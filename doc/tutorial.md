@@ -3,7 +3,7 @@
 ## Configuration
 
 The configuration file should be located in `~/.config/lf/lfrc`.
-A sample configuration file can be found [here](etc/lfrc.example).
+A sample configuration file can be found [here](/etc/lfrc.example).
 
 ## Prefixes
 
