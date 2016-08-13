@@ -1,0 +1,450 @@
+package main
+
+import (
+	"errors"
+	"fmt"
+	"io/ioutil"
+	"log"
+	"os"
+	"os/exec"
+	"path"
+	"sort"
+	"strings"
+)
+
+type Dir struct {
+	ind  int // which entry is highlighted
+	pos  int // which line in the ui highlighted entry is
+	path string
+	fi   []os.FileInfo
+}
+
+type ByName []os.FileInfo
+
+func (a ByName) Len() int      { return len(a) }
+func (a ByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+func (a ByName) Less(i, j int) bool {
+	return strings.ToLower(a[i].Name()) < strings.ToLower(a[j].Name())
+}
+
+type BySize []os.FileInfo
+
+func (a BySize) Len() int           { return len(a) }
+func (a BySize) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a BySize) Less(i, j int) bool { return a[i].Size() < a[j].Size() }
+
+type ByTime []os.FileInfo
+
+func (a ByTime) Len() int           { return len(a) }
+func (a ByTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
+func (a ByTime) Less(i, j int) bool { return a[i].ModTime().Before(a[j].ModTime()) }
+
+type ByDir []os.FileInfo
+
+func (a ByDir) Len() int      { return len(a) }
+func (a ByDir) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+func (a ByDir) Less(i, j int) bool {
+	if a[i].IsDir() == a[j].IsDir() {
+		return i < j
+	}
+	return a[i].IsDir()
+}
+
+type ByNum []os.FileInfo
+
+func (a ByNum) Len() int      { return len(a) }
+func (a ByNum) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
+
+func (a ByNum) Less(i, j int) bool {
+	nums1, rest1, numFirst1 := extractNums(a[i].Name())
+	nums2, rest2, numFirst2 := extractNums(a[j].Name())
+
+	if numFirst1 != numFirst2 {
+		return i < j
+	}
+
+	if numFirst1 {
+		if nums1[0] != nums2[0] {
+			return nums1[0] < nums2[0]
+		}
+		nums1 = nums1[1:]
+		nums2 = nums2[1:]
+	}
+
+	for k := 0; k < len(nums1) && k < len(nums2); k++ {
+		if rest1[k] != rest2[k] {
+			return i < j
+		}
+		if nums1[k] != nums2[k] {
+			return nums1[k] < nums2[k]
+		}
+	}
+
+	return i < j
+}
+
+func organizeFiles(fi []os.FileInfo) []os.FileInfo {
+	if !gOpts.hidden {
+		var tmp []os.FileInfo
+		for _, f := range fi {
+			if f.Name()[0] != '.' {
+				tmp = append(tmp, f)
+			}
+		}
+		fi = tmp
+	}
+
+	switch gOpts.sortby {
+	case "name":
+		sort.Sort(ByName(fi))
+	case "size":
+		sort.Sort(BySize(fi))
+	case "time":
+		sort.Sort(ByTime(fi))
+	default:
+		log.Printf("unknown sorting type: %s", gOpts.sortby)
+	}
+
+	// TODO: these should be optional
+	sort.Stable(ByNum(fi))
+	sort.Stable(ByDir(fi))
+
+	return fi
+}
+
+func newDir(path string) *Dir {
+	fi, err := ioutil.ReadDir(path)
+	if err != nil {
+		log.Print(err)
+	}
+
+	fi = organizeFiles(fi)
+
+	return &Dir{
+		path: path,
+		fi:   fi,
+	}
+}
+
+func (dir *Dir) renew(height int) {
+	fi, err := ioutil.ReadDir(dir.path)
+	if err != nil {
+		log.Print(err)
+	}
+
+	fi = organizeFiles(fi)
+
+	var name string
+	if len(dir.fi) != 0 {
+		name = dir.fi[dir.ind].Name()
+	}
+
+	dir.fi = fi
+
+	dir.load(dir.ind, dir.pos, height, name)
+}
+
+func (dir *Dir) load(ind, pos, height int, name string) {
+	if len(dir.fi) == 0 {
+		dir.ind, dir.pos = 0, 0
+		return
+	}
+
+	ind = max(0, min(ind, len(dir.fi)-1))
+
+	if dir.fi[ind].Name() != name {
+		for i, f := range dir.fi {
+			if f.Name() == name {
+				ind = i
+				break
+			}
+		}
+
+		edge := min(gOpts.scrolloff, len(dir.fi)-ind-1)
+		pos = min(ind, height-edge-1)
+	}
+
+	dir.ind = ind
+	dir.pos = pos
+}
+
+type Nav struct {
+	dirs   []*Dir
+	inds   map[string]int
+	poss   map[string]int
+	names  map[string]string
+	marks  map[string]bool
+	height int
+}
+
+func getDirs(wd string, height int) []*Dir {
+	var dirs []*Dir
+
+	for curr, base := wd, ""; !isRoot(base); curr, base = path.Dir(curr), path.Base(curr) {
+		dir := newDir(curr)
+		for i, f := range dir.fi {
+			if f.Name() == base {
+				dir.ind = i
+				edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
+				dir.pos = min(i, height-edge-1)
+				break
+			}
+		}
+		dirs = append(dirs, dir)
+	}
+
+	for i, j := 0, len(dirs)-1; i < j; i, j = i+1, j-1 {
+		dirs[i], dirs[j] = dirs[j], dirs[i]
+	}
+
+	return dirs
+}
+
+func newNav(height int) *Nav {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Print(err)
+	}
+
+	dirs := getDirs(wd, height)
+
+	return &Nav{
+		dirs:   dirs,
+		inds:   make(map[string]int),
+		poss:   make(map[string]int),
+		names:  make(map[string]string),
+		marks:  make(map[string]bool),
+		height: height,
+	}
+}
+
+func (nav *Nav) renew(height int) {
+	nav.height = height
+	for _, d := range nav.dirs {
+		d.renew(nav.height)
+	}
+
+	for m := range nav.marks {
+		if _, err := os.Stat(m); os.IsNotExist(err) {
+			delete(nav.marks, m)
+		}
+	}
+}
+
+func (nav *Nav) down() {
+	dir := nav.currDir()
+
+	maxind := len(dir.fi) - 1
+
+	if dir.ind >= maxind {
+		return
+	}
+
+	dir.ind++
+
+	dir.pos++
+	edge := min(gOpts.scrolloff, maxind-dir.ind)
+	dir.pos = min(dir.pos, nav.height-edge-1)
+	dir.pos = min(dir.pos, maxind)
+}
+
+func (nav *Nav) up() {
+	dir := nav.currDir()
+
+	if dir.ind == 0 {
+		return
+	}
+
+	dir.ind--
+
+	dir.pos--
+	edge := min(gOpts.scrolloff, dir.ind)
+	dir.pos = max(dir.pos, edge)
+}
+
+func (nav *Nav) updir() error {
+	if len(nav.dirs) <= 1 {
+		return nil
+	}
+
+	dir := nav.currDir()
+
+	nav.inds[dir.path] = dir.ind
+	nav.poss[dir.path] = dir.pos
+
+	if len(dir.fi) != 0 {
+		nav.names[dir.path] = dir.fi[dir.ind].Name()
+	}
+
+	nav.dirs = nav.dirs[:len(nav.dirs)-1]
+
+	err := os.Chdir(path.Dir(dir.path))
+	if err != nil {
+		return fmt.Errorf("updir: %s", err)
+	}
+
+	return nil
+}
+
+func (nav *Nav) open() error {
+	curr := nav.currFile()
+	path := nav.currPath()
+
+	if curr.IsDir() {
+		dir := newDir(path)
+
+		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
+
+		nav.dirs = append(nav.dirs, dir)
+
+		err := os.Chdir(path)
+		if err != nil {
+			return fmt.Errorf("open: %s", err)
+		}
+	} else {
+		f, err := os.Create(gSelectionPath)
+		if err != nil {
+			return fmt.Errorf("open: %s", err)
+		}
+		defer f.Close()
+
+		if len(nav.marks) != 0 {
+			marks := nav.currMarks()
+			path = strings.Join(marks, "\n")
+		}
+
+		_, err = f.WriteString(path)
+		if err != nil {
+			return fmt.Errorf("open: %s", err)
+		}
+
+		gExitFlag = true
+	}
+
+	return nil
+}
+
+func (nav *Nav) bot() {
+	dir := nav.currDir()
+
+	dir.ind = len(dir.fi) - 1
+	dir.pos = min(dir.ind, nav.height-1)
+}
+
+func (nav *Nav) top() {
+	dir := nav.currDir()
+
+	dir.ind = 0
+	dir.pos = 0
+}
+
+func (nav *Nav) cd(wd string) error {
+	if !path.IsAbs(wd) {
+		wd = path.Join(nav.currDir().path, wd)
+	}
+
+	wd = strings.Replace(wd, "~", envHome, -1)
+
+	err := os.Chdir(wd)
+	if err != nil {
+		return fmt.Errorf("cd: %s", err)
+	}
+
+	nav.dirs = getDirs(wd, nav.height)
+
+	// TODO: save/load ind and pos from the map
+
+	return nil
+}
+
+func (nav *Nav) toggle() {
+	path := nav.currPath()
+
+	if nav.marks[path] {
+		delete(nav.marks, path)
+	} else {
+		nav.marks[path] = true
+	}
+
+	nav.down()
+}
+
+func (nav *Nav) save(keep bool) error {
+	if len(nav.marks) == 0 {
+		path := nav.currPath()
+
+		err := saveFiles([]string{path}, keep)
+		if err != nil {
+			return err
+		}
+	} else {
+		var fs []string
+		for f := range nav.marks {
+			fs = append(fs, f)
+		}
+
+		err := saveFiles(fs, keep)
+		if err != nil {
+			return err
+		}
+	}
+
+	return nil
+}
+
+func (nav *Nav) paste() error {
+	list, keep, err := loadFiles()
+	if err != nil {
+		return err
+	}
+
+	if len(list) == 0 {
+		return errors.New("no file in yank/delete buffer")
+	}
+
+	dir := nav.currDir()
+
+	args := append(list, dir.path)
+
+	var sh string
+	if keep {
+		sh = "cp"
+	} else {
+		sh = "mv"
+	}
+
+	cmd := exec.Command(sh, args...)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("%s: %s", sh, err)
+	}
+
+	// TODO: async?
+
+	return nil
+}
+
+func (nav *Nav) currDir() *Dir {
+	return nav.dirs[len(nav.dirs)-1]
+}
+
+func (nav *Nav) currFile() os.FileInfo {
+	last := nav.dirs[len(nav.dirs)-1]
+	return last.fi[last.ind]
+}
+
+func (nav *Nav) currPath() string {
+	last := nav.dirs[len(nav.dirs)-1]
+	curr := last.fi[last.ind]
+	return path.Join(last.path, curr.Name())
+}
+
+func (nav *Nav) currMarks() []string {
+	marks := make([]string, 0, len(nav.marks))
+	for m := range nav.marks {
+		marks = append(marks, m)
+	}
+	return marks
+}
