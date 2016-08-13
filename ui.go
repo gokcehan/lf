@@ -365,6 +365,10 @@ func (ui *UI) getExpr() Expr {
 				case termbox.KeyEsc:
 					acc = nil
 					return r
+				default:
+					ui.message = fmt.Sprintf("unhandled key")
+					acc = nil
+					return r
 				}
 			}
 
