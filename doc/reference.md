@@ -2,10 +2,10 @@
 
 ## Keys
 
-    down              (default "j")
-    up                (default "k")
-    updir             (default "h")
-    open              (default "l")
+    up                (default "k" and "<up>")
+    down              (default "j" and "<down>")
+    updir             (default "h" and "<left>")
+    open              (default "l" and "<right>")
     quit              (default "q")
     bot               (default "G")
     top               (default "gg")

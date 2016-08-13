@@ -29,10 +29,14 @@ func init() {
 
 	gOpts.keys = make(map[string]Expr)
 
-	gOpts.keys["j"] = &CallExpr{"down", nil}
 	gOpts.keys["k"] = &CallExpr{"up", nil}
+	gOpts.keys["<up>"] = &CallExpr{"up", nil}
+	gOpts.keys["j"] = &CallExpr{"down", nil}
+	gOpts.keys["<down>"] = &CallExpr{"down", nil}
 	gOpts.keys["h"] = &CallExpr{"updir", nil}
+	gOpts.keys["<left>"] = &CallExpr{"updir", nil}
 	gOpts.keys["l"] = &CallExpr{"open", nil}
+	gOpts.keys["<right>"] = &CallExpr{"open", nil}
 	gOpts.keys["q"] = &CallExpr{"quit", nil}
 	gOpts.keys["G"] = &CallExpr{"bot", nil}
 	gOpts.keys["gg"] = &CallExpr{"top", nil}

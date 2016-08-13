@@ -360,6 +360,14 @@ func (ui *UI) getExpr() Expr {
 					acc = append(acc, '<', 'b', 's', '2', '>')
 				case termbox.KeyTab:
 					acc = append(acc, '<', 't', 'a', 'b', '>')
+				case termbox.KeyArrowUp:
+					acc = append(acc, '<', 'u', 'p', '>')
+				case termbox.KeyArrowDown:
+					acc = append(acc, '<', 'd', 'o', 'w', 'n', '>')
+				case termbox.KeyArrowLeft:
+					acc = append(acc, '<', 'l', 'e', 'f', 't', '>')
+				case termbox.KeyArrowRight:
+					acc = append(acc, '<', 'r', 'i', 'g', 'h', 't', '>')
 				case termbox.KeyCtrlL:
 					acc = append(acc, '<', 'c', '-', 'l', '>')
 				case termbox.KeyEsc:
