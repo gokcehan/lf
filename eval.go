@@ -144,17 +144,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 
-		if !f.IsDir() && gSelectionPath == "" {
-			if len(app.nav.marks) == 0 {
-				app.runShell(fmt.Sprintf("%s '%s'", gOpts.opener, path), nil, false, false)
-			} else {
-				s := gOpts.opener
-				for m := range app.nav.marks {
-					s += fmt.Sprintf(" '%s'", m)
-				}
-				app.runShell(s, nil, false, false)
-			}
-		} else {
+		if f.IsDir() {
 			err := app.nav.open()
 			if err != nil {
 				app.ui.message = err.Error()
@@ -162,6 +152,44 @@ func (e *CallExpr) eval(app *App, args []string) {
 				return
 			}
 			app.ui.echoFileInfo(app.nav)
+			return
+		}
+
+		if gSelectionPath != "" {
+			out, err := os.Create(gSelectionPath)
+			if err != nil {
+				msg := fmt.Sprintf("open: %s", err)
+				app.ui.message = msg
+				log.Print(msg)
+				return
+			}
+			defer out.Close()
+
+			if len(app.nav.marks) != 0 {
+				marks := app.nav.currMarks()
+				path = strings.Join(marks, "\n")
+			}
+
+			_, err = out.WriteString(path)
+			if err != nil {
+				msg := fmt.Sprintf("open: %s", err)
+				app.ui.message = msg
+				log.Print(msg)
+				return
+			}
+
+			gExitFlag = true
+			return
+		}
+
+		if len(app.nav.marks) == 0 {
+			app.runShell(fmt.Sprintf("%s '%s'", gOpts.opener, path), nil, false, false)
+		} else {
+			s := gOpts.opener
+			for m := range app.nav.marks {
+				s += fmt.Sprintf(" '%s'", m)
+			}
+			app.runShell(s, nil, false, false)
 		}
 	case "bot":
 		app.nav.bot()

@@ -291,40 +291,15 @@ func (nav *Nav) updir() error {
 func (nav *Nav) open() error {
 	path := nav.currPath()
 
-	f, err := os.Stat(path)
+	dir := newDir(path)
+
+	dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
+
+	nav.dirs = append(nav.dirs, dir)
+
+	err := os.Chdir(path)
 	if err != nil {
 		return fmt.Errorf("open: %s", err)
-	}
-
-	if f.IsDir() {
-		dir := newDir(path)
-
-		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
-
-		nav.dirs = append(nav.dirs, dir)
-
-		err := os.Chdir(path)
-		if err != nil {
-			return fmt.Errorf("open: %s", err)
-		}
-	} else {
-		f, err := os.Create(gSelectionPath)
-		if err != nil {
-			return fmt.Errorf("open: %s", err)
-		}
-		defer f.Close()
-
-		if len(nav.marks) != 0 {
-			marks := nav.currMarks()
-			path = strings.Join(marks, "\n")
-		}
-
-		_, err = f.WriteString(path)
-		if err != nil {
-			return fmt.Errorf("open: %s", err)
-		}
-
-		gExitFlag = true
 	}
 
 	return nil
