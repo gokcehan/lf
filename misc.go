@@ -9,10 +9,13 @@ import (
 	"unicode/utf8"
 )
 
-func isRoot(name string) bool {
-	return path.Dir(name) == name
-}
+func isRoot(name string) bool { return path.Dir(name) == name }
 
+// This function converts a size in bytes to a human readable form. For this
+// purpose metric suffixes are used (e.g. 1K = 1000). For values less than 10
+// the first significant digit is shown, otherwise it is hidden. Numbers are
+// always rounded down. For these reasons this function always show somewhat
+// smaller values but it should be fine for most human beings.
 func humanize(size int64) string {
 	if size < 1000 {
 		return fmt.Sprintf("%d", size)
@@ -32,7 +35,7 @@ func humanize(size int64) string {
 	curr := float64(size) / 1000
 	for _, s := range suffix {
 		if curr < 10 {
-			return fmt.Sprintf("%.1f%s", curr, s)
+			return fmt.Sprintf("%.1f%s", curr-0.0499, s)
 		} else if curr < 1000 {
 			return fmt.Sprintf("%d%s", int(curr), s)
 		}
@@ -98,7 +101,6 @@ func max(a, b int) int {
 	return b
 }
 
-//
 // We don't need no generic code
 // We don't need no thought control
 // No dark templates in compiler
@@ -108,4 +110,3 @@ func max(a, b int) int {
 // All in all you're just another brick in the code
 //
 // -- Pink Trolled --
-//
