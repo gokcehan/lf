@@ -18,6 +18,7 @@ var (
 
 var (
 	gExitFlag      bool
+	gLastDirPath   string
 	gSelectionPath string
 	gSocketPath    string
 	gLogPath       string
@@ -62,7 +63,7 @@ func startServer() {
 
 func main() {
 	serverMode := flag.Bool("server", false, "start server (automatic)")
-	lastDirPath := flag.String("last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
+	flag.StringVar(&gLastDirPath, "last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
 	flag.StringVar(&gSelectionPath, "selection-path", "", "path to the file to write selected files on exit (to use as open file dialog)")
 
 	flag.Parse()
@@ -77,23 +78,5 @@ func main() {
 		}
 
 		client()
-	}
-
-	if *lastDirPath != "" {
-		f, err := os.Create(*lastDirPath)
-		if err != nil {
-			log.Print(err)
-		}
-		defer f.Close()
-
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Print(err)
-		}
-
-		_, err = f.WriteString(wd)
-		if err != nil {
-			log.Print(err)
-		}
 	}
 }

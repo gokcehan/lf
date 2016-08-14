@@ -34,6 +34,22 @@ func (app *App) handleInp() {
 	for {
 		if gExitFlag {
 			log.Print("bye!")
+
+			if gLastDirPath != "" {
+				f, err := os.Create(gLastDirPath)
+				if err != nil {
+					log.Print(err)
+				}
+				defer f.Close()
+
+				dir := app.nav.currDir()
+
+				_, err = f.WriteString(dir.path)
+				if err != nil {
+					log.Print(err)
+				}
+			}
+
 			return
 		}
 		e := app.ui.getExpr()
