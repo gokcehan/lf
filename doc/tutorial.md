@@ -78,7 +78,7 @@ We can move it outside of the command so it would only run once at startup.
 
     cmd trash ${{ IFS=':'; mv --backup=numbered $fx $HOME/.trash }}
 
-Since these are one liners, we can drop `{{` and `}}.
+Since these are one liners, we can drop `{{` and `}}`.
 
     $mkdir -p ~/.trash
 

@@ -59,7 +59,7 @@ map sn :set sortby name; set showinfo none;
 map ss :set sortby size; set showinfo size;
 map st :set sortby time; set showinfo time;
 
-# sets internal field seperator (IFS) to ":"
+# sets internal field seperator (IFS) to ':'
 # useful for interactive use to automatically split file names in $fs and $fx
 # things may behave unexpectedly so use with caution
 #set ifs :
@@ -79,7 +79,7 @@ cmd extract ${{
 
 # compress selected files with tar and gunzip
 # takes the name without '.tar.gz' suffix as an argument
-# (e.g. ":compress foo" creates "foo.tar.gz")
+# (e.g. "compress foo" creates "foo.tar.gz")
 cmd compress ${{
     mkdir "$1"
     IFS=':'; cp $fs "$1"

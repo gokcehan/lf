@@ -58,9 +58,9 @@ See [etc](etc) directory to integrate `lf` to your shell or editor.
 
 ## File Opener
 
-lf does not come bundled with a file opener.
+`lf` does not come bundled with a file opener.
 By default it tries to call `xdg-open` from `xdg-utils` package.
-You can change the file opener using the opener option (e.g. `:set opener mimeopen`).
+You can change the file opener using the opener option (e.g. `set opener mimeopen`).
 Below are a few alternatives you can use:
 
 - [libfile-mimeinfo-perl](https://metacpan.org/release/File-MimeInfo) (executable name is `mimeopen`)
