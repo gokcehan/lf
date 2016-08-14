@@ -320,11 +320,11 @@ func (nav *Nav) top() {
 }
 
 func (nav *Nav) cd(wd string) error {
+	wd = strings.Replace(wd, "~", envHome, -1)
+
 	if !path.IsAbs(wd) {
 		wd = path.Join(nav.currDir().path, wd)
 	}
-
-	wd = strings.Replace(wd, "~", envHome, -1)
 
 	err := os.Chdir(wd)
 	if err != nil {
