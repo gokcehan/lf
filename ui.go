@@ -295,19 +295,28 @@ func (ui *UI) draw(nav *Nav) {
 		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks)
 	}
 
+	defer ui.msgwin.print(0, 0, fg, bg, ui.message)
+
 	if gOpts.preview {
 		if len(dir.fi) == 0 {
 			return
 		}
 
 		preview := ui.wins[len(ui.wins)-1]
-		curr := nav.currFile()
 		path := nav.currPath()
-		if curr.IsDir() {
+
+		f, err := os.Stat(path)
+		if err != nil {
+			ui.message = err.Error()
+			log.Print(err)
+			return
+		}
+
+		if f.IsDir() {
 			dir := newDir(path)
 			dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
 			preview.printd(dir, nav.marks)
-		} else {
+		} else if f.Mode().IsRegular() {
 			file, err := os.Open(path)
 			if err != nil {
 				ui.message = err.Error()
@@ -320,8 +329,6 @@ func (ui *UI) draw(nav *Nav) {
 			}
 		}
 	}
-
-	ui.msgwin.print(0, 0, fg, bg, ui.message)
 }
 
 func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok bool) {

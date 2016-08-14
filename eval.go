@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"os"
 	"strconv"
 	"strings"
 )
@@ -134,10 +135,16 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 
-		curr := app.nav.currFile()
 		path := app.nav.currPath()
 
-		if !curr.IsDir() && gSelectionPath == "" {
+		f, err := os.Stat(path)
+		if err != nil {
+			app.ui.message = err.Error()
+			log.Print(err)
+			return
+		}
+
+		if !f.IsDir() && gSelectionPath == "" {
 			if len(app.nav.marks) == 0 {
 				app.runShell(fmt.Sprintf("%s '%s'", gOpts.opener, path), nil, false, false)
 			} else {

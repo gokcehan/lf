@@ -289,10 +289,14 @@ func (nav *Nav) updir() error {
 }
 
 func (nav *Nav) open() error {
-	curr := nav.currFile()
 	path := nav.currPath()
 
-	if curr.IsDir() {
+	f, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("open: %s", err)
+	}
+
+	if f.IsDir() {
 		dir := newDir(path)
 
 		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
