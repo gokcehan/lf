@@ -233,6 +233,20 @@ func (nav *Nav) renew(height int) {
 	}
 }
 
+func (nav *Nav) up() {
+	dir := nav.currDir()
+
+	if dir.ind == 0 {
+		return
+	}
+
+	dir.ind--
+
+	dir.pos--
+	edge := min(gOpts.scrolloff, dir.ind)
+	dir.pos = max(dir.pos, edge)
+}
+
 func (nav *Nav) down() {
 	dir := nav.currDir()
 
@@ -248,20 +262,6 @@ func (nav *Nav) down() {
 	edge := min(gOpts.scrolloff, maxind-dir.ind)
 	dir.pos = min(dir.pos, nav.height-edge-1)
 	dir.pos = min(dir.pos, maxind)
-}
-
-func (nav *Nav) up() {
-	dir := nav.currDir()
-
-	if dir.ind == 0 {
-		return
-	}
-
-	dir.ind--
-
-	dir.pos--
-	edge := min(gOpts.scrolloff, dir.ind)
-	dir.pos = max(dir.pos, edge)
 }
 
 func (nav *Nav) updir() error {
