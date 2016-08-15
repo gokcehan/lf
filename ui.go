@@ -445,6 +445,8 @@ func (ui *UI) prompt(pref string) string {
 					termbox.SetCursor(win.x, win.y)
 					termbox.Flush()
 					return string(acc)
+				case termbox.KeyTab:
+					acc = compCmd(acc)
 				case termbox.KeyEsc:
 					return ""
 				}
