@@ -62,6 +62,10 @@ func matchExec(s string) string {
 	paths := strings.Split(envPath, ":")
 
 	for _, p := range paths {
+		if _, err := os.Stat(p); os.IsNotExist(err) {
+			continue
+		}
+
 		fi, err := ioutil.ReadDir(p)
 		if err != nil {
 			log.Print(err)
