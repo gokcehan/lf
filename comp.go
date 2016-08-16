@@ -42,6 +42,37 @@ func matchWord(s string, words []string) string {
 	return s
 }
 
+func matchExec(s string) string {
+	var match string
+
+	paths := strings.Split(envPath, ":")
+
+	for _, p := range paths {
+		fi, err := ioutil.ReadDir(p)
+		if err != nil {
+			log.Print(err)
+		}
+
+		for _, f := range fi {
+			if strings.HasPrefix(f.Name(), s) {
+				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
+					continue
+				}
+				if match != "" {
+					return s
+				}
+				match = f.Name()
+			}
+		}
+	}
+
+	if match != "" {
+		return match + " "
+	}
+
+	return s
+}
+
 func matchFile(s string) string {
 	var match string
 
@@ -105,6 +136,31 @@ func compCmd(acc []rune) []rune {
 			}
 			return ret
 		}
+	}
+
+	return acc
+}
+
+func compShell(acc []rune) []rune {
+	if len(acc) == 0 || acc[len(acc)-1] == ' ' {
+		return acc
+	}
+
+	s := string(acc)
+	f := strings.Fields(s)
+
+	switch len(f) {
+	case 0: // do nothing
+	case 1:
+		return []rune(matchExec(s))
+	default:
+		ret := []rune(f[0])
+		ret = append(ret, ' ')
+		for i := 1; i < len(f); i++ {
+			name := matchFile(f[i])
+			ret = append(ret, []rune(name)...)
+		}
+		return ret
 	}
 
 	return acc

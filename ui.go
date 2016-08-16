@@ -446,7 +446,11 @@ func (ui *UI) prompt(pref string) string {
 					termbox.Flush()
 					return string(acc)
 				case termbox.KeyTab:
-					acc = compCmd(acc)
+					if pref == ":" {
+						acc = compCmd(acc)
+					} else {
+						acc = compShell(acc)
+					}
 				case termbox.KeyEsc:
 					return ""
 				}

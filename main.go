@@ -13,6 +13,7 @@ var (
 	envUser  = os.Getenv("USER")
 	envHome  = os.Getenv("HOME")
 	envHost  = os.Getenv("HOSTNAME")
+	envPath  = os.Getenv("PATH")
 	envShell = os.Getenv("SHELL")
 )
 
