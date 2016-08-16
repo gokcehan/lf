@@ -4,6 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
+	"path"
 	"strings"
 )
 
@@ -68,6 +69,11 @@ func matchExec(s string) string {
 
 		for _, f := range fi {
 			if strings.HasPrefix(f.Name(), s) {
+				f, err = os.Stat(path.Join(p, f.Name()))
+				if err != nil {
+					log.Print(err)
+				}
+
 				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
 					continue
 				}
