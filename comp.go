@@ -12,8 +12,10 @@ var (
 	gOptWords = []string{
 		"preview",
 		"nopreview",
+		"preview!",
 		"hidden",
 		"nohidden",
+		"hidden!",
 		"tabstop",
 		"scrolloff",
 		"sortby",
@@ -23,20 +25,31 @@ var (
 	}
 )
 
+func matchLongest(s1, s2 string) string {
+	i := 0
+	for ; i < len(s1) && i < len(s2); i++ {
+		if s1[i] != s2[i] {
+			break
+		}
+	}
+	return s1[:i]
+}
+
 func matchWord(s string, words []string) string {
 	var match string
 
 	for _, w := range words {
 		if strings.HasPrefix(w, s) {
 			if match != "" {
-				return s
+				match = matchLongest(match, w)
+			} else {
+				match = w + " "
 			}
-			match = w
 		}
 	}
 
 	if match != "" {
-		return match + " "
+		return match
 	}
 
 	return s
@@ -59,15 +72,16 @@ func matchExec(s string) string {
 					continue
 				}
 				if match != "" {
-					return s
+					match = matchLongest(match, f.Name())
+				} else {
+					match = f.Name() + " "
 				}
-				match = f.Name()
 			}
 		}
 	}
 
 	if match != "" {
-		return match + " "
+		return match
 	}
 
 	return s
@@ -89,14 +103,15 @@ func matchFile(s string) string {
 	for _, f := range fi {
 		if strings.HasPrefix(f.Name(), s) {
 			if match != "" {
-				return s
+				match = matchLongest(match, f.Name())
+			} else {
+				match = f.Name() + " "
 			}
-			match = f.Name()
 		}
 	}
 
 	if match != "" {
-		return match + " "
+		return match
 	}
 
 	return s
