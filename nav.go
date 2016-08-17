@@ -280,8 +280,7 @@ func (nav *Nav) updir() error {
 
 	nav.dirs = nav.dirs[:len(nav.dirs)-1]
 
-	err := os.Chdir(path.Dir(dir.path))
-	if err != nil {
+	if err := os.Chdir(path.Dir(dir.path)); err != nil {
 		return fmt.Errorf("updir: %s", err)
 	}
 
@@ -297,8 +296,7 @@ func (nav *Nav) open() error {
 
 	nav.dirs = append(nav.dirs, dir)
 
-	err := os.Chdir(path)
-	if err != nil {
+	if err := os.Chdir(path); err != nil {
 		return fmt.Errorf("open: %s", err)
 	}
 
@@ -326,8 +324,7 @@ func (nav *Nav) cd(wd string) error {
 		wd = path.Join(nav.currDir().path, wd)
 	}
 
-	err := os.Chdir(wd)
-	if err != nil {
+	if err := os.Chdir(wd); err != nil {
 		return fmt.Errorf("cd: %s", err)
 	}
 
@@ -354,8 +351,7 @@ func (nav *Nav) save(keep bool) error {
 	if len(nav.marks) == 0 {
 		path := nav.currPath()
 
-		err := saveFiles([]string{path}, keep)
-		if err != nil {
+		if err := saveFiles([]string{path}, keep); err != nil {
 			return err
 		}
 	} else {
@@ -364,8 +360,7 @@ func (nav *Nav) save(keep bool) error {
 			fs = append(fs, f)
 		}
 
-		err := saveFiles(fs, keep)
-		if err != nil {
+		if err := saveFiles(fs, keep); err != nil {
 			return err
 		}
 	}

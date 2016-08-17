@@ -479,8 +479,7 @@ func (ui *UI) resume() {
 }
 
 func (ui *UI) sync() {
-	err := termbox.Sync()
-	if err != nil {
+	if err := termbox.Sync(); err != nil {
 		log.Printf("syncing termbox: %s", err)
 	}
 	termbox.SetCursor(0, 0)

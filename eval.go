@@ -125,8 +125,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.nav.up()
 		app.ui.echoFileInfo(app.nav)
 	case "updir":
-		err := app.nav.updir()
-		if err != nil {
+		if err := app.nav.updir(); err != nil {
 			app.ui.message = err.Error()
 			log.Print(err)
 			return
@@ -150,8 +149,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 
 		if f.IsDir() {
-			err := app.nav.open()
-			if err != nil {
+			if err := app.nav.open(); err != nil {
 				app.ui.message = err.Error()
 				log.Print(err)
 				return
@@ -197,8 +195,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.nav.top()
 		app.ui.echoFileInfo(app.nav)
 	case "cd":
-		err := app.nav.cd(e.args[0])
-		if err != nil {
+		if err := app.nav.cd(e.args[0]); err != nil {
 			app.ui.message = err.Error()
 			log.Print(err)
 			return
@@ -244,8 +241,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 	case "toggle":
 		app.nav.toggle()
 	case "yank":
-		err := app.nav.save(true)
-		if err != nil {
+		if err := app.nav.save(true); err != nil {
 			msg := fmt.Sprintf("yank: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
@@ -253,8 +249,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 		app.nav.marks = make(map[string]bool)
 	case "delete":
-		err := app.nav.save(false)
-		if err != nil {
+		if err := app.nav.save(false); err != nil {
 			msg := fmt.Sprintf("delete: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
@@ -262,8 +257,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 		app.nav.marks = make(map[string]bool)
 	case "paste":
-		err := app.nav.paste()
-		if err != nil {
+		if err := app.nav.paste(); err != nil {
 			msg := fmt.Sprintf("paste: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)

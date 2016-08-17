@@ -56,8 +56,7 @@ func init() {
 
 func startServer() {
 	cmd := exec.Command(os.Args[0], "-server")
-	err := cmd.Start()
-	if err != nil {
+	if err := cmd.Start(); err != nil {
 		log.Printf("starting server: %s", err)
 	}
 }

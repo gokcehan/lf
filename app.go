@@ -22,8 +22,7 @@ func waitKey() error {
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 
-	err := cmd.Run()
-	if err != nil {
+	if err := cmd.Run(); err != nil {
 		return fmt.Errorf("waiting key: %s", err)
 	}
 
