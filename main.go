@@ -37,7 +37,7 @@ func init() {
 	if envHost == "" {
 		host, err := os.Hostname()
 		if err != nil {
-			log.Fatal("$HOSTNAME not set")
+			log.Printf("hostname: %s", err)
 		}
 		envHost = host
 	}
@@ -58,7 +58,7 @@ func startServer() {
 	cmd := exec.Command(os.Args[0], "-server")
 	err := cmd.Start()
 	if err != nil {
-		log.Print(err)
+		log.Printf("starting server: %s", err)
 	}
 }
 
@@ -73,8 +73,7 @@ func main() {
 		serve()
 	} else {
 		// TODO: check if the socket is working
-		_, err := os.Stat(gSocketPath)
-		if err != nil {
+		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
 			startServer()
 		}
 
