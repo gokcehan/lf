@@ -28,12 +28,13 @@ func (e *SetExpr) eval(app *App, args []string) {
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
+			msg := fmt.Sprintf("scrolloff: %s", err)
+			app.ui.message = msg
+			log.Print(msg)
 			return
 		}
 		if n < 0 {
-			msg := "scrolloff should be a non-negative number"
+			msg := "scrolloff: value should be a non-negative number"
 			app.ui.message = msg
 			log.Print(msg)
 			return
@@ -47,12 +48,13 @@ func (e *SetExpr) eval(app *App, args []string) {
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
+			msg := fmt.Sprintf("tabstop: %s", err)
+			app.ui.message = msg
+			log.Print(msg)
 			return
 		}
 		if n <= 0 {
-			msg := "tabstop should be a positive number"
+			msg := "tabstop: value should be a positive number"
 			app.ui.message = msg
 			log.Print(msg)
 			return
@@ -85,7 +87,9 @@ func (e *SetExpr) eval(app *App, args []string) {
 		for _, s := range toks {
 			i, err := strconv.Atoi(s)
 			if err != nil {
-				log.Print(err)
+				msg := fmt.Sprintf("ratios: %s", err)
+				app.ui.message = msg
+				log.Print(msg)
 				return
 			}
 			rats = append(rats, i)
@@ -139,8 +143,9 @@ func (e *CallExpr) eval(app *App, args []string) {
 
 		f, err := os.Stat(path)
 		if err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
+			msg := fmt.Sprintf("open: %s", err)
+			app.ui.message = msg
+			log.Print(msg)
 			return
 		}
 
@@ -158,10 +163,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		if gSelectionPath != "" {
 			out, err := os.Create(gSelectionPath)
 			if err != nil {
-				msg := fmt.Sprintf("open: %s", err)
-				app.ui.message = msg
-				log.Print(msg)
-				return
+				log.Printf("opening selection file: %s", err)
 			}
 			defer out.Close()
 
@@ -172,10 +174,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 
 			_, err = out.WriteString(path)
 			if err != nil {
-				msg := fmt.Sprintf("open: %s", err)
-				app.ui.message = msg
-				log.Print(msg)
-				return
+				log.Printf("writing selection file: %s", err)
 			}
 
 			gExitFlag = true
