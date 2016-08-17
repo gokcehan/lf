@@ -29,22 +29,26 @@ func client() {
 	nav := newNav(ui.wins[0].h)
 	app := &App{ui, nav}
 
-	rcFile, err := os.Open(gConfigPath)
-	if err != nil {
-		msg := fmt.Sprintf("opening configuration file: %s", err)
-		app.ui.message = msg
-		log.Printf(msg)
-	} else {
-		app.ui.echoFileInfo(app.nav)
-	}
-	defer rcFile.Close()
+	if _, err := os.Stat(gConfigPath); err == nil {
+		log.Printf("reading configuration file: %s", gConfigPath)
 
-	p := newParser(rcFile)
-	for p.parse() {
-		p.expr.eval(app, nil)
-	}
+		rcFile, err := os.Open(gConfigPath)
+		if err != nil {
+			msg := fmt.Sprintf("opening configuration file: %s", err)
+			app.ui.message = msg
+			log.Printf(msg)
+		} else {
+			app.ui.echoFileInfo(app.nav)
+		}
+		defer rcFile.Close()
 
-	// TODO: parser error check
+		p := newParser(rcFile)
+		for p.parse() {
+			p.expr.eval(app, nil)
+		}
+
+		// TODO: parser error check
+	}
 
 	app.ui.draw(app.nav)
 
