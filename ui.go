@@ -307,8 +307,9 @@ func (ui *UI) draw(nav *Nav) {
 
 		f, err := os.Stat(path)
 		if err != nil {
-			ui.message = err.Error()
-			log.Print(err)
+			msg := fmt.Sprintf("getting file information: %s", err)
+			ui.message = msg
+			log.Print(msg)
 			return
 		}
 
@@ -319,8 +320,9 @@ func (ui *UI) draw(nav *Nav) {
 		} else if f.Mode().IsRegular() {
 			file, err := os.Open(path)
 			if err != nil {
-				ui.message = err.Error()
-				log.Print(err)
+				msg := fmt.Sprintf("opening file: %s", err)
+				ui.message = msg
+				log.Print(msg)
 			}
 
 			if err := preview.printr(file); err != nil {
@@ -472,14 +474,14 @@ func (ui *UI) pause() {
 
 func (ui *UI) resume() {
 	if err := termbox.Init(); err != nil {
-		log.Fatal(err)
+		log.Fatalf("initializing termbox: %s", err)
 	}
 }
 
 func (ui *UI) sync() {
 	err := termbox.Sync()
 	if err != nil {
-		log.Printf("syncing: %s", err)
+		log.Printf("syncing termbox: %s", err)
 	}
 	termbox.SetCursor(0, 0)
 	termbox.HideCursor()

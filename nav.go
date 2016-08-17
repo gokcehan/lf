@@ -117,7 +117,7 @@ func organizeFiles(fi []os.FileInfo) []os.FileInfo {
 func newDir(path string) *Dir {
 	fi, err := ioutil.ReadDir(path)
 	if err != nil {
-		log.Print(err)
+		log.Printf("reading directory: %s", err)
 	}
 
 	fi = organizeFiles(fi)
@@ -131,7 +131,7 @@ func newDir(path string) *Dir {
 func (dir *Dir) renew(height int) {
 	fi, err := ioutil.ReadDir(dir.path)
 	if err != nil {
-		log.Print(err)
+		log.Print("reading directory: %s", err)
 	}
 
 	fi = organizeFiles(fi)
@@ -205,7 +205,7 @@ func getDirs(wd string, height int) []*Dir {
 func newNav(height int) *Nav {
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Print(err)
+		log.Printf("getting current directory: %s", err)
 	}
 
 	dirs := getDirs(wd, height)
