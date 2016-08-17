@@ -68,14 +68,14 @@ func matchExec(s string) string {
 
 		fi, err := ioutil.ReadDir(p)
 		if err != nil {
-			log.Print(err)
+			log.Printf("reading path: %s", err)
 		}
 
 		for _, f := range fi {
 			if strings.HasPrefix(f.Name(), s) {
 				f, err = os.Stat(path.Join(p, f.Name()))
 				if err != nil {
-					log.Print(err)
+					log.Printf("getting file information: %s", err)
 				}
 
 				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
@@ -102,12 +102,12 @@ func matchFile(s string) string {
 
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Print(err)
+		log.Printf("getting current directory: %s", err)
 	}
 
 	fi, err := ioutil.ReadDir(wd)
 	if err != nil {
-		log.Print(err)
+		log.Printf("reading directory: %s", err)
 	}
 
 	for _, f := range fi {
