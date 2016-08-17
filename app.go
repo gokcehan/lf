@@ -38,7 +38,7 @@ func (app *App) handleInp() {
 			if gLastDirPath != "" {
 				f, err := os.Create(gLastDirPath)
 				if err != nil {
-					log.Print(err)
+					log.Printf("opening last dir file: %s", err)
 				}
 				defer f.Close()
 
@@ -46,7 +46,7 @@ func (app *App) handleInp() {
 
 				_, err = f.WriteString(dir.path)
 				if err != nil {
-					log.Print(err)
+					log.Printf("writing last dir file: %s", err)
 				}
 			}
 
