@@ -195,7 +195,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.nav.top()
 		app.ui.echoFileInfo(app.nav)
 	case "cd":
-		if err := app.nav.cd(e.args[0]); err != nil {
+		path := "~"
+		if len(e.args) > 0 {
+			path = e.args[0]
+		}
+		if err := app.nav.cd(path); err != nil {
 			app.ui.message = err.Error()
 			log.Print(err)
 			return
