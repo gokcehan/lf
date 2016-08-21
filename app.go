@@ -51,7 +51,7 @@ func (app *App) handleInp() {
 
 			return
 		}
-		e := app.ui.getExpr()
+		e := app.ui.getExpr(app.nav)
 		if e == nil {
 			continue
 		}

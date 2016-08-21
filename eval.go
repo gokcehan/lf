@@ -206,7 +206,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 		app.ui.echoFileInfo(app.nav)
 	case "read":
-		s := app.ui.prompt(":")
+		s := app.ui.prompt(app.nav, ":")
 		if len(s) == 0 {
 			app.ui.echoFileInfo(app.nav)
 			return
@@ -221,24 +221,24 @@ func (e *CallExpr) eval(app *App, args []string) {
 			log.Print(p.err)
 		}
 	case "read-shell":
-		s := app.ui.prompt("$")
+		s := app.ui.prompt(app.nav, "$")
 		log.Printf("shell: %s", s)
 		app.runShell(s, nil, false, false)
 	case "read-shell-wait":
-		s := app.ui.prompt("!")
+		s := app.ui.prompt(app.nav, "!")
 		log.Printf("shell-wait: %s", s)
 		app.runShell(s, nil, true, false)
 	case "read-shell-async":
-		s := app.ui.prompt("&")
+		s := app.ui.prompt(app.nav, "&")
 		log.Printf("shell-async: %s", s)
 		app.runShell(s, nil, false, true)
 	case "search":
-		s := app.ui.prompt("/")
+		s := app.ui.prompt(app.nav, "/")
 		log.Printf("search: %s", s)
 		app.ui.message = "sorry, search is not implemented yet!"
 		// TODO: implement
 	case "search-back":
-		s := app.ui.prompt("?")
+		s := app.ui.prompt(app.nav, "?")
 		log.Printf("search-back: %s", s)
 		app.ui.message = "sorry, search-back is not implemented yet!"
 		// TODO: implement

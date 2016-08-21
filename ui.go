@@ -346,7 +346,7 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 	return
 }
 
-func (ui *UI) getExpr() Expr {
+func (ui *UI) getExpr(nav *Nav) Expr {
 	r := &CallExpr{"redraw", nil}
 
 	var acc []rune
@@ -400,12 +400,14 @@ func (ui *UI) getExpr() Expr {
 				if ok {
 					return gOpts.keys[string(acc)]
 				}
+				ui.draw(nav)
 				ui.listBinds(binds)
 			default:
 				if ok {
 					// TODO: use a delay
 					return gOpts.keys[string(acc)]
 				}
+				ui.draw(nav)
 				ui.listBinds(binds)
 			}
 		case termbox.EventResize:
@@ -416,7 +418,7 @@ func (ui *UI) getExpr() Expr {
 	}
 }
 
-func (ui *UI) prompt(pref string) string {
+func (ui *UI) prompt(nav *Nav, pref string) string {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	win := ui.msgwin
@@ -448,10 +450,15 @@ func (ui *UI) prompt(pref string) string {
 					termbox.Flush()
 					return string(acc)
 				case termbox.KeyTab:
+					var matches []string
 					if pref == ":" {
-						acc = compCmd(acc)
+						matches, acc = compCmd(acc)
 					} else {
-						acc = compShell(acc)
+						matches, acc = compShell(acc)
+					}
+					ui.draw(nav)
+					if len(matches) > 1 {
+						ui.listMatches(matches)
 					}
 				case termbox.KeyEsc:
 					return ""
@@ -492,17 +499,7 @@ func (ui *UI) sync() {
 	}
 }
 
-func (ui *UI) listBinds(binds map[string]Expr) {
-	t := new(tabwriter.Writer)
-	b := new(bytes.Buffer)
-
-	t.Init(b, 0, 8, 0, '\t', 0)
-	fmt.Fprintln(t, "keys\tcommand")
-	for key, expr := range binds {
-		fmt.Fprintf(t, "%s\t%v\n", key, expr)
-	}
-	t.Flush()
-
+func (ui *UI) showMenu(b *bytes.Buffer) {
 	lines := strings.Split(b.String(), "\n")
 
 	lines = lines[:len(lines)-1]
@@ -512,8 +509,47 @@ func (ui *UI) listBinds(binds map[string]Expr) {
 
 	ui.menuwin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
 	for i, line := range lines[1:] {
-		ui.menuwin.printl(0, i+1, termbox.ColorDefault, termbox.ColorDefault, line)
+		ui.menuwin.printl(0, i+1, termbox.ColorDefault, termbox.ColorDefault, "")
+		ui.menuwin.print(0, i+1, termbox.ColorDefault, termbox.ColorDefault, line)
 	}
 
 	termbox.Flush()
+}
+
+func (ui *UI) listBinds(binds map[string]Expr) {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "keys\tcommand")
+	for key, expr := range binds {
+		fmt.Fprintf(t, "%s\t%v\n", key, expr)
+	}
+	t.Flush()
+
+	ui.showMenu(b)
+}
+
+func (ui *UI) listMatches(matches []string) {
+	b := new(bytes.Buffer)
+
+	wtot, _ := termbox.Size()
+
+	wcol := 0
+	for _, m := range matches {
+		wcol = max(wcol, len(m))
+	}
+	wcol += gOpts.tabstop - wcol%gOpts.tabstop
+
+	ncol := wtot / wcol
+
+	b.WriteString("possible matches\n")
+	for i := 0; i < len(matches); i++ {
+		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
+			b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
+		}
+		b.WriteByte('\n')
+	}
+
+	ui.showMenu(b)
 }

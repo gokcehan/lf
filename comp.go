@@ -36,29 +36,26 @@ func matchLongest(s1, s2 string) string {
 	return s1[:i]
 }
 
-func matchWord(s string, words []string) string {
-	var match string
-
+func matchWord(s string, words []string) (matches []string, longest string) {
 	for _, w := range words {
 		if strings.HasPrefix(w, s) {
-			if match != "" {
-				match = matchLongest(match, w)
+			matches = append(matches, w)
+			if longest != "" {
+				longest = matchLongest(longest, w)
 			} else {
-				match = w + " "
+				longest = w + " "
 			}
 		}
 	}
 
-	if match != "" {
-		return match
+	if longest == "" {
+		longest = s
 	}
 
-	return s
+	return
 }
 
-func matchExec(s string) string {
-	var match string
-
+func matchExec(s string) (matches []string, longest string) {
 	paths := strings.Split(envPath, ":")
 
 	for _, p := range paths {
@@ -81,25 +78,25 @@ func matchExec(s string) string {
 				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
 					continue
 				}
-				if match != "" {
-					match = matchLongest(match, f.Name())
+
+				matches = append(matches, f.Name())
+				if longest != "" {
+					longest = matchLongest(longest, f.Name())
 				} else {
-					match = f.Name() + " "
+					longest = f.Name() + " "
 				}
 			}
 		}
 	}
 
-	if match != "" {
-		return match
+	if longest == "" {
+		longest = s
 	}
 
-	return s
+	return
 }
 
-func matchFile(s string) string {
-	var match string
-
+func matchFile(s string) (matches []string, longest string) {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Printf("getting current directory: %s", err)
@@ -112,81 +109,78 @@ func matchFile(s string) string {
 
 	for _, f := range fi {
 		if strings.HasPrefix(f.Name(), s) {
-			if match != "" {
-				match = matchLongest(match, f.Name())
+			matches = append(matches, f.Name())
+			if longest != "" {
+				longest = matchLongest(longest, f.Name())
 			} else {
-				match = f.Name() + " "
+				longest = f.Name() + " "
 			}
 		}
 	}
 
-	if match != "" {
-		return match
+	if longest == "" {
+		longest = s
 	}
 
-	return s
+	return
 }
 
-func compCmd(acc []rune) []rune {
+func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 	if len(acc) == 0 || acc[len(acc)-1] == ' ' {
-		return acc
+		return matches, acc
 	}
 
 	s := string(acc)
 	f := strings.Fields(s)
 
+	var longest string
+
 	switch len(f) {
-	case 0: // do nothing
+	case 0:
+		longestAcc = acc
 	case 1:
 		words := gCmdWords
 		for c, _ := range gOpts.cmds {
 			words = append(words, c)
 		}
-		return []rune(matchWord(s, words))
+		matches, longest = matchWord(s, words)
+		longestAcc = []rune(longest)
 	default:
 		switch f[0] {
 		case "set":
-			opt := matchWord(f[1], gOptWords)
-			ret := []rune(f[0])
-			ret = append(ret, ' ')
-			ret = append(ret, []rune(opt)...)
-			return ret
-		case "map", "cmd": // do nothing
+			matches, longest = matchWord(f[1], gOptWords)
+			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+		case "map", "cmd":
+			longestAcc = acc
 		default:
-			ret := []rune(f[0])
-			ret = append(ret, ' ')
-			for i := 1; i < len(f); i++ {
-				name := matchFile(f[i])
-				ret = append(ret, []rune(name)...)
-			}
-			return ret
+			matches, longest = matchFile(f[len(f)-1])
+			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
 		}
 	}
 
-	return acc
+	return
 }
 
-func compShell(acc []rune) []rune {
+func compShell(acc []rune) (matches []string, longestAcc []rune) {
 	if len(acc) == 0 || acc[len(acc)-1] == ' ' {
-		return acc
+		return matches, acc
 	}
 
 	s := string(acc)
 	f := strings.Fields(s)
 
+	var longest string
+
 	switch len(f) {
-	case 0: // do nothing
+	case 0:
+		longestAcc = acc
 	case 1:
-		return []rune(matchExec(s))
+		matches, longest = matchExec(s)
+		longestAcc = []rune(longest)
 	default:
-		ret := []rune(f[0])
-		ret = append(ret, ' ')
-		for i := 1; i < len(f); i++ {
-			name := matchFile(f[i])
-			ret = append(ret, []rune(name)...)
-		}
-		return ret
+		matches, longest = matchFile(f[len(f)-1])
+		longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
 	}
 
-	return acc
+	return
 }
