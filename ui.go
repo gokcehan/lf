@@ -484,6 +484,12 @@ func (ui *UI) sync() {
 	}
 	termbox.SetCursor(0, 0)
 	termbox.HideCursor()
+
+	// TODO: is there an easier way to clear residual escape codes?
+	termbox.Close()
+	if err := termbox.Init(); err != nil {
+		log.Fatalf("initializing termbox: %s", err)
+	}
 }
 
 func (ui *UI) listBinds(binds map[string]Expr) {
