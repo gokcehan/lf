@@ -5,7 +5,9 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strings"
+	"syscall"
 )
 
 type App struct {
@@ -101,9 +103,13 @@ func (app *App) runShell(s string, args []string, wait bool, async bool) {
 	cmd := exec.Command(envShell, args...)
 
 	if !async {
+		var Stdnull *os.File
+		if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
+			Stdnull = os.NewFile(uintptr(syscall.Stdout), "/dev/stdout")
+		}
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stderr = Stdnull
 	}
 
 	if wait {
