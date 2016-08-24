@@ -100,10 +100,13 @@ func (app *App) runShell(s string, args []string, wait bool, async bool) {
 	args = append([]string{"-c", s, "--"}, args...)
 	cmd := exec.Command(envShell, args...)
 
+	const devnull = 3
+	Stdnull := os.NewFile(uintptr(devnull), os.DevNull)
+
 	if !async {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
+		cmd.Stderr = Stdnull
 	}
 
 	if wait {
