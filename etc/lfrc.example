@@ -19,11 +19,19 @@ map <cr> read-shell
 map x $"$f"
 map X !"$f"
 
-# you can either set your opener to 'mimeopen'
-#set opener mimeopen
-# or set dedicated keys for specific actions
+# dedicated keys for file opener actions
 map o &mimeopen "$f"
 map m !mimeopen --ask "$f"
+
+# `open-file` is called by `open` when current file is not a directory
+# you may want to use either file extensions or mime types with `file`
+# below uses an editor for text files and a file opener for the rest
+cmd open-file ${{
+    case $(file --mime-type "$f" -b) in
+        text/*) IFS=':'; vim $fx;;
+        *) IFS=':'; for f in $fx; do xdg-open "$f" &> /dev/null & done;;
+    esac
+}}
 
 # rename current file without overwrite
 cmd rename $[ -e "$1" ] || mv "$f" "$1"
