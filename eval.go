@@ -271,6 +271,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.nav.save(false)
 		saveFiles(nil, false)
 	case "redraw":
+		app.ui.sync()
 		app.ui.renew()
 		app.nav.renew(app.ui.wins[0].h)
 	default:
