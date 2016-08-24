@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path"
+	"sort"
 	"strings"
 	"text/tabwriter"
 	"time"
@@ -520,10 +521,16 @@ func (ui *UI) listBinds(binds map[string]Expr) {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
+	var keys []string
+	for k := range binds {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "keys\tcommand")
-	for key, expr := range binds {
-		fmt.Fprintf(t, "%s\t%v\n", key, expr)
+	for _, k := range keys {
+		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
 	}
 	t.Flush()
 
