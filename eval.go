@@ -79,8 +79,6 @@ func (e *SetExpr) eval(app *App, args []string) {
 		}
 		gOpts.sortby = e.val
 		app.nav.renew(app.nav.height)
-	case "opener":
-		gOpts.opener = e.val
 	case "ratios":
 		toks := strings.Split(e.val, ":")
 		var rats []int
@@ -179,14 +177,8 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 
-		if len(app.nav.marks) == 0 {
-			app.runShell(fmt.Sprintf("%s '%s'", gOpts.opener, path), nil, false, false)
-		} else {
-			s := gOpts.opener
-			for m := range app.nav.marks {
-				s += fmt.Sprintf(" '%s'", m)
-			}
-			app.runShell(s, nil, false, false)
+		if cmd, ok := gOpts.cmds["open-file"]; ok {
+			cmd.eval(app, e.args)
 		}
 	case "bot":
 		app.nav.bot()

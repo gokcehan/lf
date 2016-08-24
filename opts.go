@@ -8,7 +8,6 @@ type Opts struct {
 	ifs       string
 	showinfo  string
 	sortby    string
-	opener    string
 	ratios    []int
 	keys      map[string]Expr
 	cmds      map[string]Expr
@@ -24,7 +23,6 @@ func init() {
 	gOpts.ifs = ""
 	gOpts.showinfo = "none"
 	gOpts.sortby = "name"
-	gOpts.opener = "xdg-open"
 	gOpts.ratios = []int{1, 2, 3}
 
 	gOpts.keys = make(map[string]Expr)

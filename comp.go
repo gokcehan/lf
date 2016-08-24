@@ -21,7 +21,6 @@ var (
 		"scrolloff",
 		"sortby",
 		"showinfo",
-		"opener",
 		"ratios",
 	}
 )
