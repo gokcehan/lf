@@ -88,3 +88,33 @@ Finally note that we set `IFS` variable accordingly in the command.
 Instead we could use the `ifs` option to set it for all commands (e.g. `set ifs :`).
 This could be especially useful for interactive use (e.g. `rm $fs` would simply work).
 This option is not set by default as things may behave unexpectedly at other places.
+
+## Opening Files
+
+You can use `open-file` command to open a file.
+This is a special command called by `open` when the current file is not a directory.
+Normally a user maps the `open` command to a key (default `l`) and customize `open-file` command as desired.
+You can define it just as you would define any other command.
+
+    cmd open-file $IFS=':'; vim $fx
+
+It is possible to use different command types.
+
+    cmd open-file &xdg-open "$f"
+
+You may want to use either file extensions or mime types with `file`.
+
+    cmd open-file ${{
+        case $(file --mime-type "$f" -b) in
+            text/*) IFS=':'; vim $fx;;
+            *) IFS=':'; for f in $fx; do xdg-open "$f" &> /dev/null & done;;
+        esac
+    }}
+
+`lf` does not come bundled with a file opener.
+Below are a few different file openers you can use.
+
+- [xdg-utils](https://www.freedesktop.org/wiki/Software/xdg-utils/) (executable name is `xdg-open`)
+- [libfile-mimeinfo-perl](https://metacpan.org/release/File-MimeInfo) (executable name is `mimeopen`)
+- [rifle](http://ranger.nongnu.org/) (ranger's default file opener)
+- [mimeo](http://xyne.archlinux.ca/projects/mimeo/)

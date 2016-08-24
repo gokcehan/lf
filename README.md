@@ -55,15 +55,3 @@ See [tutorial](doc/tutorial.md) for an introduction to the configuration.
 See [reference](doc/reference.md) for the list of keys, options and variables with their default values.
 
 See [etc](etc) directory to integrate `lf` to your shell or editor.
-
-## File Opener
-
-`lf` does not come bundled with a file opener.
-By default it tries to call `xdg-open` from `xdg-utils` package.
-You can change the file opener using the opener option (e.g. `set opener mimeopen`).
-Below are a few alternatives you can use:
-
-- [libfile-mimeinfo-perl](https://metacpan.org/release/File-MimeInfo) (executable name is `mimeopen`)
-- [rifle](http://ranger.nongnu.org/) (ranger's default file opener)
-- [mimeo](http://xyne.archlinux.ca/projects/mimeo/)
-- custom (using file extensions and/or mimetypes with `file` command)
