@@ -70,7 +70,7 @@ map st :set sortby time; set showinfo time;
 # sets internal field seperator (IFS) to ':'
 # useful for interactive use to automatically split file names in $fs and $fx
 # things may behave unexpectedly so use with caution
-#set ifs :
+#set ifs ':'
 
 # extract the current file with the right command
 # xkcd link: https://xkcd.com/1168/
