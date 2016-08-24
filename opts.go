@@ -50,7 +50,7 @@ func init() {
 	gOpts.keys["y"] = &CallExpr{"yank", nil}
 	gOpts.keys["d"] = &CallExpr{"delete", nil}
 	gOpts.keys["p"] = &CallExpr{"paste", nil}
-	gOpts.keys["<c-l>"] = &CallExpr{"redraw", nil}
+	gOpts.keys["<c-l>"] = &CallExpr{"renew", nil}
 
 	gOpts.cmds = make(map[string]Expr)
 }

@@ -347,7 +347,7 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 }
 
 func (ui *UI) getExpr(nav *Nav) Expr {
-	r := &CallExpr{"redraw", nil}
+	r := &CallExpr{"renew", nil}
 
 	var acc []rune
 

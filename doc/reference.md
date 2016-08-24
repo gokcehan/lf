@@ -19,7 +19,7 @@
     yank              (default "y")
     delete            (default "d")
     paste             (default "p")
-    redraw            (default "<c-l>")
+    renew             (default "<c-l>")
 
 ## Options
 
