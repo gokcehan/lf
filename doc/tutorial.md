@@ -85,7 +85,7 @@ Since these are one liners, we can drop `{{` and `}}`.
     cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
 
 Finally note that we set `IFS` variable accordingly in the command.
-Instead we could use the `ifs` option to set it for all commands (e.g. `set ifs :`).
+Instead we could use the `ifs` option to set it for all commands (e.g. `set ifs ':'`).
 This could be especially useful for interactive use (e.g. `rm $fs` would simply work).
 This option is not set by default as things may behave unexpectedly at other places.
 
