@@ -12,6 +12,9 @@ set scrolloff 10
 map i $less "$f"
 map e $vim "$f"
 
+# mapping to spawn a shell in current directory
+map S $$SHELL
+
 # use enter for shell commands
 map <cr> read-shell
 
