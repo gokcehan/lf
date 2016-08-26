@@ -96,23 +96,45 @@ func matchExec(s string) (matches []string, longest string) {
 }
 
 func matchFile(s string) (matches []string, longest string) {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
+	dir := strings.Replace(s, "~", envHome, -1)
+
+	if !path.IsAbs(dir) {
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+		}
+		dir = wd + "/" + dir
 	}
 
-	fi, err := ioutil.ReadDir(wd)
+	dir = path.Dir(dir)
+
+	fi, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
 	for _, f := range fi {
-		if strings.HasPrefix(f.Name(), s) {
+		f, err := os.Stat(path.Join(dir, f.Name()))
+		if err != nil {
+			log.Printf("getting file information: %s", err)
+			return
+		}
+
+		_, last := path.Split(s)
+		if strings.HasPrefix(f.Name(), last) {
+			name := f.Name()
+			if isRoot(s) || path.Base(s) != s {
+				name = path.Join(path.Dir(s), f.Name())
+			}
 			matches = append(matches, f.Name())
 			if longest != "" {
-				longest = matchLongest(longest, f.Name())
+				longest = matchLongest(longest, name)
 			} else {
-				longest = f.Name() + " "
+				if f.Mode().IsRegular() {
+					longest = name + " "
+				} else {
+					longest = name + "/"
+				}
 			}
 		}
 	}
