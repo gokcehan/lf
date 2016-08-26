@@ -84,9 +84,9 @@ func (app *App) exportVars() {
 
 // This function is used to run a command in shell. Following modes are used:
 //
-// Prefix  Wait  Async  Stdin/Stdout/Stderr  UI action (before/after)
-// $       No    No     Yes                  Do nothing and then sync
-// !       Yes   No     Yes                  pause and then resume
+// Prefix  Wait  Async  Stdin/Stdout/Stderr  UI action
+// $       No    No     Yes                  Pause and then resume
+// !       Yes   No     Yes                  Pause and then resume
 // &       No    Yes    No                   Do nothing
 //
 // Waiting async commands are not used for now.
@@ -104,16 +104,11 @@ func (app *App) runShell(s string, args []string, wait bool, async bool) {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
-	}
 
-	if wait {
 		app.ui.pause()
 		defer app.ui.resume()
-	} else {
-		defer app.ui.sync()
+		defer app.nav.renew(app.ui.wins[0].h)
 	}
-
-	defer app.nav.renew(app.ui.wins[0].h)
 
 	var err error
 	if async {

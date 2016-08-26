@@ -490,14 +490,6 @@ func (ui *UI) sync() {
 	if err := termbox.Sync(); err != nil {
 		log.Printf("syncing termbox: %s", err)
 	}
-	termbox.SetCursor(0, 0)
-	termbox.HideCursor()
-
-	// TODO: is there an easier way to clear residual escape codes?
-	termbox.Close()
-	if err := termbox.Init(); err != nil {
-		log.Fatalf("initializing termbox: %s", err)
-	}
 }
 
 func (ui *UI) showMenu(b *bytes.Buffer) {
