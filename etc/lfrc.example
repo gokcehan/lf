@@ -24,7 +24,7 @@ map X !"$f"
 
 # dedicated keys for file opener actions
 map o &mimeopen "$f"
-map m !mimeopen --ask "$f"
+map m $mimeopen --ask "$f"
 
 # `open-file` is called by `open` when current file is not a directory
 # you may want to use either file extensions or mime types with `file`
