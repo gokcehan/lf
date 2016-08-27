@@ -12,18 +12,42 @@
 # (e.g. non-POSIX features provided by your regular shell).
 set shell /bin/sh
 
+# sets internal field seperator (IFS) to ':'
+# useful for interactive use to automatically split file names in $fs and $fx
+# things may behave unexpectedly so use with caution
+#set ifs ':'
+
 # leave some space at the top and the bottom of the screen
 set scrolloff 10
+
+# easily toggle options
+map zp set preview!
+map zh set hidden!
+
+# easily select what information to show
+map zn set showinfo none
+map zs set showinfo size
+map zt set showinfo time
+
+# sort files and show the corresponding info
+map sn :set sortby name; set showinfo none;
+map ss :set sortby size; set showinfo size;
+map st :set sortby time; set showinfo time;
+
+# common directories
+map gh cd ~
+map gr cd /
+
+# use enter for shell commands
+map <cr> read-shell
 
 # mappings for pager and editor (change as you like)
 map i $less "$f"
 map e $vim "$f"
 
-# mapping to spawn a shell in current directory
-map S $$SHELL
-
-# use enter for shell commands
-map <cr> read-shell
+# mapping to spawn a shell in working directory
+# see also etc/lf.sh as an alternative workflow
+map w $$SHELL
 
 # execute current file (must be executable)
 map x $"$f"
@@ -31,7 +55,7 @@ map X !"$f"
 
 # dedicated keys for file opener actions
 map o &mimeopen "$f"
-map m $mimeopen --ask "$f"
+map O $mimeopen --ask "$f"
 
 # `open-file` is called by `open` when current file is not a directory
 # you may want to use either file extensions or mime types with `file`
@@ -58,29 +82,6 @@ cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
 
 # here be dragons
 #map dD trash
-
-# common directories
-map gh cd ~
-map gr cd /
-
-# easily toggle options
-map zp set preview!
-map zh set hidden!
-
-# easily select what information to show
-map zn set showinfo none
-map zs set showinfo size
-map zt set showinfo time
-
-# sort files and show the corresponding info
-map sn :set sortby name; set showinfo none;
-map ss :set sortby size; set showinfo size;
-map st :set sortby time; set showinfo time;
-
-# sets internal field seperator (IFS) to ':'
-# useful for interactive use to automatically split file names in $fs and $fx
-# things may behave unexpectedly so use with caution
-#set ifs ':'
 
 # extract the current file with the right command
 # xkcd link: https://xkcd.com/1168/
