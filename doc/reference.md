@@ -23,12 +23,14 @@
 
 ## Options
 
-    preview    bool    (default on)
     hidden     bool    (default off)
-    tabstop    int     (default 8)
+    preview    bool    (default on)
     scrolloff  int     (default 0)
-    sortby     string  (default name)
+    tabstop    int     (default 8)
+    ifs        string  (default not set)
+    shell      string  (default $SHELL)
     showinfo   string  (default none)
+    sortby     string  (default name)
     ratios     string  (default 1:2:3)
 
 ## Variables

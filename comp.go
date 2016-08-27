@@ -11,16 +11,18 @@ import (
 var (
 	gCmdWords = []string{"set", "map", "cmd"}
 	gOptWords = []string{
-		"preview",
-		"nopreview",
-		"preview!",
 		"hidden",
 		"nohidden",
 		"hidden!",
-		"tabstop",
+		"preview",
+		"nopreview",
+		"preview!",
 		"scrolloff",
-		"sortby",
+		"tabstop",
+		"ifs",
+		"shell",
 		"showinfo",
+		"sortby",
 		"ratios",
 	}
 )

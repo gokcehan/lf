@@ -62,6 +62,8 @@ func (e *SetExpr) eval(app *App, args []string) {
 		gOpts.tabstop = n
 	case "ifs":
 		gOpts.ifs = e.val
+	case "shell":
+		gOpts.shell = e.val
 	case "showinfo":
 		if e.val != "none" && e.val != "size" && e.val != "time" {
 			msg := "showinfo should either be 'none', 'size' or 'time'"

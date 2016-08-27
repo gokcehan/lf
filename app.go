@@ -16,7 +16,7 @@ type App struct {
 func waitKey() error {
 	// TODO: this should be done with termbox somehow
 
-	cmd := exec.Command(envShell, "-c", "echo; echo -n 'Press any key to continue'; stty -echo; read -n 1; stty echo; echo")
+	cmd := exec.Command(gOpts.shell, "-c", "echo; echo -n 'Press any key to continue'; stty -echo; read -n 1; stty echo; echo")
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -98,7 +98,7 @@ func (app *App) runShell(s string, args []string, wait bool, async bool) {
 	}
 
 	args = append([]string{"-c", s, "--"}, args...)
-	cmd := exec.Command(envShell, args...)
+	cmd := exec.Command(gOpts.shell, args...)
 
 	if !async {
 		cmd.Stdin = os.Stdin
