@@ -29,7 +29,6 @@
     scrolloff  int     (default 0)
     sortby     string  (default name)
     showinfo   string  (default none)
-    opener     string  (default xdg-open)
     ratios     string  (default 1:2:3)
 
 ## Variables
