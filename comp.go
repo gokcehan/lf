@@ -20,6 +20,7 @@ var (
 		"scrolloff",
 		"tabstop",
 		"ifs",
+		"previewer",
 		"shell",
 		"showinfo",
 		"sortby",

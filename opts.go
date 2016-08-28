@@ -6,6 +6,7 @@ type Opts struct {
 	scrolloff int
 	tabstop   int
 	ifs       string
+	previewer string
 	shell     string
 	showinfo  string
 	sortby    string
@@ -21,7 +22,6 @@ func init() {
 	gOpts.preview = true
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
-	gOpts.ifs = ""
 	gOpts.shell = envShell
 	gOpts.showinfo = "none"
 	gOpts.sortby = "name"

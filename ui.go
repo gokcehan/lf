@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"os/exec"
 	"path"
 	"sort"
 	"strconv"
@@ -255,9 +256,19 @@ func (win *Win) printr(reg *os.File) error {
 		return fmt.Errorf("printing regular file: %s", buf.Err())
 	}
 
-	reg.Seek(0, 0)
+	if len(gOpts.previewer) != 0 {
+		cmd := exec.Command(gOpts.previewer, reg.Name())
 
-	buf = bufio.NewScanner(reg)
+		out, err := cmd.Output()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+		}
+
+		buf = bufio.NewScanner(bytes.NewReader(out))
+	} else {
+		reg.Seek(0, 0)
+		buf = bufio.NewScanner(reg)
+	}
 
 	for i := 0; i < win.h && buf.Scan(); i++ {
 		win.print(2, i, fg, bg, buf.Text())

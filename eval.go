@@ -62,6 +62,8 @@ func (e *SetExpr) eval(app *App, args []string) {
 		gOpts.tabstop = n
 	case "ifs":
 		gOpts.ifs = e.val
+	case "previewer":
+		gOpts.previewer = e.val
 	case "shell":
 		gOpts.shell = e.val
 	case "showinfo":
