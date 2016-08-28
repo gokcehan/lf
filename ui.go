@@ -8,13 +8,17 @@ import (
 	"os"
 	"path"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 	"time"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/nsf/termbox-go"
 )
+
+const EscapeCode = 27
 
 type Win struct {
 	w int
@@ -36,14 +40,97 @@ func (win *Win) renew(w, h, x, y int) {
 
 func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 	off := x
-	for _, c := range s {
+	for i := 0; i < len(s); i++ {
+		r, w := utf8.DecodeRuneInString(s[i:])
+
+		if r == EscapeCode {
+			i++
+			if s[i] == '[' {
+				j := strings.IndexByte(s[i:], 'm')
+
+				toks := strings.Split(s[i+1:i+j], ";")
+
+				var nums []int
+				for _, t := range toks {
+					if t == "" {
+						fg = termbox.ColorDefault
+						bg = termbox.ColorDefault
+						break
+					}
+					i, err := strconv.Atoi(t)
+					if err != nil {
+						log.Printf("converting escape code: %s", err)
+						continue
+					}
+					nums = append(nums, i)
+				}
+
+				for _, n := range nums {
+					if 30 <= n && n <= 37 {
+						fg = termbox.ColorDefault
+					}
+					if 40 <= n && n <= 47 {
+						bg = termbox.ColorDefault
+					}
+				}
+
+				for _, n := range nums {
+					switch n {
+					case 1:
+						fg = fg | termbox.AttrBold
+					case 4:
+						fg = fg | termbox.AttrUnderline
+					case 7:
+						fg = fg | termbox.AttrReverse
+					case 30:
+						fg = fg | termbox.ColorBlack
+					case 31:
+						fg = fg | termbox.ColorRed
+					case 32:
+						fg = fg | termbox.ColorGreen
+					case 33:
+						fg = fg | termbox.ColorYellow
+					case 34:
+						fg = fg | termbox.ColorBlue
+					case 35:
+						fg = fg | termbox.ColorMagenta
+					case 36:
+						fg = fg | termbox.ColorCyan
+					case 37:
+						fg = fg | termbox.ColorWhite
+					case 40:
+						bg = bg | termbox.ColorBlack
+					case 41:
+						bg = bg | termbox.ColorRed
+					case 42:
+						bg = bg | termbox.ColorGreen
+					case 43:
+						bg = bg | termbox.ColorYellow
+					case 44:
+						bg = bg | termbox.ColorBlue
+					case 45:
+						bg = bg | termbox.ColorMagenta
+					case 46:
+						bg = bg | termbox.ColorCyan
+					case 47:
+						bg = bg | termbox.ColorWhite
+					}
+				}
+
+				i = i + j
+				continue
+			}
+		}
+
 		if x >= win.w {
 			break
 		}
 
-		termbox.SetCell(win.x+x, win.y+y, c, fg, bg)
+		termbox.SetCell(win.x+x, win.y+y, r, fg, bg)
 
-		if c == '\t' {
+		i += w - 1
+
+		if r == '\t' {
 			x += gOpts.tabstop - (x-off)%gOpts.tabstop
 		} else {
 			x++
@@ -156,7 +243,7 @@ func (win *Win) printr(reg *os.File) error {
 			if unicode.IsSpace(r) {
 				continue
 			}
-			if !unicode.IsPrint(r) {
+			if !unicode.IsPrint(r) && r != EscapeCode {
 				fg = termbox.AttrBold
 				win.print(0, 0, fg, bg, "binary")
 				return nil
