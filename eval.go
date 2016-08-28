@@ -116,15 +116,11 @@ func (e *CmdExpr) eval(app *App, args []string) {
 func (e *CallExpr) eval(app *App, args []string) {
 	// TODO: check for extra toks in each case
 	switch e.name {
-	case "quit":
-		gExitFlag = true
-	case "echo":
-		app.ui.message = strings.Join(e.args, " ")
-	case "down":
-		app.nav.down()
-		app.ui.echoFileInfo(app.nav)
 	case "up":
 		app.nav.up()
+		app.ui.echoFileInfo(app.nav)
+	case "down":
+		app.nav.down()
 		app.ui.echoFileInfo(app.nav)
 	case "updir":
 		if err := app.nav.updir(); err != nil {
@@ -184,22 +180,13 @@ func (e *CallExpr) eval(app *App, args []string) {
 		if cmd, ok := gOpts.cmds["open-file"]; ok {
 			cmd.eval(app, e.args)
 		}
+	case "quit":
+		gExitFlag = true
 	case "bot":
 		app.nav.bot()
 		app.ui.echoFileInfo(app.nav)
 	case "top":
 		app.nav.top()
-		app.ui.echoFileInfo(app.nav)
-	case "cd":
-		path := "~"
-		if len(e.args) > 0 {
-			path = e.args[0]
-		}
-		if err := app.nav.cd(path); err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
-			return
-		}
 		app.ui.echoFileInfo(app.nav)
 	case "read":
 		s := app.ui.prompt(app.nav, ":")
@@ -270,6 +257,19 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.ui.sync()
 		app.ui.renew()
 		app.nav.renew(app.ui.wins[0].h)
+	case "echo":
+		app.ui.message = strings.Join(e.args, " ")
+	case "cd":
+		path := "~"
+		if len(e.args) > 0 {
+			path = e.args[0]
+		}
+		if err := app.nav.cd(path); err != nil {
+			app.ui.message = err.Error()
+			log.Print(err)
+			return
+		}
+		app.ui.echoFileInfo(app.nav)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
