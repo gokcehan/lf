@@ -16,7 +16,15 @@ type App struct {
 func waitKey() error {
 	// TODO: this should be done with termbox somehow
 
-	cmd := exec.Command(gOpts.shell, "-c", "echo; echo -n 'Press any key to continue'; stty -echo; read -n 1; stty echo; echo")
+	c := `echo
+	      echo -n 'Press any key to continue'
+	      old=$(stty -g)
+	      stty raw -echo
+	      eval "ignore=\$(dd bs=1 count=1 2> /dev/null)"
+	      stty $old
+	      echo`
+
+	cmd := exec.Command(gOpts.shell, "-c", c)
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
