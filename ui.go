@@ -454,20 +454,52 @@ func (ui *UI) getExpr(nav *Nav) Expr {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch != 0 {
-				acc = append(acc, ev.Ch)
+				switch ev.Ch {
+				case '<':
+					acc = append(acc, '<', 'l', 't', '>')
+				case '>':
+					acc = append(acc, '<', 'g', 't', '>')
+				default:
+					acc = append(acc, ev.Ch)
+				}
 			} else {
-				// TODO: rest of the keys
 				switch ev.Key {
-				case termbox.KeySpace:
-					acc = append(acc, '<', 's', 'p', 'a', 'c', 'e', '>')
-				case termbox.KeyEnter:
-					acc = append(acc, '<', 'c', 'r', '>')
-				case termbox.KeyBackspace:
-					acc = append(acc, '<', 'b', 's', '>')
-				case termbox.KeyBackspace2:
-					acc = append(acc, '<', 'b', 's', '2', '>')
-				case termbox.KeyTab:
-					acc = append(acc, '<', 't', 'a', 'b', '>')
+				case termbox.KeyF1:
+					acc = append(acc, '<', 'f', '-', '1', '>')
+				case termbox.KeyF2:
+					acc = append(acc, '<', 'f', '-', '2', '>')
+				case termbox.KeyF3:
+					acc = append(acc, '<', 'f', '-', '3', '>')
+				case termbox.KeyF4:
+					acc = append(acc, '<', 'f', '-', '4', '>')
+				case termbox.KeyF5:
+					acc = append(acc, '<', 'f', '-', '5', '>')
+				case termbox.KeyF6:
+					acc = append(acc, '<', 'f', '-', '6', '>')
+				case termbox.KeyF7:
+					acc = append(acc, '<', 'f', '-', '7', '>')
+				case termbox.KeyF8:
+					acc = append(acc, '<', 'f', '-', '8', '>')
+				case termbox.KeyF9:
+					acc = append(acc, '<', 'f', '-', '9', '>')
+				case termbox.KeyF10:
+					acc = append(acc, '<', 'f', '-', '1', '0', '>')
+				case termbox.KeyF11:
+					acc = append(acc, '<', 'f', '-', '1', '1', '>')
+				case termbox.KeyF12:
+					acc = append(acc, '<', 'f', '-', '1', '2', '>')
+				case termbox.KeyInsert:
+					acc = append(acc, '<', 'i', 'n', 's', 'e', 'r', 't', '>')
+				case termbox.KeyDelete:
+					acc = append(acc, '<', 'd', 'e', 'l', 'e', 't', 'e', '>')
+				case termbox.KeyHome:
+					acc = append(acc, '<', 'h', 'o', 'm', 'e', '>')
+				case termbox.KeyEnd:
+					acc = append(acc, '<', 'e', 'n', 'd', '>')
+				case termbox.KeyPgup:
+					acc = append(acc, '<', 'p', 'g', 'u', 'p', '>')
+				case termbox.KeyPgdn:
+					acc = append(acc, '<', 'p', 'g', 'd', 'n', '>')
 				case termbox.KeyArrowUp:
 					acc = append(acc, '<', 'u', 'p', '>')
 				case termbox.KeyArrowDown:
@@ -476,15 +508,75 @@ func (ui *UI) getExpr(nav *Nav) Expr {
 					acc = append(acc, '<', 'l', 'e', 'f', 't', '>')
 				case termbox.KeyArrowRight:
 					acc = append(acc, '<', 'r', 'i', 'g', 'h', 't', '>')
+				case termbox.KeyCtrlSpace: // also KeyCtrlTilde and KeyCtrl2
+					acc = append(acc, '<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>')
+				case termbox.KeyCtrlA:
+					acc = append(acc, '<', 'c', '-', 'a', '>')
+				case termbox.KeyCtrlB:
+					acc = append(acc, '<', 'c', '-', 'b', '>')
+				case termbox.KeyCtrlC:
+					acc = append(acc, '<', 'c', '-', 'c', '>')
+				case termbox.KeyCtrlD:
+					acc = append(acc, '<', 'c', '-', 'd', '>')
+				case termbox.KeyCtrlE:
+					acc = append(acc, '<', 'c', '-', 'e', '>')
+				case termbox.KeyCtrlF:
+					acc = append(acc, '<', 'c', '-', 'f', '>')
+				case termbox.KeyCtrlG:
+					acc = append(acc, '<', 'c', '-', 'g', '>')
+				case termbox.KeyBackspace: // also KeyCtrlH
+					acc = append(acc, '<', 'b', 's', '>')
+				case termbox.KeyTab: // also KeyCtrlI
+					acc = append(acc, '<', 't', 'a', 'b', '>')
+				case termbox.KeyCtrlJ:
+					acc = append(acc, '<', 'c', '-', 'j', '>')
+				case termbox.KeyCtrlK:
+					acc = append(acc, '<', 'c', '-', 'k', '>')
 				case termbox.KeyCtrlL:
 					acc = append(acc, '<', 'c', '-', 'l', '>')
-				case termbox.KeyEsc:
+				case termbox.KeyEnter: // also KeyCtrlM
+					acc = append(acc, '<', 'e', 'n', 't', 'e', 'r', '>')
+				case termbox.KeyCtrlN:
+					acc = append(acc, '<', 'c', '-', 'n', '>')
+				case termbox.KeyCtrlO:
+					acc = append(acc, '<', 'c', '-', 'o', '>')
+				case termbox.KeyCtrlP:
+					acc = append(acc, '<', 'c', '-', 'p', '>')
+				case termbox.KeyCtrlQ:
+					acc = append(acc, '<', 'c', '-', 'q', '>')
+				case termbox.KeyCtrlR:
+					acc = append(acc, '<', 'c', '-', 'r', '>')
+				case termbox.KeyCtrlS:
+					acc = append(acc, '<', 'c', '-', 's', '>')
+				case termbox.KeyCtrlT:
+					acc = append(acc, '<', 'c', '-', 't', '>')
+				case termbox.KeyCtrlU:
+					acc = append(acc, '<', 'c', '-', 'u', '>')
+				case termbox.KeyCtrlV:
+					acc = append(acc, '<', 'c', '-', 'v', '>')
+				case termbox.KeyCtrlW:
+					acc = append(acc, '<', 'c', '-', 'w', '>')
+				case termbox.KeyCtrlX:
+					acc = append(acc, '<', 'c', '-', 'x', '>')
+				case termbox.KeyCtrlY:
+					acc = append(acc, '<', 'c', '-', 'y', '>')
+				case termbox.KeyCtrlZ:
+					acc = append(acc, '<', 'c', '-', 'z', '>')
+				case termbox.KeyEsc: // also KeyCtrlLsqBracket and KeyCtrl3
 					acc = nil
 					return r
-				default:
-					ui.message = fmt.Sprintf("unhandled key")
-					acc = nil
-					return r
+				case termbox.KeyCtrlBackslash: // also KeyCtrl4
+					acc = append(acc, '<', 'c', '-', '\\', '>')
+				case termbox.KeyCtrlRsqBracket: // also KeyCtrl5
+					acc = append(acc, '<', 'c', '-', ']', '>')
+				case termbox.KeyCtrl6:
+					acc = append(acc, '<', 'c', '-', '6', '>')
+				case termbox.KeyCtrlSlash: // also KeyCtrlUnderscore and KeyCtrl7
+					acc = append(acc, '<', 'c', '-', '/', '>')
+				case termbox.KeySpace:
+					acc = append(acc, '<', 's', 'p', 'a', 'c', 'e', '>')
+				case termbox.KeyBackspace2: // also KeyCtrl8
+					acc = append(acc, '<', 'b', 's', '2', '>')
 				}
 			}
 

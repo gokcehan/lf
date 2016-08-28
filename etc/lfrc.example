@@ -39,7 +39,7 @@ map gh cd ~
 map gr cd /
 
 # use enter for shell commands
-map <cr> read-shell
+map <enter> read-shell
 
 # mappings for pager and editor (change as you like)
 map i $less "$f"
