@@ -257,7 +257,7 @@ func (win *Win) printr(reg *os.File) error {
 	}
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, reg.Name())
+		cmd := exec.Command(gOpts.previewer, reg.Name(), strconv.Itoa(win.w), strconv.Itoa(win.h))
 
 		out, err := cmd.Output()
 		if err != nil {
