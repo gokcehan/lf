@@ -46,6 +46,14 @@ An explicit `:` could be provided to group statements until a `\n` occurs.
 This is especially useful for `map` and `cmd` commands.
 If you need multiline you can wrap statements in `{{` and `}}` after the proper prefix.
 
+## Yank/Delete/Paste
+
+`lf` uses the underlying `cp` and `mv` shell commands for file operations.
+For this purpose, when you `yank` (i.e. copy) a file, it doesn't actually copy the file on the disk, but only records its name to memory.
+The actual file operation takes place when you do the `paste` in which case the `cp` command is used.
+Similarly the `mv` command is used for `delete` (i.e. cut or kill) followed by `paste`.
+These traditional names (e.g. `yank` and `delete`) are picked instead of the other common convention (e.g. copy and cut) to resemble the default keybinds for these operations.
+
 ## Custom Commands
 
 To wrap up let us write a shell command to move selected file(s) to trash.
