@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path"
+	"runtime/pprof"
 )
 
 var (
@@ -63,10 +64,22 @@ func startServer() {
 
 func main() {
 	serverMode := flag.Bool("server", false, "start server (automatic)")
+	cpuprofile := flag.String("cpuprofile", "", "path to the file to write the cpu profile")
 	flag.StringVar(&gLastDirPath, "last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
 	flag.StringVar(&gSelectionPath, "selection-path", "", "path to the file to write selected files on exit (to use as open file dialog)")
 
 	flag.Parse()
+
+	if *cpuprofile != "" {
+		f, err := os.Create(*cpuprofile)
+		if err != nil {
+			log.Fatal("could not create CPU profile: ", err)
+		}
+		if err := pprof.StartCPUProfile(f); err != nil {
+			log.Fatal("could not start CPU profile: ", err)
+		}
+		defer pprof.StopCPUProfile()
+	}
 
 	if *serverMode {
 		serve()
