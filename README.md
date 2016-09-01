@@ -1,5 +1,7 @@
 # LF
 
+[![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
+
 > Please note that this is an experimental file manager.
 > One of the most dangerous pieces of software you can play with.
 > You may accidentally lose your files or worse so use at your own risk.
