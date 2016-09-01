@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"os/exec"
@@ -235,9 +236,24 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 }
 
 func (win *Win) printr(reg *os.File) error {
+	var reader io.ReadSeeker
+
+	if len(gOpts.previewer) != 0 {
+		cmd := exec.Command(gOpts.previewer, reg.Name(), strconv.Itoa(win.w), strconv.Itoa(win.h))
+
+		out, err := cmd.Output()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+		}
+
+		reader = bytes.NewReader(out)
+	} else {
+		reader = reg
+	}
+
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	buf := bufio.NewScanner(reg)
+	buf := bufio.NewScanner(reader)
 
 	for i := 0; i < win.h && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
@@ -256,19 +272,8 @@ func (win *Win) printr(reg *os.File) error {
 		return fmt.Errorf("printing regular file: %s", buf.Err())
 	}
 
-	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, reg.Name(), strconv.Itoa(win.w), strconv.Itoa(win.h))
-
-		out, err := cmd.Output()
-		if err != nil {
-			log.Printf("previewing file: %s", err)
-		}
-
-		buf = bufio.NewScanner(bytes.NewReader(out))
-	} else {
-		reg.Seek(0, 0)
-		buf = bufio.NewScanner(reg)
-	}
+	reader.Seek(0, 0)
+	buf = bufio.NewScanner(reader)
 
 	for i := 0; i < win.h && buf.Scan(); i++ {
 		win.print(2, i, fg, bg, buf.Text())
