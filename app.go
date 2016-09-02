@@ -39,6 +39,8 @@ func waitKey() error {
 
 func (app *App) handleInp() {
 	for {
+		// exit check is done on the top just in case user quits
+		// before input handling for some reason (e.g. in configuration file)
 		if gExitFlag {
 			log.Print("bye!")
 
@@ -64,6 +66,9 @@ func (app *App) handleInp() {
 			continue
 		}
 		e.eval(app, nil)
+		if gExitFlag {
+			continue
+		}
 		app.ui.draw(app.nav)
 	}
 }
