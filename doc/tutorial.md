@@ -36,7 +36,7 @@ There are three special commands for configuration.
 `map` is used to bind a key to a command which could be:
 
 - built-in command (e.g. `map gh cd ~`)
-- custom command (e.g. `map dD trash`)
+- custom command (e.g. `map D trash`)
 - shell command (e.g. `map i $less "$f"`, `map u !du -h . | less`)
 
 `cmd` is used to define a custom command.
@@ -45,6 +45,8 @@ If there is no prefix then `:` is assumed.
 An explicit `:` could be provided to group statements until a `\n` occurs.
 This is especially useful for `map` and `cmd` commands.
 If you need multiline you can wrap statements in `{{` and `}}` after the proper prefix.
+
+You can delete an existing binding or command by leaving the expression empty (e.g. `map gh` or `cmd trash`).
 
 ## Yank/Delete/Paste
 
