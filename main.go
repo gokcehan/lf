@@ -11,11 +11,12 @@ import (
 )
 
 var (
-	envUser  = os.Getenv("USER")
-	envHome  = os.Getenv("HOME")
-	envHost  = os.Getenv("HOSTNAME")
-	envPath  = os.Getenv("PATH")
-	envShell = os.Getenv("SHELL")
+	envUser   = os.Getenv("USER")
+	envHome   = os.Getenv("HOME")
+	envHost   = os.Getenv("HOSTNAME")
+	envPath   = os.Getenv("PATH")
+	envShell  = os.Getenv("SHELL")
+	envConfig = os.Getenv("XDG_CONFIG_HOME")
 )
 
 var (
@@ -42,6 +43,9 @@ func init() {
 		}
 		envHost = host
 	}
+	if envConfig == "" {
+		envConfig = path.Join(envHome, ".config")
+	}
 
 	tmp := os.TempDir()
 
@@ -51,8 +55,7 @@ func init() {
 	gLogPath = path.Join(tmp, fmt.Sprintf("lf.%s.log", envUser))
 	gServerLogPath = path.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))
 
-	// TODO: xdg-config-home etc.
-	gConfigPath = path.Join(envHome, ".config", "lf", "lfrc")
+	gConfigPath = path.Join(envConfig, "lf", "lfrc")
 }
 
 func startServer() {
