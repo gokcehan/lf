@@ -39,7 +39,7 @@ func (e *SetExpr) eval(app *App, args []string) {
 			log.Print(msg)
 			return
 		}
-		max := app.ui.wins[0].h/2
+		max := app.ui.wins[0].h / 2
 		if n > max {
 			n = max
 		}

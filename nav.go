@@ -263,7 +263,7 @@ func (nav *Nav) down() {
 
 	// use a smaller value when the height is even and scrolloff is maxed
 	// in order to stay at the same row as much as possible while up/down
-	edge = min(edge, nav.height / 2 + nav.height % 2 - 1)
+	edge = min(edge, nav.height/2+nav.height%2-1)
 
 	dir.pos = min(dir.pos, nav.height-edge-1)
 	dir.pos = min(dir.pos, maxind)
