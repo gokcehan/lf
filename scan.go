@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"io"
 	"io/ioutil"
 	"log"
@@ -40,12 +39,9 @@ type Scanner struct {
 }
 
 func newScanner(r io.Reader) *Scanner {
-	// TODO: read input beforehand
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
-		msg := fmt.Sprintf("scanning: %s", err)
-		// app.ui.message = msg
-		log.Print(msg)
+		log.Printf("scanning: %s", err)
 	}
 
 	var eof bool
