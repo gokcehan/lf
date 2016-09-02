@@ -39,9 +39,8 @@ func (e *SetExpr) eval(app *App, args []string) {
 			log.Print(msg)
 			return
 		}
-		max := app.ui.wins[0].h/2 - 1
+		max := app.ui.wins[0].h/2
 		if n > max {
-			// TODO: stay at the same row while up/down in the middle
 			n = max
 		}
 		gOpts.scrolloff = n
