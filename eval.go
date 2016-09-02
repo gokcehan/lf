@@ -106,10 +106,18 @@ func (e *SetExpr) eval(app *App, args []string) {
 }
 
 func (e *MapExpr) eval(app *App, args []string) {
+	if e.expr == nil {
+		delete(gOpts.keys, e.keys)
+		return
+	}
 	gOpts.keys[e.keys] = e.expr
 }
 
 func (e *CmdExpr) eval(app *App, args []string) {
+	if e.expr == nil {
+		delete(gOpts.cmds, e.name)
+		return
+	}
 	gOpts.cmds[e.name] = e.expr
 }
 
