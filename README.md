@@ -5,13 +5,7 @@
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Join the chat at https://gitter.im/lf-fm/Lobby](https://badges.gitter.im/lf-fm/Lobby.svg)](https://gitter.im/lf-fm/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-> Please note that this is an experimental file manager.
-> One of the most dangerous pieces of software you can play with.
-> You may accidentally lose your files or worse so use at your own risk.
-
-> Likewise it is a work in progress.
-> You will most likely come across some shameful bugs.
-> Also some essentials may not have been implemented yet.
+> This is a work in progress. Use at your own risk.
 
 `lf` (as in "list files") is a terminal file manager written in Go.
 It is heavily inspired by ranger with some missing and extra features.
