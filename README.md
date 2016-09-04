@@ -1,5 +1,7 @@
 # LF
 
+[Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
+
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 
 > Please note that this is an experimental file manager.
