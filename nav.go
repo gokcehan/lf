@@ -7,7 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"sort"
 	"strings"
 )
@@ -182,7 +182,7 @@ type Nav struct {
 func getDirs(wd string, height int) []*Dir {
 	var dirs []*Dir
 
-	for curr, base := wd, ""; !isRoot(base); curr, base = path.Dir(curr), path.Base(curr) {
+	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := newDir(curr)
 		for i, f := range dir.fi {
 			if f.Name() == base {
@@ -285,7 +285,7 @@ func (nav *Nav) updir() error {
 
 	nav.dirs = nav.dirs[:len(nav.dirs)-1]
 
-	if err := os.Chdir(path.Dir(dir.path)); err != nil {
+	if err := os.Chdir(filepath.Dir(dir.path)); err != nil {
 		return fmt.Errorf("updir: %s", err)
 	}
 
@@ -325,8 +325,8 @@ func (nav *Nav) top() {
 func (nav *Nav) cd(wd string) error {
 	wd = strings.Replace(wd, "~", envHome, -1)
 
-	if !path.IsAbs(wd) {
-		wd = path.Join(nav.currDir().path, wd)
+	if !filepath.IsAbs(wd) {
+		wd = filepath.Join(nav.currDir().path, wd)
 	}
 
 	if err := os.Chdir(wd); err != nil {
@@ -417,7 +417,7 @@ func (nav *Nav) currFile() os.FileInfo {
 func (nav *Nav) currPath() string {
 	last := nav.dirs[len(nav.dirs)-1]
 	curr := last.fi[last.ind]
-	return path.Join(last.path, curr.Name())
+	return filepath.Join(last.path, curr.Name())
 }
 
 func (nav *Nav) currMarks() []string {

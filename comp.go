@@ -4,7 +4,7 @@ import (
 	"io/ioutil"
 	"log"
 	"os"
-	"path"
+	"path/filepath"
 	"strings"
 )
 
@@ -72,7 +72,7 @@ func matchExec(s string) (matches []string, longest string) {
 
 		for _, f := range fi {
 			if strings.HasPrefix(f.Name(), s) {
-				f, err = os.Stat(path.Join(p, f.Name()))
+				f, err = os.Stat(filepath.Join(p, f.Name()))
 				if err != nil {
 					log.Printf("getting file information: %s", err)
 				}
@@ -101,15 +101,15 @@ func matchExec(s string) (matches []string, longest string) {
 func matchFile(s string) (matches []string, longest string) {
 	dir := strings.Replace(s, "~", envHome, -1)
 
-	if !path.IsAbs(dir) {
+	if !filepath.IsAbs(dir) {
 		wd, err := os.Getwd()
 		if err != nil {
 			log.Printf("getting current directory: %s", err)
 		}
-		dir = wd + "/" + dir
+		dir = wd + string(filepath.Separator) + dir
 	}
 
-	dir = path.Dir(dir)
+	dir = filepath.Dir(dir)
 
 	fi, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -117,17 +117,17 @@ func matchFile(s string) (matches []string, longest string) {
 	}
 
 	for _, f := range fi {
-		f, err := os.Stat(path.Join(dir, f.Name()))
+		f, err := os.Stat(filepath.Join(dir, f.Name()))
 		if err != nil {
 			log.Printf("getting file information: %s", err)
 			return
 		}
 
-		_, last := path.Split(s)
+		_, last := filepath.Split(s)
 		if strings.HasPrefix(f.Name(), last) {
 			name := f.Name()
-			if isRoot(s) || path.Base(s) != s {
-				name = path.Join(path.Dir(s), f.Name())
+			if isRoot(s) || filepath.Base(s) != s {
+				name = filepath.Join(filepath.Dir(s), f.Name())
 			}
 			matches = append(matches, f.Name())
 			if longest != "" {
@@ -136,7 +136,7 @@ func matchFile(s string) (matches []string, longest string) {
 				if f.Mode().IsRegular() {
 					longest = name + " "
 				} else {
-					longest = name + "/"
+					longest = name + string(filepath.Separator)
 				}
 			}
 		}

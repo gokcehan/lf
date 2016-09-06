@@ -8,7 +8,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"sort"
 	"strconv"
 	"strings"
@@ -186,7 +186,7 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 			fg = termbox.ColorWhite
 		}
 
-		path := path.Join(dir.path, f.Name())
+		path := filepath.Join(dir.path, f.Name())
 
 		if marks[path] {
 			win.print(0, i, fg, termbox.ColorMagenta, " ")

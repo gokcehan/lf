@@ -6,7 +6,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
-	"path"
+	"path/filepath"
 	"runtime/pprof"
 )
 
@@ -44,18 +44,18 @@ func init() {
 		envHost = host
 	}
 	if envConfig == "" {
-		envConfig = path.Join(envHome, ".config")
+		envConfig = filepath.Join(envHome, ".config")
 	}
 
 	tmp := os.TempDir()
 
-	gSocketPath = path.Join(tmp, fmt.Sprintf("lf.%s.sock", envUser))
+	gSocketPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.sock", envUser))
 
 	// TODO: unique log file for each client
-	gLogPath = path.Join(tmp, fmt.Sprintf("lf.%s.log", envUser))
-	gServerLogPath = path.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))
+	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.log", envUser))
+	gServerLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))
 
-	gConfigPath = path.Join(envConfig, "lf", "lfrc")
+	gConfigPath = filepath.Join(envConfig, "lf", "lfrc")
 }
 
 func startServer() {

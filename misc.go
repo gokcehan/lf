@@ -3,13 +3,13 @@ package main
 import (
 	"fmt"
 	"log"
-	"path"
+	"path/filepath"
 	"strconv"
 	"unicode"
 	"unicode/utf8"
 )
 
-func isRoot(name string) bool { return path.Dir(name) == name }
+func isRoot(name string) bool { return filepath.Dir(name) == name }
 
 // This function converts a size in bytes to a human readable form. For this
 // purpose metric suffixes are used (e.g. 1K = 1000). For values less than 10
