@@ -39,11 +39,11 @@ since it is better if they are handled by external tools.
 
 ## Installation
 
-You can build from the source using:
+See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
+
+If you like to build from the source, you can use:
 
     go get -u github.com/gokcehan/lf
-
-Currently there are no prebuilt binaries provided.
 
 ## Usage
 
