@@ -41,7 +41,7 @@ since it is better if they are handled by external tools.
 
 See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 
-If you like to build from the source, you can use:
+If you like to build from the source:
 
     go get -u github.com/gokcehan/lf
 

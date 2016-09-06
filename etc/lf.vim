@@ -1,16 +1,19 @@
-" use lf to select and open a file in vim
-" adapted from the similar script for ranger
+" Use lf to select and open a file in vim (adapted from ranger).
 "
-" you need to add something like the following to your ~/.vimrc:
+" You need to either copy the content of this file to your ~/.vimrc or source
+" this file directly using something like:
 "
-" let lfvim = $GOPATH . "/src/github.com/gokcehan/lf/etc/lf.vim"
-" if filereadable(lfvim)
-"     exec "source " . lfvim
-"     nnoremap <leader>l :<c-u>StartLF<cr>
-" endif
+"     let lfvim = $GOPATH . "/src/github.com/gokcehan/lf/etc/lf.vim"
+"     if filereadable(lfvim)
+"         exec "source " . lfvim
+"     endif
+"
+" You may also like to assign a key to this command:
+"
+"     nnoremap <leader>l :<c-u>LF<cr>
 "
 
-function! StartLF()
+function! LF()
     let temp = tempname()
     exec 'silent !lf -selection-path=' . shellescape(temp)
     if !filereadable(temp)
@@ -28,4 +31,4 @@ function! StartLF()
     endfor
     redraw!
 endfunction
-command! -bar StartLF call StartLF()
+command! -bar LF call LF()

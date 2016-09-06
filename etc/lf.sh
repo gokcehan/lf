@@ -1,13 +1,16 @@
-# change the directory to last dir on exit
-# adapted from the similar script for ranger
+# Change working dir in shell to last dir in lf on exit (adapted from ranger).
 #
-# you need to add something like the following to your shell rc file (e.g. ~/.bashrc):
+# You need to either copy the content of this file to your shell rc file
+# (e.g. ~/.bashrc) or source this file directly using something like:
 #
-# LFSH="$GOPATH/src/github.com/gokcehan/lf/etc/lf.sh"
-# if [ -f "$LFSH" ]; then
-#     source "$LFSH"
+#     LFSH="$GOPATH/src/github.com/gokcehan/lf/etc/lf.sh"
+#     if [ -f "$LFSH" ]; then
+#         source "$LFSH"
+#     fi
+#
+# You may also like to assign a key to this command:
+#
 #     bind '"\C-o":"\C-ulf\C-m"'
-# fi
 #
 
 lf () {
