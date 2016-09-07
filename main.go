@@ -31,7 +31,7 @@ var (
 
 func init() {
 	if envUser == "" {
-		log.Fatal("$USER not set")
+		log.Print("$USER not set")
 	}
 	if envHome == "" {
 		envHome = "/home/" + envUser
