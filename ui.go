@@ -624,46 +624,90 @@ func (ui *UI) prompt(nav *Nav, pref string) string {
 	defer termbox.HideCursor()
 	termbox.Flush()
 
-	var acc []rune
+	var lacc []rune
+	var racc []rune
+
+	var buf []rune
 
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch != 0 {
-				acc = append(acc, ev.Ch)
+				lacc = append(lacc, ev.Ch)
 			} else {
 				// TODO: rest of the keys
 				switch ev.Key {
+				case termbox.KeyEsc:
+					return ""
 				case termbox.KeySpace:
-					acc = append(acc, ' ')
-				case termbox.KeyBackspace2:
-					if len(acc) > 0 {
-						acc = acc[:len(acc)-1]
-					}
-				case termbox.KeyEnter:
-					win.printl(0, 0, fg, bg, "")
-					termbox.SetCursor(win.x, win.y)
-					termbox.Flush()
-					return string(acc)
+					lacc = append(lacc, ' ')
 				case termbox.KeyTab:
 					var matches []string
 					if pref == ":" {
-						matches, acc = compCmd(acc)
+						matches, lacc = compCmd(lacc)
 					} else {
-						matches, acc = compShell(acc)
+						matches, lacc = compShell(lacc)
 					}
 					ui.draw(nav)
 					if len(matches) > 1 {
 						ui.listMatches(matches)
 					}
-				case termbox.KeyEsc:
-					return ""
+				case termbox.KeyEnter, termbox.KeyCtrlJ:
+					win.printl(0, 0, fg, bg, "")
+					termbox.SetCursor(win.x, win.y)
+					termbox.Flush()
+					return string(append(lacc, racc...))
+				case termbox.KeyBackspace, termbox.KeyBackspace2:
+					if len(lacc) > 0 {
+						lacc = lacc[:len(lacc)-1]
+					}
+				case termbox.KeyDelete, termbox.KeyCtrlD:
+					if len(racc) > 0 {
+						racc = racc[1:]
+					}
+				case termbox.KeyArrowLeft, termbox.KeyCtrlB:
+					if len(lacc) > 0 {
+						racc = append([]rune{lacc[len(lacc)-1]}, racc...)
+						lacc = lacc[:len(lacc)-1]
+					}
+				case termbox.KeyArrowRight, termbox.KeyCtrlF:
+					if len(racc) > 0 {
+						lacc = append(lacc, racc[0])
+						racc = racc[1:]
+					}
+				case termbox.KeyHome, termbox.KeyCtrlA:
+					racc = append(lacc, racc...)
+					lacc = nil
+				case termbox.KeyEnd, termbox.KeyCtrlE:
+					lacc = append(lacc, racc...)
+					racc = nil
+				case termbox.KeyCtrlK:
+					if len(racc) > 0 {
+						buf = racc
+						racc = nil
+					}
+				case termbox.KeyCtrlU:
+					if len(lacc) > 0 {
+						buf = lacc
+						lacc = nil
+					}
+				case termbox.KeyCtrlW:
+					ind := strings.LastIndex(strings.TrimRight(string(lacc), " "), " ") + 1
+					buf = lacc[ind:]
+					lacc = lacc[:ind]
+				case termbox.KeyCtrlY:
+					lacc = append(lacc, buf...)
+				case termbox.KeyCtrlT:
+					if len(lacc) > 1 {
+						lacc[len(lacc)-1], lacc[len(lacc)-2] = lacc[len(lacc)-2], lacc[len(lacc)-1]
+					}
 				}
 			}
 
 			win.printl(0, 0, fg, bg, pref)
-			win.print(len(pref), 0, fg, bg, string(acc))
-			termbox.SetCursor(win.x+len(pref)+len(acc), win.y)
+			win.print(len(pref), 0, fg, bg, string(lacc))
+			win.print(len(pref)+len(lacc), 0, fg, bg, string(racc))
+			termbox.SetCursor(win.x+len(pref)+len(lacc), win.y)
 			termbox.Flush()
 		default:
 			// TODO: handle other events
