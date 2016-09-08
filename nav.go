@@ -233,21 +233,22 @@ func (nav *Nav) renew(height int) {
 	}
 }
 
-func (nav *Nav) up() {
+func (nav *Nav) up(dist int) {
 	dir := nav.currDir()
 
 	if dir.ind == 0 {
 		return
 	}
 
-	dir.ind--
+	dir.ind -= dist
+	dir.ind = max(0, dir.ind)
 
-	dir.pos--
+	dir.pos -= dist
 	edge := min(gOpts.scrolloff, dir.ind)
 	dir.pos = max(dir.pos, edge)
 }
 
-func (nav *Nav) down() {
+func (nav *Nav) down(dist int) {
 	dir := nav.currDir()
 
 	maxind := len(dir.fi) - 1
@@ -256,9 +257,10 @@ func (nav *Nav) down() {
 		return
 	}
 
-	dir.ind++
+	dir.ind += dist
+	dir.ind = min(maxind, dir.ind)
 
-	dir.pos++
+	dir.pos += dist
 	edge := min(gOpts.scrolloff, maxind-dir.ind)
 
 	// use a smaller value when the height is even and scrolloff is maxed
@@ -349,7 +351,7 @@ func (nav *Nav) toggle() {
 		nav.marks[path] = true
 	}
 
-	nav.down()
+	nav.down(1)
 }
 
 func (nav *Nav) save(keep bool) error {

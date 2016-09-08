@@ -124,10 +124,22 @@ func (e *CallExpr) eval(app *App, args []string) {
 	// TODO: check for extra toks in each case
 	switch e.name {
 	case "up":
-		app.nav.up()
+		app.nav.up(1)
+		app.ui.echoFileInfo(app.nav)
+	case "half-up":
+		app.nav.up(app.nav.height / 2)
+		app.ui.echoFileInfo(app.nav)
+	case "page-up":
+		app.nav.up(app.nav.height)
 		app.ui.echoFileInfo(app.nav)
 	case "down":
-		app.nav.down()
+		app.nav.down(1)
+		app.ui.echoFileInfo(app.nav)
+	case "half-down":
+		app.nav.down(app.nav.height / 2)
+		app.ui.echoFileInfo(app.nav)
+	case "page-down":
+		app.nav.down(app.nav.height)
 		app.ui.echoFileInfo(app.nav)
 	case "updir":
 		if err := app.nav.updir(); err != nil {

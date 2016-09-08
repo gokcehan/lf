@@ -3,7 +3,11 @@
 ## Keys
 
     up                (default "k" and "<up>")
+    half-up           (default "<c-u>")
+    page-up           (default "<c-b>")
     down              (default "j" and "<down>")
+    half-down         (default "<c-d>")
+    page-down         (default "<c-f>")
     updir             (default "h" and "<left>")
     open              (default "l" and "<right>")
     quit              (default "q")
