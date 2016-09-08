@@ -61,11 +61,13 @@ func (app *App) handleInp() {
 
 			return
 		}
-		e := app.ui.getExpr(app.nav)
+		e, c := app.ui.getExpr(app.nav)
 		if e == nil {
 			continue
 		}
-		e.eval(app, nil)
+		for i := 0; i < c; i++ {
+			e.eval(app, nil)
+		}
 		if gExitFlag {
 			continue
 		}

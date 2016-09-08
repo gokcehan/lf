@@ -450,20 +450,27 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 	return
 }
 
-func (ui *UI) getExpr(nav *Nav) Expr {
-	r := &CallExpr{"renew", nil}
+func (ui *UI) getExpr(nav *Nav) (expr Expr, count int) {
+	expr = &CallExpr{"renew", nil}
+	count = 1
 
 	var acc []rune
+	var cnt []rune
 
 	for {
 		switch ev := termbox.PollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch != 0 {
-				switch ev.Ch {
-				case '<':
+				switch {
+				case ev.Ch == '<':
 					acc = append(acc, '<', 'l', 't', '>')
-				case '>':
+				case ev.Ch == '>':
 					acc = append(acc, '<', 'g', 't', '>')
+				// Interpret digits as command count but only do this for
+				// digits preceding any non-digit characters
+				// (e.g. "42y2k" as 42 times "y2k").
+				case unicode.IsDigit(ev.Ch) && len(acc) == 0:
+					cnt = append(cnt, ev.Ch)
 				default:
 					acc = append(acc, ev.Ch)
 				}
@@ -569,7 +576,7 @@ func (ui *UI) getExpr(nav *Nav) Expr {
 					acc = append(acc, '<', 'c', '-', 'z', '>')
 				case termbox.KeyEsc: // also KeyCtrlLsqBracket and KeyCtrl3
 					acc = nil
-					return r
+					return
 				case termbox.KeyCtrlBackslash: // also KeyCtrl4
 					acc = append(acc, '<', 'c', '-', '\\', '>')
 				case termbox.KeyCtrlRsqBracket: // also KeyCtrl5
@@ -591,23 +598,41 @@ func (ui *UI) getExpr(nav *Nav) Expr {
 			case 0:
 				ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
 				acc = nil
-				return r
+				return
 			case 1:
 				if ok {
-					return gOpts.keys[string(acc)]
+					if len(cnt) > 0 {
+						c, err := strconv.Atoi(string(cnt))
+						if err != nil {
+							log.Printf("converting command count: %s", err)
+						}
+						count = c
+					}
+					return gOpts.keys[string(acc)], count
 				}
 				ui.draw(nav)
-				ui.listBinds(binds)
+				if len(acc) > 0 {
+					ui.listBinds(binds)
+				}
 			default:
 				if ok {
 					// TODO: use a delay
-					return gOpts.keys[string(acc)]
+					if len(cnt) > 0 {
+						c, err := strconv.Atoi(string(cnt))
+						if err != nil {
+							log.Printf("converting command count: %s", err)
+						}
+						count = c
+					}
+					return gOpts.keys[string(acc)], count
 				}
 				ui.draw(nav)
-				ui.listBinds(binds)
+				if len(acc) > 0 {
+					ui.listBinds(binds)
+				}
 			}
 		case termbox.EventResize:
-			return r
+			return
 		default:
 			// TODO: handle other events
 		}
