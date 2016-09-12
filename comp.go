@@ -5,11 +5,41 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
 var (
-	gCmdWords = []string{"set", "map", "cmd"}
+	gCmdWords = []string{
+		"set",
+		"map",
+		"cmd",
+		"up",
+		"half-up",
+		"page-up",
+		"down",
+		"half-down",
+		"page-down",
+		"updir",
+		"open",
+		"quit",
+		"bot",
+		"top",
+		"read",
+		"read-shell",
+		"read-shell-wait",
+		"read-shell-async",
+		"search",
+		"search-back",
+		"toggle",
+		"yank",
+		"delete",
+		"paste",
+		"renew",
+		"echo",
+		"cd",
+	}
+
 	gOptWords = []string{
 		"hidden",
 		"nohidden",
@@ -44,7 +74,7 @@ func matchWord(s string, words []string) (matches []string, longest string) {
 			matches = append(matches, w)
 			if longest != "" {
 				longest = matchLongest(longest, w)
-			} else {
+			} else if s != "" {
 				longest = w + " "
 			}
 		}
@@ -58,6 +88,8 @@ func matchWord(s string, words []string) (matches []string, longest string) {
 }
 
 func matchExec(s string) (matches []string, longest string) {
+	var words []string
+
 	paths := strings.Split(envPath, ":")
 
 	for _, p := range paths {
@@ -81,21 +113,24 @@ func matchExec(s string) (matches []string, longest string) {
 					continue
 				}
 
-				matches = append(matches, f.Name())
-				if longest != "" {
-					longest = matchLongest(longest, f.Name())
-				} else {
-					longest = f.Name() + " "
-				}
+				words = append(words, f.Name())
 			}
 		}
 	}
 
-	if longest == "" {
-		longest = s
+	sort.Strings(words)
+
+	if len(words) > 0 {
+		uniq := words[:1]
+		for i := 1; i < len(words); i++ {
+			if words[i] != words[i-1] {
+				uniq = append(uniq, words[i])
+			}
+		}
+		words = uniq
 	}
 
-	return
+	return matchWord(s, words)
 }
 
 func matchFile(s string) (matches []string, longest string) {
@@ -129,10 +164,14 @@ func matchFile(s string) (matches []string, longest string) {
 			if isRoot(s) || filepath.Base(s) != s {
 				name = filepath.Join(filepath.Dir(s), f.Name())
 			}
-			matches = append(matches, f.Name())
+			item := f.Name()
+			if f.Mode().IsDir() {
+				item += string(filepath.Separator)
+			}
+			matches = append(matches, item)
 			if longest != "" {
 				longest = matchLongest(longest, name)
-			} else {
+			} else if s != "" {
 				if f.Mode().IsRegular() {
 					longest = name + " "
 				} else {
@@ -150,31 +189,38 @@ func matchFile(s string) (matches []string, longest string) {
 }
 
 func compCmd(acc []rune) (matches []string, longestAcc []rune) {
-	if len(acc) == 0 || acc[len(acc)-1] == ' ' {
-		return matches, acc
-	}
-
 	s := string(acc)
 	f := strings.Fields(s)
+
+	if len(f) == 0 || s[len(s)-1] == ' ' {
+		f = append(f, "")
+	}
 
 	var longest string
 
 	switch len(f) {
-	case 0:
-		longestAcc = acc
 	case 1:
 		words := gCmdWords
 		for c, _ := range gOpts.cmds {
 			words = append(words, c)
 		}
+		sort.Strings(words)
 		matches, longest = matchWord(s, words)
 		longestAcc = []rune(longest)
-	default:
+	case 2:
 		switch f[0] {
 		case "set":
 			matches, longest = matchWord(f[1], gOptWords)
 			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
 		case "map", "cmd":
+			longestAcc = acc
+		default:
+			matches, longest = matchFile(f[len(f)-1])
+			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+		}
+	default:
+		switch f[0] {
+		case "set", "map", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
@@ -186,18 +232,16 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 }
 
 func compShell(acc []rune) (matches []string, longestAcc []rune) {
-	if len(acc) == 0 || acc[len(acc)-1] == ' ' {
-		return matches, acc
-	}
-
 	s := string(acc)
 	f := strings.Fields(s)
+
+	if len(f) == 0 || s[len(s)-1] == ' ' {
+		f = append(f, "")
+	}
 
 	var longest string
 
 	switch len(f) {
-	case 0:
-		longestAcc = acc
 	case 1:
 		matches, longest = matchExec(s)
 		longestAcc = []rune(longest)
