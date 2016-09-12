@@ -34,6 +34,8 @@ func TestMatchWord(t *testing.T) {
 		matches []string
 		longest string
 	}{
+		{"", nil, nil, ""},
+		{"", []string{"foo", "bar", "baz"}, []string{"foo", "bar", "baz"}, ""},
 		{"fo", []string{"foo", "bar", "baz"}, []string{"foo"}, "foo "},
 		{"ba", []string{"foo", "bar", "baz"}, []string{"bar", "baz"}, "ba"},
 		{"fo", []string{"bar", "baz"}, nil, "fo"},
