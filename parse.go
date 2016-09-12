@@ -31,7 +31,6 @@ package main
 import (
 	"fmt"
 	"io"
-	"log"
 )
 
 type Expr interface {
@@ -228,8 +227,6 @@ func (p *Parser) parseExpr() Expr {
 	default:
 		// TODO: handle error
 	}
-
-	log.Println("parsed:", result)
 
 	return result
 }
