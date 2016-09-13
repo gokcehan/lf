@@ -66,12 +66,18 @@ func startServer() {
 }
 
 func main() {
+	showDoc := flag.Bool("doc", false, "show documentation")
 	serverMode := flag.Bool("server", false, "start server (automatic)")
 	cpuprofile := flag.String("cpuprofile", "", "path to the file to write the cpu profile")
 	flag.StringVar(&gLastDirPath, "last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
 	flag.StringVar(&gSelectionPath, "selection-path", "", "path to the file to write selected files on exit (to use as open file dialog)")
 
 	flag.Parse()
+
+	if *showDoc {
+		fmt.Println(genDocString)
+		return
+	}
 
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
