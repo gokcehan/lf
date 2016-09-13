@@ -387,14 +387,19 @@ func (nav *Nav) paste() error {
 
 	dir := nav.currDir()
 
-	args := append(list, dir.path)
+	var args []string
 
 	var sh string
 	if keep {
 		sh = "cp"
+		args = append(args, "-r")
 	} else {
 		sh = "mv"
 	}
+
+	args = append(args, "--backup=numbered")
+	args = append(args, list...)
+	args = append(args, dir.path)
 
 	cmd := exec.Command(sh, args...)
 
