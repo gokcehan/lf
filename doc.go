@@ -96,7 +96,7 @@ group statements until a "\n" occurs. This is especially useful for "map" and
 "cmd" commands. If you need multiline you can wrap statements in "{{" and "}}"
 after the proper prefix.
 
-Yank/Delete/Paste
+File Operations
 
 lf uses the underlying "cp" and "mv" shell commands for file operations. For
 this purpose, when you "yank" (i.e. copy) a file, it doesn't actually copy the
