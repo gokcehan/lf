@@ -4,6 +4,7 @@
 
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Join the chat at https://gitter.im/lf-fm/Lobby](https://badges.gitter.im/lf-fm/Lobby.svg)](https://gitter.im/lf-fm/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+[![GoDoc](https://godoc.org/github.com/gokcehan/lf?status.svg)](https://godoc.org/github.com/gokcehan/lf)
 
 > This is a work in progress. Use at your own risk.
 
@@ -49,8 +50,9 @@ If you like to build from the source:
 
 After the installation `lf` command should start the application in the current directory.
 
-See [tutorial](doc/tutorial.md) for an introduction to the configuration.
+Run `lf -help` to see command line options.
 
-See [reference](doc/reference.md) for the list of keys, options and variables with their default values.
+Run `lf -doc` to see the [documentation](https://godoc.org/github.com/gokcehan/lf).
 
 See [etc](etc) directory to integrate `lf` to your shell or editor.
+An example configuration file can also be found in this directory.
