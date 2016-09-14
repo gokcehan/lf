@@ -6,4 +6,4 @@
 # command line flag. Thus the same documentation is used for online and
 # terminal display.
 
-echo "package main\n\nvar genDocString = \`$(go doc)\`" > docstring.go
+echo "// DO NOT EDIT! (AUTO-GENERATED)\n\npackage main\n\nvar genDocString = \`$(go doc)\`" > docstring.go
