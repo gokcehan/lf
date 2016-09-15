@@ -62,7 +62,7 @@ func (e *SetExpr) eval(app *App, args []string) {
 	case "ifs":
 		gOpts.ifs = e.val
 	case "previewer":
-		gOpts.previewer = e.val
+		gOpts.previewer = strings.Replace(e.val, "~", envHome, -1)
 	case "shell":
 		gOpts.shell = e.val
 	case "showinfo":
