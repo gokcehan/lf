@@ -10,7 +10,7 @@ at https://godoc.org/github.com/gokcehan/lf.
 
 Reference
 
-The following commands and default keybindings are provided by lf.
+The following commands are provided by lf with default keybindings.
 
     up                (default "k" and "<up>")
     half-up           (default "<c-u>")
@@ -35,6 +35,11 @@ The following commands and default keybindings are provided by lf.
     paste             (default "p")
     renew             (default "<c-l>")
 
+The following commands are provided by lf without default keybindings.
+
+    echo
+    cd
+
 The following options can be used to customize the behavior of lf.
 
     hidden     bool    (default off)
@@ -52,6 +57,8 @@ The following variables are exported for shell commands.
     $f   current file
     $fs  marked file(s) separated with ':'
     $fx  current file or marked file(s) if any
+
+Configuration
 
 The configuration file should either be located in "$XDG_CONFIG_HOME/lf/lfrc"
 or "~/.config/lf/lfrc". A sample configuration file can be found at
@@ -75,17 +82,17 @@ default these modes are mapped to the prefix keys above.
 
 Syntax
 
-Characters from "#" to the line end are comments and ignored.
+Characters from "#" to "\n" are comments and ignored.
 
 There are three special commands for configuration.
 
-"set" is used to set an option which could be (1) bool (e.g. "set hidden", "set
-nohidden", "set hidden!") (2) int (e.g. "set scrolloff 10") (3) string (e.g.
-"set sortby time").
+"set" is used to set an option which could be bool (e.g. "set hidden", "set
+nohidden", "set hidden!"), int (e.g. "set scrolloff 10"), or string (e.g. "set
+sortby time").
 
-"map" is used to bind a key to a command which could be (1) built-in command
-(e.g. "map gh cd ~") (2) custom command (e.g. "map D trash") (3) shell command
-(e.g. "map i $less "$f"", "map u !du -h . | less"). You can delete an existing
+"map" is used to bind a key to a command which could be built-in command (e.g.
+"map gh cd ~"), custom command (e.g. "map D trash"), or shell command (e.g.
+"map i $less "$f"", "map u !du -h . | less"). You can delete an existing
 binding by leaving the expression empty (e.g. "map gh").
 
 "cmd" is used to define a custom command or delete an existing command by
@@ -96,20 +103,10 @@ group statements until a "\n" occurs. This is especially useful for "map" and
 "cmd" commands. If you need multiline you can wrap statements in "{{" and "}}"
 after the proper prefix.
 
-File Operations
-
-lf uses the underlying "cp" and "mv" shell commands for file operations. For
-this purpose, when you "yank" (i.e. copy) a file, it doesn't actually copy the
-file on the disk, but only records its name to memory. The actual file
-operation takes place when you do the "paste" in which case the "cp" command is
-used. Similarly the "mv" command is used for "delete" (i.e. cut or kill)
-followed by "paste". These traditional names (e.g. "yank" and "delete") are
-picked instead of the other common convention (e.g. copy and cut) to resemble
-the default keybinds for these operations.
-
 Custom Commands
 
-To wrap up let us write a shell command to move selected file(s) to trash.
+For demonstration let us write a shell command to move selected file(s) to
+trash.
 
 A first attempt to write such a command may look like this:
 
@@ -149,6 +146,17 @@ could use the "ifs" option to set it for all commands (e.g. "set ifs ':'").
 This could be especially useful for interactive use (e.g. "rm $fs" would simply
 work). This option is not set by default as things may behave unexpectedly at
 other places.
+
+File Operations
+
+lf uses the underlying "cp" and "mv" shell commands for file operations. For
+this purpose, when you "yank" (i.e. copy) a file, it doesn't actually copy the
+file on the disk, but only records its name to memory. The actual file
+operation takes place when you do the "paste" in which case the "cp" command is
+used. Similarly the "mv" command is used for "delete" (i.e. cut or kill)
+followed by "paste". These traditional names (e.g. "yank" and "delete") are
+picked instead of the other common convention (e.g. copy and cut) to resemble
+the default keybinds for these operations.
 
 Opening Files
 

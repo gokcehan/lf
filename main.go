@@ -75,7 +75,7 @@ func main() {
 	flag.Parse()
 
 	if *showDoc {
-		fmt.Println(genDocString)
+		fmt.Print(genDocString)
 		return
 	}
 
