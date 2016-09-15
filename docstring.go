@@ -51,6 +51,7 @@ The following options can be used to customize the behavior of lf.
     scrolloff  int     (default 0)
     tabstop    int     (default 8)
     ifs        string  (default "") (not exported if empty)
+    previewer  string  (default "") (not filtered if empty)
     shell      string  (default "$SHELL")
     showinfo   string  (default "none")
     sortby     string  (default "name")
@@ -184,7 +185,8 @@ It is possible to use different command types.
 
     cmd open-file &xdg-open "$f"
 
-You may want to use either file extensions or mime types with "file".
+You may want to use either file extensions or mime types from "file"
+command.
 
     cmd open-file ${{
         case $(file --mime-type "$f" -b) in
@@ -198,4 +200,50 @@ file openers as you like. Possible options are "open" (for Mac OS X only),
 "xdg-utils" (executable name is "xdg-open"), "libfile-mimeinfo-perl"
 (executable name is "mimeopen"), "rifle" (ranger's default file opener), or
 "mimeo" to name a few.
+
+
+Previewing Files
+
+lf previews files on the preview pane by printing the file until the end or
+the preview pane is filled. This output can be enhanced by providing a
+custom preview script for filtering. This can be used to highlight source
+codes, list contents of archive files or view pdf or image files as text to
+name few. For coloring lf recognizes ansi escape codes.
+
+In order to use this feature you need to set the value of "previewer" option
+to the path of an executable file. lf passes the current file name as the
+first argument and the height of the preview pane as the second argument
+when running this file. Output of the execution is printed in the preview
+pane. You may want to use the same script in your pager mapping as well if
+any.
+
+    set previewer ~/.config/lf/pv.sh
+    map i $~/.config/lf/pv.sh "$f" | less -R
+
+Since this script is called for each file selection change it needs to be as
+efficient as possible and this responsibility is left to the user. You may
+use file extensions to determine the type of file more efficiently compared
+to obtaining mime types from "file" command. Extensions can then be used to
+match cleanly within a conditional.
+
+    #!/bin/sh
+
+    case "$1" in
+        *.tar*) tar tf "$1";;
+        *.zip) unzip -l "$1";;
+        *.rar) unrar l "$1";;
+        *.7z) 7z l "$1";;
+        *.pdf) pdftotext "$1" -;;
+        *) highlight -O ansi "$1" || cat "$1";;
+    esac
+
+Another important consideration for efficiency is the use of programs with
+short startup times for preview. For this reason, "highlight" is recommended
+over "pygmentize" for syntax highlighting. Besides, it is also important
+that the application is processing the file on the fly rather than first
+reading it to the memory and then do the processing afterwards. This is
+especially relevant for big files. lf automatically closes the previewer
+script output pipe with a SIGPIPE when enough lines are read. When
+everything else fails, you can make use of the height argument to only feed
+the first portion of the file to a program for preview.
 `
