@@ -125,29 +125,29 @@ func (e *CallExpr) eval(app *App, args []string) {
 	switch e.name {
 	case "up":
 		app.nav.up(1)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "half-up":
 		app.nav.up(app.nav.height / 2)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "page-up":
 		app.nav.up(app.nav.height)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "down":
 		app.nav.down(1)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "half-down":
 		app.nav.down(app.nav.height / 2)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "page-down":
 		app.nav.down(app.nav.height)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "updir":
 		if err := app.nav.updir(); err != nil {
 			app.ui.message = err.Error()
 			log.Print(err)
 			return
 		}
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "open":
 		dir := app.nav.currDir()
 
@@ -171,7 +171,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 				log.Print(err)
 				return
 			}
-			app.ui.echoFileInfo(app.nav)
+			app.ui.loadFile(app.nav)
 			return
 		}
 
@@ -203,14 +203,13 @@ func (e *CallExpr) eval(app *App, args []string) {
 		gExitFlag = true
 	case "bot":
 		app.nav.bot()
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "top":
 		app.nav.top()
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "read":
 		s := app.ui.prompt(app.nav, ":")
 		if len(s) == 0 {
-			app.ui.echoFileInfo(app.nav)
 			return
 		}
 		log.Printf("command: %s", s)
@@ -224,23 +223,38 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 	case "read-shell":
 		s := app.ui.prompt(app.nav, "$")
+		if len(s) == 0 {
+			return
+		}
 		log.Printf("shell: %s", s)
 		app.runShell(s, nil, false, false)
 	case "read-shell-wait":
 		s := app.ui.prompt(app.nav, "!")
+		if len(s) == 0 {
+			return
+		}
 		log.Printf("shell-wait: %s", s)
 		app.runShell(s, nil, true, false)
 	case "read-shell-async":
 		s := app.ui.prompt(app.nav, "&")
+		if len(s) == 0 {
+			return
+		}
 		log.Printf("shell-async: %s", s)
 		app.runShell(s, nil, false, true)
 	case "search":
 		s := app.ui.prompt(app.nav, "/")
+		if len(s) == 0 {
+			return
+		}
 		log.Printf("search: %s", s)
 		app.ui.message = "sorry, search is not implemented yet!"
 		// TODO: implement
 	case "search-back":
 		s := app.ui.prompt(app.nav, "?")
+		if len(s) == 0 {
+			return
+		}
 		log.Printf("search-back: %s", s)
 		app.ui.message = "sorry, search-back is not implemented yet!"
 		// TODO: implement
@@ -288,7 +302,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			log.Print(err)
 			return
 		}
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
@@ -307,7 +321,7 @@ func (e *ExecExpr) eval(app *App, args []string) {
 		log.Printf("shell: %s -- %s", e, args)
 		app.ui.clearMsg()
 		app.runShell(e.expr, args, false, false)
-		app.ui.echoFileInfo(app.nav)
+		app.ui.loadFile(app.nav)
 	case "!":
 		log.Printf("shell-wait: %s -- %s", e, args)
 		app.runShell(e.expr, args, true, false)

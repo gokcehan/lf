@@ -235,55 +235,14 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 	}
 }
 
-func (win *Win) printr(reg *os.File) error {
-	var reader io.ReadSeeker
-
-	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, reg.Name(), strconv.Itoa(win.w), strconv.Itoa(win.h))
-
-		out, err := cmd.Output()
-		if err != nil {
-			log.Printf("previewing file: %s", err)
-		}
-
-		reader = bytes.NewReader(out)
-	} else {
-		reader = reg
-	}
-
+func (win *Win) printr(reg []string) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	buf := bufio.NewScanner(reader)
-
-	for i := 0; i < win.h && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
-			if unicode.IsSpace(r) {
-				continue
-			}
-			if !unicode.IsPrint(r) && r != EscapeCode {
-				fg = termbox.AttrBold
-				win.print(0, 0, fg, bg, "binary")
-				return nil
-			}
-		}
+	for i, l := range reg {
+		win.print(2, i, fg, bg, l)
 	}
 
-	if buf.Err() != nil {
-		return fmt.Errorf("printing regular file: %s", buf.Err())
-	}
-
-	reader.Seek(0, 0)
-	buf = bufio.NewScanner(reader)
-
-	for i := 0; i < win.h && buf.Scan(); i++ {
-		win.print(2, i, fg, bg, buf.Text())
-	}
-
-	if buf.Err() != nil {
-		return fmt.Errorf("printing regular file: %s", buf.Err())
-	}
-
-	return nil
+	return
 }
 
 type UI struct {
@@ -292,6 +251,8 @@ type UI struct {
 	msgwin  *Win
 	menuwin *Win
 	message string
+	regprev []string
+	dirprev *Dir
 }
 
 func getWidths(wtot int) []int {
@@ -352,7 +313,7 @@ func (ui *UI) renew() {
 	ui.msgwin.renew(wtot, 1, 0, htot-1)
 }
 
-func (ui *UI) echoFileInfo(nav *Nav) {
+func (ui *UI) loadFile(nav *Nav) {
 	dir := nav.currDir()
 
 	if len(dir.fi) == 0 {
@@ -362,6 +323,65 @@ func (ui *UI) echoFileInfo(nav *Nav) {
 	curr := nav.currFile()
 
 	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(time.ANSIC))
+
+	if !gOpts.preview {
+		return
+	}
+
+	path := nav.currPath()
+
+	if curr.IsDir() {
+		dir := newDir(path)
+		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
+		ui.dirprev = dir
+	} else if curr.Mode().IsRegular() {
+		var reader io.Reader
+
+		if len(gOpts.previewer) != 0 {
+			cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
+
+			out, err := cmd.Output()
+			if err != nil {
+				msg := fmt.Sprintf("previewing file: %s", err)
+				ui.message = msg
+				log.Print(msg)
+			}
+
+			reader = bytes.NewReader(out)
+		} else {
+			f, err := os.Open(path)
+			if err != nil {
+				msg := fmt.Sprintf("opening file: %s", err)
+				ui.message = msg
+				log.Print(msg)
+			}
+
+			reader = f
+		}
+
+		ui.regprev = nil
+
+		buf := bufio.NewScanner(reader)
+
+		for i := 0; i < nav.height && buf.Scan(); i++ {
+			for _, r := range buf.Text() {
+				if unicode.IsSpace(r) {
+					continue
+				}
+				if !unicode.IsPrint(r) && r != EscapeCode {
+					ui.regprev = []string{"binary"}
+					return
+				}
+			}
+			ui.regprev = append(ui.regprev, buf.Text())
+		}
+
+		if buf.Err() != nil {
+			msg := fmt.Sprintf("loading file: %s", buf.Err())
+			ui.message = msg
+			log.Print(msg)
+		}
+	}
 }
 
 func (ui *UI) clearMsg() {
@@ -418,21 +438,9 @@ func (ui *UI) draw(nav *Nav) {
 		}
 
 		if f.IsDir() {
-			dir := newDir(path)
-			dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
-			preview.printd(dir, nav.marks)
+			preview.printd(ui.dirprev, nav.marks)
 		} else if f.Mode().IsRegular() {
-			file, err := os.Open(path)
-			if err != nil {
-				msg := fmt.Sprintf("opening file: %s", err)
-				ui.message = msg
-				log.Print(msg)
-			}
-
-			if err := preview.printr(file); err != nil {
-				ui.message = err.Error()
-				log.Print(err)
-			}
+			preview.printr(ui.regprev)
 		}
 	}
 }

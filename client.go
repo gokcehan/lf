@@ -38,7 +38,7 @@ func client() {
 			app.ui.message = msg
 			log.Printf(msg)
 		} else {
-			app.ui.echoFileInfo(app.nav)
+			app.ui.loadFile(app.nav)
 		}
 		defer rcFile.Close()
 
