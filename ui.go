@@ -335,33 +335,38 @@ func (ui *UI) loadFile(nav *Nav) {
 		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
 		ui.dirprev = dir
 	} else if curr.Mode().IsRegular() {
-		var reader io.Reader
+		var err error
+		var out io.ReadCloser
 
 		if len(gOpts.previewer) != 0 {
 			cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
 
-			out, err := cmd.Output()
+			out, err = cmd.StdoutPipe()
 			if err != nil {
 				msg := fmt.Sprintf("previewing file: %s", err)
 				ui.message = msg
 				log.Print(msg)
 			}
 
-			reader = bytes.NewReader(out)
+			if err := cmd.Start(); err != nil {
+				msg := fmt.Sprintf("previewing file: %s", err)
+				ui.message = msg
+				log.Print(msg)
+			}
 		} else {
-			f, err := os.Open(path)
+			out, err = os.Open(path)
 			if err != nil {
 				msg := fmt.Sprintf("opening file: %s", err)
 				ui.message = msg
 				log.Print(msg)
 			}
-
-			reader = f
 		}
 
 		ui.regprev = nil
 
-		buf := bufio.NewScanner(reader)
+		buf := bufio.NewScanner(out)
+
+		defer out.Close()
 
 		for i := 0; i < nav.height && buf.Scan(); i++ {
 			for _, r := range buf.Text() {
