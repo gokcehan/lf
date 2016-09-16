@@ -353,7 +353,8 @@ func (ui *UI) loadFile(nav *Nav) {
 				log.Print(msg)
 			}
 
-			defer cmd.Wait()
+			defer out.Close()
+			go func() { defer cmd.Wait() }()
 			reader = out
 		} else {
 			f, err := os.Open(path)
