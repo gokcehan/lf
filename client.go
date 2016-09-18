@@ -50,6 +50,8 @@ func client() {
 		// TODO: parser error check
 	}
 
+	app.ui.loadFile(app.nav)
+
 	app.ui.draw(app.nav)
 
 	app.handleInp()
