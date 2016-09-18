@@ -1,7 +1,11 @@
 package main
 
-// These inputs are used in scan and parse tests.
+import (
+	"reflect"
+	"testing"
+)
 
+// These inputs are used in scan and parse tests.
 var gTests = []struct {
 	inp   string
 	toks  []string
@@ -198,4 +202,34 @@ var gTests = []struct {
 			rm -rf "$1"
 		`}}},
 	},
+}
+
+func TestSplitKeys(t *testing.T) {
+	inps := []struct {
+		s    string
+		keys []string
+	}{
+		{"", nil},
+		{"j", []string{"j"}},
+		{"jk", []string{"j", "k"}},
+		{"1j", []string{"1", "j"}},
+		{"42j", []string{"4", "2", "j"}},
+		{"<space>", []string{"<space>"}},
+		{"j<space>", []string{"j", "<space>"}},
+		{"j<space>k", []string{"j", "<space>", "k"}},
+		{"1j<space>k", []string{"1", "j", "<space>", "k"}},
+		{"1j<space>1k", []string{"1", "j", "<space>", "1", "k"}},
+		{"<>", []string{"<>"}},
+		{"<space", []string{"<space"}},
+		{"<space<", []string{"<space<"}},
+		{"<space<>", []string{"<space<>"}},
+		{"><space>", []string{">", "<space>"}},
+		{"><space>>", []string{">", "<space>", ">"}},
+	}
+
+	for _, inp := range inps {
+		if keys := splitKeys(inp.s); !reflect.DeepEqual(keys, inp.keys) {
+			t.Errorf("at input '%s' expected '%v' but got '%v'", inp.s, inp.keys, keys)
+		}
+	}
 }

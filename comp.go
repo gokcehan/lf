@@ -38,6 +38,7 @@ var (
 		"renew",
 		"echo",
 		"cd",
+		"push",
 	}
 
 	gOptWords = []string{

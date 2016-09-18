@@ -41,8 +41,9 @@ The following commands are provided by lf with default keybindings.
 
 The following commands are provided by lf without default keybindings.
 
-    echo
-    cd
+    echo  prints its arguments to the message line
+    cd    changes working directory to its argument
+    push  simulate key pushes given in its argument
 
 The following options can be used to customize the behavior of lf.
 
@@ -113,7 +114,34 @@ and "cmd" commands. If you need multiline you can wrap statements in "{{"
 and "}}" after the proper prefix.
 
 
-Custom Commands
+Mappings
+
+The usual way to map a key sequence is to assign it to a named or unnamed
+command. While this provides a clean way to remap builtin keys as well as
+other commands, it can be limiting at times. For this reason "push" command
+is provided by lf. This command is used to simulate key pushes given as its
+arguments. You can "map" a key to a "push" command with an argument to
+create various keybindings.
+
+This is mainly useful for two purposes. First, it can be used to map a
+command with a command count.
+
+    map <c-j> push 10j
+
+Second, it can be used to avoid typing the name when a command takes
+arguments.
+
+    map r push :rename<space>
+
+One thing to be careful is that since "push" command works with keys instead
+of commands it is possible to accidentally create recursive bindings.
+
+    map j push 2j
+
+These types of bindings create a deadlock when executed.
+
+
+Commands
 
 For demonstration let us write a shell command to move selected file(s) to
 trash.

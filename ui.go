@@ -22,6 +22,74 @@ import (
 
 const EscapeCode = 27
 
+var gKeyVal = map[termbox.Key][]rune{
+	termbox.KeyF1:             []rune{'<', 'f', '-', '1', '>'},
+	termbox.KeyF2:             []rune{'<', 'f', '-', '2', '>'},
+	termbox.KeyF3:             []rune{'<', 'f', '-', '3', '>'},
+	termbox.KeyF4:             []rune{'<', 'f', '-', '4', '>'},
+	termbox.KeyF5:             []rune{'<', 'f', '-', '5', '>'},
+	termbox.KeyF6:             []rune{'<', 'f', '-', '6', '>'},
+	termbox.KeyF7:             []rune{'<', 'f', '-', '7', '>'},
+	termbox.KeyF8:             []rune{'<', 'f', '-', '8', '>'},
+	termbox.KeyF9:             []rune{'<', 'f', '-', '9', '>'},
+	termbox.KeyF10:            []rune{'<', 'f', '-', '1', '0', '>'},
+	termbox.KeyF11:            []rune{'<', 'f', '-', '1', '1', '>'},
+	termbox.KeyF12:            []rune{'<', 'f', '-', '1', '2', '>'},
+	termbox.KeyInsert:         []rune{'<', 'i', 'n', 's', 'e', 'r', 't', '>'},
+	termbox.KeyDelete:         []rune{'<', 'd', 'e', 'l', 'e', 't', 'e', '>'},
+	termbox.KeyHome:           []rune{'<', 'h', 'o', 'm', 'e', '>'},
+	termbox.KeyEnd:            []rune{'<', 'e', 'n', 'd', '>'},
+	termbox.KeyPgup:           []rune{'<', 'p', 'g', 'u', 'p', '>'},
+	termbox.KeyPgdn:           []rune{'<', 'p', 'g', 'd', 'n', '>'},
+	termbox.KeyArrowUp:        []rune{'<', 'u', 'p', '>'},
+	termbox.KeyArrowDown:      []rune{'<', 'd', 'o', 'w', 'n', '>'},
+	termbox.KeyArrowLeft:      []rune{'<', 'l', 'e', 'f', 't', '>'},
+	termbox.KeyArrowRight:     []rune{'<', 'r', 'i', 'g', 'h', 't', '>'},
+	termbox.KeyCtrlSpace:      []rune{'<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>'},
+	termbox.KeyCtrlA:          []rune{'<', 'c', '-', 'a', '>'},
+	termbox.KeyCtrlB:          []rune{'<', 'c', '-', 'b', '>'},
+	termbox.KeyCtrlC:          []rune{'<', 'c', '-', 'c', '>'},
+	termbox.KeyCtrlD:          []rune{'<', 'c', '-', 'd', '>'},
+	termbox.KeyCtrlE:          []rune{'<', 'c', '-', 'e', '>'},
+	termbox.KeyCtrlF:          []rune{'<', 'c', '-', 'f', '>'},
+	termbox.KeyCtrlG:          []rune{'<', 'c', '-', 'g', '>'},
+	termbox.KeyBackspace:      []rune{'<', 'b', 's', '>'},
+	termbox.KeyTab:            []rune{'<', 't', 'a', 'b', '>'},
+	termbox.KeyCtrlJ:          []rune{'<', 'c', '-', 'j', '>'},
+	termbox.KeyCtrlK:          []rune{'<', 'c', '-', 'k', '>'},
+	termbox.KeyCtrlL:          []rune{'<', 'c', '-', 'l', '>'},
+	termbox.KeyEnter:          []rune{'<', 'e', 'n', 't', 'e', 'r', '>'},
+	termbox.KeyCtrlN:          []rune{'<', 'c', '-', 'n', '>'},
+	termbox.KeyCtrlO:          []rune{'<', 'c', '-', 'o', '>'},
+	termbox.KeyCtrlP:          []rune{'<', 'c', '-', 'p', '>'},
+	termbox.KeyCtrlQ:          []rune{'<', 'c', '-', 'q', '>'},
+	termbox.KeyCtrlR:          []rune{'<', 'c', '-', 'r', '>'},
+	termbox.KeyCtrlS:          []rune{'<', 'c', '-', 's', '>'},
+	termbox.KeyCtrlT:          []rune{'<', 'c', '-', 't', '>'},
+	termbox.KeyCtrlU:          []rune{'<', 'c', '-', 'u', '>'},
+	termbox.KeyCtrlV:          []rune{'<', 'c', '-', 'v', '>'},
+	termbox.KeyCtrlW:          []rune{'<', 'c', '-', 'w', '>'},
+	termbox.KeyCtrlX:          []rune{'<', 'c', '-', 'x', '>'},
+	termbox.KeyCtrlY:          []rune{'<', 'c', '-', 'y', '>'},
+	termbox.KeyCtrlZ:          []rune{'<', 'c', '-', 'z', '>'},
+	termbox.KeyEsc:            []rune{'<', 'e', 's', 'c', '>'},
+	termbox.KeyCtrlBackslash:  []rune{'<', 'c', '-', '\\', '>'},
+	termbox.KeyCtrlRsqBracket: []rune{'<', 'c', '-', ']', '>'},
+	termbox.KeyCtrl6:          []rune{'<', 'c', '-', '6', '>'},
+	termbox.KeyCtrlSlash:      []rune{'<', 'c', '-', '/', '>'},
+	termbox.KeySpace:          []rune{'<', 's', 'p', 'a', 'c', 'e', '>'},
+	termbox.KeyBackspace2:     []rune{'<', 'b', 's', '2', '>'},
+}
+
+var gValKey map[string]termbox.Key
+
+func init() {
+	gValKey = make(map[string]termbox.Key)
+	for k, v := range gKeyVal {
+		gValKey[string(v)] = k
+	}
+}
+
 type Win struct {
 	w int
 	h int
@@ -253,6 +321,7 @@ type UI struct {
 	message string
 	regprev []string
 	dirprev *Dir
+	keysbuf []string
 }
 
 func getWidths(wtot int) []int {
@@ -467,6 +536,35 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 	return
 }
 
+func (ui *UI) pollEvent() termbox.Event {
+	if len(ui.keysbuf) > 0 {
+		ev := termbox.Event{Type: termbox.EventKey}
+		keys := ui.keysbuf[0]
+		if len(keys) == 1 {
+			ev.Ch, _ = utf8.DecodeRuneInString(keys)
+		} else {
+			switch keys {
+			case "<lt>":
+				ev.Ch = '<'
+			case "<gt>":
+				ev.Ch = '>'
+			default:
+				if val, ok := gValKey[keys]; ok {
+					ev.Key = val
+				} else {
+					ev.Key = termbox.KeyEsc
+					msg := fmt.Sprintf("unknown key: %s", keys)
+					ui.message = msg
+					log.Print(msg)
+				}
+			}
+		}
+		ui.keysbuf = ui.keysbuf[1:]
+		return ev
+	}
+	return termbox.PollEvent()
+}
+
 func (ui *UI) getExpr(nav *Nav) (expr Expr, count int) {
 	expr = &CallExpr{"renew", nil}
 	count = 1
@@ -475,7 +573,7 @@ func (ui *UI) getExpr(nav *Nav) (expr Expr, count int) {
 	var cnt []rune
 
 	for {
-		switch ev := termbox.PollEvent(); ev.Type {
+		switch ev := ui.pollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch != 0 {
 				switch {
@@ -492,121 +590,12 @@ func (ui *UI) getExpr(nav *Nav) (expr Expr, count int) {
 					acc = append(acc, ev.Ch)
 				}
 			} else {
-				switch ev.Key {
-				case termbox.KeyF1:
-					acc = append(acc, '<', 'f', '-', '1', '>')
-				case termbox.KeyF2:
-					acc = append(acc, '<', 'f', '-', '2', '>')
-				case termbox.KeyF3:
-					acc = append(acc, '<', 'f', '-', '3', '>')
-				case termbox.KeyF4:
-					acc = append(acc, '<', 'f', '-', '4', '>')
-				case termbox.KeyF5:
-					acc = append(acc, '<', 'f', '-', '5', '>')
-				case termbox.KeyF6:
-					acc = append(acc, '<', 'f', '-', '6', '>')
-				case termbox.KeyF7:
-					acc = append(acc, '<', 'f', '-', '7', '>')
-				case termbox.KeyF8:
-					acc = append(acc, '<', 'f', '-', '8', '>')
-				case termbox.KeyF9:
-					acc = append(acc, '<', 'f', '-', '9', '>')
-				case termbox.KeyF10:
-					acc = append(acc, '<', 'f', '-', '1', '0', '>')
-				case termbox.KeyF11:
-					acc = append(acc, '<', 'f', '-', '1', '1', '>')
-				case termbox.KeyF12:
-					acc = append(acc, '<', 'f', '-', '1', '2', '>')
-				case termbox.KeyInsert:
-					acc = append(acc, '<', 'i', 'n', 's', 'e', 'r', 't', '>')
-				case termbox.KeyDelete:
-					acc = append(acc, '<', 'd', 'e', 'l', 'e', 't', 'e', '>')
-				case termbox.KeyHome:
-					acc = append(acc, '<', 'h', 'o', 'm', 'e', '>')
-				case termbox.KeyEnd:
-					acc = append(acc, '<', 'e', 'n', 'd', '>')
-				case termbox.KeyPgup:
-					acc = append(acc, '<', 'p', 'g', 'u', 'p', '>')
-				case termbox.KeyPgdn:
-					acc = append(acc, '<', 'p', 'g', 'd', 'n', '>')
-				case termbox.KeyArrowUp:
-					acc = append(acc, '<', 'u', 'p', '>')
-				case termbox.KeyArrowDown:
-					acc = append(acc, '<', 'd', 'o', 'w', 'n', '>')
-				case termbox.KeyArrowLeft:
-					acc = append(acc, '<', 'l', 'e', 'f', 't', '>')
-				case termbox.KeyArrowRight:
-					acc = append(acc, '<', 'r', 'i', 'g', 'h', 't', '>')
-				case termbox.KeyCtrlSpace: // also KeyCtrlTilde and KeyCtrl2
-					acc = append(acc, '<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>')
-				case termbox.KeyCtrlA:
-					acc = append(acc, '<', 'c', '-', 'a', '>')
-				case termbox.KeyCtrlB:
-					acc = append(acc, '<', 'c', '-', 'b', '>')
-				case termbox.KeyCtrlC:
-					acc = append(acc, '<', 'c', '-', 'c', '>')
-				case termbox.KeyCtrlD:
-					acc = append(acc, '<', 'c', '-', 'd', '>')
-				case termbox.KeyCtrlE:
-					acc = append(acc, '<', 'c', '-', 'e', '>')
-				case termbox.KeyCtrlF:
-					acc = append(acc, '<', 'c', '-', 'f', '>')
-				case termbox.KeyCtrlG:
-					acc = append(acc, '<', 'c', '-', 'g', '>')
-				case termbox.KeyBackspace: // also KeyCtrlH
-					acc = append(acc, '<', 'b', 's', '>')
-				case termbox.KeyTab: // also KeyCtrlI
-					acc = append(acc, '<', 't', 'a', 'b', '>')
-				case termbox.KeyCtrlJ:
-					acc = append(acc, '<', 'c', '-', 'j', '>')
-				case termbox.KeyCtrlK:
-					acc = append(acc, '<', 'c', '-', 'k', '>')
-				case termbox.KeyCtrlL:
-					acc = append(acc, '<', 'c', '-', 'l', '>')
-				case termbox.KeyEnter: // also KeyCtrlM
-					acc = append(acc, '<', 'e', 'n', 't', 'e', 'r', '>')
-				case termbox.KeyCtrlN:
-					acc = append(acc, '<', 'c', '-', 'n', '>')
-				case termbox.KeyCtrlO:
-					acc = append(acc, '<', 'c', '-', 'o', '>')
-				case termbox.KeyCtrlP:
-					acc = append(acc, '<', 'c', '-', 'p', '>')
-				case termbox.KeyCtrlQ:
-					acc = append(acc, '<', 'c', '-', 'q', '>')
-				case termbox.KeyCtrlR:
-					acc = append(acc, '<', 'c', '-', 'r', '>')
-				case termbox.KeyCtrlS:
-					acc = append(acc, '<', 'c', '-', 's', '>')
-				case termbox.KeyCtrlT:
-					acc = append(acc, '<', 'c', '-', 't', '>')
-				case termbox.KeyCtrlU:
-					acc = append(acc, '<', 'c', '-', 'u', '>')
-				case termbox.KeyCtrlV:
-					acc = append(acc, '<', 'c', '-', 'v', '>')
-				case termbox.KeyCtrlW:
-					acc = append(acc, '<', 'c', '-', 'w', '>')
-				case termbox.KeyCtrlX:
-					acc = append(acc, '<', 'c', '-', 'x', '>')
-				case termbox.KeyCtrlY:
-					acc = append(acc, '<', 'c', '-', 'y', '>')
-				case termbox.KeyCtrlZ:
-					acc = append(acc, '<', 'c', '-', 'z', '>')
-				case termbox.KeyEsc: // also KeyCtrlLsqBracket and KeyCtrl3
+				val := gKeyVal[ev.Key]
+				if string(val) == "<esc>" {
 					acc = nil
 					return
-				case termbox.KeyCtrlBackslash: // also KeyCtrl4
-					acc = append(acc, '<', 'c', '-', '\\', '>')
-				case termbox.KeyCtrlRsqBracket: // also KeyCtrl5
-					acc = append(acc, '<', 'c', '-', ']', '>')
-				case termbox.KeyCtrl6:
-					acc = append(acc, '<', 'c', '-', '6', '>')
-				case termbox.KeyCtrlSlash: // also KeyCtrlUnderscore and KeyCtrl7
-					acc = append(acc, '<', 'c', '-', '/', '>')
-				case termbox.KeySpace:
-					acc = append(acc, '<', 's', 'p', 'a', 'c', 'e', '>')
-				case termbox.KeyBackspace2: // also KeyCtrl8
-					acc = append(acc, '<', 'b', 's', '2', '>')
 				}
+				acc = append(acc, val...)
 			}
 
 			binds, ok := findBinds(gOpts.keys, string(acc))
@@ -672,7 +661,7 @@ func (ui *UI) prompt(nav *Nav, pref string) string {
 	var buf []rune
 
 	for {
-		switch ev := termbox.PollEvent(); ev.Type {
+		switch ev := ui.pollEvent(); ev.Type {
 		case termbox.EventKey:
 			if ev.Ch != 0 {
 				lacc = append(lacc, ev.Ch)

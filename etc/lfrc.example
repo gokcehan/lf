@@ -74,6 +74,7 @@ cmd open-file ${{
 
 # rename current file without overwrite
 cmd rename $[ -e "$1" ] || mv "$f" "$1"
+map r push :rename<space>
 
 # show disk usage
 cmd usage $du -h . | less

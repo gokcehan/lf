@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode/utf8"
 )
 
 func (e *SetExpr) eval(app *App, args []string) {
@@ -118,6 +119,25 @@ func (e *CmdExpr) eval(app *App, args []string) {
 		return
 	}
 	gOpts.cmds[e.name] = e.expr
+}
+
+func splitKeys(s string) (keys []string) {
+	for i := 0; i < len(s); {
+		c, w := utf8.DecodeRuneInString(s[i:])
+		if c != '<' {
+			keys = append(keys, s[i:i+w])
+			i += w
+		} else {
+			j := i + w
+			for c != '>' && j < len(s) {
+				c, w = utf8.DecodeRuneInString(s[j:])
+				j += w
+			}
+			keys = append(keys, s[i:j])
+			i = j
+		}
+	}
+	return
 }
 
 func (e *CallExpr) eval(app *App, args []string) {
@@ -303,6 +323,10 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 		app.ui.loadFile(app.nav)
+	case "push":
+		if len(e.args) > 0 {
+			app.ui.keysbuf = append(app.ui.keysbuf, splitKeys(strings.Join(e.args, ""))...)
+		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
