@@ -326,6 +326,7 @@ func (nav *Nav) top() {
 
 func (nav *Nav) cd(wd string) error {
 	wd = strings.Replace(wd, "~", envHome, -1)
+	wd = filepath.Clean(wd)
 
 	if !filepath.IsAbs(wd) {
 		wd = filepath.Join(nav.currDir().path, wd)

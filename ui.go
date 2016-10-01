@@ -476,6 +476,7 @@ func (ui *UI) draw(nav *Nav) {
 	dir := nav.currDir()
 
 	path := strings.Replace(dir.path, envHome, "~", -1)
+	path = filepath.Clean(path)
 
 	ui.pwdwin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", envUser, envHost)
 	ui.pwdwin.printf(len(envUser)+len(envHost)+1, 0, fg, bg, ":")
