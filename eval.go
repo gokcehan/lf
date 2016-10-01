@@ -287,6 +287,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 			log.Printf(msg)
 			return
 		}
+		if len(app.nav.marks) == 0 {
+			app.ui.message = "file saved for copy"
+		} else {
+			app.ui.message = fmt.Sprintf("%d files saved for copy", len(app.nav.marks))
+		}
 		app.nav.marks = make(map[string]bool)
 	case "delete":
 		if err := app.nav.save(false); err != nil {
@@ -294,6 +299,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 			app.ui.message = msg
 			log.Printf(msg)
 			return
+		}
+		if len(app.nav.marks) == 0 {
+			app.ui.message = "file saved for move"
+		} else {
+			app.ui.message = fmt.Sprintf("%d files saved for move", len(app.nav.marks))
 		}
 		app.nav.marks = make(map[string]bool)
 	case "paste":
