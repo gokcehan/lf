@@ -18,25 +18,25 @@ since it is better if they are handled by external tools.
 
 ## Features
 
-- no external runtime dependencies (except for terminfo database)
-- fast startup and low memory footprint (due to native code and static binaries)
-- server/client architecture to share selection between multiple instances
-- custom commands as shell scripts (hence any other language as well)
-- sync (waiting and skipping) and async commands
-- fully customizable keybindings
+- Single binary without any runtime dependencies (except for terminfo database)
+- Fast startup and low memory footprint (due to native code and static binaries)
+- Server/client architecture to share file selection between multiple instances
+- Custom commands as shell commands
+- Sync (waiting and non-waiting) and async commands
+- Fully customizable keybindings
+- Preview filtering (for source highlight, archives, pdfs/images as text etc.)
 
 ## Non-Features
 
-- tabs or windows (handled by the window manager or the terminal multiplexer)
-- built-in pager (handled by your pager of choice)
+- Tabs or windows (handled by the window manager or the terminal multiplexer)
+- Built-in pager (handled by your pager of choice)
+- Image previews (cool but no standard available)
+- Periodic refresh (use explicit renew instead)
 
 ## May-Futures
 
-- enchanced previews (image, pdf etc.)
-- bookmarks
-- colorschemes
-- periodic refresh
-- progress bar for file yank/delete paste
+- Bookmarks
+- Colorschemes
 
 ## Installation
 
