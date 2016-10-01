@@ -131,7 +131,7 @@ func newDir(path string) *Dir {
 func (dir *Dir) renew(height int) {
 	fi, err := ioutil.ReadDir(dir.path)
 	if err != nil {
-		log.Print("reading directory: %s", err)
+		log.Printf("reading directory: %s", err)
 	}
 
 	fi = organizeFiles(fi)

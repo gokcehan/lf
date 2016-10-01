@@ -1,6 +1,6 @@
 package main
 
-type Opts struct {
+var gOpts struct {
 	hidden    bool
 	preview   bool
 	scrolloff int
@@ -14,8 +14,6 @@ type Opts struct {
 	keys      map[string]Expr
 	cmds      map[string]Expr
 }
-
-var gOpts Opts
 
 func init() {
 	gOpts.hidden = false
