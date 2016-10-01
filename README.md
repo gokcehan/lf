@@ -18,6 +18,7 @@ since it is better if they are handled by external tools.
 
 ## Features
 
+- Cross-platform (Linux, OSX, BSDs, Windows (partial))
 - Single binary without any runtime dependencies (except for terminfo database)
 - Fast startup and low memory footprint (due to native code and static binaries)
 - Server/client architecture to share file selection between multiple instances
