@@ -443,11 +443,8 @@ func (ui *UI) loadFile(nav *Nav) {
 
 		for i := 0; i < nav.height && buf.Scan(); i++ {
 			for _, r := range buf.Text() {
-				if unicode.IsSpace(r) {
-					continue
-				}
-				if !unicode.IsPrint(r) && r != EscapeCode {
-					ui.regprev = []string{"binary"}
+				if r == 0 {
+					ui.regprev = []string{"[1mbinary[0m"}
 					return
 				}
 			}
