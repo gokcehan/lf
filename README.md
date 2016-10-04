@@ -10,7 +10,7 @@
 
 `lf` (as in "list files") is a terminal file manager written in Go.
 It is heavily inspired by ranger with some missing and extra features.
-Some of the missing features are deliberately ommited
+Some of the missing features are deliberately omitted
 since it is better if they are handled by external tools.
 
 ![multicol-screenshot](http://i.imgur.com/DaTUenu.png)
