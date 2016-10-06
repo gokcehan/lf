@@ -47,6 +47,14 @@ If you like to build from the source:
 
     go get -u github.com/gokcehan/lf
 
+If you are on Arch Linux, using your favorite [AUR
+helper](https://wiki.archlinux.org/index.php/AUR_helpers), install the [lf AUR
+package](https://aur.archlinux.org/packages/lf/) like this:
+
+```
+$ aura -A lf
+```
+
 ## Usage
 
 After the installation `lf` command should start the application in the current directory.
