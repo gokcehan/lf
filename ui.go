@@ -399,11 +399,19 @@ func (ui *UI) loadFile(nav *Nav) {
 
 	path := nav.currPath()
 
-	if curr.IsDir() {
+	f, err := os.Stat(path)
+	if err != nil {
+		msg := fmt.Sprintf("getting file information: %s", err)
+		ui.message = msg
+		log.Print(msg)
+		return
+	}
+
+	if f.IsDir() {
 		dir := newDir(path)
 		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
 		ui.dirprev = dir
-	} else if curr.Mode().IsRegular() {
+	} else if f.Mode().IsRegular() {
 		var reader io.Reader
 
 		if len(gOpts.previewer) != 0 {

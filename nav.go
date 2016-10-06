@@ -346,6 +346,10 @@ func (nav *Nav) cd(wd string) error {
 }
 
 func (nav *Nav) toggle() {
+	if nav.currEmpty() {
+		return
+	}
+
 	path := nav.currPath()
 
 	if nav.marks[path] {
@@ -359,6 +363,10 @@ func (nav *Nav) toggle() {
 
 func (nav *Nav) save(keep bool) error {
 	if len(nav.marks) == 0 {
+		if nav.currEmpty() {
+			return errors.New("no file selected")
+		}
+
 		path := nav.currPath()
 
 		if err := saveFiles([]string{path}, keep); err != nil {
@@ -413,6 +421,10 @@ func (nav *Nav) paste() error {
 	// TODO: async?
 
 	return nil
+}
+
+func (nav *Nav) currEmpty() bool {
+	return len(nav.dirs[len(nav.dirs)-1].fi) == 0
 }
 
 func (nav *Nav) currDir() *Dir {
