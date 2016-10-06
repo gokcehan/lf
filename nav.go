@@ -99,6 +99,8 @@ func organizeFiles(fi []os.FileInfo) []os.FileInfo {
 	switch gOpts.sortby {
 	case "name":
 		sort.Sort(ByName(fi))
+	case "numeric":
+		sort.Sort(ByNum(fi))
 	case "size":
 		sort.Sort(BySize(fi))
 	case "time":
@@ -107,9 +109,9 @@ func organizeFiles(fi []os.FileInfo) []os.FileInfo {
 		log.Printf("unknown sorting type: %s", gOpts.sortby)
 	}
 
-	// TODO: these should be optional
-	sort.Stable(ByNum(fi))
-	sort.Stable(ByDir(fi))
+	if gOpts.dirfirst {
+		sort.Stable(ByDir(fi))
+	}
 
 	return fi
 }

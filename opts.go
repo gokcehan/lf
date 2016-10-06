@@ -10,6 +10,7 @@ var gOpts struct {
 	shell     string
 	showinfo  string
 	sortby    string
+	dirfirst  bool
 	ratios    []int
 	keys      map[string]Expr
 	cmds      map[string]Expr
@@ -23,6 +24,7 @@ func init() {
 	gOpts.shell = envShell
 	gOpts.showinfo = "none"
 	gOpts.sortby = "name"
+	gOpts.dirfirst = true
 	gOpts.ratios = []int{1, 2, 3}
 
 	gOpts.keys = make(map[string]Expr)

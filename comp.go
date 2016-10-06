@@ -48,6 +48,8 @@ var (
 		"preview",
 		"nopreview",
 		"preview!",
+		"dirfirst",
+		"nodirfirst",
 		"scrolloff",
 		"tabstop",
 		"ifs",
