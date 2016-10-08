@@ -1,6 +1,6 @@
 # LF
 
-[Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
+[Google Groups](https://groups.google.com/forum/#!forum/lf-fm) | [Wiki](https://github.com/gokcehan/lf/wiki)
 
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Join the chat at https://gitter.im/lf-fm/Lobby](https://badges.gitter.im/lf-fm/Lobby.svg)](https://gitter.im/lf-fm/Lobby?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
@@ -46,6 +46,8 @@ See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 If you like to build from the source:
 
     go get -u github.com/gokcehan/lf
+
+See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
 
 ## Usage
 
