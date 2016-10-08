@@ -471,7 +471,6 @@ func (ui *UI) clearMsg() {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 	win := ui.msgwin
 	win.printl(0, 0, fg, bg, "")
-	termbox.SetCursor(win.x, win.y)
 	termbox.Flush()
 }
 
@@ -479,6 +478,13 @@ func (ui *UI) draw(nav *Nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	termbox.Clear(fg, bg)
+
+	// leave the cursor at the beginning of the current file for screen readers
+	var length, woff, doff int
+	defer func() {
+		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y + nav.dirs[doff+length-1].pos + 1, ui.wins[woff+length-1].x + 1)
+	}()
+
 	defer termbox.Flush()
 
 	dir := nav.currDir()
@@ -490,15 +496,15 @@ func (ui *UI) draw(nav *Nav) {
 	ui.pwdwin.printf(len(envUser)+len(envHost)+1, 0, fg, bg, ":")
 	ui.pwdwin.printf(len(envUser)+len(envHost)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
 
-	length := min(len(ui.wins), len(nav.dirs))
-	woff := len(ui.wins) - length
+	length = min(len(ui.wins), len(nav.dirs))
+	woff = len(ui.wins) - length
 
 	if gOpts.preview {
 		length = min(len(ui.wins)-1, len(nav.dirs))
 		woff = len(ui.wins) - 1 - length
 	}
 
-	doff := len(nav.dirs) - length
+	doff = len(nav.dirs) - length
 	for i := 0; i < length; i++ {
 		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks)
 	}
@@ -691,7 +697,6 @@ func (ui *UI) prompt(nav *Nav, pref string) string {
 					}
 				case termbox.KeyEnter, termbox.KeyCtrlJ:
 					win.printl(0, 0, fg, bg, "")
-					termbox.SetCursor(win.x, win.y)
 					termbox.Flush()
 					return string(append(lacc, racc...))
 				case termbox.KeyBackspace, termbox.KeyBackspace2:
