@@ -49,6 +49,7 @@ func init() {
 	gOpts.keys["/"] = &CallExpr{"search", nil}
 	gOpts.keys["?"] = &CallExpr{"search-back", nil}
 	gOpts.keys["<space>"] = &CallExpr{"toggle", nil}
+	gOpts.keys["v"] = &CallExpr{"invert", nil}
 	gOpts.keys["y"] = &CallExpr{"yank", nil}
 	gOpts.keys["d"] = &CallExpr{"delete", nil}
 	gOpts.keys["p"] = &CallExpr{"paste", nil}

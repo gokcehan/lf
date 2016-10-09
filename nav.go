@@ -343,20 +343,30 @@ func (nav *Nav) cd(wd string) error {
 	return nil
 }
 
-func (nav *Nav) toggle() {
-	if nav.currEmpty() {
-		return
-	}
-
-	path := nav.currPath()
-
+func (nav *Nav) toggleMark(path string) {
 	if nav.marks[path] {
 		delete(nav.marks, path)
 	} else {
 		nav.marks[path] = true
 	}
+}
+
+func (nav *Nav) toggle() {
+	if nav.currEmpty() {
+		return
+	}
+
+	nav.toggleMark(nav.currPath())
 
 	nav.down(1)
+}
+
+func (nav *Nav) invert() {
+	last := nav.currDir()
+	for _, f := range last.fi {
+		path := filepath.Join(last.path, f.Name())
+		nav.toggleMark(path)
+	}
 }
 
 func (nav *Nav) save(keep bool) error {
