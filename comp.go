@@ -32,6 +32,7 @@ var (
 		"search",
 		"search-back",
 		"toggle",
+		"invert",
 		"yank",
 		"delete",
 		"paste",

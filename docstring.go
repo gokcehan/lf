@@ -34,6 +34,7 @@ The following commands are provided by lf with default keybindings.
     search            (default "/")
     search-back       (default "?")
     toggle            (default "<space>")
+    invert            (default "v")
     yank              (default "y")
     delete            (default "d")
     paste             (default "p")

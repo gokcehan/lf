@@ -280,6 +280,8 @@ func (e *CallExpr) eval(app *App, args []string) {
 		// TODO: implement
 	case "toggle":
 		app.nav.toggle()
+	case "invert":
+		app.nav.invert()
 	case "yank":
 		if err := app.nav.save(true); err != nil {
 			msg := fmt.Sprintf("yank: %s", err)
