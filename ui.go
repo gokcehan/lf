@@ -489,7 +489,7 @@ func (ui *UI) draw(nav *Nav) {
 	// leave the cursor at the beginning of the current file for screen readers
 	var length, woff, doff int
 	defer func() {
-		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y + nav.dirs[doff+length-1].pos + 1, ui.wins[woff+length-1].x + 1)
+		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
 	}()
 
 	defer termbox.Flush()
