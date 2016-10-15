@@ -159,11 +159,6 @@ func (p *Parser) parseExpr() Expr {
 
 			s.scan()
 
-			if s.err != nil {
-				p.err = fmt.Errorf("parsing: %s", s.err)
-				return nil
-			}
-
 			result = &CallExpr{name, args}
 		}
 	case TokenColon:
@@ -217,11 +212,6 @@ func (p *Parser) parseExpr() Expr {
 
 		s.scan()
 		s.scan()
-
-		if s.err != nil {
-			p.err = fmt.Errorf("parsing: %s", s.err)
-			return nil
-		}
 
 		result = &ExecExpr{pref, expr}
 	default:

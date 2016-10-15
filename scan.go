@@ -10,8 +10,7 @@ import (
 type TokenType int
 
 const (
-	TokenErr TokenType = iota
-	TokenEOF           // end of file
+	TokenEOF TokenType = iota
 	// no explicit keyword type
 	TokenIdent     // e.g. set, ratios, 1:2:3
 	TokenColon     // :
@@ -35,7 +34,6 @@ type Scanner struct {
 	cmd bool      // scanning command
 	typ TokenType // scanned token type
 	tok string    // scanned token value
-	err error     // error if any
 	// TODO: pos
 }
 
@@ -110,6 +108,8 @@ scan:
 			s.nln = false
 			return true
 		}
+		s.typ = TokenEOF
+		s.tok = "EOF"
 		return false
 	case s.key:
 		beg := s.off
@@ -145,7 +145,9 @@ scan:
 				}
 			}
 		}
-		// TODO: fill error
+
+		s.typ = TokenEOF
+		s.tok = "EOF"
 		return false
 	case s.cmd:
 		for !s.eof && isSpace(s.chr) {
@@ -208,27 +210,19 @@ scan:
 		s.tok = ":"
 		s.nln = true
 		s.next()
-	case s.chr == '{':
-		if s.peek() == '{' {
-			s.next()
-			s.next()
-			s.typ = TokenLBraces
-			s.tok = "{{"
-			s.sem = false
-			s.nln = false
-			return true
-		}
-		// TODO: handle error
-	case s.chr == '}':
-		if s.peek() == '}' {
-			s.next()
-			s.next()
-			s.typ = TokenRBraces
-			s.tok = "}}"
-			s.sem = true
-			return true
-		}
-		// TODO: handle error
+	case s.chr == '{' && s.peek() == '{':
+		s.next()
+		s.next()
+		s.typ = TokenLBraces
+		s.tok = "{{"
+		s.sem = false
+		s.nln = false
+	case s.chr == '}' && s.peek() == '}':
+		s.next()
+		s.next()
+		s.typ = TokenRBraces
+		s.tok = "}}"
+		s.sem = true
 	case isPrefix(s.chr):
 		s.typ = TokenPrefix
 		s.tok = string(s.chr)
@@ -239,15 +233,17 @@ scan:
 		for !s.eof && !isSpace(s.chr) && s.chr != ';' && s.chr != '#' {
 			s.next()
 		}
+
 		s.typ = TokenIdent
 		s.tok = string(s.buf[beg:s.off])
+		s.sem = true
+
 		if s.tok == "push" {
 			s.key = true
-			for isSpace(s.chr) {
+			for !s.eof && isSpace(s.chr) && s.chr != '\n' {
 				s.next()
 			}
 		}
-		s.sem = true
 	}
 
 	return true

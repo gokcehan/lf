@@ -36,6 +36,12 @@ var gTests = []struct {
 	},
 
 	{
+		"set hidden\nset preview",
+		[]string{"set", "hidden", "\n", "set", "preview", "\n"},
+		[]Expr{&SetExpr{"hidden", ""}, &SetExpr{"preview", ""}},
+	},
+
+	{
 		"set ratios 1:2:3",
 		[]string{"set", "ratios", "1:2:3", "\n"},
 		[]Expr{&SetExpr{"ratios", "1:2:3"}},
@@ -54,9 +60,21 @@ var gTests = []struct {
 	},
 
 	{
+		":set ratios 1:2:3\nset hidden",
+		[]string{":", "set", "ratios", "1:2:3", "\n", "\n", "set", "hidden", "\n"},
+		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}, &SetExpr{"hidden", ""}},
+	},
+
+	{
 		":set ratios 1:2:3;",
 		[]string{":", "set", "ratios", "1:2:3", ";", "\n"},
 		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}},
+	},
+
+	{
+		":set ratios 1:2:3;\nset hidden",
+		[]string{":", "set", "ratios", "1:2:3", ";", "\n", "set", "hidden", "\n"},
+		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}, &SetExpr{"hidden", ""}},
 	},
 
 	{
@@ -126,7 +144,7 @@ var gTests = []struct {
 	},
 
 	{
-		"map r push :rename<space> # trailing comments area allowed after a space",
+		"map r push :rename<space> # trailing comments are allowed after a space",
 		[]string{"map", "r", "push", ":rename<space>", "\n"},
 		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>"}}}},
 	},
