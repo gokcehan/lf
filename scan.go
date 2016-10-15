@@ -166,13 +166,13 @@ scan:
 		s.cmd = false
 		s.sem = true
 	case s.chr == '\n':
-		s.next()
 		if s.sem {
 			s.typ = TokenSemicolon
 			s.tok = "\n"
 			s.sem = false
 			return true
 		}
+		s.next()
 		if s.nln {
 			s.typ = TokenSemicolon
 			s.tok = "\n"

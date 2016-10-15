@@ -31,9 +31,9 @@ map zs set showinfo size
 map zt set showinfo time
 
 # sort files and show the corresponding info
-map sn :set sortby name; set showinfo none;
-map ss :set sortby size; set showinfo size;
-map st :set sortby time; set showinfo time;
+map sn :set sortby name; set showinfo none
+map ss :set sortby size; set showinfo size
+map st :set sortby time; set showinfo time
 
 # common directories
 map gh cd ~

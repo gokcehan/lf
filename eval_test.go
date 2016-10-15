@@ -132,6 +132,18 @@ var gTests = []struct {
 	},
 
 	{
+		"map ss :set sortby size; set showinfo size",
+		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", "\n", "\n"},
+		[]Expr{&MapExpr{"ss", &ListExpr{[]Expr{&SetExpr{"sortby", "size"}, &SetExpr{"showinfo", "size"}}}}},
+	},
+
+	{
+		"map ss :set sortby size; set showinfo size;",
+		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", ";", "\n"},
+		[]Expr{&MapExpr{"ss", &ListExpr{[]Expr{&SetExpr{"sortby", "size"}, &SetExpr{"showinfo", "size"}}}}},
+	},
+
+	{
 		`cmd gohome :{{
 			cd ~
 			set hidden
