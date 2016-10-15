@@ -22,7 +22,7 @@ package main
 //
 // Prefix   = '$' | '!' | '&' | '/' | '?'
 //
-// ListExpr = ':'      ListExpr      '\n'
+// ListExpr = ':'      ListRest      '\n'
 //          | ':' '{{' ListRest '}}' ';'
 //
 // ListRest = Nil

@@ -30,6 +30,7 @@ type Scanner struct {
 	sem bool      // insert semicolon
 	nln bool      // insert newline
 	eof bool      // buffer ended
+	key bool      // scanning keys
 	blk bool      // scanning block
 	cmd bool      // scanning command
 	typ TokenType // scanned token type
@@ -93,7 +94,6 @@ func isPrefix(b byte) bool {
 }
 
 func (s *Scanner) scan() bool {
-	// log.Println("scanning:", s.tok)
 scan:
 	switch {
 	case s.eof:
@@ -111,6 +111,14 @@ scan:
 			return true
 		}
 		return false
+	case s.key:
+		beg := s.off
+		for !s.eof && !isSpace(s.chr) {
+			s.next()
+		}
+		s.typ = TokenIdent
+		s.tok = string(s.buf[beg:s.off])
+		s.key = false
 	case s.blk:
 		// return here by setting s.cmd to false
 		// after scanning the command in the loop below
@@ -233,6 +241,12 @@ scan:
 		}
 		s.typ = TokenIdent
 		s.tok = string(s.buf[beg:s.off])
+		if s.tok == "push" {
+			s.key = true
+			for isSpace(s.chr) {
+				s.next()
+			}
+		}
 		s.sem = true
 	}
 

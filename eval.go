@@ -337,7 +337,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.ui.loadFile(app.nav)
 	case "push":
 		if len(e.args) > 0 {
-			app.ui.keysbuf = append(app.ui.keysbuf, splitKeys(strings.Join(e.args, ""))...)
+			app.ui.keysbuf = append(app.ui.keysbuf, splitKeys(e.args[0])...)
 		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]

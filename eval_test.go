@@ -114,6 +114,36 @@ var gTests = []struct {
 	},
 
 	{
+		"map r push :rename<space>",
+		[]string{"map", "r", "push", ":rename<space>", "\n"},
+		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>"}}}},
+	},
+
+	{
+		"map r push :rename<space>;",
+		[]string{"map", "r", "push", ":rename<space>;", "\n"},
+		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>;"}}}},
+	},
+
+	{
+		"map r push :rename<space> # trailing comments area allowed after a space",
+		[]string{"map", "r", "push", ":rename<space>", "\n"},
+		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>"}}}},
+	},
+
+	{
+		"map r :push :rename<space>",
+		[]string{"map", "r", ":", "push", ":rename<space>", "\n", "\n"},
+		[]Expr{&MapExpr{"r", &ListExpr{[]Expr{&CallExpr{"push", []string{":rename<space>"}}}}}},
+	},
+
+	{
+		"map r :push :rename<space> ; set hidden",
+		[]string{"map", "r", ":", "push", ":rename<space>", ";", "set", "hidden", "\n", "\n"},
+		[]Expr{&MapExpr{"r", &ListExpr{[]Expr{&CallExpr{"push", []string{":rename<space>"}}, &SetExpr{"hidden", ""}}}}},
+	},
+
+	{
 		"map u $du -h . | less",
 		[]string{"map", "u", "$", "du -h . | less", "\n"},
 		[]Expr{&MapExpr{"u", &ExecExpr{"$", "du -h . | less"}}},

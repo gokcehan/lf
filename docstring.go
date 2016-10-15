@@ -132,7 +132,7 @@ command with a command count.
 Second, it can be used to avoid typing the name when a command takes
 arguments.
 
-    map r :push :rename<space>
+    map r push :rename<space>
 
 One thing to be careful is that since "push" command works with keys instead
 of commands it is possible to accidentally create recursive bindings.
