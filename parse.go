@@ -110,21 +110,21 @@ func (p *Parser) parseExpr() Expr {
 
 	var result Expr
 
-	// TODO: syntax error check
-
 	switch s.typ {
 	case TokenEOF:
 		return nil
-	case TokenSemicolon:
-		s.scan()
 	case TokenIdent:
 		switch s.tok {
 		case "set":
+			var val string
+
 			s.scan()
+			if s.typ != TokenIdent {
+				p.err = fmt.Errorf("expected identifier: %s", s.tok)
+			}
 			opt := s.tok
 
 			s.scan()
-			var val string
 			if s.typ != TokenSemicolon {
 				val = s.tok
 				s.scan()
@@ -195,19 +195,17 @@ func (p *Parser) parseExpr() Expr {
 
 		result = &ListExpr{exprs}
 	case TokenPrefix:
+		var expr string
+
 		pref := s.tok
 
 		s.scan()
-
-		var expr string
 		if s.typ == TokenLBraces {
 			s.scan()
 			expr = s.tok
 			s.scan()
-		} else if s.typ == TokenCommand {
-			expr = s.tok
 		} else {
-			// TODO: handle error
+			expr = s.tok
 		}
 
 		s.scan()
@@ -215,7 +213,7 @@ func (p *Parser) parseExpr() Expr {
 
 		result = &ExecExpr{pref, expr}
 	default:
-		// TODO: handle error
+		p.err = fmt.Errorf("unexpected token: %s", s.tok)
 	}
 
 	return result

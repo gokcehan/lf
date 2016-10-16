@@ -29,6 +29,8 @@ func client() {
 	nav := newNav(ui.wins[0].h)
 	app := &App{ui, nav}
 
+	app.ui.loadFile(app.nav)
+
 	if _, err := os.Stat(gConfigPath); err == nil {
 		log.Printf("reading configuration file: %s", gConfigPath)
 
@@ -37,20 +39,18 @@ func client() {
 			msg := fmt.Sprintf("opening configuration file: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
-		} else {
-			app.ui.loadFile(app.nav)
 		}
 		defer rcFile.Close()
 
 		p := newParser(rcFile)
 		for p.parse() {
+			if p.err != nil {
+				app.ui.message = "see the log file for errors in the configuration file"
+				log.Print(p.err)
+			}
 			p.expr.eval(app, nil)
 		}
-
-		// TODO: parser error check
 	}
-
-	app.ui.loadFile(app.nav)
 
 	app.ui.draw(app.nav)
 
