@@ -44,11 +44,12 @@ func client() {
 
 		p := newParser(rcFile)
 		for p.parse() {
-			if p.err != nil {
-				app.ui.message = "see the log file for errors in the configuration file"
-				log.Print(p.err)
-			}
 			p.expr.eval(app, nil)
+		}
+
+		if p.err != nil {
+			app.ui.message = p.err.Error()
+			log.Print(p.err)
 		}
 	}
 
