@@ -236,6 +236,15 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 
 	for i, f := range dir.fi[beg:end] {
 		switch {
+		case f.LinkState != NotLink:
+			if f.LinkState == Working {
+				fg = termbox.ColorCyan
+				if f.Mode().IsDir() {
+					fg |= termbox.AttrBold
+				}
+			} else {
+				fg = termbox.ColorMagenta
+			}
 		case f.Mode().IsRegular():
 			if f.Mode()&0111 != 0 {
 				fg = termbox.AttrBold | termbox.ColorGreen
@@ -244,8 +253,6 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 			}
 		case f.Mode().IsDir():
 			fg = termbox.AttrBold | termbox.ColorBlue
-		case f.Mode()&os.ModeSymlink != 0:
-			fg = termbox.ColorCyan
 		case f.Mode()&os.ModeNamedPipe != 0:
 			fg = termbox.ColorRed
 		case f.Mode()&os.ModeSocket != 0:
@@ -390,13 +397,10 @@ func (ui *UI) renew() {
 }
 
 func (ui *UI) loadFile(nav *Nav) {
-	dir := nav.currDir()
-
-	if len(dir.fi) == 0 {
+	curr, err := nav.currFile()
+	if err != nil {
 		return
 	}
-
-	curr := nav.currFile()
 
 	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(time.ANSIC))
 
@@ -404,25 +408,15 @@ func (ui *UI) loadFile(nav *Nav) {
 		return
 	}
 
-	path := nav.currPath()
-
-	f, err := os.Stat(path)
-	if err != nil {
-		msg := fmt.Sprintf("getting file information: %s", err)
-		ui.message = msg
-		log.Print(msg)
-		return
-	}
-
-	if f.IsDir() {
-		dir := newDir(path)
-		dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
+	if curr.IsDir() {
+		dir := newDir(curr.Path)
+		dir.load(nav.inds[curr.Path], nav.poss[curr.Path], nav.height, nav.names[curr.Path])
 		ui.dirprev = dir
-	} else if f.Mode().IsRegular() {
+	} else if curr.Mode().IsRegular() {
 		var reader io.Reader
 
 		if len(gOpts.previewer) != 0 {
-			cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
+			cmd := exec.Command(gOpts.previewer, curr.Path, strconv.Itoa(nav.height))
 
 			out, err := cmd.StdoutPipe()
 			if err != nil {
@@ -441,7 +435,7 @@ func (ui *UI) loadFile(nav *Nav) {
 			defer out.Close()
 			reader = out
 		} else {
-			f, err := os.Open(path)
+			f, err := os.Open(curr.Path)
 			if err != nil {
 				msg := fmt.Sprintf("opening file: %s", err)
 				ui.message = msg
@@ -519,20 +513,12 @@ func (ui *UI) draw(nav *Nav) {
 	defer ui.msgwin.print(0, 0, fg, bg, ui.message)
 
 	if gOpts.preview {
-		if len(dir.fi) == 0 {
+		f, err := nav.currFile()
+		if err != nil {
 			return
 		}
 
 		preview := ui.wins[len(ui.wins)-1]
-		path := nav.currPath()
-
-		f, err := os.Stat(path)
-		if err != nil {
-			msg := fmt.Sprintf("getting file information: %s", err)
-			ui.message = msg
-			log.Print(msg)
-			return
-		}
 
 		if f.IsDir() {
 			preview.printd(ui.dirprev, nav.marks)

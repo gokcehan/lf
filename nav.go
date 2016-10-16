@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"io/ioutil"
 	"log"
 	"os"
 	"os/exec"
@@ -12,14 +11,21 @@ import (
 	"strings"
 )
 
-type Dir struct {
-	ind  int // which entry is highlighted
-	pos  int // which line in the ui highlighted entry is
-	path string
-	fi   []os.FileInfo
+type LinkState int8
+
+const (
+	NotLink LinkState = iota
+	Working
+	Broken
+)
+
+type File struct {
+	os.FileInfo
+	LinkState LinkState
+	Path      string
 }
 
-type ByName []os.FileInfo
+type ByName []*File
 
 func (a ByName) Len() int      { return len(a) }
 func (a ByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -28,19 +34,19 @@ func (a ByName) Less(i, j int) bool {
 	return strings.ToLower(a[i].Name()) < strings.ToLower(a[j].Name())
 }
 
-type BySize []os.FileInfo
+type BySize []*File
 
 func (a BySize) Len() int           { return len(a) }
 func (a BySize) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a BySize) Less(i, j int) bool { return a[i].Size() < a[j].Size() }
 
-type ByTime []os.FileInfo
+type ByTime []*File
 
 func (a ByTime) Len() int           { return len(a) }
 func (a ByTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
 func (a ByTime) Less(i, j int) bool { return a[i].ModTime().Before(a[j].ModTime()) }
 
-type ByDir []os.FileInfo
+type ByDir []*File
 
 func (a ByDir) Len() int      { return len(a) }
 func (a ByDir) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -52,7 +58,7 @@ func (a ByDir) Less(i, j int) bool {
 	return a[i].IsDir()
 }
 
-type ByNum []os.FileInfo
+type ByNum []*File
 
 func (a ByNum) Len() int      { return len(a) }
 func (a ByNum) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
@@ -85,15 +91,10 @@ func (a ByNum) Less(i, j int) bool {
 	return i < j
 }
 
-func organizeFiles(fi []os.FileInfo) []os.FileInfo {
-	if !gOpts.hidden {
-		var tmp []os.FileInfo
-		for _, f := range fi {
-			if f.Name()[0] != '.' {
-				tmp = append(tmp, f)
-			}
-		}
-		fi = tmp
+func getFilesSorted(path string) []*File {
+	fi, err := readdir(path)
+	if err != nil {
+		log.Printf("reading directory: %s", err)
 	}
 
 	switch gOpts.sortby {
@@ -116,34 +117,72 @@ func organizeFiles(fi []os.FileInfo) []os.FileInfo {
 	return fi
 }
 
-func newDir(path string) *Dir {
-	fi, err := ioutil.ReadDir(path)
+func readdir(path string) ([]*File, error) {
+	f, err := os.Open(path)
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		return nil, err
 	}
 
-	fi = organizeFiles(fi)
+	names, err := f.Readdirnames(-1)
+	fi := make([]*File, 0, len(names))
+	for _, filename := range names {
+		if !gOpts.hidden && filename[0] == '.' {
+			continue
+		}
 
+		fpath := filepath.Join(path, filename)
+
+		lstat, lerr := os.Lstat(fpath)
+		if os.IsNotExist(lerr) {
+			continue
+		}
+		if lerr != nil {
+			return fi, lerr
+		}
+
+		var linkState LinkState
+
+		if lstat.Mode()&os.ModeSymlink != 0 {
+			stat, serr := os.Stat(fpath)
+			if serr == nil {
+				linkState = Working
+				lstat = stat
+			} else {
+				linkState = Broken
+				log.Printf("getting link destination info: %s", serr)
+			}
+		}
+
+		fi = append(fi, &File{
+			FileInfo:  lstat,
+			LinkState: linkState,
+			Path:      fpath,
+		})
+	}
+	return fi, err
+}
+
+type Dir struct {
+	ind  int // which entry is highlighted
+	pos  int // which line in the ui highlighted entry is
+	path string
+	fi   []*File
+}
+
+func newDir(path string) *Dir {
 	return &Dir{
 		path: path,
-		fi:   fi,
+		fi:   getFilesSorted(path),
 	}
 }
 
 func (dir *Dir) renew(height int) {
-	fi, err := ioutil.ReadDir(dir.path)
-	if err != nil {
-		log.Printf("reading directory: %s", err)
-	}
-
-	fi = organizeFiles(fi)
-
 	var name string
 	if len(dir.fi) != 0 {
 		name = dir.fi[dir.ind].Name()
 	}
 
-	dir.fi = fi
+	dir.fi = getFilesSorted(dir.path)
 
 	dir.load(dir.ind, dir.pos, height, name)
 }
@@ -296,8 +335,17 @@ func (nav *Nav) updir() error {
 	return nil
 }
 
+var ErrNotDir = fmt.Errorf("not a directory")
+
 func (nav *Nav) open() error {
-	path := nav.currPath()
+	curr, err := nav.currFile()
+	if err != nil {
+		return err
+	}
+	if !curr.IsDir() {
+		return ErrNotDir
+	}
+	path := curr.Path
 
 	dir := newDir(path)
 
@@ -354,11 +402,12 @@ func (nav *Nav) toggleMark(path string) {
 }
 
 func (nav *Nav) toggle() {
-	if nav.currEmpty() {
+	curr, err := nav.currFile()
+	if err != nil {
 		return
 	}
 
-	nav.toggleMark(nav.currPath())
+	nav.toggleMark(curr.Path)
 
 	nav.down(1)
 }
@@ -373,13 +422,12 @@ func (nav *Nav) invert() {
 
 func (nav *Nav) save(keep bool) error {
 	if len(nav.marks) == 0 {
-		if nav.currEmpty() {
+		curr, err := nav.currFile()
+		if err != nil {
 			return errors.New("no file selected")
 		}
 
-		path := nav.currPath()
-
-		if err := saveFiles([]string{path}, keep); err != nil {
+		if err := saveFiles([]string{curr.Path}, keep); err != nil {
 			return err
 		}
 	} else {
@@ -433,23 +481,17 @@ func (nav *Nav) paste() error {
 	return nil
 }
 
-func (nav *Nav) currEmpty() bool {
-	return len(nav.dirs[len(nav.dirs)-1].fi) == 0
-}
-
 func (nav *Nav) currDir() *Dir {
 	return nav.dirs[len(nav.dirs)-1]
 }
 
-func (nav *Nav) currFile() os.FileInfo {
+func (nav *Nav) currFile() (*File, error) {
 	last := nav.dirs[len(nav.dirs)-1]
-	return last.fi[last.ind]
-}
 
-func (nav *Nav) currPath() string {
-	last := nav.dirs[len(nav.dirs)-1]
-	curr := last.fi[last.ind]
-	return filepath.Join(last.path, curr.Name())
+	if len(last.fi) == 0 {
+		return nil, fmt.Errorf("empty directory")
+	}
+	return last.fi[last.ind], nil
 }
 
 func (nav *Nav) currMarks() []string {

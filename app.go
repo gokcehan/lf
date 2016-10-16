@@ -76,11 +76,9 @@ func (app *App) handleInp() {
 }
 
 func (app *App) exportVars() {
-	dir := app.nav.currDir()
-
 	var envFile string
-	if len(dir.fi) != 0 {
-		envFile = app.nav.currPath()
+	if f, err := app.nav.currFile(); err == nil {
+		envFile = f.Path
 	}
 
 	marks := app.nav.currMarks()
