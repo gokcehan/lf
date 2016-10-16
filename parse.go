@@ -134,19 +134,31 @@ func (p *Parser) parseExpr() Expr {
 
 			result = &SetExpr{opt, val}
 		case "map":
+			var expr Expr
+
 			s.scan()
 			keys := s.tok
 
 			s.scan()
-			expr := p.parseExpr()
+			if s.typ != TokenSemicolon {
+				expr = p.parseExpr()
+			} else {
+				s.scan()
+			}
 
 			result = &MapExpr{keys, expr}
 		case "cmd":
+			var expr Expr
+
 			s.scan()
 			name := s.tok
 
 			s.scan()
-			expr := p.parseExpr()
+			if s.typ != TokenSemicolon {
+				expr = p.parseExpr()
+			} else {
+				s.scan()
+			}
 
 			result = &CmdExpr{name, expr}
 		default:
