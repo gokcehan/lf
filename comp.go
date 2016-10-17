@@ -50,6 +50,7 @@ var (
 		"preview!",
 		"dirfirst",
 		"nodirfirst",
+		"dirfirst!",
 		"scrolloff",
 		"tabstop",
 		"ifs",

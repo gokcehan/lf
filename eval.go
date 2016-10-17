@@ -32,6 +32,9 @@ func (e *SetExpr) eval(app *App, args []string) {
 	case "nodirfirst":
 		gOpts.dirfirst = false
 		app.nav.renew(app.nav.height)
+	case "dirfirst!":
+		gOpts.dirfirst = !gOpts.dirfirst
+		app.nav.renew(app.nav.height)
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -81,7 +84,7 @@ func (e *SetExpr) eval(app *App, args []string) {
 		}
 		gOpts.showinfo = e.val
 	case "sortby":
-		if e.val != "name" && e.val != "size" && e.val != "time" && e.val != "numeric"{
+		if e.val != "name" && e.val != "size" && e.val != "time" {
 			msg := "sortby should either be 'name', 'size' or 'time'"
 			app.ui.message = msg
 			log.Print(msg)
