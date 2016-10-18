@@ -107,9 +107,11 @@ func organizeFiles(fi []os.FileInfo) []os.FileInfo {
 		log.Printf("unknown sorting type: %s", gOpts.sortby)
 	}
 
-	// TODO: these should be optional
+	if gOpts.dirfirst {
+		sort.Stable(ByDir(fi))
+	}
+	//TODO this should be optional
 	sort.Stable(ByNum(fi))
-	sort.Stable(ByDir(fi))
 
 	return fi
 }

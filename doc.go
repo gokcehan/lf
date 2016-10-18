@@ -46,6 +46,7 @@ The following options can be used to customize the behavior of lf.
 
     hidden     bool    (default off)
     preview    bool    (default on)
+    dirfirst   bool    (default on)
     scrolloff  int     (default 0)
     tabstop    int     (default 8)
     ifs        string  (default "") (not exported if empty)

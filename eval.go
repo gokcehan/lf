@@ -26,6 +26,15 @@ func (e *SetExpr) eval(app *App, args []string) {
 		gOpts.preview = false
 	case "preview!":
 		gOpts.preview = !gOpts.preview
+	case "dirfirst":
+		gOpts.dirfirst = true
+		app.nav.renew(app.nav.height)
+	case "nodirfirst":
+		gOpts.dirfirst = false
+		app.nav.renew(app.nav.height)
+	case "dirfirst!":
+		gOpts.dirfirst = !gOpts.dirfirst
+		app.nav.renew(app.nav.height)
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
