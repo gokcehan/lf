@@ -27,6 +27,70 @@ func TestIsRoot(t *testing.T) {
 	}
 }
 
+func TestRuneWidth(t *testing.T) {
+	chars := []struct {
+		r rune
+		w int
+	}{
+		{' ', 1},
+		{'a', 1},
+		{'ı', 1},
+		{'ş', 1},
+		{'世', 2},
+		{'界', 2},
+	}
+
+	for _, char := range chars {
+		if w := runeWidth(char.r); w != char.w {
+			t.Errorf("at input '%c' expected '%d' but got '%d'", char.r, char.w, w)
+		}
+	}
+}
+
+func TestRuneSliceWidth(t *testing.T) {
+	slices := []struct {
+		s []rune
+		w int
+	}{
+		{[]rune{'a', 'b'}, 2},
+		{[]rune{'ı', 'ş'}, 2},
+		{[]rune{'世', '界'}, 4},
+		{[]rune{'世', 'a', '界', 'ı'}, 6},
+	}
+
+	for _, slice := range slices {
+		if w := runeSliceWidth(slice.s); w != slice.w {
+			t.Errorf("at input '%v' expected '%d' but got '%d'", slice.s, slice.w, w)
+		}
+	}
+}
+
+func TestRuneSliceWidthRange(t *testing.T) {
+	slices := []struct {
+		s []rune
+		i int
+		j int
+		r []rune
+	}{
+		{[]rune{'a', 'b', 'c', 'd'}, 1, 3, []rune{'b', 'c'}},
+		{[]rune{'a', 'ı', 'b', 'ş'}, 1, 3, []rune{'ı', 'b'}},
+		{[]rune{'世', '界', '世', '界'}, 2, 6, []rune{'界', '世'}},
+		{[]rune{'世', '界', '世', '界'}, 3, 6, []rune{'世'}},
+		{[]rune{'世', '界', '世', '界'}, 2, 5, []rune{'界'}},
+		{[]rune{'世', '界', '世', '界'}, 3, 5, []rune{}},
+		{[]rune{'世', 'a', '界', 'ı'}, 2, 5, []rune{'a', '界'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 2, 4, []rune{'a'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 3, 5, []rune{'界'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 3, 4, []rune{}},
+	}
+
+	for _, slice := range slices {
+		if r := runeSliceWidthRange(slice.s, slice.i, slice.j); !reflect.DeepEqual(r, slice.r) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", slice.s, slice.r, r)
+		}
+	}
+}
+
 func TestHumanize(t *testing.T) {
 	nums := []struct {
 		i int64

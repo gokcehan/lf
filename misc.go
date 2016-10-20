@@ -7,9 +7,47 @@ import (
 	"strconv"
 	"unicode"
 	"unicode/utf8"
+
+	"golang.org/x/text/width"
 )
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
+
+func runeWidth(r rune) int {
+	k := width.LookupRune(r).Kind()
+	if k == width.EastAsianFullwidth || k == width.EastAsianWide {
+		return 2
+	}
+	return 1
+}
+
+func runeSliceWidth(rs []rune) int {
+	w := 0
+	for _, r := range rs {
+		w += runeWidth(r)
+	}
+	return w
+}
+
+func runeSliceWidthRange(rs []rune, beg int, end int) []rune {
+	curr := 0
+	b := 0
+	for i, r := range rs {
+		w := runeWidth(r)
+		switch {
+		case curr == beg:
+			b = i
+		case curr < beg && curr+w > beg:
+			b = i + 1
+		case curr == end:
+			return rs[b:i]
+		case curr > end:
+			return rs[b : i-1]
+		}
+		curr += w
+	}
+	return nil
+}
 
 // This function converts a size in bytes to a human readable form. For this
 // purpose metric suffixes are used (e.g. 1K = 1000). For values less than 10

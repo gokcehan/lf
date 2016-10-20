@@ -203,7 +203,7 @@ func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 		if r == '\t' {
 			x += gOpts.tabstop - (x-off)%gOpts.tabstop
 		} else {
-			x++
+			x += runeWidth(r)
 		}
 	}
 }
@@ -264,16 +264,19 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 			fg = fg | termbox.AttrReverse
 		}
 
-		var s []byte
+		var s []rune
 
 		s = append(s, ' ')
 
-		s = append(s, f.Name()...)
+		for _, r := range f.Name() {
+			s = append(s, r)
+		}
 
-		if len(s) > win.w-2 {
-			s = s[:win.w-2]
+		w := runeSliceWidth(s)
+		if w > win.w-2 {
+			s = runeSliceWidthRange(s, 0, win.w-2)
 		} else {
-			s = append(s, make([]byte, win.w-2-len(s))...)
+			s = append(s, make([]rune, win.w-2-w)...)
 		}
 
 		switch gOpts.showinfo {
@@ -282,16 +285,20 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 		case "size":
 			if win.w > 8 {
 				h := humanize(f.Size())
-				s = append(s[:win.w-3-len(h)])
+				s = runeSliceWidthRange(s, 0, win.w-3-len(h))
 				s = append(s, ' ')
-				s = append(s, h...)
+				for _, r := range h {
+					s = append(s, r)
+				}
 			}
 		case "time":
 			if win.w > 24 {
 				t := f.ModTime().Format("Jan _2 15:04")
-				s = append(s[:win.w-3-len(t)])
+				s = runeSliceWidthRange(s, 0, win.w-3-len(t))
 				s = append(s, ' ')
-				s = append(s, t...)
+				for _, r := range t {
+					s = append(s, r)
+				}
 			}
 		default:
 			log.Printf("unknown showinfo type: %s", gOpts.showinfo)
