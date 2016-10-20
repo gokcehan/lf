@@ -1,3 +1,4 @@
 language: go
 install:
   - go get github.com/nsf/termbox-go
+  - go get golang.org/x/text
