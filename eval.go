@@ -178,29 +178,14 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 	case "open":
-		dir := app.nav.currDir()
-
-		if len(dir.fi) == 0 {
-			return
-		}
-
-		path := app.nav.currPath()
-
-		f, err := os.Stat(path)
-		if err != nil {
-			msg := fmt.Sprintf("open: %s", err)
-			app.ui.message = msg
-			log.Print(msg)
-			return
-		}
-
-		if f.IsDir() {
-			if err := app.nav.open(); err != nil {
-				app.ui.message = err.Error()
-				log.Print(err)
-				return
-			}
+		err := app.nav.open()
+		if err == nil {
 			app.ui.loadFile(app.nav)
+			return
+		}
+		if err != ErrNotDir {
+			app.ui.message = err.Error()
+			log.Print(err)
 			return
 		}
 
@@ -211,9 +196,14 @@ func (e *CallExpr) eval(app *App, args []string) {
 			}
 			defer out.Close()
 
+			var path string
 			if len(app.nav.marks) != 0 {
 				marks := app.nav.currMarks()
 				path = strings.Join(marks, "\n")
+			} else if curr, err := app.nav.currFile(); err == nil {
+				path = curr.Path
+			} else {
+				return
 			}
 
 			_, err = out.WriteString(path)
