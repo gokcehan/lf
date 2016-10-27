@@ -193,6 +193,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			out, err := os.Create(gSelectionPath)
 			if err != nil {
 				log.Printf("opening selection file: %s", err)
+				return
 			}
 			defer out.Close()
 
@@ -211,7 +212,8 @@ func (e *CallExpr) eval(app *App, args []string) {
 				log.Printf("writing selection file: %s", err)
 			}
 
-			gExitFlag = true
+			go func() { app.quit <- true }()
+
 			return
 		}
 
@@ -219,7 +221,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			cmd.eval(app, e.args)
 		}
 	case "quit":
-		gExitFlag = true
+		go func() { app.quit <- true }()
 	case "bot":
 		app.nav.bot()
 		app.ui.loadFile(app.nav)

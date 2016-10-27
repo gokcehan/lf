@@ -25,9 +25,7 @@ func client() {
 	}
 	defer termbox.Close()
 
-	ui := newUI()
-	nav := newNav(ui.wins[0].h)
-	app := &App{ui, nav}
+	app := newApp()
 
 	app.ui.loadFile(app.nav)
 

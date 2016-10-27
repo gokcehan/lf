@@ -20,7 +20,6 @@ var (
 )
 
 var (
-	gExitFlag      bool
 	gLastDirPath   string
 	gSelectionPath string
 	gSocketPath    string

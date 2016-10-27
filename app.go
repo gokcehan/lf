@@ -9,8 +9,20 @@ import (
 )
 
 type App struct {
-	ui  *UI
-	nav *Nav
+	ui   *UI
+	nav  *Nav
+	quit chan bool
+}
+
+func newApp() *App {
+	ui := newUI()
+	nav := newNav(ui.wins[0].h)
+	quit := make(chan bool)
+	return &App{
+		ui:   ui,
+		nav:  nav,
+		quit: quit,
+	}
 }
 
 func waitKey() error {
@@ -39,9 +51,8 @@ func waitKey() error {
 
 func (app *App) handleInp() {
 	for {
-		// exit check is done on the top just in case user quits
-		// before input handling for some reason (e.g. in configuration file)
-		if gExitFlag {
+		select {
+		case <-app.quit:
 			log.Print("bye!")
 
 			if gLastDirPath != "" {
@@ -60,18 +71,16 @@ func (app *App) handleInp() {
 			}
 
 			return
+		default:
+			e, c := app.ui.getExpr(app.nav)
+			if e == nil {
+				continue
+			}
+			for i := 0; i < c; i++ {
+				e.eval(app, nil)
+			}
+			app.ui.draw(app.nav)
 		}
-		e, c := app.ui.getExpr(app.nav)
-		if e == nil {
-			continue
-		}
-		for i := 0; i < c; i++ {
-			e.eval(app, nil)
-		}
-		if gExitFlag {
-			continue
-		}
-		app.ui.draw(app.nav)
 	}
 }
 
