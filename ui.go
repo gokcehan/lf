@@ -570,84 +570,131 @@ func (ui *UI) pollEvent() termbox.Event {
 	return termbox.PollEvent()
 }
 
-func (ui *UI) getExpr(nav *Nav) (expr Expr, count int) {
-	expr = &CallExpr{"renew", nil}
-	count = 1
+type MultiExpr struct {
+	expr  Expr
+	count int
+}
+
+func (ui *UI) readExpr(app *App) chan MultiExpr {
+	ch := make(chan MultiExpr)
+
+	renew := &CallExpr{"renew", nil}
+	count := 1
 
 	var acc []rune
 	var cnt []rune
 
-	for {
-		switch ev := ui.pollEvent(); ev.Type {
-		case termbox.EventKey:
-			if ev.Ch != 0 {
-				switch {
-				case ev.Ch == '<':
-					acc = append(acc, '<', 'l', 't', '>')
-				case ev.Ch == '>':
-					acc = append(acc, '<', 'g', 't', '>')
-				// Interpret digits as command count but only do this for
-				// digits preceding any non-digit characters
-				// (e.g. "42y2k" as 42 times "y2k").
-				case unicode.IsDigit(ev.Ch) && len(acc) == 0:
-					cnt = append(cnt, ev.Ch)
-				default:
-					acc = append(acc, ev.Ch)
+	go func() {
+		for {
+			switch ev := ui.pollEvent(); ev.Type {
+			case termbox.EventKey:
+				if ev.Ch != 0 {
+					switch {
+					case ev.Ch == '<':
+						acc = append(acc, '<', 'l', 't', '>')
+					case ev.Ch == '>':
+						acc = append(acc, '<', 'g', 't', '>')
+					// Interpret digits as command count but only do this for
+					// digits preceding any non-digit characters
+					// (e.g. "42y2k" as 42 times "y2k").
+					case unicode.IsDigit(ev.Ch) && len(acc) == 0:
+						cnt = append(cnt, ev.Ch)
+					default:
+						acc = append(acc, ev.Ch)
+					}
+				} else {
+					val := gKeyVal[ev.Key]
+					if string(val) == "<esc>" {
+						ch <- MultiExpr{renew, 1}
+						acc = nil
+						cnt = nil
+					}
+					acc = append(acc, val...)
 				}
-			} else {
-				val := gKeyVal[ev.Key]
-				if string(val) == "<esc>" {
+
+				binds, ok := findBinds(gOpts.keys, string(acc))
+
+				switch len(binds) {
+				case 0:
+					ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
+					ch <- MultiExpr{renew, 1}
 					acc = nil
-					return
-				}
-				acc = append(acc, val...)
-			}
-
-			binds, ok := findBinds(gOpts.keys, string(acc))
-
-			switch len(binds) {
-			case 0:
-				ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
-				acc = nil
-				return
-			case 1:
-				if ok {
-					if len(cnt) > 0 {
-						c, err := strconv.Atoi(string(cnt))
-						if err != nil {
-							log.Printf("converting command count: %s", err)
+					cnt = nil
+				case 1:
+					if ok {
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
 						}
-						count = c
+						expr := gOpts.keys[string(acc)]
+						switch expr.(type) {
+						case *CallExpr:
+							if expr.(*CallExpr).name == "read" ||
+								expr.(*CallExpr).name == "read-shell" ||
+								expr.(*CallExpr).name == "read-shell-wait" ||
+								expr.(*CallExpr).name == "read-shell-async" {
+								expr.eval(app, nil)
+								ui.draw(app.nav)
+							} else {
+								ch <- MultiExpr{expr, count}
+							}
+						default:
+							ch <- MultiExpr{expr, count}
+						}
+						acc = nil
+						cnt = nil
 					}
-					return gOpts.keys[string(acc)], count
+					if len(acc) > 0 {
+						ui.listBinds(binds)
+					}
+				default:
+					if ok {
+						// TODO: use a delay
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
+						}
+						expr := gOpts.keys[string(acc)]
+						switch expr.(type) {
+						case *CallExpr:
+							if expr.(*CallExpr).name == "read" ||
+								expr.(*CallExpr).name == "read-shell" ||
+								expr.(*CallExpr).name == "read-shell-wait" ||
+								expr.(*CallExpr).name == "read-shell-async" {
+								expr.eval(app, nil)
+								ui.draw(app.nav)
+							} else {
+								ch <- MultiExpr{expr, count}
+							}
+						default:
+							ch <- MultiExpr{expr, count}
+						}
+						acc = nil
+						cnt = nil
+					}
+					if len(acc) > 0 {
+						ui.listBinds(binds)
+					}
 				}
-				ui.draw(nav)
-				if len(acc) > 0 {
-					ui.listBinds(binds)
-				}
+			case termbox.EventResize:
+				ch <- MultiExpr{renew, 1}
 			default:
-				if ok {
-					// TODO: use a delay
-					if len(cnt) > 0 {
-						c, err := strconv.Atoi(string(cnt))
-						if err != nil {
-							log.Printf("converting command count: %s", err)
-						}
-						count = c
-					}
-					return gOpts.keys[string(acc)], count
-				}
-				ui.draw(nav)
-				if len(acc) > 0 {
-					ui.listBinds(binds)
-				}
+				// TODO: handle other events
 			}
-		case termbox.EventResize:
-			return
-		default:
-			// TODO: handle other events
 		}
-	}
+	}()
+
+	return ch
 }
 
 func (ui *UI) prompt(nav *Nav, pref string) string {

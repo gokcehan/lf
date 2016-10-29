@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"strings"
 
 	"github.com/nsf/termbox-go"
 )
@@ -54,6 +55,27 @@ func client() {
 	app.ui.draw(app.nav)
 
 	app.handleInp()
+}
+
+func readExpr(c net.Conn) chan Expr {
+	ch := make(chan Expr)
+
+	go func() {
+		fmt.Fprintln(c, "conn")
+
+		s := bufio.NewScanner(c)
+		for s.Scan() {
+			log.Printf("reading expression: %s", s.Text())
+			p := newParser(strings.NewReader(s.Text()))
+			if p.parse() {
+				ch <- p.expr
+			}
+		}
+
+		c.Close()
+	}()
+
+	return ch
 }
 
 func saveFiles(list []string, keep bool) error {

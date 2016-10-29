@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"strings"
@@ -18,6 +19,7 @@ func newApp() *App {
 	ui := newUI()
 	nav := newNav(ui.wins[0].h)
 	quit := make(chan bool)
+
 	return &App{
 		ui:   ui,
 		nav:  nav,
@@ -50,6 +52,16 @@ func waitKey() error {
 }
 
 func (app *App) handleInp() {
+	clientChan := app.ui.readExpr(app)
+
+	c, err := net.Dial("unix", gSocketPath)
+	if err != nil {
+		msg := fmt.Sprintf("connecting server: %s", err)
+		app.ui.message = msg
+		log.Printf(msg)
+	}
+	serverChan := readExpr(c)
+
 	for {
 		select {
 		case <-app.quit:
@@ -71,14 +83,13 @@ func (app *App) handleInp() {
 			}
 
 			return
-		default:
-			e, c := app.ui.getExpr(app.nav)
-			if e == nil {
-				continue
+		case e := <-clientChan:
+			for i := 0; i < e.count; i++ {
+				e.expr.eval(app, nil)
 			}
-			for i := 0; i < c; i++ {
-				e.eval(app, nil)
-			}
+			app.ui.draw(app.nav)
+		case e := <-serverChan:
+			e.eval(app, nil)
 			app.ui.draw(app.nav)
 		}
 	}
