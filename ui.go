@@ -127,12 +127,12 @@ func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 						bg = termbox.ColorDefault
 						break
 					}
-					i, err := strconv.Atoi(t)
+					n, err := strconv.Atoi(t)
 					if err != nil {
 						log.Printf("converting escape code: %s", err)
 						continue
 					}
-					nums = append(nums, i)
+					nums = append(nums, n)
 				}
 
 				for _, n := range nums {
