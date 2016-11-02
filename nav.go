@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"sort"
 	"strings"
 )
 
@@ -25,72 +24,6 @@ type File struct {
 	Path      string
 }
 
-type ByName []*File
-
-func (a ByName) Len() int      { return len(a) }
-func (a ByName) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
-func (a ByName) Less(i, j int) bool {
-	return strings.ToLower(a[i].Name()) < strings.ToLower(a[j].Name())
-}
-
-type BySize []*File
-
-func (a BySize) Len() int           { return len(a) }
-func (a BySize) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a BySize) Less(i, j int) bool { return a[i].Size() < a[j].Size() }
-
-type ByTime []*File
-
-func (a ByTime) Len() int           { return len(a) }
-func (a ByTime) Swap(i, j int)      { a[i], a[j] = a[j], a[i] }
-func (a ByTime) Less(i, j int) bool { return a[i].ModTime().Before(a[j].ModTime()) }
-
-type ByDir []*File
-
-func (a ByDir) Len() int      { return len(a) }
-func (a ByDir) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
-func (a ByDir) Less(i, j int) bool {
-	if a[i].IsDir() == a[j].IsDir() {
-		return i < j
-	}
-	return a[i].IsDir()
-}
-
-type ByNum []*File
-
-func (a ByNum) Len() int      { return len(a) }
-func (a ByNum) Swap(i, j int) { a[i], a[j] = a[j], a[i] }
-
-func (a ByNum) Less(i, j int) bool {
-	nums1, rest1, numFirst1 := extractNums(a[i].Name())
-	nums2, rest2, numFirst2 := extractNums(a[j].Name())
-
-	if numFirst1 != numFirst2 {
-		return i < j
-	}
-
-	if numFirst1 {
-		if nums1[0] != nums2[0] {
-			return nums1[0] < nums2[0]
-		}
-		nums1 = nums1[1:]
-		nums2 = nums2[1:]
-	}
-
-	for k := 0; k < len(nums1) && k < len(nums2); k++ {
-		if rest1[k] != rest2[k] {
-			return i < j
-		}
-		if nums1[k] != nums2[k] {
-			return nums1[k] < nums2[k]
-		}
-	}
-
-	return i < j
-}
-
 func getFilesSorted(path string) []*File {
 	fi, err := readdir(path)
 	if err != nil {
@@ -99,20 +32,57 @@ func getFilesSorted(path string) []*File {
 
 	switch gOpts.sortby {
 	case "name":
-		sort.Sort(ByName(fi))
+		sortFilesStable(fi, func(i, j int) bool {
+			return strings.EqualFold(fi[i].Name(), fi[j].Name())
+		})
 	case "size":
-		sort.Sort(BySize(fi))
+		sortFilesStable(fi, func(i, j int) bool {
+			return fi[i].Size() < fi[j].Size()
+		})
 	case "time":
-		sort.Sort(ByTime(fi))
+		sortFilesStable(fi, func(i, j int) bool {
+			return fi[i].ModTime().Before(fi[j].ModTime())
+		})
 	default:
 		log.Printf("unknown sorting type: %s", gOpts.sortby)
 	}
 
 	if gOpts.dirfirst {
-		sort.Stable(ByDir(fi))
+		sortFilesStable(fi, func(i, j int) bool {
+			if fi[i].IsDir() == fi[j].IsDir() {
+				return i < j
+			}
+			return fi[i].IsDir()
+		})
 	}
 	//TODO this should be optional
-	sort.Stable(ByNum(fi))
+	sortFilesStable(fi, func(i, j int) bool {
+		nums1, rest1, numFirst1 := extractNums(fi[i].Name())
+		nums2, rest2, numFirst2 := extractNums(fi[j].Name())
+
+		if numFirst1 != numFirst2 {
+			return i < j
+		}
+
+		if numFirst1 {
+			if nums1[0] != nums2[0] {
+				return nums1[0] < nums2[0]
+			}
+			nums1 = nums1[1:]
+			nums2 = nums2[1:]
+		}
+
+		for k := 0; k < len(nums1) && k < len(nums2); k++ {
+			if rest1[k] != rest2[k] {
+				return i < j
+			}
+			if nums1[k] != nums2[k] {
+				return nums1[k] < nums2[k]
+			}
+		}
+
+		return i < j
+	})
 
 	return fi
 }
