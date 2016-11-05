@@ -20,6 +20,7 @@ var (
 )
 
 var (
+	gClientId      int
 	gLastDirPath   string
 	gSelectionPath string
 	gSocketPath    string
@@ -50,8 +51,13 @@ func init() {
 
 	gSocketPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.sock", envUser))
 
-	// TODO: unique log file for each client
-	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.log", envUser))
+	gClientId = 1000
+	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientId))
+	for _, err := os.Stat(gLogPath); err == nil; _, err = os.Stat(gLogPath) {
+		gClientId++
+		gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientId))
+	}
+
 	gServerLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))
 
 	gConfigPath = filepath.Join(envConfig, "lf", "lfrc")
