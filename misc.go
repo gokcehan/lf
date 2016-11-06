@@ -5,6 +5,7 @@ import (
 	"log"
 	"path/filepath"
 	"strconv"
+	"strings"
 	"unicode"
 	"unicode/utf8"
 
@@ -47,6 +48,23 @@ func runeSliceWidthRange(rs []rune, beg int, end int) []rune {
 		curr += w
 	}
 	return nil
+}
+
+// This function splits the first word of a string delimited by whitespace from
+// the rest. This is used to tokenize a string one by one without touching the
+// rest. Whitespace on the left side of both the word and the rest are trimmed.
+func splitWord(s string) (word, rest string) {
+	s = strings.TrimLeftFunc(s, unicode.IsSpace)
+	ind := len(s)
+	for i, c := range s {
+		if unicode.IsSpace(c) {
+			ind = i
+			break
+		}
+	}
+	word = s[0:ind]
+	rest = strings.TrimLeftFunc(s[ind:], unicode.IsSpace)
+	return
 }
 
 // This function converts a size in bytes to a human readable form. For this

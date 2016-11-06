@@ -91,6 +91,30 @@ func TestRuneSliceWidthRange(t *testing.T) {
 	}
 }
 
+func TestSplitWord(t *testing.T) {
+	strs := []struct {
+		s    string
+		word string
+		rest string
+	}{
+		{"", "", ""},
+		{"foo", "foo", ""},
+		{"  foo", "foo", ""},
+		{"foo  ", "foo", ""},
+		{"  foo  ", "foo", ""},
+		{"foo bar baz", "foo", "bar baz"},
+		{"  foo bar baz", "foo", "bar baz"},
+		{"foo   bar baz", "foo", "bar baz"},
+		{"  foo   bar baz", "foo", "bar baz"},
+	}
+
+	for _, str := range strs {
+		if w, r := splitWord(str.s); w != str.word || r != str.rest {
+			t.Errorf("at input '%s' expected '%s' and '%s' but got '%s' and '%s'", str.s, str.word, str.rest, w, r)
+		}
+	}
+}
+
 func TestHumanize(t *testing.T) {
 	nums := []struct {
 		i int64

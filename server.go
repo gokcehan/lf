@@ -6,12 +6,13 @@ import (
 	"log"
 	"net"
 	"os"
+	"strconv"
 )
 
 var (
 	gKeepFile bool
 	gFileList []string
-	gConnList []net.Conn
+	gConnList map[int]net.Conn
 )
 
 func serve() {
@@ -27,8 +28,11 @@ func serve() {
 	l, err := net.Listen("unix", gSocketPath)
 	if err != nil {
 		log.Printf("listening socket: %s", err)
+		return
 	}
 	defer l.Close()
+
+	gConnList = make(map[int]net.Conn)
 
 	listen(l)
 }
@@ -47,7 +51,9 @@ func handleConn(c net.Conn) {
 	s := bufio.NewScanner(c)
 
 	for s.Scan() {
-		switch s.Text() {
+		log.Printf("listen: %s", s.Text())
+		word, rest := splitWord(s.Text())
+		switch word {
 		case "save":
 			saveFilesServer(s)
 			log.Printf("listen: save, list: %v, keep: %t", gFileList, gKeepFile)
@@ -55,15 +61,33 @@ func handleConn(c net.Conn) {
 			loadFilesServer(c)
 			log.Printf("listen: load, keep: %t", gKeepFile)
 		case "conn":
-			gConnList = append(gConnList, c)
-			log.Print("listen: conn")
-		case "ping":
-			for _, c := range gConnList {
-				fmt.Fprintln(c, "echo ping from server")
+			if rest != "" {
+				word2, _ := splitWord(rest)
+				id, err := strconv.Atoi(word2)
+				if err != nil {
+					log.Print("listen: conn: client id should be a number")
+				} else {
+					gConnList[id] = c
+				}
+			} else {
+				log.Print("listen: conn: requires a client id")
 			}
-			log.Print("listen: ping")
+		case "send":
+			if rest != "" {
+				word2, rest2 := splitWord(rest)
+				id, err := strconv.Atoi(word2)
+				if err != nil {
+					for _, c := range gConnList {
+						fmt.Fprintln(c, rest)
+					}
+				} else {
+					if c, ok := gConnList[id]; ok {
+						fmt.Fprintln(c, rest2)
+					}
+				}
+			}
 		default:
-			log.Print("listen: unexpected command")
+			log.Printf("listen: unexpected command: %s", word)
 		}
 	}
 

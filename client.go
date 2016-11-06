@@ -61,11 +61,11 @@ func readExpr(c net.Conn) chan Expr {
 	ch := make(chan Expr)
 
 	go func() {
-		fmt.Fprintln(c, "conn")
+		fmt.Fprintf(c, "conn %d\n", gClientId)
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {
-			log.Printf("reading expression: %s", s.Text())
+			log.Printf("recv: %s", s.Text())
 			p := newParser(strings.NewReader(s.Text()))
 			if p.parse() {
 				ch <- p.expr
