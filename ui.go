@@ -380,8 +380,6 @@ func newUI() *UI {
 }
 
 func (ui *UI) renew() {
-	termbox.Flush()
-
 	wtot, htot := termbox.Size()
 
 	widths := getWidths(wtot)
