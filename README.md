@@ -32,7 +32,6 @@ since it is better if they are handled by external tools.
 - Tabs or windows (handled by the window manager or the terminal multiplexer)
 - Built-in pager (handled by your pager of choice)
 - Image previews (cool but no standard available)
-- Periodic refresh (use explicit renew instead)
 
 ## May-Futures
 
