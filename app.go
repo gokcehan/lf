@@ -54,13 +54,16 @@ func waitKey() error {
 func (app *App) handleInp() {
 	clientChan := app.ui.readExpr(app)
 
+	var serverChan chan Expr
+
 	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {
 		msg := fmt.Sprintf("connecting server: %s", err)
 		app.ui.message = msg
 		log.Printf(msg)
+	} else {
+		serverChan = readExpr(c)
 	}
-	serverChan := readExpr(c)
 
 	for {
 		select {
