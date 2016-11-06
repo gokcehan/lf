@@ -6,6 +6,7 @@ import (
 	"net"
 	"os"
 	"os/exec"
+	"strconv"
 	"strings"
 )
 
@@ -116,6 +117,8 @@ func (app *App) exportVars() {
 	} else {
 		os.Setenv("fx", envFiles)
 	}
+
+	os.Setenv("id", strconv.Itoa(gClientId))
 }
 
 // This function is used to run a command in shell. Following modes are used:
