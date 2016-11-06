@@ -8,6 +8,9 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"unicode"
+
+	"github.com/nsf/termbox-go"
 )
 
 type App struct {
@@ -52,8 +55,134 @@ func waitKey() error {
 	return nil
 }
 
+func (app *App) readExpr() chan MultiExpr {
+	ch := make(chan MultiExpr)
+
+	renew := &CallExpr{"renew", nil}
+	count := 1
+
+	var acc []rune
+	var cnt []rune
+
+	go func() {
+		for {
+			switch ev := app.ui.pollEvent(); ev.Type {
+			case termbox.EventKey:
+				if ev.Ch != 0 {
+					switch {
+					case ev.Ch == '<':
+						acc = append(acc, '<', 'l', 't', '>')
+					case ev.Ch == '>':
+						acc = append(acc, '<', 'g', 't', '>')
+					// Interpret digits as command count but only do this for
+					// digits preceding any non-digit characters
+					// (e.g. "42y2k" as 42 times "y2k").
+					case unicode.IsDigit(ev.Ch) && len(acc) == 0:
+						cnt = append(cnt, ev.Ch)
+					default:
+						acc = append(acc, ev.Ch)
+					}
+				} else {
+					val := gKeyVal[ev.Key]
+					if string(val) == "<esc>" {
+						ch <- MultiExpr{renew, 1}
+						acc = nil
+						cnt = nil
+					}
+					acc = append(acc, val...)
+				}
+
+				binds, ok := findBinds(gOpts.keys, string(acc))
+
+				switch len(binds) {
+				case 0:
+					app.ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
+					ch <- MultiExpr{renew, 1}
+					acc = nil
+					cnt = nil
+				case 1:
+					if ok {
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
+						}
+						expr := gOpts.keys[string(acc)]
+						switch expr.(type) {
+						case *CallExpr:
+							switch expr.(*CallExpr).name {
+							case "read",
+								"read-shell",
+								"read-shell-wait",
+								"read-shell-async",
+								"push":
+								expr.eval(app, nil)
+								app.ui.draw(app.nav)
+							default:
+								ch <- MultiExpr{expr, count}
+							}
+						default:
+							ch <- MultiExpr{expr, count}
+						}
+						acc = nil
+						cnt = nil
+					}
+					if len(acc) > 0 {
+						app.ui.listBinds(binds)
+					}
+				default:
+					if ok {
+						// TODO: use a delay
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
+						}
+						expr := gOpts.keys[string(acc)]
+						switch expr.(type) {
+						case *CallExpr:
+							switch expr.(*CallExpr).name {
+							case "read",
+								"read-shell",
+								"read-shell-wait",
+								"read-shell-async",
+								"push":
+								expr.eval(app, nil)
+								app.ui.draw(app.nav)
+							default:
+								ch <- MultiExpr{expr, count}
+							}
+						default:
+							ch <- MultiExpr{expr, count}
+						}
+						acc = nil
+						cnt = nil
+					}
+					if len(acc) > 0 {
+						app.ui.listBinds(binds)
+					}
+				}
+			case termbox.EventResize:
+				ch <- MultiExpr{renew, 1}
+			default:
+				// TODO: handle other events
+			}
+		}
+	}()
+
+	return ch
+}
+
 func (app *App) handleInp() {
-	clientChan := app.ui.readExpr(app)
+	clientChan := app.readExpr()
 
 	var serverChan chan Expr
 
