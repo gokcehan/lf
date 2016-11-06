@@ -55,6 +55,10 @@ func waitKey() error {
 	return nil
 }
 
+// This function is used to read expressions on the client side. Prompting
+// commands (e.g. "read") are recognized and evaluated while being read here.
+// Digits are interpreted as command counts but this is only done for digits
+// preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (app *App) readExpr() chan MultiExpr {
 	ch := make(chan MultiExpr)
 
@@ -74,9 +78,6 @@ func (app *App) readExpr() chan MultiExpr {
 						acc = append(acc, '<', 'l', 't', '>')
 					case ev.Ch == '>':
 						acc = append(acc, '<', 'g', 't', '>')
-					// Interpret digits as command count but only do this for
-					// digits preceding any non-digit characters
-					// (e.g. "42y2k" as 42 times "y2k").
 					case unicode.IsDigit(ev.Ch) && len(acc) == 0:
 						cnt = append(cnt, ev.Ch)
 					default:
@@ -181,6 +182,10 @@ func (app *App) readExpr() chan MultiExpr {
 	return ch
 }
 
+// This is the main event loop of the application. There are two channels to
+// read expressions from client and server. Reading and evaluation are done on
+// different goroutines except for prompting commands (e.g. "read"). Quitting
+// commands should create separate goroutines to prevent deadlock here.
 func (app *App) handleInp() {
 	clientChan := app.readExpr()
 
