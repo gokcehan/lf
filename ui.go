@@ -667,13 +667,15 @@ func (ui *UI) readExpr(app *App) chan MultiExpr {
 						expr := gOpts.keys[string(acc)]
 						switch expr.(type) {
 						case *CallExpr:
-							if expr.(*CallExpr).name == "read" ||
-								expr.(*CallExpr).name == "read-shell" ||
-								expr.(*CallExpr).name == "read-shell-wait" ||
-								expr.(*CallExpr).name == "read-shell-async" {
+							switch expr.(*CallExpr).name {
+							case "read",
+								"read-shell",
+								"read-shell-wait",
+								"read-shell-async",
+								"push":
 								expr.eval(app, nil)
 								ui.draw(app.nav)
-							} else {
+							default:
 								ch <- MultiExpr{expr, count}
 							}
 						default:
