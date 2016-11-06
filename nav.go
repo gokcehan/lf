@@ -420,14 +420,14 @@ func (nav *Nav) invert() {
 	}
 }
 
-func (nav *Nav) save(keep bool) error {
+func (nav *Nav) save(copy bool) error {
 	if len(nav.marks) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
 			return errors.New("no file selected")
 		}
 
-		if err := saveFiles([]string{curr.Path}, keep); err != nil {
+		if err := saveFiles([]string{curr.Path}, copy); err != nil {
 			return err
 		}
 	} else {
@@ -436,7 +436,7 @@ func (nav *Nav) save(keep bool) error {
 			fs = append(fs, f)
 		}
 
-		if err := saveFiles(fs, keep); err != nil {
+		if err := saveFiles(fs, copy); err != nil {
 			return err
 		}
 	}
@@ -445,7 +445,7 @@ func (nav *Nav) save(keep bool) error {
 }
 
 func (nav *Nav) put() error {
-	list, keep, err := loadFiles()
+	list, copy, err := loadFiles()
 	if err != nil {
 		return err
 	}
@@ -459,7 +459,7 @@ func (nav *Nav) put() error {
 	var args []string
 
 	var sh string
-	if keep {
+	if copy {
 		sh = "cp"
 		args = append(args, "-r")
 	} else {

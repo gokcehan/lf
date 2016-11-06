@@ -7,10 +7,11 @@ import (
 	"net"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
-	gKeepFile bool
+	gCopyFile bool
 	gFileList []string
 	gConnList map[int]net.Conn
 )
@@ -55,11 +56,24 @@ func handleConn(c net.Conn) {
 		word, rest := splitWord(s.Text())
 		switch word {
 		case "save":
-			saveFilesServer(s)
-			log.Printf("listen: save, list: %v, keep: %t", gFileList, gKeepFile)
+			word2, rest2 := splitWord(rest)
+			switch word2 {
+			case "copy":
+				gCopyFile = true
+			case "move":
+				gCopyFile = false
+			default:
+				log.Printf("unexpected option to copy file(s): %s", word2)
+				break
+			}
+			gFileList = strings.Split(rest2, ":")
 		case "load":
-			loadFilesServer(c)
-			log.Printf("listen: load, keep: %t", gKeepFile)
+			if gCopyFile {
+				fmt.Fprint(c, "copy ")
+			} else {
+				fmt.Fprint(c, "move ")
+			}
+			fmt.Fprintln(c, strings.Join(gFileList, ":"))
 		case "conn":
 			if rest != "" {
 				word2, _ := splitWord(rest)
@@ -91,40 +105,8 @@ func handleConn(c net.Conn) {
 		}
 	}
 
-	c.Close()
-}
-
-func saveFilesServer(s *bufio.Scanner) {
-	switch s.Scan(); s.Text() {
-	case "keep":
-		gKeepFile = true
-	case "move":
-		gKeepFile = false
-	default:
-		log.Printf("unexpected option to keep file(s): %s", s.Text())
-		return
-	}
-
-	gFileList = nil
-	for s.Scan() {
-		gFileList = append(gFileList, s.Text())
-	}
-
 	if s.Err() != nil {
-		log.Printf("scanning: %s", s.Err())
-		return
-	}
-}
-
-func loadFilesServer(c net.Conn) {
-	if gKeepFile {
-		fmt.Fprintln(c, "keep")
-	} else {
-		fmt.Fprintln(c, "move")
-	}
-
-	for _, f := range gFileList {
-		fmt.Fprintln(c, f)
+		log.Printf("listening: %s", s.Err())
 	}
 
 	c.Close()

@@ -78,7 +78,7 @@ func readExpr(c net.Conn) chan Expr {
 	return ch
 }
 
-func saveFiles(list []string, keep bool) error {
+func saveFiles(list []string, copy bool) error {
 	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {
 		return fmt.Errorf("dialing to save files: %s", err)
@@ -87,22 +87,20 @@ func saveFiles(list []string, keep bool) error {
 
 	log.Printf("saving files: %v", list)
 
-	fmt.Fprintln(c, "save")
+	fmt.Fprint(c, "save ")
 
-	if keep {
-		fmt.Fprintln(c, "keep")
+	if copy {
+		fmt.Fprint(c, "copy ")
 	} else {
-		fmt.Fprintln(c, "move")
+		fmt.Fprint(c, "move ")
 	}
 
-	for _, f := range list {
-		fmt.Fprintln(c, f)
-	}
+	fmt.Fprintln(c, strings.Join(list, ":"))
 
 	return nil
 }
 
-func loadFiles() (list []string, keep bool, err error) {
+func loadFiles() (list []string, copy bool, err error) {
 	c, e := net.Dial("unix", gSocketPath)
 	if e != nil {
 		err = fmt.Errorf("dialing to load files: %s", e)
@@ -114,19 +112,22 @@ func loadFiles() (list []string, keep bool, err error) {
 
 	s := bufio.NewScanner(c)
 
-	switch s.Scan(); s.Text() {
-	case "keep":
-		keep = true
+	s.Scan()
+
+	word, rest := splitWord(s.Text())
+	log.Printf("load: %s", s.Text())
+
+	switch word {
+	case "copy":
+		copy = true
 	case "move":
-		keep = false
+		copy = false
 	default:
-		err = fmt.Errorf("unexpected option to keep file(s): %s", s.Text())
+		err = fmt.Errorf("unexpected option to copy file(s): %s", word)
 		return
 	}
 
-	for s.Scan() {
-		list = append(list, s.Text())
-	}
+	list = strings.Split(rest, ":")
 
 	if s.Err() != nil {
 		err = fmt.Errorf("scanning file list: %s", s.Err())
