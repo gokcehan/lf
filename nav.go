@@ -444,7 +444,7 @@ func (nav *Nav) save(keep bool) error {
 	return nil
 }
 
-func (nav *Nav) paste() error {
+func (nav *Nav) put() error {
 	list, keep, err := loadFiles()
 	if err != nil {
 		return err

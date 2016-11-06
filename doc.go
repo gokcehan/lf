@@ -33,7 +33,7 @@ The following commands are provided by lf with default keybindings.
     invert            (default "v")
     yank              (default "y")
     delete            (default "d")
-    paste             (default "p")
+    put               (default "p")
     renew             (default "<c-l>")
 
 The following commands are provided by lf without default keybindings.
@@ -181,11 +181,11 @@ File Operations
 lf uses the underlying "cp" and "mv" shell commands for file operations. For
 this purpose, when you "yank" (i.e. copy) a file, it doesn't actually copy the
 file on the disk, but only records its name to memory. The actual file
-operation takes place when you do the "paste" in which case the "cp" command is
+operation takes place when you do the "put" in which case the "cp" command is
 used. Similarly the "mv" command is used for "delete" (i.e. cut or kill)
-followed by "paste". These traditional names (e.g. "yank" and "delete") are
-picked instead of the other common convention (e.g. copy and cut) to resemble
-the default keybinds for these operations.
+followed by "put". These traditional names (e.g. "yank", "delete", and "put")
+are picked instead of the other common convention (e.g. copy and cut) to
+resemble the default keybinds for these operations.
 
 Opening Files
 

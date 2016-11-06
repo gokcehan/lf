@@ -35,7 +35,7 @@ var (
 		"invert",
 		"yank",
 		"delete",
-		"paste",
+		"put",
 		"renew",
 		"echo",
 		"cd",

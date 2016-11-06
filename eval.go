@@ -309,9 +309,9 @@ func (e *CallExpr) eval(app *App, args []string) {
 			app.ui.message = fmt.Sprintf("%d files saved for move", len(app.nav.marks))
 		}
 		app.nav.marks = make(map[string]bool)
-	case "paste":
-		if err := app.nav.paste(); err != nil {
-			msg := fmt.Sprintf("paste: %s", err)
+	case "put":
+		if err := app.nav.put(); err != nil {
+			msg := fmt.Sprintf("put: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
 			return
