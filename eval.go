@@ -107,6 +107,7 @@ func (e *SetExpr) eval(app *App, args []string) {
 		}
 		gOpts.ratios = rats
 		app.ui = newUI()
+		app.ui.loadFile(app.nav)
 	default:
 		msg := fmt.Sprintf("unknown option: %s", e.opt)
 		app.ui.message = msg
