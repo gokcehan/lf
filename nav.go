@@ -217,6 +217,7 @@ type Nav struct {
 	poss   map[string]int
 	names  map[string]string
 	marks  map[string]bool
+	saves  map[string]bool
 	height int
 }
 
@@ -257,6 +258,7 @@ func newNav(height int) *Nav {
 		poss:   make(map[string]int),
 		names:  make(map[string]string),
 		marks:  make(map[string]bool),
+		saves:  make(map[string]bool),
 		height: height,
 	}
 }
@@ -430,6 +432,9 @@ func (nav *Nav) save(copy bool) error {
 		if err := saveFiles([]string{curr.Path}, copy); err != nil {
 			return err
 		}
+
+		nav.saves = make(map[string]bool)
+		nav.saves[curr.Path] = copy
 	} else {
 		var fs []string
 		for f := range nav.marks {
@@ -438,6 +443,11 @@ func (nav *Nav) save(copy bool) error {
 
 		if err := saveFiles(fs, copy); err != nil {
 			return err
+		}
+
+		nav.saves = make(map[string]bool)
+		for f := range nav.marks {
+			nav.saves[f] = copy
 		}
 	}
 

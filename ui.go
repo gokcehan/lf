@@ -215,7 +215,7 @@ func (win *Win) printl(x, y int, fg, bg termbox.Attribute, s string) {
 	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
 }
 
-func (win *Win) printd(dir *Dir, marks map[string]bool) {
+func (win *Win) printd(dir *Dir, marks, saves map[string]bool) {
 	if win.w < 3 {
 		return
 	}
@@ -264,6 +264,12 @@ func (win *Win) printd(dir *Dir, marks map[string]bool) {
 
 		if marks[path] {
 			win.print(0, i, fg, termbox.ColorMagenta, " ")
+		} else if copy, ok := saves[path]; ok {
+			if copy {
+				win.print(0, i, fg, termbox.ColorYellow, " ")
+			} else {
+				win.print(0, i, fg, termbox.ColorRed, " ")
+			}
 		}
 
 		if i == dir.pos {
@@ -504,7 +510,7 @@ func (ui *UI) draw(nav *Nav) {
 
 	doff = len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks)
+		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks, nav.saves)
 	}
 
 	defer ui.msgwin.print(0, 0, fg, bg, ui.message)
@@ -518,7 +524,7 @@ func (ui *UI) draw(nav *Nav) {
 		preview := ui.wins[len(ui.wins)-1]
 
 		if f.IsDir() {
-			preview.printd(ui.dirprev, nav.marks)
+			preview.printd(ui.dirprev, nav.marks, nav.saves)
 		} else if f.Mode().IsRegular() {
 			preview.printr(ui.regprev)
 		}

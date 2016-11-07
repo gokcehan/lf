@@ -318,6 +318,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 		}
 		app.nav.renew(app.nav.height)
 		app.nav.save(false)
+		app.nav.saves = make(map[string]bool)
 		saveFiles(nil, false)
 	case "renew":
 		app.ui.sync()
