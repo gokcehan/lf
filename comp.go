@@ -37,6 +37,7 @@ var (
 		"delete",
 		"put",
 		"renew",
+		"sync",
 		"echo",
 		"cd",
 		"push",
