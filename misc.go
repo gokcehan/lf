@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"sort"
 	"strconv"
 	"strings"
 	"unicode"
@@ -155,6 +156,22 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+type filesSortable struct {
+	files []*File
+	less  func(i, j int) bool
+}
+
+func (f filesSortable) Len() int { return len(f.files) }
+
+func (f filesSortable) Swap(i, j int) { f.files[i], f.files[j] = f.files[j], f.files[i] }
+
+func (f filesSortable) Less(i, j int) bool { return f.less(i, j) }
+
+// TODO: Replace with `sort.SliceStable` once available
+func sortFilesStable(files []*File, less func(i, j int) bool) {
+	sort.Stable(filesSortable{files: files, less: less})
 }
 
 // We don't need no generic code
