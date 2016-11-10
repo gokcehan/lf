@@ -33,7 +33,7 @@ func getFilesSorted(path string) []*File {
 	switch gOpts.sortby {
 	case "name":
 		sortFilesStable(fi, func(i, j int) bool {
-			return strings.EqualFold(fi[i].Name(), fi[j].Name())
+			return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
 		})
 	case "size":
 		sortFilesStable(fi, func(i, j int) bool {
