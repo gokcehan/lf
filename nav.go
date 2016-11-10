@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"sort"
 	"strings"
 )
 
@@ -22,6 +23,20 @@ type File struct {
 	os.FileInfo
 	LinkState LinkState
 	Path      string
+}
+
+type FilesSortable struct {
+	files []*File
+	less  func(i, j int) bool
+}
+
+func (f FilesSortable) Len() int           { return len(f.files) }
+func (f FilesSortable) Swap(i, j int)      { f.files[i], f.files[j] = f.files[j], f.files[i] }
+func (f FilesSortable) Less(i, j int) bool { return f.less(i, j) }
+
+// TODO: Replace with `sort.SliceStable` once available
+func sortFilesStable(files []*File, less func(i, j int) bool) {
+	sort.Stable(FilesSortable{files: files, less: less})
 }
 
 func getFilesSorted(path string) []*File {
