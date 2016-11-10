@@ -297,6 +297,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 			app.ui.message = fmt.Sprintf("%d files saved for copy", len(app.nav.marks))
 		}
 		app.nav.marks = make(map[string]bool)
+		if err := sendServer("send sync"); err != nil {
+			msg := fmt.Sprintf("yank: %s", err)
+			app.ui.message = msg
+			log.Printf(msg)
+		}
 	case "delete":
 		if err := app.nav.save(false); err != nil {
 			msg := fmt.Sprintf("delete: %s", err)
@@ -310,6 +315,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 			app.ui.message = fmt.Sprintf("%d files saved for move", len(app.nav.marks))
 		}
 		app.nav.marks = make(map[string]bool)
+		if err := sendServer("send sync"); err != nil {
+			msg := fmt.Sprintf("delete: %s", err)
+			app.ui.message = msg
+			log.Printf(msg)
+		}
 	case "put":
 		if err := app.nav.put(); err != nil {
 			msg := fmt.Sprintf("put: %s", err)

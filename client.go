@@ -138,3 +138,15 @@ func loadFiles() (list []string, copy bool, err error) {
 
 	return
 }
+
+func sendServer(cmd string) error {
+	c, err := net.Dial("unix", gSocketPath)
+	if err != nil {
+		return fmt.Errorf("dialing to send server: %s", err)
+	}
+	defer c.Close()
+
+	fmt.Fprintln(c, "send sync")
+
+	return nil
+}
