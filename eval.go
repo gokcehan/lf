@@ -84,8 +84,8 @@ func (e *SetExpr) eval(app *App, args []string) {
 		}
 		gOpts.showinfo = e.val
 	case "sortby":
-		if e.val != "name" && e.val != "size" && e.val != "time" {
-			msg := "sortby should either be 'name', 'size' or 'time'"
+		if e.val != "name" && e.val != "natural" && e.val != "size" && e.val != "time" {
+			msg := "sortby should either be 'name', 'natural', 'size' or 'time'"
 			app.ui.message = msg
 			log.Print(msg)
 			return

@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"unicode"
 	"unicode/utf8"
@@ -101,46 +99,94 @@ func humanize(size int64) string {
 	return ""
 }
 
-// This function extracts numbers from a string and returns with the rest.
-// It is used for numeric sorting of files when the file name consists of
-// both digits and letters.
+// naturalLess sorts strings in natural order.
+// This means that e.g. "abc2" < "abc12".
 //
-// For instance if your input is 'foo123bar456' you get a slice of number
-// consisting of elements '123' and '456' and rest of the string as a slice
-// consisting of elements 'foo' and 'bar'. The last return argument denotes
-// whether or not the first partition is a number.
-func extractNums(s string) (nums []int, rest []string, numFirst bool) {
-	var buf []rune
+// Non-digit sequences and numbers are compared separately. The former are
+// compared bytewise, while the latter are compared numerically (except that
+// the number of leading zeros is used as a tie-breaker, so e.g. "2" < "02")
+//
+// Based on NaturalLess function by Frits van Bommel
+// https://github.com/fvbommel/util/blob/master/sortorder/natsort.go
+func naturalLess(s1, s2 string) bool {
+	s1, s2 = strings.ToLower(s1), strings.ToLower(s2)
 
-	r, _ := utf8.DecodeRuneInString(s)
-	digit := unicode.IsDigit(r)
-	numFirst = digit
+	for len(s1) > 0 && len(s2) > 0 {
+		r1, size1 := utf8.DecodeRuneInString(s1)
+		r2, size2 := utf8.DecodeRuneInString(s2)
 
-	for i, c := range s {
-		if unicode.IsDigit(c) == digit {
-			buf = append(buf, c)
-			if i != len(s)-1 {
-				continue
+		dig1, dig2 := unicode.IsDigit(r1), unicode.IsDigit(r2)
+
+		switch {
+		case dig1 != dig2: // Digits before other characters.
+			return dig1 // True if LHS is a digit, false if RHS is one.
+		case !dig1: // && !dig2, becuase dig1 == dig2
+			// UTF-8 compares bytewise-lexicographically, no need to decode
+			// codepoints.
+			if r1 != r2 {
+				return r1 < r2
+			}
+			s1 = s1[size1:]
+			s2 = s2[size2:]
+		default: // Digits
+			// Eat zeros.
+			var nonZero1, nonZero2 int
+			for len(s1) > 0 {
+				r1, size := utf8.DecodeRuneInString(s1)
+				if r1 != '0' {
+					break
+				}
+				s1 = s1[size:]
+				nonZero1 += size
+			}
+			for len(s2) > 0 {
+				r2, size := utf8.DecodeRuneInString(s2)
+				if r2 != '0' {
+					break
+				}
+				s2 = s2[size:]
+				nonZero2 += size
+			}
+			// Eat all digits.
+			var len1, len2 int
+			s1a, s2a := s1, s2
+			for len(s1) > 0 {
+				r1, size := utf8.DecodeRuneInString(s1)
+				if !unicode.IsDigit(r1) {
+					break
+				}
+				s1 = s1[size:]
+				len1 += size
+			}
+			for len(s2) > 0 {
+				r2, size := utf8.DecodeRuneInString(s2)
+				if !unicode.IsDigit(r2) {
+					break
+				}
+				s2 = s2[size:]
+				len2 += size
+			}
+			// If lengths of numbers with non-zero prefix differ, the shorter
+			// one is less.
+			if len1 != len2 {
+				return len1 < len2
+			}
+			// If they're not equal, string comparison is correct.
+			if nr1, nr2 := s1a[:len1], s2a[:len2]; nr1 != nr2 {
+				return nr1 < nr2
+			}
+			// Otherwise, the one with less zeros is less.
+			// Because everything up to the number is equal, comparing the index
+			// after the zeros is sufficient.
+			if nonZero1 != nonZero2 {
+				return nonZero1 < nonZero2
 			}
 		}
-
-		if digit {
-			i, err := strconv.Atoi(string(buf))
-			if err != nil {
-				// TODO: handle error
-				log.Printf("extracting numbers: %s", err)
-			}
-			nums = append(nums, i)
-		} else {
-			rest = append(rest, string(buf))
-		}
-
-		buf = nil
-		buf = append(buf, c)
-		digit = !digit
+		// They're identical so far, so continue comparing.
 	}
-
-	return
+	// So far they are identical. At least one is ended. If the other continues,
+	// it sorts last.
+	return len(s1) < len(s2)
 }
 
 func min(a, b int) int {
