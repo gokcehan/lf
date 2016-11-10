@@ -461,6 +461,20 @@ func (nav *Nav) put() error {
 	return nil
 }
 
+func (nav *Nav) sync() error {
+	list, copy, err := loadFiles()
+	if err != nil {
+		return err
+	}
+
+	nav.saves = make(map[string]bool)
+	for _, f := range list {
+		nav.saves[f] = copy
+	}
+
+	return nil
+}
+
 func (nav *Nav) currDir() *Dir {
 	return nav.dirs[len(nav.dirs)-1]
 }

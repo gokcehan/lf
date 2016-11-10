@@ -30,6 +30,12 @@ func client() {
 
 	app.ui.loadFile(app.nav)
 
+	if err := app.nav.sync(); err != nil {
+		msg := fmt.Sprintf("sync: %s", err)
+		app.ui.message = msg
+		log.Printf(msg)
+	}
+
 	if _, err := os.Stat(gConfigPath); err == nil {
 		log.Printf("reading configuration file: %s", gConfigPath)
 

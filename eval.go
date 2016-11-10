@@ -336,16 +336,10 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.ui.renew()
 		app.nav.renew(app.ui.wins[0].h)
 	case "sync":
-		list, copy, err := loadFiles()
-		if err != nil {
+		if err := app.nav.sync(); err != nil {
 			msg := fmt.Sprintf("sync: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
-			return
-		}
-		app.nav.saves = make(map[string]bool)
-		for _, f := range list {
-			app.nav.saves[f] = copy
 		}
 	case "echo":
 		app.ui.message = strings.Join(e.args, " ")
