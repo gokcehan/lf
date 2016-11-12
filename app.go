@@ -122,6 +122,7 @@ func (app *App) readExpr() chan MultiExpr {
 								"read-shell-async",
 								"push":
 								expr.eval(app, nil)
+								app.ui.loadFile(app.nav)
 								app.ui.draw(app.nav)
 							default:
 								ch <- MultiExpr{expr, count}
@@ -157,6 +158,7 @@ func (app *App) readExpr() chan MultiExpr {
 								"read-shell-async",
 								"push":
 								expr.eval(app, nil)
+								app.ui.loadFile(app.nav)
 								app.ui.draw(app.nav)
 							default:
 								ch <- MultiExpr{expr, count}

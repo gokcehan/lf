@@ -364,9 +364,7 @@ func (e *ExecExpr) eval(app *App, args []string) {
 	switch e.pref {
 	case "$":
 		log.Printf("shell: %s -- %s", e, args)
-		app.ui.clearMsg()
 		app.runShell(e.expr, args, false, false)
-		app.ui.loadFile(app.nav)
 	case "!":
 		log.Printf("shell-wait: %s -- %s", e, args)
 		app.runShell(e.expr, args, true, false)
