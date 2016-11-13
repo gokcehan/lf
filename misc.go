@@ -9,17 +9,17 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"golang.org/x/text/width"
+	"github.com/mattn/go-runewidth"
 )
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
 
 func runeWidth(r rune) int {
-	k := width.LookupRune(r).Kind()
-	if k == width.EastAsianFullwidth || k == width.EastAsianWide {
-		return 2
+	w := runewidth.RuneWidth(r)
+	if w == 0 || (w == 2 && runewidth.IsAmbiguousWidth(r)) {
+		w = 1
 	}
-	return 1
+	return w
 }
 
 func runeSliceWidth(rs []rune) int {
