@@ -120,6 +120,8 @@ func (app *App) readExpr() chan MultiExpr {
 								"read-shell",
 								"read-shell-wait",
 								"read-shell-async",
+								"search",
+								"search-back",
 								"push":
 								expr.eval(app, nil)
 								app.ui.loadFile(app.nav)
@@ -156,6 +158,8 @@ func (app *App) readExpr() chan MultiExpr {
 								"read-shell",
 								"read-shell-wait",
 								"read-shell-async",
+								"search",
+								"search-back",
 								"push":
 								expr.eval(app, nil)
 								app.ui.loadFile(app.nav)
