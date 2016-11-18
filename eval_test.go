@@ -108,6 +108,12 @@ var gTests = []struct {
 	},
 
 	{
+		"cmd 世界 $echo 世界",
+		[]string{"cmd", "世界", "$", "echo 世界", "\n"},
+		[]Expr{&CmdExpr{"世界", &ExecExpr{"$", "echo 世界"}}},
+	},
+
+	{
 		"map u usage",
 		[]string{"map", "u", "usage", "\n"},
 		[]Expr{&MapExpr{"u", &CallExpr{"usage", nil}}},
