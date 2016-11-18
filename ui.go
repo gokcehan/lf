@@ -669,8 +669,8 @@ func (ui *UI) prompt(nav *Nav, pref string) string {
 
 			win.printl(0, 0, fg, bg, pref)
 			win.print(len(pref), 0, fg, bg, string(lacc))
-			win.print(len(pref)+len(lacc), 0, fg, bg, string(racc))
-			termbox.SetCursor(win.x+len(pref)+len(lacc), win.y)
+			win.print(len(pref)+runeSliceWidth(lacc), 0, fg, bg, string(racc))
+			termbox.SetCursor(win.x+len(pref)+runeSliceWidth(lacc), win.y)
 			termbox.Flush()
 		default:
 			// TODO: handle other events
