@@ -62,7 +62,6 @@ func newScanner(r io.Reader) *Scanner {
 
 func (s *Scanner) next() {
 	if s.off+1 < len(s.buf) {
-		// TODO: unicode
 		s.off++
 		s.chr = s.buf[s.off]
 		return
@@ -75,7 +74,6 @@ func (s *Scanner) next() {
 
 func (s *Scanner) peek() byte {
 	if s.off+1 < len(s.buf) {
-		// TODO: unicode
 		return s.buf[s.off+1]
 	}
 
