@@ -152,7 +152,7 @@ func sendServer(cmd string) error {
 	}
 	defer c.Close()
 
-	fmt.Fprintln(c, "send sync")
+	fmt.Fprintln(c, cmd)
 
 	return nil
 }
