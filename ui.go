@@ -13,7 +13,6 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
-	"time"
 	"unicode/utf8"
 
 	"github.com/nsf/termbox-go"
@@ -405,7 +404,7 @@ func (ui *UI) loadFile(nav *Nav) {
 		return
 	}
 
-	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(time.ANSIC))
+	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 
 	if !gOpts.preview {
 		return

@@ -11,6 +11,15 @@ import (
 
 func (e *SetExpr) eval(app *App, args []string) {
 	switch e.opt {
+	case "dirfirst":
+		gOpts.dirfirst = true
+		app.nav.renew(app.nav.height)
+	case "nodirfirst":
+		gOpts.dirfirst = false
+		app.nav.renew(app.nav.height)
+	case "dirfirst!":
+		gOpts.dirfirst = !gOpts.dirfirst
+		app.nav.renew(app.nav.height)
 	case "hidden":
 		gOpts.hidden = true
 		app.nav.renew(app.nav.height)
@@ -26,15 +35,6 @@ func (e *SetExpr) eval(app *App, args []string) {
 		gOpts.preview = false
 	case "preview!":
 		gOpts.preview = !gOpts.preview
-	case "dirfirst":
-		gOpts.dirfirst = true
-		app.nav.renew(app.nav.height)
-	case "nodirfirst":
-		gOpts.dirfirst = false
-		app.nav.renew(app.nav.height)
-	case "dirfirst!":
-		gOpts.dirfirst = !gOpts.dirfirst
-		app.nav.renew(app.nav.height)
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -92,6 +92,8 @@ func (e *SetExpr) eval(app *App, args []string) {
 		}
 		gOpts.sortby = e.val
 		app.nav.renew(app.nav.height)
+	case "timefmt":
+		gOpts.timefmt = e.val
 	case "ratios":
 		toks := strings.Split(e.val, ":")
 		var rats []int

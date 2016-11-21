@@ -1,6 +1,9 @@
 package main
 
+import "time"
+
 var gOpts struct {
+	dirfirst  bool
 	hidden    bool
 	preview   bool
 	scrolloff int
@@ -10,13 +13,14 @@ var gOpts struct {
 	shell     string
 	showinfo  string
 	sortby    string
-	dirfirst  bool
+	timefmt   string
 	ratios    []int
 	keys      map[string]Expr
 	cmds      map[string]Expr
 }
 
 func init() {
+	gOpts.dirfirst = true
 	gOpts.hidden = false
 	gOpts.preview = true
 	gOpts.scrolloff = 0
@@ -24,7 +28,7 @@ func init() {
 	gOpts.shell = envShell
 	gOpts.showinfo = "none"
 	gOpts.sortby = "name"
-	gOpts.dirfirst = true
+	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
 
 	gOpts.keys = make(map[string]Expr)

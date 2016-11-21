@@ -44,15 +44,15 @@ var (
 	}
 
 	gOptWords = []string{
+		"dirfirst",
+		"nodirfirst",
+		"dirfirst!",
 		"hidden",
 		"nohidden",
 		"hidden!",
 		"preview",
 		"nopreview",
 		"preview!",
-		"dirfirst",
-		"nodirfirst",
-		"dirfirst!",
 		"scrolloff",
 		"tabstop",
 		"ifs",
@@ -60,6 +60,7 @@ var (
 		"shell",
 		"showinfo",
 		"sortby",
+		"timefmt",
 		"ratios",
 	}
 )

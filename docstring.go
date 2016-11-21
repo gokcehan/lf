@@ -49,9 +49,9 @@ The following commands are provided by lf without default keybindings.
 
 The following options can be used to customize the behavior of lf.
 
+    dirfirst   bool    (default on)
     hidden     bool    (default off)
     preview    bool    (default on)
-    dirfirst   bool    (default on)
     scrolloff  int     (default 0)
     tabstop    int     (default 8)
     ifs        string  (default "") (not exported if empty)
@@ -59,6 +59,7 @@ The following options can be used to customize the behavior of lf.
     shell      string  (default "$SHELL")
     showinfo   string  (default "none")
     sortby     string  (default "name")
+    timefmt    string  (default "Mon Jan _2 15:04:05 2006")
     ratios     string  (default "1:2:3")
 
 The following variables are exported for shell commands.
