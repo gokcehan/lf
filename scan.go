@@ -203,6 +203,15 @@ scan:
 			s.next()
 		}
 		goto scan
+	case s.chr == '\'':
+		s.next()
+		beg := s.off
+		for !s.eof && s.chr != '\'' {
+			s.next()
+		}
+		s.typ = TokenIdent
+		s.tok = string(s.buf[beg:s.off])
+		s.next()
 	case s.chr == ':':
 		s.typ = TokenColon
 		s.tok = ":"
