@@ -42,6 +42,30 @@ var gTests = []struct {
 	},
 
 	{
+		`echo hello\ world`,
+		[]string{"echo", "hello world", "\n"},
+		[]Expr{&CallExpr{"echo", []string{"hello world"}}},
+	},
+
+	{
+		`echo hello\	world`,
+		[]string{"echo", "hello\tworld", "\n"},
+		[]Expr{&CallExpr{"echo", []string{"hello\tworld"}}},
+	},
+
+	{
+		"echo hello\\\nworld",
+		[]string{"echo", "hello\nworld", "\n"},
+		[]Expr{&CallExpr{"echo", []string{"hello\nworld"}}},
+	},
+
+	{
+		`echo hello\aworld`,
+		[]string{"echo", "helloworld", "\n"},
+		[]Expr{&CallExpr{"echo", []string{"helloworld"}}},
+	},
+
+	{
 		"set hidden # trailing comments are allowed",
 		[]string{"set", "hidden", "\n"},
 		[]Expr{&SetExpr{"hidden", ""}},

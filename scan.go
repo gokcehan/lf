@@ -236,13 +236,23 @@ scan:
 		s.cmd = true
 		s.next()
 	default:
-		beg := s.off
+		var buf []byte
 		for !s.eof && !isSpace(s.chr) && s.chr != ';' && s.chr != '#' {
+			if s.chr == '\\' {
+				s.next()
+				if isSpace(s.chr) {
+					buf = append(buf, s.chr)
+					s.next()
+				} else {
+					s.next()
+				}
+			}
+			buf = append(buf, s.chr)
 			s.next()
 		}
 
 		s.typ = TokenIdent
-		s.tok = string(s.buf[beg:s.off])
+		s.tok = string(buf)
 		s.sem = true
 
 		if s.tok == "push" {
