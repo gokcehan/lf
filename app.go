@@ -22,7 +22,7 @@ type App struct {
 func newApp() *App {
 	ui := newUI()
 	nav := newNav(ui.wins[0].h)
-	quit := make(chan bool)
+	quit := make(chan bool, 1)
 
 	return &App{
 		ui:   ui,
@@ -190,8 +190,7 @@ func (app *App) readExpr() chan MultiExpr {
 
 // This is the main event loop of the application. There are two channels to
 // read expressions from client and server. Reading and evaluation are done on
-// different goroutines except for prompting commands (e.g. "read"). Quitting
-// commands should create separate goroutines to prevent deadlock here.
+// different goroutines except for prompting commands (e.g. "read").
 func (app *App) handleInp() {
 	clientChan := app.readExpr()
 

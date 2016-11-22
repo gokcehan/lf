@@ -215,7 +215,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 				log.Printf("writing selection file: %s", err)
 			}
 
-			go func() { app.quit <- true }()
+			app.quit <- true
 
 			return
 		}
@@ -224,7 +224,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			cmd.eval(app, e.args)
 		}
 	case "quit":
-		go func() { app.quit <- true }()
+		app.quit <- true
 	case "bot":
 		app.nav.bot()
 		app.ui.loadFile(app.nav)
