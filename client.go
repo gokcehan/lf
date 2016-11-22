@@ -16,6 +16,7 @@ func client() {
 	if err != nil {
 		panic(err)
 	}
+	defer os.Remove(gLogPath)
 	defer logFile.Close()
 	log.SetOutput(logFile)
 
