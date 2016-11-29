@@ -111,83 +111,84 @@ func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 	for i := 0; i < len(s); i++ {
 		r, w := utf8.DecodeRuneInString(s[i:])
 
-		if r == EscapeCode {
-			i++
-			if s[i] == '[' {
-				j := strings.IndexByte(s[i:], 'm')
+		if r == EscapeCode && i+1 < len(s) && s[i+1] == '[' {
+			j := strings.IndexByte(s[i:min(len(s), i+8)], 'm')
 
-				toks := strings.Split(s[i+1:i+j], ";")
-
-				var nums []int
-				for _, t := range toks {
-					if t == "" {
-						fg = termbox.ColorDefault
-						bg = termbox.ColorDefault
-						break
-					}
-					n, err := strconv.Atoi(t)
-					if err != nil {
-						log.Printf("converting escape code: %s", err)
-						continue
-					}
-					nums = append(nums, n)
-				}
-
-				for _, n := range nums {
-					if 30 <= n && n <= 37 {
-						fg = termbox.ColorDefault
-					}
-					if 40 <= n && n <= 47 {
-						bg = termbox.ColorDefault
-					}
-				}
-
-				for _, n := range nums {
-					switch n {
-					case 1:
-						fg = fg | termbox.AttrBold
-					case 4:
-						fg = fg | termbox.AttrUnderline
-					case 7:
-						fg = fg | termbox.AttrReverse
-					case 30:
-						fg = fg | termbox.ColorBlack
-					case 31:
-						fg = fg | termbox.ColorRed
-					case 32:
-						fg = fg | termbox.ColorGreen
-					case 33:
-						fg = fg | termbox.ColorYellow
-					case 34:
-						fg = fg | termbox.ColorBlue
-					case 35:
-						fg = fg | termbox.ColorMagenta
-					case 36:
-						fg = fg | termbox.ColorCyan
-					case 37:
-						fg = fg | termbox.ColorWhite
-					case 40:
-						bg = bg | termbox.ColorBlack
-					case 41:
-						bg = bg | termbox.ColorRed
-					case 42:
-						bg = bg | termbox.ColorGreen
-					case 43:
-						bg = bg | termbox.ColorYellow
-					case 44:
-						bg = bg | termbox.ColorBlue
-					case 45:
-						bg = bg | termbox.ColorMagenta
-					case 46:
-						bg = bg | termbox.ColorCyan
-					case 47:
-						bg = bg | termbox.ColorWhite
-					}
-				}
-
-				i = i + j
+			if j == -1 {
 				continue
 			}
+
+			toks := strings.Split(s[i+2:i+j], ";")
+
+			var nums []int
+			for _, t := range toks {
+				if t == "" {
+					fg = termbox.ColorDefault
+					bg = termbox.ColorDefault
+					break
+				}
+				n, err := strconv.Atoi(t)
+				if err != nil {
+					log.Printf("converting escape code: %s", err)
+					continue
+				}
+				nums = append(nums, n)
+			}
+
+			for _, n := range nums {
+				if 30 <= n && n <= 37 {
+					fg = termbox.ColorDefault
+				}
+				if 40 <= n && n <= 47 {
+					bg = termbox.ColorDefault
+				}
+			}
+
+			for _, n := range nums {
+				switch n {
+				case 1:
+					fg = fg | termbox.AttrBold
+				case 4:
+					fg = fg | termbox.AttrUnderline
+				case 7:
+					fg = fg | termbox.AttrReverse
+				case 30:
+					fg = fg | termbox.ColorBlack
+				case 31:
+					fg = fg | termbox.ColorRed
+				case 32:
+					fg = fg | termbox.ColorGreen
+				case 33:
+					fg = fg | termbox.ColorYellow
+				case 34:
+					fg = fg | termbox.ColorBlue
+				case 35:
+					fg = fg | termbox.ColorMagenta
+				case 36:
+					fg = fg | termbox.ColorCyan
+				case 37:
+					fg = fg | termbox.ColorWhite
+				case 40:
+					bg = bg | termbox.ColorBlack
+				case 41:
+					bg = bg | termbox.ColorRed
+				case 42:
+					bg = bg | termbox.ColorGreen
+				case 43:
+					bg = bg | termbox.ColorYellow
+				case 44:
+					bg = bg | termbox.ColorBlue
+				case 45:
+					bg = bg | termbox.ColorMagenta
+				case 46:
+					bg = bg | termbox.ColorCyan
+				case 47:
+					bg = bg | termbox.ColorWhite
+				}
+			}
+
+			i += j
+			continue
 		}
 
 		if x >= win.w {
