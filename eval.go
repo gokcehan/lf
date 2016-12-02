@@ -158,21 +158,27 @@ func (e *CallExpr) eval(app *App, args []string) {
 	case "up":
 		app.nav.up(1)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "half-up":
 		app.nav.up(app.nav.height / 2)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "page-up":
 		app.nav.up(app.nav.height)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "down":
 		app.nav.down(1)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "half-down":
 		app.nav.down(app.nav.height / 2)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "page-down":
 		app.nav.down(app.nav.height)
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "updir":
 		if err := app.nav.updir(); err != nil {
 			app.ui.message = err.Error()
@@ -180,10 +186,12 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "open":
 		err := app.nav.open()
 		if err == nil {
 			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 			return
 		}
 		if err != ErrNotDir {
@@ -228,9 +236,11 @@ func (e *CallExpr) eval(app *App, args []string) {
 	case "bot":
 		app.nav.bot()
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "top":
 		app.nav.top()
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "read":
 		s := app.ui.prompt(app.nav, ":")
 		if len(s) == 0 {
@@ -346,6 +356,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			return
 		}
 		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "push":
 		if len(e.args) > 0 {
 			app.ui.keysbuf = append(app.ui.keysbuf, splitKeys(e.args[0])...)

@@ -399,13 +399,20 @@ func (ui *UI) renew() {
 	ui.msgwin.renew(wtot, 1, 0, htot-1)
 }
 
-func (ui *UI) loadFile(nav *Nav) {
+func (ui *UI) loadFileInfo(nav *Nav) {
 	curr, err := nav.currFile()
 	if err != nil {
 		return
 	}
 
 	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
+}
+
+func (ui *UI) loadFile(nav *Nav) {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
 
 	if !gOpts.preview {
 		return
