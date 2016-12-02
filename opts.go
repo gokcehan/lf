@@ -11,7 +11,7 @@ var gOpts struct {
 	ifs       string
 	previewer string
 	shell     string
-	showinfo  string
+	showinfo  []string
 	sortby    string
 	timefmt   string
 	ratios    []int
@@ -26,7 +26,7 @@ func init() {
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.shell = envShell
-	gOpts.showinfo = "none"
+	gOpts.showinfo = nil
 	gOpts.sortby = "name"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
