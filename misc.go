@@ -191,18 +191,15 @@ func extractNums(s string) (nums []int, rest []string, numFirst bool) {
 	digit := unicode.IsDigit(r)
 	numFirst = digit
 
-	for i, c := range s {
+	for _, c := range s {
 		if unicode.IsDigit(c) == digit {
 			buf = append(buf, c)
-			if i != len(s)-1 {
-				continue
-			}
+			continue
 		}
 
 		if digit {
 			i, err := strconv.Atoi(string(buf))
 			if err != nil {
-				// TODO: handle error
 				log.Printf("extracting numbers: %s", err)
 			}
 			nums = append(nums, i)
@@ -213,6 +210,16 @@ func extractNums(s string) (nums []int, rest []string, numFirst bool) {
 		buf = nil
 		buf = append(buf, c)
 		digit = !digit
+	}
+
+	if digit {
+		i, err := strconv.Atoi(string(buf))
+		if err != nil {
+			log.Printf("extracting numbers: %s", err)
+		}
+		nums = append(nums, i)
+	} else {
+		rest = append(rest, string(buf))
 	}
 
 	return

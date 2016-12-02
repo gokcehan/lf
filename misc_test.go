@@ -210,6 +210,8 @@ func TestExtractNums(t *testing.T) {
 	}{
 		{"foo123bar456", []int{123, 456}, []string{"foo", "bar"}, false},
 		{"123foo456bar", []int{123, 456}, []string{"foo", "bar"}, true},
+		{"a-1-1", []int{1, 1}, []string{"a-", "-"}, false},
+		{"a-1-1.", []int{1, 1}, []string{"a-", "-", "."}, false},
 		{"a-1-1.txt", []int{1, 1}, []string{"a-", "-", ".txt"}, false},
 		{"a-1-10.txt", []int{1, 10}, []string{"a-", "-", ".txt"}, false},
 		{"a-10-1.txt", []int{10, 1}, []string{"a-", "-", ".txt"}, false},
