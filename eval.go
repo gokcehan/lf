@@ -76,13 +76,22 @@ func (e *SetExpr) eval(app *App, args []string) {
 	case "shell":
 		gOpts.shell = e.val
 	case "showinfo":
-		if e.val != "none" && e.val != "size" && e.val != "time" {
-			msg := "showinfo should either be 'none', 'size' or 'time'"
-			app.ui.message = msg
-			log.Print(msg)
-			return
+		var tmp []string
+		for _, info := range strings.Split(e.val, ":") {
+			switch info {
+			case "size", "time":
+				tmp = append(tmp, info)
+				continue
+			case "none":
+				gOpts.showinfo = nil
+			default:
+				msg := "showinfo should either by 'none', 'size', 'time', 'time:size' or 'size:time'"
+				app.ui.message = msg
+				log.Print(msg)
+				return
+			}
 		}
-		gOpts.showinfo = e.val
+		gOpts.showinfo = tmp
 	case "sortby":
 		if e.val != "name" && e.val != "size" && e.val != "time" {
 			msg := "sortby should either be 'name', 'size' or 'time'"
