@@ -58,7 +58,7 @@ The following options can be used to customize the behavior of lf.
     previewer  string  (default "") (not filtered if empty)
     shell      string  (default "$SHELL")
     showinfo   string  (default "none")
-    sortby     string  (default "name")
+    sortby     string  (default "natural")
     timefmt    string  (default "Mon Jan _2 15:04:05 2006")
     ratios     string  (default "1:2:3")
 

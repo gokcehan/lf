@@ -46,6 +46,34 @@ func getFilesSorted(path string) []*File {
 	}
 
 	switch gOpts.sortby {
+	case "natural":
+		sortFilesStable(fi, func(i, j int) bool {
+			nums1, rest1, numFirst1 := extractNums(fi[i].Name())
+			nums2, rest2, numFirst2 := extractNums(fi[j].Name())
+
+			if numFirst1 != numFirst2 {
+				return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
+			}
+
+			if numFirst1 {
+				if nums1[0] != nums2[0] {
+					return nums1[0] < nums2[0]
+				}
+				nums1 = nums1[1:]
+				nums2 = nums2[1:]
+			}
+
+			for k := 0; k < len(nums1) && k < len(nums2); k++ {
+				if rest1[k] != rest2[k] {
+					return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
+				}
+				if nums1[k] != nums2[k] {
+					return nums1[k] < nums2[k]
+				}
+			}
+
+			return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
+		})
 	case "name":
 		sortFilesStable(fi, func(i, j int) bool {
 			return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
@@ -70,34 +98,6 @@ func getFilesSorted(path string) []*File {
 			return fi[i].IsDir()
 		})
 	}
-	//TODO this should be optional
-	sortFilesStable(fi, func(i, j int) bool {
-		nums1, rest1, numFirst1 := extractNums(fi[i].Name())
-		nums2, rest2, numFirst2 := extractNums(fi[j].Name())
-
-		if numFirst1 != numFirst2 {
-			return i < j
-		}
-
-		if numFirst1 {
-			if nums1[0] != nums2[0] {
-				return nums1[0] < nums2[0]
-			}
-			nums1 = nums1[1:]
-			nums2 = nums2[1:]
-		}
-
-		for k := 0; k < len(nums1) && k < len(nums2); k++ {
-			if rest1[k] != rest2[k] {
-				return i < j
-			}
-			if nums1[k] != nums2[k] {
-				return nums1[k] < nums2[k]
-			}
-		}
-
-		return i < j
-	})
 
 	return fi
 }

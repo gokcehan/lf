@@ -27,7 +27,7 @@ func init() {
 	gOpts.tabstop = 8
 	gOpts.shell = envShell
 	gOpts.showinfo = "none"
-	gOpts.sortby = "name"
+	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
 
