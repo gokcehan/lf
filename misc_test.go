@@ -91,6 +91,63 @@ func TestRuneSliceWidthRange(t *testing.T) {
 	}
 }
 
+func TestEscape(t *testing.T) {
+	strs := []struct {
+		s string
+		e string
+	}{
+		{"", ""},
+		{"foo", "foo"},
+		{"foo bar", `foo\ bar`},
+		{"foo  bar", `foo\ \ bar`},
+		{`foo\ bar`, `foo\ bar`},
+		{`foo\bar`, `foo\bar`},
+	}
+
+	for _, str := range strs {
+		if e := escape(str.s); !reflect.DeepEqual(e, str.e) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.e, e)
+		}
+	}
+}
+
+func TestUnescape(t *testing.T) {
+	strs := []struct {
+		s string
+		u string
+	}{
+		{"", ""},
+		{"foo", "foo"},
+		{`foo\bar`, `foo\bar`},
+		{`foo\ bar`, "foo bar"},
+		{`foo\ \ bar`, "foo  bar"},
+	}
+
+	for _, str := range strs {
+		if u := unescape(str.s); !reflect.DeepEqual(u, str.u) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.u, u)
+		}
+	}
+}
+
+func TestTokenize(t *testing.T) {
+	strs := []struct {
+		s    string
+		toks []string
+	}{
+		{"", []string{""}},
+		{"foo", []string{"foo"}},
+		{"foo bar", []string{"foo", "bar"}},
+		{`:rename foo\ bar`, []string{":rename", `foo\ bar`}},
+	}
+
+	for _, str := range strs {
+		if toks := tokenize(str.s); !reflect.DeepEqual(toks, str.toks) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.toks, toks)
+		}
+	}
+}
+
 func TestSplitWord(t *testing.T) {
 	strs := []struct {
 		s    string

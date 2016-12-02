@@ -151,7 +151,7 @@ func matchFile(s string) (matches []string, longest string) {
 		dir = wd + string(filepath.Separator) + dir
 	}
 
-	dir = filepath.Dir(dir)
+	dir = unescape(filepath.Dir(dir))
 
 	fi, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -166,11 +166,12 @@ func matchFile(s string) (matches []string, longest string) {
 		}
 
 		_, last := filepath.Split(s)
-		if strings.HasPrefix(f.Name(), last) {
+		if strings.HasPrefix(escape(f.Name()), last) {
 			name := f.Name()
 			if isRoot(s) || filepath.Base(s) != s {
 				name = filepath.Join(filepath.Dir(s), f.Name())
 			}
+			name = escape(name)
 			item := f.Name()
 			if f.Mode().IsDir() {
 				item += string(filepath.Separator)
@@ -197,7 +198,7 @@ func matchFile(s string) (matches []string, longest string) {
 
 func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
-	f := strings.Fields(s)
+	f := tokenize(s)
 
 	if len(f) == 0 || s[len(s)-1] == ' ' {
 		f = append(f, "")

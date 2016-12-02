@@ -50,6 +50,81 @@ func runeSliceWidthRange(rs []rune, beg int, end int) []rune {
 	return nil
 }
 
+// This function is used to escape whitespaces with backlashes in a given
+// string. If a whitespace is already escaped then it is not escaped again.
+func escape(s string) string {
+	esc := false
+	buf := make([]rune, 0, len(s))
+	for _, r := range s {
+		if r == '\\' {
+			esc = true
+			continue
+		}
+		if esc {
+			esc = false
+			buf = append(buf, '\\', r)
+			continue
+		}
+		if unicode.IsSpace(r) {
+			buf = append(buf, '\\')
+		}
+		buf = append(buf, r)
+	}
+	return string(buf)
+}
+
+// This function is used to remove backlashes that are used to escape
+// whitespaces in a given string.
+func unescape(s string) string {
+	esc := false
+	buf := make([]rune, 0, len(s))
+	for _, r := range s {
+		if r == '\\' {
+			esc = true
+			continue
+		}
+		if esc {
+			esc = false
+			if unicode.IsSpace(r) {
+				buf = append(buf, r)
+			} else {
+				buf = append(buf, '\\', r)
+			}
+			continue
+		}
+		buf = append(buf, r)
+	}
+	return string(buf)
+}
+
+// This function splits the given string by whitespaces. It is aware of escaped
+// whitespaces so that they are not splitted unintentionally.
+func tokenize(s string) []string {
+	esc := false
+	var buf []rune
+	var toks []string
+	for _, r := range s {
+		if r == '\\' {
+			esc = true
+			buf = append(buf, r)
+			continue
+		}
+		if esc {
+			esc = false
+			buf = append(buf, r)
+			continue
+		}
+		if !unicode.IsSpace(r) {
+			buf = append(buf, r)
+		} else {
+			toks = append(toks, string(buf))
+			buf = nil
+		}
+	}
+	toks = append(toks, string(buf))
+	return toks
+}
+
 // This function splits the first word of a string delimited by whitespace from
 // the rest. This is used to tokenize a string one by one without touching the
 // rest. Whitespace on the left side of both the word and the rest are trimmed.
