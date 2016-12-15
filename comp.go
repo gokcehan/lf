@@ -114,6 +114,7 @@ func matchExec(s string) (matches []string, longest string) {
 				f, err = os.Stat(filepath.Join(p, f.Name()))
 				if err != nil {
 					log.Printf("getting file information: %s", err)
+					continue
 				}
 
 				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
