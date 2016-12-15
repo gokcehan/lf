@@ -237,7 +237,7 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 
 func compShell(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
-	f := strings.Fields(s)
+	f := tokenize(s)
 
 	var longest string
 
