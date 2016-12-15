@@ -200,10 +200,6 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
-	if len(f) == 0 || s[len(s)-1] == ' ' {
-		f = append(f, "")
-	}
-
 	var longest string
 
 	switch len(f) {
@@ -242,10 +238,6 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 func compShell(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := strings.Fields(s)
-
-	if len(f) == 0 || s[len(s)-1] == ' ' {
-		f = append(f, "")
-	}
 
 	var longest string
 
