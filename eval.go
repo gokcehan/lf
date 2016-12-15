@@ -242,56 +242,17 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "read":
-		s := app.ui.prompt(app.nav, ":")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("command: %s", s)
-		p := newParser(strings.NewReader(s))
-		for p.parse() {
-			p.expr.eval(app, nil)
-		}
-		if p.err != nil {
-			app.ui.message = p.err.Error()
-			log.Print(p.err)
-		}
+		app.ui.cmdpref = ":"
 	case "read-shell":
-		s := app.ui.prompt(app.nav, "$")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("shell: %s", s)
-		app.runShell(s, nil, false, false)
+		app.ui.cmdpref = "$"
 	case "read-shell-wait":
-		s := app.ui.prompt(app.nav, "!")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("shell-wait: %s", s)
-		app.runShell(s, nil, true, false)
+		app.ui.cmdpref = "!"
 	case "read-shell-async":
-		s := app.ui.prompt(app.nav, "&")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("shell-async: %s", s)
-		app.runShell(s, nil, false, true)
+		app.ui.cmdpref = "&"
 	case "search":
-		s := app.ui.prompt(app.nav, "/")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("search: %s", s)
-		app.ui.message = "sorry, search is not implemented yet!"
-		// TODO: implement
+		app.ui.cmdpref = "/"
 	case "search-back":
-		s := app.ui.prompt(app.nav, "?")
-		if len(s) == 0 {
-			return
-		}
-		log.Printf("search-back: %s", s)
-		app.ui.message = "sorry, search-back is not implemented yet!"
-		// TODO: implement
+		app.ui.cmdpref = "?"
 	case "toggle":
 		app.nav.toggle()
 	case "invert":
@@ -359,7 +320,118 @@ func (e *CallExpr) eval(app *App, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "push":
 		if len(e.args) > 0 {
-			app.ui.keysbuf = append(app.ui.keysbuf, splitKeys(e.args[0])...)
+			log.Println("pushing keys", e.args[0])
+			for _, key := range splitKeys(e.args[0]) {
+				app.ui.keychan <- key
+			}
+		}
+	case "cmd-insert":
+		if len(e.args) > 0 {
+			app.ui.cmdlacc = append(app.ui.cmdlacc, []rune(e.args[0])...)
+		}
+	case "cmd-escape":
+		app.ui.menubuf = nil
+		app.ui.cmdbuf = nil
+		app.ui.cmdlacc = nil
+		app.ui.cmdracc = nil
+		app.ui.cmdpref = ""
+	case "cmd-comp":
+		var matches []string
+		if app.ui.cmdpref == ":" {
+			matches, app.ui.cmdlacc = compCmd(app.ui.cmdlacc)
+		} else {
+			matches, app.ui.cmdlacc = compShell(app.ui.cmdlacc)
+		}
+		app.ui.draw(app.nav)
+		if len(matches) > 1 {
+			app.ui.menubuf = listMatches(matches)
+		} else {
+			app.ui.menubuf = nil
+		}
+	case "cmd-enter":
+		s := string(append(app.ui.cmdlacc, app.ui.cmdracc...))
+		if len(s) == 0 {
+			return
+		}
+		app.ui.menubuf = nil
+		app.ui.cmdbuf = nil
+		app.ui.cmdlacc = nil
+		app.ui.cmdracc = nil
+		switch app.ui.cmdpref {
+		case ":":
+			log.Printf("command: %s", s)
+			p := newParser(strings.NewReader(s))
+			for p.parse() {
+				p.expr.eval(app, nil)
+			}
+			if p.err != nil {
+				app.ui.message = p.err.Error()
+				log.Print(p.err)
+			}
+		case "$":
+			log.Printf("shell: %s", s)
+			app.runShell(s, nil, false, false)
+		case "!":
+			log.Printf("shell-wait: %s", s)
+			app.runShell(s, nil, true, false)
+		case "&":
+			log.Printf("shell-async: %s", s)
+			app.runShell(s, nil, false, true)
+		case "/":
+			log.Printf("search: %s", s)
+			app.ui.message = "sorry, search is not implemented yet!"
+			// TODO: implement
+		case "?":
+			log.Printf("search-back: %s", s)
+			app.ui.message = "sorry, search-back is not implemented yet!"
+			// TODO: implement
+		default:
+			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
+		}
+		app.ui.cmdpref = ""
+	case "cmd-delete-back":
+		if len(app.ui.cmdlacc) > 0 {
+			app.ui.cmdlacc = app.ui.cmdlacc[:len(app.ui.cmdlacc)-1]
+		}
+	case "cmd-delete":
+		if len(app.ui.cmdracc) > 0 {
+			app.ui.cmdracc = app.ui.cmdracc[1:]
+		}
+	case "cmd-left":
+		if len(app.ui.cmdlacc) > 0 {
+			app.ui.cmdracc = append([]rune{app.ui.cmdlacc[len(app.ui.cmdlacc)-1]}, app.ui.cmdracc...)
+			app.ui.cmdlacc = app.ui.cmdlacc[:len(app.ui.cmdlacc)-1]
+		}
+	case "cmd-right":
+		if len(app.ui.cmdracc) > 0 {
+			app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdracc[0])
+			app.ui.cmdracc = app.ui.cmdracc[1:]
+		}
+	case "cmd-beg":
+		app.ui.cmdracc = append(app.ui.cmdlacc, app.ui.cmdracc...)
+		app.ui.cmdlacc = nil
+	case "cmd-end":
+		app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdracc...)
+		app.ui.cmdracc = nil
+	case "cmd-delete-end":
+		if len(app.ui.cmdracc) > 0 {
+			app.ui.cmdbuf = app.ui.cmdracc
+			app.ui.cmdracc = nil
+		}
+	case "cmd-delete-beg":
+		if len(app.ui.cmdlacc) > 0 {
+			app.ui.cmdbuf = app.ui.cmdlacc
+			app.ui.cmdlacc = nil
+		}
+	case "cmd-delete-word":
+		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdlacc), " "), " ") + 1
+		app.ui.cmdbuf = app.ui.cmdlacc[ind:]
+		app.ui.cmdlacc = app.ui.cmdlacc[:ind]
+	case "cmd-put":
+		app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdbuf...)
+	case "cmd-transpose":
+		if len(app.ui.cmdlacc) > 1 {
+			app.ui.cmdlacc[len(app.ui.cmdlacc)-1], app.ui.cmdlacc[len(app.ui.cmdlacc)-2] = app.ui.cmdlacc[len(app.ui.cmdlacc)-2], app.ui.cmdlacc[len(app.ui.cmdlacc)-1]
 		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
@@ -391,7 +463,7 @@ func (e *ExecExpr) eval(app *App, args []string) {
 		log.Printf("search-back: %s -- %s", e, args)
 		// TODO: implement
 	default:
-		log.Printf("unknown execution prefix: %q", e.pref)
+		log.Printf("evaluating unknown execution prefix: %q", e.pref)
 	}
 }
 

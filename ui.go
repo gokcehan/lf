@@ -13,6 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"unicode"
 	"unicode/utf8"
 
 	"github.com/nsf/termbox-go"
@@ -340,7 +341,13 @@ type UI struct {
 	message string
 	regprev []string
 	dirprev *Dir
-	keysbuf []string
+	keychan chan string
+	evschan chan termbox.Event
+	cmdpref string
+	cmdlacc []rune
+	cmdracc []rune
+	cmdbuf  []rune
+	menubuf *bytes.Buffer
 }
 
 func getWidths(wtot int) []int {
@@ -376,11 +383,22 @@ func newUI() *UI {
 		wacc += widths[i]
 	}
 
+	key := make(chan string, 1000)
+	evs := make(chan termbox.Event)
+
+	go func() {
+		for {
+			evs <- termbox.PollEvent()
+		}
+	}()
+
 	return &UI{
 		wins:    wins,
 		pwdwin:  newWin(wtot, 1, 0, 0),
 		msgwin:  newWin(wtot, 1, 0, htot-1),
 		menuwin: newWin(wtot, 1, 0, htot-2),
+		keychan: key,
+		evschan: evs,
 	}
 }
 
@@ -478,25 +496,10 @@ func (ui *UI) loadFile(nav *Nav) {
 	}
 }
 
-func (ui *UI) clearMsg() {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
-	win := ui.msgwin
-	win.printl(0, 0, fg, bg, "")
-	termbox.Flush()
-}
-
 func (ui *UI) draw(nav *Nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	termbox.Clear(fg, bg)
-
-	// leave the cursor at the beginning of the current file for screen readers
-	var length, woff, doff int
-	defer func() {
-		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
-	}()
-
-	defer termbox.Flush()
 
 	dir := nav.currDir()
 
@@ -507,20 +510,28 @@ func (ui *UI) draw(nav *Nav) {
 	ui.pwdwin.printf(len(envUser)+len(envHost)+1, 0, fg, bg, ":")
 	ui.pwdwin.printf(len(envUser)+len(envHost)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
 
-	length = min(len(ui.wins), len(nav.dirs))
-	woff = len(ui.wins) - length
+	length := min(len(ui.wins), len(nav.dirs))
+	woff := len(ui.wins) - length
 
 	if gOpts.preview {
 		length = min(len(ui.wins)-1, len(nav.dirs))
 		woff = len(ui.wins) - 1 - length
 	}
 
-	doff = len(nav.dirs) - length
+	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
 		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks, nav.saves)
 	}
 
-	defer ui.msgwin.print(0, 0, fg, bg, ui.message)
+	if ui.cmdpref != "" {
+		ui.msgwin.printl(0, 0, fg, bg, ui.cmdpref)
+		ui.msgwin.print(len(ui.cmdpref), 0, fg, bg, string(ui.cmdlacc))
+		ui.msgwin.print(len(ui.cmdpref)+runeSliceWidth(ui.cmdlacc), 0, fg, bg, string(ui.cmdracc))
+		termbox.SetCursor(ui.msgwin.x+len(ui.cmdpref)+runeSliceWidth(ui.cmdlacc), ui.msgwin.y)
+	} else {
+		ui.msgwin.print(0, 0, fg, bg, ui.message)
+		termbox.HideCursor()
+	}
 
 	if gOpts.preview {
 		f, err := nav.currFile()
@@ -535,6 +546,28 @@ func (ui *UI) draw(nav *Nav) {
 		} else if f.Mode().IsRegular() {
 			preview.printr(ui.regprev)
 		}
+	}
+
+	if ui.menubuf != nil {
+		lines := strings.Split(ui.menubuf.String(), "\n")
+
+		lines = lines[:len(lines)-1]
+
+		ui.menuwin.h = len(lines) - 1
+		ui.menuwin.y = ui.wins[0].h - ui.menuwin.h
+
+		ui.menuwin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
+		for i, line := range lines[1:] {
+			ui.menuwin.printl(0, i+1, termbox.ColorDefault, termbox.ColorDefault, "")
+			ui.menuwin.print(0, i+1, termbox.ColorDefault, termbox.ColorDefault, line)
+		}
+	}
+
+	termbox.Flush()
+
+	if ui.cmdpref == "" {
+		// leave the cursor at the beginning of the current file for screen readers
+		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
 	}
 }
 
@@ -551,33 +584,55 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 	return
 }
 
+func listBinds(binds map[string]Expr) *bytes.Buffer {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	var keys []string
+	for k := range binds {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "keys\tcommand")
+	for _, k := range keys {
+		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
+	}
+	t.Flush()
+
+	return b
+}
+
 func (ui *UI) pollEvent() termbox.Event {
-	if len(ui.keysbuf) > 0 {
+	select {
+	case key := <-ui.keychan:
 		ev := termbox.Event{Type: termbox.EventKey}
-		keys := ui.keysbuf[0]
-		if len(keys) == 1 {
-			ev.Ch, _ = utf8.DecodeRuneInString(keys)
+
+		if len(key) == 1 {
+			ev.Ch, _ = utf8.DecodeRuneInString(key)
 		} else {
-			switch keys {
+			switch key {
 			case "<lt>":
 				ev.Ch = '<'
 			case "<gt>":
 				ev.Ch = '>'
 			default:
-				if val, ok := gValKey[keys]; ok {
+				if val, ok := gValKey[key]; ok {
 					ev.Key = val
 				} else {
 					ev.Key = termbox.KeyEsc
-					msg := fmt.Sprintf("unknown key: %s", keys)
+					msg := fmt.Sprintf("unknown key: %s", key)
 					ui.message = msg
 					log.Print(msg)
 				}
 			}
 		}
-		ui.keysbuf = ui.keysbuf[1:]
+
+		return ev
+	case ev := <-ui.evschan:
 		return ev
 	}
-	return termbox.PollEvent()
 }
 
 type MultiExpr struct {
@@ -585,104 +640,152 @@ type MultiExpr struct {
 	count int
 }
 
-func (ui *UI) prompt(nav *Nav, pref string) string {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+// This function is used to read expressions on the client side. Digits are
+// interpreted as command counts but this is only done for digits preceding any
+// non-digit characters (e.g. "42y2k" as 42 times "y2k").
+func (ui *UI) readExpr() chan MultiExpr {
+	ch := make(chan MultiExpr)
 
-	win := ui.msgwin
+	renew := &CallExpr{"renew", nil}
+	count := 1
 
-	win.printl(0, 0, fg, bg, pref)
-	termbox.SetCursor(win.x+len(pref), win.y)
-	defer termbox.HideCursor()
-	termbox.Flush()
+	var acc []rune
+	var cnt []rune
 
-	var lacc []rune
-	var racc []rune
+	go func() {
+		for {
+			ev := ui.pollEvent()
 
-	var buf []rune
-
-	for {
-		switch ev := ui.pollEvent(); ev.Type {
-		case termbox.EventKey:
-			if ev.Ch != 0 {
-				lacc = append(lacc, ev.Ch)
-			} else {
-				// TODO: rest of the keys
-				switch ev.Key {
-				case termbox.KeyEsc:
-					return ""
-				case termbox.KeySpace:
-					lacc = append(lacc, ' ')
-				case termbox.KeyTab:
-					var matches []string
-					if pref == ":" {
-						matches, lacc = compCmd(lacc)
+			if ui.cmdpref != "" {
+				switch ev.Type {
+				case termbox.EventKey:
+					if ev.Ch != 0 {
+						ch <- MultiExpr{&CallExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
 					} else {
-						matches, lacc = compShell(lacc)
+						// TODO: rest of the keys
+						switch ev.Key {
+						case termbox.KeyEsc:
+							ch <- MultiExpr{&CallExpr{"cmd-escape", nil}, 1}
+						case termbox.KeySpace:
+							ch <- MultiExpr{&CallExpr{"cmd-insert", []string{" "}}, 1}
+						case termbox.KeyTab:
+							ch <- MultiExpr{&CallExpr{"cmd-comp", nil}, 1}
+						case termbox.KeyEnter, termbox.KeyCtrlJ:
+							ch <- MultiExpr{&CallExpr{"cmd-enter", nil}, 1}
+						case termbox.KeyBackspace, termbox.KeyBackspace2:
+							ch <- MultiExpr{&CallExpr{"cmd-delete-back", nil}, 1}
+						case termbox.KeyDelete, termbox.KeyCtrlD:
+							ch <- MultiExpr{&CallExpr{"cmd-delete", nil}, 1}
+						case termbox.KeyArrowLeft, termbox.KeyCtrlB:
+							ch <- MultiExpr{&CallExpr{"cmd-left", nil}, 1}
+						case termbox.KeyArrowRight, termbox.KeyCtrlF:
+							ch <- MultiExpr{&CallExpr{"cmd-right", nil}, 1}
+						case termbox.KeyHome, termbox.KeyCtrlA:
+							ch <- MultiExpr{&CallExpr{"cmd-beg", nil}, 1}
+						case termbox.KeyEnd, termbox.KeyCtrlE:
+							ch <- MultiExpr{&CallExpr{"cmd-end", nil}, 1}
+						case termbox.KeyCtrlK:
+							ch <- MultiExpr{&CallExpr{"cmd-delete-end", nil}, 1}
+						case termbox.KeyCtrlU:
+							ch <- MultiExpr{&CallExpr{"cmd-delete-beg", nil}, 1}
+						case termbox.KeyCtrlW:
+							ch <- MultiExpr{&CallExpr{"cmd-delete-word", nil}, 1}
+						case termbox.KeyCtrlY:
+							ch <- MultiExpr{&CallExpr{"cmd-put", nil}, 1}
+						case termbox.KeyCtrlT:
+							ch <- MultiExpr{&CallExpr{"cmd-transpose", nil}, 1}
+						}
 					}
-					ui.draw(nav)
-					if len(matches) > 1 {
-						ui.listMatches(matches)
-					}
-				case termbox.KeyEnter, termbox.KeyCtrlJ:
-					win.printl(0, 0, fg, bg, "")
-					termbox.Flush()
-					return string(append(lacc, racc...))
-				case termbox.KeyBackspace, termbox.KeyBackspace2:
-					if len(lacc) > 0 {
-						lacc = lacc[:len(lacc)-1]
-					}
-				case termbox.KeyDelete, termbox.KeyCtrlD:
-					if len(racc) > 0 {
-						racc = racc[1:]
-					}
-				case termbox.KeyArrowLeft, termbox.KeyCtrlB:
-					if len(lacc) > 0 {
-						racc = append([]rune{lacc[len(lacc)-1]}, racc...)
-						lacc = lacc[:len(lacc)-1]
-					}
-				case termbox.KeyArrowRight, termbox.KeyCtrlF:
-					if len(racc) > 0 {
-						lacc = append(lacc, racc[0])
-						racc = racc[1:]
-					}
-				case termbox.KeyHome, termbox.KeyCtrlA:
-					racc = append(lacc, racc...)
-					lacc = nil
-				case termbox.KeyEnd, termbox.KeyCtrlE:
-					lacc = append(lacc, racc...)
-					racc = nil
-				case termbox.KeyCtrlK:
-					if len(racc) > 0 {
-						buf = racc
-						racc = nil
-					}
-				case termbox.KeyCtrlU:
-					if len(lacc) > 0 {
-						buf = lacc
-						lacc = nil
-					}
-				case termbox.KeyCtrlW:
-					ind := strings.LastIndex(strings.TrimRight(string(lacc), " "), " ") + 1
-					buf = lacc[ind:]
-					lacc = lacc[:ind]
-				case termbox.KeyCtrlY:
-					lacc = append(lacc, buf...)
-				case termbox.KeyCtrlT:
-					if len(lacc) > 1 {
-						lacc[len(lacc)-1], lacc[len(lacc)-2] = lacc[len(lacc)-2], lacc[len(lacc)-1]
-					}
+					continue
 				}
 			}
 
-			win.printl(0, 0, fg, bg, pref)
-			win.print(len(pref), 0, fg, bg, string(lacc))
-			win.print(len(pref)+runeSliceWidth(lacc), 0, fg, bg, string(racc))
-			termbox.SetCursor(win.x+len(pref)+runeSliceWidth(lacc), win.y)
-			termbox.Flush()
-		default:
-			// TODO: handle other events
+			switch ev.Type {
+			case termbox.EventKey:
+				if ev.Ch != 0 {
+					switch {
+					case ev.Ch == '<':
+						acc = append(acc, '<', 'l', 't', '>')
+					case ev.Ch == '>':
+						acc = append(acc, '<', 'g', 't', '>')
+					case unicode.IsDigit(ev.Ch) && len(acc) == 0:
+						cnt = append(cnt, ev.Ch)
+					default:
+						acc = append(acc, ev.Ch)
+					}
+				} else {
+					val := gKeyVal[ev.Key]
+					if string(val) == "<esc>" {
+						ch <- MultiExpr{renew, 1}
+						acc = nil
+						cnt = nil
+					}
+					acc = append(acc, val...)
+				}
+
+				binds, ok := findBinds(gOpts.keys, string(acc))
+
+				switch len(binds) {
+				case 0:
+					ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
+					ch <- MultiExpr{renew, 1}
+					acc = nil
+					cnt = nil
+				case 1:
+					if ok {
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
+						}
+						expr := gOpts.keys[string(acc)]
+						ch <- MultiExpr{expr, count}
+						acc = nil
+						cnt = nil
+					}
+					if len(acc) > 0 {
+						ui.menubuf = listBinds(binds)
+						ch <- MultiExpr{renew, 1}
+					} else if ui.menubuf != nil {
+						ui.menubuf = nil
+					}
+				default:
+					if ok {
+						// TODO: use a delay
+						if len(cnt) > 0 {
+							c, err := strconv.Atoi(string(cnt))
+							if err != nil {
+								log.Printf("converting command count: %s", err)
+							}
+							count = c
+						} else {
+							count = 1
+						}
+						expr := gOpts.keys[string(acc)]
+						ch <- MultiExpr{expr, count}
+						acc = nil
+						cnt = nil
+					}
+					if len(acc) > 0 {
+						ui.menubuf = listBinds(binds)
+						ch <- MultiExpr{renew, 1}
+					} else {
+						ui.menubuf = nil
+					}
+				}
+			case termbox.EventResize:
+				ch <- MultiExpr{renew, 1}
+			default:
+				// TODO: handle other events
+			}
 		}
-	}
+	}()
+
+	return ch
 }
 
 func (ui *UI) pause() {
@@ -701,44 +804,7 @@ func (ui *UI) sync() {
 	}
 }
 
-func (ui *UI) showMenu(b *bytes.Buffer) {
-	lines := strings.Split(b.String(), "\n")
-
-	lines = lines[:len(lines)-1]
-
-	ui.menuwin.h = len(lines) - 1
-	ui.menuwin.y = ui.wins[0].h - ui.menuwin.h
-
-	ui.menuwin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
-	for i, line := range lines[1:] {
-		ui.menuwin.printl(0, i+1, termbox.ColorDefault, termbox.ColorDefault, "")
-		ui.menuwin.print(0, i+1, termbox.ColorDefault, termbox.ColorDefault, line)
-	}
-
-	termbox.Flush()
-}
-
-func (ui *UI) listBinds(binds map[string]Expr) {
-	t := new(tabwriter.Writer)
-	b := new(bytes.Buffer)
-
-	var keys []string
-	for k := range binds {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintln(t, "keys\tcommand")
-	for _, k := range keys {
-		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
-	}
-	t.Flush()
-
-	ui.showMenu(b)
-}
-
-func (ui *UI) listMatches(matches []string) {
+func listMatches(matches []string) *bytes.Buffer {
 	b := new(bytes.Buffer)
 
 	wtot, _ := termbox.Size()
@@ -759,5 +825,5 @@ func (ui *UI) listMatches(matches []string) {
 		b.WriteByte('\n')
 	}
 
-	ui.showMenu(b)
+	return b
 }
