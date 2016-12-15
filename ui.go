@@ -535,16 +535,14 @@ func (ui *UI) draw(nav *Nav) {
 
 	if gOpts.preview {
 		f, err := nav.currFile()
-		if err != nil {
-			return
-		}
+		if err == nil {
+			preview := ui.wins[len(ui.wins)-1]
 
-		preview := ui.wins[len(ui.wins)-1]
-
-		if f.IsDir() {
-			preview.printd(ui.dirprev, nav.marks, nav.saves)
-		} else if f.Mode().IsRegular() {
-			preview.printr(ui.regprev)
+			if f.IsDir() {
+				preview.printd(ui.dirprev, nav.marks, nav.saves)
+			} else if f.Mode().IsRegular() {
+				preview.printr(ui.regprev)
+			}
 		}
 	}
 
