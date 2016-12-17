@@ -64,11 +64,11 @@ func client() {
 	app.handleInp()
 }
 
-func readExpr(c net.Conn) chan Expr {
-	ch := make(chan Expr)
+func readExpr(c net.Conn) chan expr {
+	ch := make(chan expr)
 
 	go func() {
-		fmt.Fprintf(c, "conn %d\n", gClientId)
+		fmt.Fprintf(c, "conn %d\n", gClientID)
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {

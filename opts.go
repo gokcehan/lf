@@ -15,8 +15,8 @@ var gOpts struct {
 	sortby    string
 	timefmt   string
 	ratios    []int
-	keys      map[string]Expr
-	cmds      map[string]Expr
+	keys      map[string]expr
+	cmds      map[string]expr
 }
 
 func init() {
@@ -31,35 +31,35 @@ func init() {
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
 
-	gOpts.keys = make(map[string]Expr)
+	gOpts.keys = make(map[string]expr)
 
-	gOpts.keys["k"] = &CallExpr{"up", nil}
-	gOpts.keys["<up>"] = &CallExpr{"up", nil}
-	gOpts.keys["<c-u>"] = &CallExpr{"half-up", nil}
-	gOpts.keys["<c-b>"] = &CallExpr{"page-up", nil}
-	gOpts.keys["j"] = &CallExpr{"down", nil}
-	gOpts.keys["<down>"] = &CallExpr{"down", nil}
-	gOpts.keys["<c-d>"] = &CallExpr{"half-down", nil}
-	gOpts.keys["<c-f>"] = &CallExpr{"page-down", nil}
-	gOpts.keys["h"] = &CallExpr{"updir", nil}
-	gOpts.keys["<left>"] = &CallExpr{"updir", nil}
-	gOpts.keys["l"] = &CallExpr{"open", nil}
-	gOpts.keys["<right>"] = &CallExpr{"open", nil}
-	gOpts.keys["q"] = &CallExpr{"quit", nil}
-	gOpts.keys["G"] = &CallExpr{"bot", nil}
-	gOpts.keys["gg"] = &CallExpr{"top", nil}
-	gOpts.keys[":"] = &CallExpr{"read", nil}
-	gOpts.keys["$"] = &CallExpr{"read-shell", nil}
-	gOpts.keys["!"] = &CallExpr{"read-shell-wait", nil}
-	gOpts.keys["&"] = &CallExpr{"read-shell-async", nil}
-	gOpts.keys["/"] = &CallExpr{"search", nil}
-	gOpts.keys["?"] = &CallExpr{"search-back", nil}
-	gOpts.keys["<space>"] = &CallExpr{"toggle", nil}
-	gOpts.keys["v"] = &CallExpr{"invert", nil}
-	gOpts.keys["y"] = &CallExpr{"yank", nil}
-	gOpts.keys["d"] = &CallExpr{"delete", nil}
-	gOpts.keys["p"] = &CallExpr{"put", nil}
-	gOpts.keys["<c-l>"] = &CallExpr{"renew", nil}
+	gOpts.keys["k"] = &callExpr{"up", nil}
+	gOpts.keys["<up>"] = &callExpr{"up", nil}
+	gOpts.keys["<c-u>"] = &callExpr{"half-up", nil}
+	gOpts.keys["<c-b>"] = &callExpr{"page-up", nil}
+	gOpts.keys["j"] = &callExpr{"down", nil}
+	gOpts.keys["<down>"] = &callExpr{"down", nil}
+	gOpts.keys["<c-d>"] = &callExpr{"half-down", nil}
+	gOpts.keys["<c-f>"] = &callExpr{"page-down", nil}
+	gOpts.keys["h"] = &callExpr{"updir", nil}
+	gOpts.keys["<left>"] = &callExpr{"updir", nil}
+	gOpts.keys["l"] = &callExpr{"open", nil}
+	gOpts.keys["<right>"] = &callExpr{"open", nil}
+	gOpts.keys["q"] = &callExpr{"quit", nil}
+	gOpts.keys["G"] = &callExpr{"bot", nil}
+	gOpts.keys["gg"] = &callExpr{"top", nil}
+	gOpts.keys[":"] = &callExpr{"read", nil}
+	gOpts.keys["$"] = &callExpr{"read-shell", nil}
+	gOpts.keys["!"] = &callExpr{"read-shell-wait", nil}
+	gOpts.keys["&"] = &callExpr{"read-shell-async", nil}
+	gOpts.keys["/"] = &callExpr{"search", nil}
+	gOpts.keys["?"] = &callExpr{"search-back", nil}
+	gOpts.keys["<space>"] = &callExpr{"toggle", nil}
+	gOpts.keys["v"] = &callExpr{"invert", nil}
+	gOpts.keys["y"] = &callExpr{"yank", nil}
+	gOpts.keys["d"] = &callExpr{"delete", nil}
+	gOpts.keys["p"] = &callExpr{"put", nil}
+	gOpts.keys["<c-l>"] = &callExpr{"renew", nil}
 
-	gOpts.cmds = make(map[string]Expr)
+	gOpts.cmds = make(map[string]expr)
 }

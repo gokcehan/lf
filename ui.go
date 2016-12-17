@@ -19,7 +19,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const EscapeCode = 27
+const gEscapeCode = 27
 
 var gKeyVal = map[termbox.Key][]rune{
 	termbox.KeyF1:             []rune{'<', 'f', '-', '1', '>'},
@@ -89,30 +89,30 @@ func init() {
 	}
 }
 
-type Win struct {
+type win struct {
 	w int
 	h int
 	x int
 	y int
 }
 
-func newWin(w, h, x, y int) *Win {
-	return &Win{w, h, x, y}
+func newWin(w, h, x, y int) *win {
+	return &win{w, h, x, y}
 }
 
-func (win *Win) renew(w, h, x, y int) {
+func (win *win) renew(w, h, x, y int) {
 	win.w = w
 	win.h = h
 	win.x = x
 	win.y = y
 }
 
-func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
+func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 	off := x
 	for i := 0; i < len(s); i++ {
 		r, w := utf8.DecodeRuneInString(s[i:])
 
-		if r == EscapeCode && i+1 < len(s) && s[i+1] == '[' {
+		if r == gEscapeCode && i+1 < len(s) && s[i+1] == '[' {
 			j := strings.IndexByte(s[i:min(len(s), i+32)], 'm')
 
 			if j == -1 {
@@ -208,15 +208,15 @@ func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 	}
 }
 
-func (win *Win) printf(x, y int, fg, bg termbox.Attribute, format string, a ...interface{}) {
+func (win *win) printf(x, y int, fg, bg termbox.Attribute, format string, a ...interface{}) {
 	win.print(x, y, fg, bg, fmt.Sprintf(format, a...))
 }
 
-func (win *Win) printl(x, y int, fg, bg termbox.Attribute, s string) {
+func (win *win) printl(x, y int, fg, bg termbox.Attribute, s string) {
 	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
 }
 
-func (win *Win) printd(dir *Dir, marks, saves map[string]bool) {
+func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 	if win.w < 3 {
 		return
 	}
@@ -236,8 +236,8 @@ func (win *Win) printd(dir *Dir, marks, saves map[string]bool) {
 
 	for i, f := range dir.fi[beg:end] {
 		switch {
-		case f.LinkState != NotLink:
-			if f.LinkState == Working {
+		case f.LinkState != notLink:
+			if f.LinkState == working {
 				fg = termbox.ColorCyan
 				if f.Mode().IsDir() {
 					fg |= termbox.AttrBold
@@ -323,7 +323,7 @@ func (win *Win) printd(dir *Dir, marks, saves map[string]bool) {
 	}
 }
 
-func (win *Win) printr(reg []string) {
+func (win *win) printr(reg []string) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	for i, l := range reg {
@@ -333,14 +333,14 @@ func (win *Win) printr(reg []string) {
 	return
 }
 
-type UI struct {
-	wins    []*Win
-	pwdwin  *Win
-	msgwin  *Win
-	menuwin *Win
+type ui struct {
+	wins    []*win
+	pwdwin  *win
+	msgwin  *win
+	menuwin *win
 	message string
 	regprev []string
-	dirprev *Dir
+	dirprev *dir
 	keychan chan string
 	evschan chan termbox.Event
 	cmdpref string
@@ -369,10 +369,10 @@ func getWidths(wtot int) []int {
 	return widths
 }
 
-func newUI() *UI {
+func newUI() *ui {
 	wtot, htot := termbox.Size()
 
-	var wins []*Win
+	var wins []*win
 
 	widths := getWidths(wtot)
 
@@ -392,7 +392,7 @@ func newUI() *UI {
 		}
 	}()
 
-	return &UI{
+	return &ui{
 		wins:    wins,
 		pwdwin:  newWin(wtot, 1, 0, 0),
 		msgwin:  newWin(wtot, 1, 0, htot-1),
@@ -402,7 +402,7 @@ func newUI() *UI {
 	}
 }
 
-func (ui *UI) renew() {
+func (ui *ui) renew() {
 	wtot, htot := termbox.Size()
 
 	widths := getWidths(wtot)
@@ -417,7 +417,7 @@ func (ui *UI) renew() {
 	ui.msgwin.renew(wtot, 1, 0, htot-1)
 }
 
-func (ui *UI) loadFileInfo(nav *Nav) {
+func (ui *ui) loadFileInfo(nav *nav) {
 	curr, err := nav.currFile()
 	if err != nil {
 		return
@@ -426,7 +426,7 @@ func (ui *UI) loadFileInfo(nav *Nav) {
 	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
-func (ui *UI) loadFile(nav *Nav) {
+func (ui *ui) loadFile(nav *nav) {
 	curr, err := nav.currFile()
 	if err != nil {
 		return
@@ -496,7 +496,7 @@ func (ui *UI) loadFile(nav *Nav) {
 	}
 }
 
-func (ui *UI) draw(nav *Nav) {
+func (ui *ui) draw(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	termbox.Clear(fg, bg)
@@ -569,8 +569,8 @@ func (ui *UI) draw(nav *Nav) {
 	}
 }
 
-func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok bool) {
-	binds = make(map[string]Expr)
+func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
+	binds = make(map[string]expr)
 	for key, expr := range keys {
 		if strings.HasPrefix(key, prefix) {
 			binds[key] = expr
@@ -582,7 +582,7 @@ func findBinds(keys map[string]Expr, prefix string) (binds map[string]Expr, ok b
 	return
 }
 
-func listBinds(binds map[string]Expr) *bytes.Buffer {
+func listBinds(binds map[string]expr) *bytes.Buffer {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -602,7 +602,7 @@ func listBinds(binds map[string]Expr) *bytes.Buffer {
 	return b
 }
 
-func (ui *UI) pollEvent() termbox.Event {
+func (ui *ui) pollEvent() termbox.Event {
 	select {
 	case key := <-ui.keychan:
 		ev := termbox.Event{Type: termbox.EventKey}
@@ -633,18 +633,18 @@ func (ui *UI) pollEvent() termbox.Event {
 	}
 }
 
-type MultiExpr struct {
-	expr  Expr
+type multiExpr struct {
+	expr  expr
 	count int
 }
 
 // This function is used to read expressions on the client side. Digits are
 // interpreted as command counts but this is only done for digits preceding any
 // non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *UI) readExpr() chan MultiExpr {
-	ch := make(chan MultiExpr)
+func (ui *ui) readExpr() chan multiExpr {
+	ch := make(chan multiExpr)
 
-	renew := &CallExpr{"renew", nil}
+	renew := &callExpr{"renew", nil}
 	count := 1
 
 	var acc []rune
@@ -658,40 +658,40 @@ func (ui *UI) readExpr() chan MultiExpr {
 				switch ev.Type {
 				case termbox.EventKey:
 					if ev.Ch != 0 {
-						ch <- MultiExpr{&CallExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
+						ch <- multiExpr{&callExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
 					} else {
 						// TODO: rest of the keys
 						switch ev.Key {
 						case termbox.KeyEsc:
-							ch <- MultiExpr{&CallExpr{"cmd-escape", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-escape", nil}, 1}
 						case termbox.KeySpace:
-							ch <- MultiExpr{&CallExpr{"cmd-insert", []string{" "}}, 1}
+							ch <- multiExpr{&callExpr{"cmd-insert", []string{" "}}, 1}
 						case termbox.KeyTab:
-							ch <- MultiExpr{&CallExpr{"cmd-comp", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-comp", nil}, 1}
 						case termbox.KeyEnter, termbox.KeyCtrlJ:
-							ch <- MultiExpr{&CallExpr{"cmd-enter", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-enter", nil}, 1}
 						case termbox.KeyBackspace, termbox.KeyBackspace2:
-							ch <- MultiExpr{&CallExpr{"cmd-delete-back", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-delete-back", nil}, 1}
 						case termbox.KeyDelete, termbox.KeyCtrlD:
-							ch <- MultiExpr{&CallExpr{"cmd-delete", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-delete", nil}, 1}
 						case termbox.KeyArrowLeft, termbox.KeyCtrlB:
-							ch <- MultiExpr{&CallExpr{"cmd-left", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-left", nil}, 1}
 						case termbox.KeyArrowRight, termbox.KeyCtrlF:
-							ch <- MultiExpr{&CallExpr{"cmd-right", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-right", nil}, 1}
 						case termbox.KeyHome, termbox.KeyCtrlA:
-							ch <- MultiExpr{&CallExpr{"cmd-beg", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-beg", nil}, 1}
 						case termbox.KeyEnd, termbox.KeyCtrlE:
-							ch <- MultiExpr{&CallExpr{"cmd-end", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-end", nil}, 1}
 						case termbox.KeyCtrlK:
-							ch <- MultiExpr{&CallExpr{"cmd-delete-end", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-delete-end", nil}, 1}
 						case termbox.KeyCtrlU:
-							ch <- MultiExpr{&CallExpr{"cmd-delete-beg", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-delete-beg", nil}, 1}
 						case termbox.KeyCtrlW:
-							ch <- MultiExpr{&CallExpr{"cmd-delete-word", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-delete-word", nil}, 1}
 						case termbox.KeyCtrlY:
-							ch <- MultiExpr{&CallExpr{"cmd-put", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-put", nil}, 1}
 						case termbox.KeyCtrlT:
-							ch <- MultiExpr{&CallExpr{"cmd-transpose", nil}, 1}
+							ch <- multiExpr{&callExpr{"cmd-transpose", nil}, 1}
 						}
 					}
 					continue
@@ -714,7 +714,7 @@ func (ui *UI) readExpr() chan MultiExpr {
 				} else {
 					val := gKeyVal[ev.Key]
 					if string(val) == "<esc>" {
-						ch <- MultiExpr{renew, 1}
+						ch <- multiExpr{renew, 1}
 						acc = nil
 						cnt = nil
 					}
@@ -726,7 +726,7 @@ func (ui *UI) readExpr() chan MultiExpr {
 				switch len(binds) {
 				case 0:
 					ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
-					ch <- MultiExpr{renew, 1}
+					ch <- multiExpr{renew, 1}
 					acc = nil
 					cnt = nil
 				case 1:
@@ -741,13 +741,13 @@ func (ui *UI) readExpr() chan MultiExpr {
 							count = 1
 						}
 						expr := gOpts.keys[string(acc)]
-						ch <- MultiExpr{expr, count}
+						ch <- multiExpr{expr, count}
 						acc = nil
 						cnt = nil
 					}
 					if len(acc) > 0 {
 						ui.menubuf = listBinds(binds)
-						ch <- MultiExpr{renew, 1}
+						ch <- multiExpr{renew, 1}
 					} else if ui.menubuf != nil {
 						ui.menubuf = nil
 					}
@@ -764,19 +764,19 @@ func (ui *UI) readExpr() chan MultiExpr {
 							count = 1
 						}
 						expr := gOpts.keys[string(acc)]
-						ch <- MultiExpr{expr, count}
+						ch <- multiExpr{expr, count}
 						acc = nil
 						cnt = nil
 					}
 					if len(acc) > 0 {
 						ui.menubuf = listBinds(binds)
-						ch <- MultiExpr{renew, 1}
+						ch <- multiExpr{renew, 1}
 					} else {
 						ui.menubuf = nil
 					}
 				}
 			case termbox.EventResize:
-				ch <- MultiExpr{renew, 1}
+				ch <- multiExpr{renew, 1}
 			default:
 				// TODO: handle other events
 			}
@@ -786,17 +786,17 @@ func (ui *UI) readExpr() chan MultiExpr {
 	return ch
 }
 
-func (ui *UI) pause() {
+func (ui *ui) pause() {
 	termbox.Close()
 }
 
-func (ui *UI) resume() {
+func (ui *ui) resume() {
 	if err := termbox.Init(); err != nil {
 		log.Fatalf("initializing termbox: %s", err)
 	}
 }
 
-func (ui *UI) sync() {
+func (ui *ui) sync() {
 	if err := termbox.Sync(); err != nil {
 		log.Printf("syncing termbox: %s", err)
 	}

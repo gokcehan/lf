@@ -9,7 +9,7 @@ import (
 	"unicode/utf8"
 )
 
-func (e *SetExpr) eval(app *App, args []string) {
+func (e *setExpr) eval(app *app, args []string) {
 	switch e.opt {
 	case "dirfirst":
 		gOpts.dirfirst = true
@@ -117,7 +117,7 @@ func (e *SetExpr) eval(app *App, args []string) {
 	}
 }
 
-func (e *MapExpr) eval(app *App, args []string) {
+func (e *mapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.keys, e.keys)
 		return
@@ -125,7 +125,7 @@ func (e *MapExpr) eval(app *App, args []string) {
 	gOpts.keys[e.keys] = e.expr
 }
 
-func (e *CmdExpr) eval(app *App, args []string) {
+func (e *cmdExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.cmds, e.name)
 		return
@@ -152,7 +152,7 @@ func splitKeys(s string) (keys []string) {
 	return
 }
 
-func (e *CallExpr) eval(app *App, args []string) {
+func (e *callExpr) eval(app *app, args []string) {
 	// TODO: check for extra toks in each case
 	switch e.name {
 	case "up":
@@ -194,7 +194,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 			app.ui.loadFileInfo(app.nav)
 			return
 		}
-		if err != ErrNotDir {
+		if err != errNotDir {
 			app.ui.message = err.Error()
 			log.Print(err)
 			return
@@ -445,7 +445,7 @@ func (e *CallExpr) eval(app *App, args []string) {
 	}
 }
 
-func (e *ExecExpr) eval(app *App, args []string) {
+func (e *execExpr) eval(app *app, args []string) {
 	switch e.pref {
 	case "$":
 		log.Printf("shell: %s -- %s", e, args)
@@ -467,7 +467,7 @@ func (e *ExecExpr) eval(app *App, args []string) {
 	}
 }
 
-func (e *ListExpr) eval(app *App, args []string) {
+func (e *listExpr) eval(app *app, args []string) {
 	for _, expr := range e.exprs {
 		expr.eval(app, nil)
 	}

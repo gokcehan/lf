@@ -20,7 +20,7 @@ var (
 )
 
 var (
-	gClientId      int
+	gClientID      int
 	gLastDirPath   string
 	gSelectionPath string
 	gSocketPath    string
@@ -51,11 +51,11 @@ func init() {
 
 	gSocketPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.sock", envUser))
 
-	gClientId = 1000
-	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientId))
+	gClientID = 1000
+	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientID))
 	for _, err := os.Stat(gLogPath); err == nil; _, err = os.Stat(gLogPath) {
-		gClientId++
-		gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientId))
+		gClientID++
+		gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientID))
 	}
 
 	gServerLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))

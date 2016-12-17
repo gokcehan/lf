@@ -26,217 +26,217 @@ var gTests = []struct {
 	{
 		"echo hello",
 		[]string{"echo", "hello", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello"}}},
+		[]Expr{&callExpr{"echo", []string{"hello"}}},
 	},
 
 	{
 		"echo hello world",
 		[]string{"echo", "hello", "world", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello", "world"}}},
+		[]Expr{&callExpr{"echo", []string{"hello", "world"}}},
 	},
 
 	{
 		"echo 'hello world'",
 		[]string{"echo", "hello world", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello world"}}},
+		[]Expr{&callExpr{"echo", []string{"hello world"}}},
 	},
 
 	{
 		`echo hello\ world`,
 		[]string{"echo", "hello world", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello world"}}},
+		[]Expr{&callExpr{"echo", []string{"hello world"}}},
 	},
 
 	{
 		`echo hello\	world`,
 		[]string{"echo", "hello\tworld", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello\tworld"}}},
+		[]Expr{&callExpr{"echo", []string{"hello\tworld"}}},
 	},
 
 	{
 		"echo hello\\\nworld",
 		[]string{"echo", "hello\nworld", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"hello\nworld"}}},
+		[]Expr{&callExpr{"echo", []string{"hello\nworld"}}},
 	},
 
 	{
 		`echo hello\aworld`,
 		[]string{"echo", "helloworld", "\n"},
-		[]Expr{&CallExpr{"echo", []string{"helloworld"}}},
+		[]Expr{&callExpr{"echo", []string{"helloworld"}}},
 	},
 
 	{
 		"set hidden # trailing comments are allowed",
 		[]string{"set", "hidden", "\n"},
-		[]Expr{&SetExpr{"hidden", ""}},
+		[]Expr{&setExpr{"hidden", ""}},
 	},
 
 	{
 		"set hidden; set preview",
 		[]string{"set", "hidden", ";", "set", "preview", "\n"},
-		[]Expr{&SetExpr{"hidden", ""}, &SetExpr{"preview", ""}},
+		[]Expr{&setExpr{"hidden", ""}, &setExpr{"preview", ""}},
 	},
 
 	{
 		"set hidden\nset preview",
 		[]string{"set", "hidden", "\n", "set", "preview", "\n"},
-		[]Expr{&SetExpr{"hidden", ""}, &SetExpr{"preview", ""}},
+		[]Expr{&setExpr{"hidden", ""}, &setExpr{"preview", ""}},
 	},
 
 	{
 		"set ratios 1:2:3",
 		[]string{"set", "ratios", "1:2:3", "\n"},
-		[]Expr{&SetExpr{"ratios", "1:2:3"}},
+		[]Expr{&setExpr{"ratios", "1:2:3"}},
 	},
 
 	{
 		"set ratios 1:2:3;",
 		[]string{"set", "ratios", "1:2:3", ";"},
-		[]Expr{&SetExpr{"ratios", "1:2:3"}},
+		[]Expr{&setExpr{"ratios", "1:2:3"}},
 	},
 
 	{
 		":set ratios 1:2:3",
 		[]string{":", "set", "ratios", "1:2:3", "\n", "\n"},
-		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}},
+		[]Expr{&listExpr{[]Expr{&setExpr{"ratios", "1:2:3"}}}},
 	},
 
 	{
 		":set ratios 1:2:3\nset hidden",
 		[]string{":", "set", "ratios", "1:2:3", "\n", "\n", "set", "hidden", "\n"},
-		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}, &SetExpr{"hidden", ""}},
+		[]Expr{&listExpr{[]Expr{&setExpr{"ratios", "1:2:3"}}}, &setExpr{"hidden", ""}},
 	},
 
 	{
 		":set ratios 1:2:3;",
 		[]string{":", "set", "ratios", "1:2:3", ";", "\n"},
-		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}},
+		[]Expr{&listExpr{[]Expr{&setExpr{"ratios", "1:2:3"}}}},
 	},
 
 	{
 		":set ratios 1:2:3;\nset hidden",
 		[]string{":", "set", "ratios", "1:2:3", ";", "\n", "set", "hidden", "\n"},
-		[]Expr{&ListExpr{[]Expr{&SetExpr{"ratios", "1:2:3"}}}, &SetExpr{"hidden", ""}},
+		[]Expr{&listExpr{[]Expr{&setExpr{"ratios", "1:2:3"}}}, &setExpr{"hidden", ""}},
 	},
 
 	{
 		"map gh cd ~",
 		[]string{"map", "gh", "cd", "~", "\n"},
-		[]Expr{&MapExpr{"gh", &CallExpr{"cd", []string{"~"}}}},
+		[]Expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}}}},
 	},
 
 	{
 		"map gh cd ~;",
 		[]string{"map", "gh", "cd", "~", ";"},
-		[]Expr{&MapExpr{"gh", &CallExpr{"cd", []string{"~"}}}},
+		[]Expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}}}},
 	},
 
 	{
 		"map gh :cd ~",
 		[]string{"map", "gh", ":", "cd", "~", "\n", "\n"},
-		[]Expr{&MapExpr{"gh", &ListExpr{[]Expr{&CallExpr{"cd", []string{"~"}}}}}},
+		[]Expr{&mapExpr{"gh", &listExpr{[]Expr{&callExpr{"cd", []string{"~"}}}}}},
 	},
 
 	{
 		"map gh :cd ~;",
 		[]string{"map", "gh", ":", "cd", "~", ";", "\n"},
-		[]Expr{&MapExpr{"gh", &ListExpr{[]Expr{&CallExpr{"cd", []string{"~"}}}}}},
+		[]Expr{&mapExpr{"gh", &listExpr{[]Expr{&callExpr{"cd", []string{"~"}}}}}},
 	},
 
 	{
 		"cmd usage $du -h . | less",
 		[]string{"cmd", "usage", "$", "du -h . | less", "\n"},
-		[]Expr{&CmdExpr{"usage", &ExecExpr{"$", "du -h . | less"}}},
+		[]Expr{&cmdExpr{"usage", &execExpr{"$", "du -h . | less"}}},
 	},
 
 	{
 		"cmd 世界 $echo 世界",
 		[]string{"cmd", "世界", "$", "echo 世界", "\n"},
-		[]Expr{&CmdExpr{"世界", &ExecExpr{"$", "echo 世界"}}},
+		[]Expr{&cmdExpr{"世界", &execExpr{"$", "echo 世界"}}},
 	},
 
 	{
 		"map u usage",
 		[]string{"map", "u", "usage", "\n"},
-		[]Expr{&MapExpr{"u", &CallExpr{"usage", nil}}},
+		[]Expr{&mapExpr{"u", &callExpr{"usage", nil}}},
 	},
 
 	{
 		"map u usage;",
 		[]string{"map", "u", "usage", ";"},
-		[]Expr{&MapExpr{"u", &CallExpr{"usage", nil}}},
+		[]Expr{&mapExpr{"u", &callExpr{"usage", nil}}},
 	},
 
 	{
 		"map u :usage",
 		[]string{"map", "u", ":", "usage", "\n", "\n"},
-		[]Expr{&MapExpr{"u", &ListExpr{[]Expr{&CallExpr{"usage", nil}}}}},
+		[]Expr{&mapExpr{"u", &listExpr{[]Expr{&callExpr{"usage", nil}}}}},
 	},
 
 	{
 		"map u :usage;",
 		[]string{"map", "u", ":", "usage", ";", "\n"},
-		[]Expr{&MapExpr{"u", &ListExpr{[]Expr{&CallExpr{"usage", nil}}}}},
+		[]Expr{&mapExpr{"u", &listExpr{[]Expr{&callExpr{"usage", nil}}}}},
 	},
 
 	{
 		"map r push :rename<space>",
 		[]string{"map", "r", "push", ":rename<space>", "\n"},
-		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>"}}}},
+		[]Expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}}}},
 	},
 
 	{
 		"map r push :rename<space>;",
 		[]string{"map", "r", "push", ":rename<space>;", "\n"},
-		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>;"}}}},
+		[]Expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>;"}}}},
 	},
 
 	{
 		"map r push :rename<space> # trailing comments are allowed after a space",
 		[]string{"map", "r", "push", ":rename<space>", "\n"},
-		[]Expr{&MapExpr{"r", &CallExpr{"push", []string{":rename<space>"}}}},
+		[]Expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}}}},
 	},
 
 	{
 		"map r :push :rename<space>",
 		[]string{"map", "r", ":", "push", ":rename<space>", "\n", "\n"},
-		[]Expr{&MapExpr{"r", &ListExpr{[]Expr{&CallExpr{"push", []string{":rename<space>"}}}}}},
+		[]Expr{&mapExpr{"r", &listExpr{[]Expr{&callExpr{"push", []string{":rename<space>"}}}}}},
 	},
 
 	{
 		"map r :push :rename<space> ; set hidden",
 		[]string{"map", "r", ":", "push", ":rename<space>", ";", "set", "hidden", "\n", "\n"},
-		[]Expr{&MapExpr{"r", &ListExpr{[]Expr{&CallExpr{"push", []string{":rename<space>"}}, &SetExpr{"hidden", ""}}}}},
+		[]Expr{&mapExpr{"r", &listExpr{[]Expr{&callExpr{"push", []string{":rename<space>"}}, &setExpr{"hidden", ""}}}}},
 	},
 
 	{
 		"map u $du -h . | less",
 		[]string{"map", "u", "$", "du -h . | less", "\n"},
-		[]Expr{&MapExpr{"u", &ExecExpr{"$", "du -h . | less"}}},
+		[]Expr{&mapExpr{"u", &execExpr{"$", "du -h . | less"}}},
 	},
 
 	{
 		"cmd usage $du -h \"$1\" | less",
 		[]string{"cmd", "usage", "$", `du -h "$1" | less`, "\n"},
-		[]Expr{&CmdExpr{"usage", &ExecExpr{"$", `du -h "$1" | less`}}},
+		[]Expr{&cmdExpr{"usage", &execExpr{"$", `du -h "$1" | less`}}},
 	},
 
 	{
 		"map u usage /",
 		[]string{"map", "u", "usage", "/", "\n"},
-		[]Expr{&MapExpr{"u", &CallExpr{"usage", []string{"/"}}}},
+		[]Expr{&mapExpr{"u", &callExpr{"usage", []string{"/"}}}},
 	},
 
 	{
 		"map ss :set sortby size; set showinfo size",
 		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", "\n", "\n"},
-		[]Expr{&MapExpr{"ss", &ListExpr{[]Expr{&SetExpr{"sortby", "size"}, &SetExpr{"showinfo", "size"}}}}},
+		[]Expr{&mapExpr{"ss", &listExpr{[]Expr{&setExpr{"sortby", "size"}, &setExpr{"showinfo", "size"}}}}},
 	},
 
 	{
 		"map ss :set sortby size; set showinfo size;",
 		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", ";", "\n"},
-		[]Expr{&MapExpr{"ss", &ListExpr{[]Expr{&SetExpr{"sortby", "size"}, &SetExpr{"showinfo", "size"}}}}},
+		[]Expr{&mapExpr{"ss", &listExpr{[]Expr{&setExpr{"sortby", "size"}, &setExpr{"showinfo", "size"}}}}},
 	},
 
 	{
@@ -248,9 +248,9 @@ var gTests = []struct {
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
 			"}}", "\n"},
-		[]Expr{&CmdExpr{"gohome", &ListExpr{[]Expr{
-			&CallExpr{"cd", []string{"~"}},
-			&SetExpr{"hidden", ""}}},
+		[]Expr{&cmdExpr{"gohome", &listExpr{[]Expr{
+			&callExpr{"cd", []string{"~"}},
+			&setExpr{"hidden", ""}}},
 		}},
 	},
 
@@ -263,9 +263,9 @@ var gTests = []struct {
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
 			"}}", "\n"},
-		[]Expr{&MapExpr{"gh", &ListExpr{[]Expr{
-			&CallExpr{"cd", []string{"~"}},
-			&SetExpr{"hidden", ""}}},
+		[]Expr{&mapExpr{"gh", &listExpr{[]Expr{
+			&callExpr{"cd", []string{"~"}},
+			&setExpr{"hidden", ""}}},
 		}},
 	},
 
@@ -282,7 +282,7 @@ var gTests = []struct {
 			tar -czvf "foo.tar.gz" foo
 			rm -rf foo
 		`, "}}", "\n"},
-		[]Expr{&MapExpr{"c", &ExecExpr{"$", `
+		[]Expr{&mapExpr{"c", &execExpr{"$", `
 			mkdir foo
 			IFS=':'; cp ${fs} foo
 			tar -czvf "foo.tar.gz" foo
@@ -303,7 +303,7 @@ var gTests = []struct {
 			tar -czvf "$1.tar.gz" "$1"
 			rm -rf "$1"
 		`, "}}", "\n"},
-		[]Expr{&CmdExpr{"compress", &ExecExpr{"$", `
+		[]Expr{&cmdExpr{"compress", &execExpr{"$", `
 			mkdir "$1"
 			IFS=':'; cp ${fs} "$1"
 			tar -czvf "$1.tar.gz" "$1"

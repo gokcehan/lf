@@ -11,35 +11,35 @@ import (
 	"strings"
 )
 
-type LinkState int8
+type linkState int8
 
 const (
-	NotLink LinkState = iota
-	Working
-	Broken
+	notLink linkState = iota
+	working
+	broken
 )
 
-type File struct {
+type file struct {
 	os.FileInfo
-	LinkState LinkState
+	LinkState linkState
 	Path      string
 }
 
-type FilesSortable struct {
-	files []*File
+type filesSortable struct {
+	files []*file
 	less  func(i, j int) bool
 }
 
-func (f FilesSortable) Len() int           { return len(f.files) }
-func (f FilesSortable) Swap(i, j int)      { f.files[i], f.files[j] = f.files[j], f.files[i] }
-func (f FilesSortable) Less(i, j int) bool { return f.less(i, j) }
+func (f filesSortable) Len() int           { return len(f.files) }
+func (f filesSortable) Swap(i, j int)      { f.files[i], f.files[j] = f.files[j], f.files[i] }
+func (f filesSortable) Less(i, j int) bool { return f.less(i, j) }
 
 // TODO: Replace with `sort.SliceStable` once available
-func sortFilesStable(files []*File, less func(i, j int) bool) {
-	sort.Stable(FilesSortable{files: files, less: less})
+func sortFilesStable(files []*file, less func(i, j int) bool) {
+	sort.Stable(filesSortable{files: files, less: less})
 }
 
-func getFilesSorted(path string) []*File {
+func getFilesSorted(path string) []*file {
 	fi, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
@@ -78,14 +78,14 @@ func getFilesSorted(path string) []*File {
 	return fi
 }
 
-func readdir(path string) ([]*File, error) {
+func readdir(path string) ([]*file, error) {
 	f, err := os.Open(path)
 	if err != nil {
 		return nil, err
 	}
 
 	names, err := f.Readdirnames(-1)
-	fi := make([]*File, 0, len(names))
+	fi := make([]*file, 0, len(names))
 	for _, filename := range names {
 		if !gOpts.hidden && filename[0] == '.' {
 			continue
@@ -101,20 +101,20 @@ func readdir(path string) ([]*File, error) {
 			return fi, lerr
 		}
 
-		var linkState LinkState
+		var linkState linkState
 
 		if lstat.Mode()&os.ModeSymlink != 0 {
 			stat, serr := os.Stat(fpath)
 			if serr == nil {
-				linkState = Working
+				linkState = working
 				lstat = stat
 			} else {
-				linkState = Broken
+				linkState = broken
 				log.Printf("getting link destination info: %s", serr)
 			}
 		}
 
-		fi = append(fi, &File{
+		fi = append(fi, &file{
 			FileInfo:  lstat,
 			LinkState: linkState,
 			Path:      fpath,
@@ -123,21 +123,21 @@ func readdir(path string) ([]*File, error) {
 	return fi, err
 }
 
-type Dir struct {
+type dir struct {
 	ind  int // which entry is highlighted
 	pos  int // which line in the ui highlighted entry is
 	path string
-	fi   []*File
+	fi   []*file
 }
 
-func newDir(path string) *Dir {
-	return &Dir{
+func newDir(path string) *dir {
+	return &dir{
 		path: path,
 		fi:   getFilesSorted(path),
 	}
 }
 
-func (dir *Dir) renew(height int) {
+func (dir *dir) renew(height int) {
 	var name string
 	if len(dir.fi) != 0 {
 		name = dir.fi[dir.ind].Name()
@@ -148,7 +148,7 @@ func (dir *Dir) renew(height int) {
 	dir.load(dir.ind, dir.pos, height, name)
 }
 
-func (dir *Dir) load(ind, pos, height int, name string) {
+func (dir *dir) load(ind, pos, height int, name string) {
 	if len(dir.fi) == 0 {
 		dir.ind, dir.pos = 0, 0
 		return
@@ -172,8 +172,8 @@ func (dir *Dir) load(ind, pos, height int, name string) {
 	dir.pos = pos
 }
 
-type Nav struct {
-	dirs   []*Dir
+type nav struct {
+	dirs   []*dir
 	inds   map[string]int
 	poss   map[string]int
 	names  map[string]string
@@ -182,8 +182,8 @@ type Nav struct {
 	height int
 }
 
-func getDirs(wd string, height int) []*Dir {
-	var dirs []*Dir
+func getDirs(wd string, height int) []*dir {
+	var dirs []*dir
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := newDir(curr)
@@ -205,7 +205,7 @@ func getDirs(wd string, height int) []*Dir {
 	return dirs
 }
 
-func newNav(height int) *Nav {
+func newNav(height int) *nav {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Printf("getting current directory: %s", err)
@@ -213,7 +213,7 @@ func newNav(height int) *Nav {
 
 	dirs := getDirs(wd, height)
 
-	return &Nav{
+	return &nav{
 		dirs:   dirs,
 		inds:   make(map[string]int),
 		poss:   make(map[string]int),
@@ -224,7 +224,7 @@ func newNav(height int) *Nav {
 	}
 }
 
-func (nav *Nav) renew(height int) {
+func (nav *nav) renew(height int) {
 	nav.height = height
 	for _, d := range nav.dirs {
 		d.renew(nav.height)
@@ -237,7 +237,7 @@ func (nav *Nav) renew(height int) {
 	}
 }
 
-func (nav *Nav) up(dist int) {
+func (nav *nav) up(dist int) {
 	dir := nav.currDir()
 
 	if dir.ind == 0 {
@@ -252,7 +252,7 @@ func (nav *Nav) up(dist int) {
 	dir.pos = max(dir.pos, edge)
 }
 
-func (nav *Nav) down(dist int) {
+func (nav *nav) down(dist int) {
 	dir := nav.currDir()
 
 	maxind := len(dir.fi) - 1
@@ -275,7 +275,7 @@ func (nav *Nav) down(dist int) {
 	dir.pos = min(dir.pos, maxind)
 }
 
-func (nav *Nav) updir() error {
+func (nav *nav) updir() error {
 	if len(nav.dirs) <= 1 {
 		return nil
 	}
@@ -298,15 +298,15 @@ func (nav *Nav) updir() error {
 	return nil
 }
 
-var ErrNotDir = fmt.Errorf("not a directory")
+var errNotDir = fmt.Errorf("not a directory")
 
-func (nav *Nav) open() error {
+func (nav *nav) open() error {
 	curr, err := nav.currFile()
 	if err != nil {
 		return err
 	}
 	if !curr.IsDir() {
-		return ErrNotDir
+		return errNotDir
 	}
 	path := curr.Path
 
@@ -323,21 +323,21 @@ func (nav *Nav) open() error {
 	return nil
 }
 
-func (nav *Nav) bot() {
+func (nav *nav) bot() {
 	dir := nav.currDir()
 
 	dir.ind = len(dir.fi) - 1
 	dir.pos = min(dir.ind, nav.height-1)
 }
 
-func (nav *Nav) top() {
+func (nav *nav) top() {
 	dir := nav.currDir()
 
 	dir.ind = 0
 	dir.pos = 0
 }
 
-func (nav *Nav) cd(wd string) error {
+func (nav *nav) cd(wd string) error {
 	wd = strings.Replace(wd, "~", envHome, -1)
 	wd = filepath.Clean(wd)
 
@@ -356,7 +356,7 @@ func (nav *Nav) cd(wd string) error {
 	return nil
 }
 
-func (nav *Nav) toggleMark(path string) {
+func (nav *nav) toggleMark(path string) {
 	if nav.marks[path] {
 		delete(nav.marks, path)
 	} else {
@@ -364,7 +364,7 @@ func (nav *Nav) toggleMark(path string) {
 	}
 }
 
-func (nav *Nav) toggle() {
+func (nav *nav) toggle() {
 	curr, err := nav.currFile()
 	if err != nil {
 		return
@@ -375,7 +375,7 @@ func (nav *Nav) toggle() {
 	nav.down(1)
 }
 
-func (nav *Nav) invert() {
+func (nav *nav) invert() {
 	last := nav.currDir()
 	for _, f := range last.fi {
 		path := filepath.Join(last.path, f.Name())
@@ -383,7 +383,7 @@ func (nav *Nav) invert() {
 	}
 }
 
-func (nav *Nav) save(copy bool) error {
+func (nav *nav) save(copy bool) error {
 	if len(nav.marks) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
@@ -415,7 +415,7 @@ func (nav *Nav) save(copy bool) error {
 	return nil
 }
 
-func (nav *Nav) put() error {
+func (nav *nav) put() error {
 	list, copy, err := loadFiles()
 	if err != nil {
 		return err
@@ -452,7 +452,7 @@ func (nav *Nav) put() error {
 	return nil
 }
 
-func (nav *Nav) sync() error {
+func (nav *nav) sync() error {
 	list, copy, err := loadFiles()
 	if err != nil {
 		return err
@@ -466,11 +466,11 @@ func (nav *Nav) sync() error {
 	return nil
 }
 
-func (nav *Nav) currDir() *Dir {
+func (nav *nav) currDir() *dir {
 	return nav.dirs[len(nav.dirs)-1]
 }
 
-func (nav *Nav) currFile() (*File, error) {
+func (nav *nav) currFile() (*file, error) {
 	last := nav.dirs[len(nav.dirs)-1]
 
 	if len(last.fi) == 0 {
@@ -479,7 +479,7 @@ func (nav *Nav) currFile() (*File, error) {
 	return last.fi[last.ind], nil
 }
 
-func (nav *Nav) currMarks() []string {
+func (nav *nav) currMarks() []string {
 	marks := make([]string, 0, len(nav.marks))
 	for m := range nav.marks {
 		marks = append(marks, m)

@@ -7,22 +7,22 @@ import (
 	"unicode"
 )
 
-type TokenType int
+type tokenType int
 
 const (
-	TokenEOF TokenType = iota
+	tokenEOF tokenType = iota
 	// no explicit keyword type
-	TokenIdent     // e.g. set, ratios, 1:2:3
-	TokenColon     // :
-	TokenPrefix    // $, !, &, / or ?
-	TokenLBraces   // {{
-	TokenRBraces   // }}
-	TokenCommand   // in between a prefix to \n or between {{ and }}
-	TokenSemicolon // ;
+	tokenIdent     // e.g. set, ratios, 1:2:3
+	tokenColon     // :
+	tokenPrefix    // $, !, &, / or ?
+	tokenLBraces   // {{
+	tokenRBraces   // }}
+	tokenCommand   // in between a prefix to \n or between {{ and }}
+	tokenSemicolon // ;
 	// comments are stripped
 )
 
-type Scanner struct {
+type scanner struct {
 	buf []byte    // input buffer
 	off int       // current offset in buf
 	chr byte      // current character in buf
@@ -32,12 +32,12 @@ type Scanner struct {
 	key bool      // scanning keys
 	blk bool      // scanning block
 	cmd bool      // scanning command
-	typ TokenType // scanned token type
+	typ tokenType // scanned token type
 	tok string    // scanned token value
 	// TODO: pos
 }
 
-func newScanner(r io.Reader) *Scanner {
+func newScanner(r io.Reader) *scanner {
 	buf, err := ioutil.ReadAll(r)
 	if err != nil {
 		log.Printf("scanning: %s", err)
@@ -53,14 +53,14 @@ func newScanner(r io.Reader) *Scanner {
 		chr = buf[0]
 	}
 
-	return &Scanner{
+	return &scanner{
 		buf: buf,
 		eof: eof,
 		chr: chr,
 	}
 }
 
-func (s *Scanner) next() {
+func (s *scanner) next() {
 	if s.off+1 < len(s.buf) {
 		s.off++
 		s.chr = s.buf[s.off]
@@ -72,7 +72,7 @@ func (s *Scanner) next() {
 	s.eof = true
 }
 
-func (s *Scanner) peek() byte {
+func (s *scanner) peek() byte {
 	if s.off+1 < len(s.buf) {
 		return s.buf[s.off+1]
 	}
@@ -89,24 +89,24 @@ func isPrefix(b byte) bool {
 	return b == '$' || b == '!' || b == '&' // || b == '/' || b == '?'
 }
 
-func (s *Scanner) scan() bool {
+func (s *scanner) scan() bool {
 scan:
 	switch {
 	case s.eof:
 		s.next()
 		if s.sem {
-			s.typ = TokenSemicolon
+			s.typ = tokenSemicolon
 			s.tok = "\n"
 			s.sem = false
 			return true
 		}
 		if s.nln {
-			s.typ = TokenSemicolon
+			s.typ = tokenSemicolon
 			s.tok = "\n"
 			s.nln = false
 			return true
 		}
-		s.typ = TokenEOF
+		s.typ = tokenEOF
 		s.tok = "EOF"
 		return false
 	case s.key:
@@ -114,7 +114,7 @@ scan:
 		for !s.eof && !isSpace(s.chr) {
 			s.next()
 		}
-		s.typ = TokenIdent
+		s.typ = tokenIdent
 		s.tok = string(s.buf[beg:s.off])
 		s.key = false
 	case s.blk:
@@ -123,7 +123,7 @@ scan:
 		if !s.cmd {
 			s.next()
 			s.next()
-			s.typ = TokenRBraces
+			s.typ = tokenRBraces
 			s.tok = "}}"
 			s.blk = false
 			s.sem = true
@@ -136,7 +136,7 @@ scan:
 			s.next()
 			if s.chr == '}' {
 				if !s.eof && s.peek() == '}' {
-					s.typ = TokenCommand
+					s.typ = tokenCommand
 					s.tok = string(s.buf[beg:s.off])
 					s.cmd = false
 					return true
@@ -144,7 +144,7 @@ scan:
 			}
 		}
 
-		s.typ = TokenEOF
+		s.typ = tokenEOF
 		s.tok = "EOF"
 		return false
 	case s.cmd:
@@ -156,7 +156,7 @@ scan:
 			if s.peek() == '{' {
 				s.next()
 				s.next()
-				s.typ = TokenLBraces
+				s.typ = tokenLBraces
 				s.tok = "{{"
 				s.blk = true
 				return true
@@ -169,20 +169,20 @@ scan:
 			s.next()
 		}
 
-		s.typ = TokenCommand
+		s.typ = tokenCommand
 		s.tok = string(s.buf[beg:s.off])
 		s.cmd = false
 		s.sem = true
 	case s.chr == '\n':
 		if s.sem {
-			s.typ = TokenSemicolon
+			s.typ = tokenSemicolon
 			s.tok = "\n"
 			s.sem = false
 			return true
 		}
 		s.next()
 		if s.nln {
-			s.typ = TokenSemicolon
+			s.typ = tokenSemicolon
 			s.tok = "\n"
 			s.nln = false
 			return true
@@ -194,7 +194,7 @@ scan:
 		}
 		goto scan
 	case s.chr == ';':
-		s.typ = TokenSemicolon
+		s.typ = tokenSemicolon
 		s.tok = ";"
 		s.sem = false
 		s.next()
@@ -209,29 +209,29 @@ scan:
 		for !s.eof && s.chr != '\'' {
 			s.next()
 		}
-		s.typ = TokenIdent
+		s.typ = tokenIdent
 		s.tok = string(s.buf[beg:s.off])
 		s.next()
 	case s.chr == ':':
-		s.typ = TokenColon
+		s.typ = tokenColon
 		s.tok = ":"
 		s.nln = true
 		s.next()
 	case s.chr == '{' && s.peek() == '{':
 		s.next()
 		s.next()
-		s.typ = TokenLBraces
+		s.typ = tokenLBraces
 		s.tok = "{{"
 		s.sem = false
 		s.nln = false
 	case s.chr == '}' && s.peek() == '}':
 		s.next()
 		s.next()
-		s.typ = TokenRBraces
+		s.typ = tokenRBraces
 		s.tok = "}}"
 		s.sem = true
 	case isPrefix(s.chr):
-		s.typ = TokenPrefix
+		s.typ = tokenPrefix
 		s.tok = string(s.chr)
 		s.cmd = true
 		s.next()
@@ -251,7 +251,7 @@ scan:
 			s.next()
 		}
 
-		s.typ = TokenIdent
+		s.typ = tokenIdent
 		s.tok = string(buf)
 		s.sem = true
 

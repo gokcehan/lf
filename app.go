@@ -10,18 +10,18 @@ import (
 	"strings"
 )
 
-type App struct {
-	ui   *UI
-	nav  *Nav
+type app struct {
+	ui   *ui
+	nav  *nav
 	quit chan bool
 }
 
-func newApp() *App {
+func newApp() *app {
 	ui := newUI()
 	nav := newNav(ui.wins[0].h)
 	quit := make(chan bool, 1)
 
-	return &App{
+	return &app{
 		ui:   ui,
 		nav:  nav,
 		quit: quit,
@@ -55,10 +55,10 @@ func waitKey() error {
 // This is the main event loop of the application. There are two channels to
 // read expressions from client and server. Reading and evaluation are done on
 // separate goroutines.
-func (app *App) handleInp() {
+func (app *app) handleInp() {
 	clientChan := app.ui.readExpr()
 
-	var serverChan chan Expr
+	var serverChan chan expr
 
 	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {
@@ -102,7 +102,7 @@ func (app *App) handleInp() {
 	}
 }
 
-func (app *App) exportVars() {
+func (app *app) exportVars() {
 	var envFile string
 	if f, err := app.nav.currFile(); err == nil {
 		envFile = f.Path
@@ -121,7 +121,7 @@ func (app *App) exportVars() {
 		os.Setenv("fx", envFiles)
 	}
 
-	os.Setenv("id", strconv.Itoa(gClientId))
+	os.Setenv("id", strconv.Itoa(gClientID))
 }
 
 // This function is used to run a command in shell. Following modes are used:
@@ -132,7 +132,7 @@ func (app *App) exportVars() {
 // &       No    Yes    No                   Do nothing
 //
 // Waiting async commands are not used for now.
-func (app *App) runShell(s string, args []string, wait bool, async bool) {
+func (app *app) runShell(s string, args []string, wait bool, async bool) {
 	app.exportVars()
 
 	if len(gOpts.ifs) != 0 {

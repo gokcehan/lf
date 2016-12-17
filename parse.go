@@ -33,53 +33,53 @@ import (
 	"io"
 )
 
-type Expr interface {
+type expr interface {
 	String() string
 
-	eval(app *App, args []string)
+	eval(app *app, args []string)
 	// TODO: add a bind method to avoid passing args in eval
 }
 
-type SetExpr struct {
+type setExpr struct {
 	opt string
 	val string
 }
 
-func (e *SetExpr) String() string { return fmt.Sprintf("set %s %s", e.opt, e.val) }
+func (e *setExpr) String() string { return fmt.Sprintf("set %s %s", e.opt, e.val) }
 
-type MapExpr struct {
+type mapExpr struct {
 	keys string
-	expr Expr
+	expr expr
 }
 
-func (e *MapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
+func (e *mapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
 
-type CmdExpr struct {
+type cmdExpr struct {
 	name string
-	expr Expr
+	expr expr
 }
 
-func (e *CmdExpr) String() string { return fmt.Sprintf("cmd %s %s", e.name, e.expr) }
+func (e *cmdExpr) String() string { return fmt.Sprintf("cmd %s %s", e.name, e.expr) }
 
-type CallExpr struct {
+type callExpr struct {
 	name string
 	args []string
 }
 
-func (e *CallExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
+func (e *callExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
 
-type ExecExpr struct {
+type execExpr struct {
 	pref string
 	expr string
 }
 
-func (e *ExecExpr) String() string { return fmt.Sprintf("%s %s", e.pref, e.expr) }
+func (e *execExpr) String() string { return fmt.Sprintf("%s %s", e.pref, e.expr) }
 
-type ListExpr struct {
-	exprs []Expr
+type listExpr struct {
+	exprs []expr
 }
 
-func (e *ListExpr) String() string {
+func (e *listExpr) String() string {
 	buf := []byte{':', '{', '{', ' '}
 	for _, expr := range e.exprs {
 		buf = append(buf, expr.String()...)
@@ -89,95 +89,95 @@ func (e *ListExpr) String() string {
 	return string(buf)
 }
 
-type Parser struct {
-	scanner *Scanner
-	expr    Expr
+type parser struct {
+	scanner *scanner
+	expr    expr
 	err     error
 }
 
-func newParser(r io.Reader) *Parser {
+func newParser(r io.Reader) *parser {
 	scanner := newScanner(r)
 
 	scanner.scan()
 
-	return &Parser{
+	return &parser{
 		scanner: scanner,
 	}
 }
 
-func (p *Parser) parseExpr() Expr {
+func (p *parser) parseExpr() expr {
 	s := p.scanner
 
-	var result Expr
+	var result expr
 
 	switch s.typ {
-	case TokenEOF:
+	case tokenEOF:
 		return nil
-	case TokenIdent:
+	case tokenIdent:
 		switch s.tok {
 		case "set":
 			var val string
 
 			s.scan()
-			if s.typ != TokenIdent {
+			if s.typ != tokenIdent {
 				p.err = fmt.Errorf("expected identifier: %s", s.tok)
 			}
 			opt := s.tok
 
 			s.scan()
-			if s.typ != TokenSemicolon {
+			if s.typ != tokenSemicolon {
 				val = s.tok
 				s.scan()
 			}
 
 			s.scan()
 
-			result = &SetExpr{opt, val}
+			result = &setExpr{opt, val}
 		case "map":
-			var expr Expr
+			var expr expr
 
 			s.scan()
 			keys := s.tok
 
 			s.scan()
-			if s.typ != TokenSemicolon {
+			if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
 			}
 
-			result = &MapExpr{keys, expr}
+			result = &mapExpr{keys, expr}
 		case "cmd":
-			var expr Expr
+			var expr expr
 
 			s.scan()
 			name := s.tok
 
 			s.scan()
-			if s.typ != TokenSemicolon {
+			if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
 			}
 
-			result = &CmdExpr{name, expr}
+			result = &cmdExpr{name, expr}
 		default:
 			name := s.tok
 
 			var args []string
-			for s.scan() && s.typ != TokenSemicolon {
+			for s.scan() && s.typ != tokenSemicolon {
 				args = append(args, s.tok)
 			}
 
 			s.scan()
 
-			result = &CallExpr{name, args}
+			result = &callExpr{name, args}
 		}
-	case TokenColon:
+	case tokenColon:
 		s.scan()
 
-		var exprs []Expr
-		if s.typ == TokenLBraces {
+		var exprs []expr
+		if s.typ == tokenLBraces {
 			s.scan()
 			for {
 				e := p.parseExpr()
@@ -185,7 +185,7 @@ func (p *Parser) parseExpr() Expr {
 					return nil
 				}
 				exprs = append(exprs, e)
-				if s.typ == TokenRBraces {
+				if s.typ == tokenRBraces {
 					break
 				}
 			}
@@ -205,14 +205,14 @@ func (p *Parser) parseExpr() Expr {
 
 		s.scan()
 
-		result = &ListExpr{exprs}
-	case TokenPrefix:
+		result = &listExpr{exprs}
+	case tokenPrefix:
 		var expr string
 
 		pref := s.tok
 
 		s.scan()
-		if s.typ == TokenLBraces {
+		if s.typ == tokenLBraces {
 			s.scan()
 			expr = s.tok
 			s.scan()
@@ -223,7 +223,7 @@ func (p *Parser) parseExpr() Expr {
 		s.scan()
 		s.scan()
 
-		result = &ExecExpr{pref, expr}
+		result = &execExpr{pref, expr}
 	default:
 		p.err = fmt.Errorf("unexpected token: %s", s.tok)
 	}
@@ -231,7 +231,7 @@ func (p *Parser) parseExpr() Expr {
 	return result
 }
 
-func (p *Parser) parse() bool {
+func (p *parser) parse() bool {
 	if p.expr = p.parseExpr(); p.expr == nil {
 		return false
 	}
