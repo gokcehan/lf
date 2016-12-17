@@ -201,32 +201,29 @@ func TestHumanize(t *testing.T) {
 	}
 }
 
-func TestExtractNums(t *testing.T) {
-	names := []struct {
-		s        string
-		nums     []int
-		rest     []string
-		numFirst bool
+func TestNaturalLess(t *testing.T) {
+	tests := []struct {
+		s1       string
+		s2       string
+		expected bool
 	}{
-		{"foo123bar456", []int{123, 456}, []string{"foo", "bar"}, false},
-		{"123foo456bar", []int{123, 456}, []string{"foo", "bar"}, true},
-		{"a-1-1", []int{1, 1}, []string{"a-", "-"}, false},
-		{"a-1-1.", []int{1, 1}, []string{"a-", "-", "."}, false},
-		{"a-1-1.txt", []int{1, 1}, []string{"a-", "-", ".txt"}, false},
-		{"a-1-10.txt", []int{1, 10}, []string{"a-", "-", ".txt"}, false},
-		{"a-10-1.txt", []int{10, 1}, []string{"a-", "-", ".txt"}, false},
+		{"foo", "bar", false},
+		{"bar", "baz", true},
+		{"foo", "123", false},
+		{"foo1", "foobar", true},
+		{"foo1", "foo10", true},
+		{"foo2", "foo10", true},
+		{"foo1", "foo10bar", true},
+		{"foo2", "foo10bar", true},
+		{"foo1bar", "foo10bar", true},
+		{"foo2bar", "foo10bar", true},
+		{"foo1bar", "foo10", true},
+		{"foo2bar", "foo10", true},
 	}
 
-	for _, name := range names {
-		nums, rest, numFirst := extractNums(name.s)
-		if !reflect.DeepEqual(nums, name.nums) {
-			t.Errorf("at input '%s' expected '%v' but got '%v'", name.s, name.nums, nums)
-		}
-		if !reflect.DeepEqual(rest, name.rest) {
-			t.Errorf("at input '%s' expected '%v' but got '%v'", name.s, name.rest, rest)
-		}
-		if !numFirst == name.numFirst {
-			t.Errorf("at input '%s' expected '%t' but got '%t'", name.s, name.numFirst, numFirst)
+	for _, test := range tests {
+		if b := naturalLess(test.s1, test.s2); b != test.expected {
+			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.expected, b)
 		}
 	}
 }

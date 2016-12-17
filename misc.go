@@ -2,12 +2,11 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
 )
@@ -176,53 +175,32 @@ func humanize(size int64) string {
 	return ""
 }
 
-// This function extracts numbers from a string and returns with the rest.
-// It is used for numeric sorting of files when the file name consists of
-// both digits and letters.
-//
-// For instance if your input is 'foo123bar456' you get a slice of number
-// consisting of elements '123' and '456' and rest of the string as a slice
-// consisting of elements 'foo' and 'bar'. The last return argument denotes
-// whether or not the first partition is a number.
-func extractNums(s string) (nums []int, rest []string, numFirst bool) {
-	var buf []rune
+// This regexp is used to partition a given string as numbers and non-numbers.
+// For instance, if your input is 'foo123bar456' you get a slice of 'foo',
+// '123', 'bar', and '456'. This is useful for natural sorting which takes into
+// account values of numbers within strings.
+var rePart = regexp.MustCompile(`\d+|\D+`)
 
-	r, _ := utf8.DecodeRuneInString(s)
-	digit := unicode.IsDigit(r)
-	numFirst = digit
+func naturalLess(s1, s2 string) bool {
+	parts1 := rePart.FindAllString(s1, -1)
+	parts2 := rePart.FindAllString(s2, -1)
 
-	for _, c := range s {
-		if unicode.IsDigit(c) == digit {
-			buf = append(buf, c)
+	for i := 0; i < len(parts1) && i < len(parts2); i++ {
+		if parts1[i] == parts2[i] {
 			continue
 		}
 
-		if digit {
-			i, err := strconv.Atoi(string(buf))
-			if err != nil {
-				log.Printf("extracting numbers: %s", err)
-			}
-			nums = append(nums, i)
-		} else {
-			rest = append(rest, string(buf))
+		num1, err1 := strconv.Atoi(parts1[i])
+		num2, err2 := strconv.Atoi(parts2[i])
+
+		if err1 == nil && err2 == nil {
+			return num1 < num2
 		}
 
-		buf = nil
-		buf = append(buf, c)
-		digit = !digit
+		return parts1[i] < parts2[i]
 	}
 
-	if digit {
-		i, err := strconv.Atoi(string(buf))
-		if err != nil {
-			log.Printf("extracting numbers: %s", err)
-		}
-		nums = append(nums, i)
-	} else {
-		rest = append(rest, string(buf))
-	}
-
-	return
+	return len(parts1) < len(parts2)
 }
 
 func min(a, b int) int {
