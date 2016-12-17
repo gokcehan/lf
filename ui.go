@@ -113,7 +113,7 @@ func (win *Win) print(x, y int, fg, bg termbox.Attribute, s string) {
 		r, w := utf8.DecodeRuneInString(s[i:])
 
 		if r == EscapeCode && i+1 < len(s) && s[i+1] == '[' {
-			j := strings.IndexByte(s[i:min(len(s), i+8)], 'm')
+			j := strings.IndexByte(s[i:min(len(s), i+32)], 'm')
 
 			if j == -1 {
 				continue
