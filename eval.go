@@ -188,15 +188,24 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "open":
-		err := app.nav.open()
-		if err == nil {
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
+		curr, err := app.nav.currFile()
+		if err != nil {
+			msg := fmt.Sprintf("opening: %s", err)
+			app.ui.message = msg
+			log.Print(msg)
 			return
 		}
-		if err != errNotDir {
-			app.ui.message = err.Error()
-			log.Print(err)
+
+		if curr.IsDir() {
+			app.nav.open()
+			if err != nil {
+				msg := fmt.Sprintf("opening directory: %s", err)
+				app.ui.message = msg
+				log.Print(msg)
+				return
+			}
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 			return
 		}
 

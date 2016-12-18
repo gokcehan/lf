@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-type linkState int8
+type linkState byte
 
 const (
 	notLink linkState = iota
@@ -298,16 +298,12 @@ func (nav *nav) updir() error {
 	return nil
 }
 
-var errNotDir = fmt.Errorf("not a directory")
-
 func (nav *nav) open() error {
 	curr, err := nav.currFile()
 	if err != nil {
-		return err
+		return fmt.Errorf("open: %s", err)
 	}
-	if !curr.IsDir() {
-		return errNotDir
-	}
+
 	path := curr.Path
 
 	dir := newDir(path)

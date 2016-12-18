@@ -58,7 +58,7 @@ func waitKey() error {
 func (app *app) handleInp() {
 	clientChan := app.ui.readExpr()
 
-	var serverChan chan expr
+	var serverChan <-chan expr
 
 	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {

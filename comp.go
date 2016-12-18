@@ -206,7 +206,7 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 	switch len(f) {
 	case 1:
 		words := gCmdWords
-		for c, _ := range gOpts.cmds {
+		for c := range gOpts.cmds {
 			words = append(words, c)
 		}
 		sort.Strings(words)

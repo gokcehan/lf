@@ -7,9 +7,9 @@ import (
 
 func TestMatchLongest(t *testing.T) {
 	tests := []struct {
-		fst string
-		snd string
-		res string
+		s1  string
+		s2  string
+		exp string
 	}{
 		{"", "", ""},
 		{"", "foo", ""},
@@ -21,8 +21,8 @@ func TestMatchLongest(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if l := matchLongest(test.fst, test.snd); l != test.res {
-			t.Errorf("at input '%s' and '%s' expected '%s' but got '%s'", test.fst, test.snd, test.res, l)
+		if got := matchLongest(test.s1, test.s2); got != test.exp {
+			t.Errorf("at input '%s' and '%s' expected '%s' but got '%s'", test.s1, test.s2, test.exp, got)
 		}
 	}
 }

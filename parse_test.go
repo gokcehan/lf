@@ -7,7 +7,7 @@ import (
 )
 
 func TestParse(t *testing.T) {
-	for _, test := range gTests {
+	for _, test := range gEvalTests {
 		p := newParser(strings.NewReader(test.inp))
 
 		for _, expr := range test.exprs {

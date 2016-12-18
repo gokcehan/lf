@@ -21,6 +21,28 @@ import (
 
 const gEscapeCode = 27
 
+var gAnsiCodes = map[int]termbox.Attribute{
+	1:  termbox.AttrBold,
+	4:  termbox.AttrUnderline,
+	7:  termbox.AttrReverse,
+	30: termbox.ColorBlack,
+	31: termbox.ColorRed,
+	32: termbox.ColorGreen,
+	33: termbox.ColorYellow,
+	34: termbox.ColorBlue,
+	35: termbox.ColorMagenta,
+	36: termbox.ColorCyan,
+	37: termbox.ColorWhite,
+	40: termbox.ColorBlack,
+	41: termbox.ColorRed,
+	42: termbox.ColorGreen,
+	43: termbox.ColorYellow,
+	44: termbox.ColorBlue,
+	45: termbox.ColorMagenta,
+	46: termbox.ColorCyan,
+	47: termbox.ColorWhite,
+}
+
 var gKeyVal = map[termbox.Key][]rune{
 	termbox.KeyF1:             []rune{'<', 'f', '-', '1', '>'},
 	termbox.KeyF2:             []rune{'<', 'f', '-', '2', '>'},
@@ -114,7 +136,6 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 
 		if r == gEscapeCode && i+1 < len(s) && s[i+1] == '[' {
 			j := strings.IndexByte(s[i:min(len(s), i+32)], 'm')
-
 			if j == -1 {
 				continue
 			}
@@ -146,45 +167,16 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 			}
 
 			for _, n := range nums {
-				switch n {
-				case 1:
-					fg = fg | termbox.AttrBold
-				case 4:
-					fg = fg | termbox.AttrUnderline
-				case 7:
-					fg = fg | termbox.AttrReverse
-				case 30:
-					fg = fg | termbox.ColorBlack
-				case 31:
-					fg = fg | termbox.ColorRed
-				case 32:
-					fg = fg | termbox.ColorGreen
-				case 33:
-					fg = fg | termbox.ColorYellow
-				case 34:
-					fg = fg | termbox.ColorBlue
-				case 35:
-					fg = fg | termbox.ColorMagenta
-				case 36:
-					fg = fg | termbox.ColorCyan
-				case 37:
-					fg = fg | termbox.ColorWhite
-				case 40:
-					bg = bg | termbox.ColorBlack
-				case 41:
-					bg = bg | termbox.ColorRed
-				case 42:
-					bg = bg | termbox.ColorGreen
-				case 43:
-					bg = bg | termbox.ColorYellow
-				case 44:
-					bg = bg | termbox.ColorBlue
-				case 45:
-					bg = bg | termbox.ColorMagenta
-				case 46:
-					bg = bg | termbox.ColorCyan
-				case 47:
-					bg = bg | termbox.ColorWhite
+				attr, ok := gAnsiCodes[n]
+				if !ok {
+					log.Printf("unknown ansi code: %d", n)
+					continue
+				}
+				if 1 <= n && n <= 37 {
+					fg = fg | attr
+				}
+				if 40 <= n && n <= 47 {
+					bg = bg | attr
 				}
 			}
 
@@ -225,7 +217,7 @@ func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 
 	if len(dir.fi) == 0 {
 		fg = termbox.AttrBold
-		win.print(0, 0, fg, bg, "empty")
+		win.print(2, 0, fg, bg, "empty")
 		return
 	}
 
@@ -236,15 +228,13 @@ func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 
 	for i, f := range dir.fi[beg:end] {
 		switch {
-		case f.LinkState != notLink:
-			if f.LinkState == working {
-				fg = termbox.ColorCyan
-				if f.Mode().IsDir() {
-					fg |= termbox.AttrBold
-				}
-			} else {
-				fg = termbox.ColorMagenta
+		case f.LinkState == working:
+			fg = termbox.ColorCyan
+			if f.Mode().IsDir() {
+				fg |= termbox.AttrBold
 			}
+		case f.LinkState == broken:
+			fg = termbox.ColorMagenta
 		case f.Mode().IsRegular():
 			if f.Mode()&0111 != 0 {
 				fg = termbox.AttrBold | termbox.ColorGreen
@@ -343,11 +333,13 @@ type ui struct {
 	dirprev *dir
 	keychan chan string
 	evschan chan termbox.Event
+	menubuf *bytes.Buffer
 	cmdpref string
 	cmdlacc []rune
 	cmdracc []rune
 	cmdbuf  []rune
-	menubuf *bytes.Buffer
+	keyacc  []rune
+	keycnt  []rune
 }
 
 func getWidths(wtot int) []int {
@@ -481,7 +473,7 @@ func (ui *ui) loadFile(nav *nav) {
 		for i := 0; i < nav.height && buf.Scan(); i++ {
 			for _, r := range buf.Text() {
 				if r == 0 {
-					ui.regprev = []string{"[1mbinary[0m"}
+					ui.regprev = []string{"\033[1mbinary\033[0m"}
 					return
 				}
 			}
@@ -556,8 +548,8 @@ func (ui *ui) draw(nav *nav) {
 
 		ui.menuwin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
 		for i, line := range lines[1:] {
-			ui.menuwin.printl(0, i+1, termbox.ColorDefault, termbox.ColorDefault, "")
-			ui.menuwin.print(0, i+1, termbox.ColorDefault, termbox.ColorDefault, line)
+			ui.menuwin.printl(0, i+1, fg, bg, "")
+			ui.menuwin.print(0, i+1, fg, bg, line)
 		}
 	}
 
@@ -565,7 +557,7 @@ func (ui *ui) draw(nav *nav) {
 
 	if ui.cmdpref == "" {
 		// leave the cursor at the beginning of the current file for screen readers
-		fmt.Printf("[%d;%dH", ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
+		fmt.Printf("\033[%d;%dH", ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
 	}
 }
 
@@ -638,148 +630,150 @@ type multiExpr struct {
 	count int
 }
 
-// This function is used to read expressions on the client side. Digits are
-// interpreted as command counts but this is only done for digits preceding any
-// non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readExpr() chan multiExpr {
-	ch := make(chan multiExpr)
+func readCmdEvent(ch chan<- multiExpr, ev termbox.Event) {
+	if ev.Ch != 0 {
+		ch <- multiExpr{&callExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
+	} else {
+		// TODO: rest of the keys
+		switch ev.Key {
+		case termbox.KeyEsc:
+			ch <- multiExpr{&callExpr{"cmd-escape", nil}, 1}
+		case termbox.KeySpace:
+			ch <- multiExpr{&callExpr{"cmd-insert", []string{" "}}, 1}
+		case termbox.KeyTab:
+			ch <- multiExpr{&callExpr{"cmd-comp", nil}, 1}
+		case termbox.KeyEnter, termbox.KeyCtrlJ:
+			ch <- multiExpr{&callExpr{"cmd-enter", nil}, 1}
+		case termbox.KeyBackspace, termbox.KeyBackspace2:
+			ch <- multiExpr{&callExpr{"cmd-delete-back", nil}, 1}
+		case termbox.KeyDelete, termbox.KeyCtrlD:
+			ch <- multiExpr{&callExpr{"cmd-delete", nil}, 1}
+		case termbox.KeyArrowLeft, termbox.KeyCtrlB:
+			ch <- multiExpr{&callExpr{"cmd-left", nil}, 1}
+		case termbox.KeyArrowRight, termbox.KeyCtrlF:
+			ch <- multiExpr{&callExpr{"cmd-right", nil}, 1}
+		case termbox.KeyHome, termbox.KeyCtrlA:
+			ch <- multiExpr{&callExpr{"cmd-beg", nil}, 1}
+		case termbox.KeyEnd, termbox.KeyCtrlE:
+			ch <- multiExpr{&callExpr{"cmd-end", nil}, 1}
+		case termbox.KeyCtrlK:
+			ch <- multiExpr{&callExpr{"cmd-delete-end", nil}, 1}
+		case termbox.KeyCtrlU:
+			ch <- multiExpr{&callExpr{"cmd-delete-beg", nil}, 1}
+		case termbox.KeyCtrlW:
+			ch <- multiExpr{&callExpr{"cmd-delete-word", nil}, 1}
+		case termbox.KeyCtrlY:
+			ch <- multiExpr{&callExpr{"cmd-put", nil}, 1}
+		case termbox.KeyCtrlT:
+			ch <- multiExpr{&callExpr{"cmd-transpose", nil}, 1}
+		}
+	}
+}
 
+func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 	renew := &callExpr{"renew", nil}
 	count := 1
 
-	var acc []rune
-	var cnt []rune
+	switch ev.Type {
+	case termbox.EventKey:
+		if ev.Ch != 0 {
+			switch {
+			case ev.Ch == '<':
+				ui.keyacc = append(ui.keyacc, '<', 'l', 't', '>')
+			case ev.Ch == '>':
+				ui.keyacc = append(ui.keyacc, '<', 'g', 't', '>')
+			case unicode.IsDigit(ev.Ch) && len(ui.keyacc) == 0:
+				ui.keycnt = append(ui.keycnt, ev.Ch)
+			default:
+				ui.keyacc = append(ui.keyacc, ev.Ch)
+			}
+		} else {
+			val := gKeyVal[ev.Key]
+			if string(val) == "<esc>" {
+				ch <- multiExpr{renew, 1}
+				ui.keyacc = nil
+				ui.keycnt = nil
+			}
+			ui.keyacc = append(ui.keyacc, val...)
+		}
+
+		binds, ok := findBinds(gOpts.keys, string(ui.keyacc))
+
+		switch len(binds) {
+		case 0:
+			ui.message = fmt.Sprintf("unknown mapping: %s", string(ui.keyacc))
+			ch <- multiExpr{renew, 1}
+			ui.keyacc = nil
+			ui.keycnt = nil
+		case 1:
+			if ok {
+				if len(ui.keycnt) > 0 {
+					c, err := strconv.Atoi(string(ui.keycnt))
+					if err != nil {
+						log.Printf("converting command count: %s", err)
+					}
+					count = c
+				} else {
+					count = 1
+				}
+				expr := gOpts.keys[string(ui.keyacc)]
+				ch <- multiExpr{expr, count}
+				ui.keyacc = nil
+				ui.keycnt = nil
+			}
+			if len(ui.keyacc) > 0 {
+				ui.menubuf = listBinds(binds)
+				ch <- multiExpr{renew, 1}
+			} else if ui.menubuf != nil {
+				ui.menubuf = nil
+			}
+		default:
+			if ok {
+				// TODO: use a delay
+				if len(ui.keycnt) > 0 {
+					c, err := strconv.Atoi(string(ui.keycnt))
+					if err != nil {
+						log.Printf("converting command count: %s", err)
+					}
+					count = c
+				} else {
+					count = 1
+				}
+				expr := gOpts.keys[string(ui.keyacc)]
+				ch <- multiExpr{expr, count}
+				ui.keyacc = nil
+				ui.keycnt = nil
+			}
+			if len(ui.keyacc) > 0 {
+				ui.menubuf = listBinds(binds)
+				ch <- multiExpr{renew, 1}
+			} else {
+				ui.menubuf = nil
+			}
+		}
+	case termbox.EventResize:
+		ch <- multiExpr{renew, 1}
+	default:
+		// TODO: handle other events
+	}
+}
+
+// This function is used to read expressions on the client side. Digits are
+// interpreted as command counts but this is only done for digits preceding any
+// non-digit characters (e.g. "42y2k" as 42 times "y2k").
+func (ui *ui) readExpr() <-chan multiExpr {
+	ch := make(chan multiExpr)
 
 	go func() {
 		for {
 			ev := ui.pollEvent()
 
-			if ui.cmdpref != "" {
-				switch ev.Type {
-				case termbox.EventKey:
-					if ev.Ch != 0 {
-						ch <- multiExpr{&callExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
-					} else {
-						// TODO: rest of the keys
-						switch ev.Key {
-						case termbox.KeyEsc:
-							ch <- multiExpr{&callExpr{"cmd-escape", nil}, 1}
-						case termbox.KeySpace:
-							ch <- multiExpr{&callExpr{"cmd-insert", []string{" "}}, 1}
-						case termbox.KeyTab:
-							ch <- multiExpr{&callExpr{"cmd-comp", nil}, 1}
-						case termbox.KeyEnter, termbox.KeyCtrlJ:
-							ch <- multiExpr{&callExpr{"cmd-enter", nil}, 1}
-						case termbox.KeyBackspace, termbox.KeyBackspace2:
-							ch <- multiExpr{&callExpr{"cmd-delete-back", nil}, 1}
-						case termbox.KeyDelete, termbox.KeyCtrlD:
-							ch <- multiExpr{&callExpr{"cmd-delete", nil}, 1}
-						case termbox.KeyArrowLeft, termbox.KeyCtrlB:
-							ch <- multiExpr{&callExpr{"cmd-left", nil}, 1}
-						case termbox.KeyArrowRight, termbox.KeyCtrlF:
-							ch <- multiExpr{&callExpr{"cmd-right", nil}, 1}
-						case termbox.KeyHome, termbox.KeyCtrlA:
-							ch <- multiExpr{&callExpr{"cmd-beg", nil}, 1}
-						case termbox.KeyEnd, termbox.KeyCtrlE:
-							ch <- multiExpr{&callExpr{"cmd-end", nil}, 1}
-						case termbox.KeyCtrlK:
-							ch <- multiExpr{&callExpr{"cmd-delete-end", nil}, 1}
-						case termbox.KeyCtrlU:
-							ch <- multiExpr{&callExpr{"cmd-delete-beg", nil}, 1}
-						case termbox.KeyCtrlW:
-							ch <- multiExpr{&callExpr{"cmd-delete-word", nil}, 1}
-						case termbox.KeyCtrlY:
-							ch <- multiExpr{&callExpr{"cmd-put", nil}, 1}
-						case termbox.KeyCtrlT:
-							ch <- multiExpr{&callExpr{"cmd-transpose", nil}, 1}
-						}
-					}
-					continue
-				}
+			if ui.cmdpref != "" && ev.Type == termbox.EventKey {
+				readCmdEvent(ch, ev)
+				continue
 			}
 
-			switch ev.Type {
-			case termbox.EventKey:
-				if ev.Ch != 0 {
-					switch {
-					case ev.Ch == '<':
-						acc = append(acc, '<', 'l', 't', '>')
-					case ev.Ch == '>':
-						acc = append(acc, '<', 'g', 't', '>')
-					case unicode.IsDigit(ev.Ch) && len(acc) == 0:
-						cnt = append(cnt, ev.Ch)
-					default:
-						acc = append(acc, ev.Ch)
-					}
-				} else {
-					val := gKeyVal[ev.Key]
-					if string(val) == "<esc>" {
-						ch <- multiExpr{renew, 1}
-						acc = nil
-						cnt = nil
-					}
-					acc = append(acc, val...)
-				}
-
-				binds, ok := findBinds(gOpts.keys, string(acc))
-
-				switch len(binds) {
-				case 0:
-					ui.message = fmt.Sprintf("unknown mapping: %s", string(acc))
-					ch <- multiExpr{renew, 1}
-					acc = nil
-					cnt = nil
-				case 1:
-					if ok {
-						if len(cnt) > 0 {
-							c, err := strconv.Atoi(string(cnt))
-							if err != nil {
-								log.Printf("converting command count: %s", err)
-							}
-							count = c
-						} else {
-							count = 1
-						}
-						expr := gOpts.keys[string(acc)]
-						ch <- multiExpr{expr, count}
-						acc = nil
-						cnt = nil
-					}
-					if len(acc) > 0 {
-						ui.menubuf = listBinds(binds)
-						ch <- multiExpr{renew, 1}
-					} else if ui.menubuf != nil {
-						ui.menubuf = nil
-					}
-				default:
-					if ok {
-						// TODO: use a delay
-						if len(cnt) > 0 {
-							c, err := strconv.Atoi(string(cnt))
-							if err != nil {
-								log.Printf("converting command count: %s", err)
-							}
-							count = c
-						} else {
-							count = 1
-						}
-						expr := gOpts.keys[string(acc)]
-						ch <- multiExpr{expr, count}
-						acc = nil
-						cnt = nil
-					}
-					if len(acc) > 0 {
-						ui.menubuf = listBinds(binds)
-						ch <- multiExpr{renew, 1}
-					} else {
-						ui.menubuf = nil
-					}
-				}
-			case termbox.EventResize:
-				ch <- multiExpr{renew, 1}
-			default:
-				// TODO: handle other events
-			}
+			ui.readEvent(ch, ev)
 		}
 	}()
 

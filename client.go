@@ -64,7 +64,7 @@ func client() {
 	app.handleInp()
 }
 
-func readExpr(c net.Conn) chan expr {
+func readExpr(c net.Conn) <-chan expr {
 	ch := make(chan expr)
 
 	go func() {

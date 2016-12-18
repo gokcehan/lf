@@ -28,9 +28,9 @@ func TestIsRoot(t *testing.T) {
 }
 
 func TestRuneWidth(t *testing.T) {
-	chars := []struct {
-		r rune
-		w int
+	tests := []struct {
+		r   rune
+		exp int
 	}{
 		{' ', 1},
 		{'a', 1},
@@ -40,17 +40,17 @@ func TestRuneWidth(t *testing.T) {
 		{'界', 2},
 	}
 
-	for _, char := range chars {
-		if w := runeWidth(char.r); w != char.w {
-			t.Errorf("at input '%c' expected '%d' but got '%d'", char.r, char.w, w)
+	for _, test := range tests {
+		if got := runeWidth(test.r); got != test.exp {
+			t.Errorf("at input '%c' expected '%d' but got '%d'", test.r, test.exp, got)
 		}
 	}
 }
 
 func TestRuneSliceWidth(t *testing.T) {
-	slices := []struct {
-		s []rune
-		w int
+	tests := []struct {
+		rs  []rune
+		exp int
 	}{
 		{[]rune{'a', 'b'}, 2},
 		{[]rune{'ı', 'ş'}, 2},
@@ -58,19 +58,19 @@ func TestRuneSliceWidth(t *testing.T) {
 		{[]rune{'世', 'a', '界', 'ı'}, 6},
 	}
 
-	for _, slice := range slices {
-		if w := runeSliceWidth(slice.s); w != slice.w {
-			t.Errorf("at input '%v' expected '%d' but got '%d'", slice.s, slice.w, w)
+	for _, test := range tests {
+		if got := runeSliceWidth(test.rs); got != test.exp {
+			t.Errorf("at input '%v' expected '%d' but got '%d'", test.rs, test.exp, got)
 		}
 	}
 }
 
 func TestRuneSliceWidthRange(t *testing.T) {
-	slices := []struct {
-		s []rune
-		i int
-		j int
-		r []rune
+	tests := []struct {
+		rs  []rune
+		beg int
+		end int
+		exp []rune
 	}{
 		{[]rune{'a', 'b', 'c', 'd'}, 1, 3, []rune{'b', 'c'}},
 		{[]rune{'a', 'ı', 'b', 'ş'}, 1, 3, []rune{'ı', 'b'}},
@@ -84,17 +84,17 @@ func TestRuneSliceWidthRange(t *testing.T) {
 		{[]rune{'世', 'a', '界', 'ı'}, 3, 4, []rune{}},
 	}
 
-	for _, slice := range slices {
-		if r := runeSliceWidthRange(slice.s, slice.i, slice.j); !reflect.DeepEqual(r, slice.r) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", slice.s, slice.r, r)
+	for _, test := range tests {
+		if got := runeSliceWidthRange(test.rs, test.beg, test.end); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.rs, got)
 		}
 	}
 }
 
 func TestEscape(t *testing.T) {
-	strs := []struct {
-		s string
-		e string
+	tests := []struct {
+		s   string
+		exp string
 	}{
 		{"", ""},
 		{"foo", "foo"},
@@ -104,17 +104,17 @@ func TestEscape(t *testing.T) {
 		{`foo\bar`, `foo\bar`},
 	}
 
-	for _, str := range strs {
-		if e := escape(str.s); !reflect.DeepEqual(e, str.e) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.e, e)
+	for _, test := range tests {
+		if got := escape(test.s); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
 
 func TestUnescape(t *testing.T) {
-	strs := []struct {
-		s string
-		u string
+	tests := []struct {
+		s   string
+		exp string
 	}{
 		{"", ""},
 		{"foo", "foo"},
@@ -123,17 +123,17 @@ func TestUnescape(t *testing.T) {
 		{`foo\ \ bar`, "foo  bar"},
 	}
 
-	for _, str := range strs {
-		if u := unescape(str.s); !reflect.DeepEqual(u, str.u) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.u, u)
+	for _, test := range tests {
+		if got := unescape(test.s); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
 
 func TestTokenize(t *testing.T) {
-	strs := []struct {
-		s    string
-		toks []string
+	tests := []struct {
+		s   string
+		exp []string
 	}{
 		{"", []string{""}},
 		{"foo", []string{"foo"}},
@@ -141,15 +141,15 @@ func TestTokenize(t *testing.T) {
 		{`:rename foo\ bar`, []string{":rename", `foo\ bar`}},
 	}
 
-	for _, str := range strs {
-		if toks := tokenize(str.s); !reflect.DeepEqual(toks, str.toks) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", str.s, str.toks, toks)
+	for _, test := range tests {
+		if got := tokenize(test.s); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
 
 func TestSplitWord(t *testing.T) {
-	strs := []struct {
+	tests := []struct {
 		s    string
 		word string
 		rest string
@@ -165,17 +165,17 @@ func TestSplitWord(t *testing.T) {
 		{"  foo   bar baz", "foo", "bar baz"},
 	}
 
-	for _, str := range strs {
-		if w, r := splitWord(str.s); w != str.word || r != str.rest {
-			t.Errorf("at input '%s' expected '%s' and '%s' but got '%s' and '%s'", str.s, str.word, str.rest, w, r)
+	for _, test := range tests {
+		if w, r := splitWord(test.s); w != test.word || r != test.rest {
+			t.Errorf("at input '%s' expected '%s' and '%s' but got '%s' and '%s'", test.s, test.word, test.rest, w, r)
 		}
 	}
 }
 
 func TestHumanize(t *testing.T) {
-	nums := []struct {
-		i int64
-		s string
+	tests := []struct {
+		i   int64
+		exp string
 	}{
 		{0, "0"},
 		{9, "9"},
@@ -194,18 +194,18 @@ func TestHumanize(t *testing.T) {
 		{1000000, "1.0M"},
 	}
 
-	for _, num := range nums {
-		if h := humanize(num.i); h != num.s {
-			t.Errorf("at input '%d' expected '%s' but got '%s'", num.i, num.s, h)
+	for _, test := range tests {
+		if got := humanize(test.i); got != test.exp {
+			t.Errorf("at input '%d' expected '%s' but got '%s'", test.i, test.exp, got)
 		}
 	}
 }
 
 func TestNaturalLess(t *testing.T) {
 	tests := []struct {
-		s1       string
-		s2       string
-		expected bool
+		s1  string
+		s2  string
+		exp bool
 	}{
 		{"foo", "bar", false},
 		{"bar", "baz", true},
@@ -222,8 +222,8 @@ func TestNaturalLess(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if b := naturalLess(test.s1, test.s2); b != test.expected {
-			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.expected, b)
+		if got := naturalLess(test.s1, test.s2); got != test.exp {
+			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
 		}
 	}
 }

@@ -6,7 +6,7 @@ import (
 )
 
 func TestScan(t *testing.T) {
-	for _, test := range gTests {
+	for _, test := range gEvalTests {
 		s := newScanner(strings.NewReader(test.inp))
 
 		for _, tok := range test.toks {

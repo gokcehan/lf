@@ -7,7 +7,7 @@ import (
 	"unicode"
 )
 
-type tokenType int
+type tokenType byte
 
 const (
 	tokenEOF tokenType = iota
