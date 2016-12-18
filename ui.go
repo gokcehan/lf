@@ -361,7 +361,7 @@ func getWidths(wtot int) []int {
 	return widths
 }
 
-func newUI() *ui {
+func getWins() []*win {
 	wtot, htot := termbox.Size()
 
 	var wins []*win
@@ -375,6 +375,12 @@ func newUI() *ui {
 		wacc += widths[i]
 	}
 
+	return wins
+}
+
+func newUI() *ui {
+	wtot, htot := termbox.Size()
+
 	key := make(chan string, 1000)
 	evs := make(chan termbox.Event)
 
@@ -385,7 +391,7 @@ func newUI() *ui {
 	}()
 
 	return &ui{
-		wins:    wins,
+		wins:    getWins(),
 		pwdwin:  newWin(wtot, 1, 0, 0),
 		msgwin:  newWin(wtot, 1, 0, htot-1),
 		menuwin: newWin(wtot, 1, 0, htot-2),
