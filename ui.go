@@ -44,62 +44,62 @@ var gAnsiCodes = map[int]termbox.Attribute{
 }
 
 var gKeyVal = map[termbox.Key][]rune{
-	termbox.KeyF1:             []rune{'<', 'f', '-', '1', '>'},
-	termbox.KeyF2:             []rune{'<', 'f', '-', '2', '>'},
-	termbox.KeyF3:             []rune{'<', 'f', '-', '3', '>'},
-	termbox.KeyF4:             []rune{'<', 'f', '-', '4', '>'},
-	termbox.KeyF5:             []rune{'<', 'f', '-', '5', '>'},
-	termbox.KeyF6:             []rune{'<', 'f', '-', '6', '>'},
-	termbox.KeyF7:             []rune{'<', 'f', '-', '7', '>'},
-	termbox.KeyF8:             []rune{'<', 'f', '-', '8', '>'},
-	termbox.KeyF9:             []rune{'<', 'f', '-', '9', '>'},
-	termbox.KeyF10:            []rune{'<', 'f', '-', '1', '0', '>'},
-	termbox.KeyF11:            []rune{'<', 'f', '-', '1', '1', '>'},
-	termbox.KeyF12:            []rune{'<', 'f', '-', '1', '2', '>'},
-	termbox.KeyInsert:         []rune{'<', 'i', 'n', 's', 'e', 'r', 't', '>'},
-	termbox.KeyDelete:         []rune{'<', 'd', 'e', 'l', 'e', 't', 'e', '>'},
-	termbox.KeyHome:           []rune{'<', 'h', 'o', 'm', 'e', '>'},
-	termbox.KeyEnd:            []rune{'<', 'e', 'n', 'd', '>'},
-	termbox.KeyPgup:           []rune{'<', 'p', 'g', 'u', 'p', '>'},
-	termbox.KeyPgdn:           []rune{'<', 'p', 'g', 'd', 'n', '>'},
-	termbox.KeyArrowUp:        []rune{'<', 'u', 'p', '>'},
-	termbox.KeyArrowDown:      []rune{'<', 'd', 'o', 'w', 'n', '>'},
-	termbox.KeyArrowLeft:      []rune{'<', 'l', 'e', 'f', 't', '>'},
-	termbox.KeyArrowRight:     []rune{'<', 'r', 'i', 'g', 'h', 't', '>'},
-	termbox.KeyCtrlSpace:      []rune{'<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>'},
-	termbox.KeyCtrlA:          []rune{'<', 'c', '-', 'a', '>'},
-	termbox.KeyCtrlB:          []rune{'<', 'c', '-', 'b', '>'},
-	termbox.KeyCtrlC:          []rune{'<', 'c', '-', 'c', '>'},
-	termbox.KeyCtrlD:          []rune{'<', 'c', '-', 'd', '>'},
-	termbox.KeyCtrlE:          []rune{'<', 'c', '-', 'e', '>'},
-	termbox.KeyCtrlF:          []rune{'<', 'c', '-', 'f', '>'},
-	termbox.KeyCtrlG:          []rune{'<', 'c', '-', 'g', '>'},
-	termbox.KeyBackspace:      []rune{'<', 'b', 's', '>'},
-	termbox.KeyTab:            []rune{'<', 't', 'a', 'b', '>'},
-	termbox.KeyCtrlJ:          []rune{'<', 'c', '-', 'j', '>'},
-	termbox.KeyCtrlK:          []rune{'<', 'c', '-', 'k', '>'},
-	termbox.KeyCtrlL:          []rune{'<', 'c', '-', 'l', '>'},
-	termbox.KeyEnter:          []rune{'<', 'e', 'n', 't', 'e', 'r', '>'},
-	termbox.KeyCtrlN:          []rune{'<', 'c', '-', 'n', '>'},
-	termbox.KeyCtrlO:          []rune{'<', 'c', '-', 'o', '>'},
-	termbox.KeyCtrlP:          []rune{'<', 'c', '-', 'p', '>'},
-	termbox.KeyCtrlQ:          []rune{'<', 'c', '-', 'q', '>'},
-	termbox.KeyCtrlR:          []rune{'<', 'c', '-', 'r', '>'},
-	termbox.KeyCtrlS:          []rune{'<', 'c', '-', 's', '>'},
-	termbox.KeyCtrlT:          []rune{'<', 'c', '-', 't', '>'},
-	termbox.KeyCtrlU:          []rune{'<', 'c', '-', 'u', '>'},
-	termbox.KeyCtrlV:          []rune{'<', 'c', '-', 'v', '>'},
-	termbox.KeyCtrlW:          []rune{'<', 'c', '-', 'w', '>'},
-	termbox.KeyCtrlX:          []rune{'<', 'c', '-', 'x', '>'},
-	termbox.KeyCtrlY:          []rune{'<', 'c', '-', 'y', '>'},
-	termbox.KeyCtrlZ:          []rune{'<', 'c', '-', 'z', '>'},
-	termbox.KeyEsc:            []rune{'<', 'e', 's', 'c', '>'},
-	termbox.KeyCtrlBackslash:  []rune{'<', 'c', '-', '\\', '>'},
-	termbox.KeyCtrlRsqBracket: []rune{'<', 'c', '-', ']', '>'},
-	termbox.KeyCtrl6:          []rune{'<', 'c', '-', '6', '>'},
-	termbox.KeyCtrlSlash:      []rune{'<', 'c', '-', '/', '>'},
-	termbox.KeySpace:          []rune{'<', 's', 'p', 'a', 'c', 'e', '>'},
-	termbox.KeyBackspace2:     []rune{'<', 'b', 's', '2', '>'},
+	termbox.KeyF1:             {'<', 'f', '-', '1', '>'},
+	termbox.KeyF2:             {'<', 'f', '-', '2', '>'},
+	termbox.KeyF3:             {'<', 'f', '-', '3', '>'},
+	termbox.KeyF4:             {'<', 'f', '-', '4', '>'},
+	termbox.KeyF5:             {'<', 'f', '-', '5', '>'},
+	termbox.KeyF6:             {'<', 'f', '-', '6', '>'},
+	termbox.KeyF7:             {'<', 'f', '-', '7', '>'},
+	termbox.KeyF8:             {'<', 'f', '-', '8', '>'},
+	termbox.KeyF9:             {'<', 'f', '-', '9', '>'},
+	termbox.KeyF10:            {'<', 'f', '-', '1', '0', '>'},
+	termbox.KeyF11:            {'<', 'f', '-', '1', '1', '>'},
+	termbox.KeyF12:            {'<', 'f', '-', '1', '2', '>'},
+	termbox.KeyInsert:         {'<', 'i', 'n', 's', 'e', 'r', 't', '>'},
+	termbox.KeyDelete:         {'<', 'd', 'e', 'l', 'e', 't', 'e', '>'},
+	termbox.KeyHome:           {'<', 'h', 'o', 'm', 'e', '>'},
+	termbox.KeyEnd:            {'<', 'e', 'n', 'd', '>'},
+	termbox.KeyPgup:           {'<', 'p', 'g', 'u', 'p', '>'},
+	termbox.KeyPgdn:           {'<', 'p', 'g', 'd', 'n', '>'},
+	termbox.KeyArrowUp:        {'<', 'u', 'p', '>'},
+	termbox.KeyArrowDown:      {'<', 'd', 'o', 'w', 'n', '>'},
+	termbox.KeyArrowLeft:      {'<', 'l', 'e', 'f', 't', '>'},
+	termbox.KeyArrowRight:     {'<', 'r', 'i', 'g', 'h', 't', '>'},
+	termbox.KeyCtrlSpace:      {'<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>'},
+	termbox.KeyCtrlA:          {'<', 'c', '-', 'a', '>'},
+	termbox.KeyCtrlB:          {'<', 'c', '-', 'b', '>'},
+	termbox.KeyCtrlC:          {'<', 'c', '-', 'c', '>'},
+	termbox.KeyCtrlD:          {'<', 'c', '-', 'd', '>'},
+	termbox.KeyCtrlE:          {'<', 'c', '-', 'e', '>'},
+	termbox.KeyCtrlF:          {'<', 'c', '-', 'f', '>'},
+	termbox.KeyCtrlG:          {'<', 'c', '-', 'g', '>'},
+	termbox.KeyBackspace:      {'<', 'b', 's', '>'},
+	termbox.KeyTab:            {'<', 't', 'a', 'b', '>'},
+	termbox.KeyCtrlJ:          {'<', 'c', '-', 'j', '>'},
+	termbox.KeyCtrlK:          {'<', 'c', '-', 'k', '>'},
+	termbox.KeyCtrlL:          {'<', 'c', '-', 'l', '>'},
+	termbox.KeyEnter:          {'<', 'e', 'n', 't', 'e', 'r', '>'},
+	termbox.KeyCtrlN:          {'<', 'c', '-', 'n', '>'},
+	termbox.KeyCtrlO:          {'<', 'c', '-', 'o', '>'},
+	termbox.KeyCtrlP:          {'<', 'c', '-', 'p', '>'},
+	termbox.KeyCtrlQ:          {'<', 'c', '-', 'q', '>'},
+	termbox.KeyCtrlR:          {'<', 'c', '-', 'r', '>'},
+	termbox.KeyCtrlS:          {'<', 'c', '-', 's', '>'},
+	termbox.KeyCtrlT:          {'<', 'c', '-', 't', '>'},
+	termbox.KeyCtrlU:          {'<', 'c', '-', 'u', '>'},
+	termbox.KeyCtrlV:          {'<', 'c', '-', 'v', '>'},
+	termbox.KeyCtrlW:          {'<', 'c', '-', 'w', '>'},
+	termbox.KeyCtrlX:          {'<', 'c', '-', 'x', '>'},
+	termbox.KeyCtrlY:          {'<', 'c', '-', 'y', '>'},
+	termbox.KeyCtrlZ:          {'<', 'c', '-', 'z', '>'},
+	termbox.KeyEsc:            {'<', 'e', 's', 'c', '>'},
+	termbox.KeyCtrlBackslash:  {'<', 'c', '-', '\\', '>'},
+	termbox.KeyCtrlRsqBracket: {'<', 'c', '-', ']', '>'},
+	termbox.KeyCtrl6:          {'<', 'c', '-', '6', '>'},
+	termbox.KeyCtrlSlash:      {'<', 'c', '-', '/', '>'},
+	termbox.KeySpace:          {'<', 's', 'p', 'a', 'c', 'e', '>'},
+	termbox.KeyBackspace2:     {'<', 'b', 's', '2', '>'},
 }
 
 var gValKey map[string]termbox.Key
@@ -173,10 +173,10 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 					continue
 				}
 				if 1 <= n && n <= 37 {
-					fg = fg | attr
+					fg |= attr
 				}
 				if 40 <= n && n <= 47 {
-					bg = bg | attr
+					bg |= attr
 				}
 			}
 
@@ -264,7 +264,7 @@ func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 		}
 
 		if i == dir.pos {
-			fg = fg | termbox.AttrReverse
+			fg |= termbox.AttrReverse
 		}
 
 		var s []rune
