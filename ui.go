@@ -421,7 +421,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	ui.message = fmt.Sprintf("%v %v %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
+	ui.message = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
 func (ui *ui) loadFile(nav *nav) {
