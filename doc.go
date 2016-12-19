@@ -10,77 +10,85 @@ at https://godoc.org/github.com/gokcehan/lf.
 
 Reference
 
-The following commands are provided by lf with default keybindings.
+The following commands are provided by lf with default keybindings:
 
-    up                (default "k" and "<up>")
-    half-up           (default "<c-u>")
-    page-up           (default "<c-b>")
-    down              (default "j" and "<down>")
-    half-down         (default "<c-d>")
-    page-down         (default "<c-f>")
-    updir             (default "h" and "<left>")
-    open              (default "l" and "<right>")
-    quit              (default "q")
-    bot               (default "G")
-    top               (default "gg")
-    read              (default ":")
-    read-shell        (default "$")
-    read-shell-wait   (default "!")
-    read-shell-async  (default "&")
-    search            (default "/")
-    search-back       (default "?")
-    toggle            (default "<space>")
-    invert            (default "v")
-    yank              (default "y")
-    clear             (default "c")
-    delete            (default "d")
-    put               (default "p")
-    renew             (default "<c-l>")
+	up                (default "k" and "<up>")
+	half-up           (default "<c-u>")
+	page-up           (default "<c-b>")
+	down              (default "j" and "<down>")
+	half-down         (default "<c-d>")
+	page-down         (default "<c-f>")
+	updir             (default "h" and "<left>")
+	open              (default "l" and "<right>")
+	quit              (default "q")
+	bot               (default "G")
+	top               (default "gg")
+	read              (default ":")
+	read-shell        (default "$")
+	read-shell-wait   (default "!")
+	read-shell-async  (default "&")
+	search            (default "/")
+	search-back       (default "?")
+	toggle            (default "<space>")
+	invert            (default "v")
+	yank              (default "y")
+	clear             (default "c")
+	delete            (default "d")
+	put               (default "p")
+	renew             (default "<c-l>")
 
-The following commands are provided by lf without default keybindings.
+The following commands are provided by lf without default keybindings:
 
-    sync  synchronizes yanked/deleted files with server
-    echo  prints its arguments to the message line
-    cd    changes working directory to its argument
-    push  simulate key pushes given in its argument
+	sync  synchronizes yanked/deleted files with server
+	echo  prints its arguments to the message line
+	cd    changes working directory to its argument
+	push  simulate key pushes given in its argument
 
-The following options can be used to customize the behavior of lf.
+The following options can be used to customize the behavior of lf:
 
-    dirfirst   bool    (default on)
-    hidden     bool    (default off)
-    preview    bool    (default on)
-    scrolloff  int     (default 0)
-    tabstop    int     (default 8)
-    ifs        string  (default "") (not exported if empty)
-    previewer  string  (default "") (not filtered if empty)
-    shell      string  (default "$SHELL")
-    showinfo   string  (default "none")
-    sortby     string  (default "natural")
-    timefmt    string  (default "Mon Jan _2 15:04:05 2006")
-    ratios     string  (default "1:2:3")
+	dirfirst   bool    (default on)
+	hidden     bool    (default off)
+	preview    bool    (default on)
+	scrolloff  int     (default 0)
+	tabstop    int     (default 8)
+	ifs        string  (default "") (not exported if empty)
+	previewer  string  (default "") (not filtered if empty)
+	shell      string  (default "$SHELL")
+	showinfo   string  (default "none")
+	sortby     string  (default "natural")
+	timefmt    string  (default "Mon Jan _2 15:04:05 2006")
+	ratios     string  (default "1:2:3")
 
-The following variables are exported for shell commands.
+The following variables are exported for shell commands:
 
-    $f   current file
-    $fs  marked file(s) separated with ':'
-    $fx  current file or marked file(s) if any
+	$f   current file
+	$fs  marked file(s) separated with ':'
+	$fx  current file or marked file(s) if any
 
 Configuration
 
-The configuration file should either be located in "$XDG_CONFIG_HOME/lf/lfrc"
-or "~/.config/lf/lfrc". A sample configuration file can be found at
+The configuration file should be located at:
+
+	$XDG_CONFIG_HOME/lf/lfrc"
+
+If "$XDG_CONFIG_HOME" is not set, it defaults to "$HOME/.config" so the
+location should be:
+
+	~/.config/lf/lfrc
+
+A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
 
 Prefixes
 
 The following command prefixes are used by lf:
 
-    :  read (default)
-    $  read-shell
-    !  read-shell-wait
-    &  read-shell-async
-    /  search
-    ?  search-back
+	:  read (default)    built-in command
+	$  read-shell        shell command
+	!  read-shell-wait   shell command waiting for key press
+	&  read-shell-async  asynchronous shell command
+	/  search            search file in current directory
+	?  search-back       search file in the reverse order
 
 The same evaluator is used for the command line and the configuration file. The
 difference is that prefixes are not necessary in the command line. Instead
@@ -89,26 +97,56 @@ default these modes are mapped to the prefix keys above.
 
 Syntax
 
-Characters from "#" to "\n" are comments and ignored.
+Characters from "#" to "\n" are comments and ignored:
+
+	# comments start with '#'
 
 There are three special commands for configuration.
 
-"set" is used to set an option which could be bool (e.g. "set hidden", "set
-nohidden", "set hidden!"), int (e.g. "set scrolloff 10"), or string (e.g. "set
-sortby time").
+"set" is used to set an option which could be boolean, integer, or string:
 
-"map" is used to bind a key to a command which could be built-in command (e.g.
-"map gh cd ~"), custom command (e.g. "map D trash"), or shell command (e.g.
-"map i $less "$f"", "map u !du -h . | less"). You can delete an existing
-binding by leaving the expression empty (e.g. "map gh").
+	set hidden        # boolean on
+	set nohidden      # boolean off
+	set hidden!       # boolean toggle
+	set scrolloff 10  # integer value
+	set sortby time   # string value w/o quotes
 
-"cmd" is used to define a custom command or delete an existing command by
-leaving the expression empty (e.g. "cmd trash").
+"map" is used to bind a key to a command which could be built-in command,
+custom command, or shell command:
 
-If there is no prefix then ":" is assumed. An explicit ":" could be provided to
-group statements until a "\n" occurs. This is especially useful for "map" and
-"cmd" commands. If you need multiline you can wrap statements in "{{" and "}}"
-after the proper prefix.
+	map gh cd ~       # built-in command
+	map D trash       # custom command
+	map i $less "$f"  # shell command
+	map u !du -h .    # waiting shell command
+
+You can delete an existing binding by leaving the expression empty:
+
+	map gh            # deletes 'gh' mapping
+
+"cmd" is used to define a custom command
+
+	cmd usage $du -h . | less
+
+You can delete an existing command by leaving the expression empty:
+
+	cmd trash         # deletes trash command
+
+If there is no prefix then ":" is assumed:
+
+	map zt set showinfo time
+
+An explicit ":" could be provided to group statements until a "\n" occurs which
+is especially useful for "map" and "cmd" commands:
+
+	map st :set sortby time; set showinfo time
+
+If you need multiline you can wrap statements in "{{" and "}}" after the proper
+prefix.
+
+	map st :{{
+		set sortby time
+		set showinfo time
+	}}
 
 Mappings
 
@@ -120,18 +158,18 @@ arguments. You can "map" a key to a "push" command with an argument to create
 various keybindings.
 
 This is mainly useful for two purposes. First, it can be used to map a command
-with a command count.
+with a command count:
 
-    map <c-j> push 10j
+	map <c-j> push 10j
 
-Second, it can be used to avoid typing the name when a command takes arguments.
+Second, it can be used to avoid typing the name when a command takes arguments:
 
-    map r push :rename<space>
+	map r push :rename<space>
 
 One thing to be careful is that since "push" command works with keys instead of
-commands it is possible to accidentally create recursive bindings.
+commands it is possible to accidentally create recursive bindings:
 
-    map j push 2j
+	map j push 2j
 
 These types of bindings create a deadlock when executed.
 
@@ -142,36 +180,36 @@ trash.
 
 A first attempt to write such a command may look like this:
 
-    cmd trash ${{
-        mkdir -p ~/.trash
-        if [ -z $fs ]; then
-            mv --backup=numbered "$f" $HOME/.trash
-        else
-            IFS=':'; mv --backup=numbered $fs $HOME/.trash
-        fi
-    }}
+	cmd trash ${{
+		mkdir -p ~/.trash
+		if [ -z $fs ]; then
+			mv --backup=numbered "$f" $HOME/.trash
+		else
+			IFS=':'; mv --backup=numbered $fs $HOME/.trash
+		fi
+	}}
 
 We check "$fs" to see if there are any marked files. Otherwise we just delete
 the current file. Since this is such a common pattern, a separate "$fx"
-variable is provided. We can use this variable to get rid of the conditional.
+variable is provided. We can use this variable to get rid of the conditional:
 
-    cmd trash ${{
-        mkdir -p ~/.trash
-        IFS=':'; mv --backup=numbered $fx $HOME/.trash
-    }}
+	cmd trash ${{
+		mkdir -p ~/.trash
+		IFS=':'; mv --backup=numbered $fx $HOME/.trash
+	}}
 
 The trash directory is checked each time the command is executed. We can move
-it outside of the command so it would only run once at startup.
+it outside of the command so it would only run once at startup:
 
-    ${{ mkdir -p ~/.trash }}
+	${{ mkdir -p ~/.trash }}
 
-    cmd trash ${{ IFS=':'; mv --backup=numbered $fx $HOME/.trash }}
+	cmd trash ${{ IFS=':'; mv --backup=numbered $fx $HOME/.trash }}
 
-Since these are one liners, we can drop "{{" and "}}".
+Since these are one liners, we can drop "{{" and "}}":
 
-    $mkdir -p ~/.trash
+	$mkdir -p ~/.trash
 
-    cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
+	cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
 
 Finally note that we set "IFS" variable accordingly in the command. Instead we
 could use the "ifs" option to set it for all commands (e.g. "set ifs ':'").
@@ -195,22 +233,22 @@ Opening Files
 You can use "open-file" command to open a file. This is a special command
 called by "open" when the current file is not a directory. Normally a user maps
 the "open" command to a key (default "l") and customize "open-file" command as
-desired. You can define it just as you would define any other command.
+desired. You can define it just as you would define any other command:
 
-    cmd open-file $IFS=':'; vim $fx
+	cmd open-file $IFS=':'; vim $fx
 
-It is possible to use different command types.
+It is possible to use different command types:
 
-    cmd open-file &xdg-open "$f"
+	cmd open-file &xdg-open "$f"
 
-You may want to use either file extensions or mime types from "file" command.
+You may want to use either file extensions or mime types from "file" command:
 
-    cmd open-file ${{
-        case $(file --mime-type "$f" -b) in
-            text/*) IFS=':'; vim $fx;;
-            *) IFS=':'; for f in $fx; do xdg-open "$f" &> /dev/null & done;;
-        esac
-    }}
+	cmd open-file ${{
+		case $(file --mime-type "$f" -b) in
+			text/*) IFS=':'; vim $fx;;
+			*) IFS=':'; for f in $fx; do xdg-open "$f" &> /dev/null & done;;
+		esac
+	}}
 
 lf does not come bundled with a file opener. You can use any of the existing
 file openers as you like. Possible options are "open" (for Mac OS X only),
@@ -230,27 +268,27 @@ In order to use this feature you need to set the value of "previewer" option to
 the path of an executable file. lf passes the current file name as the first
 argument and the height of the preview pane as the second argument when running
 this file. Output of the execution is printed in the preview pane. You may want
-to use the same script in your pager mapping as well if any.
+to use the same script in your pager mapping as well if any:
 
-    set previewer ~/.config/lf/pv.sh
-    map i $~/.config/lf/pv.sh "$f" | less -R
+	set previewer ~/.config/lf/pv.sh
+	map i $~/.config/lf/pv.sh "$f" | less -R
 
 Since this script is called for each file selection change it needs to be as
 efficient as possible and this responsibility is left to the user. You may use
 file extensions to determine the type of file more efficiently compared to
 obtaining mime types from "file" command. Extensions can then be used to match
-cleanly within a conditional.
+cleanly within a conditional:
 
-    #!/bin/sh
+	#!/bin/sh
 
-    case "$1" in
-        *.tar*) tar tf "$1";;
-        *.zip) unzip -l "$1";;
-        *.rar) unrar l "$1";;
-        *.7z) 7z l "$1";;
-        *.pdf) pdftotext "$1" -;;
-        *) highlight -O ansi "$1" || cat "$1";;
-    esac
+	case "$1" in
+		*.tar*) tar tf "$1";;
+		*.zip) unzip -l "$1";;
+		*.rar) unrar l "$1";;
+		*.7z) 7z l "$1";;
+		*.pdf) pdftotext "$1" -;;
+		*) highlight -O ansi "$1" || cat "$1";;
+	esac
 
 Another important consideration for efficiency is the use of programs with
 short startup times for preview. For this reason, "highlight" is recommended
