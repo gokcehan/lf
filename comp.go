@@ -36,6 +36,7 @@ var (
 		"yank",
 		"delete",
 		"put",
+		"clear",
 		"renew",
 		"sync",
 		"echo",

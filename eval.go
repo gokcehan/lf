@@ -303,6 +303,18 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.save(false)
 		app.nav.saves = make(map[string]bool)
 		saveFiles(nil, false)
+	case "clear":
+		if err := saveFiles(nil, false); err != nil {
+			msg := fmt.Sprintf("clear: %s", err)
+			app.ui.message = msg
+			log.Printf(msg)
+			return
+		}
+		if err := sendRemote("send sync"); err != nil {
+			msg := fmt.Sprintf("clear: %s", err)
+			app.ui.message = msg
+			log.Printf(msg)
+		}
 	case "renew":
 		app.ui.sync()
 		app.ui.renew()

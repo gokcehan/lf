@@ -36,6 +36,7 @@ The following commands are provided by lf with default keybindings.
     toggle            (default "<space>")
     invert            (default "v")
     yank              (default "y")
+    clear             (default "c")
     delete            (default "d")
     put               (default "p")
     renew             (default "<c-l>")
