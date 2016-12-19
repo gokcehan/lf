@@ -6,9 +6,7 @@
 # command line flag. Thus the same documentation is used for online and
 # terminal display.
 
-tmp=$(mktemp)
-
-[ -f docstring.go ] && rm docstring.go
+tmp=gen/docstring.go
 
 echo "// DO NOT EDIT! (AUTO-GENERATED)" >> $tmp
 echo                                    >> $tmp
