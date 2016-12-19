@@ -72,6 +72,7 @@ func startServer() {
 
 func main() {
 	showDoc := flag.Bool("doc", false, "show documentation")
+	remoteCmd := flag.String("remote", "", "send remote command to server")
 	serverMode := flag.Bool("server", false, "start server (automatic)")
 	cpuprofile := flag.String("cpuprofile", "", "path to the file to write the cpu profile")
 	flag.StringVar(&gLastDirPath, "last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
@@ -84,13 +85,20 @@ func main() {
 		return
 	}
 
+	if *remoteCmd != "" {
+		if err := sendRemote(*remoteCmd); err != nil {
+			log.Fatalf("remote command: %s", err)
+		}
+		return
+	}
+
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
-			log.Fatal("could not create CPU profile: ", err)
+			log.Fatalf("could not create CPU profile: %s", err)
 		}
 		if err := pprof.StartCPUProfile(f); err != nil {
-			log.Fatal("could not start CPU profile: ", err)
+			log.Fatalf("could not start CPU profile: %s", err)
 		}
 		defer pprof.StopCPUProfile()
 	}
