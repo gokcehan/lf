@@ -27,26 +27,6 @@ func TestIsRoot(t *testing.T) {
 	}
 }
 
-func TestRuneWidth(t *testing.T) {
-	tests := []struct {
-		r   rune
-		exp int
-	}{
-		{' ', 1},
-		{'a', 1},
-		{'ı', 1},
-		{'ş', 1},
-		{'世', 2},
-		{'界', 2},
-	}
-
-	for _, test := range tests {
-		if got := runeWidth(test.r); got != test.exp {
-			t.Errorf("at input '%c' expected '%d' but got '%d'", test.r, test.exp, got)
-		}
-	}
-}
-
 func TestRuneSliceWidth(t *testing.T) {
 	tests := []struct {
 		rs  []rune

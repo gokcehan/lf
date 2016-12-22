@@ -13,18 +13,10 @@ import (
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
 
-func runeWidth(r rune) int {
-	w := runewidth.RuneWidth(r)
-	if w == 0 || (w == 2 && runewidth.IsAmbiguousWidth(r)) {
-		w = 1
-	}
-	return w
-}
-
 func runeSliceWidth(rs []rune) int {
 	w := 0
 	for _, r := range rs {
-		w += runeWidth(r)
+		w += runewidth.RuneWidth(r)
 	}
 	return w
 }
@@ -33,7 +25,7 @@ func runeSliceWidthRange(rs []rune, beg int, end int) []rune {
 	curr := 0
 	b := 0
 	for i, r := range rs {
-		w := runeWidth(r)
+		w := runewidth.RuneWidth(r)
 		switch {
 		case curr == beg:
 			b = i

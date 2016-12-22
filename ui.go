@@ -16,6 +16,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/mattn/go-runewidth"
 	"github.com/nsf/termbox-go"
 )
 
@@ -195,7 +196,7 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 		if r == '\t' {
 			x += gOpts.tabstop - (x-off)%gOpts.tabstop
 		} else {
-			x += runeWidth(r)
+			x += runewidth.RuneWidth(r)
 		}
 	}
 }
@@ -279,7 +280,9 @@ func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 		if w > win.w-2 {
 			s = runeSliceWidthRange(s, 0, win.w-2)
 		} else {
-			s = append(s, make([]rune, win.w-2-w)...)
+			for i := 0; i < win.w-2-w; i++ {
+				s = append(s, ' ')
+			}
 		}
 
 		switch gOpts.showinfo {
