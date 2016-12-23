@@ -180,6 +180,7 @@ type nav struct {
 	marks  map[string]bool
 	saves  map[string]bool
 	height int
+	search string
 }
 
 func getDirs(wd string, height int) []*dir {
@@ -350,6 +351,26 @@ func (nav *nav) cd(wd string) error {
 	// TODO: save/load ind and pos from the map
 
 	return nil
+}
+
+func (nav *nav) searchNext() {
+	last := nav.currDir()
+	for i := last.ind + 1; i < len(last.fi); i++ {
+		if strings.Contains(last.fi[i].Name(), nav.search) {
+			nav.down(i - last.ind)
+			return
+		}
+	}
+}
+
+func (nav *nav) searchPrev() {
+	last := nav.currDir()
+	for i := last.ind - 1; i > 0; i-- {
+		if strings.Contains(last.fi[i].Name(), nav.search) {
+			nav.up(last.ind - i)
+			return
+		}
+	}
 }
 
 func (nav *nav) toggleMark(path string) {

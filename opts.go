@@ -54,6 +54,8 @@ func init() {
 	gOpts.keys["&"] = &callExpr{"read-shell-async", nil}
 	gOpts.keys["/"] = &callExpr{"search", nil}
 	gOpts.keys["?"] = &callExpr{"search-back", nil}
+	gOpts.keys["n"] = &callExpr{"search-next", nil}
+	gOpts.keys["N"] = &callExpr{"search-prev", nil}
 	gOpts.keys["<space>"] = &callExpr{"toggle", nil}
 	gOpts.keys["v"] = &callExpr{"invert", nil}
 	gOpts.keys["y"] = &callExpr{"yank", nil}

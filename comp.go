@@ -31,6 +31,8 @@ var (
 		"read-shell-async",
 		"search",
 		"search-back",
+		"search-next",
+		"search-prev",
 		"toggle",
 		"invert",
 		"yank",

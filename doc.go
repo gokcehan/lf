@@ -29,6 +29,8 @@ The following commands are provided by lf with default keybindings:
 	read-shell-async  (default "&")
 	search            (default "/")
 	search-back       (default "?")
+	search-next       (default "n")
+	search-prev       (default "N")
 	toggle            (default "<space>")
 	invert            (default "v")
 	yank              (default "y")
