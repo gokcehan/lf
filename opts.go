@@ -8,6 +8,7 @@ var gOpts struct {
 	preview   bool
 	scrolloff int
 	tabstop   int
+	filesep   string
 	ifs       string
 	previewer string
 	shell     string
@@ -25,6 +26,7 @@ func init() {
 	gOpts.preview = true
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
+	gOpts.filesep = ":"
 	gOpts.shell = envShell
 	gOpts.showinfo = "none"
 	gOpts.sortby = "natural"

@@ -58,6 +58,7 @@ var (
 		"preview!",
 		"scrolloff",
 		"tabstop",
+		"filesep",
 		"ifs",
 		"previewer",
 		"shell",

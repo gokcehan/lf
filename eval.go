@@ -69,6 +69,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.tabstop = n
+	case "filesep":
+		gOpts.filesep = e.val
 	case "ifs":
 		gOpts.ifs = e.val
 	case "previewer":

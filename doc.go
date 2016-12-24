@@ -53,6 +53,7 @@ The following options can be used to customize the behavior of lf:
 	preview    bool    (default on)
 	scrolloff  int     (default 0)
 	tabstop    int     (default 8)
+	filesep    string  (default ":")
 	ifs        string  (default "") (not exported if empty)
 	previewer  string  (default "") (not filtered if empty)
 	shell      string  (default "$SHELL")

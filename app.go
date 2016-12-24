@@ -110,7 +110,7 @@ func (app *app) exportVars() {
 
 	marks := app.nav.currMarks()
 
-	envFiles := strings.Join(marks, ":")
+	envFiles := strings.Join(marks, gOpts.filesep)
 
 	os.Setenv("f", envFile)
 	os.Setenv("fs", envFiles)
