@@ -266,8 +266,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdpref = "?"
 	case "search-next":
 		app.nav.searchNext()
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "search-prev":
 		app.nav.searchPrev()
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "toggle":
 		app.nav.toggle()
 	case "invert":
@@ -413,10 +417,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("search: %s", s)
 			app.nav.search = s
 			app.nav.searchNext()
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		case "?":
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
 			app.nav.searchPrev()
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
 		}
