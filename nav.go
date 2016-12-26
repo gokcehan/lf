@@ -365,7 +365,7 @@ func (nav *nav) searchNext() {
 
 func (nav *nav) searchPrev() {
 	last := nav.currDir()
-	for i := last.ind - 1; i > 0; i-- {
+	for i := last.ind - 1; i >= 0; i-- {
 		if strings.Contains(last.fi[i].Name(), nav.search) {
 			nav.up(last.ind - i)
 			return
