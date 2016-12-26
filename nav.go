@@ -66,6 +66,12 @@ func getFilesSorted(path string) []*file {
 		log.Printf("unknown sorting type: %s", gOpts.sortby)
 	}
 
+	if gOpts.reverse {
+		for i, j := 0, len(fi)-1; i < j; i, j = i+1, j-1 {
+			fi[i], fi[j] = fi[j], fi[i]
+		}
+	}
+
 	if gOpts.dirfirst {
 		sortFilesStable(fi, func(i, j int) bool {
 			if fi[i].IsDir() == fi[j].IsDir() {

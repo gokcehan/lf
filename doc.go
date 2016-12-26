@@ -51,6 +51,7 @@ The following options can be used to customize the behavior of lf:
 	dirfirst   bool    (default on)
 	hidden     bool    (default off)
 	preview    bool    (default on)
+	reverse    bool    (default off)
 	scrolloff  int     (default 0)
 	tabstop    int     (default 8)
 	filesep    string  (default ":")
