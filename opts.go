@@ -29,7 +29,7 @@ func init() {
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.filesep = ":"
-	gOpts.shell = envShell
+	gOpts.shell = "/bin/sh"
 	gOpts.showinfo = "none"
 	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC

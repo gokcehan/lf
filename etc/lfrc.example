@@ -5,12 +5,7 @@
 #set nopreview
 #set showinfo size
 
-# set shell interpreter accordingly
-# Some systems use more efficient shell implementations for non-interactive use
-# (e.g. `dash`) mapped to `/bin/sh`. By setting this option here we can tell
-# `lf` to use this implementation for shell commands. This can decrease the
-# startup times of commands but may also change the syntax that you are used to
-# (e.g. non-POSIX features provided by your regular shell).
+# interpreter for shell commands (needs to be POSIX compatible)
 #set shell /bin/sh
 
 # set internal field seperator (IFS) to ':'

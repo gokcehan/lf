@@ -61,7 +61,7 @@ The following options can be used to customize the behavior of lf:
     filesep    string  (default ":")
     ifs        string  (default "") (not exported if empty)
     previewer  string  (default "") (not filtered if empty)
-    shell      string  (default "$SHELL")
+    shell      string  (default "/bin/sh")
     showinfo   string  (default "none")
     sortby     string  (default "natural")
     timefmt    string  (default "Mon Jan _2 15:04:05 2006")

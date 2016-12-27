@@ -15,7 +15,6 @@ var (
 	envHome   = os.Getenv("HOME")
 	envHost   = os.Getenv("HOSTNAME")
 	envPath   = os.Getenv("PATH")
-	envShell  = os.Getenv("SHELL")
 	envConfig = os.Getenv("XDG_CONFIG_HOME")
 )
 
