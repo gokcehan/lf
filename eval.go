@@ -230,8 +230,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 			var path string
 			if len(app.nav.marks) != 0 {
-				marks := app.nav.currMarks()
-				path = strings.Join(marks, "\n")
+				path = strings.Join(app.nav.marks, "\n")
 			} else if curr, err := app.nav.currFile(); err == nil {
 				path = curr.Path
 			} else {
@@ -292,7 +291,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf(msg)
 			return
 		}
-		app.nav.marks = make(map[string]bool)
+		app.nav.marks = make([]string, 0)
 		if err := sendRemote("send sync"); err != nil {
 			msg := fmt.Sprintf("yank: %s", err)
 			app.ui.message = msg
@@ -305,7 +304,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf(msg)
 			return
 		}
-		app.nav.marks = make(map[string]bool)
+		app.nav.marks = make([]string, 0)
 		if err := sendRemote("send sync"); err != nil {
 			msg := fmt.Sprintf("delete: %s", err)
 			app.ui.message = msg
