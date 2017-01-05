@@ -292,7 +292,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf(msg)
 			return
 		}
-		app.nav.marks = make(map[string]bool)
+		app.nav.marks = make(map[string]int)
 		if err := sendRemote("send sync"); err != nil {
 			msg := fmt.Sprintf("yank: %s", err)
 			app.ui.message = msg
@@ -305,7 +305,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf(msg)
 			return
 		}
-		app.nav.marks = make(map[string]bool)
+		app.nav.marks = make(map[string]int)
 		if err := sendRemote("send sync"); err != nil {
 			msg := fmt.Sprintf("delete: %s", err)
 			app.ui.message = msg
