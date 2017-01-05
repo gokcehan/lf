@@ -209,7 +209,7 @@ func (win *win) printl(x, y int, fg, bg termbox.Attribute, s string) {
 	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
 }
 
-func (win *win) printd(dir *dir, marks, saves map[string]bool) {
+func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 	if win.w < 3 {
 		return
 	}
@@ -254,7 +254,7 @@ func (win *win) printd(dir *dir, marks, saves map[string]bool) {
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if marks[path] {
+		if _, ok := marks[path]; ok {
 			win.print(0, i, fg, termbox.ColorMagenta, " ")
 		} else if copy, ok := saves[path]; ok {
 			if copy {
