@@ -183,7 +183,7 @@ type nav struct {
 	inds   map[string]int
 	poss   map[string]int
 	names  map[string]string
-	marks  []string
+	marks  map[string]bool
 	saves  map[string]bool
 	height int
 	search string
@@ -225,7 +225,7 @@ func newNav(height int) *nav {
 		inds:   make(map[string]int),
 		poss:   make(map[string]int),
 		names:  make(map[string]string),
-		marks:  make([]string, 0),
+		marks:  make(map[string]bool),
 		saves:  make(map[string]bool),
 		height: height,
 	}
@@ -237,13 +237,11 @@ func (nav *nav) renew(height int) {
 		d.renew(nav.height)
 	}
 
-	marks := make([]string, 0, len(nav.marks))
-	for _, m := range nav.marks {
-		if _, err := os.Stat(m); err == nil {
-			marks = append(marks, m)
+	for m := range nav.marks {
+		if _, err := os.Stat(m); os.IsNotExist(err) {
+			delete(nav.marks, m)
 		}
 	}
-	nav.marks = marks
 }
 
 func (nav *nav) up(dist int) {
@@ -382,13 +380,11 @@ func (nav *nav) searchPrev() {
 }
 
 func (nav *nav) toggleMark(path string) {
-	for i, mark := range nav.marks {
-		if mark == path {
-			nav.marks = append(nav.marks[:i], nav.marks[i+1:]...)
-			return
-		}
+	if nav.marks[path] {
+		delete(nav.marks, path)
+	} else {
+		nav.marks[path] = true
 	}
-	nav.marks = append(nav.marks, path)
 }
 
 func (nav *nav) toggle() {
@@ -425,7 +421,7 @@ func (nav *nav) save(copy bool) error {
 		nav.saves[curr.Path] = copy
 	} else {
 		var fs []string
-		for _, f := range nav.marks {
+		for f := range nav.marks {
 			fs = append(fs, f)
 		}
 
@@ -434,7 +430,7 @@ func (nav *nav) save(copy bool) error {
 		}
 
 		nav.saves = make(map[string]bool)
-		for _, f := range nav.marks {
+		for f := range nav.marks {
 			nav.saves[f] = copy
 		}
 	}
@@ -504,4 +500,12 @@ func (nav *nav) currFile() (*file, error) {
 		return nil, fmt.Errorf("empty directory")
 	}
 	return last.fi[last.ind], nil
+}
+
+func (nav *nav) currMarks() []string {
+	marks := make([]string, 0, len(nav.marks))
+	for m := range nav.marks {
+		marks = append(marks, m)
+	}
+	return marks
 }
