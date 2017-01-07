@@ -372,6 +372,12 @@ func (nav *nav) searchNext() {
 			return
 		}
 	}
+	for i := 0; i < last.ind; i++ {
+		if strings.Contains(last.fi[i].Name(), nav.search) {
+			nav.up(last.ind - i)
+			return
+		}
+	}
 }
 
 func (nav *nav) searchPrev() {
@@ -379,6 +385,12 @@ func (nav *nav) searchPrev() {
 	for i := last.ind - 1; i >= 0; i-- {
 		if strings.Contains(last.fi[i].Name(), nav.search) {
 			nav.up(last.ind - i)
+			return
+		}
+	}
+	for i := len(last.fi) - 1; i > last.ind; i-- {
+		if strings.Contains(last.fi[i].Name(), nav.search) {
+			nav.down(i - last.ind)
 			return
 		}
 	}
