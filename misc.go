@@ -140,7 +140,7 @@ func splitWord(s string) (word, rest string) {
 // smaller values but it should be fine for most human beings.
 func humanize(size int64) string {
 	if size < 1000 {
-		return fmt.Sprintf("%d", size)
+		return fmt.Sprintf("%dB", size)
 	}
 
 	suffix := []string{
