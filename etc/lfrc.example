@@ -3,7 +3,7 @@
 # (e.g. "alias mc='tmux split -h lf; lf'").
 #set ratios 1
 #set nopreview
-#set showinfo size
+#set info size
 
 # interpreter for shell commands (needs to be POSIX compatible)
 #set shell /bin/sh
@@ -21,15 +21,15 @@ map zp set preview!
 map zh set hidden!
 
 # easily select what information to show
-map zn set showinfo
-map zs set showinfo size
-map zt set showinfo time
-map za set showinfo size:time
+map zn set info
+map zs set info size
+map zt set info time
+map za set info size:time
 
 # sort files and show the corresponding info
-map sn :set sortby name; set showinfo
-map ss :set sortby size; set showinfo size
-map st :set sortby time; set showinfo time
+map sn :set sortby name; set info
+map ss :set sortby size; set info size
+map st :set sortby time; set info time
 
 # common directories
 map gh cd ~

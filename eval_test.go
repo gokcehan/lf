@@ -228,15 +228,15 @@ var gEvalTests = []struct {
 	},
 
 	{
-		"map ss :set sortby size; set showinfo size",
-		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", "\n", "\n"},
-		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"showinfo", "size"}}}}},
+		"map ss :set sortby size; set info size",
+		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "info", "size", "\n", "\n"},
+		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}}},
 	},
 
 	{
-		"map ss :set sortby size; set showinfo size;",
-		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "showinfo", "size", ";", "\n"},
-		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"showinfo", "size"}}}}},
+		"map ss :set sortby size; set info size;",
+		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "info", "size", ";", "\n"},
+		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}}},
 	},
 
 	{

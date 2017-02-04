@@ -288,14 +288,14 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 
 		var info string
 
-		for _, s := range gOpts.showinfo {
+		for _, s := range gOpts.info {
 			switch s {
 			case "size":
 				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
 			case "time":
 				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
 			default:
-				log.Printf("unknown showinfo type: %s", s)
+				log.Printf("unknown info type: %s", s)
 			}
 		}
 

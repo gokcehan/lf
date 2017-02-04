@@ -113,17 +113,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins()
 		app.ui.loadFile(app.nav)
-	case "showinfo":
+	case "info":
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			if s != "" && s != "size" && s != "time" {
-				msg := "showinfo should consist of 'size' or 'time' separated with colon"
+				msg := "info should consist of 'size' or 'time' separated with colon"
 				app.ui.message = msg
 				log.Print(msg)
 				return
 			}
 		}
-		gOpts.showinfo = toks
+		gOpts.info = toks
 	default:
 		msg := fmt.Sprintf("unknown option: %s", e.opt)
 		app.ui.message = msg

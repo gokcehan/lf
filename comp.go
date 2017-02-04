@@ -68,7 +68,7 @@ var (
 		"sortby",
 		"timefmt",
 		"ratios",
-		"showinfo",
+		"info",
 	}
 )
 

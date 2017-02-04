@@ -65,7 +65,7 @@ The following options can be used to customize the behavior of lf:
     sortby     string  (default "natural")
     timefmt    string  (default "Mon Jan _2 15:04:05 2006")
     ratios     string  (default "1:2:3")
-    showinfo   string  (default "")
+    info       string  (default "")
 
 The following variables are exported for shell commands:
 
@@ -144,19 +144,19 @@ You can delete an existing command by leaving the expression empty:
 
 If there is no prefix then ":" is assumed:
 
-    map zt set showinfo time
+    map zt set info time
 
 An explicit ":" could be provided to group statements until a "\n" occurs
 which is especially useful for "map" and "cmd" commands:
 
-    map st :set sortby time; set showinfo time
+    map st :set sortby time; set info time
 
 If you need multiline you can wrap statements in "{{" and "}}" after the
 proper prefix.
 
     map st :{{
     	set sortby time
-    	set showinfo time
+    	set info time
     }}
 
 

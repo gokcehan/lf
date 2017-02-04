@@ -16,7 +16,7 @@ var gOpts struct {
 	sortby    string
 	timefmt   string
 	ratios    []int
-	showinfo  []string
+	info      []string
 	keys      map[string]expr
 	cmds      map[string]expr
 }
@@ -33,7 +33,7 @@ func init() {
 	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
-	gOpts.showinfo = nil
+	gOpts.info = nil
 
 	gOpts.keys = make(map[string]expr)
 
