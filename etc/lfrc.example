@@ -21,12 +21,13 @@ map zp set preview!
 map zh set hidden!
 
 # easily select what information to show
-map zn set showinfo none
+map zn set showinfo
 map zs set showinfo size
 map zt set showinfo time
+map za set showinfo size:time
 
 # sort files and show the corresponding info
-map sn :set sortby name; set showinfo none
+map sn :set sortby name; set showinfo
 map ss :set sortby size; set showinfo size
 map st :set sortby time; set showinfo time
 

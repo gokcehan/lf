@@ -65,10 +65,10 @@ var (
 		"ifs",
 		"previewer",
 		"shell",
-		"showinfo",
 		"sortby",
 		"timefmt",
 		"ratios",
+		"showinfo",
 	}
 )
 

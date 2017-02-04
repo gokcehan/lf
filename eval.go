@@ -86,14 +86,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.previewer = strings.Replace(e.val, "~", envHome, -1)
 	case "shell":
 		gOpts.shell = e.val
-	case "showinfo":
-		if e.val != "none" && e.val != "size" && e.val != "time" {
-			msg := "showinfo should either be 'none', 'size' or 'time'"
-			app.ui.message = msg
-			log.Print(msg)
-			return
-		}
-		gOpts.showinfo = e.val
 	case "sortby":
 		if e.val != "natural" && e.val != "name" && e.val != "size" && e.val != "time" {
 			msg := "sortby should either be 'natural', 'name', 'size' or 'time'"
@@ -121,6 +113,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins()
 		app.ui.loadFile(app.nav)
+	case "showinfo":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			if s != "" && s != "size" && s != "time" {
+				msg := "showinfo should consist of 'size' or 'time' separated with colon"
+				app.ui.message = msg
+				log.Print(msg)
+				return
+			}
+		}
+		gOpts.showinfo = toks
 	default:
 		msg := fmt.Sprintf("unknown option: %s", e.opt)
 		app.ui.message = msg

@@ -286,29 +286,24 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 			}
 		}
 
-		switch gOpts.showinfo {
-		case "none":
-			break
-		case "size":
-			if win.w > 8 {
-				h := humanize(f.Size())
-				s = runeSliceWidthRange(s, 0, win.w-3-len(h))
-				s = append(s, ' ')
-				for _, r := range h {
-					s = append(s, r)
-				}
+		var info string
+
+		for _, s := range gOpts.showinfo {
+			switch s {
+			case "size":
+				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
+			case "time":
+				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
+			default:
+				log.Printf("unknown showinfo type: %s", s)
 			}
-		case "time":
-			if win.w > 24 {
-				t := f.ModTime().Format("Jan _2 15:04")
-				s = runeSliceWidthRange(s, 0, win.w-3-len(t))
-				s = append(s, ' ')
-				for _, r := range t {
-					s = append(s, r)
-				}
+		}
+
+		if len(info) > 0 && win.w > 2*len(info) {
+			s = runeSliceWidthRange(s, 0, win.w-2-len(info))
+			for _, r := range info {
+				s = append(s, r)
 			}
-		default:
-			log.Printf("unknown showinfo type: %s", gOpts.showinfo)
 		}
 
 		// TODO: add a trailing '~' to the name if cut

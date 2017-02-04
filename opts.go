@@ -13,10 +13,10 @@ var gOpts struct {
 	ifs       string
 	previewer string
 	shell     string
-	showinfo  string
 	sortby    string
 	timefmt   string
 	ratios    []int
+	showinfo  []string
 	keys      map[string]expr
 	cmds      map[string]expr
 }
@@ -30,10 +30,10 @@ func init() {
 	gOpts.tabstop = 8
 	gOpts.filesep = ":"
 	gOpts.shell = "/bin/sh"
-	gOpts.showinfo = "none"
 	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
+	gOpts.showinfo = nil
 
 	gOpts.keys = make(map[string]expr)
 
