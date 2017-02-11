@@ -166,5 +166,15 @@ func sendRemote(cmd string) error {
 
 	fmt.Fprintln(c, cmd)
 
+	s := bufio.NewScanner(c)
+
+	s.Scan()
+
+	fmt.Println(s.Text())
+
+	if s.Err() != nil {
+		return fmt.Errorf("reading response: %s", s.Err())
+	}
+
 	return nil
 }
