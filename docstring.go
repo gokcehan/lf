@@ -307,7 +307,7 @@ character. Setting the file selection is done with "save" command:
 Getting the file selection is similarly done with "load" command. You may
 need to parse the response as such to achieve what you need:
 
-    resp=$(lf -remote 'load')
+    resp=$(echo 'load' | nc -U /tmp/lf.${USER}.sock)
     mode=$(echo $resp | cut -d' ' -f1)
     list=$(echo $resp | cut -d' ' -f2-)
     if [ $mode == 'copy' ]; then
