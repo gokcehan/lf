@@ -31,6 +31,17 @@ func client() {
 
 	app.ui.loadFile(app.nav)
 
+	var serverChan <-chan expr
+
+	c, err := net.Dial("unix", gSocketPath)
+	if err != nil {
+		msg := fmt.Sprintf("connecting server: %s", err)
+		app.ui.message = msg
+		log.Printf(msg)
+	} else {
+		serverChan = readExpr(c)
+	}
+
 	if err := app.nav.sync(); err != nil {
 		msg := fmt.Sprintf("sync: %s", err)
 		app.ui.message = msg
@@ -61,7 +72,7 @@ func client() {
 
 	app.ui.draw(app.nav)
 
-	app.handleInp()
+	app.handleInp(serverChan)
 }
 
 func readExpr(c net.Conn) <-chan expr {

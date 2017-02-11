@@ -3,7 +3,6 @@ package main
 import (
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"os/exec"
 	"strconv"
@@ -55,19 +54,8 @@ func waitKey() error {
 // This is the main event loop of the application. There are two channels to
 // read expressions from client and server. Reading and evaluation are done on
 // separate goroutines.
-func (app *app) handleInp() {
+func (app *app) handleInp(serverChan <-chan expr) {
 	clientChan := app.ui.readExpr()
-
-	var serverChan <-chan expr
-
-	c, err := net.Dial("unix", gSocketPath)
-	if err != nil {
-		msg := fmt.Sprintf("connecting server: %s", err)
-		app.ui.message = msg
-		log.Printf(msg)
-	} else {
-		serverChan = readExpr(c)
-	}
 
 	for {
 		select {
