@@ -42,6 +42,36 @@ var gEvalTests = []struct {
 	},
 
 	{
+		`echo "hello world"`,
+		[]string{"echo", "hello world", "\n"},
+		[]expr{&callExpr{"echo", []string{"hello world"}}},
+	},
+
+	{
+		`echo "hello\"world"`,
+		[]string{"echo", `hello"world`, "\n"},
+		[]expr{&callExpr{"echo", []string{`hello"world`}}},
+	},
+
+	{
+		`echo "hello\tworld"`,
+		[]string{"echo", "hello\tworld", "\n"},
+		[]expr{&callExpr{"echo", []string{"hello\tworld"}}},
+	},
+
+	{
+		`echo "hello\nworld"`,
+		[]string{"echo", "hello\nworld", "\n"},
+		[]expr{&callExpr{"echo", []string{"hello\nworld"}}},
+	},
+
+	{
+		`echo "hello\zworld"`,
+		[]string{"echo", "helloworld", "\n"},
+		[]expr{&callExpr{"echo", []string{"helloworld"}}},
+	},
+
+	{
 		`echo hello\ world`,
 		[]string{"echo", "hello world", "\n"},
 		[]expr{&callExpr{"echo", []string{"hello world"}}},
@@ -60,7 +90,7 @@ var gEvalTests = []struct {
 	},
 
 	{
-		`echo hello\aworld`,
+		`echo hello\zworld`,
 		[]string{"echo", "helloworld", "\n"},
 		[]expr{&callExpr{"echo", []string{"helloworld"}}},
 	},

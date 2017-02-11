@@ -203,6 +203,40 @@ scan:
 			s.next()
 		}
 		goto scan
+	case s.chr == '"':
+		s.next()
+		var buf []byte
+		for !s.eof && s.chr != '"' {
+			if s.chr == '\\' {
+				s.next()
+				// TODO: octal escape
+				switch s.chr {
+				case '"', '\\':
+					buf = append(buf, s.chr)
+				case 'a':
+					buf = append(buf, '\a')
+				case 'b':
+					buf = append(buf, '\b')
+				case 'f':
+					buf = append(buf, '\f')
+				case 'n':
+					buf = append(buf, '\n')
+				case 'r':
+					buf = append(buf, '\r')
+				case 't':
+					buf = append(buf, '\t')
+				case 'v':
+					buf = append(buf, '\v')
+				}
+				s.next()
+			} else {
+				buf = append(buf, s.chr)
+				s.next()
+			}
+		}
+		s.typ = tokenIdent
+		s.tok = string(buf)
+		s.next()
 	case s.chr == '\'':
 		s.next()
 		beg := s.off
