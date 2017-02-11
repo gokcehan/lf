@@ -523,17 +523,19 @@ func (nav *nav) currFile() (*file, error) {
 	return last.fi[last.ind], nil
 }
 
-type IndexedMarks struct {
+type indexedMarks struct {
 	paths   []string
 	indices []int
 }
 
-func (m IndexedMarks) Len() int { return len(m.paths) }
-func (m IndexedMarks) Swap(i, j int) {
+func (m indexedMarks) Len() int { return len(m.paths) }
+
+func (m indexedMarks) Swap(i, j int) {
 	m.paths[i], m.paths[j] = m.paths[j], m.paths[i]
 	m.indices[i], m.indices[j] = m.indices[j], m.indices[i]
 }
-func (m IndexedMarks) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
+
+func (m indexedMarks) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
 
 func (nav *nav) currMarks() []string {
 	paths := make([]string, 0, len(nav.marks))
@@ -542,6 +544,6 @@ func (nav *nav) currMarks() []string {
 		paths = append(paths, path)
 		indices = append(indices, index)
 	}
-	sort.Sort(IndexedMarks{paths: paths, indices: indices})
+	sort.Sort(indexedMarks{paths: paths, indices: indices})
 	return paths
 }
