@@ -69,7 +69,13 @@ cmd open-file ${{
 }}
 
 # rename current file without overwrite
-cmd rename $[ -e "$1" ] || mv "$f" "$1"
+cmd rename ${{
+    if [ -e "$1" ]; then
+        lf -remote "send $id echo file exists"
+    else
+        mv "$f" "$1"
+    fi
+}}
 map r push :rename<space>
 
 # show disk usage
@@ -103,4 +109,16 @@ cmd compress ${{
     IFS=':'; cp $fs "$1"
     tar czvf "$1.tar.gz" "$1"
     rm -rf "$1"
+}}
+
+# dynamically set the number of columns on startup based on terminal width
+${{
+    w=$(tput cols)
+    if [ $w -le 80 ]; then
+        lf -remote "send $id set ratios 1:2"
+    elif [ $w -le 160 ]; then
+        lf -remote "send $id set ratios 1:2:3"
+    else
+        lf -remote "send $id set ratios 1:2:3:4"
+    fi
 }}

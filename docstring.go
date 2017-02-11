@@ -72,6 +72,7 @@ The following variables are exported for shell commands:
     $f   current file
     $fs  marked file(s) separated with ':'
     $fx  current file or marked file(s) if any
+    $id  id number of the client
 
 
 Configuration
@@ -231,6 +232,92 @@ we could use the "ifs" option to set it for all commands (e.g. "set ifs
 ':'"). This could be especially useful for interactive use (e.g. "rm $fs"
 would simply work). This option is not set by default as things may behave
 unexpectedly at other places.
+
+
+Remote Commands
+
+One of the more advanced features in lf is remote commands. All clients
+connect to a server on startup. It is possible to send commands to all or
+any of the connected clients over the common server. This is used internally
+to notify file selection changes to other clients.
+
+To use this feature, you need to use a client which supports communicating
+with a UNIX-domain socket. OpenBSD implementation of netcat (nc) is one such
+example. You can use it to send a command to the socket file:
+
+    echo 'send echo hello world' | nc -U /tmp/lf.${USER}.sock
+
+Since such a client may not be available everwhere, lf comes bundled with a
+command line flag to be used as such. When using lf, you do not need to
+specify the address of the socket file. This is the recommended way of using
+remote commands since it is shorter and immune to socket file address
+changes:
+
+    lf -remote 'send echo hello world'
+
+In this command "send" is used to send the rest of the string as a command
+to all connected clients. You can optionally give it an id number to send a
+command to a single client:
+
+    lf -remote 'send 1000 echo hello world'
+
+All clients have a unique id number but you may not be aware of the id
+number when you are writing a command. For this purpose, an "$id" variable
+is exported to the environment for shell commands. You can use it to send a
+remote command from a client to the server which in return sends a command
+back to itself. So now you can display a message in the current client by
+calling the following in a shell command:
+
+    lf -remote "send $id echo hello world"
+
+A common use for this feature is to display an error message back in the
+client. You can implement a safe rename command which does not overwrite an
+existing file or directory as such:
+
+    cmd rename ${{
+    	if [ -e "$1" ]; then
+    		lf -remote "send $id echo file exists"
+    	else
+    		mv "$f" "$1"
+    	fi
+    }}
+
+Since lf does not have control flow syntax, remote commands are used for
+such needs. Following example can be used to dynamically set the number of
+columns on startup based on terminal width:
+
+    ${{
+    	w=$(tput cols)
+    	if [ $w -le 80 ]; then
+    		lf -remote "send $id set ratios 1:2"
+    	elif [ $w -le 160 ]; then
+    		lf -remote "send $id set ratios 1:2:3"
+    	else
+    		lf -remote "send $id set ratios 1:2:3:4"
+    	fi
+    }}
+
+Besides "send" command, there are also two commands to get or set the
+current file selection. Two possible modes "copy" and "move" specify whether
+selected files are to be copied or moved. File names are separated ":"
+character. Setting the file selection is done with "save" command:
+
+    lf -remote 'save copy foo.txt:bar.txt:baz.txt'
+
+Getting the file selection is similarly done with "load" command. You may
+need to parse the response as such to achieve what you need:
+
+    resp=$(lf -remote 'load')
+    mode=$(echo $resp | cut -d' ' -f1)
+    list=$(echo $resp | cut -d' ' -f2-)
+    if [ $mode == 'copy' ]; then
+    	# do something with the $list
+    elif [ $mode == 'move' ]; then
+    	# do something else with the $list
+    fi
+
+Lastly, there is a "conn" command to connect the server as a client. This
+should not be needed for users.
 
 
 File Operations
