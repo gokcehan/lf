@@ -235,7 +235,7 @@ example. You can use it to send a command to the socket file:
 
 	echo 'send echo hello world' | nc -U /tmp/lf.${USER}.sock
 
-Since such a client may not be available everwhere, lf comes bundled with a
+Since such a client may not be available everywhere, lf comes bundled with a
 command line flag to be used as such. When using lf, you do not need to specify
 the address of the socket file. This is the recommended way of using remote
 commands since it is shorter and immune to socket file address changes:
