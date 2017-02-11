@@ -317,6 +317,11 @@ followed by "put". These traditional names (e.g. "yank", "delete", and "put")
 are picked instead of the other common convention (e.g. copy and cut) to
 resemble the default keybinds for these operations.
 
+By default, lf does not provide an actual file deletion command to protect new
+users. You can define such a command and optionally assign a key if you like.
+An example command to move selected files to a trash folder and remove files
+completely are provided in the example configuration file.
+
 Opening Files
 
 You can use "open-file" command to open a file. This is a special command

@@ -88,6 +88,14 @@ $mkdir -p $HOME/.trash
 # (see 'man mv' or 'mv --help' for backup options)
 cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
 
+# remove current file or selected files (prompting)
+#cmd remove ${{
+#    echo "$fx" | tr ':' '\n'
+#    echo -n 'remove?[y/n]'
+#    read ans
+#    [ $ans = 'y' ] && (IFS=':'; rm -rf $fx)
+#}}
+
 # extract the current file with the right command
 # (xkcd link: https://xkcd.com/1168/)
 cmd extract ${{
