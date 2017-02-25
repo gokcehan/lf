@@ -297,9 +297,9 @@ to parse the response as such to achieve what you need:
 	resp=$(echo 'load' | nc -U /tmp/lf.${USER}.sock)
 	mode=$(echo $resp | cut -d' ' -f1)
 	list=$(echo $resp | cut -d' ' -f2-)
-	if [ $mode == 'copy' ]; then
+	if [ $mode = 'copy' ]; then
 		# do something with the $list
-	elif [ $mode == 'move' ]; then
+	elif [ $mode = 'move' ]; then
 		# do something else with the $list
 	fi
 
