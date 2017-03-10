@@ -43,6 +43,25 @@ The following commands are provided by lf with default keybindings:
     put               (default "p")
     renew             (default "<c-l>")
 
+The following command line commands are provided by lf with default
+keybindings:
+
+    cmd-escape        (default "<esc>")
+    cmd-insert        (default "<space>")
+    cmd-comp          (default "<tab>")
+    cmd-enter         (default "<c-j>" and "<enter>")
+    cmd-delete-back   (default "<bs>" and "<bs2>")
+    cmd-delete        (default "<c-d>" and "<delete>")
+    cmd-left          (default "<c-b>" and "<left>")
+    cmd-right         (default "<c-f>" and "<right>")
+    cmd-beg           (default "<c-a>" and "<home>")
+    cmd-end           (default "<c-e>" and "<end>")
+    cmd-delete-end    (default "<c-k>")
+    cmd-delete-beg    (default "<c-u>")
+    cmd-delete-word   (default "<c-w>")
+    cmd-put           (default "<c-y>")
+    cmd-transpose     (default "<c-t>")
+
 The following commands are provided by lf without default keybindings:
 
     sync  synchronizes yanked/deleted files with server
@@ -52,20 +71,20 @@ The following commands are provided by lf without default keybindings:
 
 The following options can be used to customize the behavior of lf:
 
-    dirfirst   boolean (default on)
-    hidden     boolean (default off)
-    preview    boolean (default on)
-    reverse    boolean (default off)
-    scrolloff  integer (default 0)
-    tabstop    integer (default 8)
-    filesep    string  (default ":")
-    ifs        string  (default "") (not exported if empty)
-    previewer  string  (default "") (not filtered if empty)
-    shell      string  (default "/bin/sh")
-    sortby     string  (default "natural")
-    timefmt    string  (default "Mon Jan _2 15:04:05 2006")
-    ratios     string  (default "1:2:3")
-    info       string  (default "")
+    dirfirst   boolean  (default on)
+    hidden     boolean  (default off)
+    preview    boolean  (default on)
+    reverse    boolean  (default off)
+    scrolloff  integer  (default 0)
+    tabstop    integer  (default 8)
+    filesep    string   (default ":")
+    ifs        string   (default "") (not exported if empty)
+    previewer  string   (default "") (not filtered if empty)
+    shell      string   (default "/bin/sh")
+    sortby     string   (default "natural")
+    timefmt    string   (default "Mon Jan _2 15:04:05 2006")
+    ratios     string   (default "1:2:3")
+    info       string   (default "")
 
 The following variables are exported for shell commands:
 
@@ -113,28 +132,36 @@ Characters from "#" to "\n" are comments and ignored:
 
     # comments start with '#'
 
-There are three special commands for configuration.
+There are three special commands ("set", "map", and "cmd") and their
+variants for configuration.
 
-"set" is used to set an option which could be boolean, integer, or string:
+"set" is used to set an option which can be boolean, integer, or string:
 
-    set hidden        # boolean on
-    set nohidden      # boolean off
-    set hidden!       # boolean toggle
-    set scrolloff 10  # integer value
-    set sortby time   # string value w/o quotes
-    set sortby 'time' # string value with quotes
+    set hidden         # boolean on
+    set nohidden       # boolean off
+    set hidden!        # boolean toggle
+    set scrolloff 10   # integer value
+    set sortby time    # string value w/o quotes
+    set sortby 'time'  # string value with single quotes (whitespaces)
+    set sortby "time"  # string value with double quotes (backslash escapes)
 
-"map" is used to bind a key to a command which could be built-in command,
+"map" is used to bind a key to a command which can be built-in command,
 custom command, or shell command:
 
-    map gh cd ~       # built-in command
-    map D trash       # custom command
-    map i $less "$f"  # shell command
-    map u !du -h .    # waiting shell command
+    map gh cd ~        # built-in command
+    map D trash        # custom command
+    map i $less "$f"   # shell command
+    map u !du -h .     # waiting shell command
+
+"cmap" is used to bind a key to a command line command which can only be one
+of the built-in commands:
+
+    cmap <c-g> cmd-escape
 
 You can delete an existing binding by leaving the expression empty:
 
-    map gh            # deletes 'gh' mapping
+    map gh             # deletes 'gh' mapping
+    cmap <c-g>         # deletes '<c-g>' mapping
 
 "cmd" is used to define a custom command
 
@@ -142,13 +169,13 @@ You can delete an existing binding by leaving the expression empty:
 
 You can delete an existing command by leaving the expression empty:
 
-    cmd trash         # deletes trash command
+    cmd trash          # deletes trash command
 
 If there is no prefix then ":" is assumed:
 
     map zt set info time
 
-An explicit ":" could be provided to group statements until a "\n" occurs
+An explicit ":" can be provided to group statements until a "\n" occurs
 which is especially useful for "map" and "cmd" commands:
 
     map st :set sortby time; set info time
@@ -230,7 +257,7 @@ Since these are one liners, we can drop "{{" and "}}":
 
 Finally note that we set "IFS" variable accordingly in the command. Instead
 we could use the "ifs" option to set it for all commands (e.g. "set ifs
-':'"). This could be especially useful for interactive use (e.g. "rm $fs"
+':'"). This can be especially useful for interactive use (e.g. "rm $fs"
 would simply work). This option is not set by default as things may behave
 unexpectedly at other places.
 
@@ -294,7 +321,7 @@ columns on startup based on terminal width:
         elif [ $w -le 160 ]; then
             lf -remote "send $id set ratios 1:2:3"
         else
-            lf -remote "send $id set ratios 1:2:3:4"
+            lf -remote "send $id set ratios 1:2:3:5"
         fi
     }}
 

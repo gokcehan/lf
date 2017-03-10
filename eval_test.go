@@ -174,6 +174,12 @@ var gEvalTests = []struct {
 	},
 
 	{
+		"cmap <c-g> cmd-escape",
+		[]string{"cmap", "<c-g>", "cmd-escape", "\n"},
+		[]expr{&cmapExpr{"<c-g>", "cmd-escape"}},
+	},
+
+	{
 		"cmd usage $du -h . | less",
 		[]string{"cmd", "usage", "$", "du -h . | less", "\n"},
 		[]expr{&cmdExpr{"usage", &execExpr{"$", "du -h . | less"}}},

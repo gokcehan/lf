@@ -18,6 +18,7 @@ var gOpts struct {
 	ratios    []int
 	info      []string
 	keys      map[string]expr
+	cmdkeys   map[string]expr
 	cmds      map[string]expr
 }
 
@@ -67,6 +68,32 @@ func init() {
 	gOpts.keys["c"] = &callExpr{"clear", nil}
 	gOpts.keys["p"] = &callExpr{"put", nil}
 	gOpts.keys["<c-l>"] = &callExpr{"renew", nil}
+
+	gOpts.cmdkeys = make(map[string]expr)
+
+	// TODO: rest of the keys
+	gOpts.cmdkeys["<esc>"] = &callExpr{"cmd-escape", nil}
+	gOpts.cmdkeys["<space>"] = &callExpr{"cmd-insert", []string{" "}}
+	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-comp", nil}
+	gOpts.cmdkeys["<enter>"] = &callExpr{"cmd-enter", nil}
+	gOpts.cmdkeys["<c-j>"] = &callExpr{"cmd-enter", nil}
+	gOpts.cmdkeys["<bs>"] = &callExpr{"cmd-delete-back", nil}
+	gOpts.cmdkeys["<bs2>"] = &callExpr{"cmd-delete-back", nil}
+	gOpts.cmdkeys["<delete>"] = &callExpr{"cmd-delete", nil}
+	gOpts.cmdkeys["<c-d>"] = &callExpr{"cmd-delete", nil}
+	gOpts.cmdkeys["<left>"] = &callExpr{"cmd-left", nil}
+	gOpts.cmdkeys["<c-b>"] = &callExpr{"cmd-left", nil}
+	gOpts.cmdkeys["<right>"] = &callExpr{"cmd-right", nil}
+	gOpts.cmdkeys["<c-f>"] = &callExpr{"cmd-right", nil}
+	gOpts.cmdkeys["<home>"] = &callExpr{"cmd-beg", nil}
+	gOpts.cmdkeys["<c-a>"] = &callExpr{"cmd-beg", nil}
+	gOpts.cmdkeys["<end>"] = &callExpr{"cmd-end", nil}
+	gOpts.cmdkeys["<c-e>"] = &callExpr{"cmd-end", nil}
+	gOpts.cmdkeys["<c-k>"] = &callExpr{"cmd-delete-end", nil}
+	gOpts.cmdkeys["<c-u>"] = &callExpr{"cmd-delete-beg", nil}
+	gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-word", nil}
+	gOpts.cmdkeys["<c-y>"] = &callExpr{"cmd-put", nil}
+	gOpts.cmdkeys["<c-t>"] = &callExpr{"cmd-transpose", nil}
 
 	gOpts.cmds = make(map[string]expr)
 }

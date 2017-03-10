@@ -139,6 +139,14 @@ func (e *mapExpr) eval(app *app, args []string) {
 	gOpts.keys[e.keys] = e.expr
 }
 
+func (e *cmapExpr) eval(app *app, args []string) {
+	if e.cmd == "" {
+		delete(gOpts.cmdkeys, e.key)
+		return
+	}
+	gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil}
+}
+
 func (e *cmdExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.cmds, e.name)

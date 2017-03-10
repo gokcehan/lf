@@ -647,38 +647,9 @@ func readCmdEvent(ch chan<- multiExpr, ev termbox.Event) {
 	if ev.Ch != 0 {
 		ch <- multiExpr{&callExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
 	} else {
-		// TODO: rest of the keys
-		switch ev.Key {
-		case termbox.KeyEsc:
-			ch <- multiExpr{&callExpr{"cmd-escape", nil}, 1}
-		case termbox.KeySpace:
-			ch <- multiExpr{&callExpr{"cmd-insert", []string{" "}}, 1}
-		case termbox.KeyTab:
-			ch <- multiExpr{&callExpr{"cmd-comp", nil}, 1}
-		case termbox.KeyEnter, termbox.KeyCtrlJ:
-			ch <- multiExpr{&callExpr{"cmd-enter", nil}, 1}
-		case termbox.KeyBackspace, termbox.KeyBackspace2:
-			ch <- multiExpr{&callExpr{"cmd-delete-back", nil}, 1}
-		case termbox.KeyDelete, termbox.KeyCtrlD:
-			ch <- multiExpr{&callExpr{"cmd-delete", nil}, 1}
-		case termbox.KeyArrowLeft, termbox.KeyCtrlB:
-			ch <- multiExpr{&callExpr{"cmd-left", nil}, 1}
-		case termbox.KeyArrowRight, termbox.KeyCtrlF:
-			ch <- multiExpr{&callExpr{"cmd-right", nil}, 1}
-		case termbox.KeyHome, termbox.KeyCtrlA:
-			ch <- multiExpr{&callExpr{"cmd-beg", nil}, 1}
-		case termbox.KeyEnd, termbox.KeyCtrlE:
-			ch <- multiExpr{&callExpr{"cmd-end", nil}, 1}
-		case termbox.KeyCtrlK:
-			ch <- multiExpr{&callExpr{"cmd-delete-end", nil}, 1}
-		case termbox.KeyCtrlU:
-			ch <- multiExpr{&callExpr{"cmd-delete-beg", nil}, 1}
-		case termbox.KeyCtrlW:
-			ch <- multiExpr{&callExpr{"cmd-delete-word", nil}, 1}
-		case termbox.KeyCtrlY:
-			ch <- multiExpr{&callExpr{"cmd-put", nil}, 1}
-		case termbox.KeyCtrlT:
-			ch <- multiExpr{&callExpr{"cmd-transpose", nil}, 1}
+		val := gKeyVal[ev.Key]
+		if expr, ok := gOpts.cmdkeys[string(val)]; ok {
+			ch <- multiExpr{expr, 1}
 		}
 	}
 }

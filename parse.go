@@ -4,6 +4,7 @@ package main
 //
 // Expr     = SetExpr
 //          | MapExpr
+//          | CMapExpr
 //          | CmdExpr
 //          | CallExpr
 //          | ExecExpr
@@ -12,6 +13,8 @@ package main
 // SetExpr  = 'set' <opt> <val> ';'
 //
 // MapExpr  = 'map' <keys> Expr ';'
+//
+// CMapExpr = 'cmap' <key> <cmd> ';'
 //
 // CmdExpr  = 'cmd' <name> Expr ';'
 //
@@ -53,6 +56,13 @@ type mapExpr struct {
 }
 
 func (e *mapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
+
+type cmapExpr struct {
+	key string
+	cmd string
+}
+
+func (e *cmapExpr) String() string { return fmt.Sprintf("cmap %s %s", e.key, e.cmd) }
 
 type cmdExpr struct {
 	name string
@@ -147,6 +157,24 @@ func (p *parser) parseExpr() expr {
 			}
 
 			result = &mapExpr{keys, expr}
+		case "cmap":
+			var cmd string
+
+			s.scan()
+			key := s.tok
+
+			s.scan()
+			if s.typ != tokenSemicolon {
+				if s.typ != tokenIdent {
+					p.err = fmt.Errorf("expected command: %s", s.tok)
+				}
+				cmd = s.tok
+				s.scan()
+			}
+
+			s.scan()
+
+			result = &cmapExpr{key, cmd}
 		case "cmd":
 			var expr expr
 
