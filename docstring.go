@@ -52,12 +52,12 @@ The following commands are provided by lf without default keybindings:
 
 The following options can be used to customize the behavior of lf:
 
-    dirfirst   bool    (default on)
-    hidden     bool    (default off)
-    preview    bool    (default on)
-    reverse    bool    (default off)
-    scrolloff  int     (default 0)
-    tabstop    int     (default 8)
+    dirfirst   boolean (default on)
+    hidden     boolean (default off)
+    preview    boolean (default on)
+    reverse    boolean (default off)
+    scrolloff  integer (default 0)
+    tabstop    integer (default 8)
     filesep    string  (default ":")
     ifs        string  (default "") (not exported if empty)
     previewer  string  (default "") (not filtered if empty)
@@ -122,6 +122,7 @@ There are three special commands for configuration.
     set hidden!       # boolean toggle
     set scrolloff 10  # integer value
     set sortby time   # string value w/o quotes
+    set sortby 'time' # string value with quotes
 
 "map" is used to bind a key to a command which could be built-in command,
 custom command, or shell command:
@@ -156,8 +157,8 @@ If you need multiline you can wrap statements in "{{" and "}}" after the
 proper prefix.
 
     map st :{{
-    	set sortby time
-    	set info time
+        set sortby time
+        set info time
     }}
 
 
@@ -196,12 +197,12 @@ trash.
 A first attempt to write such a command may look like this:
 
     cmd trash ${{
-    	mkdir -p ~/.trash
-    	if [ -z $fs ]; then
-    		mv --backup=numbered "$f" $HOME/.trash
-    	else
-    		IFS=':'; mv --backup=numbered $fs $HOME/.trash
-    	fi
+        mkdir -p ~/.trash
+        if [ -z $fs ]; then
+            mv --backup=numbered "$f" $HOME/.trash
+        else
+            IFS=':'; mv --backup=numbered $fs $HOME/.trash
+        fi
     }}
 
 We check "$fs" to see if there are any marked files. Otherwise we just
@@ -210,8 +211,8 @@ delete the current file. Since this is such a common pattern, a separate
 conditional:
 
     cmd trash ${{
-    	mkdir -p ~/.trash
-    	IFS=':'; mv --backup=numbered $fx $HOME/.trash
+        mkdir -p ~/.trash
+        IFS=':'; mv --backup=numbered $fx $HOME/.trash
     }}
 
 The trash directory is checked each time the command is executed. We can
@@ -275,11 +276,11 @@ client. You can implement a safe rename command which does not overwrite an
 existing file or directory as such:
 
     cmd rename ${{
-    	if [ -e "$1" ]; then
-    		lf -remote "send $id echo file exists"
-    	else
-    		mv "$f" "$1"
-    	fi
+        if [ -e "$1" ]; then
+            lf -remote "send $id echo file exists"
+        else
+            mv "$f" "$1"
+        fi
     }}
 
 Since lf does not have control flow syntax, remote commands are used for
@@ -287,14 +288,14 @@ such needs. Following example can be used to dynamically set the number of
 columns on startup based on terminal width:
 
     ${{
-    	w=$(tput cols)
-    	if [ $w -le 80 ]; then
-    		lf -remote "send $id set ratios 1:2"
-    	elif [ $w -le 160 ]; then
-    		lf -remote "send $id set ratios 1:2:3"
-    	else
-    		lf -remote "send $id set ratios 1:2:3:4"
-    	fi
+        w=$(tput cols)
+        if [ $w -le 80 ]; then
+            lf -remote "send $id set ratios 1:2"
+        elif [ $w -le 160 ]; then
+            lf -remote "send $id set ratios 1:2:3"
+        else
+            lf -remote "send $id set ratios 1:2:3:4"
+        fi
     }}
 
 Besides "send" command, there are also two commands to get or set the
@@ -311,9 +312,9 @@ need to parse the response as such to achieve what you need:
     mode=$(echo $resp | cut -d' ' -f1)
     list=$(echo $resp | cut -d' ' -f2-)
     if [ $mode = 'copy' ]; then
-    	# do something with the $list
+        # do something with the $list
     elif [ $mode = 'move' ]; then
-    	# do something else with the $list
+        # do something else with the $list
     fi
 
 Lastly, there is a "conn" command to connect the server as a client. This
@@ -355,10 +356,14 @@ You may want to use either file extensions or mime types from "file"
 command:
 
     cmd open-file ${{
-    	case $(file --mime-type "$f" -b) in
-    		text/*) IFS=':'; vim $fx;;
-    		*) IFS=':'; for f in $fx; do xdg-open "$f" > /dev/null 2> /dev/null & done;;
-    	esac
+        case $(file --mime-type "$f" -b) in
+            text/*)
+                IFS=':'; vim $fx;;
+            *)
+                IFS=':'; for f in $fx; do
+                    xdg-open "$f" > /dev/null 2> /dev/null &
+                done;;
+        esac
     }}
 
 lf does not come bundled with a file opener. You can use any of the existing
@@ -395,12 +400,12 @@ match cleanly within a conditional:
     #!/bin/sh
 
     case "$1" in
-    	*.tar*) tar tf "$1";;
-    	*.zip) unzip -l "$1";;
-    	*.rar) unrar l "$1";;
-    	*.7z) 7z l "$1";;
-    	*.pdf) pdftotext "$1" -;;
-    	*) highlight -O ansi "$1" || cat "$1";;
+        *.tar*) tar tf "$1";;
+        *.zip) unzip -l "$1";;
+        *.rar) unrar l "$1";;
+        *.7z) 7z l "$1";;
+        *.pdf) pdftotext "$1" -;;
+        *) highlight -O ansi "$1" || cat "$1";;
     esac
 
 Another important consideration for efficiency is the use of programs with
