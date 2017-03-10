@@ -294,6 +294,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
 		app.nav.toggle()
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "invert":
 		app.nav.invert()
 	case "yank":
