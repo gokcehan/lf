@@ -43,15 +43,21 @@ The following commands are provided by lf with default keybindings:
     put               (default "p")
     renew             (default "<c-l>")
 
+The following commands are provided by lf without default keybindings:
+
+    sync  synchronizes yanked/deleted files with server
+    echo  prints its arguments to the message line
+    cd    changes working directory to its argument
+    push  simulate key pushes given in its argument
+
 The following command line commands are provided by lf with default
 keybindings:
 
     cmd-escape        (default "<esc>")
-    cmd-insert        (default "<space>")
     cmd-comp          (default "<tab>")
     cmd-enter         (default "<c-j>" and "<enter>")
-    cmd-delete-back   (default "<bs>" and "<bs2>")
     cmd-delete        (default "<c-d>" and "<delete>")
+    cmd-delete-back   (default "<bs>" and "<bs2>")
     cmd-left          (default "<c-b>" and "<left>")
     cmd-right         (default "<c-f>" and "<right>")
     cmd-beg           (default "<c-a>" and "<home>")
@@ -61,13 +67,6 @@ keybindings:
     cmd-delete-word   (default "<c-w>")
     cmd-put           (default "<c-y>")
     cmd-transpose     (default "<c-t>")
-
-The following commands are provided by lf without default keybindings:
-
-    sync  synchronizes yanked/deleted files with server
-    echo  prints its arguments to the message line
-    cd    changes working directory to its argument
-    push  simulate key pushes given in its argument
 
 The following options can be used to customize the behavior of lf:
 
