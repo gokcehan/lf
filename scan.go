@@ -4,6 +4,7 @@ import (
 	"io"
 	"io/ioutil"
 	"log"
+	"strconv"
 	"unicode"
 )
 
@@ -82,6 +83,10 @@ func (s *scanner) peek() byte {
 
 func isSpace(b byte) bool {
 	return unicode.IsSpace(rune(b))
+}
+
+func isDigit(b byte) bool {
+	return unicode.IsDigit(rune(b))
 }
 
 func isPrefix(b byte) bool {
@@ -228,7 +233,20 @@ scan:
 				case 'v':
 					buf = append(buf, '\v')
 				}
-				s.next()
+				if isDigit(s.chr) {
+					var oct []byte
+					for isDigit(s.chr) {
+						oct = append(oct, s.chr)
+						s.next()
+					}
+					n, err := strconv.ParseInt(string(oct), 8, 0)
+					if err != nil {
+						log.Printf("scanning: %s", err)
+					}
+					buf = append(buf, byte(n))
+				} else {
+					s.next()
+				}
 			} else {
 				buf = append(buf, s.chr)
 				s.next()
