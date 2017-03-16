@@ -44,6 +44,12 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "reverse!":
 		gOpts.reverse = !gOpts.reverse
 		app.nav.renew(app.nav.height)
+	case "wrapscan":
+		gOpts.wrapscan = true
+	case "nowrapscan":
+		gOpts.wrapscan = false
+	case "wrapscan!":
+		gOpts.wrapscan = !gOpts.wrapscan
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {

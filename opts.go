@@ -7,6 +7,7 @@ var gOpts struct {
 	hidden    bool
 	preview   bool
 	reverse   bool
+	wrapscan  bool
 	scrolloff int
 	tabstop   int
 	filesep   string
@@ -27,6 +28,7 @@ func init() {
 	gOpts.hidden = false
 	gOpts.preview = true
 	gOpts.reverse = false
+	gOpts.wrapscan = true
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.filesep = ":"
