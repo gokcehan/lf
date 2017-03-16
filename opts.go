@@ -3,6 +3,7 @@ package main
 import "time"
 
 var gOpts struct {
+	dircounts bool
 	dirfirst  bool
 	hidden    bool
 	preview   bool
@@ -24,6 +25,7 @@ var gOpts struct {
 }
 
 func init() {
+	gOpts.dircounts = false
 	gOpts.dirfirst = true
 	gOpts.hidden = false
 	gOpts.preview = true

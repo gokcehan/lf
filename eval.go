@@ -11,6 +11,12 @@ import (
 
 func (e *setExpr) eval(app *app, args []string) {
 	switch e.opt {
+	case "dircounts":
+		gOpts.dircounts = true
+	case "nodircounts":
+		gOpts.dircounts = false
+	case "dircounts!":
+		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
 		gOpts.dirfirst = true
 		app.nav.renew(app.nav.height)

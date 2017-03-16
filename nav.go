@@ -23,6 +23,7 @@ type file struct {
 	os.FileInfo
 	LinkState linkState
 	Path      string
+	Count     int
 }
 
 type filesSortable struct {
@@ -126,6 +127,7 @@ func readdir(path string) ([]*file, error) {
 			FileInfo:  lstat,
 			LinkState: linkState,
 			Path:      fpath,
+			Count:     -1,
 		})
 	}
 	return fi, err
