@@ -91,6 +91,8 @@ func readdir(path string) ([]*file, error) {
 	}
 
 	names, err := f.Readdirnames(-1)
+	f.Close()
+
 	fi := make([]*file, 0, len(names))
 	for _, filename := range names {
 		if !gOpts.hidden && filename[0] == '.' {
