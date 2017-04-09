@@ -160,4 +160,7 @@ func (app *app) runShell(s string, args []string, wait bool, async bool) {
 			log.Print(msg)
 		}
 	}
+
+	app.ui.loadFile(app.nav)
+	app.ui.loadFileInfo(app.nav)
 }

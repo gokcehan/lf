@@ -452,8 +452,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
 		}
-		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
 		app.ui.cmdpref = ""
 	case "cmd-delete-back":
 		if len(app.ui.cmdlacc) > 0 {
