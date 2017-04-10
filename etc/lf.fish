@@ -5,11 +5,13 @@
 
 function lf
     set tmp (mktemp)
-    command lf -last-dir-path=$tmp $argv 
-    if test -f $tmp
+    command lf -last-dir-path=$tmp $argv
+    if test -f "$tmp"
         set dir (cat $tmp)
-        if [ $dir != "" && $dir != (pwd) ]
-            cd $dir
+        if test -n "$dir"
+            if test "$dir" != (pwd)
+                cd $dir
+            end
         end
     end
     rm -f $tmp
