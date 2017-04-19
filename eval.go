@@ -445,10 +445,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("search: %s", s)
 			app.nav.search = s
 			app.nav.searchNext()
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		case "?":
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
 			app.nav.searchPrev()
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
 		}
