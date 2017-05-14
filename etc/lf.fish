@@ -1,12 +1,10 @@
-# Change working dir in Fish to last dir in lf on exit (adapted from ranger).
+# Change working dir in fish to last dir in lf on exit (adapted from ranger).
 #
 # You need to either copy the content of this file to ~/.config/fish/config.fish
-# or source this file directly using something like:
+# or put the file to ~/.config/fish/functions using something like:
 #
-#     set lffish "$GOPATH/src/github.com/gokcehan/lf/etc/lf.fish"
-#     if test -f "$lffish"
-#         source "$lffish"
-#     end
+#     mkdir -p ~/.config/fish/functions
+#     ln -s "$GOPATH/src/github.com/gokcehan/lf/etc/lf.fish" ~/.config/fish/functions
 #
 
 function lf
