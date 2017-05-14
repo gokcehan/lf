@@ -75,7 +75,7 @@ func main() {
 	serverMode := flag.Bool("server", false, "start server (automatic)")
 	cpuprofile := flag.String("cpuprofile", "", "path to the file to write the cpu profile")
 	flag.StringVar(&gLastDirPath, "last-dir-path", "", "path to the file to write the last dir on exit (to use for cd)")
-	flag.StringVar(&gSelectionPath, "selection-path", "", "path to the file to write selected files on exit (to use as open file dialog)")
+	flag.StringVar(&gSelectionPath, "selection-path", "", "path to the file to write selected files on open (to use as open file dialog)")
 
 	flag.Parse()
 
