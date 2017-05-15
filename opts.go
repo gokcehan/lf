@@ -59,6 +59,8 @@ func init() {
 	gOpts.keys["$"] = &callExpr{"read-shell", nil}
 	gOpts.keys["!"] = &callExpr{"read-shell-wait", nil}
 	gOpts.keys["&"] = &callExpr{"read-shell-async", nil}
+	gOpts.keys["<c-n>"] = &callExpr{"cmd-hist-next", nil}
+	gOpts.keys["<c-p>"] = &callExpr{"cmd-hist-prev", nil}
 	gOpts.keys["/"] = &callExpr{"search", nil}
 	gOpts.keys["?"] = &callExpr{"search-back", nil}
 	gOpts.keys["n"] = &callExpr{"search-next", nil}
@@ -79,6 +81,8 @@ func init() {
 	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-comp", nil}
 	gOpts.cmdkeys["<enter>"] = &callExpr{"cmd-enter", nil}
 	gOpts.cmdkeys["<c-j>"] = &callExpr{"cmd-enter", nil}
+	gOpts.cmdkeys["<c-n>"] = &callExpr{"cmd-hist-next", nil}
+	gOpts.cmdkeys["<c-p>"] = &callExpr{"cmd-hist-prev", nil}
 	gOpts.cmdkeys["<bs>"] = &callExpr{"cmd-delete-back", nil}
 	gOpts.cmdkeys["<bs2>"] = &callExpr{"cmd-delete-back", nil}
 	gOpts.cmdkeys["<delete>"] = &callExpr{"cmd-delete", nil}

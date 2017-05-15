@@ -9,10 +9,17 @@ import (
 	"strings"
 )
 
+type cmdItem struct {
+	pref string
+	s    string
+}
+
 type app struct {
-	ui   *ui
-	nav  *nav
-	quit chan bool
+	ui      *ui
+	nav     *nav
+	quit    chan bool
+	cmdHist []cmdItem
+	cmdHind int
 }
 
 func newApp() *app {

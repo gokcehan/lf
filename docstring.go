@@ -56,6 +56,8 @@ keybindings:
     cmd-escape        (default "<esc>")
     cmd-comp          (default "<tab>")
     cmd-enter         (default "<c-j>" and "<enter>")
+    cmd-hist-next     (default "<c-n>")
+    cmd-hist-prev     (default "<c-p>")
     cmd-delete        (default "<c-d>" and "<delete>")
     cmd-delete-back   (default "<bs>" and "<bs2>")
     cmd-left          (default "<c-b>" and "<left>")

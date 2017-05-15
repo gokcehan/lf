@@ -395,7 +395,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-escape":
 		app.ui.menubuf = nil
-		app.ui.cmdbuf = nil
 		app.ui.cmdlacc = nil
 		app.ui.cmdracc = nil
 		app.ui.cmdpref = ""
@@ -418,7 +417,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.ui.menubuf = nil
-		app.ui.cmdbuf = nil
 		app.ui.cmdlacc = nil
 		app.ui.cmdracc = nil
 		switch app.ui.cmdpref {
@@ -456,7 +454,34 @@ func (e *callExpr) eval(app *app, args []string) {
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
 		}
+		app.cmdHist = append(app.cmdHist, cmdItem{app.ui.cmdpref, s})
 		app.ui.cmdpref = ""
+	case "cmd-hist-prev":
+		if app.cmdHind == len(app.cmdHist) {
+			return
+		}
+		app.cmdHind++
+		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHind]
+		app.ui.cmdpref = cmd.pref
+		app.ui.cmdlacc = []rune(cmd.s)
+		app.ui.cmdracc = nil
+		app.ui.menubuf = nil
+	case "cmd-hist-next":
+		if app.cmdHind > 0 {
+			app.cmdHind--
+		}
+		if app.cmdHind == 0 {
+			app.ui.menubuf = nil
+			app.ui.cmdlacc = nil
+			app.ui.cmdracc = nil
+			app.ui.cmdpref = ""
+			return
+		}
+		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHind]
+		app.ui.cmdpref = cmd.pref
+		app.ui.cmdlacc = []rune(cmd.s)
+		app.ui.cmdracc = nil
+		app.ui.menubuf = nil
 	case "cmd-delete-back":
 		if len(app.ui.cmdlacc) > 0 {
 			app.ui.cmdlacc = app.ui.cmdlacc[:len(app.ui.cmdlacc)-1]
