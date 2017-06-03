@@ -291,7 +291,29 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 		for _, s := range gOpts.info {
 			switch s {
 			case "size":
-				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
+				if !(gOpts.dircounts && f.IsDir()) {
+					info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
+					continue
+				}
+
+				if f.Count == -1 {
+					d, err := os.Open(path)
+					if err != nil {
+						log.Printf("opening dir to read count: %s", err)
+						continue
+					}
+
+					names, err := d.Readdirnames(-1)
+					d.Close()
+
+					if err != nil {
+						log.Printf("reading dir count: %s", err)
+						continue
+					}
+
+					f.Count = len(names)
+				}
+				info = fmt.Sprintf("%s %d", info, f.Count)
 			case "time":
 				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
 			default:

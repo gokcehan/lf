@@ -72,6 +72,7 @@ keybindings:
 
 The following options can be used to customize the behavior of lf:
 
+    dircounts  boolean  (default off)
     dirfirst   boolean  (default on)
     hidden     boolean  (default off)
     preview    boolean  (default on)

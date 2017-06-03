@@ -47,6 +47,9 @@ var (
 	}
 
 	gOptWords = []string{
+		"dircounts",
+		"nodircounts",
+		"dircounts!",
 		"dirfirst",
 		"nodirfirst",
 		"dirfirst!",
