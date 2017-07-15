@@ -62,6 +62,12 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "reverse!":
 		gOpts.reverse = !gOpts.reverse
 		app.nav.renew(app.nav.height)
+	case "smartcase":
+		gOpts.smartcase = true
+	case "nosmartcase":
+		gOpts.smartcase = false
+	case "smartcase!":
+		gOpts.smartcase = !gOpts.smartcase
 	case "wrapscan":
 		gOpts.wrapscan = true
 	case "nowrapscan":

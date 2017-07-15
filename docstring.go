@@ -79,6 +79,7 @@ The following options can be used to customize the behavior of lf:
     ignorecase  boolean  (default off)
     preview     boolean  (default on)
     reverse     boolean  (default off)
+    smartcase   boolean  (default off)
     wrapscan    boolean  (default on)
     scrolloff   integer  (default 0)
     tabstop     integer  (default 8)

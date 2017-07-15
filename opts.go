@@ -10,6 +10,7 @@ var gOpts struct {
 	ignorecase bool
 	preview    bool
 	reverse    bool
+	smartcase  bool
 	wrapscan   bool
 	scrolloff  int
 	tabstop    int
@@ -34,6 +35,7 @@ func init() {
 	gOpts.ignorecase = false
 	gOpts.preview = true
 	gOpts.reverse = false
+	gOpts.smartcase = false
 	gOpts.wrapscan = true
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
