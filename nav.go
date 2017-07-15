@@ -369,6 +369,9 @@ func (nav *nav) cd(wd string) error {
 }
 
 func match(pattern, name string) (matched bool, err error) {
+	if gOpts.ignorecase {
+		pattern, name = strings.ToLower(pattern), strings.ToLower(name)
+	}
 	if gOpts.globsearch {
 		return filepath.Match(pattern, name)
 	} else {

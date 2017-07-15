@@ -41,6 +41,12 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "hidden!":
 		gOpts.hidden = !gOpts.hidden
 		app.nav.renew(app.nav.height)
+	case "ignorecase":
+		gOpts.ignorecase = true
+	case "noignorecase":
+		gOpts.ignorecase = false
+	case "ignorecase!":
+		gOpts.ignorecase = !gOpts.ignorecase
 	case "preview":
 		gOpts.preview = true
 	case "nopreview":

@@ -72,6 +72,7 @@ The following options can be used to customize the behavior of lf:
     dirfirst    boolean  (default on)
     globsearch  boolean  (default off)
     hidden      boolean  (default off)
+    ignorecase  boolean  (default off)
     preview     boolean  (default on)
     reverse     boolean  (default off)
     wrapscan    boolean  (default on)

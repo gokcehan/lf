@@ -7,6 +7,7 @@ var gOpts struct {
 	dirfirst   bool
 	globsearch bool
 	hidden     bool
+	ignorecase bool
 	preview    bool
 	reverse    bool
 	wrapscan   bool
@@ -30,6 +31,7 @@ func init() {
 	gOpts.dirfirst = true
 	gOpts.globsearch = false
 	gOpts.hidden = false
+	gOpts.ignorecase = false
 	gOpts.preview = true
 	gOpts.reverse = false
 	gOpts.wrapscan = true
