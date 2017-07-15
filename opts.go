@@ -3,30 +3,32 @@ package main
 import "time"
 
 var gOpts struct {
-	dircounts bool
-	dirfirst  bool
-	hidden    bool
-	preview   bool
-	reverse   bool
-	wrapscan  bool
-	scrolloff int
-	tabstop   int
-	filesep   string
-	ifs       string
-	previewer string
-	shell     string
-	sortby    string
-	timefmt   string
-	ratios    []int
-	info      []string
-	keys      map[string]expr
-	cmdkeys   map[string]expr
-	cmds      map[string]expr
+	dircounts  bool
+	dirfirst   bool
+	globsearch bool
+	hidden     bool
+	preview    bool
+	reverse    bool
+	wrapscan   bool
+	scrolloff  int
+	tabstop    int
+	filesep    string
+	ifs        string
+	previewer  string
+	shell      string
+	sortby     string
+	timefmt    string
+	ratios     []int
+	info       []string
+	keys       map[string]expr
+	cmdkeys    map[string]expr
+	cmds       map[string]expr
 }
 
 func init() {
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
+	gOpts.globsearch = false
 	gOpts.hidden = false
 	gOpts.preview = true
 	gOpts.reverse = false

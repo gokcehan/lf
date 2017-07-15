@@ -368,40 +368,66 @@ func (nav *nav) cd(wd string) error {
 	return nil
 }
 
-func (nav *nav) searchNext() {
+func match(pattern, name string) (matched bool, err error) {
+	if gOpts.globsearch {
+		return filepath.Match(pattern, name)
+	} else {
+		return strings.Contains(name, pattern), nil
+	}
+}
+
+func (nav *nav) searchNext() error {
 	last := nav.currDir()
 	for i := last.ind + 1; i < len(last.fi); i++ {
-		if strings.Contains(last.fi[i].Name(), nav.search) {
+		matched, err := match(nav.search, last.fi[i].Name())
+		if err != nil {
+			return err
+		}
+		if matched {
 			nav.down(i - last.ind)
-			return
+			return nil
 		}
 	}
 	if gOpts.wrapscan {
 		for i := 0; i < last.ind; i++ {
-			if strings.Contains(last.fi[i].Name(), nav.search) {
+			matched, err := match(nav.search, last.fi[i].Name())
+			if err != nil {
+				return err
+			}
+			if matched {
 				nav.up(last.ind - i)
-				return
+				return nil
 			}
 		}
 	}
+	return nil
 }
 
-func (nav *nav) searchPrev() {
+func (nav *nav) searchPrev() error {
 	last := nav.currDir()
 	for i := last.ind - 1; i >= 0; i-- {
-		if strings.Contains(last.fi[i].Name(), nav.search) {
+		matched, err := match(nav.search, last.fi[i].Name())
+		if err != nil {
+			return err
+		}
+		if matched {
 			nav.up(last.ind - i)
-			return
+			return nil
 		}
 	}
 	if gOpts.wrapscan {
 		for i := len(last.fi) - 1; i > last.ind; i-- {
-			if strings.Contains(last.fi[i].Name(), nav.search) {
+			matched, err := match(nav.search, last.fi[i].Name())
+			if err != nil {
+				return err
+			}
+			if matched {
 				nav.down(i - last.ind)
-				return
+				return nil
 			}
 		}
 	}
+	return nil
 }
 
 func (nav *nav) toggleMark(path string) {

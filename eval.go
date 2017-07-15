@@ -26,6 +26,12 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "dirfirst!":
 		gOpts.dirfirst = !gOpts.dirfirst
 		app.nav.renew(app.nav.height)
+	case "globsearch":
+		gOpts.globsearch = true
+	case "noglobsearch":
+		gOpts.globsearch = false
+	case "globsearch!":
+		gOpts.globsearch = !gOpts.globsearch
 	case "hidden":
 		gOpts.hidden = true
 		app.nav.renew(app.nav.height)
@@ -297,11 +303,21 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "search-back":
 		app.ui.cmdpref = "?"
 	case "search-next":
-		app.nav.searchNext()
+		if err := app.nav.searchNext(); err != nil {
+			msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
+			app.ui.message = msg
+			log.Printf(msg)
+			return
+		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "search-prev":
-		app.nav.searchPrev()
+		if err := app.nav.searchPrev(); err != nil {
+			msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
+			app.ui.message = msg
+			log.Printf(msg)
+			return
+		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
@@ -448,15 +464,25 @@ func (e *callExpr) eval(app *app, args []string) {
 		case "/":
 			log.Printf("search: %s", s)
 			app.nav.search = s
-			app.nav.searchNext()
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
+			if err := app.nav.searchNext(); err != nil {
+				msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
+				app.ui.message = msg
+				log.Printf(msg)
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			}
 		case "?":
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
-			app.nav.searchPrev()
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
+			if err := app.nav.searchPrev(); err != nil {
+				msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
+				app.ui.message = msg
+				log.Printf(msg)
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			}
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
 		}
