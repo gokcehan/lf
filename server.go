@@ -26,7 +26,7 @@ func serve() {
 
 	log.Print("hi!")
 
-	l, err := net.Listen("unix", gSocketPath)
+	l, err := net.Listen(gSocketProt, gSocketPath)
 	if err != nil {
 		log.Printf("listening socket: %s", err)
 		return

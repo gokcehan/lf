@@ -33,7 +33,7 @@ func client() {
 
 	var serverChan <-chan expr
 
-	c, err := net.Dial("unix", gSocketPath)
+	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
 		msg := fmt.Sprintf("connecting server: %s", err)
 		app.ui.message = msg
@@ -97,7 +97,7 @@ func readExpr(c net.Conn) <-chan expr {
 }
 
 func saveFiles(list []string, copy bool) error {
-	c, err := net.Dial("unix", gSocketPath)
+	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
 		return fmt.Errorf("dialing to save files: %s", err)
 	}
@@ -119,7 +119,7 @@ func saveFiles(list []string, copy bool) error {
 }
 
 func loadFiles() (list []string, copy bool, err error) {
-	c, e := net.Dial("unix", gSocketPath)
+	c, e := net.Dial(gSocketProt, gSocketPath)
 	if e != nil {
 		err = fmt.Errorf("dialing to load files: %s", e)
 		return
@@ -158,7 +158,7 @@ func loadFiles() (list []string, copy bool, err error) {
 }
 
 func sendRemote(cmd string) error {
-	c, err := net.Dial("unix", gSocketPath)
+	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
 		return fmt.Errorf("dialing to send server: %s", err)
 	}
