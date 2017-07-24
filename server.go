@@ -7,7 +7,6 @@ import (
 	"net"
 	"os"
 	"strconv"
-	"strings"
 )
 
 var (
@@ -56,24 +55,30 @@ func handleConn(c net.Conn) {
 		word, rest := splitWord(s.Text())
 		switch word {
 		case "save":
-			word2, rest2 := splitWord(rest)
-			switch word2 {
+			s.Scan()
+			switch s.Text() {
 			case "copy":
 				gCopyFile = true
 			case "move":
 				gCopyFile = false
 			default:
-				log.Printf("unexpected option to copy file(s): %s", word2)
+				log.Printf("unexpected option to copy file(s): %s", s.Text())
 				break
 			}
-			gFileList = strings.Split(rest2, ":")
+			gFileList = nil
+			for s.Scan() && s.Text() != "" {
+				gFileList = append(gFileList, s.Text())
+			}
 		case "load":
 			if gCopyFile {
-				fmt.Fprint(c, "copy ")
+				fmt.Fprintln(c, "copy")
 			} else {
-				fmt.Fprint(c, "move ")
+				fmt.Fprintln(c, "move")
 			}
-			fmt.Fprintln(c, strings.Join(gFileList, ":"))
+			for _, f := range gFileList {
+				fmt.Fprintln(c, f)
+			}
+			fmt.Fprintln(c)
 		case "conn":
 			if rest != "" {
 				word2, _ := splitWord(rest)

@@ -105,15 +105,18 @@ func saveFiles(list []string, copy bool) error {
 
 	log.Printf("saving files: %v", list)
 
-	fmt.Fprint(c, "save ")
+	fmt.Fprintln(c, "save")
 
 	if copy {
-		fmt.Fprint(c, "copy ")
+		fmt.Fprintln(c, "copy")
 	} else {
-		fmt.Fprint(c, "move ")
+		fmt.Fprintln(c, "move")
 	}
 
-	fmt.Fprintln(c, strings.Join(list, ":"))
+	for _, f := range list {
+		fmt.Fprintln(c, f)
+	}
+	fmt.Fprintln(c)
 
 	return nil
 }
@@ -132,20 +135,19 @@ func loadFiles() (list []string, copy bool, err error) {
 
 	s.Scan()
 
-	word, rest := splitWord(s.Text())
-	log.Printf("load: %s", s.Text())
-
-	switch word {
+	switch s.Text() {
 	case "copy":
 		copy = true
 	case "move":
 		copy = false
 	default:
-		err = fmt.Errorf("unexpected option to copy file(s): %s", word)
+		err = fmt.Errorf("unexpected option to copy file(s): %s", s.Text())
 		return
 	}
 
-	list = strings.Split(rest, ":")
+	for s.Scan() && s.Text() != "" {
+		list = append(list, s.Text())
+	}
 
 	if s.Err() != nil {
 		err = fmt.Errorf("scanning file list: %s", s.Err())
