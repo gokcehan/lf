@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strings"
 )
@@ -512,24 +513,44 @@ func (nav *nav) put() error {
 
 	dir := nav.currDir()
 
+	var sh string
 	var args []string
 
-	var sh string
-	if copy {
-		sh = "cp"
-		args = append(args, "-r")
+	if runtime.GOOS == "windows" {
+		sh = "robocopy"
+		if !copy {
+			args = []string{"/move"}
+		}
+		for _, f := range list {
+			stat, err := os.Stat(f)
+			if err != nil {
+				log.Printf("getting file information: %s", err)
+				continue
+			}
+			base := filepath.Base(f)
+			dest := filepath.Dir(f)
+			if stat.IsDir() {
+				exec.Command(sh, append(args, f, filepath.Join(dir.path, base))...).Run()
+			} else {
+				exec.Command(sh, append(args, dest, dir.path, base)...).Run()
+			}
+		}
 	} else {
-		sh = "mv"
-	}
+		if copy {
+			sh = "cp"
+			args = append(args, "-r")
+		} else {
+			sh = "mv"
+		}
+		args = append(args, "--backup=numbered")
+		args = append(args, list...)
+		args = append(args, dir.path)
 
-	args = append(args, "--backup=numbered")
-	args = append(args, list...)
-	args = append(args, dir.path)
+		cmd := exec.Command(sh, args...)
 
-	cmd := exec.Command(sh, args...)
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("%s: %s", sh, err)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("%s: %s", sh, err)
+		}
 	}
 
 	// TODO: async?
