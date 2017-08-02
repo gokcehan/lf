@@ -140,7 +140,11 @@ func (app *app) runShell(s string, args []string, wait bool, async bool) {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
 	}
 
-	args = append([]string{"-c", s, "--"}, args...)
+	if runtime.GOOS == "windows" {
+		args = append([]string{"/c", s}, args...)
+	} else {
+		args = append([]string{"-c", s, "--"}, args...)
+	}
 
 	cmd := exec.Command(gOpts.shell, args...)
 
