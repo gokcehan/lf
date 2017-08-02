@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"runtime"
 	"strconv"
 	"strings"
 )
@@ -45,7 +46,12 @@ func waitKey() error {
 	      stty $old
 	      echo`
 
-	cmd := exec.Command(gOpts.shell, "-c", c)
+	var cmd *exec.Cmd
+	if runtime.GOOS == "windows" {
+		cmd = exec.Command("cmd", "/c", "pause")
+	} else {
+		cmd = exec.Command(gOpts.shell, "-c", c)
+	}
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -135,6 +141,7 @@ func (app *app) runShell(s string, args []string, wait bool, async bool) {
 	}
 
 	args = append([]string{"-c", s, "--"}, args...)
+
 	cmd := exec.Command(gOpts.shell, args...)
 
 	if !async {
