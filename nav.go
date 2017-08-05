@@ -377,9 +377,8 @@ func match(pattern, name string) (matched bool, err error) {
 	}
 	if gOpts.globsearch {
 		return filepath.Match(pattern, name)
-	} else {
-		return strings.Contains(name, pattern), nil
 	}
+	return strings.Contains(name, pattern), nil
 }
 
 func (nav *nav) searchNext() error {
