@@ -1,9 +1,6 @@
 package main
 
-import (
-	"runtime"
-	"time"
-)
+import "time"
 
 var gOpts struct {
 	dircounts  bool
@@ -43,11 +40,7 @@ func init() {
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.filesep = ":"
-	if runtime.GOOS == "windows" {
-		gOpts.shell = "cmd"
-	} else {
-		gOpts.shell = "/bin/sh"
-	}
+	gOpts.shell = gDefaultShell
 	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}

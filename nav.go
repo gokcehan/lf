@@ -5,9 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strings"
 )
@@ -513,44 +511,11 @@ func (nav *nav) put() error {
 
 	dir := nav.currDir()
 
-	var sh string
-	var args []string
+	cmd := putCommand(list, dir, copy)
 
-	if runtime.GOOS == "windows" {
-		sh = "robocopy"
-		if !copy {
-			args = []string{"/move"}
-		}
-		for _, f := range list {
-			stat, err := os.Stat(f)
-			if err != nil {
-				log.Printf("getting file information: %s", err)
-				continue
-			}
-			base := filepath.Base(f)
-			dest := filepath.Dir(f)
-			if stat.IsDir() {
-				exec.Command(sh, append(args, f, filepath.Join(dir.path, base))...).Run()
-			} else {
-				exec.Command(sh, append(args, dest, dir.path, base)...).Run()
-			}
-		}
-	} else {
-		if copy {
-			sh = "cp"
-			args = append(args, "-r")
-		} else {
-			sh = "mv"
-		}
-		args = append(args, "--backup=numbered")
-		args = append(args, list...)
-		args = append(args, dir.path)
-
-		cmd := exec.Command(sh, args...)
-
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("%s: %s", sh, err)
-		}
+	if err := cmd.Run(); err != nil {
+		// TODO: add name of external command to message
+		return fmt.Errorf("putting files: %s", err)
 	}
 
 	// TODO: async?

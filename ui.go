@@ -9,7 +9,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -513,14 +512,6 @@ func (ui *ui) loadFile(nav *nav) {
 			log.Print(msg)
 		}
 	}
-}
-
-func moveCursor(y, x int) {
-	// TODO: implement for windows
-	if runtime.GOOS == "windows" {
-		return
-	}
-	fmt.Printf("\033[%d;%dH", y, x)
 }
 
 func (ui *ui) draw(nav *nav) {

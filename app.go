@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"os/exec"
-	"runtime"
 	"strconv"
 	"strings"
 )
@@ -38,20 +36,7 @@ func newApp() *app {
 func waitKey() error {
 	// TODO: this should be done with termbox somehow
 
-	c := `echo
-	      echo -n 'Press any key to continue'
-	      old=$(stty -g)
-	      stty raw -echo
-	      eval "ignore=\$(dd bs=1 count=1 2> /dev/null)"
-	      stty $old
-	      echo`
-
-	var cmd *exec.Cmd
-	if runtime.GOOS == "windows" {
-		cmd = exec.Command("cmd", "/c", "pause")
-	} else {
-		cmd = exec.Command(gOpts.shell, "-c", c)
-	}
+	cmd := pauseCommand()
 
 	cmd.Stdin = os.Stdin
 	cmd.Stdout = os.Stdout
@@ -136,17 +121,7 @@ func (app *app) exportVars() {
 func (app *app) runShell(s string, args []string, wait bool, async bool) {
 	app.exportVars()
 
-	if len(gOpts.ifs) != 0 {
-		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
-	}
-
-	if runtime.GOOS == "windows" {
-		args = append([]string{"/c", s}, args...)
-	} else {
-		args = append([]string{"-c", s, "--"}, args...)
-	}
-
-	cmd := exec.Command(gOpts.shell, args...)
+	cmd := shellCommand(s, args)
 
 	if !async {
 		cmd.Stdin = os.Stdin

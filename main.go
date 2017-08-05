@@ -7,7 +7,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"runtime"
 	"runtime/pprof"
 )
 
@@ -48,15 +47,10 @@ func init() {
 		envConfig = filepath.Join(envHome, ".config")
 	}
 
-	tmp := os.TempDir()
+	gSocketProt = gDefaultSocketProt
+	gSocketPath = gDefaultSocketPath
 
-	if runtime.GOOS == "windows" {
-		gSocketProt = "tcp"
-		gSocketPath = ":12345"
-	} else {
-		gSocketProt = "unix"
-		gSocketPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.sock", envUser))
-	}
+	tmp := os.TempDir()
 
 	gClientID = 1000
 	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientID))
