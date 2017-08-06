@@ -4,14 +4,41 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
 )
 
-var gDefaultShell = "/bin/sh"
-var gDefaultSocketProt = "unix"
-var gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", envUser))
+var (
+	gDefaultShell      = "/bin/sh"
+	gDefaultSocketProt = "unix"
+	gDefaultSocketPath string
+)
+
+var (
+	gUser       *user.User
+	gConfigPath string
+)
+
+func init() {
+	var err error
+
+	gUser, err = user.Current()
+	if err != nil {
+		log.Printf("user: %s", err)
+	}
+
+	config := os.Getenv("XDG_CONFIG_HOME")
+	if config == "" {
+		config = filepath.Join(gUser.HomeDir, ".config")
+	}
+
+	gConfigPath = filepath.Join(config, "lf", "lfrc")
+
+	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
+}
 
 func pauseCommand() *exec.Cmd {
 	c := `echo

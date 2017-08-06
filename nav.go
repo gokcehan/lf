@@ -349,7 +349,7 @@ func (nav *nav) top() {
 }
 
 func (nav *nav) cd(wd string) error {
-	wd = strings.Replace(wd, "~", envHome, -1)
+	wd = strings.Replace(wd, "~", gUser.HomeDir, -1)
 	wd = filepath.Clean(wd)
 
 	if !filepath.IsAbs(wd) {

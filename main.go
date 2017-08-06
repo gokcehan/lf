@@ -11,57 +11,27 @@ import (
 )
 
 var (
-	envUser   = os.Getenv("USER")
-	envHome   = os.Getenv("HOME")
-	envHost   = os.Getenv("HOSTNAME")
-	envPath   = os.Getenv("PATH")
-	envConfig = os.Getenv("XDG_CONFIG_HOME")
+	envPath = os.Getenv("PATH")
 )
 
 var (
 	gClientID      int
+	gHostname      string
 	gLastDirPath   string
 	gSelectionPath string
 	gSocketProt    string
 	gSocketPath    string
 	gLogPath       string
 	gServerLogPath string
-	gConfigPath    string
 )
 
 func init() {
-	if envUser == "" {
-		log.Print("$USER not set")
-	}
-	if envHome == "" {
-		envHome = "/home/" + envUser
-	}
-	if envHost == "" {
-		host, err := os.Hostname()
-		if err != nil {
-			log.Printf("hostname: %s", err)
-		}
-		envHost = host
-	}
-	if envConfig == "" {
-		envConfig = filepath.Join(envHome, ".config")
-	}
+	var err error
 
-	gSocketProt = gDefaultSocketProt
-	gSocketPath = gDefaultSocketPath
-
-	tmp := os.TempDir()
-
-	gClientID = 1000
-	gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientID))
-	for _, err := os.Stat(gLogPath); err == nil; _, err = os.Stat(gLogPath) {
-		gClientID++
-		gLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.%d.log", envUser, gClientID))
+	gHostname, err = os.Hostname()
+	if err != nil {
+		log.Printf("hostname: %s", err)
 	}
-
-	gServerLogPath = filepath.Join(tmp, fmt.Sprintf("lf.%s.server.log", envUser))
-
-	gConfigPath = filepath.Join(envConfig, "lf", "lfrc")
 }
 
 func startServer() {
@@ -104,12 +74,23 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
+	gSocketProt = gDefaultSocketProt
+	gSocketPath = gDefaultSocketPath
+
 	if *serverMode {
+		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
 		serve()
 	} else {
 		// TODO: check if the socket is working
 		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
 			startServer()
+		}
+
+		gClientID = 1000
+		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
+		for _, err := os.Stat(gLogPath); err == nil; _, err = os.Stat(gLogPath) {
+			gClientID++
+			gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
 		}
 
 		client()

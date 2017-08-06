@@ -521,12 +521,12 @@ func (ui *ui) draw(nav *nav) {
 
 	dir := nav.currDir()
 
-	path := strings.Replace(dir.path, envHome, "~", -1)
+	path := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
 	path = filepath.Clean(path)
 
-	ui.pwdwin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", envUser, envHost)
-	ui.pwdwin.printf(len(envUser)+len(envHost)+1, 0, fg, bg, ":")
-	ui.pwdwin.printf(len(envUser)+len(envHost)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
+	ui.pwdwin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
+	ui.pwdwin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
+	ui.pwdwin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
 
 	length := min(len(ui.wins), len(nav.dirs))
 	woff := len(ui.wins) - length

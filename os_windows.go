@@ -4,12 +4,35 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/user"
 	"path/filepath"
+	"strings"
 )
 
-var gDefaultShell = "cmd"
-var gDefaultSocketProt = "tcp"
-var gDefaultSocketPath = ":12345"
+var (
+	gDefaultShell      = "cmd"
+	gDefaultSocketProt = "tcp"
+	gDefaultSocketPath = ":12345"
+)
+
+var (
+	gUser       *user.User
+	gConfigPath string
+)
+
+func init() {
+	var err error
+
+	gUser, err = user.Current()
+	if err != nil {
+		log.Printf("user: %s", err)
+	}
+
+	// remove domain prefix
+	gUser.Username = strings.Split(gUser.Username, `\`)[1]
+
+	gConfigPath = filepath.Join(gUser.HomeDir, "AppData", "Local", "lf", "lfrc")
+}
 
 func pauseCommand() *exec.Cmd {
 	return exec.Command("cmd", "/c", "pause")
