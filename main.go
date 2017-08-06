@@ -51,6 +51,9 @@ func main() {
 
 	flag.Parse()
 
+	gSocketProt = gDefaultSocketProt
+	gSocketPath = gDefaultSocketPath
+
 	if *showDoc {
 		fmt.Print(genDocString)
 		return
@@ -73,9 +76,6 @@ func main() {
 		}
 		defer pprof.StopCPUProfile()
 	}
-
-	gSocketProt = gDefaultSocketProt
-	gSocketPath = gDefaultSocketPath
 
 	if *serverMode {
 		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
