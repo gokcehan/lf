@@ -264,9 +264,9 @@ var gEvalTests = []struct {
 	},
 
 	{
-		"cmd usage $du -h \"$1\" | less",
-		[]string{"cmd", "usage", "$", `du -h "$1" | less`, "\n"},
-		[]expr{&cmdExpr{"usage", &execExpr{"$", `du -h "$1" | less`}}},
+		"cmd usage $du -h $1 | less",
+		[]string{"cmd", "usage", "$", "du -h $1 | less", "\n"},
+		[]expr{&cmdExpr{"usage", &execExpr{"$", "du -h $1 | less"}}},
 	},
 
 	{
@@ -320,42 +320,42 @@ var gEvalTests = []struct {
 	{
 		`map c ${{
 			mkdir foo
-			IFS=':'; cp ${fs} foo
-			tar -czvf "foo.tar.gz" foo
+			cp $fs foo
+			tar -czvf foo.tar.gz foo
 			rm -rf foo
 		}}`,
 		[]string{"map", "c", "$", "{{", `
 			mkdir foo
-			IFS=':'; cp ${fs} foo
-			tar -czvf "foo.tar.gz" foo
+			cp $fs foo
+			tar -czvf foo.tar.gz foo
 			rm -rf foo
 		`, "}}", "\n"},
 		[]expr{&mapExpr{"c", &execExpr{"$", `
 			mkdir foo
-			IFS=':'; cp ${fs} foo
-			tar -czvf "foo.tar.gz" foo
+			cp $fs foo
+			tar -czvf foo.tar.gz foo
 			rm -rf foo
 		`}}},
 	},
 
 	{
 		`cmd compress ${{
-			mkdir "$1"
-			IFS=':'; cp ${fs} "$1"
-			tar -czvf "$1.tar.gz" "$1"
-			rm -rf "$1"
+			mkdir $1
+			cp $fs $1
+			tar -czvf $1.tar.gz $1
+			rm -rf $1
 		}}`,
 		[]string{"cmd", "compress", "$", "{{", `
-			mkdir "$1"
-			IFS=':'; cp ${fs} "$1"
-			tar -czvf "$1.tar.gz" "$1"
-			rm -rf "$1"
+			mkdir $1
+			cp $fs $1
+			tar -czvf $1.tar.gz $1
+			rm -rf $1
 		`, "}}", "\n"},
 		[]expr{&cmdExpr{"compress", &execExpr{"$", `
-			mkdir "$1"
-			IFS=':'; cp ${fs} "$1"
-			tar -czvf "$1.tar.gz" "$1"
-			rm -rf "$1"
+			mkdir $1
+			cp $fs $1
+			tar -czvf $1.tar.gz $1
+			rm -rf $1
 		`}}},
 	},
 }

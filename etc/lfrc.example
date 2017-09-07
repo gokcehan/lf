@@ -8,10 +8,12 @@
 # interpreter for shell commands (needs to be POSIX compatible)
 #set shell /bin/sh
 
-# set internal field seperator (IFS) to ':'
-# This is especially useful for interactive use to automatically split file
-# names in $fs and $fx. Things may behave unexpectedly so use with caution.
-#set ifs ':'
+# set internal field separator (IFS) to "\n" for shell commands
+# This is useful to automatically split file names in $fs and $fx properly
+# since default file separator used in these variables (i.e. `filesep` option)
+# is newline. You need to consider the values of these options and create your
+# commands accordingly.
+set ifs "\n"
 
 # leave some space at the top and the bottom of the screen
 set scrolloff 10
@@ -39,20 +41,20 @@ map gr cd /
 map <enter> read-shell
 
 # mappings for pager and editor (change as you like)
-map i $less "$f"
-map e $vim "$f"
+map i $less $f
+map e $vim $f
 
 # mapping to spawn a shell in working directory
 # (see also etc/lf.sh as an alternative workflow)
 map w $$SHELL
 
 # execute current file (must be executable)
-map x $"$f"
-map X !"$f"
+map x $$f
+map X !$f
 
 # dedicated keys for file opener actions
-map o &mimeopen "$f"
-map O $mimeopen --ask "$f"
+map o &mimeopen $f
+map O $mimeopen --ask $f
 
 # show documentation (overrides search-back)
 map ? $lf -doc | less
@@ -62,18 +64,18 @@ map ? $lf -doc | less
 # want to use either file extensions and/or mime types here. Below uses an
 # editor for text files and a file opener for the rest.
 cmd open-file ${{
-    case $(file --mime-type "$f" -b) in
-        text/*) IFS=':'; vim $fx;;
-        *) IFS=':'; for f in $fx; do xdg-open "$f" > /dev/null 2> /dev/null & done;;
+    case $(file --mime-type $f -b) in
+        text/*) vim $fx;;
+        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
     esac
 }}
 
 # rename current file without overwrite
 cmd rename ${{
-    if [ -e "$1" ]; then
+    if [ -e $1 ]; then
         lf -remote "send $id echo file exists"
     else
-        mv "$f" "$1"
+        mv $f $1
     fi
 }}
 map r push :rename<space>
@@ -86,26 +88,26 @@ $mkdir -p $HOME/.trash
 
 # move current file or selected files to trash folder
 # (see 'man mv' or 'mv --help' for backup options)
-cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
+cmd trash $mv --backup=numbered $fx $HOME/.trash
 
 # remove current file or selected files (prompting)
 #cmd remove ${{
-#    echo "$fx" | tr ':' '\n'
-#    echo -n 'remove?[y/n]'
+#    printf "$fx\n"
+#    printf "remove?[y/n]"
 #    read ans
-#    [ $ans = 'y' ] && (IFS=':'; rm -rf $fx)
+#    [ $ans = "y" ] && rm -rf $fx
 #}}
 
 # extract the current file with the right command
 # (xkcd link: https://xkcd.com/1168/)
 cmd extract ${{
-    case "$f" in
-        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf "$f";;
-        *.tar.gz|*.tgz) tar xzvf "$f";;
-        *.tar.xz|*.txz) tar xJvf "$f";;
-        *.zip) unzip "$f";;
-        *.rar) unrar x "$f";;
-        *.7z) 7z x "$f";;
+    case $f in
+        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
+        *.tar.gz|*.tgz) tar xzvf $f;;
+        *.tar.xz|*.txz) tar xJvf $f;;
+        *.zip) unzip $f;;
+        *.rar) unrar x $f;;
+        *.7z) 7z x $f;;
     esac
 }}
 
@@ -113,10 +115,10 @@ cmd extract ${{
 # This command takes the output name without '.tar.gz' suffix as an argument
 # (e.g. "compress foo" creates "foo.tar.gz").
 cmd compress ${{
-    mkdir "$1"
-    IFS=':'; cp $fs "$1"
-    tar czvf "$1.tar.gz" "$1"
-    rm -rf "$1"
+    mkdir $1
+    cp $fs $1
+    tar czvf $1.tar.gz $1
+    rm -rf $1
 }}
 
 # dynamically set the number of columns on startup based on terminal width

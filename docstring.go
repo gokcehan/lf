@@ -83,7 +83,7 @@ The following options can be used to customize the behavior of lf:
     wrapscan    boolean  (default on)
     scrolloff   integer  (default 0)
     tabstop     integer  (default 8)
-    filesep     string   (default ":")
+    filesep     string   (default "\n")
     ifs         string   (default "") (not exported if empty)
     previewer   string   (default "") (not filtered if empty)
     shell       string   (default "/bin/sh")
@@ -95,7 +95,7 @@ The following options can be used to customize the behavior of lf:
 The following variables are exported for shell commands:
 
     $f   current file
-    $fs  marked file(s) separated with ':'
+    $fs  marked file(s) separated with 'filesep'
     $fx  current file or marked file(s) if any
     $id  id number of the client
 
@@ -231,10 +231,10 @@ A first attempt to write such a command may look like this:
 
     cmd trash ${{
         mkdir -p ~/.trash
-        if [ -z $fs ]; then
-            mv --backup=numbered "$f" $HOME/.trash
+        if [ -z "$fs" ]; then
+            mv --backup=numbered "$f" ~/.trash
         else
-            IFS=':'; mv --backup=numbered $fs $HOME/.trash
+            IFS="'printf '\n\t''"; mv --backup=numbered $fs ~/.trash
         fi
     }}
 
@@ -245,7 +245,7 @@ conditional:
 
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS=':'; mv --backup=numbered $fx $HOME/.trash
+        IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash
     }}
 
 The trash directory is checked each time the command is executed. We can
@@ -253,19 +253,20 @@ move it outside of the command so it would only run once at startup:
 
     ${{ mkdir -p ~/.trash }}
 
-    cmd trash ${{ IFS=':'; mv --backup=numbered $fx $HOME/.trash }}
+    cmd trash ${{ IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash }}
 
 Since these are one liners, we can drop "{{" and "}}":
 
     $mkdir -p ~/.trash
 
-    cmd trash $IFS=':'; mv --backup=numbered $fx $HOME/.trash
+    cmd trash $IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash
 
-Finally note that we set "IFS" variable accordingly in the command. Instead
-we could use the "ifs" option to set it for all commands (e.g. "set ifs
-':'"). This can be especially useful for interactive use (e.g. "rm $fs"
-would simply work). This option is not set by default as things may behave
-unexpectedly at other places.
+Finally note that we set "IFS" variable manually in these commands. Instead
+we could use the "ifs" option to set it for all shell commands (i.e. 'set
+ifs "\n"'). This can be especially useful for interactive use (e.g. "$rm $f"
+or "$rm $fs" would simply work). This option is not set by default as it can
+behave unexpectedly for new users. However, use of this option is highly
+recommended and it is assumed in the rest of the documentation.
 
 
 Remote Commands
@@ -379,23 +380,19 @@ maps the "open" command to a key (default "l") and customize "open-file"
 command as desired. You can define it just as you would define any other
 command:
 
-    cmd open-file $IFS=':'; vim $fx
+    cmd open-file $vim $fx
 
 It is possible to use different command types:
 
-    cmd open-file &xdg-open "$f"
+    cmd open-file &xdg-open $f
 
 You may want to use either file extensions or mime types from "file"
 command:
 
     cmd open-file ${{
-        case $(file --mime-type "$f" -b) in
-            text/*)
-                IFS=':'; vim $fx;;
-            *)
-                IFS=':'; for f in $fx; do
-                    xdg-open "$f" > /dev/null 2> /dev/null &
-                done;;
+        case $(file --mime-type $f -b) in
+            text/*) vim $fx;;
+            *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
     }}
 
@@ -422,7 +419,7 @@ pane. You may want to use the same script in your pager mapping as well if
 any:
 
     set previewer ~/.config/lf/pv.sh
-    map i $~/.config/lf/pv.sh "$f" | less -R
+    map i $~/.config/lf/pv.sh $f | less -R
 
 Since this script is called for each file selection change it needs to be as
 efficient as possible and this responsibility is left to the user. You may
