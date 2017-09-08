@@ -119,7 +119,7 @@ Prefixes
 
 The following command prefixes are used by lf:
 
-    :  read (default)    built-in command
+    :  read (default)    builtin/custom command
     $  read-shell        shell command
     !  read-shell-wait   shell command waiting for key press
     &  read-shell-async  asynchronous shell command
@@ -151,16 +151,16 @@ variants for configuration.
     set sortby 'time'  # string value with single quotes (whitespaces)
     set sortby "time"  # string value with double quotes (backslash escapes)
 
-"map" is used to bind a key to a command which can be built-in command,
+"map" is used to bind a key to a command which can be builtin command,
 custom command, or shell command:
 
-    map gh cd ~        # built-in command
+    map gh cd ~        # builtin command
     map D trash        # custom command
     map i $less "$f"   # shell command
     map u !du -h .     # waiting shell command
 
 "cmap" is used to bind a key to a command line command which can only be one
-of the built-in commands:
+of the builtin commands:
 
     cmap <c-g> cmd-escape
 
@@ -305,30 +305,16 @@ calling the following in a shell command:
 
     lf -remote "send $id echo hello world"
 
-A common use for this feature is to display an error message back in the
-client. You can implement a safe rename command which does not overwrite an
-existing file or directory as such:
+Since lf does not have control flow syntax, remote commands are used for
+such needs. A common use is to display an error message back in the client.
+You can implement a safe rename command which does not overwrite an existing
+file or directory as such:
 
     cmd rename ${{
         if [ -e "$1" ]; then
             lf -remote "send $id echo file exists"
         else
             mv "$f" "$1"
-        fi
-    }}
-
-Since lf does not have control flow syntax, remote commands are used for
-such needs. Following example can be used to dynamically set the number of
-columns on startup based on terminal width:
-
-    ${{
-        w=$(tput cols)
-        if [ $w -le 80 ]; then
-            lf -remote "send $id set ratios 1:2"
-        elif [ $w -le 160 ]; then
-            lf -remote "send $id set ratios 1:2:3"
-        else
-            lf -remote "send $id set ratios 1:2:3:5"
         fi
     }}
 

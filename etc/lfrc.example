@@ -1,9 +1,9 @@
 # interpreter for shell commands (needs to be POSIX compatible)
-#set shell /bin/sh
+set shell /bin/sh
 
 # set internal field separator (IFS) to "\n" for shell commands
 # This is useful to automatically split file names in $fs and $fx properly
-# since default file separator used in these variables (i.e. `filesep` option)
+# since default file separator used in these variables (i.e. 'filesep' option)
 # is newline. You need to consider the values of these options and create your
 # commands accordingly.
 set ifs "\n"
@@ -11,11 +11,11 @@ set ifs "\n"
 # leave some space at the top and the bottom of the screen
 set scrolloff 10
 
-# easily toggle options
+# toggle options
 map zp set preview!
 map zh set hidden!
 
-# easily select what information to show
+# select what information to show
 map zn set info
 map zs set info size
 map zt set info time
@@ -35,7 +35,7 @@ map <enter> read-shell
 
 # mappings for pager and editor (change as you like)
 map i $less $f
-map e $vim $f
+map e $vi $f
 
 # mapping to spawn a shell in working directory
 # (see also etc/lf.sh as an alternative workflow)
@@ -49,16 +49,16 @@ map X !$f
 map o &mimeopen $f
 map O $mimeopen --ask $f
 
-# show documentation (overrides search-back)
+# show documentation (overrides 'search-back' command)
 map ? $lf -doc | less
 
-# define a custom `open-file` command
-# `open-file` is called by `open` when current file is not a directory. You may
+# define a custom 'open-file' command
+# 'open-file' is called by 'open' when current file is not a directory. You may
 # want to use either file extensions and/or mime types here. Below uses an
 # editor for text files and a file opener for the rest.
 cmd open-file ${{
     case $(file --mime-type $f -b) in
-        text/*) vim $fx;;
+        text/*) vi $fx;;
         *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
     esac
 }}
@@ -77,19 +77,19 @@ map r push :rename<space>
 cmd usage $du -h . | less
 
 # make sure trash folder exists
-$mkdir -p $HOME/.trash
+$mkdir -p ~/.trash
 
 # move current file or selected files to trash folder
 # (see 'man mv' or 'mv --help' for backup options)
-cmd trash $mv --backup=numbered $fx $HOME/.trash
+cmd trash $mv --backup=numbered $fx ~/.trash
 
 # remove current file or selected files (prompting)
-#cmd remove ${{
-#    printf "$fx\n"
-#    printf "remove?[y/n]"
-#    read ans
-#    [ $ans = "y" ] && rm -rf $fx
-#}}
+cmd remove ${{
+    printf "$fx\n"
+    printf "remove?[y/n]"
+    read ans
+    [ $ans = "y" ] && rm -rf $fx
+}}
 
 # extract the current file with the right command
 # (xkcd link: https://xkcd.com/1168/)
@@ -106,7 +106,7 @@ cmd extract ${{
 
 # compress marked files with tar and gunzip
 # This command takes the output name without '.tar.gz' suffix as an argument
-# (e.g. "compress foo" creates "foo.tar.gz").
+# (e.g. 'compress foo' creates 'foo.tar.gz').
 cmd compress ${{
     mkdir $1
     cp $fs $1

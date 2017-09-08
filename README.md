@@ -11,8 +11,8 @@
 
 `lf` (as in "list files") is a terminal file manager written in Go.
 It is heavily inspired by ranger with some missing and extra features.
-Some of the missing features are deliberately omitted
-since it is better if they are handled by external tools.
+Some of the missing features are deliberately omitted since they are better handled by external tools.
+See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information.
 
 ![multicol-screenshot](http://i.imgur.com/DaTUenu.png)
 ![singlecol-screenshot](http://i.imgur.com/p95xzUj.png)
@@ -23,15 +23,14 @@ since it is better if they are handled by external tools.
 - Single binary without any runtime dependencies (except for terminfo database)
 - Fast startup and low memory footprint (due to native code and static binaries)
 - Server/client architecture to share file selection between multiple instances
-- Custom commands as shell commands
-- Sync (waiting and non-waiting) and async commands
-- Fully customizable keybindings
+- Configurable with shell commands (sync or async)
+- Customizable keybindings (vi and readline defaults)
 - Preview filtering (for source highlight, archives, pdfs/images as text etc.)
 
 ## Non-Features
 
-- Tabs or windows (handled by the window manager or the terminal multiplexer)
-- Built-in pager (handled by your pager of choice)
+- Tabs or windows (handled by window manager or terminal multiplexer)
+- Builtin pager/editor (handled by your pager/editor of choice)
 - Image previews (cool but no standard available)
 
 ## May-Futures
@@ -59,3 +58,9 @@ Run `lf -doc` to see the [documentation](https://godoc.org/github.com/gokcehan/l
 
 See [etc](etc) directory to integrate `lf` to your shell or editor.
 An example configuration file can also be found in this directory.
+
+See [tips](https://github.com/gokcehan/lf/wiki/Tips) for more examples.
+
+## Contributing
+
+See [contributing](https://github.com/gokcehan/lf/wiki/Contributing) for guidelines.
