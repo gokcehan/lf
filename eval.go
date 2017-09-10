@@ -365,7 +365,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf(msg)
 		}
 	case "put":
-		if err := app.nav.put(); err != nil {
+		if cmd, ok := gOpts.cmds["put"]; ok {
+			cmd.eval(app, e.args)
+		} else if err := app.nav.put(); err != nil {
 			msg := fmt.Sprintf("put: %s", err)
 			app.ui.message = msg
 			log.Printf(msg)
