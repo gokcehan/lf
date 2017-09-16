@@ -65,7 +65,6 @@ func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
 		}
 	}
 
-	// TODO: add backup options
 	// TODO: return 0 on success
 
 	return exec.Command(sh, args...)

@@ -232,9 +232,9 @@ A first attempt to write such a command may look like this:
     cmd trash ${{
         mkdir -p ~/.trash
         if [ -z "$fs" ]; then
-            mv --backup=numbered "$f" ~/.trash
+            mv "$f" ~/.trash
         else
-            IFS="'printf '\n\t''"; mv --backup=numbered $fs ~/.trash
+            IFS="'printf '\n\t''"; mv $fs ~/.trash
         fi
     }}
 
@@ -245,7 +245,7 @@ conditional:
 
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash
+        IFS="'printf '\n\t''"; mv $fx ~/.trash
     }}
 
 The trash directory is checked each time the command is executed. We can
@@ -253,13 +253,13 @@ move it outside of the command so it would only run once at startup:
 
     ${{ mkdir -p ~/.trash }}
 
-    cmd trash ${{ IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash }}
+    cmd trash ${{ IFS="'printf '\n\t''"; mv $fx ~/.trash }}
 
 Since these are one liners, we can drop '{{' and '}}':
 
     $mkdir -p ~/.trash
 
-    cmd trash $IFS="'printf '\n\t''"; mv --backup=numbered $fx ~/.trash
+    cmd trash $IFS="'printf '\n\t''"; mv $fx ~/.trash
 
 Finally note that we set 'IFS' variable manually in these commands. Instead
 we could use the 'ifs' option to set it for all shell commands (i.e. 'set

@@ -68,11 +68,10 @@ func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
 
 	if copy {
 		sh = "cp"
-		args = append(args, "-r")
+		args = append(args, "-R")
 	} else {
 		sh = "mv"
 	}
-	args = append(args, "--backup=numbered")
 	args = append(args, list...)
 	args = append(args, dir.path)
 

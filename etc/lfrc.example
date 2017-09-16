@@ -80,8 +80,8 @@ cmd usage $du -h . | less
 $mkdir -p ~/.trash
 
 # move current file or selected files to trash folder
-# (see 'man mv' or 'mv --help' for backup options)
-cmd trash $mv --backup=numbered $fx ~/.trash
+# (also see 'man mv' for backup/overwrite options)
+cmd trash $mv $fx ~/.trash
 
 # remove current file or selected files (prompting)
 cmd remove ${{
