@@ -323,18 +323,11 @@ current file selection. Two possible modes 'copy' and 'move' specify whether
 selected files are to be copied or moved. File names are separated by
 newline character. Setting the file selection is done with 'save' command:
 
-    nc -U /tmp/lf.${USER}.sock << 'EOF'
-    save
-    copy
-    foo.txt
-    bar.txt
-    baz.txt
-
-    EOF
+    lf -remote "$(printf 'save\ncopy\nfoo.txt\nbar.txt\nbaz.txt\n')"
 
 Getting the file selection is similarly done with 'load' command:
 
-    resp=$(echo 'load' | nc -U /tmp/lf.${USER}.sock)
+    resp=$(lf -remote 'load')
     mode=$(echo "$resp" | sed -n '1p')
     list=$(echo "$resp" | sed '1d')
     if [ $mode = 'copy' ]; then
