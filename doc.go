@@ -337,6 +337,28 @@ followed by 'put'. These traditional names (e.g. 'yank', 'delete', and 'put')
 are picked instead of the other common convention (e.g. copy and cut) to
 resemble the default keybinds for these operations.
 
+You can customize these operations by defining a 'put' command. This is a
+special command that is called when it is defined instead of the builtin
+implementation. The default behavior is similar to the following command:
+
+    cmd put ${{
+        load=$(lf -remote 'load')
+        mode=$(echo "$load" | sed -n '1p')
+        list=$(echo "$load" | sed '1d')
+        if [ $mode = 'copy' ]; then
+            cp -r $list .
+        elif [ $mode = 'move' ]; then
+            mv $list .
+        fi
+    }}
+
+Some of the useful things you can do is to add some backup or overwrite options
+to 'cp' and 'mv' operations (e.g. '--backup' or '-n'), change the command type
+to asynchronous while also adding a remote 'renew' call at the end to update
+the client afterwards, or use 'rsync' command with progress bar option for
+copying and feed the progress to the client periodically with remote 'echo'
+calls.
+
 By default, lf does not provide an actual file deletion command to protect new
 users. You can define such a command and optionally assign a key if you like.
 An example command to move selected files to a trash folder and remove files
