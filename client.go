@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
@@ -164,9 +165,23 @@ func sendRemote(cmd string) error {
 	if err != nil {
 		return fmt.Errorf("dialing to send server: %s", err)
 	}
-	defer c.Close()
 
 	fmt.Fprintln(c, cmd)
+
+	// XXX: Standard net.Conn interface does not include a CloseWrite method
+	// but net.UnixConn and net.TCPConn implement it so the following should be
+	// safe as long as we do not use other types of connections. We need
+	// CloseWrite to notify the server that this is not a persistent connection
+	// and it should be closed after the response.
+	if v, ok := c.(interface {
+		CloseWrite() error
+	}); ok {
+		v.CloseWrite()
+	}
+
+	io.Copy(os.Stdout, c)
+
+	c.Close()
 
 	return nil
 }
