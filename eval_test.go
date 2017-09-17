@@ -2,10 +2,10 @@ package main
 
 import (
 	"reflect"
+	"strings"
 	"testing"
 )
 
-// These inputs are used in scan and parse tests.
 var gEvalTests = []struct {
 	inp   string
 	toks  []string
@@ -358,6 +358,38 @@ var gEvalTests = []struct {
 			rm -rf $1
 		`}}},
 	},
+}
+
+func TestScan(t *testing.T) {
+	for _, test := range gEvalTests {
+		s := newScanner(strings.NewReader(test.inp))
+
+		for _, tok := range test.toks {
+			if s.scan(); s.tok != tok {
+				t.Errorf("at input '%s' expected '%s' but scanned '%s'", test.inp, tok, s.tok)
+			}
+		}
+
+		if s.scan() {
+			t.Errorf("at input '%s' unexpected '%s'", test.inp, s.tok)
+		}
+	}
+}
+
+func TestParse(t *testing.T) {
+	for _, test := range gEvalTests {
+		p := newParser(strings.NewReader(test.inp))
+
+		for _, expr := range test.exprs {
+			if p.parse(); !reflect.DeepEqual(p.expr, expr) {
+				t.Errorf("at input '%s' expected '%s' but parsed '%s'", test.inp, expr, p.expr)
+			}
+		}
+
+		if p.parse(); p.expr != nil {
+			t.Errorf("at input '%s' unexpected '%s'", test.inp, p.expr)
+		}
+	}
 }
 
 func TestSplitKeys(t *testing.T) {
