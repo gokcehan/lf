@@ -38,7 +38,7 @@ map i $less $f
 map e $vi $f
 
 # mapping to spawn a shell in working directory
-# (see also etc/lf.sh as an alternative workflow)
+# (see also etc/lfcd.sh as an alternative workflow)
 map w $$SHELL
 
 # execute current file (must be executable)
