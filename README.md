@@ -59,6 +59,8 @@ Run `lf -doc` to see the [documentation](https://godoc.org/github.com/gokcehan/l
 See [etc](etc) directory to integrate `lf` to your shell or editor.
 An example configuration file can also be found in this directory.
 
+See [integrations](https://github.com/gokcehan/lf/wiki/Integrations) to integrate `lf` to other tools.
+
 See [tips](https://github.com/gokcehan/lf/wiki/Tips) for more examples.
 
 ## Contributing
