@@ -360,17 +360,19 @@ implementation. The default behavior is similar to the following command:
         mode=$(echo "$load" | sed -n '1p')
         list=$(echo "$load" | sed '1d')
         if [ $mode = 'copy' ]; then
-            cp -r $list .
+            cp -R -n $list .
         elif [ $mode = 'move' ]; then
-            mv $list .
+            mv -n $list .
         fi
+        lf -remote "send $id renew"
+        lf -remote "$(printf 'save\nmove\n\n')"
+        lf -remote "send sync"
     }}
 
-Some of the useful things you can do is to add some backup or overwrite
-options to 'cp' and 'mv' operations (e.g. '--backup' or '-n'), change the
-command type to asynchronous while also adding a remote 'renew' call at the
-end to update the client afterwards, or use 'rsync' command with progress
-bar option for copying and feed the progress to the client periodically with
+Some useful things are to use the backup option ('--backup') with 'cp' and
+'mv' commands if they support it (i.e. GNU implementation), change the
+command type to asynchronous, or use 'rsync' command with progress bar
+option for copying and feed the progress to the client periodically with
 remote 'echo' calls.
 
 By default, lf does not provide an actual file deletion command to protect
