@@ -519,6 +519,8 @@ func (nav *nav) put() error {
 
 	// TODO: async?
 
+	saveFiles(nil, false)
+
 	return nil
 }
 

@@ -374,9 +374,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.renew(app.nav.height)
-		app.nav.save(false)
-		app.nav.saves = make(map[string]bool)
-		saveFiles(nil, false)
 		if err := sendRemote("send sync"); err != nil {
 			msg := fmt.Sprintf("put: %s", err)
 			app.ui.message = msg
