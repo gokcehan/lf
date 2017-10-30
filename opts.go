@@ -32,10 +32,10 @@ func init() {
 	gOpts.dirfirst = true
 	gOpts.globsearch = false
 	gOpts.hidden = false
-	gOpts.ignorecase = false
+	gOpts.ignorecase = true
 	gOpts.preview = true
 	gOpts.reverse = false
-	gOpts.smartcase = false
+	gOpts.smartcase = true
 	gOpts.wrapscan = true
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
