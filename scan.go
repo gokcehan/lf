@@ -178,6 +178,9 @@ scan:
 		s.tok = string(s.buf[beg:s.off])
 		s.cmd = false
 		s.sem = true
+	case s.chr == '\r':
+		s.next()
+		goto scan
 	case s.chr == '\n':
 		if s.sem {
 			s.typ = tokenSemicolon
