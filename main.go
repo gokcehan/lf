@@ -54,6 +54,19 @@ func main() {
 	gSocketProt = gDefaultSocketProt
 	gSocketPath = gDefaultSocketPath
 
+	switch flag.NArg() {
+	case 0:
+	case 1:
+		dir := flag.Arg(0)
+		if err := os.Chdir(dir); err != nil {
+			fmt.Fprintf(os.Stderr, "%s\n", err)
+			os.Exit(2)
+		}
+	default:
+		fmt.Fprintf(os.Stderr, "only single directory is allowed\n")
+		os.Exit(2)
+	}
+
 	if *showDoc {
 		fmt.Print(genDocString)
 		return
