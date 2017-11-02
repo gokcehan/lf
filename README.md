@@ -1,6 +1,8 @@
 # LF
 
-[Google Groups](https://groups.google.com/forum/#!forum/lf-fm) | [Wiki](https://github.com/gokcehan/lf/wiki)
+[Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
+| [#lf on Freenode](https://webchat.freenode.net/?channels=lf)
+| [Wiki](https://github.com/gokcehan/lf/wiki)
 
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
