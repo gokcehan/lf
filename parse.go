@@ -32,8 +32,10 @@ package main
 //          | Expr ListRest
 
 import (
+	"bytes"
 	"fmt"
 	"io"
+	"strings"
 )
 
 type expr interface {
@@ -83,7 +85,33 @@ type execExpr struct {
 	expr string
 }
 
-func (e *execExpr) String() string { return fmt.Sprintf("%s %s", e.pref, e.expr) }
+func (e *execExpr) String() string {
+	var buf bytes.Buffer
+
+	buf.WriteString(e.pref)
+	buf.WriteString("{{ ")
+
+	lines := strings.Split(e.expr, "\n")
+
+	for _, line := range lines {
+		trimmed := strings.TrimSpace(line)
+		if trimmed == "" {
+			continue
+		}
+
+		buf.WriteString(trimmed)
+
+		if len(lines) > 1 {
+			buf.WriteString(" ...")
+		}
+
+		break
+	}
+
+	buf.WriteString(" }}")
+
+	return buf.String()
+}
 
 type listExpr struct {
 	exprs []expr
