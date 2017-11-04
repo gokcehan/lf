@@ -118,13 +118,18 @@ type listExpr struct {
 }
 
 func (e *listExpr) String() string {
-	buf := []byte{':', '{', '{', ' '}
+	var buf bytes.Buffer
+
+	buf.WriteString(":{{ ")
+
 	for _, expr := range e.exprs {
-		buf = append(buf, expr.String()...)
-		buf = append(buf, ';', ' ')
+		buf.WriteString(expr.String())
+		buf.WriteString("; ")
 	}
-	buf = append(buf, '}', '}')
-	return string(buf)
+
+	buf.WriteString("}}")
+
+	return buf.String()
 }
 
 type parser struct {
