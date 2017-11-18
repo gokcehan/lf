@@ -667,7 +667,7 @@ func readCmdEvent(ch chan<- multiExpr, ev termbox.Event) {
 }
 
 func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
-	renew := &callExpr{"renew", nil}
+	redraw := &callExpr{"redraw", nil}
 	count := 1
 
 	switch ev.Type {
@@ -686,7 +686,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 		} else {
 			val := gKeyVal[ev.Key]
 			if string(val) == "<esc>" {
-				ch <- multiExpr{renew, 1}
+				ch <- multiExpr{redraw, 1}
 				ui.keyacc = nil
 				ui.keycnt = nil
 			}
@@ -698,7 +698,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 		switch len(binds) {
 		case 0:
 			ui.message = fmt.Sprintf("unknown mapping: %s", string(ui.keyacc))
-			ch <- multiExpr{renew, 1}
+			ch <- multiExpr{redraw, 1}
 			ui.keyacc = nil
 			ui.keycnt = nil
 		case 1:
@@ -719,7 +719,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 			}
 			if len(ui.keyacc) > 0 {
 				ui.menubuf = listBinds(binds)
-				ch <- multiExpr{renew, 1}
+				ch <- multiExpr{redraw, 1}
 			} else if ui.menubuf != nil {
 				ui.menubuf = nil
 			}
@@ -742,13 +742,13 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 			}
 			if len(ui.keyacc) > 0 {
 				ui.menubuf = listBinds(binds)
-				ch <- multiExpr{renew, 1}
+				ch <- multiExpr{redraw, 1}
 			} else {
 				ui.menubuf = nil
 			}
 		}
 	case termbox.EventResize:
-		ch <- multiExpr{renew, 1}
+		ch <- multiExpr{redraw, 1}
 	default:
 		// TODO: handle other events
 	}
