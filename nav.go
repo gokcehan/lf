@@ -140,10 +140,19 @@ type dir struct {
 }
 
 func newDir(path string) *dir {
-	return &dir{
-		path: path,
-		fi:   getFilesSorted(path),
+	fi, err := readdir(path)
+	if err != nil {
+		log.Printf("reading directory: %s", err)
 	}
+
+	dir := &dir{
+		path: path,
+		fi:   fi,
+	}
+
+	dir.sort()
+
+	return dir
 }
 
 func (dir *dir) renew(height int) {
@@ -152,9 +161,54 @@ func (dir *dir) renew(height int) {
 		name = dir.fi[dir.ind].Name()
 	}
 
-	dir.fi = getFilesSorted(dir.path)
+	fi, err := readdir(dir.path)
+	if err != nil {
+		log.Printf("reading directory: %s", err)
+	}
+
+	dir.fi = fi
+
+	dir.sort()
 
 	dir.load(dir.ind, dir.pos, height, name)
+}
+
+func (dir *dir) sort() {
+	switch gOpts.sortby {
+	case "natural":
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			return naturalLess(strings.ToLower(dir.fi[i].Name()), strings.ToLower(dir.fi[j].Name()))
+		})
+	case "name":
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			return strings.ToLower(dir.fi[i].Name()) < strings.ToLower(dir.fi[j].Name())
+		})
+	case "size":
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			return dir.fi[i].Size() < dir.fi[j].Size()
+		})
+	case "time":
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			return dir.fi[i].ModTime().Before(dir.fi[j].ModTime())
+		})
+	default:
+		log.Printf("unknown sorting type: %s", gOpts.sortby)
+	}
+
+	if gOpts.reverse {
+		for i, j := 0, len(dir.fi)-1; i < j; i, j = i+1, j-1 {
+			dir.fi[i], dir.fi[j] = dir.fi[j], dir.fi[i]
+		}
+	}
+
+	if gOpts.dirfirst {
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			if dir.fi[i].IsDir() == dir.fi[j].IsDir() {
+				return i < j
+			}
+			return dir.fi[i].IsDir()
+		})
+	}
 }
 
 func (dir *dir) load(ind, pos, height int, name string) {
@@ -249,6 +303,12 @@ func (nav *nav) renew(height int) {
 	}
 	if len(nav.marks) == 0 {
 		nav.markInd = 0
+	}
+}
+
+func (nav *nav) sort() {
+	for _, d := range nav.dirs {
+		d.sort()
 	}
 }
 

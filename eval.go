@@ -19,13 +19,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
 		gOpts.dirfirst = true
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "nodirfirst":
 		gOpts.dirfirst = false
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "dirfirst!":
 		gOpts.dirfirst = !gOpts.dirfirst
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":
@@ -55,13 +55,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.preview = !gOpts.preview
 	case "reverse":
 		gOpts.reverse = true
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "noreverse":
 		gOpts.reverse = false
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "reverse!":
 		gOpts.reverse = !gOpts.reverse
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "smartcase":
 		gOpts.smartcase = true
 	case "nosmartcase":
@@ -124,7 +124,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.sortby = e.val
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "ratios":
