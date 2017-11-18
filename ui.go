@@ -455,8 +455,7 @@ func (ui *ui) loadFile(nav *nav) {
 	}
 
 	if curr.IsDir() {
-		dir := newDir(curr.Path)
-		dir.load(nav.inds[curr.Path], nav.poss[curr.Path], nav.height, nav.names[curr.Path])
+		dir := nav.load(curr.Path)
 		ui.dirprev = dir
 	} else if curr.Mode().IsRegular() {
 		var reader io.Reader

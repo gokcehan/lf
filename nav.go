@@ -139,7 +139,7 @@ type dir struct {
 	fi   []*file
 }
 
-func newDir(path string) *dir {
+func newDir(path string, height int) *dir {
 	fi, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
@@ -150,7 +150,7 @@ func newDir(path string) *dir {
 		fi:   fi,
 	}
 
-	dir.sort()
+	dir.sort(height)
 
 	return dir
 }
@@ -168,12 +168,16 @@ func (dir *dir) renew(height int) {
 
 	dir.fi = fi
 
-	dir.sort()
+	dir.sort(height)
 
-	dir.load(dir.ind, dir.pos, height, name)
+	dir.find(dir.ind, dir.pos, height, name)
 }
 
-func (dir *dir) sort() {
+func (dir *dir) sort(height int) {
+	if len(dir.fi) != 0 && dir.ind < len(dir.fi) {
+		defer dir.find(dir.ind, dir.pos, height, dir.fi[dir.ind].Name())
+	}
+
 	switch gOpts.sortby {
 	case "natural":
 		sortFilesStable(dir.fi, func(i, j int) bool {
@@ -211,7 +215,7 @@ func (dir *dir) sort() {
 	}
 }
 
-func (dir *dir) load(ind, pos, height int, name string) {
+func (dir *dir) find(ind, pos, height int, name string) {
 	if len(dir.fi) == 0 {
 		dir.ind, dir.pos = 0, 0
 		return
@@ -236,27 +240,44 @@ func (dir *dir) load(ind, pos, height int, name string) {
 }
 
 type nav struct {
-	dirs    []*dir
-	inds    map[string]int
-	poss    map[string]int
-	names   map[string]string
-	marks   map[string]int
-	saves   map[string]bool
-	markInd int
-	height  int
-	search  string
+	dirs     []*dir
+	dirCache map[string]*dir
+	marks    map[string]int
+	saves    map[string]bool
+	markInd  int
+	height   int
+	search   string
 }
 
-func getDirs(wd string, height int) []*dir {
+func newNav(height int) *nav {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
+
+	nav := &nav{
+		dirCache: make(map[string]*dir),
+		marks:    make(map[string]int),
+		saves:    make(map[string]bool),
+		markInd:  0,
+		height:   height,
+	}
+
+	nav.getDirs(wd)
+
+	return nav
+}
+
+func (nav *nav) getDirs(wd string) {
 	var dirs []*dir
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
-		dir := newDir(curr)
+		dir := nav.load(curr)
 		for i, f := range dir.fi {
 			if f.Name() == base {
 				dir.ind = i
 				edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
-				dir.pos = min(i, height-edge-1)
+				dir.pos = min(i, nav.height-edge-1)
 				break
 			}
 		}
@@ -267,27 +288,7 @@ func getDirs(wd string, height int) []*dir {
 		dirs[i], dirs[j] = dirs[j], dirs[i]
 	}
 
-	return dirs
-}
-
-func newNav(height int) *nav {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-	}
-
-	dirs := getDirs(wd, height)
-
-	return &nav{
-		dirs:    dirs,
-		inds:    make(map[string]int),
-		poss:    make(map[string]int),
-		names:   make(map[string]string),
-		marks:   make(map[string]int),
-		saves:   make(map[string]bool),
-		markInd: 0,
-		height:  height,
-	}
+	nav.dirs = dirs
 }
 
 func (nav *nav) renew(height int) {
@@ -306,9 +307,19 @@ func (nav *nav) renew(height int) {
 	}
 }
 
+func (nav *nav) load(path string) *dir {
+	dir, ok := nav.dirCache[path]
+	if !ok {
+		dir = newDir(path, nav.height)
+		dir.ind, dir.pos = 0, 0
+		nav.dirCache[path] = dir
+	}
+	return dir
+}
+
 func (nav *nav) sort() {
 	for _, d := range nav.dirs {
-		d.sort()
+		d.sort(nav.height)
 	}
 }
 
@@ -357,13 +368,6 @@ func (nav *nav) updir() error {
 
 	dir := nav.currDir()
 
-	nav.inds[dir.path] = dir.ind
-	nav.poss[dir.path] = dir.pos
-
-	if len(dir.fi) != 0 {
-		nav.names[dir.path] = dir.fi[dir.ind].Name()
-	}
-
 	nav.dirs = nav.dirs[:len(nav.dirs)-1]
 
 	if err := os.Chdir(filepath.Dir(dir.path)); err != nil {
@@ -381,9 +385,7 @@ func (nav *nav) open() error {
 
 	path := curr.Path
 
-	dir := newDir(path)
-
-	dir.load(nav.inds[path], nav.poss[path], nav.height, nav.names[path])
+	dir := nav.load(path)
 
 	nav.dirs = append(nav.dirs, dir)
 
@@ -420,9 +422,7 @@ func (nav *nav) cd(wd string) error {
 		return fmt.Errorf("cd: %s", err)
 	}
 
-	nav.dirs = getDirs(wd, nav.height)
-
-	// TODO: save/load ind and pos from the map
+	nav.getDirs(wd)
 
 	return nil
 }
