@@ -391,6 +391,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.message = msg
 			log.Printf(msg)
 		}
+	case "redraw":
+		app.ui.sync()
+		app.ui.renew()
 	case "renew":
 		app.ui.sync()
 		app.ui.renew()

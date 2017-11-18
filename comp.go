@@ -39,6 +39,7 @@ var (
 		"delete",
 		"put",
 		"clear",
+		"redraw",
 		"renew",
 		"sync",
 		"echo",
