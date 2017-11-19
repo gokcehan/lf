@@ -21,7 +21,7 @@ func runeSliceWidth(rs []rune) int {
 	return w
 }
 
-func runeSliceWidthRange(rs []rune, beg int, end int) []rune {
+func runeSliceWidthRange(rs []rune, beg, end int) []rune {
 	curr := 0
 	b := 0
 	for i, r := range rs {

@@ -20,9 +20,9 @@ const (
 
 type file struct {
 	os.FileInfo
-	LinkState linkState
-	Path      string
-	Count     int
+	linkState linkState
+	path      string
+	count     int
 }
 
 type filesSortable struct {
@@ -37,51 +37,6 @@ func (f filesSortable) Less(i, j int) bool { return f.less(i, j) }
 // TODO: Replace with `sort.SliceStable` once available
 func sortFilesStable(files []*file, less func(i, j int) bool) {
 	sort.Stable(filesSortable{files: files, less: less})
-}
-
-func getFilesSorted(path string) []*file {
-	fi, err := readdir(path)
-	if err != nil {
-		log.Printf("reading directory: %s", err)
-	}
-
-	switch gOpts.sortby {
-	case "natural":
-		sortFilesStable(fi, func(i, j int) bool {
-			return naturalLess(strings.ToLower(fi[i].Name()), strings.ToLower(fi[j].Name()))
-		})
-	case "name":
-		sortFilesStable(fi, func(i, j int) bool {
-			return strings.ToLower(fi[i].Name()) < strings.ToLower(fi[j].Name())
-		})
-	case "size":
-		sortFilesStable(fi, func(i, j int) bool {
-			return fi[i].Size() < fi[j].Size()
-		})
-	case "time":
-		sortFilesStable(fi, func(i, j int) bool {
-			return fi[i].ModTime().Before(fi[j].ModTime())
-		})
-	default:
-		log.Printf("unknown sorting type: %s", gOpts.sortby)
-	}
-
-	if gOpts.reverse {
-		for i, j := 0, len(fi)-1; i < j; i, j = i+1, j-1 {
-			fi[i], fi[j] = fi[j], fi[i]
-		}
-	}
-
-	if gOpts.dirfirst {
-		sortFilesStable(fi, func(i, j int) bool {
-			if fi[i].IsDir() == fi[j].IsDir() {
-				return i < j
-			}
-			return fi[i].IsDir()
-		})
-	}
-
-	return fi
 }
 
 func readdir(path string) ([]*file, error) {
@@ -124,11 +79,12 @@ func readdir(path string) ([]*file, error) {
 
 		fi = append(fi, &file{
 			FileInfo:  lstat,
-			LinkState: linkState,
-			Path:      fpath,
-			Count:     -1,
+			linkState: linkState,
+			path:      fpath,
+			count:     -1,
 		})
 	}
+
 	return fi, err
 }
 
@@ -139,45 +95,28 @@ type dir struct {
 	fi   []*file
 }
 
-func newDir(path string, height int) *dir {
+func newDir(path string) *dir {
 	fi, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
-	dir := &dir{
+	return &dir{
 		path: path,
 		fi:   fi,
 	}
-
-	dir.sort(height)
-
-	return dir
 }
 
-func (dir *dir) renew(height int) {
-	var name string
-	if len(dir.fi) != 0 {
-		name = dir.fi[dir.ind].Name()
-	}
-
+func (dir *dir) renew() {
 	fi, err := readdir(dir.path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
 	dir.fi = fi
-
-	dir.sort(height)
-
-	dir.find(dir.ind, dir.pos, height, name)
 }
 
-func (dir *dir) sort(height int) {
-	if len(dir.fi) != 0 && dir.ind < len(dir.fi) {
-		defer dir.find(dir.ind, dir.pos, height, dir.fi[dir.ind].Name())
-	}
-
+func (dir *dir) sort() {
 	switch gOpts.sortby {
 	case "natural":
 		sortFilesStable(dir.fi, func(i, j int) bool {
@@ -215,35 +154,39 @@ func (dir *dir) sort(height int) {
 	}
 }
 
-func (dir *dir) find(ind, pos, height int, name string) {
+func (dir *dir) name() string {
+	if len(dir.fi) == 0 {
+		return ""
+	}
+	return dir.fi[dir.ind].Name()
+}
+
+func (dir *dir) find(name string, height int) {
 	if len(dir.fi) == 0 {
 		dir.ind, dir.pos = 0, 0
 		return
 	}
 
-	ind = max(0, min(ind, len(dir.fi)-1))
+	dir.ind = max(0, min(dir.ind, len(dir.fi)-1))
 
-	if dir.fi[ind].Name() != name {
+	if dir.fi[dir.ind].Name() != name {
 		for i, f := range dir.fi {
 			if f.Name() == name {
-				ind = i
+				dir.ind = i
 				break
 			}
 		}
 
-		edge := min(gOpts.scrolloff, len(dir.fi)-ind-1)
-		pos = min(ind, height-edge-1)
+		edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
+		dir.pos = min(dir.ind, height-edge-1)
 	}
-
-	dir.ind = ind
-	dir.pos = pos
 }
 
 type nav struct {
 	dirs     []*dir
 	dirCache map[string]*dir
-	marks    map[string]int
 	saves    map[string]bool
+	marks    map[string]int
 	markInd  int
 	height   int
 	search   string
@@ -294,7 +237,10 @@ func (nav *nav) getDirs(wd string) {
 func (nav *nav) renew(height int) {
 	nav.height = height
 	for _, d := range nav.dirs {
-		d.renew(nav.height)
+		name := d.name()
+		d.renew()
+		d.sort()
+		d.find(name, height)
 	}
 
 	for m := range nav.marks {
@@ -310,7 +256,8 @@ func (nav *nav) renew(height int) {
 func (nav *nav) load(path string) *dir {
 	dir, ok := nav.dirCache[path]
 	if !ok {
-		dir = newDir(path, nav.height)
+		dir = newDir(path)
+		dir.sort()
 		dir.ind, dir.pos = 0, 0
 		nav.dirCache[path] = dir
 	}
@@ -319,7 +266,9 @@ func (nav *nav) load(path string) *dir {
 
 func (nav *nav) sort() {
 	for _, d := range nav.dirs {
-		d.sort(nav.height)
+		name := d.name()
+		d.sort()
+		d.find(name, nav.height)
 	}
 }
 
@@ -383,7 +332,7 @@ func (nav *nav) open() error {
 		return fmt.Errorf("open: %s", err)
 	}
 
-	path := curr.Path
+	path := curr.path
 
 	dir := nav.load(path)
 
@@ -396,6 +345,13 @@ func (nav *nav) open() error {
 	return nil
 }
 
+func (nav *nav) top() {
+	dir := nav.currDir()
+
+	dir.ind = 0
+	dir.pos = 0
+}
+
 func (nav *nav) bot() {
 	dir := nav.currDir()
 
@@ -403,11 +359,101 @@ func (nav *nav) bot() {
 	dir.pos = min(dir.ind, nav.height-1)
 }
 
-func (nav *nav) top() {
+func (nav *nav) toggleMark(path string) {
+	if _, ok := nav.marks[path]; ok {
+		delete(nav.marks, path)
+		if len(nav.marks) == 0 {
+			nav.markInd = 0
+		}
+	} else {
+		nav.marks[path] = nav.markInd
+		nav.markInd = nav.markInd + 1
+	}
+}
+
+func (nav *nav) toggle() {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	nav.toggleMark(curr.path)
+
+	nav.down(1)
+}
+
+func (nav *nav) invert() {
+	last := nav.currDir()
+	for _, f := range last.fi {
+		path := filepath.Join(last.path, f.Name())
+		nav.toggleMark(path)
+	}
+}
+
+func (nav *nav) save(copy bool) error {
+	if len(nav.marks) == 0 {
+		curr, err := nav.currFile()
+		if err != nil {
+			return errors.New("no file selected")
+		}
+
+		if err := saveFiles([]string{curr.path}, copy); err != nil {
+			return err
+		}
+
+		nav.saves = make(map[string]bool)
+		nav.saves[curr.path] = copy
+	} else {
+		marks := nav.currMarks()
+
+		if err := saveFiles(marks, copy); err != nil {
+			return err
+		}
+
+		nav.saves = make(map[string]bool)
+		for f := range nav.marks {
+			nav.saves[f] = copy
+		}
+	}
+
+	return nil
+}
+
+func (nav *nav) put() error {
+	list, copy, err := loadFiles()
+	if err != nil {
+		return err
+	}
+
+	if len(list) == 0 {
+		return errors.New("no file in yank/delete buffer")
+	}
+
 	dir := nav.currDir()
 
-	dir.ind = 0
-	dir.pos = 0
+	cmd := putCommand(list, dir, copy)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("putting files: %s", err)
+	}
+
+	saveFiles(nil, false)
+
+	return nil
+}
+
+func (nav *nav) sync() error {
+	list, copy, err := loadFiles()
+	if err != nil {
+		return err
+	}
+
+	nav.saves = make(map[string]bool)
+	for _, f := range list {
+		nav.saves[f] = copy
+	}
+
+	return nil
 }
 
 func (nav *nav) cd(wd string) error {
@@ -492,109 +538,6 @@ func (nav *nav) searchPrev() error {
 			}
 		}
 	}
-	return nil
-}
-
-func (nav *nav) toggleMark(path string) {
-	if _, ok := nav.marks[path]; ok {
-		delete(nav.marks, path)
-		if len(nav.marks) == 0 {
-			nav.markInd = 0
-		}
-	} else {
-		nav.marks[path] = nav.markInd
-		nav.markInd = nav.markInd + 1
-	}
-}
-
-func (nav *nav) toggle() {
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	nav.toggleMark(curr.Path)
-
-	nav.down(1)
-}
-
-func (nav *nav) invert() {
-	last := nav.currDir()
-	for _, f := range last.fi {
-		path := filepath.Join(last.path, f.Name())
-		nav.toggleMark(path)
-	}
-}
-
-func (nav *nav) save(copy bool) error {
-	if len(nav.marks) == 0 {
-		curr, err := nav.currFile()
-		if err != nil {
-			return errors.New("no file selected")
-		}
-
-		if err := saveFiles([]string{curr.Path}, copy); err != nil {
-			return err
-		}
-
-		nav.saves = make(map[string]bool)
-		nav.saves[curr.Path] = copy
-	} else {
-		var fs []string
-		for f := range nav.marks {
-			fs = append(fs, f)
-		}
-
-		if err := saveFiles(fs, copy); err != nil {
-			return err
-		}
-
-		nav.saves = make(map[string]bool)
-		for f := range nav.marks {
-			nav.saves[f] = copy
-		}
-	}
-
-	return nil
-}
-
-func (nav *nav) put() error {
-	list, copy, err := loadFiles()
-	if err != nil {
-		return err
-	}
-
-	if len(list) == 0 {
-		return errors.New("no file in yank/delete buffer")
-	}
-
-	dir := nav.currDir()
-
-	cmd := putCommand(list, dir, copy)
-
-	if err := cmd.Run(); err != nil {
-		// TODO: add name of external command to message
-		return fmt.Errorf("putting files: %s", err)
-	}
-
-	// TODO: async?
-
-	saveFiles(nil, false)
-
-	return nil
-}
-
-func (nav *nav) sync() error {
-	list, copy, err := loadFiles()
-	if err != nil {
-		return err
-	}
-
-	nav.saves = make(map[string]bool)
-	for _, f := range list {
-		nav.saves[f] = copy
-	}
-
 	return nil
 }
 

@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -77,15 +76,11 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			msg := fmt.Sprintf("scrolloff: %s", err)
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.printf("scrolloff: %s", err)
 			return
 		}
 		if n < 0 {
-			msg := "scrolloff: value should be a non-negative number"
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.print("scrolloff: value should be a non-negative number")
 			return
 		}
 		max := app.ui.wins[0].h / 2
@@ -96,15 +91,11 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			msg := fmt.Sprintf("tabstop: %s", err)
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.printf("tabstop: %s", err)
 			return
 		}
 		if n <= 0 {
-			msg := "tabstop: value should be a positive number"
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.print("tabstop: value should be a positive number")
 			return
 		}
 		gOpts.tabstop = n
@@ -118,9 +109,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.shell = e.val
 	case "sortby":
 		if e.val != "natural" && e.val != "name" && e.val != "size" && e.val != "time" {
-			msg := "sortby should either be 'natural', 'name', 'size' or 'time'"
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.print("sortby should either be 'natural', 'name', 'size' or 'time'")
 			return
 		}
 		gOpts.sortby = e.val
@@ -133,9 +122,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		for _, s := range toks {
 			i, err := strconv.Atoi(s)
 			if err != nil {
-				msg := fmt.Sprintf("ratios: %s", err)
-				app.ui.message = msg
-				log.Print(msg)
+				app.ui.printf("ratios: %s", err)
 				return
 			}
 			rats = append(rats, i)
@@ -147,17 +134,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			if s != "" && s != "size" && s != "time" {
-				msg := "info should consist of 'size' or 'time' separated with colon"
-				app.ui.message = msg
-				log.Print(msg)
+				app.ui.print("info should consist of 'size' or 'time' separated with colon")
 				return
 			}
 		}
 		gOpts.info = toks
 	default:
-		msg := fmt.Sprintf("unknown option: %s", e.opt)
-		app.ui.message = msg
-		log.Print(msg)
+		app.ui.printf("unknown option: %s", e.opt)
 	}
 }
 
@@ -205,7 +188,6 @@ func splitKeys(s string) (keys []string) {
 }
 
 func (e *callExpr) eval(app *app, args []string) {
-	// TODO: check for extra toks in each case
 	switch e.name {
 	case "up":
 		app.nav.up(1)
@@ -233,8 +215,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "updir":
 		if err := app.nav.updir(); err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
+			app.ui.printf("%s", err)
 			return
 		}
 		app.ui.loadFile(app.nav)
@@ -242,18 +223,14 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "open":
 		curr, err := app.nav.currFile()
 		if err != nil {
-			msg := fmt.Sprintf("opening: %s", err)
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.printf("opening: %s", err)
 			return
 		}
 
 		if curr.IsDir() {
-			app.nav.open()
+			err := app.nav.open()
 			if err != nil {
-				msg := fmt.Sprintf("opening directory: %s", err)
-				app.ui.message = msg
-				log.Print(msg)
+				app.ui.printf("opening directory: %s", err)
 				return
 			}
 			app.ui.loadFile(app.nav)
@@ -274,7 +251,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				marks := app.nav.currMarks()
 				path = strings.Join(marks, "\n")
 			} else if curr, err := app.nav.currFile(); err == nil {
-				path = curr.Path
+				path = curr.path
 			} else {
 				return
 			}
@@ -284,7 +261,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				log.Printf("writing selection file: %s", err)
 			}
 
-			app.quit <- true
+			app.quitChan <- true
 
 			return
 		}
@@ -293,43 +270,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			cmd.eval(app, e.args)
 		}
 	case "quit":
-		app.quit <- true
-	case "bot":
-		app.nav.bot()
-		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
+		app.quitChan <- true
 	case "top":
 		app.nav.top()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
-	case "read":
-		app.ui.cmdpref = ":"
-	case "read-shell":
-		app.ui.cmdpref = "$"
-	case "read-shell-wait":
-		app.ui.cmdpref = "!"
-	case "read-shell-async":
-		app.ui.cmdpref = "&"
-	case "search":
-		app.ui.cmdpref = "/"
-	case "search-back":
-		app.ui.cmdpref = "?"
-	case "search-next":
-		if err := app.nav.searchNext(); err != nil {
-			msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
-			app.ui.message = msg
-			log.Printf(msg)
-			return
-		}
-		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
-	case "search-prev":
-		if err := app.nav.searchPrev(); err != nil {
-			msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
-			app.ui.message = msg
-			log.Printf(msg)
-			return
-		}
+	case "bot":
+		app.nav.bot()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
@@ -340,80 +287,88 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "yank":
 		if err := app.nav.save(true); err != nil {
-			msg := fmt.Sprintf("yank: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("yank: %s", err)
 			return
 		}
 		app.nav.marks = make(map[string]int)
 		if err := sendRemote("send sync"); err != nil {
-			msg := fmt.Sprintf("yank: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("yank: %s", err)
 		}
 	case "delete":
 		if err := app.nav.save(false); err != nil {
-			msg := fmt.Sprintf("delete: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("delete: %s", err)
 			return
 		}
 		app.nav.marks = make(map[string]int)
 		if err := sendRemote("send sync"); err != nil {
-			msg := fmt.Sprintf("delete: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("delete: %s", err)
 		}
 	case "put":
 		if cmd, ok := gOpts.cmds["put"]; ok {
 			cmd.eval(app, e.args)
 		} else if err := app.nav.put(); err != nil {
-			msg := fmt.Sprintf("put: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("put: %s", err)
 			return
 		}
 		app.nav.renew(app.nav.height)
 		if err := sendRemote("send sync"); err != nil {
-			msg := fmt.Sprintf("put: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("put: %s", err)
 		}
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {
-			msg := fmt.Sprintf("clear: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("clear: %s", err)
 			return
 		}
 		if err := sendRemote("send sync"); err != nil {
-			msg := fmt.Sprintf("clear: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("clear: %s", err)
 		}
-	case "redraw":
-		app.ui.sync()
-		app.ui.renew()
 	case "renew":
 		app.ui.sync()
 		app.ui.renew()
 		app.nav.renew(app.ui.wins[0].h)
+	case "read":
+		app.ui.cmdPrefix = ":"
+	case "read-shell":
+		app.ui.cmdPrefix = "$"
+	case "read-shell-wait":
+		app.ui.cmdPrefix = "!"
+	case "read-shell-async":
+		app.ui.cmdPrefix = "&"
+	case "search":
+		app.ui.cmdPrefix = "/"
+	case "search-back":
+		app.ui.cmdPrefix = "?"
+	case "search-next":
+		if err := app.nav.searchNext(); err != nil {
+			app.ui.printf("search: %s: %s", err, app.nav.search)
+			return
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+	case "search-prev":
+		if err := app.nav.searchPrev(); err != nil {
+			app.ui.printf("search: %s: %s", err, app.nav.search)
+			return
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "sync":
 		if err := app.nav.sync(); err != nil {
-			msg := fmt.Sprintf("sync: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
+			app.ui.printf("sync: %s", err)
 		}
 	case "echo":
-		app.ui.message = strings.Join(e.args, " ")
+		app.ui.msg = strings.Join(e.args, " ")
+	case "redraw":
+		app.ui.sync()
+		app.ui.renew()
+		app.ui.loadFile(app.nav)
 	case "cd":
 		path := "~"
 		if len(e.args) > 0 {
 			path = e.args[0]
 		}
 		if err := app.nav.cd(path); err != nil {
-			app.ui.message = err.Error()
-			log.Print(err)
+			app.ui.printf("%s", err)
 			return
 		}
 		app.ui.loadFile(app.nav)
@@ -422,40 +377,40 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) > 0 {
 			log.Println("pushing keys", e.args[0])
 			for _, key := range splitKeys(e.args[0]) {
-				app.ui.keychan <- key
+				app.ui.keyChan <- key
 			}
 		}
 	case "cmd-insert":
 		if len(e.args) > 0 {
-			app.ui.cmdlacc = append(app.ui.cmdlacc, []rune(e.args[0])...)
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(e.args[0])...)
 		}
 	case "cmd-escape":
-		app.ui.menubuf = nil
-		app.ui.cmdlacc = nil
-		app.ui.cmdracc = nil
-		app.ui.cmdpref = ""
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
 	case "cmd-comp":
 		var matches []string
-		if app.ui.cmdpref == ":" {
-			matches, app.ui.cmdlacc = compCmd(app.ui.cmdlacc)
+		if app.ui.cmdPrefix == ":" {
+			matches, app.ui.cmdAccLeft = compCmd(app.ui.cmdAccLeft)
 		} else {
-			matches, app.ui.cmdlacc = compShell(app.ui.cmdlacc)
+			matches, app.ui.cmdAccLeft = compShell(app.ui.cmdAccLeft)
 		}
 		app.ui.draw(app.nav)
 		if len(matches) > 1 {
-			app.ui.menubuf = listMatches(matches)
+			app.ui.menuBuf = listMatches(matches)
 		} else {
-			app.ui.menubuf = nil
+			app.ui.menuBuf = nil
 		}
 	case "cmd-enter":
-		s := string(append(app.ui.cmdlacc, app.ui.cmdracc...))
+		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 {
 			return
 		}
-		app.ui.menubuf = nil
-		app.ui.cmdlacc = nil
-		app.ui.cmdracc = nil
-		switch app.ui.cmdpref {
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
 			p := newParser(strings.NewReader(s))
@@ -463,8 +418,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				p.expr.eval(app, nil)
 			}
 			if p.err != nil {
-				app.ui.message = p.err.Error()
-				log.Print(p.err)
+				app.ui.printf("%s", p.err)
 			}
 		case "$":
 			log.Printf("shell: %s", s)
@@ -479,9 +433,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("search: %s", s)
 			app.nav.search = s
 			if err := app.nav.searchNext(); err != nil {
-				msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
-				app.ui.message = msg
-				log.Printf(msg)
+				app.ui.printf("search: %s: %s", err, app.nav.search)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -490,94 +442,90 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
 			if err := app.nav.searchPrev(); err != nil {
-				msg := fmt.Sprintf("search: %s: %s", err, app.nav.search)
-				app.ui.message = msg
-				log.Printf(msg)
+				app.ui.printf("search: %s: %s", err, app.nav.search)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
 		default:
-			log.Printf("entering unknown execution prefix: %q", app.ui.cmdpref)
+			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
-		app.cmdHist = append(app.cmdHist, cmdItem{app.ui.cmdpref, s})
-		app.ui.cmdpref = ""
-	case "cmd-hist-prev":
-		if app.cmdHind == len(app.cmdHist) {
-			return
-		}
-		app.cmdHind++
-		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHind]
-		app.ui.cmdpref = cmd.pref
-		app.ui.cmdlacc = []rune(cmd.s)
-		app.ui.cmdracc = nil
-		app.ui.menubuf = nil
+		app.cmdHist = append(app.cmdHist, cmdItem{app.ui.cmdPrefix, s})
+		app.ui.cmdPrefix = ""
 	case "cmd-hist-next":
-		if app.cmdHind > 0 {
-			app.cmdHind--
+		if app.cmdHistInd > 0 {
+			app.cmdHistInd--
 		}
-		if app.cmdHind == 0 {
-			app.ui.menubuf = nil
-			app.ui.cmdlacc = nil
-			app.ui.cmdracc = nil
-			app.ui.cmdpref = ""
+		if app.cmdHistInd == 0 {
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
 			return
 		}
-		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHind]
-		app.ui.cmdpref = cmd.pref
-		app.ui.cmdlacc = []rune(cmd.s)
-		app.ui.cmdracc = nil
-		app.ui.menubuf = nil
-	case "cmd-delete-back":
-		if len(app.ui.cmdlacc) > 0 {
-			app.ui.cmdlacc = app.ui.cmdlacc[:len(app.ui.cmdlacc)-1]
+		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHistInd]
+		app.ui.cmdPrefix = cmd.prefix
+		app.ui.cmdAccLeft = []rune(cmd.value)
+		app.ui.cmdAccRight = nil
+		app.ui.menuBuf = nil
+	case "cmd-hist-prev":
+		if app.cmdHistInd == len(app.cmdHist) {
+			return
 		}
+		app.cmdHistInd++
+		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHistInd]
+		app.ui.cmdPrefix = cmd.prefix
+		app.ui.cmdAccLeft = []rune(cmd.value)
+		app.ui.cmdAccRight = nil
+		app.ui.menuBuf = nil
 	case "cmd-delete":
-		if len(app.ui.cmdracc) > 0 {
-			app.ui.cmdracc = app.ui.cmdracc[1:]
+		if len(app.ui.cmdAccRight) > 0 {
+			app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
+		}
+	case "cmd-delete-back":
+		if len(app.ui.cmdAccLeft) > 0 {
+			app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
 		}
 	case "cmd-left":
-		if len(app.ui.cmdlacc) > 0 {
-			app.ui.cmdracc = append([]rune{app.ui.cmdlacc[len(app.ui.cmdlacc)-1]}, app.ui.cmdracc...)
-			app.ui.cmdlacc = app.ui.cmdlacc[:len(app.ui.cmdlacc)-1]
+		if len(app.ui.cmdAccLeft) > 0 {
+			app.ui.cmdAccRight = append([]rune{app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]}, app.ui.cmdAccRight...)
+			app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
 		}
 	case "cmd-right":
-		if len(app.ui.cmdracc) > 0 {
-			app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdracc[0])
-			app.ui.cmdracc = app.ui.cmdracc[1:]
+		if len(app.ui.cmdAccRight) > 0 {
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[0])
+			app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
 		}
 	case "cmd-beg":
-		app.ui.cmdracc = append(app.ui.cmdlacc, app.ui.cmdracc...)
-		app.ui.cmdlacc = nil
+		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
+		app.ui.cmdAccLeft = nil
 	case "cmd-end":
-		app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdracc...)
-		app.ui.cmdracc = nil
-	case "cmd-delete-end":
-		if len(app.ui.cmdracc) > 0 {
-			app.ui.cmdbuf = app.ui.cmdracc
-			app.ui.cmdracc = nil
-		}
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
+		app.ui.cmdAccRight = nil
 	case "cmd-delete-beg":
-		if len(app.ui.cmdlacc) > 0 {
-			app.ui.cmdbuf = app.ui.cmdlacc
-			app.ui.cmdlacc = nil
+		if len(app.ui.cmdAccLeft) > 0 {
+			app.ui.cmdBuf = app.ui.cmdAccLeft
+			app.ui.cmdAccLeft = nil
+		}
+	case "cmd-delete-end":
+		if len(app.ui.cmdAccRight) > 0 {
+			app.ui.cmdBuf = app.ui.cmdAccRight
+			app.ui.cmdAccRight = nil
 		}
 	case "cmd-delete-word":
-		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdlacc), " "), " ") + 1
-		app.ui.cmdbuf = app.ui.cmdlacc[ind:]
-		app.ui.cmdlacc = app.ui.cmdlacc[:ind]
+		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
+		app.ui.cmdBuf = app.ui.cmdAccLeft[ind:]
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 	case "cmd-put":
-		app.ui.cmdlacc = append(app.ui.cmdlacc, app.ui.cmdbuf...)
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdBuf...)
 	case "cmd-transpose":
-		if len(app.ui.cmdlacc) > 1 {
-			app.ui.cmdlacc[len(app.ui.cmdlacc)-1], app.ui.cmdlacc[len(app.ui.cmdlacc)-2] = app.ui.cmdlacc[len(app.ui.cmdlacc)-2], app.ui.cmdlacc[len(app.ui.cmdlacc)-1]
+		if len(app.ui.cmdAccLeft) > 1 {
+			app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
 		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
-			msg := fmt.Sprintf("command not found: %s", e.name)
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.printf("command not found: %s", e.name)
 			return
 		}
 		cmd.eval(app, e.args)
@@ -585,16 +533,16 @@ func (e *callExpr) eval(app *app, args []string) {
 }
 
 func (e *execExpr) eval(app *app, args []string) {
-	switch e.pref {
+	switch e.prefix {
 	case "$":
 		log.Printf("shell: %s -- %s", e, args)
-		app.runShell(e.expr, args, false, false)
+		app.runShell(e.value, args, false, false)
 	case "!":
 		log.Printf("shell-wait: %s -- %s", e, args)
-		app.runShell(e.expr, args, true, false)
+		app.runShell(e.value, args, true, false)
 	case "&":
 		log.Printf("shell-async: %s -- %s", e, args)
-		app.runShell(e.expr, args, false, true)
+		app.runShell(e.value, args, false, true)
 	case "/":
 		log.Printf("search: %s -- %s", e, args)
 		// TODO: implement
@@ -602,7 +550,7 @@ func (e *execExpr) eval(app *app, args []string) {
 		log.Printf("search-back: %s -- %s", e, args)
 		// TODO: implement
 	default:
-		log.Printf("evaluating unknown execution prefix: %q", e.pref)
+		log.Printf("evaluating unknown execution prefix: %q", e.prefix)
 	}
 }
 

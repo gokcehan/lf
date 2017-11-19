@@ -23,12 +23,11 @@ var (
 )
 
 func init() {
-	var err error
-
-	gUser, err = user.Current()
+	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
 	}
+	gUser = u
 
 	config := os.Getenv("XDG_CONFIG_HOME")
 	if config == "" {

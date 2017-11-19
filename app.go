@@ -9,55 +9,59 @@ import (
 )
 
 type cmdItem struct {
-	pref string
-	s    string
+	prefix string
+	value  string
 }
 
 type app struct {
-	ui      *ui
-	nav     *nav
-	quit    chan bool
-	cmdHist []cmdItem
-	cmdHind int
+	ui         *ui
+	nav        *nav
+	quitChan   chan bool
+	cmdHist    []cmdItem
+	cmdHistInd int
 }
 
 func newApp() *app {
 	ui := newUI()
 	nav := newNav(ui.wins[0].h)
-	quit := make(chan bool, 1)
 
 	return &app{
-		ui:   ui,
-		nav:  nav,
-		quit: quit,
+		ui:       ui,
+		nav:      nav,
+		quitChan: make(chan bool, 1),
 	}
 }
 
-func waitKey() error {
-	// TODO: this should be done with termbox somehow
+func (app *app) readFile(path string) {
+	log.Printf("reading file: %s", path)
 
-	cmd := pauseCommand()
+	f, err := os.Open(path)
+	if err != nil {
+		app.ui.printf("opening file: %s", err)
+		return
+	}
+	defer f.Close()
 
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("waiting key: %s", err)
+	p := newParser(f)
+	for p.parse() {
+		p.expr.eval(app, nil)
 	}
 
-	return nil
+	if p.err != nil {
+		app.ui.printf("%s", p.err)
+	}
 }
 
 // This is the main event loop of the application. There are two channels to
 // read expressions from client and server. Reading and evaluation are done on
 // separate goroutines.
-func (app *app) handleInp(serverChan <-chan expr) {
+func (app *app) loop() {
 	clientChan := app.ui.readExpr()
+	serverChan := readExpr()
 
 	for {
 		select {
-		case <-app.quit:
+		case <-app.quitChan:
 			log.Print("bye!")
 
 			if gLastDirPath != "" {
@@ -91,7 +95,7 @@ func (app *app) handleInp(serverChan <-chan expr) {
 func (app *app) exportVars() {
 	var envFile string
 	if f, err := app.nav.currFile(); err == nil {
-		envFile = f.Path
+		envFile = f.path
 	}
 
 	marks := app.nav.currMarks()
@@ -108,6 +112,20 @@ func (app *app) exportVars() {
 	}
 
 	os.Setenv("id", strconv.Itoa(gClientID))
+}
+
+func waitKey() error {
+	cmd := pauseCommand()
+
+	cmd.Stdin = os.Stdin
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("waiting key: %s", err)
+	}
+
+	return nil
 }
 
 // This function is used to run a command in shell. Following modes are used:
@@ -141,16 +159,12 @@ func (app *app) runShell(s string, args []string, wait bool, async bool) {
 	}
 
 	if err != nil {
-		msg := fmt.Sprintf("running shell: %s", err)
-		app.ui.message = msg
-		log.Print(msg)
+		app.ui.printf("running shell: %s", err)
 	}
 
 	if wait {
 		if err := waitKey(); err != nil {
-			msg := fmt.Sprintf("waiting shell: %s", err)
-			app.ui.message = msg
-			log.Print(msg)
+			app.ui.printf("waiting shell: %s", err)
 		}
 	}
 

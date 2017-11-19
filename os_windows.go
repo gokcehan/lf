@@ -21,12 +21,11 @@ var (
 )
 
 func init() {
-	var err error
-
-	gUser, err = user.Current()
+	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
 	}
+	gUser = u
 
 	// remove domain prefix
 	gUser.Username = strings.Split(gUser.Username, `\`)[1]

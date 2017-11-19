@@ -12,24 +12,24 @@ package main
 //
 // SetExpr  = 'set' <opt> <val> ';'
 //
-// MapExpr  = 'map' <keys> Expr ';'
+// MapExpr  = 'map' <keys> Expr
 //
 // CMapExpr = 'cmap' <key> <cmd> ';'
 //
-// CmdExpr  = 'cmd' <name> Expr ';'
+// CmdExpr  = 'cmd' <name> Expr
 //
 // CallExpr = <name> <args> ';'
 //
-// ExecExpr = Prefix      <expr>      '\n'
-//          | Prefix '{{' <expr> '}}' ';'
+// ExecExpr = Prefix      <value>      '\n'
+//          | Prefix '{{' <value> '}}' ';'
 //
 // Prefix   = '$' | '!' | '&' | '/' | '?'
 //
-// ListExpr = ':'      ListRest      '\n'
-//          | ':' '{{' ListRest '}}' ';'
+// ListExpr = ':'      Expr ListRest      '\n'
+//          | ':' '{{' Expr ListRest '}}' ';'
 //
 // ListRest = Nil
-//          | Expr ListRest
+//          | Expr ListExpr
 
 import (
 	"bytes"
@@ -40,9 +40,7 @@ import (
 
 type expr interface {
 	String() string
-
 	eval(app *app, args []string)
-	// TODO: add a bind method to avoid passing args in eval
 }
 
 type setExpr struct {
@@ -81,17 +79,17 @@ type callExpr struct {
 func (e *callExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
 
 type execExpr struct {
-	pref string
-	expr string
+	prefix string
+	value  string
 }
 
 func (e *execExpr) String() string {
 	var buf bytes.Buffer
 
-	buf.WriteString(e.pref)
+	buf.WriteString(e.prefix)
 	buf.WriteString("{{ ")
 
-	lines := strings.Split(e.expr, "\n")
+	lines := strings.Split(e.value, "\n")
 
 	for _, line := range lines {
 		trimmed := strings.TrimSpace(line)
@@ -270,7 +268,7 @@ func (p *parser) parseExpr() expr {
 	case tokenPrefix:
 		var expr string
 
-		pref := s.tok
+		prefix := s.tok
 
 		s.scan()
 		if s.typ == tokenLBraces {
@@ -284,7 +282,7 @@ func (p *parser) parseExpr() expr {
 		s.scan()
 		s.scan()
 
-		result = &execExpr{pref, expr}
+		result = &execExpr{prefix, expr}
 	default:
 		p.err = fmt.Errorf("unexpected token: %s", s.tok)
 	}

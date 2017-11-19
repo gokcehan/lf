@@ -113,10 +113,7 @@ func init() {
 }
 
 type win struct {
-	w int
-	h int
-	x int
-	y int
+	w, h, x, y int
 }
 
 func newWin(w, h, x, y int) *win {
@@ -124,10 +121,7 @@ func newWin(w, h, x, y int) *win {
 }
 
 func (win *win) renew(w, h, x, y int) {
-	win.w = w
-	win.h = h
-	win.x = x
-	win.y = y
+	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
 func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
@@ -209,8 +203,22 @@ func (win *win) printl(x, y int, fg, bg termbox.Attribute, s string) {
 	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
 }
 
-func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
+func (win *win) printReg(reg []string) {
+	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+
+	for i, l := range reg {
+		win.print(2, i, fg, bg, l)
+	}
+
+	return
+}
+
+func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) {
 	if win.w < 3 {
+		return
+	}
+
+	if dir == nil {
 		return
 	}
 
@@ -229,12 +237,12 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 
 	for i, f := range dir.fi[beg:end] {
 		switch {
-		case f.LinkState == working:
+		case f.linkState == working:
 			fg = termbox.ColorCyan
 			if f.Mode().IsDir() {
 				fg |= termbox.AttrBold
 			}
-		case f.LinkState == broken:
+		case f.linkState == broken:
 			fg = termbox.ColorMagenta
 		case f.Mode().IsRegular():
 			if f.Mode()&0111 != 0 {
@@ -295,7 +303,7 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 					continue
 				}
 
-				if f.Count == -1 {
+				if f.count == -1 {
 					d, err := os.Open(path)
 					if err != nil {
 						log.Printf("opening dir to read count: %s", err)
@@ -310,9 +318,9 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 						continue
 					}
 
-					f.Count = len(names)
+					f.count = len(names)
 				}
-				info = fmt.Sprintf("%s %d", info, f.Count)
+				info = fmt.Sprintf("%s %d", info, f.count)
 			case "time":
 				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
 			default:
@@ -333,33 +341,23 @@ func (win *win) printd(dir *dir, marks map[string]int, saves map[string]bool) {
 	}
 }
 
-func (win *win) printr(reg []string) {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
-
-	for i, l := range reg {
-		win.print(2, i, fg, bg, l)
-	}
-
-	return
-}
-
 type ui struct {
-	wins    []*win
-	pwdwin  *win
-	msgwin  *win
-	menuwin *win
-	message string
-	regprev []string
-	dirprev *dir
-	keychan chan string
-	evschan chan termbox.Event
-	menubuf *bytes.Buffer
-	cmdpref string
-	cmdlacc []rune
-	cmdracc []rune
-	cmdbuf  []rune
-	keyacc  []rune
-	keycnt  []rune
+	wins        []*win
+	pwdWin      *win
+	msgWin      *win
+	menuWin     *win
+	msg         string
+	regPrev     []string
+	dirPrev     *dir
+	keyChan     chan string
+	evChan      chan termbox.Event
+	menuBuf     *bytes.Buffer
+	cmdPrefix   string
+	cmdAccLeft  []rune
+	cmdAccRight []rune
+	cmdBuf      []rune
+	keyAcc      []rune
+	keyCount    []rune
 }
 
 func getWidths(wtot int) []int {
@@ -401,22 +399,21 @@ func getWins() []*win {
 func newUI() *ui {
 	wtot, htot := termbox.Size()
 
-	key := make(chan string, 1000)
-	evs := make(chan termbox.Event)
+	evChan := make(chan termbox.Event)
 
 	go func() {
 		for {
-			evs <- termbox.PollEvent()
+			evChan <- termbox.PollEvent()
 		}
 	}()
 
 	return &ui{
 		wins:    getWins(),
-		pwdwin:  newWin(wtot, 1, 0, 0),
-		msgwin:  newWin(wtot, 1, 0, htot-1),
-		menuwin: newWin(wtot, 1, 0, htot-2),
-		keychan: key,
-		evschan: evs,
+		pwdWin:  newWin(wtot, 1, 0, 0),
+		msgWin:  newWin(wtot, 1, 0, htot-1),
+		menuWin: newWin(wtot, 1, 0, htot-2),
+		keyChan: make(chan string, 1000),
+		evChan:  evChan,
 	}
 }
 
@@ -432,16 +429,16 @@ func (ui *ui) renew() {
 		wacc += widths[i]
 	}
 
-	ui.msgwin.renew(wtot, 1, 0, htot-1)
+	ui.msgWin.renew(wtot, 1, 0, htot-1)
 }
 
-func (ui *ui) loadFileInfo(nav *nav) {
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
+func (ui *ui) print(msg string) {
+	ui.msg = msg
+	log.Print(msg)
+}
 
-	ui.message = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
+func (ui *ui) printf(format string, a ...interface{}) {
+	ui.print(fmt.Sprintf(format, a...))
 }
 
 func (ui *ui) loadFile(nav *nav) {
@@ -455,62 +452,63 @@ func (ui *ui) loadFile(nav *nav) {
 	}
 
 	if curr.IsDir() {
-		dir := nav.load(curr.Path)
-		ui.dirprev = dir
+		dir := nav.load(curr.path)
+		ui.dirPrev = dir
 	} else if curr.Mode().IsRegular() {
 		var reader io.Reader
 
 		if len(gOpts.previewer) != 0 {
-			cmd := exec.Command(gOpts.previewer, curr.Path, strconv.Itoa(nav.height))
+			cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
 
 			out, err := cmd.StdoutPipe()
 			if err != nil {
-				msg := fmt.Sprintf("previewing file: %s", err)
-				ui.message = msg
-				log.Print(msg)
+				ui.printf("previewing file: %s", err)
 			}
 
 			if err := cmd.Start(); err != nil {
-				msg := fmt.Sprintf("previewing file: %s", err)
-				ui.message = msg
-				log.Print(msg)
+				ui.printf("previewing file: %s", err)
 			}
 
 			defer cmd.Wait()
 			defer out.Close()
 			reader = out
 		} else {
-			f, err := os.Open(curr.Path)
+			f, err := os.Open(curr.path)
 			if err != nil {
-				msg := fmt.Sprintf("opening file: %s", err)
-				ui.message = msg
-				log.Print(msg)
+				ui.printf("opening file: %s", err)
 			}
 
 			defer f.Close()
 			reader = f
 		}
 
-		ui.regprev = nil
+		ui.regPrev = nil
 
 		buf := bufio.NewScanner(reader)
 
 		for i := 0; i < nav.height && buf.Scan(); i++ {
 			for _, r := range buf.Text() {
 				if r == 0 {
-					ui.regprev = []string{"\033[1mbinary\033[0m"}
+					ui.regPrev = []string{"\033[1mbinary\033[0m"}
 					return
 				}
 			}
-			ui.regprev = append(ui.regprev, buf.Text())
+			ui.regPrev = append(ui.regPrev, buf.Text())
 		}
 
 		if buf.Err() != nil {
-			msg := fmt.Sprintf("loading file: %s", buf.Err())
-			ui.message = msg
-			log.Print(msg)
+			ui.printf("loading file: %s", buf.Err())
 		}
 	}
+}
+
+func (ui *ui) loadFileInfo(nav *nav) {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	ui.msg = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
 func (ui *ui) draw(nav *nav) {
@@ -523,9 +521,9 @@ func (ui *ui) draw(nav *nav) {
 	path := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
 	path = filepath.Clean(path)
 
-	ui.pwdwin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
-	ui.pwdwin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
-	ui.pwdwin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
+	ui.pwdWin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
+	ui.pwdWin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
+	ui.pwdWin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
 
 	length := min(len(ui.wins), len(nav.dirs))
 	woff := len(ui.wins) - length
@@ -537,16 +535,16 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printd(nav.dirs[doff+i], nav.marks, nav.saves)
+		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.marks, nav.saves)
 	}
 
-	if ui.cmdpref != "" {
-		ui.msgwin.printl(0, 0, fg, bg, ui.cmdpref)
-		ui.msgwin.print(len(ui.cmdpref), 0, fg, bg, string(ui.cmdlacc))
-		ui.msgwin.print(len(ui.cmdpref)+runeSliceWidth(ui.cmdlacc), 0, fg, bg, string(ui.cmdracc))
-		termbox.SetCursor(ui.msgwin.x+len(ui.cmdpref)+runeSliceWidth(ui.cmdlacc), ui.msgwin.y)
+	if ui.cmdPrefix != "" {
+		ui.msgWin.printl(0, 0, fg, bg, ui.cmdPrefix)
+		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, string(ui.cmdAccLeft))
+		ui.msgWin.print(len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
+		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
 	} else {
-		ui.msgwin.print(0, 0, fg, bg, ui.message)
+		ui.msgWin.print(0, 0, fg, bg, ui.msg)
 		termbox.HideCursor()
 	}
 
@@ -556,31 +554,31 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if f.IsDir() {
-				preview.printd(ui.dirprev, nav.marks, nav.saves)
+				preview.printDir(ui.dirPrev, nav.marks, nav.saves)
 			} else if f.Mode().IsRegular() {
-				preview.printr(ui.regprev)
+				preview.printReg(ui.regPrev)
 			}
 		}
 	}
 
-	if ui.menubuf != nil {
-		lines := strings.Split(ui.menubuf.String(), "\n")
+	if ui.menuBuf != nil {
+		lines := strings.Split(ui.menuBuf.String(), "\n")
 
 		lines = lines[:len(lines)-1]
 
-		ui.menuwin.h = len(lines) - 1
-		ui.menuwin.y = ui.wins[0].h - ui.menuwin.h
+		ui.menuWin.h = len(lines) - 1
+		ui.menuWin.y = ui.wins[0].h - ui.menuWin.h
 
-		ui.menuwin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
+		ui.menuWin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
 		for i, line := range lines[1:] {
-			ui.menuwin.printl(0, i+1, fg, bg, "")
-			ui.menuwin.print(0, i+1, fg, bg, line)
+			ui.menuWin.printl(0, i+1, fg, bg, "")
+			ui.menuWin.print(0, i+1, fg, bg, line)
 		}
 	}
 
 	termbox.Flush()
 
-	if ui.cmdpref == "" {
+	if ui.cmdPrefix == "" {
 		// leave the cursor at the beginning of the current file for screen readers
 		moveCursor(ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
 	}
@@ -621,7 +619,7 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 
 func (ui *ui) pollEvent() termbox.Event {
 	select {
-	case key := <-ui.keychan:
+	case key := <-ui.keyChan:
 		ev := termbox.Event{Type: termbox.EventKey}
 
 		if len(key) == 1 {
@@ -637,15 +635,13 @@ func (ui *ui) pollEvent() termbox.Event {
 					ev.Key = val
 				} else {
 					ev.Key = termbox.KeyEsc
-					msg := fmt.Sprintf("unknown key: %s", key)
-					ui.message = msg
-					log.Print(msg)
+					ui.printf("unknown key: %s", key)
 				}
 			}
 		}
 
 		return ev
-	case ev := <-ui.evschan:
+	case ev := <-ui.evChan:
 		return ev
 	}
 }
@@ -675,36 +671,36 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 		if ev.Ch != 0 {
 			switch {
 			case ev.Ch == '<':
-				ui.keyacc = append(ui.keyacc, '<', 'l', 't', '>')
+				ui.keyAcc = append(ui.keyAcc, '<', 'l', 't', '>')
 			case ev.Ch == '>':
-				ui.keyacc = append(ui.keyacc, '<', 'g', 't', '>')
-			case unicode.IsDigit(ev.Ch) && len(ui.keyacc) == 0:
-				ui.keycnt = append(ui.keycnt, ev.Ch)
+				ui.keyAcc = append(ui.keyAcc, '<', 'g', 't', '>')
+			case unicode.IsDigit(ev.Ch) && len(ui.keyAcc) == 0:
+				ui.keyCount = append(ui.keyCount, ev.Ch)
 			default:
-				ui.keyacc = append(ui.keyacc, ev.Ch)
+				ui.keyAcc = append(ui.keyAcc, ev.Ch)
 			}
 		} else {
 			val := gKeyVal[ev.Key]
 			if string(val) == "<esc>" {
 				ch <- multiExpr{redraw, 1}
-				ui.keyacc = nil
-				ui.keycnt = nil
+				ui.keyAcc = nil
+				ui.keyCount = nil
 			}
-			ui.keyacc = append(ui.keyacc, val...)
+			ui.keyAcc = append(ui.keyAcc, val...)
 		}
 
-		binds, ok := findBinds(gOpts.keys, string(ui.keyacc))
+		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
 
 		switch len(binds) {
 		case 0:
-			ui.message = fmt.Sprintf("unknown mapping: %s", string(ui.keyacc))
+			ui.printf("unknown mapping: %s", string(ui.keyAcc))
 			ch <- multiExpr{redraw, 1}
-			ui.keyacc = nil
-			ui.keycnt = nil
+			ui.keyAcc = nil
+			ui.keyCount = nil
 		case 1:
 			if ok {
-				if len(ui.keycnt) > 0 {
-					c, err := strconv.Atoi(string(ui.keycnt))
+				if len(ui.keyCount) > 0 {
+					c, err := strconv.Atoi(string(ui.keyCount))
 					if err != nil {
 						log.Printf("converting command count: %s", err)
 					}
@@ -712,22 +708,22 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 				} else {
 					count = 1
 				}
-				expr := gOpts.keys[string(ui.keyacc)]
+				expr := gOpts.keys[string(ui.keyAcc)]
 				ch <- multiExpr{expr, count}
-				ui.keyacc = nil
-				ui.keycnt = nil
+				ui.keyAcc = nil
+				ui.keyCount = nil
 			}
-			if len(ui.keyacc) > 0 {
-				ui.menubuf = listBinds(binds)
+			if len(ui.keyAcc) > 0 {
+				ui.menuBuf = listBinds(binds)
 				ch <- multiExpr{redraw, 1}
-			} else if ui.menubuf != nil {
-				ui.menubuf = nil
+			} else if ui.menuBuf != nil {
+				ui.menuBuf = nil
 			}
 		default:
 			if ok {
 				// TODO: use a delay
-				if len(ui.keycnt) > 0 {
-					c, err := strconv.Atoi(string(ui.keycnt))
+				if len(ui.keyCount) > 0 {
+					c, err := strconv.Atoi(string(ui.keyCount))
 					if err != nil {
 						log.Printf("converting command count: %s", err)
 					}
@@ -735,16 +731,16 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 				} else {
 					count = 1
 				}
-				expr := gOpts.keys[string(ui.keyacc)]
+				expr := gOpts.keys[string(ui.keyAcc)]
 				ch <- multiExpr{expr, count}
-				ui.keyacc = nil
-				ui.keycnt = nil
+				ui.keyAcc = nil
+				ui.keyCount = nil
 			}
-			if len(ui.keyacc) > 0 {
-				ui.menubuf = listBinds(binds)
+			if len(ui.keyAcc) > 0 {
+				ui.menuBuf = listBinds(binds)
 				ch <- multiExpr{redraw, 1}
 			} else {
-				ui.menubuf = nil
+				ui.menuBuf = nil
 			}
 		}
 	case termbox.EventResize:
@@ -761,10 +757,12 @@ func (ui *ui) readExpr() <-chan multiExpr {
 	ch := make(chan multiExpr)
 
 	go func() {
+		ch <- multiExpr{&callExpr{"redraw", nil}, 1}
+
 		for {
 			ev := ui.pollEvent()
 
-			if ui.cmdpref != "" && ev.Type == termbox.EventKey {
+			if ui.cmdPrefix != "" && ev.Type == termbox.EventKey {
 				readCmdEvent(ch, ev)
 				continue
 			}

@@ -217,7 +217,6 @@ scan:
 		for !s.eof && s.chr != '"' {
 			if s.chr == '\\' {
 				s.next()
-				// TODO: octal escape
 				switch s.chr {
 				case '"', '\\':
 					buf = append(buf, s.chr)

@@ -12,7 +12,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-func client() {
+func run() {
 	logFile, err := os.Create(gLogPath)
 	if err != nil {
 		panic(err)
@@ -30,57 +30,26 @@ func client() {
 
 	app := newApp()
 
-	app.ui.loadFile(app.nav)
-
-	var serverChan <-chan expr
-
-	c, err := net.Dial(gSocketProt, gSocketPath)
-	if err != nil {
-		msg := fmt.Sprintf("connecting server: %s", err)
-		app.ui.message = msg
-		log.Printf(msg)
-	} else {
-		serverChan = readExpr(c)
+	if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
+		app.readFile(gConfigPath)
 	}
 
-	if err := app.nav.sync(); err != nil {
-		msg := fmt.Sprintf("sync: %s", err)
-		app.ui.message = msg
-		log.Printf(msg)
-	}
-
-	if _, err := os.Stat(gConfigPath); err == nil {
-		log.Printf("reading configuration file: %s", gConfigPath)
-
-		rcFile, err := os.Open(gConfigPath)
-		if err != nil {
-			msg := fmt.Sprintf("opening configuration file: %s", err)
-			app.ui.message = msg
-			log.Printf(msg)
-		}
-		defer rcFile.Close()
-
-		p := newParser(rcFile)
-		for p.parse() {
-			p.expr.eval(app, nil)
-		}
-
-		if p.err != nil {
-			app.ui.message = p.err.Error()
-			log.Print(p.err)
-		}
-	}
-
-	app.ui.draw(app.nav)
-
-	app.handleInp(serverChan)
+	app.loop()
 }
 
-func readExpr(c net.Conn) <-chan expr {
+func readExpr() <-chan expr {
 	ch := make(chan expr)
 
 	go func() {
+		c, err := net.Dial(gSocketProt, gSocketPath)
+		if err != nil {
+			log.Printf(fmt.Sprintf("connecting server: %s", err))
+			return
+		}
+
 		fmt.Fprintf(c, "conn %d\n", gClientID)
+
+		ch <- &callExpr{"sync", nil}
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {
