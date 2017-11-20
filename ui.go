@@ -23,6 +23,7 @@ import (
 const gEscapeCode = 27
 
 var gAnsiCodes = map[int]termbox.Attribute{
+	0:  termbox.ColorDefault,
 	1:  termbox.AttrBold,
 	4:  termbox.AttrUnderline,
 	7:  termbox.AttrReverse,
