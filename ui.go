@@ -20,7 +20,10 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const gEscapeCode = 27
+const (
+	gEscapeCode         = 27
+	gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse
+)
 
 var gAnsiCodes = map[int]termbox.Attribute{
 	0:  termbox.ColorDefault,
@@ -125,7 +128,47 @@ func (win *win) renew(w, h, x, y int) {
 	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
-func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
+func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, termbox.Attribute) {
+	toks := strings.Split(s, ";")
+
+	var nums []int
+	for _, t := range toks {
+		if t == "" {
+			fg = termbox.ColorDefault
+			bg = termbox.ColorDefault
+			break
+		}
+		n, err := strconv.Atoi(t)
+		if err != nil {
+			log.Printf("converting escape code: %s", err)
+			continue
+		}
+		nums = append(nums, n)
+	}
+
+	for _, n := range nums {
+		attr, ok := gAnsiCodes[n]
+		if !ok {
+			log.Printf("unknown ansi code: %d", n)
+			continue
+		}
+		switch {
+		case n == 0:
+			fg, bg = attr, attr
+		case n == 1 || n == 4 || n == 7:
+			fg |= attr
+		case 30 <= n && n <= 37:
+			fg &= gAnsiColorResetMask
+			fg |= attr
+		case 40 <= n && n <= 47:
+			bg = attr
+		}
+	}
+
+	return fg, bg
+}
+
+func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Attribute, termbox.Attribute) {
 	off := x
 	for i := 0; i < len(s); i++ {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -136,45 +179,7 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 				continue
 			}
 
-			toks := strings.Split(s[i+2:i+j], ";")
-
-			var nums []int
-			for _, t := range toks {
-				if t == "" {
-					fg = termbox.ColorDefault
-					bg = termbox.ColorDefault
-					break
-				}
-				n, err := strconv.Atoi(t)
-				if err != nil {
-					log.Printf("converting escape code: %s", err)
-					continue
-				}
-				nums = append(nums, n)
-			}
-
-			for _, n := range nums {
-				if 30 <= n && n <= 37 {
-					fg = termbox.ColorDefault
-				}
-				if 40 <= n && n <= 47 {
-					bg = termbox.ColorDefault
-				}
-			}
-
-			for _, n := range nums {
-				attr, ok := gAnsiCodes[n]
-				if !ok {
-					log.Printf("unknown ansi code: %d", n)
-					continue
-				}
-				if 1 <= n && n <= 37 {
-					fg |= attr
-				}
-				if 40 <= n && n <= 47 {
-					bg |= attr
-				}
-			}
+			fg, bg = applyAnsiCodes(s[i+2:i+j], fg, bg)
 
 			i += j
 			continue
@@ -194,6 +199,8 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) {
 			x += runewidth.RuneWidth(r)
 		}
 	}
+
+	return fg, bg
 }
 
 func (win *win) printf(x, y int, fg, bg termbox.Attribute, format string, a ...interface{}) {
@@ -208,7 +215,7 @@ func (win *win) printReg(reg []string) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	for i, l := range reg {
-		win.print(2, i, fg, bg, l)
+		fg, bg = win.print(2, i, fg, bg, l)
 	}
 
 	return
