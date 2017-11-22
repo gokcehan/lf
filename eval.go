@@ -109,7 +109,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.shell = e.val
 	case "sortby":
 		if e.val != "natural" && e.val != "name" && e.val != "size" && e.val != "time" {
-			app.ui.print("sortby should either be 'natural', 'name', 'size' or 'time'")
+			app.ui.print("sortby: value should either be 'natural', 'name', 'size' or 'time'")
 			return
 		}
 		gOpts.sortby = e.val
@@ -120,12 +120,20 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		var rats []int
 		for _, s := range toks {
-			i, err := strconv.Atoi(s)
+			n, err := strconv.Atoi(s)
 			if err != nil {
 				app.ui.printf("ratios: %s", err)
 				return
 			}
-			rats = append(rats, i)
+			if n <= 0 {
+				app.ui.print("ratios: value should be a positive number")
+				return
+			}
+			rats = append(rats, n)
+		}
+		if gOpts.preview && len(rats) < 2 {
+			app.ui.print("ratios: should consist of at least two numbers when 'preview' is enabled")
+			return
 		}
 		gOpts.ratios = rats
 		app.ui.wins = getWins()
@@ -134,7 +142,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			if s != "" && s != "size" && s != "time" {
-				app.ui.print("info should consist of 'size' or 'time' separated with colon")
+				app.ui.print("info: should consist of 'size' or 'time' separated with colon")
 				return
 			}
 		}
