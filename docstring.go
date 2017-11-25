@@ -29,6 +29,7 @@ The following commands are provided by lf with default keybindings:
     bot               (default 'G')
     toggle            (default '<space>')
     invert            (default 'v')
+    unmark            (default 'u')
     yank              (default 'y')
     delete            (default 'd')
     put               (default 'p')

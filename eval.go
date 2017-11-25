@@ -293,12 +293,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "invert":
 		app.nav.invert()
+	case "unmark":
+		app.nav.unmark()
 	case "yank":
 		if err := app.nav.save(true); err != nil {
 			app.ui.printf("yank: %s", err)
 			return
 		}
-		app.nav.marks = make(map[string]int)
+		app.nav.unmark()
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("yank: %s", err)
 		}
@@ -307,7 +309,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("delete: %s", err)
 			return
 		}
-		app.nav.marks = make(map[string]int)
+		app.nav.unmark()
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("delete: %s", err)
 		}

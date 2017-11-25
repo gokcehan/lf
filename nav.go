@@ -390,6 +390,11 @@ func (nav *nav) invert() {
 	}
 }
 
+func (nav *nav) unmark() {
+	nav.marks = make(map[string]int)
+	nav.markInd = 0
+}
+
 func (nav *nav) save(copy bool) error {
 	if len(nav.marks) == 0 {
 		curr, err := nav.currFile()

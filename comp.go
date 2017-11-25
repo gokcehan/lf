@@ -27,6 +27,7 @@ var (
 		"bot",
 		"toggle",
 		"invert",
+		"unmark",
 		"yank",
 		"delete",
 		"put",
