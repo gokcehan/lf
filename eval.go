@@ -33,13 +33,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.globsearch = !gOpts.globsearch
 	case "hidden":
 		gOpts.hidden = true
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "nohidden":
 		gOpts.hidden = false
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "hidden!":
 		gOpts.hidden = !gOpts.hidden
-		app.nav.renew(app.nav.height)
+		app.nav.sort()
 	case "ignorecase":
 		gOpts.ignorecase = true
 	case "noignorecase":

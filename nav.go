@@ -50,10 +50,6 @@ func readdir(path string) ([]*file, error) {
 
 	fi := make([]*file, 0, len(names))
 	for _, filename := range names {
-		if !gOpts.hidden && filename[0] == '.' {
-			continue
-		}
-
 		fpath := filepath.Join(path, filename)
 
 		lstat, lerr := os.Lstat(fpath)
@@ -89,10 +85,11 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	ind  int // which entry is highlighted
-	pos  int // which line in the ui highlighted entry is
-	path string
-	fi   []*file
+	ind  int     // index of current entry in fi
+	pos  int     // position of current entry in ui
+	path string  // full path of directory
+	fi   []*file // displayed files in directory including or excluding hidden ones
+	all  []*file // all files in directory including hidden ones (same array as fi)
 }
 
 func newDir(path string) *dir {
@@ -104,6 +101,7 @@ func newDir(path string) *dir {
 	return &dir{
 		path: path,
 		fi:   fi,
+		all:  fi,
 	}
 }
 
@@ -114,9 +112,12 @@ func (dir *dir) renew() {
 	}
 
 	dir.fi = fi
+	dir.all = fi
 }
 
 func (dir *dir) sort() {
+	dir.fi = dir.all
+
 	switch gOpts.sortby {
 	case "natural":
 		sortFilesStable(dir.fi, func(i, j int) bool {
@@ -152,6 +153,25 @@ func (dir *dir) sort() {
 			return dir.fi[i].IsDir()
 		})
 	}
+
+	// when hidden option is disabled, we move hidden files to the
+	// beginning of our file list and then set the beginning of displayed
+	// files to the first non-hidden file in the list
+	if !gOpts.hidden {
+		sortFilesStable(dir.fi, func(i, j int) bool {
+			if dir.fi[i].Name()[0] == '.' && dir.fi[j].Name()[0] == '.' {
+				return i < j
+			}
+			return dir.fi[i].Name()[0] == '.'
+		})
+		for i, f := range dir.fi {
+			if f.Name()[0] != '.' {
+				dir.fi = dir.fi[i:]
+				return
+			}
+		}
+		dir.fi = dir.fi[len(dir.fi):]
+	}
 }
 
 func (dir *dir) name() string {
@@ -176,10 +196,10 @@ func (dir *dir) find(name string, height int) {
 				break
 			}
 		}
-
-		edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
-		dir.pos = min(dir.ind, height-edge-1)
 	}
+
+	edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
+	dir.pos = min(dir.ind, height-edge-1)
 }
 
 type nav struct {
