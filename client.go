@@ -28,6 +28,8 @@ func run() {
 	}
 	defer termbox.Close()
 
+	termbox.SetOutputMode(termbox.Output256)
+
 	app := newApp()
 
 	if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
