@@ -146,6 +146,20 @@ func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, term
 		nums = append(nums, n)
 	}
 
+	// Parse 256 color terminal ansi codes
+	// termbox-go has a color offset of one, because of attributes
+	if len(nums) == 3 {
+		if nums[0] == 48 && nums[1] == 5 {
+			bg = termbox.Attribute(nums[2])
+			bg++
+		}
+		if nums[0] == 38 && nums[1] == 5 {
+			fg = termbox.Attribute(nums[2])
+			fg++
+		}
+		return fg, bg
+	}
+
 	for _, n := range nums {
 		attr, ok := gAnsiCodes[n]
 		if !ok {
