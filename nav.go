@@ -272,6 +272,9 @@ func (nav *nav) getDirs(wd string) {
 
 func (nav *nav) renew(height int) {
 	nav.dirCache = make(map[string]*dir)
+	for _, d := range nav.dirs {
+		nav.dirCache[d.path] = d
+	}
 
 	nav.height = height
 	for _, d := range nav.dirs {
