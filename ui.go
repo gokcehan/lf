@@ -221,8 +221,12 @@ func (win *win) printf(x, y int, fg, bg termbox.Attribute, format string, a ...i
 	win.print(x, y, fg, bg, fmt.Sprintf(format, a...))
 }
 
-func (win *win) printl(x, y int, fg, bg termbox.Attribute, s string) {
+func (win *win) printLine(x, y int, fg, bg termbox.Attribute, s string) {
 	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
+}
+
+func (win *win) printRight(y int, fg, bg termbox.Attribute, s string) {
+	win.print(win.w-len(s), y, fg, bg, s)
 }
 
 func (win *win) printReg(reg []string) {
@@ -539,6 +543,21 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	ui.msg = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
+func (ui *ui) drawStatLine(nav *nav) {
+	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+
+	currDir := nav.currDir()
+
+	ui.msgWin.print(0, 0, fg, bg, ui.msg)
+
+	tot := len(currDir.fi)
+	ind := min(currDir.ind+1, tot)
+
+	ruler := fmt.Sprintf("%d/%d", ind, tot)
+
+	ui.msgWin.printRight(0, fg, bg, ruler)
+}
+
 func (ui *ui) draw(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
@@ -567,12 +586,12 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	if ui.cmdPrefix != "" {
-		ui.msgWin.printl(0, 0, fg, bg, ui.cmdPrefix)
+		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
 		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, string(ui.cmdAccLeft))
 		ui.msgWin.print(len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
 		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
 	} else {
-		ui.msgWin.print(0, 0, fg, bg, ui.msg)
+		ui.drawStatLine(nav)
 		termbox.HideCursor()
 	}
 
@@ -597,9 +616,9 @@ func (ui *ui) draw(nav *nav) {
 		ui.menuWin.h = len(lines) - 1
 		ui.menuWin.y = ui.wins[0].h - ui.menuWin.h
 
-		ui.menuWin.printl(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
+		ui.menuWin.printLine(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
 		for i, line := range lines[1:] {
-			ui.menuWin.printl(0, i+1, fg, bg, "")
+			ui.menuWin.printLine(0, i+1, fg, bg, "")
 			ui.menuWin.print(0, i+1, fg, bg, line)
 		}
 	}
