@@ -725,6 +725,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 			ch <- multiExpr{redraw, 1}
 			ui.keyAcc = nil
 			ui.keyCount = nil
+			ui.menuBuf = nil
 		case 1:
 			if ok {
 				if len(ui.keyCount) > 0 {
