@@ -252,14 +252,6 @@ func (nav *nav) getDirs(wd string) {
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := nav.load(curr)
-		for i, f := range dir.fi {
-			if f.Name() == base {
-				dir.ind = i
-				edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
-				dir.pos = min(i, nav.height-edge-1)
-				break
-			}
-		}
 		dirs = append(dirs, dir)
 	}
 
