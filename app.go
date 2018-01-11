@@ -80,6 +80,28 @@ func (app *app) loop() {
 			}
 
 			return
+		case d := <-app.nav.dirChan:
+			app.nav.dirCache[d.path] = d
+
+			for i := range app.nav.dirs {
+				if app.nav.dirs[i].path == d.path {
+					app.nav.dirs[i] = d
+				}
+			}
+
+			app.nav.position()
+
+			curr, err := app.nav.currFile()
+			if err == nil {
+				if d.path == app.nav.currDir().path {
+					app.nav.load(curr.path)
+				}
+				if d.path == curr.path {
+					app.ui.dirPrev = d
+				}
+			}
+
+			app.ui.draw(app.nav)
 		case e := <-clientChan:
 			for i := 0; i < e.count; i++ {
 				e.expr.eval(app, nil)

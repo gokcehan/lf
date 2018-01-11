@@ -85,11 +85,12 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	ind  int     // index of current entry in fi
-	pos  int     // position of current entry in ui
-	path string  // full path of directory
-	fi   []*file // displayed files in directory including or excluding hidden ones
-	all  []*file // all files in directory including hidden ones (same array as fi)
+	loading bool    // directory is loading from disk
+	ind     int     // index of current entry in fi
+	pos     int     // position of current entry in ui
+	path    string  // full path of directory
+	fi      []*file // displayed files in directory including or excluding hidden ones
+	all     []*file // all files in directory including hidden ones (same array as fi)
 }
 
 func newDir(path string) *dir {
@@ -205,6 +206,7 @@ func (dir *dir) find(name string, height int) {
 type nav struct {
 	dirs     []*dir
 	dirCache map[string]*dir
+	dirChan  chan *dir
 	saves    map[string]bool
 	marks    map[string]int
 	markInd  int
@@ -220,6 +222,7 @@ func newNav(height int) *nav {
 
 	nav := &nav{
 		dirCache: make(map[string]*dir),
+		dirChan:  make(chan *dir),
 		marks:    make(map[string]int),
 		saves:    make(map[string]bool),
 		markInd:  0,
@@ -229,6 +232,19 @@ func newNav(height int) *nav {
 	nav.getDirs(wd)
 
 	return nav
+}
+
+func (nav *nav) position() {
+	curr, err := nav.currFile()
+	if err == nil {
+		nav.dirs[len(nav.dirs)-1].find(filepath.Base(curr.path), nav.height)
+	}
+
+	path := nav.currDir().path
+	for i := len(nav.dirs) - 2; i >= 0; i-- {
+		nav.dirs[i].find(filepath.Base(path), nav.height)
+		path = filepath.Dir(path)
+	}
 }
 
 func (nav *nav) getDirs(wd string) {
@@ -276,14 +292,19 @@ func (nav *nav) renew(height int) {
 }
 
 func (nav *nav) load(path string) *dir {
-	dir, ok := nav.dirCache[path]
+	d, ok := nav.dirCache[path]
 	if !ok {
-		dir = newDir(path)
-		dir.sort()
-		dir.ind, dir.pos = 0, 0
-		nav.dirCache[path] = dir
+		go func() {
+			d := newDir(path)
+			d.sort()
+			d.ind, d.pos = 0, 0
+			nav.dirChan <- d
+		}()
+		d := &dir{loading: true, path: path}
+		nav.dirCache[path] = d
+		return d
 	}
-	return dir
+	return d
 }
 
 func (nav *nav) sort() {

@@ -246,6 +246,12 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
+	if dir.loading {
+		fg = termbox.AttrBold
+		win.print(2, 0, fg, bg, "loading...")
+		return
+	}
+
 	if len(dir.fi) == 0 {
 		fg = termbox.AttrBold
 		win.print(2, 0, fg, bg, "empty")
