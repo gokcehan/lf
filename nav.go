@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"sort"
 	"strings"
+	"time"
 )
 
 type linkState byte
@@ -85,24 +86,28 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading bool    // directory is loading from disk
-	ind     int     // index of current entry in fi
-	pos     int     // position of current entry in ui
-	path    string  // full path of directory
-	fi      []*file // displayed files in directory including or excluding hidden ones
-	all     []*file // all files in directory including hidden ones (same array as fi)
+	loading  bool      // directory is loading from disk
+	loadTime time.Time // current loading or last load time
+	ind      int       // index of current entry in fi
+	pos      int       // position of current entry in ui
+	path     string    // full path of directory
+	fi       []*file   // displayed files in directory including or excluding hidden ones
+	all      []*file   // all files in directory including hidden ones (same array as fi)
 }
 
 func newDir(path string) *dir {
+	time := time.Now()
+
 	fi, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
 	return &dir{
-		path: path,
-		fi:   fi,
-		all:  fi,
+		loadTime: time,
+		path:     path,
+		fi:       fi,
+		all:      fi,
 	}
 }
 
@@ -270,10 +275,19 @@ func (nav *nav) renew(height int) {
 
 	nav.height = height
 	for _, d := range nav.dirs {
-		name := d.name()
-		d.renew()
-		d.sort()
-		d.find(name, height)
+		go func(d *dir) {
+			s, err := os.Stat(d.path)
+			if err != nil {
+				log.Printf("getting directory info: %s", err)
+			}
+			if d.loadTime.After(s.ModTime()) {
+				return
+			}
+			d.loadTime = time.Now()
+			nd := newDir(d.path)
+			nd.sort()
+			nav.dirChan <- nd
+		}(d)
 	}
 
 	for m := range nav.marks {

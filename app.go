@@ -81,6 +81,11 @@ func (app *app) loop() {
 
 			return
 		case d := <-app.nav.dirChan:
+			prev, ok := app.nav.dirCache[d.path]
+			if ok {
+				d.find(prev.name(), app.nav.height)
+			}
+
 			app.nav.dirCache[d.path] = d
 
 			for i := range app.nav.dirs {
