@@ -107,6 +107,15 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
+		case p := <-app.ui.prevChan:
+			curr, err := app.nav.currFile()
+			if err == nil {
+				if p.path == curr.path {
+					app.ui.regPrev = p.lines
+				}
+			}
+
+			app.ui.draw(app.nav)
 		case e := <-clientChan:
 			for i := 0; i < e.count; i++ {
 				e.expr.eval(app, nil)
