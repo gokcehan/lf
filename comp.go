@@ -32,7 +32,7 @@ var (
 		"delete",
 		"put",
 		"clear",
-		"renew",
+		"reload",
 		"read",
 		"read-shell",
 		"read-shell-wait",

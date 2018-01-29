@@ -300,6 +300,17 @@ func (nav *nav) renew(height int) {
 	}
 }
 
+func (nav *nav) reload() {
+	nav.dirCache = make(map[string]*dir)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
+
+	nav.getDirs(wd)
+}
+
 func (nav *nav) load(path string) *dir {
 	d, ok := nav.dirCache[path]
 	if !ok {

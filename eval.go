@@ -332,10 +332,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("clear: %s", err)
 		}
-	case "renew":
+	case "reload":
 		app.ui.sync()
 		app.ui.renew()
-		app.nav.renew(app.ui.wins[0].h)
+		app.nav.reload()
 	case "read":
 		app.ui.cmdPrefix = ":"
 	case "read-shell":

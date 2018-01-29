@@ -34,7 +34,7 @@ The following commands are provided by lf with default keybindings:
     delete            (default 'd')
     put               (default 'p')
     clear             (default 'c')
-    renew             (default '<c-l>')
+    reload            (default '<c-r>')
     read              (default ':')
     read-shell        (default '$')
     read-shell-wait   (default '!')
@@ -366,7 +366,7 @@ implementation. The default behavior is similar to the following command:
         elif [ $mode = 'move' ]; then
             mv -n $list .
         fi
-        lf -remote "send $id renew"
+        lf -remote "send $id reload"
         lf -remote "$(printf 'save\nmove\n\n')"
         lf -remote "send sync"
     }}
