@@ -332,6 +332,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("clear: %s", err)
 		}
+	case "redraw":
+		app.ui.sync()
+		app.ui.renew()
+		app.ui.loadFile(app.nav)
 	case "reload":
 		app.ui.sync()
 		app.ui.renew()
@@ -368,10 +372,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "echo":
 		app.ui.msg = strings.Join(e.args, " ")
-	case "redraw":
-		app.ui.sync()
-		app.ui.renew()
-		app.ui.loadFile(app.nav)
 	case "cd":
 		path := "~"
 		if len(e.args) > 0 {

@@ -34,6 +34,7 @@ The following commands are provided by lf with default keybindings:
     delete            (default 'd')
     put               (default 'p')
     clear             (default 'c')
+    redraw            (default '<c-l>')
     reload            (default '<c-r>')
     read              (default ':')
     read-shell        (default '$')
@@ -48,7 +49,6 @@ The following commands are provided by lf without default keybindings:
 
     sync    synchronizes yanked/deleted files with server
     echo    prints its arguments to the message line
-    redraw  renew ui elements and redraw the screen
     cd      changes working directory to its argument
     push    simulate key pushes given in its argument
 

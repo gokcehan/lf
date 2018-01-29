@@ -32,6 +32,7 @@ var (
 		"delete",
 		"put",
 		"clear",
+		"redraw",
 		"reload",
 		"read",
 		"read-shell",
@@ -43,7 +44,6 @@ var (
 		"search-prev",
 		"sync",
 		"echo",
-		"redraw",
 		"cd",
 		"push",
 	}

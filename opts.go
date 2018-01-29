@@ -70,6 +70,7 @@ func init() {
 	gOpts.keys["d"] = &callExpr{"delete", nil}
 	gOpts.keys["c"] = &callExpr{"clear", nil}
 	gOpts.keys["p"] = &callExpr{"put", nil}
+	gOpts.keys["<c-l>"] = &callExpr{"redraw", nil}
 	gOpts.keys["<c-r>"] = &callExpr{"reload", nil}
 	gOpts.keys[":"] = &callExpr{"read", nil}
 	gOpts.keys["$"] = &callExpr{"read-shell", nil}
