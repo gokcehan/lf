@@ -383,7 +383,7 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 
 type ui struct {
 	wins        []*win
-	pwdWin      *win
+	promptWin   *win
 	msgWin      *win
 	menuWin     *win
 	msg         string
@@ -448,12 +448,12 @@ func newUI() *ui {
 	}()
 
 	return &ui{
-		wins:    getWins(),
-		pwdWin:  newWin(wtot, 1, 0, 0),
-		msgWin:  newWin(wtot, 1, 0, htot-1),
-		menuWin: newWin(wtot, 1, 0, htot-2),
-		keyChan: make(chan string, 1000),
-		evChan:  evChan,
+		wins:      getWins(),
+		promptWin: newWin(wtot, 1, 0, 0),
+		msgWin:    newWin(wtot, 1, 0, htot-1),
+		menuWin:   newWin(wtot, 1, 0, htot-2),
+		keyChan:   make(chan string, 1000),
+		evChan:    evChan,
 	}
 }
 
@@ -512,6 +512,39 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	ui.msg = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
+func (ui *ui) drawPromptLine(nav *nav) {
+	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+
+	dir := nav.currDir()
+
+	pwd := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
+	pwd = filepath.Clean(pwd)
+
+	var base string
+	curr, err := nav.currFile()
+	if err == nil {
+		base = filepath.Base(curr.path)
+	}
+
+	if len(gUser.Username)+len(gHostname)+len(pwd)+len(base)+3 > ui.promptWin.w {
+		sep := string(filepath.Separator)
+		names := strings.Split(pwd, sep)
+		for i, _ := range names {
+			r, _ := utf8.DecodeRuneInString(names[i])
+			names[i] = string(r)
+			if len(gUser.Username)+len(gHostname)+len(strings.Join(names, sep))+len(base)+3 <= ui.promptWin.w {
+				break
+			}
+		}
+		pwd = strings.Join(names, sep)
+	}
+
+	ui.promptWin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
+	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
+	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s/", pwd)
+	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+len(pwd)+3, 0, termbox.AttrBold|fg, bg, "%s", base)
+}
+
 func (ui *ui) drawStatLine(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
@@ -532,14 +565,7 @@ func (ui *ui) draw(nav *nav) {
 
 	termbox.Clear(fg, bg)
 
-	dir := nav.currDir()
-
-	path := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
-	path = filepath.Clean(path)
-
-	ui.pwdWin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
-	ui.pwdWin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
-	ui.pwdWin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s", path)
+	ui.drawPromptLine(nav)
 
 	length := min(len(ui.wins), len(nav.dirs))
 	woff := len(ui.wins) - length
