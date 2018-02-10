@@ -3,6 +3,7 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -339,21 +340,27 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 				if f.count == -1 {
 					d, err := os.Open(path)
 					if err != nil {
-						log.Printf("opening dir to read count: %s", err)
-						continue
+						f.count = -2
 					}
 
-					names, err := d.Readdirnames(-1)
+					names, err := d.Readdirnames(1000)
 					d.Close()
 
-					if err != nil {
-						log.Printf("reading dir count: %s", err)
-						continue
+					if names == nil && err != io.EOF {
+						f.count = -2
+					} else {
+						f.count = len(names)
 					}
-
-					f.count = len(names)
 				}
-				info = fmt.Sprintf("%s %d", info, f.count)
+
+				switch {
+				case f.count < 0:
+					info = fmt.Sprintf("%s    ?", info)
+				case f.count < 1000:
+					info = fmt.Sprintf("%s %4d", info, f.count)
+				default:
+					info = fmt.Sprintf("%s 999+", info)
+				}
 			case "time":
 				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
 			default:
