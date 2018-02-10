@@ -99,7 +99,7 @@ func (app *app) loop() {
 			curr, err := app.nav.currFile()
 			if err == nil {
 				if d.path == app.nav.currDir().path {
-					app.nav.load(curr.path)
+					app.ui.loadFile(app.nav)
 				}
 				if d.path == curr.path {
 					app.ui.dirPrev = d
@@ -107,11 +107,13 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
-		case p := <-app.ui.prevChan:
+		case r := <-app.nav.regChan:
+			app.nav.regCache[r.path] = r
+
 			curr, err := app.nav.currFile()
 			if err == nil {
-				if p.path == curr.path {
-					app.ui.regPrev = p.lines
+				if r.path == curr.path {
+					app.ui.regPrev = r
 				}
 			}
 

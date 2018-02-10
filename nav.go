@@ -1,12 +1,16 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -210,8 +214,10 @@ func (dir *dir) find(name string, height int) {
 
 type nav struct {
 	dirs     []*dir
-	dirCache map[string]*dir
 	dirChan  chan *dir
+	regChan  chan *reg
+	dirCache map[string]*dir
+	regCache map[string]*reg
 	saves    map[string]bool
 	marks    map[string]int
 	markInd  int
@@ -226,8 +232,10 @@ func newNav(height int) *nav {
 	}
 
 	nav := &nav{
-		dirCache: make(map[string]*dir),
 		dirChan:  make(chan *dir),
+		regChan:  make(chan *reg),
+		dirCache: make(map[string]*dir),
+		regCache: make(map[string]*reg),
 		marks:    make(map[string]int),
 		saves:    make(map[string]bool),
 		markInd:  0,
@@ -256,7 +264,7 @@ func (nav *nav) getDirs(wd string) {
 	var dirs []*dir
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
-		dir := nav.load(curr)
+		dir := nav.loadDir(curr)
 		dirs = append(dirs, dir)
 	}
 
@@ -302,6 +310,7 @@ func (nav *nav) renew(height int) {
 
 func (nav *nav) reload() {
 	nav.dirCache = make(map[string]*dir)
+	nav.regCache = make(map[string]*reg)
 
 	wd, err := os.Getwd()
 	if err != nil {
@@ -311,7 +320,7 @@ func (nav *nav) reload() {
 	nav.getDirs(wd)
 }
 
-func (nav *nav) load(path string) *dir {
+func (nav *nav) loadDir(path string) *dir {
 	d, ok := nav.dirCache[path]
 	if !ok {
 		go func() {
@@ -325,6 +334,72 @@ func (nav *nav) load(path string) *dir {
 		return d
 	}
 	return d
+}
+
+func (nav *nav) preview() {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	var reader io.Reader
+
+	if len(gOpts.previewer) != 0 {
+		cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
+
+		out, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+		}
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("previewing file: %s", err)
+		}
+
+		defer cmd.Wait()
+		defer out.Close()
+		reader = out
+	} else {
+		f, err := os.Open(curr.path)
+		if err != nil {
+			log.Printf("opening file: %s", err)
+		}
+
+		defer f.Close()
+		reader = f
+	}
+
+	reg := &reg{path: curr.path}
+
+	buf := bufio.NewScanner(reader)
+
+	for i := 0; i < nav.height && buf.Scan(); i++ {
+		for _, r := range buf.Text() {
+			if r == 0 {
+				reg.lines = []string{"\033[1mbinary\033[0m"}
+				nav.regChan <- reg
+				return
+			}
+		}
+		reg.lines = append(reg.lines, buf.Text())
+	}
+
+	if buf.Err() != nil {
+		log.Printf("loading file: %s", buf.Err())
+	}
+
+	nav.regChan <- reg
+}
+
+func (nav *nav) loadReg(ui *ui, path string) *reg {
+	r, ok := nav.regCache[path]
+	if !ok {
+		go nav.preview()
+		r := &reg{path: path, lines: []string{"\033[1mloading...\033[0m"}}
+		nav.regCache[path] = r
+		return r
+	}
+	return r
 }
 
 func (nav *nav) sort() {
@@ -397,7 +472,7 @@ func (nav *nav) open() error {
 
 	path := curr.path
 
-	dir := nav.load(path)
+	dir := nav.loadDir(path)
 
 	nav.dirs = append(nav.dirs, dir)
 

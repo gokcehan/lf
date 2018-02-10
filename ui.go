@@ -1,13 +1,10 @@
 package main
 
 import (
-	"bufio"
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -229,10 +226,14 @@ func (win *win) printRight(y int, fg, bg termbox.Attribute, s string) {
 	win.print(win.w-len(s), y, fg, bg, s)
 }
 
-func (win *win) printReg(reg []string) {
+func (win *win) printReg(reg *reg) {
+	if reg == nil {
+		return
+	}
+
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	for i, l := range reg {
+	for i, l := range reg.lines {
 		fg, bg = win.print(2, i, fg, bg, l)
 	}
 
@@ -379,9 +380,8 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
-	regPrev     []string
+	regPrev     *reg
 	dirPrev     *dir
-	prevChan    chan preview
 	keyChan     chan string
 	evChan      chan termbox.Event
 	menuBuf     *bytes.Buffer
@@ -441,13 +441,12 @@ func newUI() *ui {
 	}()
 
 	return &ui{
-		wins:     getWins(),
-		pwdWin:   newWin(wtot, 1, 0, 0),
-		msgWin:   newWin(wtot, 1, 0, htot-1),
-		menuWin:  newWin(wtot, 1, 0, htot-2),
-		prevChan: make(chan preview),
-		keyChan:  make(chan string, 1000),
-		evChan:   evChan,
+		wins:    getWins(),
+		pwdWin:  newWin(wtot, 1, 0, 0),
+		msgWin:  newWin(wtot, 1, 0, htot-1),
+		menuWin: newWin(wtot, 1, 0, htot-2),
+		keyChan: make(chan string, 1000),
+		evChan:  evChan,
 	}
 }
 
@@ -475,66 +474,9 @@ func (ui *ui) printf(format string, a ...interface{}) {
 	ui.print(fmt.Sprintf(format, a...))
 }
 
-type preview struct {
+type reg struct {
 	path  string
 	lines []string
-}
-
-func (ui *ui) preview(nav *nav) {
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	var reader io.Reader
-
-	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
-
-		out, err := cmd.StdoutPipe()
-		if err != nil {
-			ui.printf("previewing file: %s", err)
-		}
-
-		if err := cmd.Start(); err != nil {
-			ui.printf("previewing file: %s", err)
-		}
-
-		defer cmd.Wait()
-		defer out.Close()
-		reader = out
-	} else {
-		f, err := os.Open(curr.path)
-		if err != nil {
-			ui.printf("opening file: %s", err)
-		}
-
-		defer f.Close()
-		reader = f
-	}
-
-	var prev preview
-
-	prev.path = curr.path
-
-	buf := bufio.NewScanner(reader)
-
-	for i := 0; i < nav.height && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
-			if r == 0 {
-				prev.lines = []string{"\033[1mbinary\033[0m"}
-				ui.prevChan <- prev
-				return
-			}
-		}
-		prev.lines = append(prev.lines, buf.Text())
-	}
-
-	if buf.Err() != nil {
-		ui.printf("loading file: %s", buf.Err())
-	}
-
-	ui.prevChan <- prev
 }
 
 func (ui *ui) loadFile(nav *nav) {
@@ -548,10 +490,9 @@ func (ui *ui) loadFile(nav *nav) {
 	}
 
 	if curr.IsDir() {
-		ui.dirPrev = nav.load(curr.path)
+		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = []string{"\033[1mloading...\033[0m"}
-		go ui.preview(nav)
+		ui.regPrev = nav.loadReg(ui, curr.path)
 	}
 }
 
