@@ -7,6 +7,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"runtime"
 	"runtime/pprof"
 )
 
@@ -59,7 +60,12 @@ func main() {
 	cpuprofile := flag.String(
 		"cpuprofile",
 		"",
-		"path to the file to write the cpu profile")
+		"path to the file to write the CPU profile")
+
+	memprofile := flag.String(
+		"memprofile",
+		"",
+		"path to the file to write the memory profile")
 
 	flag.StringVar(&gLastDirPath,
 		"last-dir-path",
@@ -124,5 +130,17 @@ func main() {
 		}
 
 		run()
+	}
+
+	if *memprofile != "" {
+		f, err := os.Create(*memprofile)
+		if err != nil {
+			log.Fatal("could not create memory profile: ", err)
+		}
+		runtime.GC()
+		if err := pprof.WriteHeapProfile(f); err != nil {
+			log.Fatal("could not write memory profile: ", err)
+		}
+		f.Close()
 	}
 }
