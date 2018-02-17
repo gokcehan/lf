@@ -88,7 +88,7 @@ The following options can be used to customize the behavior of lf:
     filesep     string   (default "\n")
     ifs         string   (default '') (not exported if empty)
     previewer   string   (default '') (not filtered if empty)
-    shell       string   (default '/bin/sh')
+    shell       string   (default 'sh')
     sortby      string   (default 'natural')
     timefmt     string   (default 'Mon Jan _2 15:04:05 2006')
     ratios      string   (default '1:2:3')

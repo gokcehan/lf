@@ -1,5 +1,5 @@
 # interpreter for shell commands (needs to be POSIX compatible)
-set shell /bin/sh
+set shell sh
 
 # set internal field separator (IFS) to "\n" for shell commands
 # This is useful to automatically split file names in $fs and $fx properly

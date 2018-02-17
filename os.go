@@ -12,7 +12,7 @@ import (
 )
 
 var (
-	gDefaultShell      = "/bin/sh"
+	gDefaultShell      = "sh"
 	gDefaultSocketProt = "unix"
 	gDefaultSocketPath string
 )
