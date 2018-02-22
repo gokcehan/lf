@@ -81,6 +81,7 @@ var (
 		"filesep",
 		"ifs",
 		"previewer",
+		"promptfmt",
 		"shell",
 		"sortby",
 		"timefmt",

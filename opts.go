@@ -17,6 +17,7 @@ var gOpts struct {
 	filesep    string
 	ifs        string
 	previewer  string
+	promptfmt  string
 	shell      string
 	sortby     string
 	timefmt    string
@@ -40,6 +41,7 @@ func init() {
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.filesep = "\n"
+	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m"
 	gOpts.shell = gDefaultShell
 	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC

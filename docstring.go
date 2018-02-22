@@ -88,6 +88,7 @@ The following options can be used to customize the behavior of lf:
     filesep     string   (default "\n")
     ifs         string   (default '') (not exported if empty)
     previewer   string   (default '') (not filtered if empty)
+    promptfmt   string   (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
     shell       string   (default 'sh')
     sortby      string   (default 'natural')
     timefmt     string   (default 'Mon Jan _2 15:04:05 2006')

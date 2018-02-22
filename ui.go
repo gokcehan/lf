@@ -180,6 +180,34 @@ func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, term
 	return fg, bg
 }
 
+func printLength(s string) int {
+	ind := 0
+	off := 0
+	for i := 0; i < len(s); i++ {
+		r, w := utf8.DecodeRuneInString(s[i:])
+
+		if r == gEscapeCode && i+1 < len(s) && s[i+1] == '[' {
+			j := strings.IndexByte(s[i:min(len(s), i+32)], 'm')
+			if j == -1 {
+				continue
+			}
+
+			i += j
+			continue
+		}
+
+		i += w - 1
+
+		if r == '\t' {
+			ind += gOpts.tabstop - (ind-off)%gOpts.tabstop
+		} else {
+			ind += runewidth.RuneWidth(r)
+		}
+	}
+
+	return ind
+}
+
 func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Attribute, termbox.Attribute) {
 	off := x
 	for i := 0; i < len(s); i++ {
@@ -520,29 +548,34 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	pwd := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
 	pwd = filepath.Clean(pwd)
 
-	var base string
+	var fname string
 	curr, err := nav.currFile()
 	if err == nil {
-		base = filepath.Base(curr.path)
+		fname = filepath.Base(curr.path)
 	}
 
-	if len(gUser.Username)+len(gHostname)+len(pwd)+len(base)+3 > ui.promptWin.w {
+	var prompt string
+
+	prompt = strings.Replace(gOpts.promptfmt, "%u", gUser.Username, -1)
+	prompt = strings.Replace(prompt, "%h", gHostname, -1)
+	prompt = strings.Replace(prompt, "%f", fname, -1)
+
+	if printLength(strings.Replace(prompt, "%w", pwd, -1)) > ui.promptWin.w {
 		sep := string(filepath.Separator)
 		names := strings.Split(pwd, sep)
 		for i, _ := range names {
 			r, _ := utf8.DecodeRuneInString(names[i])
 			names[i] = string(r)
-			if len(gUser.Username)+len(gHostname)+len(strings.Join(names, sep))+len(base)+3 <= ui.promptWin.w {
+			if printLength(strings.Replace(prompt, "%w", strings.Join(names, sep), -1)) <= ui.promptWin.w {
 				break
 			}
 		}
 		pwd = strings.Join(names, sep)
 	}
 
-	ui.promptWin.printf(0, 0, termbox.AttrBold|termbox.ColorGreen, bg, "%s@%s", gUser.Username, gHostname)
-	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+1, 0, fg, bg, ":")
-	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+2, 0, termbox.AttrBold|termbox.ColorBlue, bg, "%s/", pwd)
-	ui.promptWin.printf(len(gUser.Username)+len(gHostname)+len(pwd)+3, 0, termbox.AttrBold|fg, bg, "%s", base)
+	prompt = strings.Replace(prompt, "%w", pwd, -1)
+
+	ui.promptWin.print(0, 0, fg, bg, prompt)
 }
 
 func (ui *ui) drawStatLine(nav *nav) {
