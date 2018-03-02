@@ -9,6 +9,13 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"runtime"
+)
+
+var (
+	envEditor = os.Getenv("EDITOR")
+	envPager  = os.Getenv("PAGER")
+	envShell  = os.Getenv("SHELL")
 )
 
 var (
@@ -83,6 +90,32 @@ func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
 	args = append(args, dir.path)
 
 	return exec.Command(sh, args...)
+}
+
+func setDefaults() {
+	if envEditor == "" {
+		gOpts.keys["e"] = &execExpr{"$", `vi "$f"`}
+	} else {
+		gOpts.keys["e"] = &execExpr{"$", envEditor + ` "$f"`}
+	}
+
+	if envPager == "" {
+		gOpts.keys["i"] = &execExpr{"$", `less "$f"`}
+	} else {
+		gOpts.keys["i"] = &execExpr{"$", envPager + ` "$f"`}
+	}
+
+	if envShell == "" {
+		gOpts.keys["w"] = &execExpr{"$", "sh"}
+	} else {
+		gOpts.keys["w"] = &execExpr{"$", envShell}
+	}
+
+	if runtime.GOOS == "darwin" {
+		gOpts.cmds["open-file"] = &execExpr{"&", `open "$f"`}
+	} else {
+		gOpts.cmds["open-file"] = &execExpr{"&", `xdg-open "$f"`}
+	}
 }
 
 func moveCursor(y, x int) {

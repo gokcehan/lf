@@ -85,6 +85,17 @@ func init() {
 	gOpts.keys["<c-n>"] = &callExpr{"cmd-hist-next", nil}
 	gOpts.keys["<c-p>"] = &callExpr{"cmd-hist-prev", nil}
 
+	gOpts.keys["zh"] = &setExpr{"hidden!", ""}
+	gOpts.keys["zr"] = &setExpr{"reverse!", ""}
+	gOpts.keys["zn"] = &setExpr{"info", ""}
+	gOpts.keys["zs"] = &setExpr{"info", "size"}
+	gOpts.keys["zt"] = &setExpr{"info", "time"}
+	gOpts.keys["za"] = &setExpr{"info", "size:time"}
+	gOpts.keys["sn"] = &listExpr{[]expr{&setExpr{"sortby", "natural"}, &setExpr{"info", ""}}}
+	gOpts.keys["ss"] = &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}
+	gOpts.keys["st"] = &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}}
+	gOpts.keys["gh"] = &callExpr{"cd", []string{"~"}}
+
 	gOpts.cmdkeys = make(map[string]expr)
 
 	// TODO: rest of the keys
@@ -114,4 +125,6 @@ func init() {
 	gOpts.cmdkeys["<c-t>"] = &callExpr{"cmd-transpose", nil}
 
 	gOpts.cmds = make(map[string]expr)
+
+	setDefaults()
 }

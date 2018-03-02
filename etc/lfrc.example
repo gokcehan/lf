@@ -11,35 +11,8 @@ set ifs "\n"
 # leave some space at the top and the bottom of the screen
 set scrolloff 10
 
-# toggle options
-map zp set preview!
-map zh set hidden!
-
-# select what information to show
-map zn set info
-map zs set info size
-map zt set info time
-map za set info size:time
-
-# sort files and show the corresponding info
-map sn :set sortby natural; set info
-map ss :set sortby size; set info size
-map st :set sortby time; set info time
-
-# common directories
-map gh cd ~
-map gr cd /
-
 # use enter for shell commands
 map <enter> read-shell
-
-# mappings for pager and editor (change as you like)
-map i $less $f
-map e $vi $f
-
-# mapping to spawn a shell in working directory
-# (see also etc/lfcd.sh as an alternative workflow)
-map w $$SHELL
 
 # execute current file (must be executable)
 map x $$f

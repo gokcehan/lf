@@ -98,6 +98,31 @@ The following variables are exported for shell commands:
     $fx  current file or marked file(s) if any
     $id  id number of the client
 
+The following additional keybindings are provided by default:
+
+    map zh set hidden!
+    map zr set reverse!
+    map zn set info
+    map zs set info size
+    map zt set info time
+    map za set info size:time
+    map sn :set sortby natural; set info
+    map ss :set sortby size; set info size
+    map st :set sortby time; set info time
+    map gh cd ~
+
+The following keybindings to applications are provided by default on unix:
+
+    map e $$EDITOR $f ('vi' if empty)
+    map i $$PAGER $f  ('less' if empty)
+    map w $$SHELL     ('sh' if empty)
+
+The following keybindings to applications are provided by default on windows:
+
+    map e $notepad "%f%"
+    map i $more "%f%"
+    map w $cmd
+
 Configuration
 
 The configuration file should be located at:
@@ -390,11 +415,15 @@ You may want to use either file extensions or mime types from 'file' command:
         esac
     }}
 
-lf does not come bundled with a file opener. You can use any of the existing
-file openers as you like. Possible options are 'open' (for Mac OS X only),
-'xdg-utils' (executable name is 'xdg-open'), 'libfile-mimeinfo-perl'
-(executable name is 'mimeopen'), 'rifle' (ranger's default file opener), or
-'mimeo' to name a few.
+Following commands are provided by default:
+
+    cmd open-file &start "" "%f%"  # windows
+    cmd open-file &open "$f"       # mac
+    cmd open-file &xdg-open "$f"   # others
+
+You may also use any other existing file openers as you like. Possible options
+are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's
+default file opener), or 'mimeo' to name a few.
 
 Previewing Files
 

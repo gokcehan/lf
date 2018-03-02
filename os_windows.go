@@ -69,6 +69,13 @@ func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
 	return exec.Command(sh, args...)
 }
 
+func setDefaults() {
+	gOpts.keys["e"] = &execExpr{"$", `notepad "%f%"`}
+	gOpts.keys["i"] = &execExpr{"$", `more "%f%"`}
+	gOpts.keys["w"] = &execExpr{"$", "cmd"}
+	gOpts.cmds["open-file"] = &execExpr{"&", `start "" "%f%"`}
+}
+
 func moveCursor(y, x int) {
 	// TODO: implement
 	return
