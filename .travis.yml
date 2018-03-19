@@ -1,7 +1,7 @@
 language: go
 install:
   - go get github.com/nsf/termbox-go
-script:
+before_deploy:
   - gen/xbuild.sh
 deploy:
   provider: releases
