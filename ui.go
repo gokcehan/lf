@@ -225,11 +225,9 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Att
 			continue
 		}
 
-		if x >= win.w {
-			break
+		if x < win.w {
+			termbox.SetCell(win.x+x, win.y+y, r, fg, bg)
 		}
-
-		termbox.SetCell(win.x+x, win.y+y, r, fg, bg)
 
 		i += w - 1
 
