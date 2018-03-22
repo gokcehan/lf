@@ -580,7 +580,9 @@ func (nav *nav) put() error {
 		return fmt.Errorf("putting files: %s", err)
 	}
 
-	saveFiles(nil, false)
+	if err := saveFiles(nil, false); err != nil {
+		return fmt.Errorf("clearing yank/delete buffer: %s", err)
+	}
 
 	return nil
 }

@@ -12,7 +12,7 @@ import (
 var (
 	gCopyFile bool
 	gFileList []string
-	gConnList map[int]net.Conn = make(map[int]net.Conn)
+	gConnList = make(map[int]net.Conn)
 )
 
 func serve() {

@@ -563,7 +563,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	if printLength(strings.Replace(prompt, "%w", pwd, -1)) > ui.promptWin.w {
 		sep := string(filepath.Separator)
 		names := strings.Split(pwd, sep)
-		for i, _ := range names {
+		for i := range names {
 			r, _ := utf8.DecodeRuneInString(names[i])
 			names[i] = string(r)
 			if printLength(strings.Replace(prompt, "%w", strings.Join(names, sep), -1)) <= ui.promptWin.w {
