@@ -197,7 +197,7 @@ func (dir *dir) find(name string, height int) {
 		return
 	}
 
-	dir.ind = max(0, min(dir.ind, len(dir.fi)-1))
+	dir.ind = min(dir.ind, len(dir.fi)-1)
 
 	if dir.fi[dir.ind].Name() != name {
 		for i, f := range dir.fi {
@@ -248,11 +248,6 @@ func newNav(height int) *nav {
 }
 
 func (nav *nav) position() {
-	curr, err := nav.currFile()
-	if err == nil {
-		nav.dirs[len(nav.dirs)-1].find(filepath.Base(curr.path), nav.height)
-	}
-
 	path := nav.currDir().path
 	for i := len(nav.dirs) - 2; i >= 0; i-- {
 		nav.dirs[i].find(filepath.Base(path), nav.height)
@@ -317,7 +312,12 @@ func (nav *nav) reload() {
 		log.Printf("getting current directory: %s", err)
 	}
 
+	curr, err := nav.currFile()
 	nav.getDirs(wd)
+	if err == nil {
+		last := nav.dirs[len(nav.dirs)-1]
+		last.fi = append(last.fi, curr)
+	}
 }
 
 func (nav *nav) loadDir(path string) *dir {
