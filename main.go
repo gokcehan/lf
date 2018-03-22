@@ -24,6 +24,7 @@ var (
 	gSocketPath    string
 	gLogPath       string
 	gServerLogPath string
+	gVersion       string
 )
 
 func init() {
@@ -46,6 +47,11 @@ func main() {
 		"doc",
 		false,
 		"show documentation")
+
+	showVersion := flag.Bool(
+		"version",
+		false,
+		"show version")
 
 	remoteCmd := flag.String(
 		"remote",
@@ -109,6 +115,8 @@ func main() {
 	switch {
 	case *showDoc:
 		fmt.Print(genDocString)
+	case *showVersion:
+		fmt.Println(gVersion)
 	case *remoteCmd != "":
 		if err := sendRemote(*remoteCmd); err != nil {
 			log.Fatalf("remote command: %s", err)
