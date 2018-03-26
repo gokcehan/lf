@@ -346,6 +346,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = ":"
 	case "read-shell":
 		app.ui.cmdPrefix = "$"
+	case "read-shell-pipe":
+		app.ui.cmdPrefix = "%"
 	case "read-shell-wait":
 		app.ui.cmdPrefix = "!"
 	case "read-shell-async":
@@ -434,13 +436,18 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "$":
 			log.Printf("shell: %s", s)
-			app.runShell(s, nil, false, false)
+			app.runShell(s, nil, app.ui.cmdPrefix)
+		case "%":
+			log.Printf("shell-pipe: %s", s)
+			app.runShell(s, nil, app.ui.cmdPrefix)
+			app.cmdHist = append(app.cmdHist, cmdItem{"%", s})
+			return
 		case "!":
 			log.Printf("shell-wait: %s", s)
-			app.runShell(s, nil, true, false)
+			app.runShell(s, nil, app.ui.cmdPrefix)
 		case "&":
 			log.Printf("shell-async: %s", s)
-			app.runShell(s, nil, false, true)
+			app.runShell(s, nil, app.ui.cmdPrefix)
 		case "/":
 			log.Printf("search: %s", s)
 			app.nav.search = s
@@ -548,19 +555,16 @@ func (e *execExpr) eval(app *app, args []string) {
 	switch e.prefix {
 	case "$":
 		log.Printf("shell: %s -- %s", e, args)
-		app.runShell(e.value, args, false, false)
+		app.runShell(e.value, args, e.prefix)
+	case "%":
+		log.Printf("shell-pipe: %s -- %s", e, args)
+		app.runShell(e.value, args, e.prefix)
 	case "!":
 		log.Printf("shell-wait: %s -- %s", e, args)
-		app.runShell(e.value, args, true, false)
+		app.runShell(e.value, args, e.prefix)
 	case "&":
 		log.Printf("shell-async: %s -- %s", e, args)
-		app.runShell(e.value, args, false, true)
-	case "/":
-		log.Printf("search: %s -- %s", e, args)
-		// TODO: implement
-	case "?":
-		log.Printf("search-back: %s -- %s", e, args)
-		// TODO: implement
+		app.runShell(e.value, args, e.prefix)
 	default:
 		log.Printf("evaluating unknown execution prefix: %q", e.prefix)
 	}

@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -168,18 +170,19 @@ func waitKey() error {
 
 // This function is used to run a command in shell. Following modes are used:
 //
-// Prefix  Wait  Async  Stdin/Stdout/Stderr  UI action
-// $       No    No     Yes                  Pause and then resume
-// !       Yes   No     Yes                  Pause and then resume
-// &       No    Yes    No                   Do nothing
-//
-// Waiting async commands are not used for now.
-func (app *app) runShell(s string, args []string, wait bool, async bool) {
+// Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
+// $       No    No     Yes    Yes     Yes     Pause and then resume
+// %       No    No     No     Yes     Yes     Display output in statline
+// !       Yes   No     Yes    Yes     Yes     Pause and then resume
+// &       No    Yes    No     No      No      Do nothing
+func (app *app) runShell(s string, args []string, prefix string) {
 	app.exportVars()
 
 	cmd := shellCommand(s, args)
 
-	if !async {
+	var out io.Reader
+	switch prefix {
+	case "$", "!":
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
@@ -187,25 +190,51 @@ func (app *app) runShell(s string, args []string, wait bool, async bool) {
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew(app.ui.wins[0].h)
+	case "%":
+		stdout, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Printf("reading stdout: %s", err)
+		}
+		stderr, err := cmd.StderrPipe()
+		if err != nil {
+			log.Printf("reading stderr: %s", err)
+		}
+		out = io.MultiReader(stdout, stderr)
+		defer app.nav.renew(app.ui.wins[0].h)
 	}
 
 	var err error
-	if async {
-		err = cmd.Start()
-	} else {
+	switch prefix {
+	case "$", "!":
 		err = cmd.Run()
+	case "%", "&":
+		err = cmd.Start()
 	}
 
 	if err != nil {
 		app.ui.printf("running shell: %s", err)
 	}
 
-	if wait {
+	switch prefix {
+	case "!":
 		if err := waitKey(); err != nil {
-			app.ui.printf("waiting shell: %s", err)
+			app.ui.printf("waiting key: %s", err)
 		}
 	}
 
 	app.ui.loadFile(app.nav)
 	app.ui.loadFileInfo(app.nav)
+
+	switch prefix {
+	case "%":
+		app.ui.cmdPrefix = ""
+		scanner := bufio.NewScanner(out)
+		for scanner.Scan() {
+			app.ui.msg = scanner.Text()
+			app.ui.draw(app.nav)
+		}
+		if err := cmd.Wait(); err != nil {
+			log.Printf("running shell: %s", err)
+		}
+	}
 }

@@ -36,6 +36,7 @@ var (
 		"reload",
 		"read",
 		"read-shell",
+		"read-shell-pipe",
 		"read-shell-wait",
 		"read-shell-async",
 		"search",

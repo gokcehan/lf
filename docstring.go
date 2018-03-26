@@ -38,6 +38,7 @@ The following commands are provided by lf with default keybindings:
     reload            (default '<c-r>')
     read              (default ':')
     read-shell        (default '$')
+    read-shell-pipe   (default '%')
     read-shell-wait   (default '!')
     read-shell-async  (default '&')
     search            (default '/')
@@ -150,6 +151,7 @@ The following command prefixes are used by lf:
 
     :  read (default)    builtin/custom command
     $  read-shell        shell command
+    %  read-shell-pipe   shell command displaying the output
     !  read-shell-wait   shell command waiting for key press
     &  read-shell-async  asynchronous shell command
     /  search            search file in current directory

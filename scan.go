@@ -15,7 +15,7 @@ const (
 	// no explicit keyword type
 	tokenIdent     // e.g. set, ratios, 1:2:3
 	tokenColon     // :
-	tokenPrefix    // $, !, &, / or ?
+	tokenPrefix    // $, %, !, &
 	tokenLBraces   // {{
 	tokenRBraces   // }}
 	tokenCommand   // in between a prefix to \n or between {{ and }}
@@ -90,8 +90,7 @@ func isDigit(b byte) bool {
 }
 
 func isPrefix(b byte) bool {
-	// TODO: how to differentiate slash in path vs search?
-	return b == '$' || b == '!' || b == '&' // || b == '/' || b == '?'
+	return b == '$' || b == '%' || b == '!' || b == '&'
 }
 
 func (s *scanner) scan() bool {

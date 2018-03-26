@@ -76,6 +76,7 @@ func init() {
 	gOpts.keys["<c-r>"] = &callExpr{"reload", nil}
 	gOpts.keys[":"] = &callExpr{"read", nil}
 	gOpts.keys["$"] = &callExpr{"read-shell", nil}
+	gOpts.keys["%"] = &callExpr{"read-shell-pipe", nil}
 	gOpts.keys["!"] = &callExpr{"read-shell-wait", nil}
 	gOpts.keys["&"] = &callExpr{"read-shell-async", nil}
 	gOpts.keys["/"] = &callExpr{"search", nil}
