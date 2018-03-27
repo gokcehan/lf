@@ -344,13 +344,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.reload()
 	case "read":
 		app.ui.cmdPrefix = ":"
-	case "read-shell":
+	case "shell":
 		app.ui.cmdPrefix = "$"
-	case "read-shell-pipe":
+	case "shell-pipe":
 		app.ui.cmdPrefix = "%"
-	case "read-shell-wait":
+	case "shell-wait":
 		app.ui.cmdPrefix = "!"
-	case "read-shell-async":
+	case "shell-async":
 		app.ui.cmdPrefix = "&"
 	case "search":
 		app.ui.cmdPrefix = "/"

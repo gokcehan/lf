@@ -12,35 +12,35 @@ Reference
 
 The following commands are provided by lf with default keybindings:
 
-    up                (default 'k' and '<up>')
-    half-up           (default '<c-u>')
-    page-up           (default '<c-b>')
-    down              (default 'j' and '<down>')
-    half-down         (default '<c-d>')
-    page-down         (default '<c-f>')
-    updir             (default 'h' and '<left>')
-    open              (default 'l' and '<right>')
-    quit              (default 'q')
-    top               (default 'gg')
-    bot               (default 'G')
-    toggle            (default '<space>')
-    invert            (default 'v')
-    unmark            (default 'u')
-    yank              (default 'y')
-    delete            (default 'd')
-    put               (default 'p')
-    clear             (default 'c')
-    redraw            (default '<c-l>')
-    reload            (default '<c-r>')
-    read              (default ':')
-    read-shell        (default '$')
-    read-shell-pipe   (default '%')
-    read-shell-wait   (default '!')
-    read-shell-async  (default '&')
-    search            (default '/')
-    search-back       (default '?')
-    search-next       (default 'n')
-    search-prev       (default 'N')
+    up           (default 'k' and '<up>')
+    half-up      (default '<c-u>')
+    page-up      (default '<c-b>')
+    down         (default 'j' and '<down>')
+    half-down    (default '<c-d>')
+    page-down    (default '<c-f>')
+    updir        (default 'h' and '<left>')
+    open         (default 'l' and '<right>')
+    quit         (default 'q')
+    top          (default 'gg')
+    bot          (default 'G')
+    toggle       (default '<space>')
+    invert       (default 'v')
+    unmark       (default 'u')
+    yank         (default 'y')
+    delete       (default 'd')
+    put          (default 'p')
+    clear        (default 'c')
+    redraw       (default '<c-l>')
+    reload       (default '<c-r>')
+    read         (default ':')
+    shell        (default '$')
+    shell-pipe   (default '%')
+    shell-wait   (default '!')
+    shell-async  (default '&')
+    search       (default '/')
+    search-back  (default '?')
+    search-next  (default 'n')
+    search-prev  (default 'N')
 
 The following commands are provided by lf without default keybindings:
 
@@ -143,13 +143,13 @@ Prefixes
 
 The following command prefixes are used by lf:
 
-    :  read (default)    builtin/custom command
-    $  read-shell        shell command
-    %  read-shell-pipe   shell command displaying the output
-    !  read-shell-wait   shell command waiting for key press
-    &  read-shell-async  asynchronous shell command
-    /  search            search file in current directory
-    ?  search-back       search file in the reverse order
+    :  read (default)  builtin/custom command
+    $  shell           shell command
+    %  shell-pipe      shell command displaying the output
+    !  shell-wait      shell command waiting for key press
+    &  shell-async     asynchronous shell command
+    /  search          search file in current directory
+    ?  search-back     search file in the reverse order
 
 The same evaluator is used for the command line and the configuration file. The
 difference is that prefixes are not necessary in the command line. Instead

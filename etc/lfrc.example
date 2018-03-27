@@ -12,7 +12,7 @@ set ifs "\n"
 set scrolloff 10
 
 # use enter for shell commands
-map <enter> read-shell
+map <enter> shell
 
 # execute current file (must be executable)
 map x $$f

@@ -75,10 +75,10 @@ func init() {
 	gOpts.keys["<c-l>"] = &callExpr{"redraw", nil}
 	gOpts.keys["<c-r>"] = &callExpr{"reload", nil}
 	gOpts.keys[":"] = &callExpr{"read", nil}
-	gOpts.keys["$"] = &callExpr{"read-shell", nil}
-	gOpts.keys["%"] = &callExpr{"read-shell-pipe", nil}
-	gOpts.keys["!"] = &callExpr{"read-shell-wait", nil}
-	gOpts.keys["&"] = &callExpr{"read-shell-async", nil}
+	gOpts.keys["$"] = &callExpr{"shell", nil}
+	gOpts.keys["%"] = &callExpr{"shell-pipe", nil}
+	gOpts.keys["!"] = &callExpr{"shell-wait", nil}
+	gOpts.keys["&"] = &callExpr{"shell-async", nil}
 	gOpts.keys["/"] = &callExpr{"search", nil}
 	gOpts.keys["?"] = &callExpr{"search-back", nil}
 	gOpts.keys["n"] = &callExpr{"search-next", nil}
