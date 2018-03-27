@@ -387,6 +387,17 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+	case "select":
+		if len(e.args) != 1 {
+			app.ui.print("select: requires an argument")
+			return
+		}
+		if err := app.nav.find(e.args[0]); err != nil {
+			app.ui.printf("%s", err)
+			return
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "push":
 		if len(e.args) > 0 {
 			log.Println("pushing keys", e.args[0])

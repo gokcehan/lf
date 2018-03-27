@@ -46,6 +46,7 @@ var (
 		"sync",
 		"echo",
 		"cd",
+		"select",
 		"push",
 	}
 

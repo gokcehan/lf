@@ -260,6 +260,7 @@ func (nav *nav) getDirs(wd string) {
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := nav.loadDir(curr)
+		dir.find(base, nav.height)
 		dirs = append(dirs, dir)
 	}
 
@@ -614,6 +615,30 @@ func (nav *nav) cd(wd string) error {
 	}
 
 	nav.getDirs(wd)
+
+	return nil
+}
+
+func (nav *nav) find(path string) error {
+	lstat, err := os.Stat(path)
+	if err != nil {
+		return fmt.Errorf("select: %s", err)
+	}
+
+	dir := filepath.Dir(path)
+
+	if err := nav.cd(dir); err != nil {
+		return fmt.Errorf("select: %s", err)
+	}
+
+	base := filepath.Base(path)
+
+	last := nav.dirs[len(nav.dirs)-1]
+	if last.loading {
+		last.fi = append(last.fi, &file{FileInfo: lstat})
+	} else {
+		last.find(base, nav.height)
+	}
 
 	return nil
 }
