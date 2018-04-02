@@ -296,28 +296,32 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 	end := min(beg+win.h, maxind+1)
 
 	for i, f := range dir.fi[beg:end] {
-		switch {
-		case f.linkState == working:
-			fg = termbox.ColorCyan
-			if f.Mode().IsDir() {
-				fg |= termbox.AttrBold
+		if gOpts.lscolors {
+			fg, bg = lsColors.getColors(f)
+		} else {
+			switch {
+			case f.linkState == working:
+				fg = termbox.ColorCyan
+				if f.Mode().IsDir() {
+					fg |= termbox.AttrBold
+				}
+			case f.linkState == broken:
+				fg = termbox.ColorMagenta
+			case f.Mode().IsRegular():
+				if f.Mode()&0111 != 0 {
+					fg = termbox.AttrBold | termbox.ColorGreen
+				} else {
+					fg = termbox.ColorDefault
+				}
+			case f.Mode().IsDir():
+				fg = termbox.AttrBold | termbox.ColorBlue
+			case f.Mode()&os.ModeNamedPipe != 0:
+				fg = termbox.ColorRed
+			case f.Mode()&os.ModeSocket != 0:
+				fg = termbox.ColorYellow
+			case f.Mode()&os.ModeDevice != 0:
+				fg = termbox.ColorWhite
 			}
-		case f.linkState == broken:
-			fg = termbox.ColorMagenta
-		case f.Mode().IsRegular():
-			if f.Mode()&0111 != 0 {
-				fg = termbox.AttrBold | termbox.ColorGreen
-			} else {
-				fg = termbox.ColorDefault
-			}
-		case f.Mode().IsDir():
-			fg = termbox.AttrBold | termbox.ColorBlue
-		case f.Mode()&os.ModeNamedPipe != 0:
-			fg = termbox.ColorRed
-		case f.Mode()&os.ModeSocket != 0:
-			fg = termbox.ColorYellow
-		case f.Mode()&os.ModeDevice != 0:
-			fg = termbox.ColorWhite
 		}
 
 		path := filepath.Join(dir.path, f.Name())

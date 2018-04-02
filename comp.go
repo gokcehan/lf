@@ -62,6 +62,8 @@ var (
 		"nohidden",
 		"hidden!",
 		"ignorecase",
+		"lscolors",
+		"nolscolors",
 		"noignorecase",
 		"ignorecase!",
 		"preview",
