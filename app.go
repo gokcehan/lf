@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
 	"strings"
 )
@@ -19,6 +20,7 @@ type app struct {
 	ui         *ui
 	nav        *nav
 	quitChan   chan bool
+	cmd        *exec.Cmd
 	cmdIn      io.WriteCloser
 	cmdHist    []cmdItem
 	cmdHistInd int
@@ -230,6 +232,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	switch prefix {
 	case "%":
 		go func() {
+			app.cmd = cmd
 			app.ui.msg = ""
 			app.ui.cmdPrefix = ">"
 
@@ -252,6 +255,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 				log.Printf("running shell: %s", err)
 			}
 			app.nav.renew(app.ui.wins[0].h)
+			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.draw(app.nav)
 		}()

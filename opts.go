@@ -124,6 +124,7 @@ func init() {
 	gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-word", nil}
 	gOpts.cmdkeys["<c-y>"] = &callExpr{"cmd-put", nil}
 	gOpts.cmdkeys["<c-t>"] = &callExpr{"cmd-transpose", nil}
+	gOpts.cmdkeys["<c-c>"] = &callExpr{"cmd-interrupt", nil}
 
 	gOpts.cmds = make(map[string]expr)
 

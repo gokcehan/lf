@@ -559,6 +559,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(app.ui.cmdAccLeft) > 1 {
 			app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
 		}
+	case "cmd-interrupt":
+		if app.cmd != nil {
+			app.cmd.Process.Kill()
+		}
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

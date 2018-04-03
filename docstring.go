@@ -73,6 +73,7 @@ keybindings:
     cmd-delete-word   (default '<c-w>')
     cmd-put           (default '<c-y>')
     cmd-transpose     (default '<c-t>')
+    cmd-interrupt     (default '<c-c>')
 
 The following options can be used to customize the behavior of lf:
 
