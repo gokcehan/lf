@@ -297,7 +297,7 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 
 	for i, f := range dir.fi[beg:end] {
 		if gOpts.lscolors {
-			fg, bg = lsColors.getColors(f)
+			fg, bg = gColors.getColors(f)
 		} else {
 			switch {
 			case f.linkState == working:

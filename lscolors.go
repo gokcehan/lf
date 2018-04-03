@@ -11,11 +11,11 @@ import (
 
 func init() {
 	if lscolors := os.Getenv("LSCOLORS"); lscolors != "" {
-		lsColors.parseBSD(lscolors)
+		gColors.parseBSD(lscolors)
 		gOpts.lscolors = true
 	}
 	if ls_colors := os.Getenv("LS_COLORS"); ls_colors != "" {
-		lsColors.parseLinux(ls_colors)
+		gColors.parseLinux(ls_colors)
 		gOpts.lscolors = true
 	}
 }
@@ -27,7 +27,7 @@ type lsColorsEntry struct {
 
 type lsColorsT map[string]lsColorsEntry
 
-var lsColors = make(lsColorsT)
+var gColors = make(lsColorsT)
 
 // This function parses LS_COLORS environment variable
 func (lsc lsColorsT) parseLinux(env string) {
