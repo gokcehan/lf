@@ -1,6 +1,7 @@
 package main
 
 import (
+	"io"
 	"log"
 	"os"
 	"strconv"
@@ -410,6 +411,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(e.args[0])...)
 		}
 	case "cmd-escape":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
@@ -452,6 +456,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("shell-pipe: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
 			app.cmdHist = append(app.cmdHist, cmdItem{"%", s})
+			return
+		case ">":
+			io.WriteString(app.cmdIn, s+"\n")
 			return
 		case "!":
 			log.Printf("shell-wait: %s", s)

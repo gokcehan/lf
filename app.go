@@ -19,6 +19,7 @@ type app struct {
 	ui         *ui
 	nav        *nav
 	quitChan   chan bool
+	cmdIn      io.WriteCloser
 	cmdHist    []cmdItem
 	cmdHistInd int
 }
@@ -191,16 +192,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		defer app.ui.resume()
 		defer app.nav.renew(app.ui.wins[0].h)
 	case "%":
+		stdin, err := cmd.StdinPipe()
+		if err != nil {
+			log.Printf("writing stdin: %s", err)
+		}
+		app.cmdIn = stdin
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Printf("reading stdout: %s", err)
 		}
-		stderr, err := cmd.StderrPipe()
-		if err != nil {
-			log.Printf("reading stderr: %s", err)
-		}
-		out = io.MultiReader(stdout, stderr)
-		defer app.nav.renew(app.ui.wins[0].h)
+		out = stdout
+		cmd.Stderr = cmd.Stdout
 	}
 
 	var err error
@@ -227,14 +229,31 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "%":
-		app.ui.cmdPrefix = ""
-		scanner := bufio.NewScanner(out)
-		for scanner.Scan() {
-			app.ui.msg = scanner.Text()
+		go func() {
+			app.ui.msg = ""
+			app.ui.cmdPrefix = ">"
+
+			reader := bufio.NewReader(out)
+			var buf []byte
+			for {
+				b, err := reader.ReadByte()
+				if err == io.EOF {
+					break
+				}
+				buf = append(buf, b)
+				app.ui.msg = string(buf)
+				app.ui.draw(app.nav)
+				if b == '\n' {
+					buf = nil
+				}
+			}
+
+			if err := cmd.Wait(); err != nil {
+				log.Printf("running shell: %s", err)
+			}
+			app.nav.renew(app.ui.wins[0].h)
+			app.ui.cmdPrefix = ""
 			app.ui.draw(app.nav)
-		}
-		if err := cmd.Wait(); err != nil {
-			log.Printf("running shell: %s", err)
-		}
+		}()
 	}
 }

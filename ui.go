@@ -611,14 +611,21 @@ func (ui *ui) draw(nav *nav) {
 		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.marks, nav.saves)
 	}
 
-	if ui.cmdPrefix != "" {
+	switch ui.cmdPrefix {
+	case "":
+		ui.drawStatLine(nav)
+		termbox.HideCursor()
+	case ">":
+		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
+		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, ui.msg)
+		ui.msgWin.print(len(ui.cmdPrefix)+len(ui.msg), 0, fg, bg, string(ui.cmdAccLeft))
+		ui.msgWin.print(len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
+		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
+	default:
 		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
 		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, string(ui.cmdAccLeft))
 		ui.msgWin.print(len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
 		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
-	} else {
-		ui.drawStatLine(nav)
-		termbox.HideCursor()
 	}
 
 	if gOpts.preview {
