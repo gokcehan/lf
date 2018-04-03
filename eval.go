@@ -490,6 +490,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.cmdHist = append(app.cmdHist, cmdItem{app.ui.cmdPrefix, s})
 		app.ui.cmdPrefix = ""
 	case "cmd-hist-next":
+		if app.ui.cmdPrefix == "" {
+			return
+		}
 		if app.cmdHistInd > 0 {
 			app.cmdHistInd--
 		}
@@ -506,6 +509,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccRight = nil
 		app.ui.menuBuf = nil
 	case "cmd-hist-prev":
+		if app.ui.cmdPrefix == "" {
+			app.cmdHistInd = 0
+		}
 		if app.cmdHistInd == len(app.cmdHist) {
 			return
 		}
