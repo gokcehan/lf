@@ -42,14 +42,16 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 	case "ignorecase":
 		gOpts.ignorecase = true
-	case "lscolors":
-		gOpts.lscolors = true
-	case "nolscolors":
-		gOpts.lscolors = false
 	case "noignorecase":
 		gOpts.ignorecase = false
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
+	case "lscolors":
+		gOpts.lscolors = true
+	case "nolscolors":
+		gOpts.lscolors = false
+	case "lscolors!":
+		gOpts.lscolors = !gOpts.lscolors
 	case "preview":
 		gOpts.preview = true
 	case "nopreview":
