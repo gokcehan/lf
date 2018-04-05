@@ -415,6 +415,7 @@ type ui struct {
 	msg         string
 	regPrev     *reg
 	dirPrev     *dir
+	exprChan    chan multiExpr
 	keyChan     chan string
 	evChan      chan termbox.Event
 	menuBuf     *bytes.Buffer
@@ -836,6 +837,8 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 // non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (ui *ui) readExpr() <-chan multiExpr {
 	ch := make(chan multiExpr)
+
+	ui.exprChan = ch
 
 	go func() {
 		ch <- multiExpr{&callExpr{"redraw", nil}, 1}

@@ -244,8 +244,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 					break
 				}
 				buf = append(buf, b)
-				app.ui.msg = string(buf)
-				app.ui.draw(app.nav)
+				app.ui.exprChan <- multiExpr{&callExpr{"echo", []string{string(buf)}}, 1}
 				if b == '\n' {
 					buf = nil
 				}
@@ -254,10 +253,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
-			app.nav.renew(app.ui.wins[0].h)
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
-			app.ui.draw(app.nav)
+			app.ui.exprChan <- multiExpr{&callExpr{"reload", nil}, 1}
 		}()
 	}
 }
