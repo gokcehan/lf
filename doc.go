@@ -53,23 +53,23 @@ The following commands are provided by lf without default keybindings:
 The following command line commands are provided by lf with default
 keybindings:
 
-    cmd-escape        (default '<esc>')
-    cmd-comp          (default '<tab>')
-    cmd-enter         (default '<c-j>' and '<enter>')
-    cmd-hist-next     (default '<c-n>')
-    cmd-hist-prev     (default '<c-p>')
-    cmd-delete        (default '<c-d>' and '<delete>')
-    cmd-delete-back   (default '<bs>' and '<bs2>')
-    cmd-left          (default '<c-b>' and '<left>')
-    cmd-right         (default '<c-f>' and '<right>')
-    cmd-beg           (default '<c-a>' and '<home>')
-    cmd-end           (default '<c-e>' and '<end>')
-    cmd-delete-beg    (default '<c-u>')
-    cmd-delete-end    (default '<c-k>')
-    cmd-delete-word   (default '<c-w>')
-    cmd-put           (default '<c-y>')
-    cmd-transpose     (default '<c-t>')
-    cmd-interrupt     (default '<c-c>')
+    cmd-escape       (default '<esc>')
+    cmd-comp         (default '<tab>')
+    cmd-enter        (default '<c-j>' and '<enter>')
+    cmd-hist-next    (default '<c-n>')
+    cmd-hist-prev    (default '<c-p>')
+    cmd-delete       (default '<c-d>' and '<delete>')
+    cmd-delete-back  (default '<bs>' and '<bs2>')
+    cmd-left         (default '<c-b>' and '<left>')
+    cmd-right        (default '<c-f>' and '<right>')
+    cmd-beg          (default '<c-a>' and '<home>')
+    cmd-end          (default '<c-e>' and '<end>')
+    cmd-delete-beg   (default '<c-u>')
+    cmd-delete-end   (default '<c-k>')
+    cmd-delete-word  (default '<c-w>')
+    cmd-put          (default '<c-y>')
+    cmd-transpose    (default '<c-t>')
+    cmd-interrupt    (default '<c-c>')
 
 The following options can be used to customize the behavior of lf:
 
@@ -146,9 +146,9 @@ The following command prefixes are used by lf:
 
     :  read (default)  builtin/custom command
     $  shell           shell command
-    %  shell-pipe      shell command displaying the output
+    %  shell-pipe      shell command running with the ui
     !  shell-wait      shell command waiting for key press
-    &  shell-async     asynchronous shell command
+    &  shell-async     shell command running asynchronously
     /  search          search file in current directory
     ?  search-back     search file in the reverse order
 
@@ -219,7 +219,7 @@ prefix.
         set info time
     }}
 
-Mappings
+Push Mappings
 
 The usual way to map a key sequence is to assign it to a named or unnamed
 command. While this provides a clean way to remap builtin keys as well as other
@@ -244,12 +244,11 @@ commands it is possible to accidentally create recursive bindings:
 
 These types of bindings create a deadlock when executed.
 
-Commands
+Shell Commands ($)
 
-For demonstration let us write a shell command to move selected file(s) to
-trash.
-
-A first attempt to write such a command may look like this:
+Regular shell commands are the most basic command type that is useful for many
+purposes. For example, we can write a shell command to move selected file(s) to
+trash. A first attempt to write such a command may look like this:
 
     cmd trash ${{
         mkdir -p ~/.trash
@@ -289,6 +288,47 @@ could use the 'ifs' option to set it for all shell commands (i.e. 'set ifs
 behave unexpectedly for new users. However, use of this option is highly
 recommended and it is assumed in the rest of the documentation.
 
+Piping Shell Commands (%)
+
+Regular shell commands have some limitations in some cases. When an output or
+error message is given and the command exits afterwards, the ui is immediately
+resumed and there is no way to see the message without dropping to shell again.
+Also, even when there is no output or error, the ui still needs to be paused
+while the command is running. This can cause flickering on the screen for short
+commands and similar distractions for longer commands.
+
+Instead of pausing the ui, piping shell commands connects stdin, stdout, and
+stderr of the command to the statline in the bottom of the ui. This can be
+useful for programs following the unix philosophy to give no output in the
+success case, and brief error messages or prompts in other cases.
+
+For example, following rename command prompts for overwrite in the statline if
+there is an existing file with the given name:
+
+    cmd rename %mv -i $f $1
+
+You can also output error messages in the command and it will show up in the
+statline. For example, an alternative rename command may look like this:
+
+    cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
+
+One thing to be careful is that although input is still line buffered, output
+and error are byte buffered and verbose commands will be very slow to display.
+
+Waiting Shell Commands (!)
+
+Waiting shell commands are similar to regular shell commands except that they
+wait for a key press when the command is finished. These can be useful to see
+the output of a program before the ui is resumed. Waiting shell commands are
+more appropriate than piping shell commands when the command is verbose and the
+output is best displayed as multiline.
+
+Asynchronous Shell Commands (&)
+
+Asynchronous shell commands are used to start a command in the background and
+then resume operation without waiting for the command to finish. Stdin, stdout,
+and stderr of the command is neither connected to the terminal nor to the ui.
+
 Remote Commands
 
 One of the more advanced features in lf is remote commands. All clients connect
@@ -325,15 +365,17 @@ a shell command:
     lf -remote "send $id echo hello world"
 
 Since lf does not have control flow syntax, remote commands are used for such
-needs. A common use is to display an error message back in the client. You can
-implement a safe rename command which does not overwrite an existing file or
-directory as such:
+needs. For example, you can configure the number of columns in the ui with
+respect to the terminal width as follows:
 
-    cmd rename ${{
-        if [ -e $1 ]; then
-            lf -remote "send $id echo file exists"
+    cmd recol ${{
+        w=$(tput cols)
+        if [ $w -le 80 ]; then
+            lf -remote "send $id set ratios 1:2"
+        elif [ $w -le 160 ]; then
+            lf -remote "send $id set ratios 1:2:3"
         else
-            mv $f $1
+            lf -remote "send $id set ratios 1:2:3:5"
         fi
     }}
 

@@ -37,24 +37,15 @@ cmd open-file ${{
 }}
 
 # rename current file without overwrite
-cmd rename ${{
-    if [ -e $1 ]; then
-        lf -remote "send $id echo file exists"
-    else
-        mv $f $1
-    fi
-}}
+cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 map r push :rename<space>
 
-# show disk usage
-cmd usage $du -h . | less
-
 # make sure trash folder exists
-$mkdir -p ~/.trash
+%mkdir -p ~/.trash
 
 # move current file or selected files to trash folder
 # (also see 'man mv' for backup/overwrite options)
-cmd trash $mv $fx ~/.trash
+cmd trash %mv $fx ~/.trash
 
 # remove current file or selected files (prompting)
 cmd remove ${{
@@ -66,7 +57,7 @@ cmd remove ${{
 
 # extract the current file with the right command
 # (xkcd link: https://xkcd.com/1168/)
-cmd extract ${{
+cmd extract %{{
     case $f in
         *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
         *.tar.gz|*.tgz) tar xzvf $f;;
@@ -77,12 +68,10 @@ cmd extract ${{
     esac
 }}
 
-# compress marked files with tar and gunzip
-# This command takes the output name without '.tar.gz' suffix as an argument
-# (e.g. 'compress foo' creates 'foo.tar.gz').
-cmd compress ${{
+# compress current file or selected files with tar and gunzip
+cmd compress %{{
     mkdir $1
-    cp $fs $1
-    tar czvf $1.tar.gz $1
+    cp -r $fx $1
+    tar czf $1.tar.gz $1
     rm -rf $1
 }}
