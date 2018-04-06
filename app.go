@@ -22,6 +22,7 @@ type app struct {
 	quitChan   chan bool
 	cmd        *exec.Cmd
 	cmdIn      io.WriteCloser
+	cmdOutBuf  []byte
 	cmdHist    []cmdItem
 	cmdHistInd int
 }
@@ -175,7 +176,7 @@ func waitKey() error {
 //
 // Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
 // $       No    No     Yes    Yes     Yes     Pause and then resume
-// %       No    No     No     Yes     Yes     Display output in statline
+// %       No    No     Yes    Yes     Yes     Use statline for input/output
 // !       Yes   No     Yes    Yes     Yes     Pause and then resume
 // &       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
@@ -233,20 +234,20 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	case "%":
 		go func() {
 			app.cmd = cmd
+			app.cmdOutBuf = nil
 			app.ui.msg = ""
 			app.ui.cmdPrefix = ">"
 
 			reader := bufio.NewReader(out)
-			var buf []byte
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
 					break
 				}
-				buf = append(buf, b)
-				app.ui.exprChan <- multiExpr{&callExpr{"echo", []string{string(buf)}}, 1}
+				app.cmdOutBuf = append(app.cmdOutBuf, b)
+				app.ui.exprChan <- multiExpr{&callExpr{"echo", []string{string(app.cmdOutBuf)}}, 1}
 				if b == '\n' || b == '\r' {
-					buf = nil
+					app.cmdOutBuf = nil
 				}
 			}
 

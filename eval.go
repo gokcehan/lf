@@ -459,6 +459,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
+			app.cmdOutBuf = nil
 			return
 		case "!":
 			log.Printf("shell-wait: %s", s)
