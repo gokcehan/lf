@@ -244,7 +244,7 @@ commands it is possible to accidentally create recursive bindings:
 
 These types of bindings create a deadlock when executed.
 
-Shell Commands ($)
+Shell Commands
 
 Regular shell commands are the most basic command type that is useful for many
 purposes. For example, we can write a shell command to move selected file(s) to
@@ -288,7 +288,7 @@ could use the 'ifs' option to set it for all shell commands (i.e. 'set ifs
 behave unexpectedly for new users. However, use of this option is highly
 recommended and it is assumed in the rest of the documentation.
 
-Piping Shell Commands (%)
+Piping Shell Commands
 
 Regular shell commands have some limitations in some cases. When an output or
 error message is given and the command exits afterwards, the ui is immediately
@@ -315,7 +315,7 @@ statline. For example, an alternative rename command may look like this:
 One thing to be careful is that although input is still line buffered, output
 and error are byte buffered and verbose commands will be very slow to display.
 
-Waiting Shell Commands (!)
+Waiting Shell Commands
 
 Waiting shell commands are similar to regular shell commands except that they
 wait for a key press when the command is finished. These can be useful to see
@@ -323,7 +323,7 @@ the output of a program before the ui is resumed. Waiting shell commands are
 more appropriate than piping shell commands when the command is verbose and the
 output is best displayed as multiline.
 
-Asynchronous Shell Commands (&)
+Asynchronous Shell Commands
 
 Asynchronous shell commands are used to start a command in the background and
 then resume operation without waiting for the command to finish. Stdin, stdout,
