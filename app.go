@@ -245,7 +245,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 				}
 				buf = append(buf, b)
 				app.ui.exprChan <- multiExpr{&callExpr{"echo", []string{string(buf)}}, 1}
-				if b == '\n' {
+				if b == '\n' || b == '\r' {
 					buf = nil
 				}
 			}
