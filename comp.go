@@ -32,6 +32,7 @@ var (
 		"delete",
 		"put",
 		"clear",
+		"draw",
 		"redraw",
 		"reload",
 		"read",

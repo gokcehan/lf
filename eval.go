@@ -339,6 +339,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("clear: %s", err)
 		}
+	case "draw":
 	case "redraw":
 		app.ui.sync()
 		app.ui.renew()
