@@ -586,8 +586,9 @@ func (ui *ui) drawStatLine(nav *nav) {
 
 	tot := len(currDir.fi)
 	ind := min(currDir.ind+1, tot)
+	acc := string(ui.keyCount) + string(ui.keyAcc)
 
-	ruler := fmt.Sprintf("%d/%d", ind, tot)
+	ruler := fmt.Sprintf("%s  %d/%d", acc, ind, tot)
 
 	ui.msgWin.printRight(0, fg, bg, ruler)
 }
@@ -765,6 +766,11 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 			ui.keyAcc = append(ui.keyAcc, val...)
 		}
 
+		if len(ui.keyAcc) == 0 {
+			ch <- redraw
+			break
+		}
+
 		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
 
 		switch len(binds) {
@@ -792,12 +798,10 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ch <- expr
 				ui.keyAcc = nil
 				ui.keyCount = nil
-			}
-			if len(ui.keyAcc) > 0 {
+				ui.menuBuf = nil
+			} else {
 				ui.menuBuf = listBinds(binds)
 				ch <- redraw
-			} else if ui.menuBuf != nil {
-				ui.menuBuf = nil
 			}
 		default:
 			if ok {
@@ -818,12 +822,10 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ch <- expr
 				ui.keyAcc = nil
 				ui.keyCount = nil
-			}
-			if len(ui.keyAcc) > 0 {
+				ui.menuBuf = nil
+			} else {
 				ui.menuBuf = listBinds(binds)
 				ch <- redraw
-			} else {
-				ui.menuBuf = nil
 			}
 		}
 	case termbox.EventResize:
