@@ -740,7 +740,7 @@ func readCmdEvent(ch chan<- expr, ev termbox.Event) {
 }
 
 func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
-	redraw := &callExpr{"redraw", nil, 1}
+	draw := &callExpr{"draw", nil, 1}
 	count := 1
 
 	switch ev.Type {
@@ -759,7 +759,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 		} else {
 			val := gKeyVal[ev.Key]
 			if string(val) == "<esc>" {
-				ch <- redraw
+				ch <- draw
 				ui.keyAcc = nil
 				ui.keyCount = nil
 			}
@@ -767,7 +767,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 		}
 
 		if len(ui.keyAcc) == 0 {
-			ch <- redraw
+			ch <- draw
 			break
 		}
 
@@ -776,7 +776,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 		switch len(binds) {
 		case 0:
 			ui.printf("unknown mapping: %s", string(ui.keyAcc))
-			ch <- redraw
+			ch <- draw
 			ui.keyAcc = nil
 			ui.keyCount = nil
 			ui.menuBuf = nil
@@ -801,7 +801,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ui.menuBuf = nil
 			} else {
 				ui.menuBuf = listBinds(binds)
-				ch <- redraw
+				ch <- draw
 			}
 		default:
 			if ok {
@@ -825,11 +825,11 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ui.menuBuf = nil
 			} else {
 				ui.menuBuf = listBinds(binds)
-				ch <- redraw
+				ch <- draw
 			}
 		}
 	case termbox.EventResize:
-		ch <- redraw
+		ch <- draw
 	default:
 		// TODO: handle other events
 	}
@@ -844,7 +844,7 @@ func (ui *ui) readExpr() <-chan expr {
 	ui.exprChan = ch
 
 	go func() {
-		ch <- &callExpr{"redraw", nil, 1}
+		ch <- &callExpr{"draw", nil, 1}
 
 		for {
 			ev := ui.pollEvent()
