@@ -125,9 +125,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case e := <-clientChan:
-			for i := 0; i < e.count; i++ {
-				e.expr.eval(app, nil)
-			}
+			e.eval(app, nil)
 			app.ui.draw(app.nav)
 		case e := <-serverChan:
 			e.eval(app, nil)
@@ -245,7 +243,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 					break
 				}
 				app.cmdOutBuf = append(app.cmdOutBuf, b)
-				app.ui.exprChan <- multiExpr{&callExpr{"echo", []string{string(app.cmdOutBuf)}}, 1}
+				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
 				if b == '\n' || b == '\r' {
 					app.cmdOutBuf = nil
 				}
@@ -256,7 +254,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			}
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
-			app.ui.exprChan <- multiExpr{&callExpr{"reload", nil}, 1}
+			app.ui.exprChan <- &callExpr{"reload", nil, 1}
 		}()
 	}
 }

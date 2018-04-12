@@ -415,7 +415,7 @@ type ui struct {
 	msg         string
 	regPrev     *reg
 	dirPrev     *dir
-	exprChan    chan multiExpr
+	exprChan    chan expr
 	keyChan     chan string
 	evChan      chan termbox.Event
 	menuBuf     *bytes.Buffer
@@ -727,24 +727,19 @@ func (ui *ui) pollEvent() termbox.Event {
 	}
 }
 
-type multiExpr struct {
-	expr  expr
-	count int
-}
-
-func readCmdEvent(ch chan<- multiExpr, ev termbox.Event) {
+func readCmdEvent(ch chan<- expr, ev termbox.Event) {
 	if ev.Ch != 0 {
-		ch <- multiExpr{&callExpr{"cmd-insert", []string{string(ev.Ch)}}, 1}
+		ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
 	} else {
 		val := gKeyVal[ev.Key]
 		if expr, ok := gOpts.cmdkeys[string(val)]; ok {
-			ch <- multiExpr{expr, 1}
+			ch <- expr
 		}
 	}
 }
 
-func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
-	redraw := &callExpr{"redraw", nil}
+func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
+	redraw := &callExpr{"redraw", nil, 1}
 	count := 1
 
 	switch ev.Type {
@@ -763,7 +758,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 		} else {
 			val := gKeyVal[ev.Key]
 			if string(val) == "<esc>" {
-				ch <- multiExpr{redraw, 1}
+				ch <- redraw
 				ui.keyAcc = nil
 				ui.keyCount = nil
 			}
@@ -775,7 +770,7 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 		switch len(binds) {
 		case 0:
 			ui.printf("unknown mapping: %s", string(ui.keyAcc))
-			ch <- multiExpr{redraw, 1}
+			ch <- redraw
 			ui.keyAcc = nil
 			ui.keyCount = nil
 			ui.menuBuf = nil
@@ -791,13 +786,16 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 					count = 1
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
-				ch <- multiExpr{expr, count}
+				if e, ok := expr.(*callExpr); ok {
+					e.count = count
+				}
+				ch <- expr
 				ui.keyAcc = nil
 				ui.keyCount = nil
 			}
 			if len(ui.keyAcc) > 0 {
 				ui.menuBuf = listBinds(binds)
-				ch <- multiExpr{redraw, 1}
+				ch <- redraw
 			} else if ui.menuBuf != nil {
 				ui.menuBuf = nil
 			}
@@ -814,19 +812,22 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 					count = 1
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
-				ch <- multiExpr{expr, count}
+				if e, ok := expr.(*callExpr); ok {
+					e.count = count
+				}
+				ch <- expr
 				ui.keyAcc = nil
 				ui.keyCount = nil
 			}
 			if len(ui.keyAcc) > 0 {
 				ui.menuBuf = listBinds(binds)
-				ch <- multiExpr{redraw, 1}
+				ch <- redraw
 			} else {
 				ui.menuBuf = nil
 			}
 		}
 	case termbox.EventResize:
-		ch <- multiExpr{redraw, 1}
+		ch <- redraw
 	default:
 		// TODO: handle other events
 	}
@@ -835,13 +836,13 @@ func (ui *ui) readEvent(ch chan<- multiExpr, ev termbox.Event) {
 // This function is used to read expressions on the client side. Digits are
 // interpreted as command counts but this is only done for digits preceding any
 // non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readExpr() <-chan multiExpr {
-	ch := make(chan multiExpr)
+func (ui *ui) readExpr() <-chan expr {
+	ch := make(chan expr)
 
 	ui.exprChan = ch
 
 	go func() {
-		ch <- multiExpr{&callExpr{"redraw", nil}, 1}
+		ch <- &callExpr{"redraw", nil, 1}
 
 		for {
 			ev := ui.pollEvent()

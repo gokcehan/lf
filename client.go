@@ -51,7 +51,7 @@ func readExpr() <-chan expr {
 
 		fmt.Fprintf(c, "conn %d\n", gClientID)
 
-		ch <- &callExpr{"sync", nil}
+		ch <- &callExpr{"sync", nil, 1}
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {

@@ -72,8 +72,9 @@ type cmdExpr struct {
 func (e *cmdExpr) String() string { return fmt.Sprintf("cmd %s %s", e.name, e.expr) }
 
 type callExpr struct {
-	name string
-	args []string
+	name  string
+	args  []string
+	count int
 }
 
 func (e *callExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
@@ -230,7 +231,7 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 
-			result = &callExpr{name, args}
+			result = &callExpr{name, args, 1}
 		}
 	case tokenColon:
 		s.scan()

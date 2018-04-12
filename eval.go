@@ -168,7 +168,7 @@ func (e *cmapExpr) eval(app *app, args []string) {
 		delete(gOpts.cmdkeys, e.key)
 		return
 	}
-	gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil}
+	gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil, 1}
 }
 
 func (e *cmdExpr) eval(app *app, args []string) {
@@ -201,33 +201,35 @@ func splitKeys(s string) (keys []string) {
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
 	case "up":
-		app.nav.up(1)
+		app.nav.up(e.count)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "half-up":
-		app.nav.up(app.nav.height / 2)
+		app.nav.up(e.count * app.nav.height / 2)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "page-up":
-		app.nav.up(app.nav.height)
+		app.nav.up(e.count * app.nav.height)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "down":
-		app.nav.down(1)
+		app.nav.down(e.count)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "half-down":
-		app.nav.down(app.nav.height / 2)
+		app.nav.down(e.count * app.nav.height / 2)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "page-down":
-		app.nav.down(app.nav.height)
+		app.nav.down(e.count * app.nav.height)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "updir":
-		if err := app.nav.updir(); err != nil {
-			app.ui.printf("%s", err)
-			return
+		for i := 0; i < e.count; i++ {
+			if err := app.nav.updir(); err != nil {
+				app.ui.printf("%s", err)
+				return
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
@@ -291,7 +293,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
-		app.nav.toggle()
+		for i := 0; i < e.count; i++ {
+			app.nav.toggle()
+		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "invert":
@@ -358,16 +362,20 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "search-back":
 		app.ui.cmdPrefix = "?"
 	case "search-next":
-		if err := app.nav.searchNext(); err != nil {
-			app.ui.printf("search: %s: %s", err, app.nav.search)
-			return
+		for i := 0; i < e.count; i++ {
+			if err := app.nav.searchNext(); err != nil {
+				app.ui.printf("search: %s: %s", err, app.nav.search)
+				return
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "search-prev":
-		if err := app.nav.searchPrev(); err != nil {
-			app.ui.printf("search: %s: %s", err, app.nav.search)
-			return
+		for i := 0; i < e.count; i++ {
+			if err := app.nav.searchPrev(); err != nil {
+				app.ui.printf("search: %s: %s", err, app.nav.search)
+				return
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
