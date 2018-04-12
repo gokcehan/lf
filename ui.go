@@ -829,7 +829,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 			}
 		}
 	case termbox.EventResize:
-		ch <- draw
+		ch <- &callExpr{"redraw", nil, 1}
 	default:
 		// TODO: handle other events
 	}
