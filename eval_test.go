@@ -26,85 +26,85 @@ var gEvalTests = []struct {
 	{
 		"echo hello",
 		[]string{"echo", "hello", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello"}}},
+		[]expr{&callExpr{"echo", []string{"hello"}, 1}},
 	},
 
 	{
 		"echo hello world",
 		[]string{"echo", "hello", "world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello", "world"}}},
+		[]expr{&callExpr{"echo", []string{"hello", "world"}, 1}},
 	},
 
 	{
 		"echo 'hello world'",
 		[]string{"echo", "hello world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello world"}}},
+		[]expr{&callExpr{"echo", []string{"hello world"}, 1}},
 	},
 
 	{
 		`echo "hello world"`,
 		[]string{"echo", "hello world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello world"}}},
+		[]expr{&callExpr{"echo", []string{"hello world"}, 1}},
 	},
 
 	{
 		`echo "hello\"world"`,
 		[]string{"echo", `hello"world`, "\n"},
-		[]expr{&callExpr{"echo", []string{`hello"world`}}},
+		[]expr{&callExpr{"echo", []string{`hello"world`}, 1}},
 	},
 
 	{
 		`echo "hello\tworld"`,
 		[]string{"echo", "hello\tworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\tworld"}}},
+		[]expr{&callExpr{"echo", []string{"hello\tworld"}, 1}},
 	},
 
 	{
 		`echo "hello\nworld"`,
 		[]string{"echo", "hello\nworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\nworld"}}},
+		[]expr{&callExpr{"echo", []string{"hello\nworld"}, 1}},
 	},
 
 	{
 		`echo "hello\zworld"`,
 		[]string{"echo", "helloworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"helloworld"}}},
+		[]expr{&callExpr{"echo", []string{"helloworld"}, 1}},
 	},
 
 	{
 		`echo "hello\0world"`,
 		[]string{"echo", "hello\000world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\000world"}}},
+		[]expr{&callExpr{"echo", []string{"hello\000world"}, 1}},
 	},
 
 	{
 		`echo "hello\101world"`,
 		[]string{"echo", "hello\101world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\101world"}}},
+		[]expr{&callExpr{"echo", []string{"hello\101world"}, 1}},
 	},
 
 	{
 		`echo hello\ world`,
 		[]string{"echo", "hello world", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello world"}}},
+		[]expr{&callExpr{"echo", []string{"hello world"}, 1}},
 	},
 
 	{
 		`echo hello\	world`,
 		[]string{"echo", "hello\tworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\tworld"}}},
+		[]expr{&callExpr{"echo", []string{"hello\tworld"}, 1}},
 	},
 
 	{
 		"echo hello\\\nworld",
 		[]string{"echo", "hello\nworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"hello\nworld"}}},
+		[]expr{&callExpr{"echo", []string{"hello\nworld"}, 1}},
 	},
 
 	{
 		`echo hello\zworld`,
 		[]string{"echo", "helloworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"helloworld"}}},
+		[]expr{&callExpr{"echo", []string{"helloworld"}, 1}},
 	},
 
 	{
@@ -164,25 +164,25 @@ var gEvalTests = []struct {
 	{
 		"map gh cd ~",
 		[]string{"map", "gh", "cd", "~", "\n"},
-		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}}}},
+		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}, 1}}},
 	},
 
 	{
 		"map gh cd ~;",
 		[]string{"map", "gh", "cd", "~", ";"},
-		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}}}},
+		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}, 1}}},
 	},
 
 	{
 		"map gh :cd ~",
 		[]string{"map", "gh", ":", "cd", "~", "\n", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}}}}}},
+		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}}}},
 	},
 
 	{
 		"map gh :cd ~;",
 		[]string{"map", "gh", ":", "cd", "~", ";", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}}}}}},
+		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}}}},
 	},
 
 	{
@@ -206,55 +206,55 @@ var gEvalTests = []struct {
 	{
 		"map u usage",
 		[]string{"map", "u", "usage", "\n"},
-		[]expr{&mapExpr{"u", &callExpr{"usage", nil}}},
+		[]expr{&mapExpr{"u", &callExpr{"usage", nil, 1}}},
 	},
 
 	{
 		"map u usage;",
 		[]string{"map", "u", "usage", ";"},
-		[]expr{&mapExpr{"u", &callExpr{"usage", nil}}},
+		[]expr{&mapExpr{"u", &callExpr{"usage", nil, 1}}},
 	},
 
 	{
 		"map u :usage",
 		[]string{"map", "u", ":", "usage", "\n", "\n"},
-		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil}}}}},
+		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}}}},
 	},
 
 	{
 		"map u :usage;",
 		[]string{"map", "u", ":", "usage", ";", "\n"},
-		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil}}}}},
+		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}}}},
 	},
 
 	{
 		"map r push :rename<space>",
 		[]string{"map", "r", "push", ":rename<space>", "\n"},
-		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}}}},
+		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}, 1}}},
 	},
 
 	{
 		"map r push :rename<space>;",
 		[]string{"map", "r", "push", ":rename<space>;", "\n"},
-		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>;"}}}},
+		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>;"}, 1}}},
 	},
 
 	{
 		"map r push :rename<space> # trailing comments are allowed after a space",
 		[]string{"map", "r", "push", ":rename<space>", "\n"},
-		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}}}},
+		[]expr{&mapExpr{"r", &callExpr{"push", []string{":rename<space>"}, 1}}},
 	},
 
 	{
 		"map r :push :rename<space>",
 		[]string{"map", "r", ":", "push", ":rename<space>", "\n", "\n"},
-		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}}}}}},
+		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}}}}},
 	},
 
 	{
 		"map r :push :rename<space> ; set hidden",
 		[]string{"map", "r", ":", "push", ":rename<space>", ";", "set", "hidden", "\n", "\n"},
-		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}}, &setExpr{"hidden", ""}}}}},
+		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}, &setExpr{"hidden", ""}}}}},
 	},
 
 	{
@@ -272,7 +272,7 @@ var gEvalTests = []struct {
 	{
 		"map u usage /",
 		[]string{"map", "u", "usage", "/", "\n"},
-		[]expr{&mapExpr{"u", &callExpr{"usage", []string{"/"}}}},
+		[]expr{&mapExpr{"u", &callExpr{"usage", []string{"/"}, 1}}},
 	},
 
 	{
@@ -297,7 +297,7 @@ var gEvalTests = []struct {
 			"set", "hidden", "\n",
 			"}}", "\n"},
 		[]expr{&cmdExpr{"gohome", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}},
+			&callExpr{"cd", []string{"~"}, 1},
 			&setExpr{"hidden", ""}}},
 		}},
 	},
@@ -312,7 +312,7 @@ var gEvalTests = []struct {
 			"set", "hidden", "\n",
 			"}}", "\n"},
 		[]expr{&mapExpr{"gh", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}},
+			&callExpr{"cd", []string{"~"}, 1},
 			&setExpr{"hidden", ""}}},
 		}},
 	},
