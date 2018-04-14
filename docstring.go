@@ -83,7 +83,6 @@ The following options can be used to customize the behavior of lf:
     globsearch  boolean  (default off)
     hidden      boolean  (default off)
     ignorecase  boolean  (default on)
-    lscolors    boolean  (default on)
     preview     boolean  (default on)
     reverse     boolean  (default off)
     smartcase   boolean  (default on)

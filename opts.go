@@ -8,7 +8,6 @@ var gOpts struct {
 	globsearch bool
 	hidden     bool
 	ignorecase bool
-	lscolors   bool
 	preview    bool
 	reverse    bool
 	smartcase  bool
@@ -35,7 +34,6 @@ func init() {
 	gOpts.globsearch = false
 	gOpts.hidden = false
 	gOpts.ignorecase = true
-	gOpts.lscolors = true
 	gOpts.preview = true
 	gOpts.reverse = false
 	gOpts.smartcase = true

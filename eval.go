@@ -47,15 +47,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignorecase = false
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
-	case "lscolors":
-		gOpts.lscolors = true
-		app.ui.colors = parseColors()
-	case "nolscolors":
-		gOpts.lscolors = false
-		app.ui.colors = parseColors()
-	case "lscolors!":
-		gOpts.lscolors = !gOpts.lscolors
-		app.ui.colors = parseColors()
 	case "preview":
 		gOpts.preview = true
 	case "nopreview":
