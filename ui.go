@@ -213,12 +213,55 @@ func (win *win) printReg(reg *reg) {
 	return
 }
 
-func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, colors colorMap) {
-	if win.w < 3 {
-		return
+func fileInfo(f *file, d *dir) string {
+	var info string
+
+	path := filepath.Join(d.path, f.Name())
+
+	for _, s := range gOpts.info {
+		switch s {
+		case "size":
+			if !(gOpts.dircounts && f.IsDir()) {
+				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
+				continue
+			}
+
+			if f.count == -1 {
+				d, err := os.Open(path)
+				if err != nil {
+					f.count = -2
+				}
+
+				names, err := d.Readdirnames(1000)
+				d.Close()
+
+				if names == nil && err != io.EOF {
+					f.count = -2
+				} else {
+					f.count = len(names)
+				}
+			}
+
+			switch {
+			case f.count < 0:
+				info = fmt.Sprintf("%s    ?", info)
+			case f.count < 1000:
+				info = fmt.Sprintf("%s %4d", info, f.count)
+			default:
+				info = fmt.Sprintf("%s 999+", info)
+			}
+		case "time":
+			info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
+		default:
+			log.Printf("unknown info type: %s", s)
+		}
 	}
 
-	if dir == nil {
+	return info
+}
+
+func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, colors colorMap) {
+	if win.w < 5 || dir == nil {
 		return
 	}
 
@@ -269,63 +312,31 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, 
 		}
 
 		w := runeSliceWidth(s)
-		if w > win.w-2 {
-			s = runeSliceWidthRange(s, 0, win.w-2)
+
+		if w > win.w-3 {
+			s = runeSliceWidthRange(s, 0, win.w-4)
+			s = append(s, '~')
 		} else {
-			for i := 0; i < win.w-2-w; i++ {
+			for i := 0; i < win.w-3-w; i++ {
 				s = append(s, ' ')
 			}
 		}
 
-		var info string
+		info := fileInfo(f, dir)
 
-		for _, s := range gOpts.info {
-			switch s {
-			case "size":
-				if !(gOpts.dircounts && f.IsDir()) {
-					info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
-					continue
-				}
-
-				if f.count == -1 {
-					d, err := os.Open(path)
-					if err != nil {
-						f.count = -2
-					}
-
-					names, err := d.Readdirnames(1000)
-					d.Close()
-
-					if names == nil && err != io.EOF {
-						f.count = -2
-					} else {
-						f.count = len(names)
-					}
-				}
-
-				switch {
-				case f.count < 0:
-					info = fmt.Sprintf("%s    ?", info)
-				case f.count < 1000:
-					info = fmt.Sprintf("%s %4d", info, f.count)
-				default:
-					info = fmt.Sprintf("%s 999+", info)
-				}
-			case "time":
-				info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
-			default:
-				log.Printf("unknown info type: %s", s)
+		if len(info) > 0 && win.w-2 > 2*len(info) {
+			if win.w-2 > w+len(info) {
+				s = runeSliceWidthRange(s, 0, win.w-3-len(info))
+			} else {
+				s = runeSliceWidthRange(s, 0, win.w-4-len(info))
+				s = append(s, '~')
 			}
-		}
-
-		if len(info) > 0 && win.w > 2*len(info) {
-			s = runeSliceWidthRange(s, 0, win.w-2-len(info))
 			for _, r := range info {
 				s = append(s, r)
 			}
 		}
 
-		// TODO: add a trailing '~' to the name if cut
+		s = append(s, ' ')
 
 		win.print(1, i, fg, bg, string(s))
 	}
