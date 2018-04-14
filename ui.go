@@ -126,60 +126,6 @@ func (win *win) renew(w, h, x, y int) {
 	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
-func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, termbox.Attribute) {
-	toks := strings.Split(s, ";")
-
-	var nums []int
-	for _, t := range toks {
-		if t == "" {
-			fg = termbox.ColorDefault
-			bg = termbox.ColorDefault
-			break
-		}
-		n, err := strconv.Atoi(t)
-		if err != nil {
-			log.Printf("converting escape code: %s", err)
-			continue
-		}
-		nums = append(nums, n)
-	}
-
-	// Parse 256 color terminal ansi codes
-	// termbox-go has a color offset of one, because of attributes
-	if len(nums) == 3 {
-		if nums[0] == 48 && nums[1] == 5 {
-			bg = termbox.Attribute(nums[2])
-			bg++
-		}
-		if nums[0] == 38 && nums[1] == 5 {
-			fg = termbox.Attribute(nums[2])
-			fg++
-		}
-		return fg, bg
-	}
-
-	for _, n := range nums {
-		attr, ok := gAnsiCodes[n]
-		if !ok {
-			log.Printf("unknown ansi code: %d", n)
-			continue
-		}
-		switch {
-		case n == 0:
-			fg, bg = attr, attr
-		case n == 1 || n == 4 || n == 7:
-			fg |= attr
-		case 30 <= n && n <= 37:
-			fg &= gAnsiColorResetMask
-			fg |= attr
-		case 40 <= n && n <= 47:
-			bg = attr
-		}
-	}
-
-	return fg, bg
-}
-
 func printLength(s string) int {
 	ind := 0
 	off := 0
@@ -267,7 +213,7 @@ func (win *win) printReg(reg *reg) {
 	return
 }
 
-func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) {
+func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, colors colorMap) {
 	if win.w < 3 {
 		return
 	}
@@ -296,33 +242,7 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool) 
 	end := min(beg+win.h, maxind+1)
 
 	for i, f := range dir.fi[beg:end] {
-		if gOpts.lscolors {
-			fg, bg = gColors.getColors(f)
-		} else {
-			switch {
-			case f.linkState == working:
-				fg = termbox.ColorCyan
-				if f.Mode().IsDir() {
-					fg |= termbox.AttrBold
-				}
-			case f.linkState == broken:
-				fg = termbox.ColorMagenta
-			case f.Mode().IsRegular():
-				if f.Mode()&0111 != 0 {
-					fg = termbox.AttrBold | termbox.ColorGreen
-				} else {
-					fg = termbox.ColorDefault
-				}
-			case f.Mode().IsDir():
-				fg = termbox.AttrBold | termbox.ColorBlue
-			case f.Mode()&os.ModeNamedPipe != 0:
-				fg = termbox.ColorRed
-			case f.Mode()&os.ModeSocket != 0:
-				fg = termbox.ColorYellow
-			case f.Mode()&os.ModeDevice != 0:
-				fg = termbox.ColorWhite
-			}
-		}
+		fg, bg = colors.get(f)
 
 		path := filepath.Join(dir.path, f.Name())
 
@@ -429,6 +349,7 @@ type ui struct {
 	cmdBuf      []rune
 	keyAcc      []rune
 	keyCount    []rune
+	colors      colorMap
 }
 
 func getWidths(wtot int) []int {
@@ -485,6 +406,7 @@ func newUI() *ui {
 		menuWin:   newWin(wtot, 1, 0, htot-2),
 		keyChan:   make(chan string, 1000),
 		evChan:    evChan,
+		colors:    parseColors(),
 	}
 }
 
@@ -614,7 +536,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.marks, nav.saves)
+		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.marks, nav.saves, ui.colors)
 	}
 
 	switch ui.cmdPrefix {
@@ -640,7 +562,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if f.IsDir() {
-				preview.printDir(ui.dirPrev, nav.marks, nav.saves)
+				preview.printDir(ui.dirPrev, nav.marks, nav.saves, ui.colors)
 			} else if f.Mode().IsRegular() {
 				preview.printReg(ui.regPrev)
 			}
