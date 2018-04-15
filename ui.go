@@ -276,10 +276,12 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, 
 		return
 	}
 
-	maxind := len(dir.fi) - 1
-
 	beg := max(dir.ind-dir.pos, 0)
-	end := min(beg+win.h, maxind+1)
+	end := min(beg+win.h, len(dir.fi))
+
+	if beg > end {
+		return
+	}
 
 	for i, f := range dir.fi[beg:end] {
 		fg, bg = colors.get(f)
@@ -376,6 +378,10 @@ func getWidths(wtot int) []int {
 	}
 	widths[wlen-1] = wtot - wsum
 
+	if gOpts.drawbox {
+		widths[wlen-1]--
+	}
+
 	return widths
 }
 
@@ -389,7 +395,11 @@ func getWins() []*win {
 	wacc := 0
 	wlen := len(widths)
 	for i := 0; i < wlen; i++ {
-		wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
+		if gOpts.drawbox {
+			wins = append(wins, newWin(widths[i], htot-4, wacc+1, 2))
+		} else {
+			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
+		}
 		wacc += widths[i]
 	}
 
@@ -426,7 +436,11 @@ func (ui *ui) renew() {
 	wacc := 0
 	wlen := len(widths)
 	for i := 0; i < wlen; i++ {
-		ui.wins[i].renew(widths[i], htot-2, wacc, 1)
+		if gOpts.drawbox {
+			ui.wins[i].renew(widths[i], htot-4, wacc+1, 2)
+		} else {
+			ui.wins[i].renew(widths[i], htot-2, wacc, 1)
+		}
 		wacc += widths[i]
 	}
 
@@ -529,6 +543,37 @@ func (ui *ui) drawStatLine(nav *nav) {
 	ui.msgWin.printRight(0, fg, bg, ruler)
 }
 
+func (ui *ui) drawBox(nav *nav) {
+	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+
+	w, h := termbox.Size()
+
+	for i := 1; i < w-1; i++ {
+		termbox.SetCell(i, 1, '─', fg, bg)
+		termbox.SetCell(i, h-2, '─', fg, bg)
+	}
+
+	for i := 2; i < h-2; i++ {
+		termbox.SetCell(0, i, '│', fg, bg)
+		termbox.SetCell(w-1, i, '│', fg, bg)
+	}
+
+	termbox.SetCell(0, 1, '┌', fg, bg)
+	termbox.SetCell(w-1, 1, '┐', fg, bg)
+	termbox.SetCell(0, h-2, '└', fg, bg)
+	termbox.SetCell(w-1, h-2, '┘', fg, bg)
+
+	wacc := 0
+	for wind := 0; wind < len(ui.wins)-1; wind++ {
+		wacc += ui.wins[wind].w
+		termbox.SetCell(wacc, 1, '┬', fg, bg)
+		for i := 2; i < h-2; i++ {
+			termbox.SetCell(wacc, i, '│', fg, bg)
+		}
+		termbox.SetCell(wacc, h-2, '┴', fg, bg)
+	}
+}
+
 func (ui *ui) draw(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
@@ -579,6 +624,10 @@ func (ui *ui) draw(nav *nav) {
 		}
 	}
 
+	if gOpts.drawbox {
+		ui.drawBox(nav)
+	}
+
 	if ui.menuBuf != nil {
 		lines := strings.Split(ui.menuBuf.String(), "\n")
 
@@ -586,6 +635,10 @@ func (ui *ui) draw(nav *nav) {
 
 		ui.menuWin.h = len(lines) - 1
 		ui.menuWin.y = ui.wins[0].h - ui.menuWin.h
+
+		if gOpts.drawbox {
+			ui.menuWin.y += 2
+		}
 
 		ui.menuWin.printLine(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
 		for i, line := range lines[1:] {

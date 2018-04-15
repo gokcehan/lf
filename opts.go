@@ -5,6 +5,7 @@ import "time"
 var gOpts struct {
 	dircounts  bool
 	dirfirst   bool
+	drawbox    bool
 	globsearch bool
 	hidden     bool
 	ignorecase bool
@@ -31,6 +32,7 @@ var gOpts struct {
 func init() {
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
+	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.hidden = false
 	gOpts.ignorecase = true

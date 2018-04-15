@@ -80,6 +80,7 @@ The following options can be used to customize the behavior of lf:
 
     dircounts   boolean  (default off)
     dirfirst    boolean  (default on)
+    drawbox     boolean  (default off)
     globsearch  boolean  (default off)
     hidden      boolean  (default off)
     ignorecase  boolean  (default on)

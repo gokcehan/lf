@@ -26,6 +26,18 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "dirfirst!":
 		gOpts.dirfirst = !gOpts.dirfirst
 		app.nav.sort()
+	case "drawbox":
+		gOpts.drawbox = true
+		app.ui.renew()
+		app.nav.height = app.ui.wins[0].h
+	case "nodrawbox":
+		gOpts.drawbox = false
+		app.ui.renew()
+		app.nav.height = app.ui.wins[0].h
+	case "drawbox!":
+		gOpts.drawbox = !gOpts.drawbox
+		app.ui.renew()
+		app.nav.height = app.ui.wins[0].h
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":
