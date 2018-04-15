@@ -84,10 +84,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.print("scrolloff: value should be a non-negative number")
 			return
 		}
-		max := app.ui.wins[0].h / 2
-		if n > max {
-			n = max
-		}
 		gOpts.scrolloff = n
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
@@ -327,7 +323,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("put: %s", err)
 			return
 		}
-		app.nav.renew(app.nav.height)
+		app.nav.renew()
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("put: %s", err)
 		}
@@ -343,7 +339,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "redraw":
 		app.ui.sync()
 		app.ui.renew()
-		app.ui.loadFile(app.nav)
+		app.nav.height = app.ui.wins[0].h
 	case "reload":
 		app.ui.sync()
 		app.ui.renew()

@@ -208,7 +208,7 @@ func (dir *dir) find(name string, height int) {
 		}
 	}
 
-	edge := min(gOpts.scrolloff, len(dir.fi)-dir.ind-1)
+	edge := min(min(height/2, gOpts.scrolloff), len(dir.fi)-dir.ind-1)
 	dir.pos = min(dir.ind, height-edge-1)
 }
 
@@ -271,13 +271,12 @@ func (nav *nav) getDirs(wd string) {
 	nav.dirs = dirs
 }
 
-func (nav *nav) renew(height int) {
+func (nav *nav) renew() {
 	nav.dirCache = make(map[string]*dir)
 	for _, d := range nav.dirs {
 		nav.dirCache[d.path] = d
 	}
 
-	nav.height = height
 	for _, d := range nav.dirs {
 		go func(d *dir) {
 			s, err := os.Stat(d.path)
@@ -422,7 +421,7 @@ func (nav *nav) up(dist int) {
 	dir.ind = max(0, dir.ind)
 
 	dir.pos -= dist
-	edge := min(gOpts.scrolloff, dir.ind)
+	edge := min(min(nav.height/2, gOpts.scrolloff), dir.ind)
 	dir.pos = max(dir.pos, edge)
 }
 
@@ -439,7 +438,7 @@ func (nav *nav) down(dist int) {
 	dir.ind = min(maxind, dir.ind)
 
 	dir.pos += dist
-	edge := min(gOpts.scrolloff, maxind-dir.ind)
+	edge := min(min(nav.height/2, gOpts.scrolloff), maxind-dir.ind)
 
 	// use a smaller value when the height is even and scrolloff is maxed
 	// in order to stay at the same row as much as possible while up/down

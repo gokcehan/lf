@@ -191,7 +191,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		app.ui.pause()
 		defer app.ui.resume()
-		defer app.nav.renew(app.ui.wins[0].h)
+		defer app.nav.renew()
 	case "%":
 		stdin, err := cmd.StdinPipe()
 		if err != nil {

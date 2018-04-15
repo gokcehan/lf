@@ -18,10 +18,7 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
-const (
-	gEscapeCode         = 27
-	gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse
-)
+const gEscapeCode = 27
 
 var gAnsiCodes = map[int]termbox.Attribute{
 	0:  termbox.ColorDefault,
@@ -433,7 +430,9 @@ func (ui *ui) renew() {
 		wacc += widths[i]
 	}
 
+	ui.promptWin.renew(wtot, 1, 0, 0)
 	ui.msgWin.renew(wtot, 1, 0, htot-1)
+	ui.menuWin.renew(wtot, 1, 0, htot-2)
 }
 
 func (ui *ui) print(msg string) {

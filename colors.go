@@ -10,6 +10,8 @@ import (
 	"github.com/nsf/termbox-go"
 )
 
+const gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse
+
 type colorEntry struct {
 	fg termbox.Attribute
 	bg termbox.Attribute
