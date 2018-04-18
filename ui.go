@@ -449,6 +449,12 @@ func (ui *ui) renew() {
 	ui.menuWin.renew(wtot, 1, 0, htot-2)
 }
 
+func (ui *ui) sort() {
+	name := ui.dirPrev.name()
+	ui.dirPrev.sort()
+	ui.dirPrev.find(name, ui.wins[0].h)
+}
+
 func (ui *ui) print(msg string) {
 	ui.msg = msg
 	log.Print(msg)

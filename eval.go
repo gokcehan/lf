@@ -20,12 +20,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "dirfirst":
 		gOpts.dirfirst = true
 		app.nav.sort()
+		app.ui.sort()
 	case "nodirfirst":
 		gOpts.dirfirst = false
 		app.nav.sort()
+		app.ui.sort()
 	case "dirfirst!":
 		gOpts.dirfirst = !gOpts.dirfirst
 		app.nav.sort()
+		app.ui.sort()
 	case "drawbox":
 		gOpts.drawbox = true
 		app.ui.renew()
@@ -47,12 +50,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "hidden":
 		gOpts.hidden = true
 		app.nav.sort()
+		app.ui.sort()
 	case "nohidden":
 		gOpts.hidden = false
 		app.nav.sort()
+		app.ui.sort()
 	case "hidden!":
 		gOpts.hidden = !gOpts.hidden
 		app.nav.sort()
+		app.ui.sort()
 	case "ignorecase":
 		gOpts.ignorecase = true
 	case "noignorecase":
@@ -68,12 +74,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "reverse":
 		gOpts.reverse = true
 		app.nav.sort()
+		app.ui.sort()
 	case "noreverse":
 		gOpts.reverse = false
 		app.nav.sort()
+		app.ui.sort()
 	case "reverse!":
 		gOpts.reverse = !gOpts.reverse
 		app.nav.sort()
+		app.ui.sort()
 	case "smartcase":
 		gOpts.smartcase = true
 	case "nosmartcase":
@@ -125,6 +134,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.sortby = e.val
 		app.nav.sort()
+		app.ui.sort()
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "ratios":
