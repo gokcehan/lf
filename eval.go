@@ -18,15 +18,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "dircounts!":
 		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
-		gOpts.dirfirst = true
+		gOpts.sortType.option |= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
 	case "nodirfirst":
-		gOpts.dirfirst = false
+		gOpts.sortType.option &= ^dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
 	case "dirfirst!":
-		gOpts.dirfirst = !gOpts.dirfirst
+		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
 	case "drawbox":
@@ -48,15 +48,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "globsearch!":
 		gOpts.globsearch = !gOpts.globsearch
 	case "hidden":
-		gOpts.hidden = true
+		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()
 		app.ui.sort()
 	case "nohidden":
-		gOpts.hidden = false
+		gOpts.sortType.option &= ^hiddenSort
 		app.nav.sort()
 		app.ui.sort()
 	case "hidden!":
-		gOpts.hidden = !gOpts.hidden
+		gOpts.sortType.option ^= hiddenSort
 		app.nav.sort()
 		app.ui.sort()
 	case "ignorecase":
@@ -72,15 +72,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "preview!":
 		gOpts.preview = !gOpts.preview
 	case "reverse":
-		gOpts.reverse = true
+		gOpts.sortType.option |= reverseSort
 		app.nav.sort()
 		app.ui.sort()
 	case "noreverse":
-		gOpts.reverse = false
+		gOpts.sortType.option &= ^reverseSort
 		app.nav.sort()
 		app.ui.sort()
 	case "reverse!":
-		gOpts.reverse = !gOpts.reverse
+		gOpts.sortType.option ^= reverseSort
 		app.nav.sort()
 		app.ui.sort()
 	case "smartcase":
@@ -132,7 +132,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.print("sortby: value should either be 'natural', 'name', 'size' or 'time'")
 			return
 		}
-		gOpts.sortby = e.val
+		switch e.val {
+		case "natural":
+			gOpts.sortType.method = naturalSort
+		case "name":
+			gOpts.sortType.method = nameSort
+		case "size":
+			gOpts.sortType.method = sizeSort
+		case "time":
+			gOpts.sortType.method = timeSort
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "timefmt":

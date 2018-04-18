@@ -97,6 +97,7 @@ type dir struct {
 	path     string    // full path of directory
 	fi       []*file   // displayed files in directory including or excluding hidden ones
 	all      []*file   // all files in directory including hidden ones (same array as fi)
+	sortType sortType  // sort method and options from last sort
 }
 
 func newDir(path string) *dir {
@@ -126,36 +127,36 @@ func (dir *dir) renew() {
 }
 
 func (dir *dir) sort() {
+	dir.sortType = gOpts.sortType
+
 	dir.fi = dir.all
 
-	switch gOpts.sortby {
-	case "natural":
+	switch gOpts.sortType.method {
+	case naturalSort:
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			return naturalLess(strings.ToLower(dir.fi[i].Name()), strings.ToLower(dir.fi[j].Name()))
 		})
-	case "name":
+	case nameSort:
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			return strings.ToLower(dir.fi[i].Name()) < strings.ToLower(dir.fi[j].Name())
 		})
-	case "size":
+	case sizeSort:
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			return dir.fi[i].Size() < dir.fi[j].Size()
 		})
-	case "time":
+	case timeSort:
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			return dir.fi[i].ModTime().Before(dir.fi[j].ModTime())
 		})
-	default:
-		log.Printf("unknown sorting type: %s", gOpts.sortby)
 	}
 
-	if gOpts.reverse {
+	if gOpts.sortType.option&reverseSort != 0 {
 		for i, j := 0, len(dir.fi)-1; i < j; i, j = i+1, j-1 {
 			dir.fi[i], dir.fi[j] = dir.fi[j], dir.fi[i]
 		}
 	}
 
-	if gOpts.dirfirst {
+	if gOpts.sortType.option&dirfirstSort != 0 {
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			if dir.fi[i].IsDir() == dir.fi[j].IsDir() {
 				return i < j
@@ -167,7 +168,7 @@ func (dir *dir) sort() {
 	// when hidden option is disabled, we move hidden files to the
 	// beginning of our file list and then set the beginning of displayed
 	// files to the first non-hidden file in the list
-	if !gOpts.hidden {
+	if gOpts.sortType.option&hiddenSort == 0 {
 		sortFilesStable(dir.fi, func(i, j int) bool {
 			if dir.fi[i].Name()[0] == '.' && dir.fi[j].Name()[0] == '.' {
 				return i < j
@@ -332,6 +333,11 @@ func (nav *nav) loadDir(path string) *dir {
 		d := &dir{loading: true, path: path}
 		nav.dirCache[path] = d
 		return d
+	}
+	if d.sortType != gOpts.sortType {
+		name := d.name()
+		d.sort()
+		d.find(name, nav.height)
 	}
 	return d
 }

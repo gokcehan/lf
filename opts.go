@@ -2,15 +2,34 @@ package main
 
 import "time"
 
+type sortMethod byte
+
+const (
+	naturalSort sortMethod = iota
+	nameSort
+	sizeSort
+	timeSort
+)
+
+type sortOption byte
+
+const (
+	dirfirstSort sortOption = 1 << iota
+	hiddenSort
+	reverseSort
+)
+
+type sortType struct {
+	method sortMethod
+	option sortOption
+}
+
 var gOpts struct {
 	dircounts  bool
-	dirfirst   bool
 	drawbox    bool
 	globsearch bool
-	hidden     bool
 	ignorecase bool
 	preview    bool
-	reverse    bool
 	smartcase  bool
 	wrapscan   bool
 	scrolloff  int
@@ -20,24 +39,21 @@ var gOpts struct {
 	previewer  string
 	promptfmt  string
 	shell      string
-	sortby     string
 	timefmt    string
 	ratios     []int
 	info       []string
 	keys       map[string]expr
 	cmdkeys    map[string]expr
 	cmds       map[string]expr
+	sortType   sortType
 }
 
 func init() {
 	gOpts.dircounts = false
-	gOpts.dirfirst = true
 	gOpts.drawbox = false
 	gOpts.globsearch = false
-	gOpts.hidden = false
 	gOpts.ignorecase = true
 	gOpts.preview = true
-	gOpts.reverse = false
 	gOpts.smartcase = true
 	gOpts.wrapscan = true
 	gOpts.scrolloff = 0
@@ -45,10 +61,10 @@ func init() {
 	gOpts.filesep = "\n"
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m"
 	gOpts.shell = gDefaultShell
-	gOpts.sortby = "natural"
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.info = nil
+	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 
 	gOpts.keys = make(map[string]expr)
 
