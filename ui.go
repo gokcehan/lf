@@ -450,6 +450,9 @@ func (ui *ui) renew() {
 }
 
 func (ui *ui) sort() {
+	if ui.dirPrev == nil {
+		return
+	}
 	name := ui.dirPrev.name()
 	ui.dirPrev.sort()
 	ui.dirPrev.find(name, ui.wins[0].h)
