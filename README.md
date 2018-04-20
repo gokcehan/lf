@@ -26,7 +26,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information.
 - Single binary without any runtime dependencies (except for terminfo database)
 - Fast startup and low memory footprint (due to native code and static binaries)
 - Server/client architecture to share file selection between multiple instances
-- Configurable with shell commands (sync or async)
+- Configuration with shell commands
 - Customizable keybindings (vi and readline defaults)
 - Preview filtering (for source highlight, archives, pdfs/images as text etc.)
 
@@ -39,7 +39,6 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information.
 ## May-Futures
 
 - Bookmarks
-- Colorschemes
 
 ## Installation
 

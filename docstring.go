@@ -544,4 +544,38 @@ especially relevant for big files. lf automatically closes the previewer
 script output pipe with a SIGPIPE when enough lines are read. When
 everything else fails, you can make use of the height argument to only feed
 the first portion of the file to a program for preview.
+
+
+Colorschemes
+
+lf tries to automatically adapt its colors to the environment. On startup,
+first '$LS_COLORS' environment variable is checked. This variable is used by
+GNU ls to configure its colors based on file types and extensions. The value
+of this variable is often set by GNU dircolors in a shell configuration
+file. dircolors program itself can be configured with a configuration file.
+dircolors supports 256 colors along with common attributes such as bold and
+underline.
+
+If '$LS_COLORS' variable is not set, '$LSCOLORS' variable is checked
+instead. This variable is used by ls programs on unix systems such as Mac
+and BSDs. This variable has a simple syntax and supports 8 colors and bold
+attribute.
+
+If both of these environment variables are not set, then lf fallbacks to its
+default colorscheme. Default lf colors are taken from GNU dircolors
+defaults. These defaults use 8 basic colors and bold attribute.
+
+Keeping this mechanism in mind, you can configure lf colors in two different
+ways. First, you can configure 8 basic colors used by your terminal and lf
+should pick up those colors automatically. Depending on your terminal, you
+should be able to select your colors from a 24-bit palette. This is the
+recommended approach as colors used by other programs will also match each
+other.
+
+Second, you can set the values of environmental variables mentioned above
+for fine grained customization. This is useful to change colors used for
+different file types and extensions. '$LS_COLORS' is more powerful than
+'$LSCOLORS' and it can be used even when GNU programs are not installed on
+the system. You can combine this second method with the first method for
+best results.
 `
