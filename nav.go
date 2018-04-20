@@ -330,15 +330,22 @@ func (nav *nav) loadDir(path string) *dir {
 			d.ind, d.pos = 0, 0
 			nav.dirChan <- d
 		}()
-		d := &dir{loading: true, path: path}
+		d := &dir{loading: true, path: path, sortType: gOpts.sortType}
 		nav.dirCache[path] = d
 		return d
 	}
+
 	if d.sortType != gOpts.sortType {
-		name := d.name()
-		d.sort()
-		d.find(name, nav.height)
+		go func() {
+			d.loading = true
+			name := d.name()
+			d.sort()
+			d.find(name, nav.height)
+			d.loading = false
+			nav.dirChan <- d
+		}()
 	}
+
 	return d
 }
 
