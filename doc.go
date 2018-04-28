@@ -124,8 +124,8 @@ The following keybindings to applications are provided by default on unix:
 
 The following keybindings to applications are provided by default on windows:
 
-    map e $notepad "%f%"
-    map i $more "%f%"
+    map e $notepad %f%
+    map i $more %f%
     map w $cmd
 
 Configuration
@@ -465,9 +465,9 @@ You may want to use either file extensions or mime types from 'file' command:
 
 Following commands are provided by default:
 
-    cmd open-file &start "" "%f%"  # windows
-    cmd open-file &open "$f"       # mac
-    cmd open-file &xdg-open "$f"   # others
+    cmd open-file &start %f%      # windows
+    cmd open-file &open "$f"      # mac
+    cmd open-file &xdg-open "$f"  # others
 
 You may also use any other existing file openers as you like. Possible options
 are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's
