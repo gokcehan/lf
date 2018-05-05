@@ -7,10 +7,12 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"time"
 	"unicode"
 	"unicode/utf8"
 
@@ -409,11 +411,27 @@ func getWins() []*win {
 func newUI() *ui {
 	wtot, htot := termbox.Size()
 
-	evChan := make(chan termbox.Event)
-
+	evQueue := make(chan termbox.Event)
 	go func() {
 		for {
-			evChan <- termbox.PollEvent()
+			evQueue <- termbox.PollEvent()
+		}
+	}()
+
+	evChan := make(chan termbox.Event)
+	go func() {
+		for {
+			ev := <-evQueue
+			if ev.Type == termbox.EventKey && ev.Key == termbox.KeyEsc {
+				select {
+				case ev2 := <-evQueue:
+					ev2.Mod = termbox.ModAlt
+					evChan <- ev2
+					continue
+				case <-time.After(100 * time.Millisecond):
+				}
+			}
+			evChan <- ev
 		}
 	}()
 
@@ -697,6 +715,8 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 	return b
 }
 
+var altKey = regexp.MustCompile(`<a-(.)>`)
+
 func (ui *ui) pollEvent() termbox.Event {
 	select {
 	case key := <-ui.keyChan:
@@ -705,11 +725,15 @@ func (ui *ui) pollEvent() termbox.Event {
 		if len(key) == 1 {
 			ev.Ch, _ = utf8.DecodeRuneInString(key)
 		} else {
-			switch key {
-			case "<lt>":
+			switch {
+			case key == "<lt>":
 				ev.Ch = '<'
-			case "<gt>":
+			case key == "<gt>":
 				ev.Ch = '>'
+			case altKey.MatchString(key):
+				match := altKey.FindStringSubmatch(key)[1]
+				ev.Ch, _ = utf8.DecodeRuneInString(match)
+				ev.Mod = termbox.ModAlt
 			default:
 				if val, ok := gValKey[key]; ok {
 					ev.Key = val
@@ -728,7 +752,14 @@ func (ui *ui) pollEvent() termbox.Event {
 
 func readCmdEvent(ch chan<- expr, ev termbox.Event) {
 	if ev.Ch != 0 {
-		ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
+		if ev.Mod == termbox.ModAlt {
+			val := []rune{'<', 'a', '-', ev.Ch, '>'}
+			if expr, ok := gOpts.cmdkeys[string(val)]; ok {
+				ch <- expr
+			}
+		} else {
+			ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
+		}
 	} else {
 		val := gKeyVal[ev.Key]
 		if expr, ok := gOpts.cmdkeys[string(val)]; ok {
@@ -749,6 +780,8 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ui.keyAcc = append(ui.keyAcc, '<', 'l', 't', '>')
 			case ev.Ch == '>':
 				ui.keyAcc = append(ui.keyAcc, '<', 'g', 't', '>')
+			case ev.Mod == termbox.ModAlt:
+				ui.keyAcc = append(ui.keyAcc, '<', 'a', '-', ev.Ch, '>')
 			case unicode.IsDigit(ev.Ch) && len(ui.keyAcc) == 0:
 				ui.keyCount = append(ui.keyCount, ev.Ch)
 			default:
