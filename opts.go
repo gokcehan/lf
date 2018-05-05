@@ -117,7 +117,6 @@ func init() {
 
 	gOpts.cmdkeys = make(map[string]expr)
 
-	// TODO: rest of the keys
 	gOpts.cmdkeys["<space>"] = &callExpr{"cmd-insert", []string{" "}, 1}
 	gOpts.cmdkeys["<esc>"] = &callExpr{"cmd-escape", nil, 1}
 	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-comp", nil, 1}
@@ -143,6 +142,10 @@ func init() {
 	gOpts.cmdkeys["<c-y>"] = &callExpr{"cmd-put", nil, 1}
 	gOpts.cmdkeys["<c-t>"] = &callExpr{"cmd-transpose", nil, 1}
 	gOpts.cmdkeys["<c-c>"] = &callExpr{"cmd-interrupt", nil, 1}
+	gOpts.cmdkeys["<a-f>"] = &callExpr{"cmd-word", nil, 1}
+	gOpts.cmdkeys["<a-b>"] = &callExpr{"cmd-word-back", nil, 1}
+
+	// TODO: implement the rest of readline keys
 
 	gOpts.cmds = make(map[string]expr)
 

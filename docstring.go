@@ -75,6 +75,8 @@ keybindings:
     cmd-put          (default '<c-y>')
     cmd-transpose    (default '<c-t>')
     cmd-interrupt    (default '<c-c>')
+    cmd-word         (default '<a-f>')
+    cmd-word-back    (default '<a-b>')
 
 The following options can be used to customize the behavior of lf:
 

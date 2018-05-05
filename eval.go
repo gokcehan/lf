@@ -610,6 +610,26 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 		app.ui.cmdPrefix = ""
+	case "cmd-word":
+		if len(app.ui.cmdAccRight) > 0 {
+			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+			if loc == nil {
+				return
+			}
+			ind := loc[0] + 1
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
+			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		}
+	case "cmd-word-back":
+		if len(app.ui.cmdAccLeft) > 0 {
+			locs := reWordBeg.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+			if locs == nil {
+				return
+			}
+			ind := locs[len(locs)-1][1] - 1
+			app.ui.cmdAccRight = append(app.ui.cmdAccLeft[ind:], app.ui.cmdAccRight...)
+			app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
