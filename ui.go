@@ -22,29 +22,6 @@ import (
 
 const gEscapeCode = 27
 
-var gAnsiCodes = map[int]termbox.Attribute{
-	0:  termbox.ColorDefault,
-	1:  termbox.AttrBold,
-	4:  termbox.AttrUnderline,
-	7:  termbox.AttrReverse,
-	30: termbox.ColorBlack,
-	31: termbox.ColorRed,
-	32: termbox.ColorGreen,
-	33: termbox.ColorYellow,
-	34: termbox.ColorBlue,
-	35: termbox.ColorMagenta,
-	36: termbox.ColorCyan,
-	37: termbox.ColorWhite,
-	40: termbox.ColorBlack,
-	41: termbox.ColorRed,
-	42: termbox.ColorGreen,
-	43: termbox.ColorYellow,
-	44: termbox.ColorBlue,
-	45: termbox.ColorMagenta,
-	46: termbox.ColorCyan,
-	47: termbox.ColorWhite,
-}
-
 var gKeyVal = map[termbox.Key][]rune{
 	termbox.KeyF1:             {'<', 'f', '-', '1', '>'},
 	termbox.KeyF2:             {'<', 'f', '-', '2', '>'},

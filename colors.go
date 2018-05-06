@@ -12,6 +12,29 @@ import (
 
 const gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse
 
+var gAnsiCodes = map[int]termbox.Attribute{
+	0:  termbox.ColorDefault,
+	1:  termbox.AttrBold,
+	4:  termbox.AttrUnderline,
+	7:  termbox.AttrReverse,
+	30: termbox.ColorBlack,
+	31: termbox.ColorRed,
+	32: termbox.ColorGreen,
+	33: termbox.ColorYellow,
+	34: termbox.ColorBlue,
+	35: termbox.ColorMagenta,
+	36: termbox.ColorCyan,
+	37: termbox.ColorWhite,
+	40: termbox.ColorBlack,
+	41: termbox.ColorRed,
+	42: termbox.ColorGreen,
+	43: termbox.ColorYellow,
+	44: termbox.ColorBlue,
+	45: termbox.ColorMagenta,
+	46: termbox.ColorCyan,
+	47: termbox.ColorWhite,
+}
+
 type colorEntry struct {
 	fg termbox.Attribute
 	bg termbox.Attribute
@@ -57,13 +80,12 @@ func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, term
 	toks := strings.Split(s, ";")
 
 	var nums []int
-	for _, t := range toks {
-		if t == "" {
-			fg = termbox.ColorDefault
-			bg = termbox.ColorDefault
-			break
+	for _, tok := range toks {
+		if tok == "" {
+			nums = append(nums, 0)
+			continue
 		}
-		n, err := strconv.Atoi(t)
+		n, err := strconv.Atoi(tok)
 		if err != nil {
 			log.Printf("converting escape code: %s", err)
 			continue
@@ -71,17 +93,19 @@ func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, term
 		nums = append(nums, n)
 	}
 
-	// parse 256 color terminal ansi codes
-	if len(nums) == 3 {
-		if nums[0] == 48 && nums[1] == 5 {
-			bg = termbox.Attribute(nums[2] + 1)
+	for i := 0; i < len(nums); i++ {
+		n := nums[i]
+		switch {
+		case n == 38 && i+2 < len(nums) && nums[i+1] == 5:
+			fg &= gAnsiColorResetMask
+			fg |= termbox.Attribute(nums[i+2] + 1)
+			i += 2
+			continue
+		case n == 48 && i+2 < len(nums) && nums[i+1] == 5:
+			bg = termbox.Attribute(nums[i+2] + 1)
+			i += 2
+			continue
 		}
-		if nums[0] == 38 && nums[1] == 5 {
-			fg = termbox.Attribute(nums[2] + 1)
-		}
-	}
-
-	for _, n := range nums {
 		attr, ok := gAnsiCodes[n]
 		if !ok {
 			log.Printf("unknown ansi code: %d", n)
