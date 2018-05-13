@@ -147,6 +147,7 @@ func init() {
 	gOpts.cmdkeys["<a-c>"] = &callExpr{"cmd-capitalize-word", nil, 1}
 	gOpts.cmdkeys["<a-d>"] = &callExpr{"cmd-delete-word", nil, 1}
 	gOpts.cmdkeys["<a-u>"] = &callExpr{"cmd-uppercase-word", nil, 1}
+	gOpts.cmdkeys["<a-l>"] = &callExpr{"cmd-lowercase-word", nil, 1}
 
 	// TODO: implement the rest of readline keys
 
