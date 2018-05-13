@@ -651,6 +651,16 @@ func (e *callExpr) eval(app *app, args []string) {
 			ind := loc[0] + 1
 			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		}
+	case "cmd-uppercase-word":
+		if len(app.ui.cmdAccRight) > 0 {
+			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+			if loc == nil {
+				return
+			}
+			ind := loc[0] + 1
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight[:ind])))...)
+			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
