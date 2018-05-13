@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 )
 
@@ -629,6 +630,17 @@ func (e *callExpr) eval(app *app, args []string) {
 			ind := locs[len(locs)-1][1] - 1
 			app.ui.cmdAccRight = append(app.ui.cmdAccLeft[ind:], app.ui.cmdAccRight...)
 			app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		}
+	case "cmd-capitalize-word":
+		if len(app.ui.cmdAccRight) > 0 {
+			app.ui.cmdAccRight[0] = unicode.ToUpper(app.ui.cmdAccRight[0])
+			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+			if loc == nil {
+				return
+			}
+			ind := loc[0] + 1
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
+			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
