@@ -78,6 +78,7 @@ keybindings:
     cmd-word              (default '<a-f>')
     cmd-word-back         (default '<a-b>')
     cmd-capitalize-word   (default '<a-c>')
+    cmd-delete-word       (default '<a-d>')
 
 The following options can be used to customize the behavior of lf:
 
