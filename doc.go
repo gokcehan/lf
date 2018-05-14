@@ -77,6 +77,7 @@ keybindings:
     cmd-delete-word       (default '<a-d>')
     cmd-uppercase-word    (default '<a-u>')
     cmd-lowercase-word    (default '<a-l>')
+    cmd-transpose-word    (default '<a-t>')
 
 The following options can be used to customize the behavior of lf:
 

@@ -195,6 +195,7 @@ func naturalLess(s1, s2 string) bool {
 	return len(parts1) < len(parts2)
 }
 
+var reWord = regexp.MustCompile(`(\pL|\pN)+`)
 var reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
 var reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
 

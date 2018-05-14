@@ -671,6 +671,35 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight[:ind])))...)
 			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		}
+	case "cmd-transpose-word":
+		if len(app.ui.cmdAccLeft) > 0 {
+			locs := reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+			if len(locs) < 2 {
+				return
+			}
+
+			if len(app.ui.cmdAccRight) > 0 {
+				loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+				ind := loc[0] + 1
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
+				app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+			}
+
+			locs = reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+
+			beg1, end1 := locs[len(locs)-2][0], locs[len(locs)-2][1]
+			beg2, end2 := locs[len(locs)-1][0], locs[len(locs)-1][1]
+
+			var acc []rune
+
+			acc = append(acc, app.ui.cmdAccLeft[:beg1]...)
+			acc = append(acc, app.ui.cmdAccLeft[beg2:end2]...)
+			acc = append(acc, app.ui.cmdAccLeft[end1:beg2]...)
+			acc = append(acc, app.ui.cmdAccLeft[beg1:end1]...)
+			acc = append(acc, app.ui.cmdAccLeft[end2:]...)
+
+			app.ui.cmdAccLeft = acc
+		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
