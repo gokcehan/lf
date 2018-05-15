@@ -63,7 +63,7 @@ keybindings:
     cmd-delete-back       (default '<bs>' and '<bs2>')
     cmd-left              (default '<c-b>' and '<left>')
     cmd-right             (default '<c-f>' and '<right>')
-    cmd-beg               (default '<c-a>' and '<home>')
+    cmd-home              (default '<c-a>' and '<home>')
     cmd-end               (default '<c-e>' and '<end>')
     cmd-delete-beg        (default '<c-u>')
     cmd-delete-end        (default '<c-k>')

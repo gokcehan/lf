@@ -577,7 +577,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[0])
 			app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
 		}
-	case "cmd-beg":
+	case "cmd-home":
 		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
 		app.ui.cmdAccLeft = nil
 	case "cmd-end":
