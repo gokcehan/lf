@@ -65,7 +65,7 @@ keybindings:
     cmd-right             (default '<c-f>' and '<right>')
     cmd-home              (default '<c-a>' and '<home>')
     cmd-end               (default '<c-e>' and '<end>')
-    cmd-delete-beg        (default '<c-u>')
+    cmd-delete-home       (default '<c-u>')
     cmd-delete-end        (default '<c-k>')
     cmd-delete-unix-word  (default '<c-w>')
     cmd-put               (default '<c-y>')

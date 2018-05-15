@@ -136,7 +136,7 @@ func init() {
 	gOpts.cmdkeys["<c-a>"] = &callExpr{"cmd-home", nil, 1}
 	gOpts.cmdkeys["<end>"] = &callExpr{"cmd-end", nil, 1}
 	gOpts.cmdkeys["<c-e>"] = &callExpr{"cmd-end", nil, 1}
-	gOpts.cmdkeys["<c-u>"] = &callExpr{"cmd-delete-beg", nil, 1}
+	gOpts.cmdkeys["<c-u>"] = &callExpr{"cmd-delete-home", nil, 1}
 	gOpts.cmdkeys["<c-k>"] = &callExpr{"cmd-delete-end", nil, 1}
 	gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-unix-word", nil, 1}
 	gOpts.cmdkeys["<c-y>"] = &callExpr{"cmd-put", nil, 1}
