@@ -492,7 +492,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		case "%":
 			log.Printf("shell-pipe: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
-			app.cmdHist = append(app.cmdHist, cmdItem{"%", s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
 			return
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
@@ -525,36 +525,36 @@ func (e *callExpr) eval(app *app, args []string) {
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
-		app.cmdHist = append(app.cmdHist, cmdItem{app.ui.cmdPrefix, s})
+		app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 		app.ui.cmdPrefix = ""
-	case "cmd-hist-next":
+	case "cmd-history-next":
 		if app.ui.cmdPrefix == "" {
 			return
 		}
-		if app.cmdHistInd > 0 {
-			app.cmdHistInd--
+		if app.cmdHistoryInd > 0 {
+			app.cmdHistoryInd--
 		}
-		if app.cmdHistInd == 0 {
+		if app.cmdHistoryInd == 0 {
 			app.ui.menuBuf = nil
 			app.ui.cmdAccLeft = nil
 			app.ui.cmdAccRight = nil
 			app.ui.cmdPrefix = ""
 			return
 		}
-		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHistInd]
+		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 		app.ui.cmdAccRight = nil
 		app.ui.menuBuf = nil
-	case "cmd-hist-prev":
+	case "cmd-history-prev":
 		if app.ui.cmdPrefix == "" {
-			app.cmdHistInd = 0
+			app.cmdHistoryInd = 0
 		}
-		if app.cmdHistInd == len(app.cmdHist) {
+		if app.cmdHistoryInd == len(app.cmdHistory) {
 			return
 		}
-		app.cmdHistInd++
-		cmd := app.cmdHist[len(app.cmdHist)-app.cmdHistInd]
+		app.cmdHistoryInd++
+		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 		app.ui.cmdAccRight = nil

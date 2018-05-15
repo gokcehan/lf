@@ -17,14 +17,14 @@ type cmdItem struct {
 }
 
 type app struct {
-	ui         *ui
-	nav        *nav
-	quitChan   chan bool
-	cmd        *exec.Cmd
-	cmdIn      io.WriteCloser
-	cmdOutBuf  []byte
-	cmdHist    []cmdItem
-	cmdHistInd int
+	ui            *ui
+	nav           *nav
+	quitChan      chan bool
+	cmd           *exec.Cmd
+	cmdIn         io.WriteCloser
+	cmdOutBuf     []byte
+	cmdHistory    []cmdItem
+	cmdHistoryInd int
 }
 
 func newApp() *app {
