@@ -59,7 +59,7 @@ The following command line commands are provided by lf with default
 keybindings:
 
     cmd-escape            (default '<esc>')
-    cmd-comp              (default '<tab>')
+    cmd-complete          (default '<tab>')
     cmd-enter             (default '<c-j>' and '<enter>')
     cmd-hist-next         (default '<c-n>')
     cmd-hist-prev         (default '<c-p>')

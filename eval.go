@@ -455,12 +455,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 		app.ui.cmdPrefix = ""
-	case "cmd-comp":
+	case "cmd-complete":
 		var matches []string
 		if app.ui.cmdPrefix == ":" {
-			matches, app.ui.cmdAccLeft = compCmd(app.ui.cmdAccLeft)
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdAccLeft)
 		} else {
-			matches, app.ui.cmdAccLeft = compShell(app.ui.cmdAccLeft)
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdAccLeft)
 		}
 		app.ui.draw(app.nav)
 		if len(matches) > 1 {

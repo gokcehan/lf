@@ -228,7 +228,7 @@ func matchFile(s string) (matches []string, longest string) {
 	return
 }
 
-func compCmd(acc []rune) (matches []string, longestAcc []rune) {
+func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
@@ -267,7 +267,7 @@ func compCmd(acc []rune) (matches []string, longestAcc []rune) {
 	return
 }
 
-func compShell(acc []rune) (matches []string, longestAcc []rune) {
+func completeShell(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
