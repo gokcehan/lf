@@ -503,7 +503,7 @@ func (nav *nav) top() {
 	dir.pos = 0
 }
 
-func (nav *nav) bot() {
+func (nav *nav) bottom() {
 	dir := nav.currDir()
 
 	dir.ind = len(dir.fi) - 1

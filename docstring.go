@@ -26,7 +26,7 @@ The following commands are provided by lf with default keybindings:
     open         (default 'l' and '<right>')
     quit         (default 'q')
     top          (default 'gg')
-    bot          (default 'G')
+    bottom       (default 'G')
     toggle       (default '<space>')
     invert       (default 'v')
     unmark       (default 'u')

@@ -316,8 +316,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.top()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
-	case "bot":
-		app.nav.bot()
+	case "bottom":
+		app.nav.bottom()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":

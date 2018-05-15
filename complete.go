@@ -24,7 +24,7 @@ var (
 		"open",
 		"quit",
 		"top",
-		"bot",
+		"bottom",
 		"toggle",
 		"invert",
 		"unmark",
