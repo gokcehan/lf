@@ -597,7 +597,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
 		app.ui.cmdBuf = app.ui.cmdAccLeft[ind:]
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
-	case "cmd-put":
+	case "cmd-yank":
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdBuf...)
 	case "cmd-transpose":
 		if len(app.ui.cmdAccLeft) > 1 {

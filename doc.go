@@ -68,7 +68,7 @@ keybindings:
     cmd-delete-home       (default '<c-u>')
     cmd-delete-end        (default '<c-k>')
     cmd-delete-unix-word  (default '<c-w>')
-    cmd-put               (default '<c-y>')
+    cmd-yank              (default '<c-y>')
     cmd-transpose         (default '<c-t>')
     cmd-interrupt         (default '<c-c>')
     cmd-word              (default '<a-f>')
