@@ -633,12 +633,18 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-capitalize-word":
 		if len(app.ui.cmdAccRight) > 0 {
-			app.ui.cmdAccRight[0] = unicode.ToUpper(app.ui.cmdAccRight[0])
+			ind := 0
+			for ; ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]); ind++ {
+			}
+			if ind >= len(app.ui.cmdAccRight) {
+				return
+			}
+			app.ui.cmdAccRight[ind] = unicode.ToUpper(app.ui.cmdAccRight[ind])
 			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
 			if loc == nil {
 				return
 			}
-			ind := loc[0] + 1
+			ind = loc[0] + 1
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
 			app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		}
