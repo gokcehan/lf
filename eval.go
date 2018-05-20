@@ -489,24 +489,30 @@ func (e *callExpr) eval(app *app, args []string) {
 			if p.err != nil {
 				app.ui.printf("%s", p.err)
 			}
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.ui.cmdPrefix = ""
 		case "$":
 			log.Printf("shell: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.ui.cmdPrefix = ""
 		case "%":
 			log.Printf("shell-pipe: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
-			return
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
-			return
 		case "!":
 			log.Printf("shell-wait: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.ui.cmdPrefix = ""
 		case "&":
 			log.Printf("shell-async: %s", s)
 			app.runShell(s, nil, app.ui.cmdPrefix)
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.ui.cmdPrefix = ""
 		case "/":
 			log.Printf("search: %s", s)
 			app.nav.search = s
@@ -516,6 +522,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
+			app.ui.cmdPrefix = ""
 		case "?":
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
@@ -525,11 +532,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
+			app.ui.cmdPrefix = ""
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
-		app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
-		app.ui.cmdPrefix = ""
 	case "cmd-history-next":
 		if app.ui.cmdPrefix == "" {
 			return
