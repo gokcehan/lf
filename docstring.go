@@ -168,10 +168,11 @@ The following command prefixes are used by lf:
     /  search          search file in current directory
     ?  search-back     search file in the reverse order
 
-The same evaluator is used for the command line and the configuration file.
-The difference is that prefixes are not necessary in the command line.
-Instead different modes are provided to read corresponding commands. Note
-that by default these modes are mapped to the prefix keys above.
+The same evaluator is used for the command line and the configuration file
+for read and shell commands. The difference is that prefixes are not
+necessary in the command line. Instead, different modes are provided to read
+corresponding commands. These modes are mapped to the prefix keys above by
+default. Searching commands are only used from the command line.
 
 
 Syntax

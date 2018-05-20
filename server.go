@@ -16,12 +16,12 @@ var (
 )
 
 func serve() {
-	logFile, err := os.Create(gServerLogPath)
+	f, err := os.Create(gServerLogPath)
 	if err != nil {
 		panic(err)
 	}
-	defer logFile.Close()
-	log.SetOutput(logFile)
+	defer f.Close()
+	log.SetOutput(f)
 
 	log.Print("hi!")
 

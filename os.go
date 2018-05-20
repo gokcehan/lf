@@ -47,15 +47,15 @@ func init() {
 }
 
 func pauseCommand() *exec.Cmd {
-	c := `echo
-	      echo -n 'Press any key to continue'
-	      old=$(stty -g)
-	      stty raw -echo
-	      eval "ignore=\$(dd bs=1 count=1 2> /dev/null)"
-	      stty $old
-	      echo`
+	cmd := `echo
+	        echo -n 'Press any key to continue'
+	        old=$(stty -g)
+	        stty raw -echo
+	        eval "ignore=\$(dd bs=1 count=1 2> /dev/null)"
+	        stty $old
+	        echo`
 
-	return exec.Command(gOpts.shell, "-c", c)
+	return exec.Command(gOpts.shell, "-c", cmd)
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
@@ -80,10 +80,11 @@ func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
 	}
 
 	// XXX: POSIX standard states that -i flag shall do nothing when the
-	// response is not affirmative. Since this command is run with a nil stdin,
-	// it should not give an affirmative answer and in return this command
-	// should not overwrite existing files. Our intention here is to use the
-	// standard -i flag in place of non-standard -n flag to avoid overwrites.
+	// response is not affirmative. Since this command is run with a nil
+	// stdin, it should not give an affirmative answer and in return this
+	// command should not overwrite existing files. Our intention here is
+	// to use the standard -i flag in place of non-standard -n flag to
+	// avoid overwrites.
 	args = append(args, "-i")
 
 	args = append(args, list...)

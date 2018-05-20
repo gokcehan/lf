@@ -27,21 +27,7 @@ type file struct {
 	os.FileInfo
 	linkState linkState
 	path      string
-	count     int
-}
-
-type filesSortable struct {
-	files []*file
-	less  func(i, j int) bool
-}
-
-func (f filesSortable) Len() int           { return len(f.files) }
-func (f filesSortable) Swap(i, j int)      { f.files[i], f.files[j] = f.files[j], f.files[i] }
-func (f filesSortable) Less(i, j int) bool { return f.less(i, j) }
-
-// TODO: Replace with `sort.SliceStable` once available
-func sortFilesStable(files []*file, less func(i, j int) bool) {
-	sort.Stable(filesSortable{files: files, less: less})
+	dirCount  int
 }
 
 func readdir(path string) ([]*file, error) {
@@ -49,61 +35,59 @@ func readdir(path string) ([]*file, error) {
 	if err != nil {
 		return nil, err
 	}
-
 	names, err := f.Readdirnames(-1)
 	f.Close()
 
-	fi := make([]*file, 0, len(names))
-	for _, filename := range names {
-		fpath := filepath.Join(path, filename)
+	files := make([]*file, 0, len(names))
+	for _, fname := range names {
+		fpath := filepath.Join(path, fname)
 
-		lstat, lerr := os.Lstat(fpath)
-		if os.IsNotExist(lerr) {
+		lstat, err := os.Lstat(fpath)
+		if os.IsNotExist(err) {
 			continue
 		}
-		if lerr != nil {
-			return fi, lerr
+		if err != nil {
+			return files, err
 		}
 
 		var linkState linkState
 
 		if lstat.Mode()&os.ModeSymlink != 0 {
-			stat, serr := os.Stat(fpath)
-			if serr == nil {
+			stat, err := os.Stat(fpath)
+			if err == nil {
 				linkState = working
 				lstat = stat
 			} else {
 				linkState = broken
-				log.Printf("getting link destination info: %s", serr)
 			}
 		}
 
-		fi = append(fi, &file{
+		files = append(files, &file{
 			FileInfo:  lstat,
 			linkState: linkState,
 			path:      fpath,
-			count:     -1,
+			dirCount:  -1,
 		})
 	}
 
-	return fi, err
+	return files, err
 }
 
 type dir struct {
 	loading  bool      // directory is loading from disk
 	loadTime time.Time // current loading or last load time
-	ind      int       // index of current entry in fi
+	ind      int       // index of current entry in files
 	pos      int       // position of current entry in ui
 	path     string    // full path of directory
-	fi       []*file   // displayed files in directory including or excluding hidden ones
-	all      []*file   // all files in directory including hidden ones (same array as fi)
+	files    []*file   // displayed files in directory including or excluding hidden ones
+	allFiles []*file   // all files in directory including hidden ones (same array as files)
 	sortType sortType  // sort method and options from last sort
 }
 
 func newDir(path string) *dir {
 	time := time.Now()
 
-	fi, err := readdir(path)
+	files, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
@@ -111,57 +95,47 @@ func newDir(path string) *dir {
 	return &dir{
 		loadTime: time,
 		path:     path,
-		fi:       fi,
-		all:      fi,
+		files:    files,
+		allFiles: files,
 	}
-}
-
-func (dir *dir) renew() {
-	fi, err := readdir(dir.path)
-	if err != nil {
-		log.Printf("reading directory: %s", err)
-	}
-
-	dir.fi = fi
-	dir.all = fi
 }
 
 func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
 
-	dir.fi = dir.all
+	dir.files = dir.allFiles
 
 	switch gOpts.sortType.method {
 	case naturalSort:
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			return naturalLess(strings.ToLower(dir.fi[i].Name()), strings.ToLower(dir.fi[j].Name()))
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return naturalLess(strings.ToLower(dir.files[i].Name()), strings.ToLower(dir.files[j].Name()))
 		})
 	case nameSort:
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			return strings.ToLower(dir.fi[i].Name()) < strings.ToLower(dir.fi[j].Name())
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return strings.ToLower(dir.files[i].Name()) < strings.ToLower(dir.files[j].Name())
 		})
 	case sizeSort:
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			return dir.fi[i].Size() < dir.fi[j].Size()
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].Size() < dir.files[j].Size()
 		})
 	case timeSort:
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			return dir.fi[i].ModTime().Before(dir.fi[j].ModTime())
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
 		})
 	}
 
 	if gOpts.sortType.option&reverseSort != 0 {
-		for i, j := 0, len(dir.fi)-1; i < j; i, j = i+1, j-1 {
-			dir.fi[i], dir.fi[j] = dir.fi[j], dir.fi[i]
+		for i, j := 0, len(dir.files)-1; i < j; i, j = i+1, j-1 {
+			dir.files[i], dir.files[j] = dir.files[j], dir.files[i]
 		}
 	}
 
 	if gOpts.sortType.option&dirfirstSort != 0 {
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			if dir.fi[i].IsDir() == dir.fi[j].IsDir() {
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			if dir.files[i].IsDir() == dir.files[j].IsDir() {
 				return i < j
 			}
-			return dir.fi[i].IsDir()
+			return dir.files[i].IsDir()
 		})
 	}
 
@@ -169,39 +143,39 @@ func (dir *dir) sort() {
 	// beginning of our file list and then set the beginning of displayed
 	// files to the first non-hidden file in the list
 	if gOpts.sortType.option&hiddenSort == 0 {
-		sortFilesStable(dir.fi, func(i, j int) bool {
-			if dir.fi[i].Name()[0] == '.' && dir.fi[j].Name()[0] == '.' {
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			if dir.files[i].Name()[0] == '.' && dir.files[j].Name()[0] == '.' {
 				return i < j
 			}
-			return dir.fi[i].Name()[0] == '.'
+			return dir.files[i].Name()[0] == '.'
 		})
-		for i, f := range dir.fi {
+		for i, f := range dir.files {
 			if f.Name()[0] != '.' {
-				dir.fi = dir.fi[i:]
+				dir.files = dir.files[i:]
 				return
 			}
 		}
-		dir.fi = dir.fi[len(dir.fi):]
+		dir.files = dir.files[len(dir.files):]
 	}
 }
 
 func (dir *dir) name() string {
-	if len(dir.fi) == 0 {
+	if len(dir.files) == 0 {
 		return ""
 	}
-	return dir.fi[dir.ind].Name()
+	return dir.files[dir.ind].Name()
 }
 
 func (dir *dir) find(name string, height int) {
-	if len(dir.fi) == 0 {
+	if len(dir.files) == 0 {
 		dir.ind, dir.pos = 0, 0
 		return
 	}
 
-	dir.ind = min(dir.ind, len(dir.fi)-1)
+	dir.ind = min(dir.ind, len(dir.files)-1)
 
-	if dir.fi[dir.ind].Name() != name {
-		for i, f := range dir.fi {
+	if dir.files[dir.ind].Name() != name {
+		for i, f := range dir.files {
 			if f.Name() == name {
 				dir.ind = i
 				break
@@ -209,7 +183,7 @@ func (dir *dir) find(name string, height int) {
 		}
 	}
 
-	edge := min(min(height/2, gOpts.scrolloff), len(dir.fi)-dir.ind-1)
+	edge := min(min(height/2, gOpts.scrolloff), len(dir.files)-dir.ind-1)
 	dir.pos = min(dir.ind, height-edge-1)
 }
 
@@ -226,34 +200,32 @@ type nav struct {
 	search   string
 }
 
-func newNav(height int) *nav {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
+func (nav *nav) loadDir(path string) *dir {
+	d, ok := nav.dirCache[path]
+	if !ok {
+		go func() {
+			d := newDir(path)
+			d.sort()
+			d.ind, d.pos = 0, 0
+			nav.dirChan <- d
+		}()
+		d := &dir{loading: true, path: path, sortType: gOpts.sortType}
+		nav.dirCache[path] = d
+		return d
 	}
 
-	nav := &nav{
-		dirChan:  make(chan *dir),
-		regChan:  make(chan *reg),
-		dirCache: make(map[string]*dir),
-		regCache: make(map[string]*reg),
-		marks:    make(map[string]int),
-		saves:    make(map[string]bool),
-		markInd:  0,
-		height:   height,
+	if d.sortType != gOpts.sortType {
+		go func() {
+			d.loading = true
+			name := d.name()
+			d.sort()
+			d.find(name, nav.height)
+			d.loading = false
+			nav.dirChan <- d
+		}()
 	}
 
-	nav.getDirs(wd)
-
-	return nav
-}
-
-func (nav *nav) position() {
-	path := nav.currDir().path
-	for i := len(nav.dirs) - 2; i >= 0; i-- {
-		nav.dirs[i].find(filepath.Base(path), nav.height)
-		path = filepath.Dir(path)
-	}
+	return d
 }
 
 func (nav *nav) getDirs(wd string) {
@@ -270,6 +242,28 @@ func (nav *nav) getDirs(wd string) {
 	}
 
 	nav.dirs = dirs
+}
+
+func newNav(height int) *nav {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
+
+	nav := &nav{
+		dirChan:  make(chan *dir),
+		regChan:  make(chan *reg),
+		dirCache: make(map[string]*dir),
+		regCache: make(map[string]*reg),
+		saves:    make(map[string]bool),
+		marks:    make(map[string]int),
+		markInd:  0,
+		height:   height,
+	}
+
+	nav.getDirs(wd)
+
+	return nav
 }
 
 func (nav *nav) renew() {
@@ -317,36 +311,16 @@ func (nav *nav) reload() {
 	nav.getDirs(wd)
 	if err == nil {
 		last := nav.dirs[len(nav.dirs)-1]
-		last.fi = append(last.fi, curr)
+		last.files = append(last.files, curr)
 	}
 }
 
-func (nav *nav) loadDir(path string) *dir {
-	d, ok := nav.dirCache[path]
-	if !ok {
-		go func() {
-			d := newDir(path)
-			d.sort()
-			d.ind, d.pos = 0, 0
-			nav.dirChan <- d
-		}()
-		d := &dir{loading: true, path: path, sortType: gOpts.sortType}
-		nav.dirCache[path] = d
-		return d
+func (nav *nav) position() {
+	path := nav.currDir().path
+	for i := len(nav.dirs) - 2; i >= 0; i-- {
+		nav.dirs[i].find(filepath.Base(path), nav.height)
+		path = filepath.Dir(path)
 	}
-
-	if d.sortType != gOpts.sortType {
-		go func() {
-			d.loading = true
-			name := d.name()
-			d.sort()
-			d.find(name, nav.height)
-			d.loading = false
-			nav.dirChan <- d
-		}()
-	}
-
-	return d
 }
 
 func (nav *nav) preview() {
@@ -441,7 +415,7 @@ func (nav *nav) up(dist int) {
 func (nav *nav) down(dist int) {
 	dir := nav.currDir()
 
-	maxind := len(dir.fi) - 1
+	maxind := len(dir.files) - 1
 
 	if dir.ind >= maxind {
 		return
@@ -506,7 +480,7 @@ func (nav *nav) top() {
 func (nav *nav) bottom() {
 	dir := nav.currDir()
 
-	dir.ind = len(dir.fi) - 1
+	dir.ind = len(dir.files) - 1
 	dir.pos = min(dir.ind, nav.height-1)
 }
 
@@ -535,7 +509,7 @@ func (nav *nav) toggle() {
 
 func (nav *nav) invert() {
 	last := nav.currDir()
-	for _, f := range last.fi {
+	for _, f := range last.files {
 		path := filepath.Join(last.path, f.Name())
 		nav.toggleMark(path)
 	}
@@ -647,7 +621,7 @@ func (nav *nav) find(path string) error {
 
 	last := nav.dirs[len(nav.dirs)-1]
 	if last.loading {
-		last.fi = append(last.fi, &file{FileInfo: lstat})
+		last.files = append(last.files, &file{FileInfo: lstat})
 	} else {
 		last.find(base, nav.height)
 	}
@@ -671,8 +645,8 @@ func match(pattern, name string) (matched bool, err error) {
 
 func (nav *nav) searchNext() error {
 	last := nav.currDir()
-	for i := last.ind + 1; i < len(last.fi); i++ {
-		matched, err := match(nav.search, last.fi[i].Name())
+	for i := last.ind + 1; i < len(last.files); i++ {
+		matched, err := match(nav.search, last.files[i].Name())
 		if err != nil {
 			return err
 		}
@@ -683,7 +657,7 @@ func (nav *nav) searchNext() error {
 	}
 	if gOpts.wrapscan {
 		for i := 0; i < last.ind; i++ {
-			matched, err := match(nav.search, last.fi[i].Name())
+			matched, err := match(nav.search, last.files[i].Name())
 			if err != nil {
 				return err
 			}
@@ -699,7 +673,7 @@ func (nav *nav) searchNext() error {
 func (nav *nav) searchPrev() error {
 	last := nav.currDir()
 	for i := last.ind - 1; i >= 0; i-- {
-		matched, err := match(nav.search, last.fi[i].Name())
+		matched, err := match(nav.search, last.files[i].Name())
 		if err != nil {
 			return err
 		}
@@ -709,8 +683,8 @@ func (nav *nav) searchPrev() error {
 		}
 	}
 	if gOpts.wrapscan {
-		for i := len(last.fi) - 1; i > last.ind; i-- {
-			matched, err := match(nav.search, last.fi[i].Name())
+		for i := len(last.files) - 1; i > last.ind; i-- {
+			matched, err := match(nav.search, last.files[i].Name())
 			if err != nil {
 				return err
 			}
@@ -730,10 +704,10 @@ func (nav *nav) currDir() *dir {
 func (nav *nav) currFile() (*file, error) {
 	last := nav.dirs[len(nav.dirs)-1]
 
-	if len(last.fi) == 0 {
+	if len(last.files) == 0 {
 		return nil, fmt.Errorf("empty directory")
 	}
-	return last.fi[last.ind], nil
+	return last.files[last.ind], nil
 }
 
 type indexedMarks struct {

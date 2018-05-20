@@ -23,7 +23,7 @@ package main
 // ExecExpr = Prefix      <value>      '\n'
 //          | Prefix '{{' <value> '}}' ';'
 //
-// Prefix   = '$' | '!' | '&' | '/' | '?'
+// Prefix   = '$' | '%' | '!' | '&'
 //
 // ListExpr = ':'      Expr ListRest      '\n'
 //          | ':' '{{' Expr ListRest '}}' ';'

@@ -49,6 +49,7 @@ func (app *app) readFile(path string) {
 	defer f.Close()
 
 	p := newParser(f)
+
 	for p.parse() {
 		p.expr.eval(app, nil)
 	}
@@ -58,9 +59,10 @@ func (app *app) readFile(path string) {
 	}
 }
 
-// This is the main event loop of the application. There are two channels to
-// read expressions from client and server. Reading and evaluation are done on
-// separate goroutines.
+// This is the main event loop of the application. Expressions are read from
+// the client and the server on separate goroutines and sent here over channels
+// for evaluation. Similarly directories and regular files are also read in
+// separate goroutines and sent here for update.
 func (app *app) loop() {
 	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
@@ -170,13 +172,13 @@ func waitKey() error {
 	return nil
 }
 
-// This function is used to run a command in shell. Following modes are used:
+// This function is used to run a shell command. Modes are as follows:
 //
-// Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
-// $       No    No     Yes    Yes     Yes     Pause and then resume
-// %       No    No     Yes    Yes     Yes     Use statline for input/output
-// !       Yes   No     Yes    Yes     Yes     Pause and then resume
-// &       No    Yes    No     No      No      Do nothing
+//     Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
+//     $       No    No     Yes    Yes     Yes     Pause and then resume
+//     %       No    No     Yes    Yes     Yes     Statline for input/output
+//     !       Yes   No     Yes    Yes     Yes     Pause and then resume
+//     &       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.exportVars()
 

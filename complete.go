@@ -108,13 +108,15 @@ func matchLongest(s1, s2 string) string {
 
 func matchWord(s string, words []string) (matches []string, longest string) {
 	for _, w := range words {
-		if strings.HasPrefix(w, s) {
-			matches = append(matches, w)
-			if longest != "" {
-				longest = matchLongest(longest, w)
-			} else if s != "" {
-				longest = w + " "
-			}
+		if !strings.HasPrefix(w, s) {
+			continue
+		}
+
+		matches = append(matches, w)
+		if longest != "" {
+			longest = matchLongest(longest, w)
+		} else if s != "" {
+			longest = w + " "
 		}
 	}
 
@@ -135,25 +137,27 @@ func matchExec(s string) (matches []string, longest string) {
 			continue
 		}
 
-		fi, err := ioutil.ReadDir(p)
+		files, err := ioutil.ReadDir(p)
 		if err != nil {
 			log.Printf("reading path: %s", err)
 		}
 
-		for _, f := range fi {
-			if strings.HasPrefix(f.Name(), s) {
-				f, err = os.Stat(filepath.Join(p, f.Name()))
-				if err != nil {
-					log.Printf("getting file information: %s", err)
-					continue
-				}
-
-				if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
-					continue
-				}
-
-				words = append(words, f.Name())
+		for _, f := range files {
+			if !strings.HasPrefix(f.Name(), s) {
+				continue
 			}
+
+			f, err = os.Stat(filepath.Join(p, f.Name()))
+			if err != nil {
+				log.Printf("getting file information: %s", err)
+				continue
+			}
+
+			if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
+				continue
+			}
+
+			words = append(words, f.Name())
 		}
 	}
 
@@ -185,12 +189,12 @@ func matchFile(s string) (matches []string, longest string) {
 
 	dir = unescape(filepath.Dir(dir))
 
-	fi, err := ioutil.ReadDir(dir)
+	files, err := ioutil.ReadDir(dir)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
-	for _, f := range fi {
+	for _, f := range files {
 		f, err := os.Stat(filepath.Join(dir, f.Name()))
 		if err != nil {
 			log.Printf("getting file information: %s", err)
@@ -198,25 +202,29 @@ func matchFile(s string) (matches []string, longest string) {
 		}
 
 		_, last := filepath.Split(s)
-		if strings.HasPrefix(escape(f.Name()), last) {
-			name := f.Name()
-			if isRoot(s) || filepath.Base(s) != s {
-				name = filepath.Join(filepath.Dir(s), f.Name())
-			}
-			name = escape(name)
-			item := f.Name()
-			if f.Mode().IsDir() {
-				item += string(filepath.Separator)
-			}
-			matches = append(matches, item)
-			if longest != "" {
-				longest = matchLongest(longest, name)
-			} else if s != "" {
-				if f.Mode().IsRegular() {
-					longest = name + " "
-				} else {
-					longest = name + string(filepath.Separator)
-				}
+		if !strings.HasPrefix(escape(f.Name()), last) {
+			continue
+		}
+
+		name := f.Name()
+		if isRoot(s) || filepath.Base(s) != s {
+			name = filepath.Join(filepath.Dir(s), f.Name())
+		}
+		name = escape(name)
+
+		item := f.Name()
+		if f.Mode().IsDir() {
+			item += string(filepath.Separator)
+		}
+		matches = append(matches, item)
+
+		if longest != "" {
+			longest = matchLongest(longest, name)
+		} else if s != "" {
+			if f.Mode().IsRegular() {
+				longest = name + " "
+			} else {
+				longest = name + string(filepath.Separator)
 			}
 		}
 	}

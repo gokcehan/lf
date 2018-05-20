@@ -13,13 +13,13 @@ import (
 )
 
 func run() {
-	logFile, err := os.Create(gLogPath)
+	f, err := os.Create(gLogPath)
 	if err != nil {
 		panic(err)
 	}
 	defer os.Remove(gLogPath)
-	defer logFile.Close()
-	log.SetOutput(logFile)
+	defer f.Close()
+	log.SetOutput(f)
 
 	log.Print("hi!")
 

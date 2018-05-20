@@ -195,6 +195,8 @@ func naturalLess(s1, s2 string) bool {
 	return len(parts1) < len(parts2)
 }
 
+var reAltKey = regexp.MustCompile(`<a-(.)>`)
+
 var reWord = regexp.MustCompile(`(\pL|\pN)+`)
 var reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
 var reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
@@ -214,7 +216,7 @@ func max(a, b int) int {
 }
 
 // We don't need no generic code
-// We don't need no thought control
+// We don't need no type control
 // No dark templates in compiler
 // Haskell leave them kids alone
 // Hey Bjarne leave them kids alone

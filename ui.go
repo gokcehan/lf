@@ -7,7 +7,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"regexp"
 	"sort"
 	"strconv"
 	"strings"
@@ -22,63 +21,63 @@ import (
 
 const gEscapeCode = 27
 
-var gKeyVal = map[termbox.Key][]rune{
-	termbox.KeyF1:             {'<', 'f', '-', '1', '>'},
-	termbox.KeyF2:             {'<', 'f', '-', '2', '>'},
-	termbox.KeyF3:             {'<', 'f', '-', '3', '>'},
-	termbox.KeyF4:             {'<', 'f', '-', '4', '>'},
-	termbox.KeyF5:             {'<', 'f', '-', '5', '>'},
-	termbox.KeyF6:             {'<', 'f', '-', '6', '>'},
-	termbox.KeyF7:             {'<', 'f', '-', '7', '>'},
-	termbox.KeyF8:             {'<', 'f', '-', '8', '>'},
-	termbox.KeyF9:             {'<', 'f', '-', '9', '>'},
-	termbox.KeyF10:            {'<', 'f', '-', '1', '0', '>'},
-	termbox.KeyF11:            {'<', 'f', '-', '1', '1', '>'},
-	termbox.KeyF12:            {'<', 'f', '-', '1', '2', '>'},
-	termbox.KeyInsert:         {'<', 'i', 'n', 's', 'e', 'r', 't', '>'},
-	termbox.KeyDelete:         {'<', 'd', 'e', 'l', 'e', 't', 'e', '>'},
-	termbox.KeyHome:           {'<', 'h', 'o', 'm', 'e', '>'},
-	termbox.KeyEnd:            {'<', 'e', 'n', 'd', '>'},
-	termbox.KeyPgup:           {'<', 'p', 'g', 'u', 'p', '>'},
-	termbox.KeyPgdn:           {'<', 'p', 'g', 'd', 'n', '>'},
-	termbox.KeyArrowUp:        {'<', 'u', 'p', '>'},
-	termbox.KeyArrowDown:      {'<', 'd', 'o', 'w', 'n', '>'},
-	termbox.KeyArrowLeft:      {'<', 'l', 'e', 'f', 't', '>'},
-	termbox.KeyArrowRight:     {'<', 'r', 'i', 'g', 'h', 't', '>'},
-	termbox.KeyCtrlSpace:      {'<', 'c', '-', 's', 'p', 'a', 'c', 'e', '>'},
-	termbox.KeyCtrlA:          {'<', 'c', '-', 'a', '>'},
-	termbox.KeyCtrlB:          {'<', 'c', '-', 'b', '>'},
-	termbox.KeyCtrlC:          {'<', 'c', '-', 'c', '>'},
-	termbox.KeyCtrlD:          {'<', 'c', '-', 'd', '>'},
-	termbox.KeyCtrlE:          {'<', 'c', '-', 'e', '>'},
-	termbox.KeyCtrlF:          {'<', 'c', '-', 'f', '>'},
-	termbox.KeyCtrlG:          {'<', 'c', '-', 'g', '>'},
-	termbox.KeyBackspace:      {'<', 'b', 's', '>'},
-	termbox.KeyTab:            {'<', 't', 'a', 'b', '>'},
-	termbox.KeyCtrlJ:          {'<', 'c', '-', 'j', '>'},
-	termbox.KeyCtrlK:          {'<', 'c', '-', 'k', '>'},
-	termbox.KeyCtrlL:          {'<', 'c', '-', 'l', '>'},
-	termbox.KeyEnter:          {'<', 'e', 'n', 't', 'e', 'r', '>'},
-	termbox.KeyCtrlN:          {'<', 'c', '-', 'n', '>'},
-	termbox.KeyCtrlO:          {'<', 'c', '-', 'o', '>'},
-	termbox.KeyCtrlP:          {'<', 'c', '-', 'p', '>'},
-	termbox.KeyCtrlQ:          {'<', 'c', '-', 'q', '>'},
-	termbox.KeyCtrlR:          {'<', 'c', '-', 'r', '>'},
-	termbox.KeyCtrlS:          {'<', 'c', '-', 's', '>'},
-	termbox.KeyCtrlT:          {'<', 'c', '-', 't', '>'},
-	termbox.KeyCtrlU:          {'<', 'c', '-', 'u', '>'},
-	termbox.KeyCtrlV:          {'<', 'c', '-', 'v', '>'},
-	termbox.KeyCtrlW:          {'<', 'c', '-', 'w', '>'},
-	termbox.KeyCtrlX:          {'<', 'c', '-', 'x', '>'},
-	termbox.KeyCtrlY:          {'<', 'c', '-', 'y', '>'},
-	termbox.KeyCtrlZ:          {'<', 'c', '-', 'z', '>'},
-	termbox.KeyEsc:            {'<', 'e', 's', 'c', '>'},
-	termbox.KeyCtrlBackslash:  {'<', 'c', '-', '\\', '>'},
-	termbox.KeyCtrlRsqBracket: {'<', 'c', '-', ']', '>'},
-	termbox.KeyCtrl6:          {'<', 'c', '-', '6', '>'},
-	termbox.KeyCtrlSlash:      {'<', 'c', '-', '/', '>'},
-	termbox.KeySpace:          {'<', 's', 'p', 'a', 'c', 'e', '>'},
-	termbox.KeyBackspace2:     {'<', 'b', 's', '2', '>'},
+var gKeyVal = map[termbox.Key]string{
+	termbox.KeyF1:             "<f-1>",
+	termbox.KeyF2:             "<f-2>",
+	termbox.KeyF3:             "<f-3>",
+	termbox.KeyF4:             "<f-4>",
+	termbox.KeyF5:             "<f-5>",
+	termbox.KeyF6:             "<f-6>",
+	termbox.KeyF7:             "<f-7>",
+	termbox.KeyF8:             "<f-8>",
+	termbox.KeyF9:             "<f-9>",
+	termbox.KeyF10:            "<f-10>",
+	termbox.KeyF11:            "<f-11>",
+	termbox.KeyF12:            "<f-12>",
+	termbox.KeyInsert:         "<insert>",
+	termbox.KeyDelete:         "<delete>",
+	termbox.KeyHome:           "<home>",
+	termbox.KeyEnd:            "<end>",
+	termbox.KeyPgup:           "<pgup>",
+	termbox.KeyPgdn:           "<pgdn>",
+	termbox.KeyArrowUp:        "<up>",
+	termbox.KeyArrowDown:      "<down>",
+	termbox.KeyArrowLeft:      "<left>",
+	termbox.KeyArrowRight:     "<right>",
+	termbox.KeyCtrlSpace:      "<c-space>",
+	termbox.KeyCtrlA:          "<c-a>",
+	termbox.KeyCtrlB:          "<c-b>",
+	termbox.KeyCtrlC:          "<c-c>",
+	termbox.KeyCtrlD:          "<c-d>",
+	termbox.KeyCtrlE:          "<c-e>",
+	termbox.KeyCtrlF:          "<c-f>",
+	termbox.KeyCtrlG:          "<c-g>",
+	termbox.KeyBackspace:      "<bs>",
+	termbox.KeyTab:            "<tab>",
+	termbox.KeyCtrlJ:          "<c-j>",
+	termbox.KeyCtrlK:          "<c-k>",
+	termbox.KeyCtrlL:          "<c-l>",
+	termbox.KeyEnter:          "<enter>",
+	termbox.KeyCtrlN:          "<c-n>",
+	termbox.KeyCtrlO:          "<c-o>",
+	termbox.KeyCtrlP:          "<c-p>",
+	termbox.KeyCtrlQ:          "<c-q>",
+	termbox.KeyCtrlR:          "<c-r>",
+	termbox.KeyCtrlS:          "<c-s>",
+	termbox.KeyCtrlT:          "<c-t>",
+	termbox.KeyCtrlU:          "<c-u>",
+	termbox.KeyCtrlV:          "<c-v>",
+	termbox.KeyCtrlW:          "<c-w>",
+	termbox.KeyCtrlX:          "<c-x>",
+	termbox.KeyCtrlY:          "<c-y>",
+	termbox.KeyCtrlZ:          "<c-z>",
+	termbox.KeyEsc:            "<esc>",
+	termbox.KeyCtrlBackslash:  "<c-\\>",
+	termbox.KeyCtrlRsqBracket: "<c-]>",
+	termbox.KeyCtrl6:          "<c-6>",
+	termbox.KeyCtrlSlash:      "<c-/>",
+	termbox.KeySpace:          "<space>",
+	termbox.KeyBackspace2:     "<bs2>",
 }
 
 var gValKey map[string]termbox.Key
@@ -86,7 +85,7 @@ var gValKey map[string]termbox.Key
 func init() {
 	gValKey = make(map[string]termbox.Key)
 	for k, v := range gKeyVal {
-		gValKey[string(v)] = k
+		gValKey[v] = k
 	}
 }
 
@@ -202,27 +201,27 @@ func fileInfo(f *file, d *dir) string {
 				continue
 			}
 
-			if f.count == -1 {
+			if f.dirCount == -1 {
 				d, err := os.Open(path)
 				if err != nil {
-					f.count = -2
+					f.dirCount = -2
 				}
 
 				names, err := d.Readdirnames(1000)
 				d.Close()
 
 				if names == nil && err != io.EOF {
-					f.count = -2
+					f.dirCount = -2
 				} else {
-					f.count = len(names)
+					f.dirCount = len(names)
 				}
 			}
 
 			switch {
-			case f.count < 0:
+			case f.dirCount < 0:
 				info = fmt.Sprintf("%s    ?", info)
-			case f.count < 1000:
-				info = fmt.Sprintf("%s %4d", info, f.count)
+			case f.dirCount < 1000:
+				info = fmt.Sprintf("%s %4d", info, f.dirCount)
 			default:
 				info = fmt.Sprintf("%s 999+", info)
 			}
@@ -249,20 +248,20 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, 
 		return
 	}
 
-	if len(dir.fi) == 0 {
+	if len(dir.files) == 0 {
 		fg = termbox.AttrBold
 		win.print(2, 0, fg, bg, "empty")
 		return
 	}
 
 	beg := max(dir.ind-dir.pos, 0)
-	end := min(beg+win.h, len(dir.fi))
+	end := min(beg+win.h, len(dir.files))
 
 	if beg > end {
 		return
 	}
 
-	for i, f := range dir.fi[beg:end] {
+	for i, f := range dir.files[beg:end] {
 		fg, bg = colors.get(f)
 
 		path := filepath.Join(dir.path, f.Name())
@@ -335,7 +334,7 @@ type ui struct {
 	cmdPrefix   string
 	cmdAccLeft  []rune
 	cmdAccRight []rune
-	cmdBuf      []rune
+	cmdYankBuf  []rune
 	keyAcc      []rune
 	keyCount    []rune
 	colors      colorMap
@@ -343,8 +342,8 @@ type ui struct {
 
 func getWidths(wtot int) []int {
 	rsum := 0
-	for _, rat := range gOpts.ratios {
-		rsum += rat
+	for _, r := range gOpts.ratios {
+		rsum += r
 	}
 
 	wlen := len(gOpts.ratios)
@@ -538,7 +537,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 
 	ui.msgWin.print(0, 0, fg, bg, ui.msg)
 
-	tot := len(currDir.fi)
+	tot := len(currDir.files)
 	ind := min(currDir.ind+1, tot)
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
@@ -662,11 +661,12 @@ func (ui *ui) draw(nav *nav) {
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
 	binds = make(map[string]expr)
 	for key, expr := range keys {
-		if strings.HasPrefix(key, prefix) {
-			binds[key] = expr
-			if key == prefix {
-				ok = true
-			}
+		if !strings.HasPrefix(key, prefix) {
+			continue
+		}
+		binds[key] = expr
+		if key == prefix {
+			ok = true
 		}
 	}
 	return
@@ -692,8 +692,6 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 	return b
 }
 
-var altKey = regexp.MustCompile(`<a-(.)>`)
-
 func (ui *ui) pollEvent() termbox.Event {
 	select {
 	case key := <-ui.keyChan:
@@ -707,8 +705,8 @@ func (ui *ui) pollEvent() termbox.Event {
 				ev.Ch = '<'
 			case key == "<gt>":
 				ev.Ch = '>'
-			case altKey.MatchString(key):
-				match := altKey.FindStringSubmatch(key)[1]
+			case reAltKey.MatchString(key):
+				match := reAltKey.FindStringSubmatch(key)[1]
 				ev.Ch, _ = utf8.DecodeRuneInString(match)
 				ev.Mod = termbox.ModAlt
 			default:
@@ -727,24 +725,9 @@ func (ui *ui) pollEvent() termbox.Event {
 	}
 }
 
-func readCmdEvent(ch chan<- expr, ev termbox.Event) {
-	if ev.Ch != 0 {
-		if ev.Mod == termbox.ModAlt {
-			val := []rune{'<', 'a', '-', ev.Ch, '>'}
-			if expr, ok := gOpts.cmdkeys[string(val)]; ok {
-				ch <- expr
-			}
-		} else {
-			ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
-		}
-	} else {
-		val := gKeyVal[ev.Key]
-		if expr, ok := gOpts.cmdkeys[string(val)]; ok {
-			ch <- expr
-		}
-	}
-}
-
+// This function is used to read a normal event on the client side. For keys,
+// digits are interpreted as command counts but this is only done for digits
+// preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 	draw := &callExpr{"draw", nil, 1}
 	count := 1
@@ -754,9 +737,9 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 		if ev.Ch != 0 {
 			switch {
 			case ev.Ch == '<':
-				ui.keyAcc = append(ui.keyAcc, '<', 'l', 't', '>')
+				ui.keyAcc = append(ui.keyAcc, []rune("<lt>")...)
 			case ev.Ch == '>':
-				ui.keyAcc = append(ui.keyAcc, '<', 'g', 't', '>')
+				ui.keyAcc = append(ui.keyAcc, []rune("<gt>")...)
 			case ev.Mod == termbox.ModAlt:
 				ui.keyAcc = append(ui.keyAcc, '<', 'a', '-', ev.Ch, '>')
 			case unicode.IsDigit(ev.Ch) && len(ui.keyAcc) == 0:
@@ -766,12 +749,12 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 			}
 		} else {
 			val := gKeyVal[ev.Key]
-			if string(val) == "<esc>" {
+			if val == "<esc>" {
 				ch <- draw
 				ui.keyAcc = nil
 				ui.keyCount = nil
 			}
-			ui.keyAcc = append(ui.keyAcc, val...)
+			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 		}
 
 		if len(ui.keyAcc) == 0 {
@@ -843,9 +826,24 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 	}
 }
 
-// This function is used to read expressions on the client side. Digits are
-// interpreted as command counts but this is only done for digits preceding any
-// non-digit characters (e.g. "42y2k" as 42 times "y2k").
+func readCmdEvent(ch chan<- expr, ev termbox.Event) {
+	if ev.Ch != 0 {
+		if ev.Mod == termbox.ModAlt {
+			val := string([]rune{'<', 'a', '-', ev.Ch, '>'})
+			if expr, ok := gOpts.cmdkeys[val]; ok {
+				ch <- expr
+			}
+		} else {
+			ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
+		}
+	} else {
+		val := gKeyVal[ev.Key]
+		if expr, ok := gOpts.cmdkeys[val]; ok {
+			ch <- expr
+		}
+	}
+}
+
 func (ui *ui) readExpr() <-chan expr {
 	ch := make(chan expr)
 
