@@ -4,6 +4,7 @@ import (
 	"flag"
 	"fmt"
 	"log"
+	"net"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -39,6 +40,21 @@ func startServer() {
 	cmd := exec.Command(os.Args[0], "-server")
 	if err := cmd.Start(); err != nil {
 		log.Printf("starting server: %s", err)
+	}
+}
+
+func checkServer() {
+	if gSocketProt == "unix" {
+		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
+			startServer()
+		} else if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
+			os.Remove(gSocketPath)
+			startServer()
+		}
+	} else {
+		if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
+			startServer()
+		}
 	}
 }
 
@@ -125,10 +141,7 @@ func main() {
 		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
 		serve()
 	default:
-		// TODO: check if the socket is working
-		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
-			startServer()
-		}
+		checkServer()
 
 		gClientID = 1000
 		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
