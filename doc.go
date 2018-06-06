@@ -229,6 +229,53 @@ prefix.
         set info time
     }}
 
+Key Mappings
+
+Regular keys are assigned to a command with the usual syntax:
+
+    map a down
+
+Keys combined with the shift key simply use the uppercase letter:
+
+    map A down
+
+Special keys are written in between '<' and '>' characters and always use
+lowercase letters:
+
+    map <enter> down
+
+Angle brackets can be assigned with their special names:
+
+    map <lt> down
+    map <gt> down
+
+Function keys are prefixed with 'f' character:
+
+    map <f-1> down
+
+Keys combined with the control key are prefixed with 'c' character:
+
+    map <c-a> down
+
+Keys combined with the alt key are assigned in two different ways depending on
+the behavior of your terminal. Older terminals (e.g. xterm) may set the 8th bit
+of a character when the alt key is pressed. On these terminals, you can use the
+corresponding byte for the mapping:
+
+    map á down
+
+Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key
+when the alt key is pressed: lf uses the escape delaying mechanism to recognize
+alt keys in these terminals (delay is 100ms). On these terminals, keys combined
+with the alt key are prefixed with 'a' character:
+
+    map <a-a> down
+
+Please note that, some key combinations are not possible due to the way
+terminals work (e.g. control and h combination sends a backspace key). The
+easiest way to find the name of a key combination is to press the key while lf
+is running and read the name of the key from the unknown mapping error.
+
 Push Mappings
 
 The usual way to map a key sequence is to assign it to a named or unnamed
