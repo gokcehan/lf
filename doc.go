@@ -265,16 +265,16 @@ corresponding byte for the mapping:
     map á down
 
 Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key
-when the alt key is pressed: lf uses the escape delaying mechanism to recognize
+when the alt key is pressed. lf uses the escape delaying mechanism to recognize
 alt keys in these terminals (delay is 100ms). On these terminals, keys combined
 with the alt key are prefixed with 'a' character:
 
     map <a-a> down
 
 Please note that, some key combinations are not possible due to the way
-terminals work (e.g. control and h combination sends a backspace key). The
-easiest way to find the name of a key combination is to press the key while lf
-is running and read the name of the key from the unknown mapping error.
+terminals work (e.g. control and h combination sends a backspace key instead).
+The easiest way to find the name of a key combination is to press the key while
+lf is running and read the name of the key from the unknown mapping error.
 
 Push Mappings
 
