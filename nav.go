@@ -214,7 +214,21 @@ func (nav *nav) loadDir(path string) *dir {
 		return d
 	}
 
-	if d.sortType != gOpts.sortType {
+	s, err := os.Stat(d.path)
+	if err != nil {
+		return d
+	}
+
+	switch {
+	case s.ModTime().After(d.loadTime):
+		go func() {
+			d.loadTime = time.Now()
+			nd := newDir(path)
+			nd.sort()
+			nd.find(d.name(), nav.height)
+			nav.dirChan <- nd
+		}()
+	case d.sortType != gOpts.sortType:
 		go func() {
 			d.loading = true
 			name := d.name()
