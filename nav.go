@@ -370,7 +370,7 @@ func (nav *nav) preview() {
 		reader = f
 	}
 
-	reg := &reg{path: curr.path}
+	reg := &reg{loadTime: time.Now(), path: curr.path}
 
 	buf := bufio.NewScanner(reader)
 
@@ -396,10 +396,21 @@ func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok {
 		go nav.preview()
-		r := &reg{path: path, lines: []string{"\033[1mloading...\033[0m"}}
+		r := &reg{loading: true, path: path}
 		nav.regCache[path] = r
 		return r
 	}
+
+	s, err := os.Stat(r.path)
+	if err != nil {
+		return r
+	}
+
+	if s.ModTime().After(r.loadTime) {
+		r.loadTime = time.Now()
+		go nav.preview()
+	}
+
 	return r
 }
 

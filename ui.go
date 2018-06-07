@@ -181,6 +181,12 @@ func (win *win) printReg(reg *reg) {
 
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
+	if reg.loading {
+		fg = termbox.AttrBold
+		win.print(2, 0, fg, bg, "loading...")
+		return
+	}
+
 	for i, l := range reg.lines {
 		fg, bg = win.print(2, i, fg, bg, l)
 	}
@@ -462,8 +468,10 @@ func (ui *ui) printf(format string, a ...interface{}) {
 }
 
 type reg struct {
-	path  string
-	lines []string
+	loading  bool
+	loadTime time.Time
+	path     string
+	lines    []string
 }
 
 func (ui *ui) loadFile(nav *nav) {
