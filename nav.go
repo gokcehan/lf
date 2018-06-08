@@ -281,11 +281,6 @@ func newNav(height int) *nav {
 }
 
 func (nav *nav) renew() {
-	nav.dirCache = make(map[string]*dir)
-	for _, d := range nav.dirs {
-		nav.dirCache[d.path] = d
-	}
-
 	for _, d := range nav.dirs {
 		go func(d *dir) {
 			s, err := os.Stat(d.path)
