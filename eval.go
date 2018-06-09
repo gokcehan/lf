@@ -6,6 +6,7 @@ import (
 	"os"
 	"strconv"
 	"strings"
+	"time"
 	"unicode"
 	"unicode/utf8"
 )
@@ -96,6 +97,23 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscan = false
 	case "wrapscan!":
 		gOpts.wrapscan = !gOpts.wrapscan
+	case "period":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.printf("period: %s", err)
+			return
+		}
+		if n < 0 {
+			app.ui.print("period: value should be a non-negative number")
+			return
+		}
+		gOpts.period = n
+		if n == 0 {
+			app.ticker.Stop()
+		} else {
+			app.ticker.Stop()
+			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
+		}
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {

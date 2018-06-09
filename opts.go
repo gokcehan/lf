@@ -32,6 +32,7 @@ var gOpts struct {
 	preview    bool
 	smartcase  bool
 	wrapscan   bool
+	period     int
 	scrolloff  int
 	tabstop    int
 	filesep    string
@@ -56,6 +57,7 @@ func init() {
 	gOpts.preview = true
 	gOpts.smartcase = true
 	gOpts.wrapscan = true
+	gOpts.period = 0
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.filesep = "\n"

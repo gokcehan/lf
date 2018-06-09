@@ -95,6 +95,7 @@ The following options can be used to customize the behavior of lf:
     reverse     boolean  (default off)
     smartcase   boolean  (default on)
     wrapscan    boolean  (default on)
+    period      integer  (default 0)
     scrolloff   integer  (default 0)
     tabstop     integer  (default 8)
     filesep     string   (default "\n")

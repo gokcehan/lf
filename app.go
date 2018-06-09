@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"strconv"
 	"strings"
+	"time"
 )
 
 type cmdItem struct {
@@ -19,6 +20,7 @@ type cmdItem struct {
 type app struct {
 	ui            *ui
 	nav           *nav
+	ticker        *time.Ticker
 	quitChan      chan bool
 	cmd           *exec.Cmd
 	cmdIn         io.WriteCloser
@@ -34,6 +36,7 @@ func newApp() *app {
 	return &app{
 		ui:       ui,
 		nav:      nav,
+		ticker:   new(time.Ticker),
 		quitChan: make(chan bool, 1),
 	}
 }
@@ -131,6 +134,10 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		case e := <-serverChan:
 			e.eval(app, nil)
+			app.ui.draw(app.nav)
+		case <-app.ticker.C:
+			app.nav.renew()
+			app.ui.loadFile(app.nav)
 			app.ui.draw(app.nav)
 		}
 	}

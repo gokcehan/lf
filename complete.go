@@ -82,6 +82,7 @@ var (
 		"wrapscan",
 		"nowrapscan",
 		"wrapscan!",
+		"period",
 		"scrolloff",
 		"tabstop",
 		"filesep",
