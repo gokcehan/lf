@@ -507,8 +507,8 @@ implementation. The default behavior is similar to the following command:
         elif [ $mode = 'move' ]; then
             mv -n $list .
         fi
-        lf -remote "send $id reload"
         lf -remote "$(printf 'save\nmove\n\n')"
+        lf -remote "send load"
         lf -remote "send sync"
     }}
 
