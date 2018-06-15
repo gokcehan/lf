@@ -202,7 +202,7 @@ custom command, or shell command:
     map gh cd ~        # builtin command
     map D trash        # custom command
     map i $less $f     # shell command
-    map u !du -h .     # waiting shell command
+    map U !du -sh      # waiting shell command
 
 'cmap' is used to bind a key to a command line command which can only be one
 of the builtin commands:
@@ -216,7 +216,7 @@ You can delete an existing binding by leaving the expression empty:
 
 'cmd' is used to define a custom command
 
-    cmd usage $du -h . | less
+    cmd usage $du -h -d1 | less
 
 You can delete an existing command by leaving the expression empty:
 
@@ -450,7 +450,7 @@ Since lf does not have control flow syntax, remote commands are used for
 such needs. For example, you can configure the number of columns in the ui
 with respect to the terminal width as follows:
 
-    cmd recol ${{
+    cmd recol %{{
         w=$(tput cols)
         if [ $w -le 80 ]; then
             lf -remote "send $id set ratios 1:2"
@@ -508,8 +508,8 @@ implementation. The default behavior is similar to the following command:
             mv -n $list .
         fi
         lf -remote "$(printf 'save\nmove\n\n')"
-        lf -remote "send load"
-        lf -remote "send sync"
+        lf -remote 'send load'
+        lf -remote 'send sync'
     }}
 
 Some useful things are to use the backup option ('--backup') with 'cp' and
