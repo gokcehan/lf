@@ -670,7 +670,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := locs[len(locs)-1][1] - 1
-		app.ui.cmdAccRight = append(app.ui.cmdAccLeft[ind:], app.ui.cmdAccRight...)
+		old := app.ui.cmdAccRight
+		app.ui.cmdAccRight = append([]rune{}, app.ui.cmdAccLeft[ind:]...)
+		app.ui.cmdAccRight = append(app.ui.cmdAccRight, old...)
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 	case "cmd-capitalize-word":
 		if len(app.ui.cmdAccRight) == 0 {
