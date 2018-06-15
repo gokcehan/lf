@@ -54,6 +54,8 @@ See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maint
 
 After the installation `lf` command should start the application in the current directory.
 
+See [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
+
 Run `lf -help` to see command line options.
 
 Run `lf -doc` to see the [documentation](https://godoc.org/github.com/gokcehan/lf).
