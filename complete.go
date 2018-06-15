@@ -34,6 +34,7 @@ var (
 		"clear",
 		"draw",
 		"redraw",
+		"load",
 		"reload",
 		"read",
 		"shell",

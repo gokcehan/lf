@@ -390,9 +390,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.sync()
 		app.ui.renew()
 		app.nav.height = app.ui.wins[0].h
+	case "load":
+		app.nav.renew()
 	case "reload":
-		app.ui.sync()
-		app.ui.renew()
 		app.nav.reload()
 	case "read":
 		app.ui.cmdPrefix = ":"

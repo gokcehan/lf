@@ -45,6 +45,7 @@ The following commands are provided by lf with default keybindings:
 The following commands are provided by lf without default keybindings:
 
     draw    draw the ui
+    load    load modified files and directories
     sync    synchronizes yanked/deleted files with server
     echo    prints its arguments to the message line
     cd      changes working directory to its argument
