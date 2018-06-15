@@ -373,7 +373,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("put: %s", err)
 			return
 		}
-		app.nav.renew()
+		if err := sendRemote("send load"); err != nil {
+			app.ui.printf("put: %s", err)
+		}
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("put: %s", err)
 		}
