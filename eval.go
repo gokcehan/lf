@@ -52,14 +52,17 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "hidden":
 		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()
+		app.nav.position()
 		app.ui.sort()
 	case "nohidden":
 		gOpts.sortType.option &= ^hiddenSort
 		app.nav.sort()
+		app.nav.position()
 		app.ui.sort()
 	case "hidden!":
 		gOpts.sortType.option ^= hiddenSort
 		app.nav.sort()
+		app.nav.position()
 		app.ui.sort()
 	case "ignorecase":
 		gOpts.ignorecase = true
