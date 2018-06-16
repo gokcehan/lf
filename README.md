@@ -39,6 +39,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information.
 ## May-Futures
 
 - Bookmarks
+- Mouse control
 
 ## Installation
 
@@ -52,9 +53,9 @@ See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maint
 
 ## Usage
 
-After the installation `lf` command should start the application in the current directory.
-
 See [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
+
+After the installation `lf` command should start the application in the current directory.
 
 Run `lf -help` to see command line options.
 
