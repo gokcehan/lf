@@ -202,6 +202,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
+	case "shellopts":
+		gOpts.shellopts = strings.Split(e.val, ":")
 	default:
 		app.ui.printf("unknown option: %s", e.opt)
 	}

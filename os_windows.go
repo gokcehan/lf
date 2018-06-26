@@ -39,6 +39,9 @@ func pauseCommand() *exec.Cmd {
 
 func shellCommand(s string, args []string) *exec.Cmd {
 	args = append([]string{"/c", s}, args...)
+
+	args = append(gOpts.shellopts, args...)
+
 	return exec.Command(gOpts.shell, args...)
 }
 

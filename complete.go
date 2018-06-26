@@ -95,6 +95,7 @@ var (
 		"timefmt",
 		"ratios",
 		"info",
+		"shellopts",
 	}
 )
 

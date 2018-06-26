@@ -43,6 +43,7 @@ var gOpts struct {
 	timefmt    string
 	ratios     []int
 	info       []string
+	shellopts  []string
 	keys       map[string]expr
 	cmdkeys    map[string]expr
 	cmds       map[string]expr
@@ -66,6 +67,7 @@ func init() {
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.info = nil
+	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 
 	gOpts.keys = make(map[string]expr)
