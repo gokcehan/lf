@@ -4,13 +4,13 @@
 # This script is used to build binaries for all supported platforms. Cgo is
 # disabled to make sure binaries are statically linked. Appropriate flags are
 # given to the go compiler to strip binaries. Current git tag is passed to the
-# compiler to be used as the version in binaries. These are then compressed in
-# an archive form (`.zip` for windows and `.tar.gz` for the rest) within a
-# folder named `dist`.
+# compiler by default to be used as the version in binaries. These are then
+# compressed in an archive form (`.zip` for windows and `.tar.gz` for the rest)
+# within a folder named `dist`.
 
 set -o verbose
 
-version=$(git describe --tags)
+[ -z $version ] && version=$(git describe --tags)
 
 mkdir -p dist
 
