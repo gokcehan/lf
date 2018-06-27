@@ -3,7 +3,7 @@ set shell sh
 
 # set '-eu' options for shell commands
 # These options are used to have safer shell commands. Option '-e' is used to
-# exit on error and '-u' option is used to give error for unset variables.
+# exit on error and option '-u' is used to give error for unset variables.
 # Option '-f' disables pathname expansion which can be useful when $f, $fs, and
 # $fx variables contain names with '*' or '?' characters. However, this option
 # is used selectively within individual commands as it can be limiting at

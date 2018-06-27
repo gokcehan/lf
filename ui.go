@@ -274,8 +274,8 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, 
 
 		if _, ok := marks[path]; ok {
 			win.print(0, i, fg, termbox.ColorMagenta, " ")
-		} else if copy, ok := saves[path]; ok {
-			if copy {
+		} else if cp, ok := saves[path]; ok {
+			if cp {
 				win.print(0, i, fg, termbox.ColorYellow, " ")
 			} else {
 				win.print(0, i, fg, termbox.ColorRed, " ")

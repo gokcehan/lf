@@ -90,10 +90,10 @@ func init() {
 	gOpts.keys["<space>"] = &callExpr{"toggle", nil, 1}
 	gOpts.keys["v"] = &callExpr{"invert", nil, 1}
 	gOpts.keys["u"] = &callExpr{"unmark", nil, 1}
-	gOpts.keys["y"] = &callExpr{"yank", nil, 1}
-	gOpts.keys["d"] = &callExpr{"delete", nil, 1}
+	gOpts.keys["y"] = &callExpr{"copy", nil, 1}
+	gOpts.keys["d"] = &callExpr{"cut", nil, 1}
 	gOpts.keys["c"] = &callExpr{"clear", nil, 1}
-	gOpts.keys["p"] = &callExpr{"put", nil, 1}
+	gOpts.keys["p"] = &callExpr{"paste", nil, 1}
 	gOpts.keys["<c-l>"] = &callExpr{"redraw", nil, 1}
 	gOpts.keys["<c-r>"] = &callExpr{"reload", nil, 1}
 	gOpts.keys[":"] = &callExpr{"read", nil, 1}

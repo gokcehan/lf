@@ -30,9 +30,9 @@ The following commands are provided by lf with default keybindings:
     toggle       (default '<space>')
     invert       (default 'v')
     unmark       (default 'u')
-    yank         (default 'y')
-    delete       (default 'd')
-    put          (default 'p')
+    copy         (default 'y')
+    cut          (default 'd')
+    paste        (default 'p')
     clear        (default 'c')
     redraw       (default '<c-l>')
     reload       (default '<c-r>')
@@ -50,7 +50,7 @@ The following commands are provided by lf without default keybindings:
 
     draw    draw the ui
     load    load modified files and directories
-    sync    synchronizes yanked/deleted files with server
+    sync    synchronizes copied/cut files with server
     echo    prints its arguments to the message line
     cd      changes working directory to its argument
     select  changes current file selection to its argument
@@ -487,19 +487,16 @@ should not be needed for users.
 File Operations
 
 lf uses the underlying 'cp' and 'mv' shell commands for file operations. For
-this purpose, when you 'yank' (i.e. copy) a file, it doesn't actually copy
-the file on the disk, but only records its name to memory. The actual file
-operation takes place when you do the 'put' in which case the 'cp' command
-is used. Similarly the 'mv' command is used for 'delete' (i.e. cut or kill)
-followed by 'put'. These traditional names (e.g. 'yank', 'delete', and
-'put') are picked instead of the other common convention (e.g. copy and cut)
-to resemble the default keybinds for these operations.
+this purpose, when you 'copy' a file, it doesn't actually copy the file on
+the disk, but only records its name to memory. The actual file operation
+takes place when you 'paste' in which case the 'cp' command is used.
+Similarly the 'mv' command is used for 'cut' followed by 'paste'.
 
-You can customize these operations by defining a 'put' command. This is a
+You can customize these operations by defining a 'paste' command. This is a
 special command that is called when it is defined instead of the builtin
 implementation. The default behavior is similar to the following command:
 
-    cmd put ${{
+    cmd paste ${{
         load=$(lf -remote 'load')
         mode=$(echo "$load" | sed -n '1p')
         list=$(echo "$load" | sed '1d')

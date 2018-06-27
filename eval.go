@@ -356,36 +356,36 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "unmark":
 		app.nav.unmark()
-	case "yank":
+	case "copy":
 		if err := app.nav.save(true); err != nil {
-			app.ui.printf("yank: %s", err)
+			app.ui.printf("copy: %s", err)
 			return
 		}
 		app.nav.unmark()
 		if err := sendRemote("send sync"); err != nil {
-			app.ui.printf("yank: %s", err)
+			app.ui.printf("copy: %s", err)
 		}
-	case "delete":
+	case "cut":
 		if err := app.nav.save(false); err != nil {
-			app.ui.printf("delete: %s", err)
+			app.ui.printf("cut: %s", err)
 			return
 		}
 		app.nav.unmark()
 		if err := sendRemote("send sync"); err != nil {
-			app.ui.printf("delete: %s", err)
+			app.ui.printf("cut: %s", err)
 		}
-	case "put":
-		if cmd, ok := gOpts.cmds["put"]; ok {
+	case "paste":
+		if cmd, ok := gOpts.cmds["paste"]; ok {
 			cmd.eval(app, e.args)
-		} else if err := app.nav.put(); err != nil {
-			app.ui.printf("put: %s", err)
+		} else if err := app.nav.paste(); err != nil {
+			app.ui.printf("paste: %s", err)
 			return
 		}
 		if err := sendRemote("send load"); err != nil {
-			app.ui.printf("put: %s", err)
+			app.ui.printf("paste: %s", err)
 		}
 		if err := sendRemote("send sync"); err != nil {
-			app.ui.printf("put: %s", err)
+			app.ui.printf("paste: %s", err)
 		}
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {

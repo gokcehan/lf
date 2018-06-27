@@ -540,69 +540,69 @@ func (nav *nav) unmark() {
 	nav.markInd = 0
 }
 
-func (nav *nav) save(copy bool) error {
+func (nav *nav) save(cp bool) error {
 	if len(nav.marks) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
 			return errors.New("no file selected")
 		}
 
-		if err := saveFiles([]string{curr.path}, copy); err != nil {
+		if err := saveFiles([]string{curr.path}, cp); err != nil {
 			return err
 		}
 
 		nav.saves = make(map[string]bool)
-		nav.saves[curr.path] = copy
+		nav.saves[curr.path] = cp
 	} else {
 		marks := nav.currMarks()
 
-		if err := saveFiles(marks, copy); err != nil {
+		if err := saveFiles(marks, cp); err != nil {
 			return err
 		}
 
 		nav.saves = make(map[string]bool)
 		for f := range nav.marks {
-			nav.saves[f] = copy
+			nav.saves[f] = cp
 		}
 	}
 
 	return nil
 }
 
-func (nav *nav) put() error {
-	list, copy, err := loadFiles()
+func (nav *nav) paste() error {
+	list, cp, err := loadFiles()
 	if err != nil {
 		return err
 	}
 
 	if len(list) == 0 {
-		return errors.New("no file in yank/delete buffer")
+		return errors.New("no file in copy/cut buffer")
 	}
 
 	dir := nav.currDir()
 
-	cmd := putCommand(list, dir, copy)
+	cmd := pasteCommand(list, dir, cp)
 
 	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("putting files: %s", err)
+		return fmt.Errorf("pasting files: %s", err)
 	}
 
 	if err := saveFiles(nil, false); err != nil {
-		return fmt.Errorf("clearing yank/delete buffer: %s", err)
+		return fmt.Errorf("clearing copy/cut buffer: %s", err)
 	}
 
 	return nil
 }
 
 func (nav *nav) sync() error {
-	list, copy, err := loadFiles()
+	list, cp, err := loadFiles()
 	if err != nil {
 		return err
 	}
 
 	nav.saves = make(map[string]bool)
 	for _, f := range list {
-		nav.saves[f] = copy
+		nav.saves[f] = cp
 	}
 
 	return nil

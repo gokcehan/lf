@@ -45,11 +45,11 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func putCommand(list []string, dir *dir, copy bool) *exec.Cmd {
+func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 	var args []string
 
 	sh := "robocopy"
-	if !copy {
+	if !cp {
 		args = []string{"/move"}
 	}
 	for _, f := range list {

@@ -68,7 +68,7 @@ func readExpr() <-chan expr {
 	return ch
 }
 
-func saveFiles(list []string, copy bool) error {
+func saveFiles(list []string, cp bool) error {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
 		return fmt.Errorf("dialing to save files: %s", err)
@@ -79,7 +79,7 @@ func saveFiles(list []string, copy bool) error {
 
 	fmt.Fprintln(c, "save")
 
-	if copy {
+	if cp {
 		fmt.Fprintln(c, "copy")
 	} else {
 		fmt.Fprintln(c, "move")
@@ -93,7 +93,7 @@ func saveFiles(list []string, copy bool) error {
 	return nil
 }
 
-func loadFiles() (list []string, copy bool, err error) {
+func loadFiles() (list []string, cp bool, err error) {
 	c, e := net.Dial(gSocketProt, gSocketPath)
 	if e != nil {
 		err = fmt.Errorf("dialing to load files: %s", e)
@@ -109,9 +109,9 @@ func loadFiles() (list []string, copy bool, err error) {
 
 	switch s.Text() {
 	case "copy":
-		copy = true
+		cp = true
 	case "move":
-		copy = false
+		cp = false
 	default:
 		err = fmt.Errorf("unexpected option to copy file(s): %s", s.Text())
 		return
