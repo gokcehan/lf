@@ -118,9 +118,9 @@ func setDefaults() {
 	}
 
 	if runtime.GOOS == "darwin" {
-		gOpts.cmds["open-file"] = &execExpr{"&", `open "$f"`}
+		gOpts.cmds["open"] = &execExpr{"&", `open "$f"`}
 	} else {
-		gOpts.cmds["open-file"] = &execExpr{"&", `xdg-open "$f"`}
+		gOpts.cmds["open"] = &execExpr{"&", `xdg-open "$f"`}
 	}
 }
 

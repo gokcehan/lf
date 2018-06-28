@@ -79,7 +79,7 @@ func setDefaults() {
 	gOpts.keys["e"] = &execExpr{"$", `notepad %f%`}
 	gOpts.keys["i"] = &execExpr{"$", `more %f%`}
 	gOpts.keys["w"] = &execExpr{"$", "cmd"}
-	gOpts.cmds["open-file"] = &execExpr{"&", `start %f%`}
+	gOpts.cmds["open"] = &execExpr{"&", `start %f%`}
 }
 
 func moveCursor(y, x int) {

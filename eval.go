@@ -333,7 +333,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if cmd, ok := gOpts.cmds["open-file"]; ok {
+		if cmd, ok := gOpts.cmds["open"]; ok {
 			cmd.eval(app, e.args)
 		}
 	case "quit":

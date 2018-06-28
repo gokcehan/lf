@@ -34,11 +34,11 @@ map O $mimeopen --ask $f
 # show documentation (overrides 'search-back' command)
 map ? $lf -doc | less
 
-# define a custom 'open-file' command
-# 'open-file' is called by 'open' when current file is not a directory. You may
-# want to use either file extensions and/or mime types here. Below uses an
-# editor for text files and a file opener for the rest.
-cmd open-file ${{
+# define a custom 'open' command
+# This command is called when current file is not a directory. You may want to
+# use either file extensions and/or mime types here. Below uses an editor for
+# text files and a file opener for the rest.
+cmd open ${{
     case $(file --mime-type $f -b) in
         text/*) vi $fx;;
         *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;

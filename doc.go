@@ -503,20 +503,20 @@ completely are provided in the example configuration file.
 
 Opening Files
 
-You can use 'open-file' command to open a file. This is a special command
-called by 'open' when the current file is not a directory. Normally a user maps
-the 'open' command to a key (default 'l') and customize 'open-file' command as
-desired. You can define it just as you would define any other command:
+You can define a an 'open' command (default 'l') to configure file opening.
+This command is only called when the current file is not a directory, otherwise
+the directory is entered instead. You can define it just as you would define
+any other command:
 
-    cmd open-file $vi $fx
+    cmd open $vi $fx
 
 It is possible to use different command types:
 
-    cmd open-file &xdg-open $f
+    cmd open &xdg-open $f
 
 You may want to use either file extensions or mime types from 'file' command:
 
-    cmd open-file ${{
+    cmd open ${{
         case $(file --mime-type $f -b) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
@@ -525,9 +525,9 @@ You may want to use either file extensions or mime types from 'file' command:
 
 Following commands are provided by default:
 
-    cmd open-file &start %f%      # windows
-    cmd open-file &open "$f"      # macos
-    cmd open-file &xdg-open "$f"  # others
+    cmd open &start %f%      # windows
+    cmd open &open "$f"      # macos
+    cmd open &xdg-open "$f"  # others
 
 You may also use any other existing file openers as you like. Possible options
 are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's
