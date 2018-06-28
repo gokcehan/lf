@@ -54,6 +54,7 @@ The following commands are provided by lf without default keybindings:
     echo    prints its arguments to the message line
     cd      changes working directory to its argument
     select  changes current file selection to its argument
+    source  reads and evaluates the file in its argument
     push    simulate key pushes given in its argument
 
 The following command line commands are provided by lf with default

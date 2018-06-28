@@ -464,6 +464,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+	case "source":
+		if len(e.args) != 1 {
+			app.ui.print("source: requires an argument")
+			return
+		}
+		app.readFile(strings.Replace(e.args[0], "~", gUser.HomeDir, -1))
 	case "push":
 		if len(e.args) != 1 {
 			app.ui.print("push: requires an argument")

@@ -49,6 +49,7 @@ var (
 		"echo",
 		"cd",
 		"select",
+		"source",
 		"push",
 	}
 
