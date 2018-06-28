@@ -127,14 +127,14 @@ when they are not set or empty:
     $PAGER   less
     $SHELL   sh
 
-The following default values are set to the environmental variables on windows
-when they are not set or empty:
-    
+The following default values are set to the environmental variables on
+windows when they are not set or empty:
+
     %OPENER%  start
     %EDITOR%  notepad
     %PAGER%   more
     %SHELL%   cmd
-    
+
 The following additional keybindings are provided by default:
 
     map zh set hidden!
@@ -562,7 +562,7 @@ command:
 
 Following command is provided by default:
 
-        cmd open &$OPENER $f
+    cmd open &$OPENER $f
 
 You may also use any other existing file openers as you like. Possible
 options are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle'
