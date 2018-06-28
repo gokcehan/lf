@@ -32,8 +32,10 @@ func run() {
 
 	app := newApp()
 
-	if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
-		app.readFile(gConfigPath)
+	for _, path := range gConfigPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			app.readFile(path)
+		}
 	}
 
 	app.loop()

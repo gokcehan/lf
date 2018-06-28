@@ -16,8 +16,8 @@ var (
 )
 
 var (
-	gUser       *user.User
-	gConfigPath string
+	gUser        *user.User
+	gConfigPaths []string
 )
 
 func init() {
@@ -30,7 +30,7 @@ func init() {
 	// remove domain prefix
 	gUser.Username = strings.Split(gUser.Username, `\`)[1]
 
-	gConfigPath = filepath.Join(gUser.HomeDir, "AppData", "Local", "lf", "lfrc")
+	gConfigPaths = []string{filepath.Join(gUser.HomeDir, "AppData", "Local", "lf", "lfrc")}
 }
 
 func pauseCommand() *exec.Cmd {

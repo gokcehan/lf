@@ -25,8 +25,8 @@ var (
 )
 
 var (
-	gUser       *user.User
-	gConfigPath string
+	gUser        *user.User
+	gConfigPaths []string
 )
 
 func init() {
@@ -41,7 +41,10 @@ func init() {
 		config = filepath.Join(gUser.HomeDir, ".config")
 	}
 
-	gConfigPath = filepath.Join(config, "lf", "lfrc")
+	gConfigPaths = []string{
+		filepath.Join("/etc", "lfrc"),
+		filepath.Join(config, "lf", "lfrc"),
+	}
 
 	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
 }
