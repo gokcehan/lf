@@ -54,7 +54,7 @@ The following commands are provided by lf without default keybindings:
     echo    prints its arguments to the message line
     cd      changes working directory to its argument
     select  changes current file selection to its argument
-    source  reads and evaluates the file in its argument
+    source  reads the configuration file in its argument
     push    simulate key pushes given in its argument
 
 The following command line commands are provided by lf with default
@@ -147,14 +147,18 @@ windows:
 
 Configuration
 
-The configuration file should be located at:
+Configuration files should be located at:
 
-    $XDG_CONFIG_HOME/lf/lfrc
+             system-wide             user-specific
+    unix     /etc/lfrc               ~/.config/lf/lfrc
+    windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
-If '$XDG_CONFIG_HOME' is not set, it defaults to '$HOME/.config' so the
-location should be:
+You can configure the default values of following variables to change these
+locations:
 
-    ~/.config/lf/lfrc
+    $XDG_CONFIG_HOME  ~/.config
+    %ProgramData%     C:\ProgramData
+    %LOCALAPPDATA%    C:\Users\<user>\AppData\Local
 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
@@ -550,7 +554,7 @@ command:
 Following commands are provided by default:
 
     cmd open-file &start %f%      # windows
-    cmd open-file &open "$f"      # mac
+    cmd open-file &open "$f"      # macos
     cmd open-file &xdg-open "$f"  # others
 
 You may also use any other existing file openers as you like. Possible
