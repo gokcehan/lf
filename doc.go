@@ -114,6 +114,15 @@ The following variables are exported for shell commands:
     $fx  current file or marked file(s) if any
     $id  id number of the client
 
+The following default values are set to the environmental variables on unix
+when they are not set or empty:
+
+    $OPENER  open      # macos
+    $OPENER  xdg-open  # others
+    $EDITOR  vi
+    $PAGER   less
+    $SHELL   sh
+
 The following additional keybindings are provided by default:
 
     map zh set hidden!
@@ -129,9 +138,9 @@ The following additional keybindings are provided by default:
 
 The following keybindings to applications are provided by default on unix:
 
-    map e $$EDITOR $f ('vi' if empty)
-    map i $$PAGER $f  ('less' if empty)
-    map w $$SHELL     ('sh' if empty)
+    map e $$EDITOR "$f"
+    map i $$PAGER "$f"
+    map w $$SHELL
 
 The following keybindings to applications are provided by default on windows:
 
@@ -525,9 +534,8 @@ You may want to use either file extensions or mime types from 'file' command:
 
 Following commands are provided by default:
 
-    cmd open &start %f%      # windows
-    cmd open &open "$f"      # macos
-    cmd open &xdg-open "$f"  # others
+    cmd open &$OPENER "$f  # unix
+    cmd open &start %f%    # windows
 
 You may also use any other existing file openers as you like. Possible options
 are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's

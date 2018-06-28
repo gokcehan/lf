@@ -13,6 +13,7 @@ import (
 )
 
 var (
+	envOpener = os.Getenv("OPENER")
 	envEditor = os.Getenv("EDITOR")
 	envPager  = os.Getenv("PAGER")
 	envShell  = os.Getenv("SHELL")
@@ -30,6 +31,26 @@ var (
 )
 
 func init() {
+	if envOpener == "" {
+		if runtime.GOOS == "darwin" {
+			envOpener = "open"
+		} else {
+			envOpener = "xdg-open"
+		}
+	}
+
+	if envEditor == "" {
+		envEditor = "vi"
+	}
+
+	if envPager == "" {
+		envPager = "less"
+	}
+
+	if envShell == "" {
+		envShell = "sh"
+	}
+
 	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
@@ -99,29 +120,10 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 }
 
 func setDefaults() {
-	if envEditor == "" {
-		gOpts.keys["e"] = &execExpr{"$", `vi "$f"`}
-	} else {
-		gOpts.keys["e"] = &execExpr{"$", envEditor + ` "$f"`}
-	}
-
-	if envPager == "" {
-		gOpts.keys["i"] = &execExpr{"$", `less "$f"`}
-	} else {
-		gOpts.keys["i"] = &execExpr{"$", envPager + ` "$f"`}
-	}
-
-	if envShell == "" {
-		gOpts.keys["w"] = &execExpr{"$", "sh"}
-	} else {
-		gOpts.keys["w"] = &execExpr{"$", envShell}
-	}
-
-	if runtime.GOOS == "darwin" {
-		gOpts.cmds["open"] = &execExpr{"&", `open "$f"`}
-	} else {
-		gOpts.cmds["open"] = &execExpr{"&", `xdg-open "$f"`}
-	}
+	gOpts.cmds["open"] = &execExpr{"&", `$OPENER "$f"`}
+	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}
+	gOpts.keys["i"] = &execExpr{"$", `$PAGER "$f"`}
+	gOpts.keys["w"] = &execExpr{"$", "$SHELL"}
 }
 
 func moveCursor(y, x int) {

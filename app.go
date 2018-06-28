@@ -163,6 +163,11 @@ func (app *app) exportVars() {
 	}
 
 	os.Setenv("id", strconv.Itoa(gClientID))
+
+	os.Setenv("OPENER", envOpener)
+	os.Setenv("EDITOR", envEditor)
+	os.Setenv("PAGER", envPager)
+	os.Setenv("SHELL", envShell)
 }
 
 func waitKey() error {

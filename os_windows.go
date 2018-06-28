@@ -76,10 +76,10 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 }
 
 func setDefaults() {
+	gOpts.cmds["open"] = &execExpr{"&", `start %f%`}
 	gOpts.keys["e"] = &execExpr{"$", `notepad %f%`}
 	gOpts.keys["i"] = &execExpr{"$", `more %f%`}
 	gOpts.keys["w"] = &execExpr{"$", "cmd"}
-	gOpts.cmds["open"] = &execExpr{"&", `start %f%`}
 }
 
 func moveCursor(y, x int) {
