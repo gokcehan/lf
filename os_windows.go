@@ -17,6 +17,10 @@ var (
 )
 
 var (
+	envPathExt = os.Getenv("PATHEXT")
+)
+
+var (
 	gDefaultShell      = "cmd"
 	gDefaultSocketProt = "tcp"
 	gDefaultSocketPath = ":12345"
@@ -108,4 +112,15 @@ func setDefaults() {
 func moveCursor(y, x int) {
 	// TODO: implement
 	return
+}
+
+func isExecutable(f os.FileInfo) bool {
+	exts := strings.Split(envPathExt, string(filepath.ListSeparator))
+	for _, e := range exts {
+		if strings.HasSuffix(strings.ToLower(f.Name()), strings.ToLower(e)) {
+			log.Print(f.Name(), e)
+			return true
+		}
+	}
+	return false
 }

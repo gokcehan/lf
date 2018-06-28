@@ -134,7 +134,7 @@ func matchWord(s string, words []string) (matches []string, longest string) {
 func matchExec(s string) (matches []string, longest string) {
 	var words []string
 
-	paths := strings.Split(envPath, ":")
+	paths := strings.Split(envPath, string(filepath.ListSeparator))
 
 	for _, p := range paths {
 		if _, err := os.Stat(p); os.IsNotExist(err) {
@@ -157,10 +157,11 @@ func matchExec(s string) (matches []string, longest string) {
 				continue
 			}
 
-			if !f.Mode().IsRegular() || f.Mode()&0111 == 0 {
+			if !f.Mode().IsRegular() || !isExecutable(f) {
 				continue
 			}
 
+			log.Print(f.Name())
 			words = append(words, f.Name())
 		}
 	}
