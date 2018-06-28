@@ -127,6 +127,14 @@ when they are not set or empty:
     $PAGER   less
     $SHELL   sh
 
+The following default values are set to the environmental variables on windows
+when they are not set or empty:
+    
+    %OPENER%  start
+    %EDITOR%  notepad
+    %PAGER%   more
+    %SHELL%   cmd
+    
 The following additional keybindings are provided by default:
 
     map zh set hidden!
@@ -140,18 +148,11 @@ The following additional keybindings are provided by default:
     map st :set sortby time; set info time
     map gh cd ~
 
-The following keybindings to applications are provided by default on unix:
+The following keybindings to applications are provided by default:
 
-    map e $$EDITOR "$f"
-    map i $$PAGER "$f"
+    map e $$EDITOR $f
+    map i $$PAGER $f
     map w $$SHELL
-
-The following keybindings to applications are provided by default on
-windows:
-
-    map e $notepad %f%
-    map i $more %f%
-    map w $cmd
 
 
 Configuration
@@ -559,10 +560,9 @@ command:
         esac
     }}
 
-Following commands are provided by default:
+Following command is provided by default:
 
-    cmd open &$OPENER "$f  # unix
-    cmd open &start %f%    # windows
+        cmd open &$OPENER $f
 
 You may also use any other existing file openers as you like. Possible
 options are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle'

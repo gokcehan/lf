@@ -10,6 +10,13 @@ import (
 )
 
 var (
+	envOpener = os.Getenv("OPENER")
+	envEditor = os.Getenv("EDITOR")
+	envPager  = os.Getenv("PAGER")
+	envShell  = os.Getenv("SHELL")
+)
+
+var (
 	gDefaultShell      = "cmd"
 	gDefaultSocketProt = "tcp"
 	gDefaultSocketPath = ":12345"
@@ -21,6 +28,22 @@ var (
 )
 
 func init() {
+	if envOpener == "" {
+		envOpener = "start"
+	}
+
+	if envEditor == "" {
+		envEditor = "notepad"
+	}
+
+	if envPager == "" {
+		envPager = "more"
+	}
+
+	if envShell == "" {
+		envShell = "cmd"
+	}
+
 	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
@@ -76,10 +99,10 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 }
 
 func setDefaults() {
-	gOpts.cmds["open"] = &execExpr{"&", `start %f%`}
-	gOpts.keys["e"] = &execExpr{"$", `notepad %f%`}
-	gOpts.keys["i"] = &execExpr{"$", `more %f%`}
-	gOpts.keys["w"] = &execExpr{"$", "cmd"}
+	gOpts.cmds["open"] = &execExpr{"&", "%OPENER% %f%"}
+	gOpts.keys["e"] = &execExpr{"$", "%EDITOR% %f%"}
+	gOpts.keys["i"] = &execExpr{"!", "%PAGER% %f%"}
+	gOpts.keys["w"] = &execExpr{"$", "%SHELL%"}
 }
 
 func moveCursor(y, x int) {
