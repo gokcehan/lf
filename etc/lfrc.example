@@ -32,7 +32,7 @@ map o &mimeopen $f
 map O $mimeopen --ask $f
 
 # show documentation (overrides 'search-back' command)
-map ? $lf -doc | less
+map ? $lf -doc | $PAGER
 
 # define a custom 'open' command
 # This command is called when current file is not a directory. You may want to
@@ -40,8 +40,8 @@ map ? $lf -doc | less
 # text files and a file opener for the rest.
 cmd open ${{
     case $(file --mime-type $f -b) in
-        text/*) vi $fx;;
-        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+        text/*) $EDITOR $fx;;
+        *) for f in $fx; do $OPENER $f > /dev/null 2> /dev/null & done;;
     esac
 }}
 
