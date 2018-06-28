@@ -56,11 +56,11 @@ map r push :rename<space>
 # (also see 'man mv' for backup/overwrite options)
 cmd trash %set -f; mv $fx ~/.trash
 
-# remove current file or selected files (prompting)
-cmd remove ${{
+# delete current file or selected files (prompting)
+cmd delete ${{
     set -f
     printf "$fx\n"
-    printf "remove?[y/n]"
+    printf "delete?[y/n]"
     read ans
     [ $ans = "y" ] && rm -rf $fx
 }}
