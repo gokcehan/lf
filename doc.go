@@ -1,4 +1,5 @@
 //go:generate gen/docstring.sh
+//go:generate gen/man.sh
 
 /*
 lf is a terminal file manager.
@@ -8,39 +9,41 @@ Source code can be found in the repository at https://github.com/gokcehan/lf.
 This documentation can either be read from terminal using 'lf -doc' or online
 at https://godoc.org/github.com/gokcehan/lf.
 
+You can run 'lf -help' to see descriptions of command line options.
+
 Reference
 
 The following commands are provided by lf with default keybindings:
 
-    up           (default 'k' and '<up>')
-    half-up      (default '<c-u>')
-    page-up      (default '<c-b>' and '<pgup>')
-    down         (default 'j' and '<down>')
-    half-down    (default '<c-d>')
-    page-down    (default '<c-f>' and '<pgdn>')
-    updir        (default 'h' and '<left>')
-    open         (default 'l' and '<right>')
-    quit         (default 'q')
-    top          (default 'gg' and '<home>')
-    bottom       (default 'G' and '<end>')
-    toggle       (default '<space>')
-    invert       (default 'v')
-    unmark       (default 'u')
-    copy         (default 'y')
-    cut          (default 'd')
-    paste        (default 'p')
-    clear        (default 'c')
-    redraw       (default '<c-l>')
-    reload       (default '<c-r>')
-    read         (default ':')
-    shell        (default '$')
-    shell-pipe   (default '%')
-    shell-wait   (default '!')
-    shell-async  (default '&')
-    search       (default '/')
-    search-back  (default '?')
-    search-next  (default 'n')
-    search-prev  (default 'N')
+    up                    (default 'k' and '<up>')
+    half-up               (default '<c-u>')
+    page-up               (default '<c-b>' and '<pgup>')
+    down                  (default 'j' and '<down>')
+    half-down             (default '<c-d>')
+    page-down             (default '<c-f>' and '<pgdn>')
+    updir                 (default 'h' and '<left>')
+    open                  (default 'l' and '<right>')
+    quit                  (default 'q')
+    top                   (default 'gg' and '<home>')
+    bottom                (default 'G' and '<end>')
+    toggle                (default '<space>')
+    invert                (default 'v')
+    unmark                (default 'u')
+    copy                  (default 'y')
+    cut                   (default 'd')
+    paste                 (default 'p')
+    clear                 (default 'c')
+    redraw                (default '<c-l>')
+    reload                (default '<c-r>')
+    read                  (default ':')
+    shell                 (default '$')
+    shell-pipe            (default '%')
+    shell-wait            (default '!')
+    shell-async           (default '&')
+    search                (default '/')
+    search-back           (default '?')
+    search-next           (default 'n')
+    search-prev           (default 'N')
 
 The following commands are provided by lf without default keybindings:
 
@@ -83,29 +86,29 @@ keybindings:
 
 The following options can be used to customize the behavior of lf:
 
-    dircounts   boolean  (default off)
-    dirfirst    boolean  (default on)
-    drawbox     boolean  (default off)
-    globsearch  boolean  (default off)
-    hidden      boolean  (default off)
-    ignorecase  boolean  (default on)
-    preview     boolean  (default on)
-    reverse     boolean  (default off)
-    smartcase   boolean  (default on)
-    wrapscan    boolean  (default on)
-    period      integer  (default 0)
-    scrolloff   integer  (default 0)
-    tabstop     integer  (default 8)
-    filesep     string   (default "\n")
-    ifs         string   (default '') (not exported if empty)
-    previewer   string   (default '') (not filtered if empty)
-    promptfmt   string   (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
-    shell       string   (default 'sh')
-    sortby      string   (default 'natural')
-    timefmt     string   (default 'Mon Jan _2 15:04:05 2006')
-    ratios      string   (default '1:2:3')
-    info        string   (default '')
-    shellopts   string   (default '')
+    dircounts   boolean   (default off)
+    dirfirst    boolean   (default on)
+    drawbox     boolean   (default off)
+    globsearch  boolean   (default off)
+    hidden      boolean   (default off)
+    ignorecase  boolean   (default on)
+    preview     boolean   (default on)
+    reverse     boolean   (default off)
+    smartcase   boolean   (default on)
+    wrapscan    boolean   (default on)
+    period      integer   (default 0)
+    scrolloff   integer   (default 0)
+    tabstop     integer   (default 8)
+    filesep     string    (default "\n")
+    ifs         string    (default '') (not exported if empty)
+    previewer   string    (default '') (not filtered if empty)
+    promptfmt   string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
+    shell       string    (default 'sh')
+    sortby      string    (default 'natural')
+    timefmt     string    (default 'Mon Jan _2 15:04:05 2006')
+    ratios      string    (default '1:2:3')
+    info        string    (default '')
+    shellopts   string    (default '')
 
 The following variables are exported for shell commands:
 
@@ -154,7 +157,7 @@ Configuration
 
 Configuration files should be located at:
 
-             system-wide             user-specific
+    os       system-wide             user-specific
     unix     /etc/lfrc               ~/.config/lf/lfrc
     windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
@@ -195,7 +198,8 @@ Characters from '#' to newline are comments and ignored:
 There are three special commands ('set', 'map', and 'cmd') and their variants
 for configuration.
 
-'set' is used to set an option which can be boolean, integer, or string:
+Command 'set' is used to set an option which can be boolean, integer, or
+string:
 
     set hidden         # boolean on
     set nohidden       # boolean off
@@ -205,16 +209,16 @@ for configuration.
     set sortby 'time'  # string value with single quotes (whitespaces)
     set sortby "time"  # string value with double quotes (backslash escapes)
 
-'map' is used to bind a key to a command which can be builtin command, custom
-command, or shell command:
+Command 'map' is used to bind a key to a command which can be builtin command,
+custom command, or shell command:
 
     map gh cd ~        # builtin command
     map D trash        # custom command
     map i $less $f     # shell command
     map U !du -sh      # waiting shell command
 
-'cmap' is used to bind a key to a command line command which can only be one of
-the builtin commands:
+Command 'cmap' is used to bind a key to a command line command which can only
+be one of the builtin commands:
 
     cmap <c-g> cmd-escape
 
@@ -223,7 +227,7 @@ You can delete an existing binding by leaving the expression empty:
     map gh             # deletes 'gh' mapping
     cmap <c-g>         # deletes '<c-g>' mapping
 
-'cmd' is used to define a custom command
+Command 'cmd' is used to define a custom command:
 
     cmd usage $du -h -d1 | less
 
@@ -464,9 +468,9 @@ Setting the file selection is done with 'save' command:
 
 Getting the file selection is similarly done with 'load' command:
 
-    resp=$(lf -remote 'load')
-    mode=$(echo "$resp" | sed -n '1p')
-    list=$(echo "$resp" | sed '1d')
+    load=$(lf -remote 'load')
+    mode=$(echo "$load" | sed -n '1p')
+    list=$(echo "$load" | sed '1d')
     if [ $mode = 'copy' ]; then
         # do something with $list
     elif [ $mode = 'move' ]; then
@@ -488,7 +492,7 @@ You can customize these operations by defining a 'paste' command. This is a
 special command that is called when it is defined instead of the builtin
 implementation. The default behavior is similar to the following command:
 
-    cmd paste ${{
+    cmd paste %{{
         load=$(lf -remote 'load')
         mode=$(echo "$load" | sed -n '1p')
         list=$(echo "$load" | sed '1d')
@@ -497,9 +501,8 @@ implementation. The default behavior is similar to the following command:
         elif [ $mode = 'move' ]; then
             mv -n $list .
         fi
-        lf -remote "$(printf 'save\nmove\n\n')"
         lf -remote 'send load'
-        lf -remote 'send sync'
+        lf -remote 'send clear'
     }}
 
 Some useful things are to use the backup option ('--backup') with 'cp' and 'mv'
