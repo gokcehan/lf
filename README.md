@@ -15,7 +15,7 @@
 `lf` (as in "list files") is a terminal file manager written in Go.
 It is heavily inspired by ranger with some missing and extra features.
 Some of the missing features are deliberately omitted since they are better handled by external tools.
-See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information.
+See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
 
 ![multicol-screenshot](http://i.imgur.com/DaTUenu.png)
 ![singlecol-screenshot](http://i.imgur.com/p95xzUj.png)
@@ -52,8 +52,6 @@ If you like to build from the source:
 See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
 
 ## Usage
-
-See [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
 
 After the installation `lf` command should start the application in the current directory.
 
