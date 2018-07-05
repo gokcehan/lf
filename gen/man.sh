@@ -31,7 +31,7 @@ lf \- terminal file manager
 .OP \-selection-path path
 .OP \-server
 .OP \-version
-.RI [directory]
+.RI [ directory ]
 .YS
 .SH DESCRIPTION
 END
