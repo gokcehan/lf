@@ -149,14 +149,14 @@ func (app *app) exportVars() {
 		envFile = f.path
 	}
 
-	marks := app.nav.currMarks()
+	selections := app.nav.currSelections()
 
-	envFiles := strings.Join(marks, gOpts.filesep)
+	envFiles := strings.Join(selections, gOpts.filesep)
 
 	os.Setenv("f", envFile)
 	os.Setenv("fs", envFiles)
 
-	if len(marks) == 0 {
+	if len(selections) == 0 {
 		os.Setenv("fx", envFile)
 	} else {
 		os.Setenv("fx", envFiles)

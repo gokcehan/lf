@@ -188,16 +188,16 @@ func (dir *dir) find(name string, height int) {
 }
 
 type nav struct {
-	dirs     []*dir
-	dirChan  chan *dir
-	regChan  chan *reg
-	dirCache map[string]*dir
-	regCache map[string]*reg
-	saves    map[string]bool
-	marks    map[string]int
-	markInd  int
-	height   int
-	search   string
+	dirs         []*dir
+	dirChan      chan *dir
+	regChan      chan *reg
+	dirCache     map[string]*dir
+	regCache     map[string]*reg
+	saves        map[string]bool
+	selections   map[string]int
+	selectionInd int
+	height       int
+	search       string
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -265,14 +265,14 @@ func newNav(height int) *nav {
 	}
 
 	nav := &nav{
-		dirChan:  make(chan *dir),
-		regChan:  make(chan *reg),
-		dirCache: make(map[string]*dir),
-		regCache: make(map[string]*reg),
-		saves:    make(map[string]bool),
-		marks:    make(map[string]int),
-		markInd:  0,
-		height:   height,
+		dirChan:      make(chan *dir),
+		regChan:      make(chan *reg),
+		dirCache:     make(map[string]*dir),
+		regCache:     make(map[string]*reg),
+		saves:        make(map[string]bool),
+		selections:   make(map[string]int),
+		selectionInd: 0,
+		height:       height,
 	}
 
 	nav.getDirs(wd)
@@ -297,13 +297,13 @@ func (nav *nav) renew() {
 		}(d)
 	}
 
-	for m := range nav.marks {
+	for m := range nav.selections {
 		if _, err := os.Stat(m); os.IsNotExist(err) {
-			delete(nav.marks, m)
+			delete(nav.selections, m)
 		}
 	}
-	if len(nav.marks) == 0 {
-		nav.markInd = 0
+	if len(nav.selections) == 0 {
+		nav.selectionInd = 0
 	}
 }
 
@@ -504,15 +504,15 @@ func (nav *nav) bottom() {
 	dir.pos = min(dir.ind, nav.height-1)
 }
 
-func (nav *nav) toggleMark(path string) {
-	if _, ok := nav.marks[path]; ok {
-		delete(nav.marks, path)
-		if len(nav.marks) == 0 {
-			nav.markInd = 0
+func (nav *nav) toggleSelection(path string) {
+	if _, ok := nav.selections[path]; ok {
+		delete(nav.selections, path)
+		if len(nav.selections) == 0 {
+			nav.selectionInd = 0
 		}
 	} else {
-		nav.marks[path] = nav.markInd
-		nav.markInd = nav.markInd + 1
+		nav.selections[path] = nav.selectionInd
+		nav.selectionInd++
 	}
 }
 
@@ -522,7 +522,7 @@ func (nav *nav) toggle() {
 		return
 	}
 
-	nav.toggleMark(curr.path)
+	nav.toggleSelection(curr.path)
 
 	nav.down(1)
 }
@@ -531,17 +531,17 @@ func (nav *nav) invert() {
 	last := nav.currDir()
 	for _, f := range last.files {
 		path := filepath.Join(last.path, f.Name())
-		nav.toggleMark(path)
+		nav.toggleSelection(path)
 	}
 }
 
-func (nav *nav) unmark() {
-	nav.marks = make(map[string]int)
-	nav.markInd = 0
+func (nav *nav) unselect() {
+	nav.selections = make(map[string]int)
+	nav.selectionInd = 0
 }
 
 func (nav *nav) save(cp bool) error {
-	if len(nav.marks) == 0 {
+	if len(nav.selections) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
 			return errors.New("no file selected")
@@ -554,14 +554,14 @@ func (nav *nav) save(cp bool) error {
 		nav.saves = make(map[string]bool)
 		nav.saves[curr.path] = cp
 	} else {
-		marks := nav.currMarks()
+		selections := nav.currSelections()
 
-		if err := saveFiles(marks, cp); err != nil {
+		if err := saveFiles(selections, cp); err != nil {
 			return err
 		}
 
 		nav.saves = make(map[string]bool)
-		for f := range nav.marks {
+		for f := range nav.selections {
 			nav.saves[f] = cp
 		}
 	}
@@ -730,27 +730,27 @@ func (nav *nav) currFile() (*file, error) {
 	return last.files[last.ind], nil
 }
 
-type indexedMarks struct {
+type indexedSelections struct {
 	paths   []string
 	indices []int
 }
 
-func (m indexedMarks) Len() int { return len(m.paths) }
+func (m indexedSelections) Len() int { return len(m.paths) }
 
-func (m indexedMarks) Swap(i, j int) {
+func (m indexedSelections) Swap(i, j int) {
 	m.paths[i], m.paths[j] = m.paths[j], m.paths[i]
 	m.indices[i], m.indices[j] = m.indices[j], m.indices[i]
 }
 
-func (m indexedMarks) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
+func (m indexedSelections) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
 
-func (nav *nav) currMarks() []string {
-	paths := make([]string, 0, len(nav.marks))
-	indices := make([]int, 0, len(nav.marks))
-	for path, index := range nav.marks {
+func (nav *nav) currSelections() []string {
+	paths := make([]string, 0, len(nav.selections))
+	indices := make([]int, 0, len(nav.selections))
+	for path, index := range nav.selections {
 		paths = append(paths, path)
 		indices = append(indices, index)
 	}
-	sort.Sort(indexedMarks{paths: paths, indices: indices})
+	sort.Sort(indexedSelections{paths: paths, indices: indices})
 	return paths
 }

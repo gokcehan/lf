@@ -241,7 +241,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, colors colorMap) {
+func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]bool, colors colorMap) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -272,7 +272,7 @@ func (win *win) printDir(dir *dir, marks map[string]int, saves map[string]bool, 
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := marks[path]; ok {
+		if _, ok := selections[path]; ok {
 			win.print(0, i, fg, termbox.ColorMagenta, " ")
 		} else if cp, ok := saves[path]; ok {
 			if cp {
@@ -602,7 +602,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.marks, nav.saves, ui.colors)
+		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.selections, nav.saves, ui.colors)
 	}
 
 	switch ui.cmdPrefix {
@@ -628,7 +628,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if f.IsDir() {
-				preview.printDir(ui.dirPrev, nav.marks, nav.saves, ui.colors)
+				preview.printDir(ui.dirPrev, nav.selections, nav.saves, ui.colors)
 			} else if f.Mode().IsRegular() {
 				preview.printReg(ui.regPrev)
 			}

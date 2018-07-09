@@ -314,9 +314,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			defer out.Close()
 
 			var path string
-			if len(app.nav.marks) != 0 {
-				marks := app.nav.currMarks()
-				path = strings.Join(marks, "\n")
+			if len(app.nav.selections) != 0 {
+				selections := app.nav.currSelections()
+				path = strings.Join(selections, "\n")
 			} else if curr, err := app.nav.currFile(); err == nil {
 				path = curr.path
 			} else {
@@ -354,14 +354,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "invert":
 		app.nav.invert()
-	case "unmark":
-		app.nav.unmark()
+	case "unselect":
+		app.nav.unselect()
 	case "copy":
 		if err := app.nav.save(true); err != nil {
 			app.ui.printf("copy: %s", err)
 			return
 		}
-		app.nav.unmark()
+		app.nav.unselect()
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("copy: %s", err)
 		}
@@ -370,7 +370,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("cut: %s", err)
 			return
 		}
-		app.nav.unmark()
+		app.nav.unselect()
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("cut: %s", err)
 		}

@@ -27,7 +27,7 @@ var (
 		"bottom",
 		"toggle",
 		"invert",
-		"unmark",
+		"unselect",
 		"copy",
 		"cut",
 		"paste",

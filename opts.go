@@ -93,7 +93,7 @@ func init() {
 	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 1}
 	gOpts.keys["<space>"] = &callExpr{"toggle", nil, 1}
 	gOpts.keys["v"] = &callExpr{"invert", nil, 1}
-	gOpts.keys["u"] = &callExpr{"unmark", nil, 1}
+	gOpts.keys["u"] = &callExpr{"unselect", nil, 1}
 	gOpts.keys["y"] = &callExpr{"copy", nil, 1}
 	gOpts.keys["d"] = &callExpr{"cut", nil, 1}
 	gOpts.keys["c"] = &callExpr{"clear", nil, 1}

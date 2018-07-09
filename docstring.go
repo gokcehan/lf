@@ -32,7 +32,7 @@ The following commands are provided by lf with default keybindings:
     bottom                (default 'G' and '<end>')
     toggle                (default '<space>')
     invert                (default 'v')
-    unmark                (default 'u')
+    unselect              (default 'u')
     copy                  (default 'y')
     cut                   (default 'd')
     paste                 (default 'p')
@@ -117,8 +117,8 @@ The following options can be used to customize the behavior of lf:
 The following variables are exported for shell commands:
 
     $f   current file
-    $fs  marked file(s) separated with 'filesep'
-    $fx  current file or marked file(s) if any
+    $fs  selected file(s) separated with 'filesep'
+    $fx  current file or selected file(s) if any
     $id  id number of the client
 
 The following default values are set to the environmental variables on unix
@@ -352,7 +352,7 @@ this:
         fi
     }}
 
-We check '$fs' to see if there are any marked files. Otherwise we just
+We check '$fs' to see if there are any selected files. Otherwise we just
 delete the current file. Since this is such a common pattern, a separate
 '$fx' variable is provided. We can use this variable to get rid of the
 conditional:
