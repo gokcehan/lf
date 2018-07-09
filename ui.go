@@ -700,6 +700,26 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 	return b
 }
 
+func listMarks(marks map[string]string) *bytes.Buffer {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	var keys []string
+	for k := range marks {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "mark\tpath")
+	for _, k := range keys {
+		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
+	}
+	t.Flush()
+
+	return b
+}
+
 func (ui *ui) pollEvent() termbox.Event {
 	select {
 	case key := <-ui.keyChan:

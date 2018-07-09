@@ -194,6 +194,7 @@ type nav struct {
 	dirCache     map[string]*dir
 	regCache     map[string]*reg
 	saves        map[string]bool
+	marks        map[string]string
 	selections   map[string]int
 	selectionInd int
 	height       int
@@ -270,6 +271,7 @@ func newNav(height int) *nav {
 		dirCache:     make(map[string]*dir),
 		regCache:     make(map[string]*reg),
 		saves:        make(map[string]bool),
+		marks:        make(map[string]string),
 		selections:   make(map[string]int),
 		selectionInd: 0,
 		height:       height,

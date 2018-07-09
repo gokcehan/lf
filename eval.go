@@ -436,6 +436,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+	case "mark-save":
+		app.ui.cmdPrefix = "mark-save: "
+	case "mark-load":
+		app.ui.menuBuf = listMarks(app.nav.marks)
+		app.ui.cmdPrefix = "mark-load: "
 	case "sync":
 		if err := app.nav.sync(); err != nil {
 			app.ui.printf("sync: %s", err)
@@ -481,6 +486,41 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-insert":
 		if len(e.args) == 0 {
+			return
+		}
+		switch app.ui.cmdPrefix {
+		case "mark-save: ":
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
+
+			wd, err := os.Getwd()
+			if err != nil {
+				log.Printf("getting current directory: %s", err)
+				return
+			}
+			app.nav.marks[e.args[0]] = wd
+
+			return
+		case "mark-load: ":
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
+
+			path, ok := app.nav.marks[e.args[0]]
+			if !ok {
+				app.ui.print("mark-load: no such mark")
+				return
+			}
+			if err := app.nav.cd(path); err != nil {
+				app.ui.printf("%s", err)
+				return
+			}
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
+
 			return
 		}
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(e.args[0])...)

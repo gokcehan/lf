@@ -45,6 +45,8 @@ The following commands are provided by lf with default keybindings:
     search-back           (default '?')
     search-next           (default 'n')
     search-prev           (default 'N')
+    mark-save             (default 'm')
+    mark-load             (default "'")
 
 The following commands are provided by lf without default keybindings:
 

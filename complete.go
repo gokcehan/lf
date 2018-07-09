@@ -45,6 +45,8 @@ var (
 		"search-back",
 		"search-next",
 		"search-prev",
+		"mark-save",
+		"mark-load",
 		"sync",
 		"echo",
 		"cd",
