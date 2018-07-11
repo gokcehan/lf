@@ -38,6 +38,10 @@ func run() {
 		}
 	}
 
+	if err := app.nav.readMarks(); err != nil {
+		app.ui.printf("reading marks file: %s", err)
+	}
+
 	app.loop()
 }
 

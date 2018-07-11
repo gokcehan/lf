@@ -28,6 +28,7 @@ var (
 var (
 	gUser        *user.User
 	gConfigPaths []string
+	gMarksPath   string
 )
 
 func init() {
@@ -66,6 +67,13 @@ func init() {
 		filepath.Join("/etc", "lfrc"),
 		filepath.Join(config, "lf", "lfrc"),
 	}
+
+	data := os.Getenv("XDG_DATA_HOME")
+	if data == "" {
+		data = filepath.Join(gUser.HomeDir, ".local", "share")
+	}
+
+	gMarksPath = filepath.Join(data, "lf", "marks")
 
 	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
 }

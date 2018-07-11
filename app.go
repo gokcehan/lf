@@ -75,6 +75,10 @@ func (app *app) loop() {
 		case <-app.quitChan:
 			log.Print("bye!")
 
+			if err := app.nav.writeMarks(); err != nil {
+				log.Printf("writing marks file: %s", err)
+			}
+
 			if gLastDirPath != "" {
 				f, err := os.Create(gLastDirPath)
 				if err != nil {

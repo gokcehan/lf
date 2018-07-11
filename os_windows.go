@@ -29,6 +29,7 @@ var (
 var (
 	gUser        *user.User
 	gConfigPaths []string
+	gMarksPath   string
 )
 
 func init() {
@@ -61,6 +62,8 @@ func init() {
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
 		filepath.Join(os.Getenv("LOCALAPPDATA"), "lf", "lfrc"),
 	}
+
+	gMarksPath = filepath.Join(os.Getenv("LOCALAPPDATA"), "lf", "marks")
 }
 
 func pauseCommand() *exec.Cmd {

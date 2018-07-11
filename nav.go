@@ -732,6 +732,66 @@ func (nav *nav) currFile() (*file, error) {
 	return last.files[last.ind], nil
 }
 
+func (nav *nav) readMarks() error {
+	f, err := os.Open(gMarksPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("opening marks file: %s", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		toks := strings.SplitN(scanner.Text(), ":", 2)
+		if _, ok := nav.marks[toks[0]]; !ok {
+			nav.marks[toks[0]] = toks[1]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("reading marks file: %s", err)
+	}
+
+	return nil
+}
+
+func (nav *nav) writeMarks() error {
+	if len(nav.marks) == 0 {
+		return nil
+	}
+
+	if err := nav.readMarks(); err != nil {
+		return fmt.Errorf("reading marks file: %s", err)
+	}
+
+	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
+		return fmt.Errorf("creating data directory: %s", err)
+	}
+
+	f, err := os.Create(gMarksPath)
+	if err != nil {
+		return fmt.Errorf("creating marks file: %s", err)
+	}
+	defer f.Close()
+
+	var keys []string
+	for k := range nav.marks {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		_, err = f.WriteString(fmt.Sprintf("%s:%s\n", k, nav.marks[k]))
+		if err != nil {
+			return fmt.Errorf("writing marks file: %s", err)
+		}
+	}
+
+	return nil
+}
+
 type indexedSelections struct {
 	paths   []string
 	indices []int
