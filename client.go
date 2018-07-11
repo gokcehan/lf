@@ -42,6 +42,10 @@ func run() {
 		app.ui.printf("reading marks file: %s", err)
 	}
 
+	if err := app.readHistory(); err != nil {
+		app.ui.printf("reading history file: %s", err)
+	}
+
 	app.loop()
 }
 

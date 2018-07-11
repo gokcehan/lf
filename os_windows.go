@@ -30,6 +30,7 @@ var (
 	gUser        *user.User
 	gConfigPaths []string
 	gMarksPath   string
+	gHistoryPath string
 )
 
 func init() {
@@ -58,12 +59,15 @@ func init() {
 	// remove domain prefix
 	gUser.Username = strings.Split(gUser.Username, `\`)[1]
 
+	data := os.Getenv("LOCALAPPDATA")
+
 	gConfigPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
-		filepath.Join(os.Getenv("LOCALAPPDATA"), "lf", "lfrc"),
+		filepath.Join(data, "lf", "lfrc"),
 	}
 
-	gMarksPath = filepath.Join(os.Getenv("LOCALAPPDATA"), "lf", "marks")
+	gMarksPath = filepath.Join(data, "lf", "marks")
+	gHistoryPath = filepath.Join(data, "lf", "history")
 }
 
 func pauseCommand() *exec.Cmd {

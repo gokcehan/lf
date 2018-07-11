@@ -29,6 +29,7 @@ var (
 	gUser        *user.User
 	gConfigPaths []string
 	gMarksPath   string
+	gHistoryPath string
 )
 
 func init() {
@@ -74,6 +75,7 @@ func init() {
 	}
 
 	gMarksPath = filepath.Join(data, "lf", "marks")
+	gHistoryPath = filepath.Join(data, "lf", "history")
 
 	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
 }

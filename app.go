@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -26,6 +27,7 @@ type app struct {
 	cmdIn         io.WriteCloser
 	cmdOutBuf     []byte
 	cmdHistory    []cmdItem
+	cmdHistoryBeg int
 	cmdHistoryInd int
 }
 
@@ -62,6 +64,70 @@ func (app *app) readFile(path string) {
 	}
 }
 
+func (app *app) readHistory() error {
+	f, err := os.Open(gHistoryPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("opening history file: %s", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		toks := strings.SplitN(scanner.Text(), " ", 2)
+		app.cmdHistory = append(app.cmdHistory, cmdItem{toks[0], toks[1]})
+	}
+
+	app.cmdHistoryBeg = len(app.cmdHistory)
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("reading history file: %s", err)
+	}
+
+	return nil
+}
+
+func (app *app) writeHistory() error {
+	if len(app.cmdHistory) == 0 {
+		return nil
+	}
+
+	local := make([]cmdItem, len(app.cmdHistory)-app.cmdHistoryBeg)
+	copy(local, app.cmdHistory[app.cmdHistoryBeg:])
+	app.cmdHistory = nil
+
+	if err := app.readHistory(); err != nil {
+		return fmt.Errorf("reading history file: %s", err)
+	}
+
+	app.cmdHistory = append(app.cmdHistory, local...)
+
+	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
+		return fmt.Errorf("creating data directory: %s", err)
+	}
+
+	f, err := os.Create(gHistoryPath)
+	if err != nil {
+		return fmt.Errorf("creating history file: %s", err)
+	}
+	defer f.Close()
+
+	if len(app.cmdHistory) > 1000 {
+		app.cmdHistory = app.cmdHistory[len(app.cmdHistory)-1000:]
+	}
+
+	for _, cmd := range app.cmdHistory {
+		_, err = f.WriteString(fmt.Sprintf("%s %s\n", cmd.prefix, cmd.value))
+		if err != nil {
+			return fmt.Errorf("writing history file: %s", err)
+		}
+	}
+
+	return nil
+}
+
 // This is the main event loop of the application. Expressions are read from
 // the client and the server on separate goroutines and sent here over channels
 // for evaluation. Similarly directories and regular files are also read in
@@ -77,6 +143,10 @@ func (app *app) loop() {
 
 			if err := app.nav.writeMarks(); err != nil {
 				log.Printf("writing marks file: %s", err)
+			}
+
+			if err := app.writeHistory(); err != nil {
+				log.Printf("writing history file: %s", err)
 			}
 
 			if gLastDirPath != "" {
