@@ -188,10 +188,25 @@ Configuration files should be located at:
     windows  C:\eProgramData\elf\elfrc  C:\eUsers\e<user>\eAppData\eLocal\elf\elfrc
 .EE
 .PP
+Marks file should be located at:
+.PP
+.EX
+    unix     ~/.local/share/lf/marks
+    windows  C:\eUsers\e<user>\eAppData\eLocal\elf\emarks
+.EE
+.PP
+History file should be located at:
+.PP
+.EX
+    unix     ~/.local/share/lf/history
+    windows  C:\eUsers\e<user>\eAppData\eLocal\elf\ehistory
+.EE
+.PP
 You can configure the default values of following variables to change these locations:
 .PP
 .EX
     $XDG_CONFIG_HOME  ~/.config
+    $XDG_DATA_HOME    ~/.local/share
     %ProgramData%     C:\eProgramData
     %LOCALAPPDATA%    C:\eUsers\e<user>\eAppData\eLocal
 .EE

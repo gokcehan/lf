@@ -164,10 +164,21 @@ Configuration files should be located at:
     unix     /etc/lfrc               ~/.config/lf/lfrc
     windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
+Marks file should be located at:
+
+    unix     ~/.local/share/lf/marks
+    windows  C:\Users\<user>\AppData\Local\lf\marks
+
+History file should be located at:
+
+    unix     ~/.local/share/lf/history
+    windows  C:\Users\<user>\AppData\Local\lf\history
+
 You can configure the default values of following variables to change these
 locations:
 
     $XDG_CONFIG_HOME  ~/.config
+    $XDG_DATA_HOME    ~/.local/share
     %ProgramData%     C:\ProgramData
     %LOCALAPPDATA%    C:\Users\<user>\AppData\Local
 
