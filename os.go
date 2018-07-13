@@ -65,7 +65,7 @@ func init() {
 	}
 
 	gConfigPaths = []string{
-		filepath.Join("/etc", "lfrc"),
+		filepath.Join("/etc", "lf", "lfrc"),
 		filepath.Join(config, "lf", "lfrc"),
 	}
 

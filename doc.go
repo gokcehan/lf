@@ -161,7 +161,7 @@ Configuration
 Configuration files should be located at:
 
     os       system-wide             user-specific
-    unix     /etc/lfrc               ~/.config/lf/lfrc
+    unix     /etc/lf/lfrc            ~/.config/lf/lfrc
     windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
 Marks file should be located at:
