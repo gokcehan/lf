@@ -4,6 +4,7 @@ import (
 	"io"
 	"log"
 	"os"
+	"path/filepath"
 	"strconv"
 	"strings"
 	"time"
@@ -452,23 +453,58 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) > 0 {
 			path = e.args[0]
 		}
+
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+		}
+
 		if err := app.nav.cd(path); err != nil {
 			app.ui.printf("%s", err)
 			return
 		}
+
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(wd, path)
+		} else {
+			path = filepath.Clean(path)
+		}
+
+		if wd != path {
+			app.nav.marks["'"] = wd
+		}
 	case "select":
 		if len(e.args) != 1 {
 			app.ui.print("select: requires an argument")
 			return
 		}
+
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+		}
+
 		if err := app.nav.find(e.args[0]); err != nil {
 			app.ui.printf("%s", err)
 			return
 		}
+
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+
+		path := filepath.Dir(e.args[0])
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(wd, path)
+		} else {
+			path = filepath.Clean(path)
+		}
+
+		if wd != path {
+			app.nav.marks["'"] = wd
+		}
 	case "source":
 		if len(e.args) != 1 {
 			app.ui.print("source: requires an argument")
@@ -509,6 +545,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdAccRight = nil
 			app.ui.cmdPrefix = ""
 
+			wd, err := os.Getwd()
+			if err != nil {
+				log.Printf("getting current directory: %s", err)
+			}
+
 			path, ok := app.nav.marks[e.args[0]]
 			if !ok {
 				app.ui.print("mark-load: no such mark")
@@ -520,6 +561,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
+
+			if wd != path {
+				app.nav.marks["'"] = wd
+			}
 
 			return
 		}
