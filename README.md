@@ -38,7 +38,6 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ## May-Futures
 
-- Bookmarks
 - Mouse control
 
 ## Installation
