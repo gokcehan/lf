@@ -512,6 +512,10 @@ Getting the file selection is similarly done with 'load' command:
         # do something else with $list
     fi
 
+There is a 'quit' command to close client connections and quit the server:
+
+    lf -remote 'quit'
+
 Lastly, there is a 'conn' command to connect the server as a client. This
 should not be needed for users.
 

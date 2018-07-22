@@ -13,6 +13,8 @@ var (
 	gCopyFile bool
 	gFileList []string
 	gConnList = make(map[int]net.Conn)
+	gQuitChan = make(chan bool, 1)
+	gListener net.Listener
 )
 
 func serve() {
@@ -32,6 +34,8 @@ func serve() {
 	}
 	defer l.Close()
 
+	gListener = l
+
 	listen(l)
 }
 
@@ -39,7 +43,13 @@ func listen(l net.Listener) {
 	for {
 		c, err := l.Accept()
 		if err != nil {
-			log.Printf("accepting connection: %s", err)
+			select {
+			case <-gQuitChan:
+				log.Printf("bye!")
+				return
+			default:
+				log.Printf("accepting connection: %s", err)
+			}
 		}
 		go handleConn(c)
 	}
@@ -103,6 +113,14 @@ func handleConn(c net.Conn) {
 					}
 				}
 			}
+		case "quit":
+			gQuitChan <- true
+			for _, c := range gConnList {
+				fmt.Fprintln(c, "echo server is quitting...")
+				c.Close()
+			}
+			gListener.Close()
+			break
 		default:
 			log.Printf("listen: unexpected command: %s", word)
 		}

@@ -501,6 +501,12 @@ Getting the file selection is similarly done with 'load' command:
     fi
 .EE
 .PP
+There is a 'quit' command to close client connections and quit the server:
+.PP
+.EX
+    lf -remote 'quit'
+.EE
+.PP
 Lastly, there is a 'conn' command to connect the server as a client. This should not be needed for users.
 .SH FILE OPERATIONS
 lf uses the underlying 'cp' and 'mv' shell commands for file operations. For this purpose, when you 'copy' a file, it doesn't actually copy the file on the disk, but only records its name to memory. The actual file operation takes place when you 'paste' in which case the 'cp' command is used. Similarly the 'mv' command is used for 'cut' followed by 'paste'.
