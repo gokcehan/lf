@@ -8,6 +8,7 @@ import (
 	"net"
 	"os"
 	"strings"
+	"time"
 
 	"github.com/nsf/termbox-go"
 )
@@ -53,10 +54,14 @@ func readExpr() <-chan expr {
 	ch := make(chan expr)
 
 	go func() {
+		duration := 1 * time.Second
+
 		c, err := net.Dial(gSocketProt, gSocketPath)
-		if err != nil {
+		for err != nil {
 			log.Printf(fmt.Sprintf("connecting server: %s", err))
-			return
+			c, err = net.Dial(gSocketProt, gSocketPath)
+			time.Sleep(duration)
+			duration *= 2
 		}
 
 		fmt.Fprintf(c, "conn %d\n", gClientID)
