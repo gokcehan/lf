@@ -242,6 +242,15 @@ func (app *app) exportVars() {
 	os.Setenv("EDITOR", envEditor)
 	os.Setenv("PAGER", envPager)
 	os.Setenv("SHELL", envShell)
+
+	level, err := strconv.Atoi(envLevel)
+	if err != nil {
+		log.Printf("reading lf level: %s", err)
+	}
+
+	level++
+
+	os.Setenv("LF_LEVEL", strconv.Itoa(level))
 }
 
 func waitKey() error {

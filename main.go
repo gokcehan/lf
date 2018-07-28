@@ -14,6 +14,7 @@ import (
 
 var (
 	envPath = os.Getenv("PATH")
+	envLevel = os.Getenv("LF_LEVEL")
 )
 
 var (
@@ -34,6 +35,10 @@ func init() {
 		log.Printf("hostname: %s", err)
 	}
 	gHostname = h
+
+	if envLevel == "" {
+		envLevel = "0"
+	}
 }
 
 func startServer() {
