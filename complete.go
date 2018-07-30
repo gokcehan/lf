@@ -190,8 +190,9 @@ func matchFile(s string) (matches []string, longest string) {
 		wd, err := os.Getwd()
 		if err != nil {
 			log.Printf("getting current directory: %s", err)
+		} else {
+			dir = wd + string(filepath.Separator) + dir
 		}
-		dir = wd + string(filepath.Separator) + dir
 	}
 
 	dir = unescape(filepath.Dir(dir))

@@ -310,13 +310,13 @@ func (nav *nav) renew() {
 	}
 }
 
-func (nav *nav) reload() {
+func (nav *nav) reload() error {
 	nav.dirCache = make(map[string]*dir)
 	nav.regCache = make(map[string]*reg)
 
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Printf("getting current directory: %s", err)
+		return fmt.Errorf("getting current directory: %s", err)
 	}
 
 	curr, err := nav.currFile()
@@ -325,6 +325,8 @@ func (nav *nav) reload() {
 		last := nav.dirs[len(nav.dirs)-1]
 		last.files = append(last.files, curr)
 	}
+
+	return nil
 }
 
 func (nav *nav) position() {

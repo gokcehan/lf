@@ -120,19 +120,6 @@ func main() {
 		defer pprof.StopCPUProfile()
 	}
 
-	switch flag.NArg() {
-	case 0:
-	case 1:
-		dir := flag.Arg(0)
-		if err := os.Chdir(dir); err != nil {
-			fmt.Fprintf(os.Stderr, "%s\n", err)
-			os.Exit(2)
-		}
-	default:
-		fmt.Fprintf(os.Stderr, "only single directory is allowed\n")
-		os.Exit(2)
-	}
-
 	switch {
 	case *showDoc:
 		fmt.Print(genDocString)
@@ -153,6 +140,24 @@ func main() {
 		for _, err := os.Stat(gLogPath); !os.IsNotExist(err); _, err = os.Stat(gLogPath) {
 			gClientID++
 			gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
+		}
+
+		switch flag.NArg() {
+		case 0:
+			_, err := os.Getwd()
+			if err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(2)
+			}
+		case 1:
+			dir := flag.Arg(0)
+			if err := os.Chdir(dir); err != nil {
+				fmt.Fprintf(os.Stderr, "%s\n", err)
+				os.Exit(2)
+			}
+		default:
+			fmt.Fprintf(os.Stderr, "only single directory is allowed\n")
+			os.Exit(2)
 		}
 
 		run()

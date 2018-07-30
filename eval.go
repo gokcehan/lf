@@ -404,7 +404,9 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "load":
 		app.nav.renew()
 	case "reload":
-		app.nav.reload()
+		if err := app.nav.reload(); err != nil {
+			app.ui.printf("reload: %s", err)
+		}
 	case "read":
 		app.ui.cmdPrefix = ":"
 	case "shell":
