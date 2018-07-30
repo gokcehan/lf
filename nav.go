@@ -288,6 +288,7 @@ func (nav *nav) renew() {
 			s, err := os.Stat(d.path)
 			if err != nil {
 				log.Printf("getting directory info: %s", err)
+				return
 			}
 			if d.loadTime.After(s.ModTime()) {
 				return
