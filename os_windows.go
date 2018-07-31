@@ -7,6 +7,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -68,6 +69,12 @@ func init() {
 
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gHistoryPath = filepath.Join(data, "lf", "history")
+}
+
+func detachedCommand(name string, arg ...string) *exec.Cmd {
+	cmd := exec.Command(name, arg...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{CreationFlags: 8}
+	return cmd
 }
 
 func pauseCommand() *exec.Cmd {

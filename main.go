@@ -6,14 +6,13 @@ import (
 	"log"
 	"net"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
 )
 
 var (
-	envPath = os.Getenv("PATH")
+	envPath  = os.Getenv("PATH")
 	envLevel = os.Getenv("LF_LEVEL")
 )
 
@@ -42,7 +41,7 @@ func init() {
 }
 
 func startServer() {
-	cmd := exec.Command(os.Args[0], "-server")
+	cmd := detachedCommand(os.Args[0], "-server")
 	if err := cmd.Start(); err != nil {
 		log.Printf("starting server: %s", err)
 	}

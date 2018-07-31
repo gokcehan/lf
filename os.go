@@ -80,6 +80,10 @@ func init() {
 	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
 }
 
+func detachedCommand(name string, arg ...string) *exec.Cmd {
+	return exec.Command(name, arg...)
+}
+
 func pauseCommand() *exec.Cmd {
 	cmd := `echo
 	        echo -n 'Press any key to continue'
