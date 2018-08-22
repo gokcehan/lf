@@ -455,7 +455,7 @@ func (ui *ui) sort() {
 	}
 	name := ui.dirPrev.name()
 	ui.dirPrev.sort()
-	ui.dirPrev.find(name, ui.wins[0].h)
+	ui.dirPrev.sel(name, ui.wins[0].h)
 }
 
 func (ui *ui) print(msg string) {

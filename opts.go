@@ -105,6 +105,10 @@ func init() {
 	gOpts.keys["%"] = &callExpr{"shell-pipe", nil, 1}
 	gOpts.keys["!"] = &callExpr{"shell-wait", nil, 1}
 	gOpts.keys["&"] = &callExpr{"shell-async", nil, 1}
+	gOpts.keys["f"] = &callExpr{"find", nil, 1}
+	gOpts.keys["F"] = &callExpr{"find-back", nil, 1}
+	gOpts.keys[";"] = &callExpr{"find-next", nil, 1}
+	gOpts.keys[","] = &callExpr{"find-prev", nil, 1}
 	gOpts.keys["/"] = &callExpr{"search", nil, 1}
 	gOpts.keys["?"] = &callExpr{"search-back", nil, 1}
 	gOpts.keys["n"] = &callExpr{"search-next", nil, 1}

@@ -417,6 +417,22 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = "!"
 	case "shell-async":
 		app.ui.cmdPrefix = "&"
+	case "find":
+		app.ui.cmdPrefix = "find: "
+	case "find-back":
+		app.ui.cmdPrefix = "find-back: "
+	case "find-next":
+		for i := 0; i < e.count; i++ {
+			app.nav.findNext()
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+	case "find-prev":
+		for i := 0; i < e.count; i++ {
+			app.nav.findPrev()
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "search":
 		app.ui.cmdPrefix = "/"
 	case "search-back":
@@ -489,7 +505,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("getting current directory: %s", err)
 		}
 
-		if err := app.nav.find(e.args[0]); err != nil {
+		if err := app.nav.sel(e.args[0]); err != nil {
 			app.ui.printf("%s", err)
 			return
 		}
@@ -527,6 +543,40 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		switch app.ui.cmdPrefix {
+		case "find: ":
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
+
+			app.nav.find = e.args[0]
+
+			if !app.nav.findNext() {
+				app.ui.print("pattern not found")
+				return
+			}
+
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
+
+			return
+		case "find-back: ":
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
+
+			app.nav.find = e.args[0]
+
+			if !app.nav.findPrev() {
+				app.ui.print("pattern not found")
+				return
+			}
+
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
+
+			return
 		case "mark-save: ":
 			app.ui.menuBuf = nil
 			app.ui.cmdAccLeft = nil

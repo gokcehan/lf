@@ -168,7 +168,7 @@ func (app *app) loop() {
 		case d := <-app.nav.dirChan:
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
-				d.find(prev.name(), app.nav.height)
+				d.sel(prev.name(), app.nav.height)
 			}
 
 			app.nav.dirCache[d.path] = d
