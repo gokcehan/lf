@@ -199,7 +199,9 @@ type nav struct {
 	selectionInd int
 	height       int
 	find         string
+	findBack     bool
 	search       string
+	searchBack   bool
 }
 
 func (nav *nav) loadDir(path string) *dir {

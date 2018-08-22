@@ -278,7 +278,7 @@ func insert(app *app, arg string) {
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
 			case 0:
-				app.ui.print("pattern not found")
+				app.ui.printf("find: pattern not found: %s", app.nav.find)
 			case 1:
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -293,7 +293,7 @@ func insert(app *app, arg string) {
 			}
 
 			if !app.nav.findNext() {
-				app.ui.print("pattern not found")
+				app.ui.printf("find: pattern not found: %s", app.nav.find)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -310,7 +310,7 @@ func insert(app *app, arg string) {
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
 			case 0:
-				app.ui.print("pattern not found")
+				app.ui.printf("find-back: pattern not found: %s", app.nav.find)
 			case 1:
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -325,7 +325,7 @@ func insert(app *app, arg string) {
 			}
 
 			if !app.nav.findPrev() {
-				app.ui.print("pattern not found")
+				app.ui.printf("find-back: pattern not found: %s", app.nav.find)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -545,38 +545,64 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = "&"
 	case "find":
 		app.ui.cmdPrefix = "find: "
+		app.nav.findBack = false
 	case "find-back":
 		app.ui.cmdPrefix = "find-back: "
+		app.nav.findBack = true
 	case "find-next":
 		for i := 0; i < e.count; i++ {
-			app.nav.findNext()
+			if app.nav.findBack {
+				app.nav.findPrev()
+			} else {
+				app.nav.findNext()
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "find-prev":
 		for i := 0; i < e.count; i++ {
-			app.nav.findPrev()
+			if app.nav.findBack {
+				app.nav.findNext()
+			} else {
+				app.nav.findPrev()
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "search":
 		app.ui.cmdPrefix = "/"
+		app.nav.searchBack = false
 	case "search-back":
 		app.ui.cmdPrefix = "?"
+		app.nav.searchBack = true
 	case "search-next":
 		for i := 0; i < e.count; i++ {
-			if err := app.nav.searchNext(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
-				return
+			if app.nav.searchBack {
+				if err := app.nav.searchPrev(); err != nil {
+					app.ui.printf("search-back: %s: %s", err, app.nav.search)
+					return
+				}
+			} else {
+				if err := app.nav.searchNext(); err != nil {
+					app.ui.printf("search: %s: %s", err, app.nav.search)
+					return
+				}
 			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "search-prev":
 		for i := 0; i < e.count; i++ {
-			if err := app.nav.searchPrev(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
-				return
+			if app.nav.searchBack {
+				if err := app.nav.searchNext(); err != nil {
+					app.ui.printf("search-back: %s: %s", err, app.nav.search)
+					return
+				}
+			} else {
+				if err := app.nav.searchPrev(); err != nil {
+					app.ui.printf("search: %s: %s", err, app.nav.search)
+					return
+				}
 			}
 		}
 		app.ui.loadFile(app.nav)
@@ -746,7 +772,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
 			if err := app.nav.searchPrev(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
+				app.ui.printf("search-back: %s: %s", err, app.nav.search)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
