@@ -14,6 +14,12 @@ import (
 
 func (e *setExpr) eval(app *app, args []string) {
 	switch e.opt {
+	case "anchorfind":
+		gOpts.anchorfind = true
+	case "noanchorfind":
+		gOpts.anchorfind = false
+	case "anchorfind!":
+		gOpts.anchorfind = !gOpts.anchorfind
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":

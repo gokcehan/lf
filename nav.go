@@ -663,7 +663,10 @@ func findMatch(name, pattern string) bool {
 			name = strings.ToLower(name)
 		}
 	}
-	return strings.HasPrefix(name, pattern)
+	if gOpts.anchorfind {
+		return strings.HasPrefix(name, pattern)
+	}
+	return strings.Contains(name, pattern)
 }
 
 func (nav *nav) findSingle() int {

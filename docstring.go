@@ -96,6 +96,7 @@ keybindings:
 
 The following options can be used to customize the behavior of lf:
 
+    anchorfind  boolean   (default on)
     dircounts   boolean   (default off)
     dirfirst    boolean   (default on)
     drawbox     boolean   (default off)

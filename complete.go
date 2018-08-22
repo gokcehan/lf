@@ -60,6 +60,9 @@ var (
 	}
 
 	gOptWords = []string{
+		"anchorfind",
+		"noanchorfind",
+		"anchorfind!",
 		"dircounts",
 		"nodircounts",
 		"dircounts!",
