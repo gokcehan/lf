@@ -104,6 +104,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscan = false
 	case "wrapscan!":
 		gOpts.wrapscan = !gOpts.wrapscan
+	case "findlen":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.printf("findlen: %s", err)
+			return
+		}
+		if n <= 0 {
+			app.ui.print("findlen: value should be a positive number")
+			return
+		}
+		gOpts.findlen = n
 	case "period":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -544,37 +555,45 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		switch app.ui.cmdPrefix {
 		case "find: ":
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
+			pattern := string(app.ui.cmdAccLeft) + e.args[0] + string(app.ui.cmdAccRight)
+			if len(pattern) < gOpts.findlen {
+				break
+			}
 
-			app.nav.find = e.args[0]
+			app.nav.find = pattern
 
 			if !app.nav.findNext() {
 				app.ui.print("pattern not found")
-				return
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
 			}
 
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
-
-			return
-		case "find-back: ":
 			app.ui.menuBuf = nil
 			app.ui.cmdAccLeft = nil
 			app.ui.cmdAccRight = nil
 			app.ui.cmdPrefix = ""
 
-			app.nav.find = e.args[0]
+			return
+		case "find-back: ":
+			pattern := string(app.ui.cmdAccLeft) + e.args[0] + string(app.ui.cmdAccRight)
+			if len(pattern) < gOpts.findlen {
+				break
+			}
+
+			app.nav.find = pattern
 
 			if !app.nav.findPrev() {
 				app.ui.print("pattern not found")
-				return
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
 			}
 
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
+			app.ui.menuBuf = nil
+			app.ui.cmdAccLeft = nil
+			app.ui.cmdAccRight = nil
+			app.ui.cmdPrefix = ""
 
 			return
 		case "mark-save: ":

@@ -90,6 +90,7 @@ var (
 		"wrapscan",
 		"nowrapscan",
 		"wrapscan!",
+		"findlen",
 		"period",
 		"scrolloff",
 		"tabstop",
