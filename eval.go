@@ -110,8 +110,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.printf("findlen: %s", err)
 			return
 		}
-		if n <= 0 {
-			app.ui.print("findlen: value should be a positive number")
+		if n < 0 {
+			app.ui.print("findlen: value should be a non-negative number")
 			return
 		}
 		gOpts.findlen = n
@@ -262,6 +262,115 @@ func splitKeys(s string) (keys []string) {
 		}
 	}
 	return
+}
+
+func insert(app *app, arg string) {
+	switch app.ui.cmdPrefix {
+	case "find: ":
+		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
+
+		if gOpts.findlen == 0 {
+			switch app.nav.findSingle() {
+			case 0:
+				app.ui.print("pattern not found")
+			case 1:
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			default:
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				return
+			}
+		} else {
+			if len(app.nav.find) < gOpts.findlen {
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				return
+			}
+
+			if !app.nav.findNext() {
+				app.ui.print("pattern not found")
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			}
+		}
+
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+	case "find-back: ":
+		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
+
+		if gOpts.findlen == 0 {
+			switch app.nav.findSingle() {
+			case 0:
+				app.ui.print("pattern not found")
+			case 1:
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			default:
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				return
+			}
+		} else {
+			if len(app.nav.find) < gOpts.findlen {
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				return
+			}
+
+			if !app.nav.findPrev() {
+				app.ui.print("pattern not found")
+			} else {
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
+			}
+		}
+
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+	case "mark-save: ":
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+			return
+		}
+		app.nav.marks[arg] = wd
+	case "mark-load: ":
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+		}
+
+		path, ok := app.nav.marks[arg]
+		if !ok {
+			app.ui.print("mark-load: no such mark")
+			return
+		}
+		if err := app.nav.cd(path); err != nil {
+			app.ui.printf("%s", err)
+			return
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+
+		if wd != path {
+			app.nav.marks["'"] = wd
+		}
+	default:
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+	}
 }
 
 func (e *callExpr) eval(app *app, args []string) {
@@ -553,93 +662,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) == 0 {
 			return
 		}
-		switch app.ui.cmdPrefix {
-		case "find: ":
-			pattern := string(app.ui.cmdAccLeft) + e.args[0] + string(app.ui.cmdAccRight)
-			if len(pattern) < gOpts.findlen {
-				break
-			}
-
-			app.nav.find = pattern
-
-			if !app.nav.findNext() {
-				app.ui.print("pattern not found")
-			} else {
-				app.ui.loadFile(app.nav)
-				app.ui.loadFileInfo(app.nav)
-			}
-
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
-
-			return
-		case "find-back: ":
-			pattern := string(app.ui.cmdAccLeft) + e.args[0] + string(app.ui.cmdAccRight)
-			if len(pattern) < gOpts.findlen {
-				break
-			}
-
-			app.nav.find = pattern
-
-			if !app.nav.findPrev() {
-				app.ui.print("pattern not found")
-			} else {
-				app.ui.loadFile(app.nav)
-				app.ui.loadFileInfo(app.nav)
-			}
-
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
-
-			return
-		case "mark-save: ":
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
-
-			wd, err := os.Getwd()
-			if err != nil {
-				log.Printf("getting current directory: %s", err)
-				return
-			}
-			app.nav.marks[e.args[0]] = wd
-
-			return
-		case "mark-load: ":
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
-
-			wd, err := os.Getwd()
-			if err != nil {
-				log.Printf("getting current directory: %s", err)
-			}
-
-			path, ok := app.nav.marks[e.args[0]]
-			if !ok {
-				app.ui.print("mark-load: no such mark")
-				return
-			}
-			if err := app.nav.cd(path); err != nil {
-				app.ui.printf("%s", err)
-				return
-			}
-			app.ui.loadFile(app.nav)
-			app.ui.loadFileInfo(app.nav)
-
-			if wd != path {
-				app.nav.marks["'"] = wd
-			}
-
-			return
-		}
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(e.args[0])...)
+		insert(app, e.args[0])
 	case "cmd-escape":
 		if app.ui.cmdPrefix == ">" {
 			return

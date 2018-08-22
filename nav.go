@@ -666,6 +666,29 @@ func findMatch(name, pattern string) bool {
 	return strings.HasPrefix(name, pattern)
 }
 
+func (nav *nav) findSingle() int {
+	count := 0
+	index := 0
+	last := nav.currDir()
+	for i := 0; i < len(last.files); i++ {
+		if findMatch(last.files[i].Name(), nav.find) {
+			count++
+			if count > 1 {
+				return count
+			}
+			index = i
+		}
+	}
+	if count == 1 {
+		if index > last.ind {
+			nav.down(index - last.ind)
+		} else {
+			nav.up(last.ind - index)
+		}
+	}
+	return count
+}
+
 func (nav *nav) findNext() bool {
 	last := nav.currDir()
 	for i := last.ind + 1; i < len(last.files); i++ {
@@ -677,7 +700,7 @@ func (nav *nav) findNext() bool {
 	if gOpts.wrapscan {
 		for i := 0; i < last.ind; i++ {
 			if findMatch(last.files[i].Name(), nav.find) {
-				nav.down(i - last.ind)
+				nav.up(last.ind - i)
 				return true
 			}
 		}
@@ -689,7 +712,7 @@ func (nav *nav) findPrev() bool {
 	last := nav.currDir()
 	for i := last.ind - 1; i >= 0; i-- {
 		if findMatch(last.files[i].Name(), nav.find) {
-			nav.down(i - last.ind)
+			nav.up(last.ind - i)
 			return true
 		}
 	}
