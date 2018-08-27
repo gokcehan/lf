@@ -352,7 +352,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			}
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
-			app.ui.exprChan <- &callExpr{"reload", nil, 1}
+			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
 }
