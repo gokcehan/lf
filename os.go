@@ -56,6 +56,12 @@ func init() {
 	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
+		if os.Getenv("HOME") == "" {
+			log.Print("$HOME variable is empty or not set")
+		}
+		if os.Getenv("USER") == "" {
+			log.Print("$USER variable is empty or not set")
+		}
 	}
 	gUser = u
 
