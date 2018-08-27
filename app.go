@@ -168,6 +168,7 @@ func (app *app) loop() {
 		case d := <-app.nav.dirChan:
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
+				d.ind = prev.ind
 				d.sel(prev.name(), app.nav.height)
 			}
 
