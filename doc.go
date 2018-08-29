@@ -104,8 +104,8 @@ The following options can be used to customize the behavior of lf:
     reverse     boolean   (default off)
     smartcase   boolean   (default on)
     wrapscan    boolean   (default on)
-    findlen     integer   (default 1)
-    period      integer   (default 0)
+    findlen     integer   (default 1) (zero to prompt until single match)
+    period      integer   (default 0) (zero to disable periodic loading)
     scrolloff   integer   (default 0)
     tabstop     integer   (default 8)
     filesep     string    (default "\n")
@@ -125,6 +125,10 @@ The following variables are exported for shell commands:
     $fs  selected file(s) separated with 'filesep'
     $fx  current file or selected file(s) if any
     $id  id number of the client
+
+The following variables are set to the corresponding values:
+
+    $LF_LEVEL  current nesting level
 
 The following default values are set to the environmental variables on unix
 when they are not set or empty:
