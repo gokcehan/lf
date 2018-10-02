@@ -12,6 +12,8 @@
 
 > This is a work in progress. Use at your own risk.
 
+> I will not have access to computers until 27th October 2018. Then hopefully I will come back and remove this notice. In the meantime, feel free to send PRs, create issues, or leave comments though I will not be able to respond.
+
 `lf` (as in "list files") is a terminal file manager written in Go.
 It is heavily inspired by ranger with some missing and extra features.
 Some of the missing features are deliberately omitted since they are better handled by external tools.
