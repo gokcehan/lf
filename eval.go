@@ -80,6 +80,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignorecase = false
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
+	case "ignoredia":
+		gOpts.ignoredia = true
+	case "noignoredia":
+		gOpts.ignoredia = false
+	case "ignoredia!":
+		gOpts.ignoredia = !gOpts.ignoredia
 	case "preview":
 		gOpts.preview = true
 	case "nopreview":
@@ -104,6 +110,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.smartcase = false
 	case "smartcase!":
 		gOpts.smartcase = !gOpts.smartcase
+	case "smartdia":
+		gOpts.smartdia = true
+	case "nosmartdia":
+		gOpts.smartdia = false
+	case "smartdia!":
+		gOpts.smartdia = !gOpts.smartdia
 	case "wrapscan":
 		gOpts.wrapscan = true
 	case "nowrapscan":

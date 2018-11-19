@@ -665,6 +665,13 @@ func findMatch(name, pattern string) bool {
 			name = strings.ToLower(name)
 		}
 	}
+	if gOpts.ignoredia {
+		lpattern := removeDiacritics(pattern)
+		if !gOpts.smartdia || lpattern == pattern {
+			pattern = lpattern
+			name = removeDiacritics(name)
+		}
+	}
 	if gOpts.anchorfind {
 		return strings.HasPrefix(name, pattern)
 	}
@@ -738,6 +745,13 @@ func searchMatch(name, pattern string) (matched bool, err error) {
 		if !gOpts.smartcase || lpattern == pattern {
 			pattern = lpattern
 			name = strings.ToLower(name)
+		}
+	}
+	if gOpts.ignoredia {
+		lpattern := removeDiacritics(pattern)
+		if !gOpts.smartdia || lpattern == pattern {
+			pattern = lpattern
+			name = removeDiacritics(name)
 		}
 	}
 	if gOpts.globsearch {
