@@ -80,6 +80,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignorecase = false
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
+	case "incsearch":
+		gOpts.incsearch = true
+	case "noincsearch":
+		gOpts.incsearch = false
+	case "incsearch!":
+		gOpts.incsearch = !gOpts.incsearch
 	case "preview":
 		gOpts.preview = true
 	case "nopreview":
@@ -270,9 +276,59 @@ func splitKeys(s string) (keys []string) {
 	return
 }
 
+func update(app *app) {
+	switch {
+	case gOpts.incsearch && app.ui.cmdPrefix == "/":
+		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+
+		last := app.nav.currDir()
+		last.ind = app.nav.searchInd
+		last.pos = app.nav.searchPos
+
+		if app.nav.searchBack {
+			if err := app.nav.searchPrev(); err != nil {
+				app.ui.printf("search-back: %s: %s", err, app.nav.search)
+				return
+			}
+		} else {
+			if err := app.nav.searchNext(); err != nil {
+				app.ui.printf("search: %s: %s", err, app.nav.search)
+				return
+			}
+		}
+
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+	case gOpts.incsearch && app.ui.cmdPrefix == "?":
+		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+
+		last := app.nav.currDir()
+		last.ind = app.nav.searchInd
+		last.pos = app.nav.searchPos
+
+		if app.nav.searchBack {
+			if err := app.nav.searchNext(); err != nil {
+				app.ui.printf("search-back: %s: %s", err, app.nav.search)
+				return
+			}
+		} else {
+			if err := app.nav.searchPrev(); err != nil {
+				app.ui.printf("search: %s: %s", err, app.nav.search)
+				return
+			}
+		}
+
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+	}
+}
+
 func insert(app *app, arg string) {
-	switch app.ui.cmdPrefix {
-	case "find: ":
+	switch {
+	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		update(app)
+	case app.ui.cmdPrefix == "find: ":
 		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
 
 		if gOpts.findlen == 0 {
@@ -304,7 +360,7 @@ func insert(app *app, arg string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 		app.ui.cmdPrefix = ""
-	case "find-back: ":
+	case app.ui.cmdPrefix == "find-back: ":
 		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
 
 		if gOpts.findlen == 0 {
@@ -336,7 +392,7 @@ func insert(app *app, arg string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 		app.ui.cmdPrefix = ""
-	case "mark-save: ":
+	case app.ui.cmdPrefix == "mark-save: ":
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
@@ -348,7 +404,7 @@ func insert(app *app, arg string) {
 			return
 		}
 		app.nav.marks[arg] = wd
-	case "mark-load: ":
+	case app.ui.cmdPrefix == "mark-load: ":
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
@@ -571,9 +627,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "search":
 		app.ui.cmdPrefix = "/"
+		last := app.nav.currDir()
+		app.nav.searchInd = last.ind
+		app.nav.searchPos = last.pos
 		app.nav.searchBack = false
 	case "search-back":
 		app.ui.cmdPrefix = "?"
+		last := app.nav.currDir()
+		app.nav.searchInd = last.ind
+		app.nav.searchPos = last.pos
 		app.nav.searchBack = true
 	case "search-next":
 		for i := 0; i < e.count; i++ {
@@ -699,6 +761,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
+		if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
+			last := app.nav.currDir()
+			last.ind = app.nav.searchInd
+			last.pos = app.nav.searchPos
+
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
+		}
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
@@ -759,6 +829,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 			app.ui.cmdPrefix = ""
 		case "/":
+			if gOpts.incsearch {
+				last := app.nav.currDir()
+				last.ind = app.nav.searchInd
+				last.pos = app.nav.searchPos
+			}
 			log.Printf("search: %s", s)
 			app.nav.search = s
 			if err := app.nav.searchNext(); err != nil {
@@ -769,6 +844,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.cmdPrefix = ""
 		case "?":
+			if gOpts.incsearch {
+				last := app.nav.currDir()
+				last.ind = app.nav.searchInd
+				last.pos = app.nav.searchPos
+			}
 			log.Printf("search-back: %s", s)
 			app.nav.search = s
 			if err := app.nav.searchPrev(); err != nil {
@@ -821,11 +901,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
+		update(app)
 	case "cmd-delete-back":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
 		}
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
+		update(app)
 	case "cmd-left":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
@@ -850,23 +932,28 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.cmdYankBuf = app.ui.cmdAccLeft
 		app.ui.cmdAccLeft = nil
+		update(app)
 	case "cmd-delete-end":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
 		app.ui.cmdYankBuf = app.ui.cmdAccRight
 		app.ui.cmdAccRight = nil
+		update(app)
 	case "cmd-delete-unix-word":
 		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
 		app.ui.cmdYankBuf = app.ui.cmdAccLeft[ind:]
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		update(app)
 	case "cmd-yank":
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdYankBuf...)
+		update(app)
 	case "cmd-transpose":
 		if len(app.ui.cmdAccLeft) < 2 {
 			return
 		}
 		app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
+		update(app)
 	case "cmd-interrupt":
 		if app.cmd != nil {
 			app.cmd.Process.Kill()
@@ -917,6 +1004,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind = loc[0] + 1
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
 		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		update(app)
 	case "cmd-delete-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -927,6 +1015,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		ind := loc[0] + 1
 		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -938,6 +1027,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind := loc[0] + 1
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight[:ind])))...)
 		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		update(app)
 	case "cmd-lowercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -949,6 +1039,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind := loc[0] + 1
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight[:ind])))...)
 		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		update(app)
 	case "cmd-transpose-word":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
@@ -982,6 +1073,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		acc = append(acc, app.ui.cmdAccLeft[end2:]...)
 
 		app.ui.cmdAccLeft = acc
+		update(app)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
