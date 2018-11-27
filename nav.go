@@ -202,6 +202,8 @@ type nav struct {
 	findBack     bool
 	search       string
 	searchBack   bool
+	searchInd    int
+	searchPos    int
 }
 
 func (nav *nav) loadDir(path string) *dir {

@@ -30,6 +30,7 @@ var gOpts struct {
 	drawbox    bool
 	globsearch bool
 	ignorecase bool
+	incsearch  bool
 	preview    bool
 	smartcase  bool
 	ignoredia  bool
@@ -60,6 +61,7 @@ func init() {
 	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.ignorecase = true
+	gOpts.incsearch = false
 	gOpts.preview = true
 	gOpts.smartcase = true
 	gOpts.ignoredia = false
