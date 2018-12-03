@@ -33,6 +33,8 @@ var gOpts struct {
 	incsearch  bool
 	preview    bool
 	smartcase  bool
+	ignoredia  bool
+	smartdia   bool
 	wrapscan   bool
 	findlen    int
 	period     int
@@ -62,6 +64,8 @@ func init() {
 	gOpts.incsearch = false
 	gOpts.preview = true
 	gOpts.smartcase = true
+	gOpts.ignoredia = false
+	gOpts.smartdia = false
 	gOpts.wrapscan = true
 	gOpts.findlen = 1
 	gOpts.period = 0
