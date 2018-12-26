@@ -139,18 +139,6 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 	return exec.Command(sh, args...)
 }
 
-func deleteCommand(list []string) *exec.Cmd {
-	var sh string
-	var args []string
-
-	sh = "rm"
-
-	args = append(args, "-r")
-	args = append(args, list...)
-
-	return exec.Command(sh, args...)
-}
-
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", `$OPENER "$f"`}
 	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}

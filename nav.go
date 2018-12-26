@@ -614,10 +614,10 @@ func (nav *nav) deleteFiles() error {
 		return errors.New("no file(s) selected for deletion")
 	}
 
-	cmd := deleteCommand(list)
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("deleting file(s): %s", err)
+	for _, path := range list {
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
 	}
 
 	return nil
