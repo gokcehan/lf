@@ -605,10 +605,7 @@ func (nav *nav) paste() error {
 }
 
 func (nav *nav) deleteFiles() error {
-	list, _, err := loadFiles()
-	if err != nil {
-		return err
-	}
+	list := nav.currSelections()
 
 	if len(list) == 0 {
 		return errors.New("no file(s) selected for deletion")
