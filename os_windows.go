@@ -130,6 +130,10 @@ func moveCursor(y, x int) {
 	// TODO: implement
 	return
 }
+func deleteCommand(list []string) *exec.Cmd {
+	// TODO: implement
+	return
+}
 
 func isExecutable(f os.FileInfo) bool {
 	exts := strings.Split(envPathExt, string(filepath.ListSeparator))
