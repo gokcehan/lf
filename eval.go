@@ -582,6 +582,22 @@ func (e *callExpr) eval(app *app, args []string) {
 		if err := sendRemote("send sync"); err != nil {
 			app.ui.printf("paste: %s", err)
 		}
+	case "delete":
+		if err := app.nav.save(false); err != nil {
+			app.ui.printf("delete: %s", err)
+			return
+		}
+		app.nav.unselect()
+		if err := app.nav.deleteFiles(); err != nil {
+			app.ui.printf("delete: %s", err)
+			return
+		}
+		if err := sendRemote("send load"); err != nil {
+			app.ui.printf("delete: %s", err)
+		}
+		if err := sendRemote("send sync"); err != nil {
+			app.ui.printf("delete: %s", err)
+		}
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {
 			app.ui.printf("clear: %s", err)

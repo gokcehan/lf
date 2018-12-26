@@ -604,6 +604,25 @@ func (nav *nav) paste() error {
 	return nil
 }
 
+func (nav *nav) deleteFiles() error {
+	list, _, err := loadFiles()
+	if err != nil {
+		return err
+	}
+
+	if len(list) == 0 {
+		return errors.New("no file(s) selected for deletion")
+	}
+
+	cmd := deleteCommand(list)
+
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("deleting file(s): %s", err)
+	}
+
+	return nil
+}
+
 func (nav *nav) sync() error {
 	list, cp, err := loadFiles()
 	if err != nil {
