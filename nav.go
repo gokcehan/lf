@@ -550,6 +550,19 @@ func (nav *nav) unselect() {
 	nav.selectionInd = 0
 }
 
+func (nav *nav) effectiveSelection() (list []string, err error) {
+	if len(nav.selections) == 0 {
+		curr, err := nav.currFile()
+		if err != nil {
+			return nil, errors.New("no file selected")
+		}
+
+		return []string{curr.path}, nil
+	}
+
+	return nav.currSelections(), nil
+}
+
 func (nav *nav) save(cp bool) error {
 	if len(nav.selections) == 0 {
 		curr, err := nav.currFile()
@@ -605,10 +618,10 @@ func (nav *nav) paste() error {
 }
 
 func (nav *nav) deleteFiles() error {
-	list := nav.currSelections()
+	list, err := nav.effectiveSelection()
 
-	if len(list) == 0 {
-		return errors.New("no file(s) selected for deletion")
+	if err != nil {
+		return err
 	}
 
 	for _, path := range list {
