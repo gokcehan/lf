@@ -554,7 +554,7 @@ func (nav *nav) effectiveSelection() (list []string, err error) {
 	if len(nav.selections) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
-			return nil, errors.New("no file selected")
+			return _, errors.New("no file selected")
 		}
 
 		return []string{curr.path}, nil
