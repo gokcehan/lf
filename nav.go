@@ -620,6 +620,8 @@ func (nav *nav) paste() error {
 	return nil
 }
 
+// deleteFiles deletes the user's selected files
+// it returns an error if no files selected or if the OS fails to delete a file
 func (nav *nav) deleteFiles() error {
 	list, err := nav.effectiveSelection()
 
