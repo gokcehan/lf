@@ -626,7 +626,7 @@ func (nav *nav) deleteFiles() error {
 
 	for _, path := range list {
 		if err := os.RemoveAll(path); err != nil {
-			return fmt.Errorf("deleting %s: %s", path, err)
+			return err
 		}
 	}
 
