@@ -554,7 +554,7 @@ func (nav *nav) effectiveSelection() (list []string, err error) {
 	if len(nav.selections) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
-			return _, errors.New("no file selected")
+			return nil, errors.New("no file selected")
 		}
 
 		return []string{curr.path}, nil
@@ -626,7 +626,7 @@ func (nav *nav) deleteFiles() error {
 
 	for _, path := range list {
 		if err := os.RemoveAll(path); err != nil {
-			return err
+			return fmt.Errorf("deleting %s: %s", path, err)
 		}
 	}
 
