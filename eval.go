@@ -583,7 +583,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("paste: %s", err)
 		}
 	case "delete":
-		if err := app.nav.deleteFiles(); err != nil {
+		if cmd, ok := gOpts.cmds["paste"]; ok {
+			cmd.eval(app, e.args)
+		} else if err := app.nav.deleteFiles(); err != nil {
 			app.ui.printf("delete: %s", err)
 			return
 		}
