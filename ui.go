@@ -206,6 +206,9 @@ func fileInfo(f *file, d *dir) string {
 				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
 				continue
 			}
+			if !gOpts.dircounts {
+				continue
+			}
 
 			if f.dirCount == -1 {
 				d, err := os.Open(path)
