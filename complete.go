@@ -275,6 +275,15 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 			words = append(words, c)
 		}
 		sort.Strings(words)
+		j := 0
+		for i := 1; i < len(words); i++ {
+			if words[j] == words[i] {
+				continue
+			}
+			j++
+			words[i], words[j] = words[j], words[i]
+		}
+		words = words[:j+1]
 		matches, longest = matchWord(s, words)
 		longestAcc = []rune(longest)
 	case 2:
