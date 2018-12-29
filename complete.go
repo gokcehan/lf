@@ -31,6 +31,7 @@ var (
 		"copy",
 		"cut",
 		"paste",
+		"delete",
 		"clear",
 		"draw",
 		"redraw",

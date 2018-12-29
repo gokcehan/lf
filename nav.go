@@ -550,6 +550,22 @@ func (nav *nav) unselect() {
 	nav.selectionInd = 0
 }
 
+// effectiveSelection is a pure function that returns the selected files's paths.
+// In case the user has not selected a file it returns the file on the user's cursor.
+// If the function can't return a selection it returns an error.
+func (nav *nav) effectiveSelection() (list []string, err error) {
+	if len(nav.selections) == 0 {
+		curr, err := nav.currFile()
+		if err != nil {
+			return nil, errors.New("no file selected")
+		}
+
+		return []string{curr.path}, nil
+	}
+
+	return nav.currSelections(), nil
+}
+
 func (nav *nav) save(cp bool) error {
 	if len(nav.selections) == 0 {
 		curr, err := nav.currFile()
@@ -599,6 +615,24 @@ func (nav *nav) paste() error {
 
 	if err := saveFiles(nil, false); err != nil {
 		return fmt.Errorf("clearing copy/cut buffer: %s", err)
+	}
+
+	return nil
+}
+
+// deleteFiles deletes the user's selected files
+// it returns an error if no files are selected or if the OS fails to delete a file
+func (nav *nav) deleteFiles() error {
+	list, err := nav.effectiveSelection()
+
+	if err != nil {
+		return err
+	}
+
+	for _, path := range list {
+		if err := os.RemoveAll(path); err != nil {
+			return err
+		}
 	}
 
 	return nil

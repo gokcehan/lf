@@ -65,6 +65,7 @@ The following commands are provided by lf without default keybindings:
     select  changes current file selection to its argument
     source  reads the configuration file in its argument
     push    simulate key pushes given in its argument
+    delete  deletes the selected files. Warning: no prompt
 
 The following command line commands are provided by lf with default
 keybindings:
