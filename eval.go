@@ -448,6 +448,12 @@ func insert(app *app, arg string) {
 }
 
 func (e *callExpr) eval(app *app, args []string) {
+	if app.ui.cmdPrefix != "" && !strings.HasPrefix(e.name, "cmd-") {
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+	}
 	switch e.name {
 	case "up":
 		app.nav.up(e.count)
