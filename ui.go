@@ -892,6 +892,14 @@ func (ui *ui) readExpr() <-chan expr {
 	return ch
 }
 
+func setColorMode() {
+	if gOpts.color256 {
+		termbox.SetOutputMode(termbox.Output256)
+	} else {
+		termbox.SetOutputMode(termbox.OutputNormal)
+	}
+}
+
 func (ui *ui) pause() {
 	termbox.Close()
 }

@@ -95,6 +95,7 @@ keybindings:
 The following options can be used to customize the behavior of lf:
 
     anchorfind  boolean   (default on)
+    color256    boolean   (default off)
     dircounts   boolean   (default off)
     dirfirst    boolean   (default on)
     drawbox     boolean   (default off)
@@ -638,6 +639,13 @@ If both of these environment variables are not set, then lf fallbacks to its
 default colorscheme. Default lf colors are taken from GNU dircolors defaults.
 These defaults use 8 basic colors and bold attribute.
 
+You should also note that lf uses 8 color mode by default which uses sgr 3-bit
+color escapes (e.g. '\033[34m'). If you want to use 256 colors, you need to
+enable 'color256' option which then makes lf use sgr 8-bit color escapes (e.g.
+'\033[38;5;4m'). This option is intended to eliminate differences between
+default colors used by ls and lf since terminals may render 3-bit and 8-bit
+escapes differently even for the same color.
+
 Keeping this mechanism in mind, you can configure lf colors in two different
 ways. First, you can configure 8 basic colors used by your terminal and lf
 should pick up those colors automatically. Depending on your terminal, you
@@ -650,5 +658,10 @@ fine grained customization. This is useful to change colors used for different
 file types and extensions. '$LS_COLORS' is more powerful than '$LSCOLORS' and
 it can be used even when GNU programs are not installed on the system. You can
 combine this second method with the first method for best results.
+
+Lastly, you may also want to configure the colors of the prompt line to match
+the rest of the colors. Colors of the prompt line can be configured using the
+'promptfmt' option which can include hardcoded colors as ansi escapes. See the
+default value of this option to have an idea about how to color this line.
 */
 package main

@@ -29,7 +29,7 @@ func run() {
 	}
 	defer termbox.Close()
 
-	termbox.SetOutputMode(termbox.Output256)
+	setColorMode()
 
 	app := newApp()
 

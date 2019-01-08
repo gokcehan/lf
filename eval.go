@@ -20,6 +20,21 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.anchorfind = false
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
+	case "color256":
+		gOpts.color256 = true
+		setColorMode()
+		app.ui.pause()
+		app.ui.resume()
+	case "nocolor256":
+		gOpts.color256 = false
+		setColorMode()
+		app.ui.pause()
+		app.ui.resume()
+	case "color256!":
+		gOpts.color256 = !gOpts.color256
+		setColorMode()
+		app.ui.pause()
+		app.ui.resume()
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":
