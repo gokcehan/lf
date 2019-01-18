@@ -73,8 +73,8 @@ The following commands are provided by lf without default keybindings:
     cd      changes working directory to its argument
     select  changes current file selection to its argument
     source  reads the configuration file in its argument
-    push    simulate key pushes given in its argument
-    delete  deletes the selected files. Warning: no prompt
+    push    simulates key pushes given in its argument
+    delete  deletes the current file or selected file(s)
 .EE
 .PP
 The following command line commands are provided by lf with default keybindings:
@@ -562,7 +562,7 @@ Finding mechanism is implemented with commands 'find' (default 'f'), 'find-back'
 .PP
 Some options effect both searching and finding. You can disable 'wrapscan' option to prevent searches to wrap around at the end of the file list. You can disable 'ignorecase' option to match cases in the pattern and the filename. This option is already automatically overridden if the pattern contains upper case characters. You can disable 'smartcase' option to disable this behavior. Two similar options 'ignoredia' and 'smartdia' are provided to control matching diacritics in latin letters.
 .SH OPENING FILES
-You can define a an 'open' command (default 'l') to configure file opening. This command is only called when the current file is not a directory, otherwise the directory is entered instead. You can define it just as you would define any other command:
+You can define a an 'open' command (default 'l' and '<right>') to configure file opening. This command is only called when the current file is not a directory, otherwise the directory is entered instead. You can define it just as you would define any other command:
 .PP
 .EX
     cmd open $vi $fx

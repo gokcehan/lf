@@ -61,8 +61,8 @@ The following commands are provided by lf without default keybindings:
     cd      changes working directory to its argument
     select  changes current file selection to its argument
     source  reads the configuration file in its argument
-    push    simulate key pushes given in its argument
-    delete  deletes the selected files. Warning: no prompt
+    push    simulates key pushes given in its argument
+    delete  deletes the current file or selected file(s)
 
 The following command line commands are provided by lf with default
 keybindings:
@@ -588,10 +588,10 @@ diacritics in latin letters.
 
 Opening Files
 
-You can define a an 'open' command (default 'l') to configure file opening.
-This command is only called when the current file is not a directory, otherwise
-the directory is entered instead. You can define it just as you would define
-any other command:
+You can define a an 'open' command (default 'l' and '<right>') to configure
+file opening. This command is only called when the current file is not a
+directory, otherwise the directory is entered instead. You can define it just
+as you would define any other command:
 
     cmd open $vi $fx
 
