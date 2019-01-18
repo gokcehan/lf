@@ -105,7 +105,7 @@ The following options can be used to customize the behavior of lf:
     globsearch  boolean   (default off)
     hidden      boolean   (default off)
     ignorecase  boolean   (default on)
-    ignoredia   boolean   (default off) (ignore diacritics in latin letters for search and find)
+    ignoredia   boolean   (default off)
     incsearch   boolean   (default off)
     preview     boolean   (default on)
     reverse     boolean   (default off)
@@ -570,6 +570,45 @@ By default, lf does not provide an actual file deletion command to protect
 new users. You can define such a command and optionally assign a key if you
 like. An example command to move selected files to a trash folder and remove
 files completely are provided in the example configuration file.
+
+
+Searching Files
+
+There are two mechanisms implemented in lf to search a file in the current
+directory. Searching is the traditional method to move the selection to a
+file matching a given pattern. Finding is an alternative way to search for a
+pattern possibly using fewer keystrokes.
+
+Searching mechanism is implemented with commands 'search' (default '/'),
+'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev'
+(default 'N'). You can enable 'globsearch' option to match with a glob
+pattern. Globbing supports '*' to match any sequence, '?' to match any
+character, and '[...]' or '[^...] to match character sets or ranges. You can
+enable 'incsearch' option to jump to the current match at each keystroke
+while typing. In this mode, you can either use 'cmd-enter' to accept the
+search or use 'cmd-escape' to cancel the search. Alternatively, you can also
+map some other commands with 'cmap' to accept the search and execute the
+command immediately afterwards. For example, you can use arrow keys to
+finish the search with the following mappings:
+
+    cmap <up> up
+    cmap <down> down
+
+Finding mechanism is implemented with commands 'find' (default 'f'),
+'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default
+','). You can disable 'anchorfind' option to match a pattern at an arbitrary
+position in the filename instead of the beginning. You can set the number of
+keys to match using 'findlen' option. If you set this value to zero, then
+the the keys are read until there is only a single match. Default values of
+these two options are set to jump to the first file with the given initial.
+
+Some options effect both searching and finding. You can disable 'wrapscan'
+option to prevent searches to wrap around at the end of the file list. You
+can disable 'ignorecase' option to match cases in the pattern and the
+filename. This option is already automatically overridden if the pattern
+contains upper case characters. You can disable 'smartcase' option to
+disable this behavior. Two similar options 'ignoredia' and 'smartdia' are
+provided to control matching diacritics in latin letters.
 
 
 Opening Files
