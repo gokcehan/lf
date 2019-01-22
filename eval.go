@@ -143,6 +143,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscan = false
 	case "wrapscan!":
 		gOpts.wrapscan = !gOpts.wrapscan
+	case "number":
+		gOpts.number = true
+	case "nonumber":
+		gOpts.number = false
+	case "number!":
+		gOpts.number = !gOpts.number
+	case "relativenumber":
+		gOpts.relativenumber = true
+	case "norelativenumber":
+		gOpts.relativenumber = false
+	case "relativenumber!":
+		gOpts.relativenumber = !gOpts.relativenumber
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
