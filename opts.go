@@ -25,35 +25,37 @@ type sortType struct {
 }
 
 var gOpts struct {
-	anchorfind bool
-	color256   bool
-	dircounts  bool
-	drawbox    bool
-	globsearch bool
-	ignorecase bool
-	incsearch  bool
-	preview    bool
-	smartcase  bool
-	ignoredia  bool
-	smartdia   bool
-	wrapscan   bool
-	findlen    int
-	period     int
-	scrolloff  int
-	tabstop    int
-	filesep    string
-	ifs        string
-	previewer  string
-	promptfmt  string
-	shell      string
-	timefmt    string
-	ratios     []int
-	info       []string
-	shellopts  []string
-	keys       map[string]expr
-	cmdkeys    map[string]expr
-	cmds       map[string]expr
-	sortType   sortType
+	anchorfind     bool
+	color256       bool
+	dircounts      bool
+	drawbox        bool
+	globsearch     bool
+	ignorecase     bool
+	incsearch      bool
+	preview        bool
+	smartcase      bool
+	ignoredia      bool
+	smartdia       bool
+	wrapscan       bool
+	number         bool
+	relativenumber bool
+	findlen        int
+	period         int
+	scrolloff      int
+	tabstop        int
+	filesep        string
+	ifs            string
+	previewer      string
+	promptfmt      string
+	shell          string
+	timefmt        string
+	ratios         []int
+	info           []string
+	shellopts      []string
+	keys           map[string]expr
+	cmdkeys        map[string]expr
+	cmds           map[string]expr
+	sortType       sortType
 }
 
 func init() {
