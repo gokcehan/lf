@@ -549,7 +549,7 @@ You can customize these operations by defining a 'paste' command. This is a spec
 .PP
 Some useful things are to use the backup option ('--backup') with 'cp' and 'mv' commands if they support it (i.e. GNU implementation), change the command type to asynchronous, or use 'rsync' command with progress bar option for copying and feed the progress to the client periodically with remote 'echo' calls.
 .PP
-By default, lf does not provide an actual file deletion command to protect new users. You can define such a command and optionally assign a key if you like. An example command to move selected files to a trash folder and remove files completely are provided in the example configuration file.
+By default, lf does not assign 'delete' command to a key to protect new users. You can customize file deletion by defining a 'delete' command. You can also assign a key to this command if you like. An example command to move selected files to a trash folder and remove files completely after a prompt are provided in the example configuration file.
 .SH SEARCHING FILES
 There are two mechanisms implemented in lf to search a file in the current directory. Searching is the traditional method to move the selection to a file matching a given pattern. Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 .PP

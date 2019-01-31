@@ -568,10 +568,11 @@ command type to asynchronous, or use 'rsync' command with progress bar
 option for copying and feed the progress to the client periodically with
 remote 'echo' calls.
 
-By default, lf does not provide an actual file deletion command to protect
-new users. You can define such a command and optionally assign a key if you
-like. An example command to move selected files to a trash folder and remove
-files completely are provided in the example configuration file.
+By default, lf does not assign 'delete' command to a key to protect new
+users. You can customize file deletion by defining a 'delete' command. You
+can also assign a key to this command if you like. An example command to
+move selected files to a trash folder and remove files completely after a
+prompt are provided in the example configuration file.
 
 
 Searching Files
