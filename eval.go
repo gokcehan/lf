@@ -475,7 +475,7 @@ func insert(app *app, arg string) {
 }
 
 func (e *callExpr) eval(app *app, args []string) {
-	if app.ui.cmdPrefix != "" && !strings.HasPrefix(e.name, "cmd-") {
+	if app.ui.cmdPrefix != "" && e.name != "redraw" && !strings.HasPrefix(e.name, "cmd-") {
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
