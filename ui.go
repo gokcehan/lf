@@ -267,11 +267,11 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		return
 	}
 
-	var lnwidth int = 0;
-	var lnformat string = "";
+	var lnwidth int = 0
+	var lnformat string = ""
 
-	if (gOpts.number || gOpts.relativenumber) {
-		lnwidth = 1;
+	if gOpts.number || gOpts.relativenumber {
+		lnwidth = 1
 		for j := 10; j < len(dir.files); j *= 10 {
 			lnwidth++
 		}
@@ -281,16 +281,16 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 	for i, f := range dir.files[beg:end] {
 		fg, bg = colors.get(f)
 
-		if (lnwidth > 0) {
+		if lnwidth > 0 {
 			var ln string
 
-			if (gOpts.number && (!gOpts.relativenumber || i == dir.pos)) {
-				ln = fmt.Sprintf(lnformat, i + 1 + beg)
-			} else if (gOpts.relativenumber) {
-				if (i < dir.pos) {
-					ln = fmt.Sprintf(lnformat, dir.pos - i)
+			if gOpts.number && (!gOpts.relativenumber || i == dir.pos) {
+				ln = fmt.Sprintf(lnformat, i+1+beg)
+			} else if gOpts.relativenumber {
+				if i < dir.pos {
+					ln = fmt.Sprintf(lnformat, dir.pos-i)
 				} else {
-					ln = fmt.Sprintf(lnformat, i - dir.pos)
+					ln = fmt.Sprintf(lnformat, i-dir.pos)
 				}
 			}
 
