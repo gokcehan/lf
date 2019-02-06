@@ -550,46 +550,19 @@ func (nav *nav) unselect() {
 	nav.selectionInd = 0
 }
 
-// effectiveSelection is a pure function that returns the selected files's paths.
-// In case the user has not selected a file it returns the file on the user's cursor.
-// If the function can't return a selection it returns an error.
-func (nav *nav) effectiveSelection() (list []string, err error) {
-	if len(nav.selections) == 0 {
-		curr, err := nav.currFile()
-		if err != nil {
-			return nil, errors.New("no file selected")
-		}
-
-		return []string{curr.path}, nil
+func (nav *nav) save(cp bool) error {
+	list, err := nav.currFileOrSelections()
+	if err != nil {
+		return err
 	}
 
-	return nav.currSelections(), nil
-}
+	if err := saveFiles(list, cp); err != nil {
+		return err
+	}
 
-func (nav *nav) save(cp bool) error {
-	if len(nav.selections) == 0 {
-		curr, err := nav.currFile()
-		if err != nil {
-			return errors.New("no file selected")
-		}
-
-		if err := saveFiles([]string{curr.path}, cp); err != nil {
-			return err
-		}
-
-		nav.saves = make(map[string]bool)
-		nav.saves[curr.path] = cp
-	} else {
-		selections := nav.currSelections()
-
-		if err := saveFiles(selections, cp); err != nil {
-			return err
-		}
-
-		nav.saves = make(map[string]bool)
-		for f := range nav.selections {
-			nav.saves[f] = cp
-		}
+	nav.saves = make(map[string]bool)
+	for _, f := range list {
+		nav.saves[f] = cp
 	}
 
 	return nil
@@ -620,10 +593,8 @@ func (nav *nav) paste() error {
 	return nil
 }
 
-// deleteFiles deletes the user's selected files
-// it returns an error if no files are selected or if the OS fails to delete a file
-func (nav *nav) deleteFiles() error {
-	list, err := nav.effectiveSelection()
+func (nav *nav) del() error {
+	list, err := nav.currFileOrSelections()
 
 	if err != nil {
 		return err
@@ -850,19 +821,6 @@ func (nav *nav) searchPrev() error {
 	return nil
 }
 
-func (nav *nav) currDir() *dir {
-	return nav.dirs[len(nav.dirs)-1]
-}
-
-func (nav *nav) currFile() (*file, error) {
-	last := nav.dirs[len(nav.dirs)-1]
-
-	if len(last.files) == 0 {
-		return nil, fmt.Errorf("empty directory")
-	}
-	return last.files[last.ind], nil
-}
-
 func (nav *nav) readMarks() error {
 	f, err := os.Open(gMarksPath)
 	if os.IsNotExist(err) {
@@ -923,6 +881,19 @@ func (nav *nav) writeMarks() error {
 	return nil
 }
 
+func (nav *nav) currDir() *dir {
+	return nav.dirs[len(nav.dirs)-1]
+}
+
+func (nav *nav) currFile() (*file, error) {
+	last := nav.dirs[len(nav.dirs)-1]
+
+	if len(last.files) == 0 {
+		return nil, fmt.Errorf("empty directory")
+	}
+	return last.files[last.ind], nil
+}
+
 type indexedSelections struct {
 	paths   []string
 	indices []int
@@ -947,3 +918,17 @@ func (nav *nav) currSelections() []string {
 	sort.Sort(indexedSelections{paths: paths, indices: indices})
 	return paths
 }
+
+func (nav *nav) currFileOrSelections() (list []string, err error) {
+	if len(nav.selections) == 0 {
+		curr, err := nav.currFile()
+		if err != nil {
+			return nil, errors.New("no file selected")
+		}
+
+		return []string{curr.path}, nil
+	}
+
+	return nav.currSelections(), nil
+}
+

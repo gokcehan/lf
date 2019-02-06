@@ -431,6 +431,22 @@ func insert(app *app, arg string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 		app.ui.cmdPrefix = ""
+	case app.ui.cmdPrefix == "delete?[y/N]: ":
+		app.ui.menuBuf = nil
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
+		app.ui.cmdPrefix = ""
+
+		if arg == "y" {
+			if err := app.nav.del(); err != nil {
+				app.ui.printf("delete: %s", err)
+				return
+			}
+			app.nav.unselect()
+			if err := sendRemote("send load"); err != nil {
+				app.ui.printf("delete: %s", err)
+			}
+		}
 	case app.ui.cmdPrefix == "mark-save: ":
 		app.ui.menuBuf = nil
 		app.ui.cmdAccLeft = nil
@@ -542,11 +558,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			defer out.Close()
 
 			var path string
-			if len(app.nav.selections) != 0 {
-				selections := app.nav.currSelections()
-				path = strings.Join(selections, "\n")
-			} else if curr, err := app.nav.currFile(); err == nil {
-				path = curr.path
+			if list, err := app.nav.currFileOrSelections(); err == nil {
+				path = strings.Join(list, "\n")
 			} else {
 				return
 			}
@@ -618,13 +631,16 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "delete":
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)
-		} else if err := app.nav.deleteFiles(); err != nil {
-			app.ui.printf("delete: %s", err)
-			return
-		}
-		app.nav.unselect()
-		if err := sendRemote("send load"); err != nil {
-			app.ui.printf("delete: %s", err)
+			app.nav.unselect()
+			if err := sendRemote("send load"); err != nil {
+				app.ui.printf("delete: %s", err)
+			}
+		} else {
+			if _, err := app.nav.currFileOrSelections(); err != nil {
+				app.ui.printf("delete: %s", err)
+				return
+			}
+			app.ui.cmdPrefix = "delete?[y/N]: "
 		}
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {
