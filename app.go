@@ -136,6 +136,14 @@ func (app *app) loop() {
 	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
 
+	if gCommand != "" {
+		p := newParser(strings.NewReader(gCommand))
+		if e := p.parseExpr(); e != nil {
+			log.Printf("evaluating start command: %s", e.String())
+			e.eval(app, nil)
+		}
+	}
+
 	for {
 		select {
 		case <-app.quitChan:

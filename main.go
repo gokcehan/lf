@@ -21,6 +21,7 @@ var (
 	gHostname      string
 	gLastDirPath   string
 	gSelectionPath string
+	gCommand       string
 	gSocketProt    string
 	gSocketPath    string
 	gLogPath       string
@@ -102,6 +103,11 @@ func main() {
 		"selection-path",
 		"",
 		"path to the file to write selected files on open (to use as open file dialog)")
+
+	flag.StringVar(&gCommand,
+		"command",
+		"",
+		"command to execute on client initialization")
 
 	flag.Parse()
 
