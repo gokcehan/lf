@@ -853,6 +853,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
+			app.ui.cmdPrefix = ""
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 			p := newParser(strings.NewReader(s))
 			for p.parse() {
 				p.expr.eval(app, nil)
@@ -860,30 +862,28 @@ func (e *callExpr) eval(app *app, args []string) {
 			if p.err != nil {
 				app.ui.printf("%s", p.err)
 			}
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
-			app.ui.cmdPrefix = ""
 		case "$":
 			log.Printf("shell: %s", s)
-			app.runShell(s, nil, app.ui.cmdPrefix)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 			app.ui.cmdPrefix = ""
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.runShell(s, nil, "$")
 		case "%":
 			log.Printf("shell-pipe: %s", s)
-			app.runShell(s, nil, app.ui.cmdPrefix)
 			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.runShell(s, nil, "%")
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
 			log.Printf("shell-wait: %s", s)
-			app.runShell(s, nil, app.ui.cmdPrefix)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 			app.ui.cmdPrefix = ""
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.runShell(s, nil, "!")
 		case "&":
 			log.Printf("shell-async: %s", s)
-			app.runShell(s, nil, app.ui.cmdPrefix)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
 			app.ui.cmdPrefix = ""
+			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.runShell(s, nil, "&")
 		case "/":
 			if gOpts.incsearch {
 				last := app.nav.currDir()
@@ -891,6 +891,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				last.pos = app.nav.searchPos
 			}
 			log.Printf("search: %s", s)
+			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if err := app.nav.searchNext(); err != nil {
 				app.ui.printf("search: %s: %s", err, app.nav.search)
@@ -898,7 +899,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
-			app.ui.cmdPrefix = ""
 		case "?":
 			if gOpts.incsearch {
 				last := app.nav.currDir()
@@ -906,6 +906,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				last.pos = app.nav.searchPos
 			}
 			log.Printf("search-back: %s", s)
+			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if err := app.nav.searchPrev(); err != nil {
 				app.ui.printf("search-back: %s: %s", err, app.nav.search)
@@ -913,7 +914,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
-			app.ui.cmdPrefix = ""
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
