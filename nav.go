@@ -931,4 +931,3 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 
 	return nav.currSelections(), nil
 }
-
