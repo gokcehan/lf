@@ -33,6 +33,12 @@ func run() {
 
 	app := newApp()
 
+	for _, path := range gConfigPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			app.readFile(path)
+		}
+	}
+
 	if err := app.nav.readMarks(); err != nil {
 		app.ui.printf("reading marks file: %s", err)
 	}
