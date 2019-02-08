@@ -136,6 +136,12 @@ func (app *app) loop() {
 	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
 
+	for _, path := range gConfigPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			app.readFile(path)
+		}
+	}
+
 	if gCommand != "" {
 		p := newParser(strings.NewReader(gCommand))
 
@@ -340,12 +346,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "%":
-		go func() {
-			app.cmd = cmd
-			app.cmdOutBuf = nil
-			app.ui.msg = ""
-			app.ui.cmdPrefix = ">"
+		app.cmd = cmd
+		app.cmdOutBuf = nil
+		app.ui.msg = ""
+		app.ui.cmdPrefix = ">"
 
+		go func() {
 			reader := bufio.NewReader(out)
 			for {
 				b, err := reader.ReadByte()
