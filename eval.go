@@ -873,7 +873,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		case ":":
 			log.Printf("command: %s", s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{":", s})
 			p := newParser(strings.NewReader(s))
 			for p.parse() {
 				p.expr.eval(app, nil)
@@ -884,11 +884,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		case "$":
 			log.Printf("shell: %s", s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{"$", s})
 			app.runShell(s, nil, "$")
 		case "%":
 			log.Printf("shell-pipe: %s", s)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
 			app.runShell(s, nil, "%")
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
@@ -896,12 +896,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		case "!":
 			log.Printf("shell-wait: %s", s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{"!", s})
 			app.runShell(s, nil, "!")
 		case "&":
 			log.Printf("shell-async: %s", s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{app.ui.cmdPrefix, s})
+			app.cmdHistory = append(app.cmdHistory, cmdItem{"&", s})
 			app.runShell(s, nil, "&")
 		case "/":
 			if gOpts.incsearch {
