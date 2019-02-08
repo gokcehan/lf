@@ -136,6 +136,12 @@ func (app *app) loop() {
 	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
 
+	for _, path := range gConfigPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			app.readFile(path)
+		}
+	}
+
 	if gCommand != "" {
 		p := newParser(strings.NewReader(gCommand))
 		if e := p.parseExpr(); e != nil {
@@ -336,22 +342,41 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "%":
-		go func() {
-			app.cmd = cmd
-			app.cmdOutBuf = nil
-			app.ui.msg = ""
-			app.ui.cmdPrefix = ">"
+		app.cmd = cmd
+		app.cmdOutBuf = nil
+		app.ui.msg = ""
+		app.ui.cmdPrefix = ">"
 
-			reader := bufio.NewReader(out)
+		reader := bufio.NewReader(out)
+		bytes := make(chan byte, 1000)
+
+		go func() {
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
 					break
 				}
-				app.cmdOutBuf = append(app.cmdOutBuf, b)
-				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
-				if b == '\n' || b == '\r' {
-					app.cmdOutBuf = nil
+				bytes <- b
+			}
+			close(bytes)
+		}()
+
+		go func() {
+		loop:
+			for {
+				select {
+				case b, ok := <-bytes:
+					switch {
+					case !ok:
+						break loop
+					case b == '\n' || b == '\r':
+						app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
+						app.cmdOutBuf = nil
+					default:
+						app.cmdOutBuf = append(app.cmdOutBuf, b)
+					}
+				default:
+					app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
 				}
 			}
 
