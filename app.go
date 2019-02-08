@@ -144,9 +144,13 @@ func (app *app) loop() {
 
 	if gCommand != "" {
 		p := newParser(strings.NewReader(gCommand))
-		if e := p.parseExpr(); e != nil {
-			log.Printf("evaluating start command: %s", e.String())
-			e.eval(app, nil)
+
+		for p.parse() {
+			p.expr.eval(app, nil)
+		}
+
+		if p.err != nil {
+			app.ui.printf("%s", p.err)
 		}
 	}
 
