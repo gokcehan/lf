@@ -21,11 +21,12 @@ var (
 	gHostname      string
 	gLastDirPath   string
 	gSelectionPath string
-	gCommand       string
 	gSocketProt    string
 	gSocketPath    string
 	gLogPath       string
 	gServerLogPath string
+	gSelect        string
+	gCommand       string
 	gVersion       string
 )
 
@@ -155,13 +156,9 @@ func main() {
 				os.Exit(2)
 			}
 		case 1:
-			dir := flag.Arg(0)
-			if err := os.Chdir(dir); err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
-				os.Exit(2)
-			}
+			gSelect = flag.Arg(0)
 		default:
-			fmt.Fprintf(os.Stderr, "only single directory is allowed\n")
+			fmt.Fprintf(os.Stderr, "only single file or directory is allowed\n")
 			os.Exit(2)
 		}
 

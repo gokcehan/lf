@@ -136,6 +136,12 @@ func (app *app) loop() {
 	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
 
+	if gSelect != "" {
+		go func() {
+			app.ui.exprChan <- &callExpr{"select", []string{gSelect}, 1}
+		}()
+	}
+
 	for _, path := range gConfigPaths {
 		if _, err := os.Stat(path); !os.IsNotExist(err) {
 			app.readFile(path)
