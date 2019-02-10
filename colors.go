@@ -51,25 +51,25 @@ func parseColors() colorMap {
 		return parseColorsBSD(env)
 	}
 
-	// default values from dircolors
+	// default values from dircolors with removed background colors
 	defaultColors := []string{
 		// "rs=0",
 		"di=01;34",
 		"ln=01;36",
 		// "mh=00",
-		"pi=40;33",
+		"pi=33", // "pi=40;33",
 		"so=01;35",
 		"do=01;35",
-		"bd=40;33;01",
-		"cd=40;33;01",
-		"or=40;31;01",
+		"bd=33;01", // "bd=40;33;01",
+		"cd=33;01", // "cd=40;33;01",
+		"or=31;01", // "or=40;31;01",
 		// "mi=00",
-		"su=37;41",
-		"sg=30;43",
-		"ca=30;41",
-		"tw=30;42",
-		"ow=34;42",
-		"st=37;44",
+		"su=01;32", // "su=37;41",
+		"sg=01;32", // "sg=30;43",
+		// "ca=30;41",
+		"tw=01;34", // "tw=30;42",
+		"ow=01;34", // "ow=34;42",
+		"st=01;34", // "st=37;44",
 		"ex=01;32",
 	}
 
