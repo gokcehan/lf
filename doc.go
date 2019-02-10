@@ -565,13 +565,7 @@ Globbing supports '*' to match any sequence, '?' to match any character, and
 '[...]' or '[^...] to match character sets or ranges. You can enable
 'incsearch' option to jump to the current match at each keystroke while typing.
 In this mode, you can either use 'cmd-enter' to accept the search or use
-'cmd-escape' to cancel the search. Alternatively, you can also map some other
-commands with 'cmap' to accept the search and execute the command immediately
-afterwards. For example, you can use arrow keys to finish the search with the
-following mappings:
-
-    cmap <up> up
-    cmap <down> down
+'cmd-escape' to cancel the search.
 
 Finding mechanism is implemented with commands 'find' (default 'f'),
 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default
