@@ -14,6 +14,13 @@ import (
 )
 
 func run() {
+	if err := termbox.Init(); err != nil {
+		log.Fatalf("initializing termbox: %s", err)
+	}
+	defer termbox.Close()
+
+	setColorMode()
+
 	f, err := os.Create(gLogPath)
 	if err != nil {
 		panic(err)
@@ -23,13 +30,6 @@ func run() {
 	log.SetOutput(f)
 
 	log.Print("hi!")
-
-	if err := termbox.Init(); err != nil {
-		log.Fatalf("initializing termbox: %s", err)
-	}
-	defer termbox.Close()
-
-	setColorMode()
 
 	app := newApp()
 
