@@ -612,7 +612,7 @@ loop:
 		}
 	}
 
-	if err := sendRemote("send load"); err != nil {
+	if err := remote("send load"); err != nil {
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
 		ui.exprChan <- echo
@@ -663,7 +663,7 @@ func moveAsync(ui *ui, srcs []string, dstDir string) {
 		}
 	}
 
-	if err := sendRemote("send load"); err != nil {
+	if err := remote("send load"); err != nil {
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
 		ui.exprChan <- echo
@@ -692,7 +692,7 @@ func (nav *nav) paste(ui *ui) error {
 		return fmt.Errorf("clearing copy/cut buffer: %s", err)
 	}
 
-	if err := sendRemote("send sync"); err != nil {
+	if err := remote("send sync"); err != nil {
 		return fmt.Errorf("paste: %s", err)
 	}
 

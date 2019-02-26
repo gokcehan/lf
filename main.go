@@ -132,7 +132,7 @@ func main() {
 	case *showVersion:
 		fmt.Println(gVersion)
 	case *remoteCmd != "":
-		if err := sendRemote(*remoteCmd); err != nil {
+		if err := remote(*remoteCmd); err != nil {
 			log.Fatalf("remote command: %s", err)
 		}
 	case *serverMode:

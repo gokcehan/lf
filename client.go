@@ -140,7 +140,7 @@ func loadFiles() (list []string, cp bool, err error) {
 	return
 }
 
-func sendRemote(cmd string) error {
+func remote(cmd string) error {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
 		return fmt.Errorf("dialing to send server: %s", err)

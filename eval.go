@@ -443,7 +443,7 @@ func insert(app *app, arg string) {
 				return
 			}
 			app.nav.unselect()
-			if err := sendRemote("send load"); err != nil {
+			if err := remote("send load"); err != nil {
 				app.ui.printf("delete: %s", err)
 			}
 		}
@@ -597,7 +597,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.unselect()
-		if err := sendRemote("send sync"); err != nil {
+		if err := remote("send sync"); err != nil {
 			app.ui.printf("copy: %s", err)
 		}
 	case "cut":
@@ -606,7 +606,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.unselect()
-		if err := sendRemote("send sync"); err != nil {
+		if err := remote("send sync"); err != nil {
 			app.ui.printf("cut: %s", err)
 		}
 	case "paste":
@@ -620,7 +620,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)
 			app.nav.unselect()
-			if err := sendRemote("send load"); err != nil {
+			if err := remote("send load"); err != nil {
 				app.ui.printf("delete: %s", err)
 			}
 		} else {
@@ -635,7 +635,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("clear: %s", err)
 			return
 		}
-		if err := sendRemote("send sync"); err != nil {
+		if err := remote("send sync"); err != nil {
 			app.ui.printf("clear: %s", err)
 		}
 	case "draw":
