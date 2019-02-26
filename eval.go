@@ -616,12 +616,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.printf("paste: %s", err)
 			return
 		}
-		if err := sendRemote("send load"); err != nil {
-			app.ui.printf("paste: %s", err)
-		}
-		if err := sendRemote("send sync"); err != nil {
-			app.ui.printf("paste: %s", err)
-		}
 	case "delete":
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)

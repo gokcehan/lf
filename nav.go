@@ -611,6 +611,12 @@ loop:
 			ui.exprChan <- echo
 		}
 	}
+
+	if err := sendRemote("send load"); err != nil {
+		errCount++
+		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+		ui.exprChan <- echo
+	}
 }
 
 func moveAsync(ui *ui, srcs []string, dstDir string) {
@@ -643,6 +649,12 @@ func moveAsync(ui *ui, srcs []string, dstDir string) {
 			ui.exprChan <- echo
 		}
 	}
+
+	if err := sendRemote("send load"); err != nil {
+		errCount++
+		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+		ui.exprChan <- echo
+	}
 }
 
 func (nav *nav) paste(ui *ui) error {
@@ -665,6 +677,10 @@ func (nav *nav) paste(ui *ui) error {
 
 	if err := saveFiles(nil, false); err != nil {
 		return fmt.Errorf("clearing copy/cut buffer: %s", err)
+	}
+
+	if err := sendRemote("send sync"); err != nil {
+		return fmt.Errorf("paste: %s", err)
 	}
 
 	return nil
