@@ -114,7 +114,7 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
+func pasteCommand(list []string, dstDir string, cp bool) *exec.Cmd {
 	var sh string
 	var args []string
 
@@ -134,7 +134,7 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 	args = append(args, "-i")
 
 	args = append(args, list...)
-	args = append(args, dir.path)
+	args = append(args, dstDir)
 
 	return exec.Command(sh, args...)
 }

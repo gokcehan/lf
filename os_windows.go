@@ -89,7 +89,7 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
+func pasteCommand(list []string, dstDir string, cp bool) *exec.Cmd {
 	var args []string
 
 	sh := "robocopy"
@@ -105,9 +105,9 @@ func pasteCommand(list []string, dir *dir, cp bool) *exec.Cmd {
 		base := filepath.Base(f)
 		dest := filepath.Dir(f)
 		if stat.IsDir() {
-			exec.Command(sh, append(args, f, filepath.Join(dir.path, base))...).Run()
+			exec.Command(sh, append(args, f, filepath.Join(dstDir, base))...).Run()
 		} else {
-			exec.Command(sh, append(args, dest, dir.path, base)...).Run()
+			exec.Command(sh, append(args, dest, dstDir, base)...).Run()
 		}
 	}
 

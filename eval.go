@@ -612,7 +612,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "paste":
 		if cmd, ok := gOpts.cmds["paste"]; ok {
 			cmd.eval(app, e.args)
-		} else if err := app.nav.paste(); err != nil {
+		} else if err := app.nav.paste(app.ui); err != nil {
 			app.ui.printf("paste: %s", err)
 			return
 		}

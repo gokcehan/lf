@@ -568,22 +568,71 @@ func (nav *nav) save(cp bool) error {
 	return nil
 }
 
-func (nav *nav) paste() error {
-	list, cp, err := loadFiles()
+func copyAsync(ui *ui, srcs []string, dstDir string) {
+	echo := &callExpr{"echo", []string{""}, 1}
+
+	_, err := os.Stat(dstDir)
+	if os.IsNotExist(err) {
+		echo.args[0] = fmt.Sprintf("error: %s", err)
+		ui.exprChan <- echo
+		return
+	}
+
+	total, err := copySize(srcs)
+	if err != nil {
+		echo.args[0] = fmt.Sprintf("error: %s", err)
+		ui.exprChan <- echo
+		return
+	}
+
+	nums, errs := copyAll(srcs, dstDir)
+
+	curr := int64(0)
+	lastUpdate := 0
+	errCount := 0
+loop:
+	for {
+		select {
+		case n := <-nums:
+			curr += n
+			// n is usually 1024B so update roughly per 1024B x 1024 = 1MB copied
+			if lastUpdate++; lastUpdate >= 1024 {
+				lastUpdate = 0
+				percentage := int((100 * float64(curr)) / float64(total))
+				echo.args[0] = fmt.Sprintf("%d%%", percentage)
+				ui.exprChan <- echo
+			}
+		case err, ok := <-errs:
+			if !ok {
+				break loop
+			}
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			ui.exprChan <- echo
+		}
+	}
+}
+
+func (nav *nav) paste(ui *ui) error {
+	srcs, cp, err := loadFiles()
 	if err != nil {
 		return err
 	}
 
-	if len(list) == 0 {
+	if len(srcs) == 0 {
 		return errors.New("no file in copy/cut buffer")
 	}
 
-	dir := nav.currDir()
+	dstDir := nav.currDir().path
 
-	cmd := pasteCommand(list, dir, cp)
+	if cp {
+		go copyAsync(ui, srcs, dstDir)
+	} else {
+		cmd := pasteCommand(srcs, dstDir, cp)
 
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("pasting files: %s", err)
+		if err := cmd.Run(); err != nil {
+			return fmt.Errorf("pasting files: %s", err)
+		}
 	}
 
 	if err := saveFiles(nil, false); err != nil {
