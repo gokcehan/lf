@@ -613,6 +613,38 @@ loop:
 	}
 }
 
+func moveAsync(ui *ui, srcs []string, dstDir string) {
+	echo := &callExpr{"echo", []string{""}, 1}
+
+	_, err := os.Stat(dstDir)
+	if os.IsNotExist(err) {
+		echo.args[0] = fmt.Sprintf("error: %s", err)
+		ui.exprChan <- echo
+		return
+	}
+
+	errCount := 0
+	for _, src := range srcs {
+		dst := filepath.Join(dstDir, filepath.Base(src))
+
+		_, err := os.Stat(dst)
+		if !os.IsNotExist(err) {
+			var newPath string
+			for i := 1; !os.IsNotExist(err); i++ {
+				newPath = fmt.Sprintf("%s.~%d~", dst, i)
+				_, err = os.Stat(newPath)
+			}
+			dst = newPath
+		}
+
+		if err := os.Rename(src, dst); err != nil {
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			ui.exprChan <- echo
+		}
+	}
+}
+
 func (nav *nav) paste(ui *ui) error {
 	srcs, cp, err := loadFiles()
 	if err != nil {
@@ -628,11 +660,7 @@ func (nav *nav) paste(ui *ui) error {
 	if cp {
 		go copyAsync(ui, srcs, dstDir)
 	} else {
-		cmd := pasteCommand(srcs, dstDir, cp)
-
-		if err := cmd.Run(); err != nil {
-			return fmt.Errorf("pasting files: %s", err)
-		}
+		go moveAsync(ui, srcs, dstDir)
 	}
 
 	if err := saveFiles(nil, false); err != nil {
