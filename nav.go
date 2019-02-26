@@ -631,10 +631,23 @@ func moveAsync(ui *ui, srcs []string, dstDir string) {
 
 	errCount := 0
 	for _, src := range srcs {
+		srcStat, err := os.Stat(src)
+		if err != nil {
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			ui.exprChan <- echo
+			continue
+		}
+
 		dst := filepath.Join(dstDir, filepath.Base(src))
 
-		_, err := os.Stat(dst)
-		if !os.IsNotExist(err) {
+		dstStat, err := os.Stat(dst)
+		if os.SameFile(srcStat, dstStat) {
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] error: rename %s %s: source and destination are the same file", errCount, src, dst)
+			ui.exprChan <- echo
+			continue
+		} else if !os.IsNotExist(err) {
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
 				newPath = fmt.Sprintf("%s.~%d~", dst, i)
