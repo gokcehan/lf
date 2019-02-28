@@ -189,6 +189,19 @@ func (app *app) loop() {
 			}
 
 			return
+		case n := <-app.nav.copyBytesChan:
+			// n is usually 1024B so update roughly per 1024B x 1024 = 1MB copied
+			if app.nav.copyUpdate++; app.nav.copyUpdate >= 1024 {
+				app.nav.copyUpdate = 0
+				app.ui.draw(app.nav)
+			}
+			app.nav.copyBytes += n
+		case n := <-app.nav.copyTotalChan:
+			app.nav.copyTotal += n
+			if n < 0 {
+				app.nav.copyBytes += n
+			}
+			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {

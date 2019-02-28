@@ -188,22 +188,27 @@ func (dir *dir) sel(name string, height int) {
 }
 
 type nav struct {
-	dirs         []*dir
-	dirChan      chan *dir
-	regChan      chan *reg
-	dirCache     map[string]*dir
-	regCache     map[string]*reg
-	saves        map[string]bool
-	marks        map[string]string
-	selections   map[string]int
-	selectionInd int
-	height       int
-	find         string
-	findBack     bool
-	search       string
-	searchBack   bool
-	searchInd    int
-	searchPos    int
+	dirs          []*dir
+	copyBytes     int64
+	copyTotal     int64
+	copyUpdate    int
+	copyBytesChan chan int64
+	copyTotalChan chan int64
+	dirChan       chan *dir
+	regChan       chan *reg
+	dirCache      map[string]*dir
+	regCache      map[string]*reg
+	saves         map[string]bool
+	marks         map[string]string
+	selections    map[string]int
+	selectionInd  int
+	height        int
+	find          string
+	findBack      bool
+	search        string
+	searchBack    bool
+	searchInd     int
+	searchPos     int
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -271,15 +276,17 @@ func newNav(height int) *nav {
 	}
 
 	nav := &nav{
-		dirChan:      make(chan *dir),
-		regChan:      make(chan *reg),
-		dirCache:     make(map[string]*dir),
-		regCache:     make(map[string]*reg),
-		saves:        make(map[string]bool),
-		marks:        make(map[string]string),
-		selections:   make(map[string]int),
-		selectionInd: 0,
-		height:       height,
+		copyBytesChan: make(chan int64, 1024),
+		copyTotalChan: make(chan int64, 1024),
+		dirChan:       make(chan *dir),
+		regChan:       make(chan *reg),
+		dirCache:      make(map[string]*dir),
+		regCache:      make(map[string]*reg),
+		saves:         make(map[string]bool),
+		marks:         make(map[string]string),
+		selections:    make(map[string]int),
+		selectionInd:  0,
+		height:        height,
 	}
 
 	nav.getDirs(wd)
@@ -568,7 +575,7 @@ func (nav *nav) save(cp bool) error {
 	return nil
 }
 
-func copyAsync(ui *ui, srcs []string, dstDir string) {
+func (nav *nav) copyAsync(ui *ui, srcs []string, dstDir string) {
 	echo := &callExpr{"echo", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
@@ -585,25 +592,19 @@ func copyAsync(ui *ui, srcs []string, dstDir string) {
 		return
 	}
 
+	nav.copyTotalChan <- total
+
 	nums, errs := copyAll(srcs, dstDir)
 
-	curr := int64(0)
-	lastUpdate := 0
 	errCount := 0
 loop:
 	for {
 		select {
 		case n := <-nums:
-			curr += n
-			// n is usually 1024B so update roughly per 1024B x 1024 = 1MB copied
-			if lastUpdate++; lastUpdate >= 1024 {
-				lastUpdate = 0
-				percentage := int((100 * float64(curr)) / float64(total))
-				echo.args[0] = fmt.Sprintf("%d%%", percentage)
-				ui.exprChan <- echo
-			}
+			nav.copyBytesChan <- n
 		case err, ok := <-errs:
 			if !ok {
+				nav.copyTotalChan <- -total
 				break loop
 			}
 			errCount++
@@ -619,7 +620,7 @@ loop:
 	}
 }
 
-func moveAsync(ui *ui, srcs []string, dstDir string) {
+func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 	echo := &callExpr{"echo", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
@@ -683,9 +684,9 @@ func (nav *nav) paste(ui *ui) error {
 	dstDir := nav.currDir().path
 
 	if cp {
-		go copyAsync(ui, srcs, dstDir)
+		go nav.copyAsync(ui, srcs, dstDir)
 	} else {
-		go moveAsync(ui, srcs, dstDir)
+		go nav.moveAsync(ui, srcs, dstDir)
 	}
 
 	if err := saveFiles(nil, false); err != nil {

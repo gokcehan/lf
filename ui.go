@@ -576,7 +576,13 @@ func (ui *ui) drawStatLine(nav *nav) {
 	ind := min(currDir.ind+1, tot)
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
-	ruler := fmt.Sprintf("%s  %d/%d", acc, ind, tot)
+	var progress string
+	if nav.copyTotal > 0 {
+		percentage := int((100 * float64(nav.copyBytes)) / float64(nav.copyTotal))
+		progress = fmt.Sprintf("  [%d%%]", percentage)
+	}
+
+	ruler := fmt.Sprintf("%s%s  %d/%d", acc, progress, ind, tot)
 
 	ui.msgWin.printRight(0, fg, bg, ruler)
 }
