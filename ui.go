@@ -182,7 +182,7 @@ func (win *win) printReg(reg *reg) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	if reg.loading {
-		fg = termbox.AttrBold
+		fg = termbox.AttrReverse
 		win.print(2, 0, fg, bg, "loading...")
 		return
 	}
@@ -249,13 +249,13 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	if dir.loading {
-		fg = termbox.AttrBold
+		fg = termbox.AttrReverse
 		win.print(2, 0, fg, bg, "loading...")
 		return
 	}
 
 	if len(dir.files) == 0 {
-		fg = termbox.AttrBold
+		fg = termbox.AttrReverse
 		win.print(2, 0, fg, bg, "empty")
 		return
 	}

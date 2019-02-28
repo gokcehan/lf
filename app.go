@@ -163,6 +163,11 @@ func (app *app) loop() {
 	for {
 		select {
 		case <-app.quitChan:
+			if app.nav.copyTotal > 0 {
+				app.ui.echoerr("quit: copy operation in progress")
+				continue
+			}
+
 			log.Print("bye!")
 
 			if err := app.nav.writeMarks(); err != nil {

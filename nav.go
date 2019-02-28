@@ -389,7 +389,7 @@ func (nav *nav) preview() {
 	for i := 0; i < nav.height && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
-				reg.lines = []string{"\033[mbinary\033[0m"}
+				reg.lines = []string{"\033[7mbinary\033[0m"}
 				nav.regChan <- reg
 				return
 			}
