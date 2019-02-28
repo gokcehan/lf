@@ -576,18 +576,18 @@ func (nav *nav) save(cp bool) error {
 }
 
 func (nav *nav) copyAsync(ui *ui, srcs []string, dstDir string) {
-	echo := &callExpr{"echo", []string{""}, 1}
+	echo := &callExpr{"echoerr", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
-		echo.args[0] = fmt.Sprintf("error: %s", err)
+		echo.args[0] = err.Error()
 		ui.exprChan <- echo
 		return
 	}
 
 	total, err := copySize(srcs)
 	if err != nil {
-		echo.args[0] = fmt.Sprintf("error: %s", err)
+		echo.args[0] = err.Error()
 		ui.exprChan <- echo
 		return
 	}
@@ -608,24 +608,24 @@ loop:
 				break loop
 			}
 			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 			ui.exprChan <- echo
 		}
 	}
 
 	if err := remote("send load"); err != nil {
 		errCount++
-		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
 	}
 }
 
 func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
-	echo := &callExpr{"echo", []string{""}, 1}
+	echo := &callExpr{"echoerr", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
-		echo.args[0] = fmt.Sprintf("error: %s", err)
+		echo.args[0] = err.Error()
 		ui.exprChan <- echo
 		return
 	}
@@ -635,7 +635,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		srcStat, err := os.Stat(src)
 		if err != nil {
 			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 			ui.exprChan <- echo
 			continue
 		}
@@ -645,7 +645,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		dstStat, err := os.Stat(dst)
 		if os.SameFile(srcStat, dstStat) {
 			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] error: rename %s %s: source and destination are the same file", errCount, src, dst)
+			echo.args[0] = fmt.Sprintf("[%d] rename %s %s: source and destination are the same file", errCount, src, dst)
 			ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
@@ -659,14 +659,14 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 
 		if err := os.Rename(src, dst); err != nil {
 			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 			ui.exprChan <- echo
 		}
 	}
 
 	if err := remote("send load"); err != nil {
 		errCount++
-		echo.args[0] = fmt.Sprintf("[%d] error: %s", errCount, err)
+		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
 	}
 }
