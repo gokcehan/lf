@@ -61,6 +61,8 @@ The following commands are provided by lf without default keybindings:
     load    load modified files and directories
     sync    synchronizes copied/cut files with server
     echo    prints its arguments to the message line
+    echomsg same as echo but logging
+    echoerr same as echomsg but red color
     cd      changes working directory to its argument
     select  changes current file selection to its argument
     source  reads the configuration file in its argument

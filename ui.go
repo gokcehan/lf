@@ -485,13 +485,30 @@ func (ui *ui) sort() {
 	ui.dirPrev.sel(name, ui.wins[0].h)
 }
 
-func (ui *ui) print(msg string) {
+func (ui *ui) echo(msg string) {
+	ui.msg = msg
+}
+
+func (ui *ui) echof(format string, a ...interface{}) {
+	ui.echo(fmt.Sprintf(format, a...))
+}
+
+func (ui *ui) echomsg(msg string) {
 	ui.msg = msg
 	log.Print(msg)
 }
 
-func (ui *ui) printf(format string, a ...interface{}) {
-	ui.print(fmt.Sprintf(format, a...))
+func (ui *ui) echomsgf(format string, a ...interface{}) {
+	ui.echomsg(fmt.Sprintf(format, a...))
+}
+
+func (ui *ui) echoerr(msg string) {
+	ui.msg = fmt.Sprintf("\033[7;31;47m%s\033[0m", msg)
+	log.Printf("error: %s", msg)
+}
+
+func (ui *ui) echoerrf(format string, a ...interface{}) {
+	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
 type reg struct {
@@ -524,7 +541,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	ui.msg = fmt.Sprintf("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
+	ui.echof("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
@@ -775,7 +792,7 @@ func (ui *ui) pollEvent() termbox.Event {
 					ev.Key = val
 				} else {
 					ev.Key = termbox.KeyEsc
-					ui.printf("unknown key: %s", key)
+					ui.echoerrf("unknown key: %s", key)
 				}
 			}
 		}
@@ -827,7 +844,7 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 
 		switch len(binds) {
 		case 0:
-			ui.printf("unknown mapping: %s", string(ui.keyAcc))
+			ui.echoerrf("unknown mapping: %s", string(ui.keyAcc))
 			ch <- draw
 			ui.keyAcc = nil
 			ui.keyCount = nil

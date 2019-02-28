@@ -48,7 +48,7 @@ func (app *app) readFile(path string) {
 
 	f, err := os.Open(path)
 	if err != nil {
-		app.ui.printf("opening file: %s", err)
+		app.ui.echoerrf("opening file: %s", err)
 		return
 	}
 	defer f.Close()
@@ -60,7 +60,7 @@ func (app *app) readFile(path string) {
 	}
 
 	if p.err != nil {
-		app.ui.printf("%s", p.err)
+		app.ui.echoerrf("%s", p.err)
 	}
 }
 
@@ -156,7 +156,7 @@ func (app *app) loop() {
 		}
 
 		if p.err != nil {
-			app.ui.printf("%s", p.err)
+			app.ui.echoerrf("%s", p.err)
 		}
 	}
 
@@ -350,13 +350,13 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	if err != nil {
-		app.ui.printf("running shell: %s", err)
+		app.ui.echoerrf("running shell: %s", err)
 	}
 
 	switch prefix {
 	case "!":
 		if err := waitKey(); err != nil {
-			app.ui.printf("waiting key: %s", err)
+			app.ui.echoerrf("waiting key: %s", err)
 		}
 	}
 

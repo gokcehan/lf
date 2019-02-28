@@ -34,11 +34,11 @@ func run() {
 	app := newApp()
 
 	if err := app.nav.readMarks(); err != nil {
-		app.ui.printf("reading marks file: %s", err)
+		app.ui.echoerrf("reading marks file: %s", err)
 	}
 
 	if err := app.readHistory(); err != nil {
-		app.ui.printf("reading history file: %s", err)
+		app.ui.echoerrf("reading history file: %s", err)
 	}
 
 	app.loop()

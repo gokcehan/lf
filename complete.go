@@ -54,6 +54,8 @@ var (
 		"mark-load",
 		"sync",
 		"echo",
+		"echomsg",
+		"echoerr",
 		"cd",
 		"select",
 		"source",

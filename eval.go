@@ -158,22 +158,22 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.printf("findlen: %s", err)
+			app.ui.echoerrf("findlen: %s", err)
 			return
 		}
 		if n < 0 {
-			app.ui.print("findlen: value should be a non-negative number")
+			app.ui.echoerr("findlen: value should be a non-negative number")
 			return
 		}
 		gOpts.findlen = n
 	case "period":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.printf("period: %s", err)
+			app.ui.echoerrf("period: %s", err)
 			return
 		}
 		if n < 0 {
-			app.ui.print("period: value should be a non-negative number")
+			app.ui.echoerr("period: value should be a non-negative number")
 			return
 		}
 		gOpts.period = n
@@ -186,22 +186,22 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.printf("scrolloff: %s", err)
+			app.ui.echoerrf("scrolloff: %s", err)
 			return
 		}
 		if n < 0 {
-			app.ui.print("scrolloff: value should be a non-negative number")
+			app.ui.echoerr("scrolloff: value should be a non-negative number")
 			return
 		}
 		gOpts.scrolloff = n
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
-			app.ui.printf("tabstop: %s", err)
+			app.ui.echoerrf("tabstop: %s", err)
 			return
 		}
 		if n <= 0 {
-			app.ui.print("tabstop: value should be a positive number")
+			app.ui.echoerr("tabstop: value should be a positive number")
 			return
 		}
 		gOpts.tabstop = n
@@ -217,7 +217,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.shell = e.val
 	case "sortby":
 		if e.val != "natural" && e.val != "name" && e.val != "size" && e.val != "time" {
-			app.ui.print("sortby: value should either be 'natural', 'name', 'size' or 'time'")
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size' or 'time'")
 			return
 		}
 		switch e.val {
@@ -240,17 +240,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		for _, s := range toks {
 			n, err := strconv.Atoi(s)
 			if err != nil {
-				app.ui.printf("ratios: %s", err)
+				app.ui.echoerrf("ratios: %s", err)
 				return
 			}
 			if n <= 0 {
-				app.ui.print("ratios: value should be a positive number")
+				app.ui.echoerr("ratios: value should be a positive number")
 				return
 			}
 			rats = append(rats, n)
 		}
 		if gOpts.preview && len(rats) < 2 {
-			app.ui.print("ratios: should consist of at least two numbers when 'preview' is enabled")
+			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
 			return
 		}
 		gOpts.ratios = rats
@@ -260,7 +260,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			if s != "" && s != "size" && s != "time" {
-				app.ui.print("info: should consist of 'size' or 'time' separated with colon")
+				app.ui.echoerr("info: should consist of 'size' or 'time' separated with colon")
 				return
 			}
 		}
@@ -268,7 +268,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "shellopts":
 		gOpts.shellopts = strings.Split(e.val, ":")
 	default:
-		app.ui.printf("unknown option: %s", e.opt)
+		app.ui.echoerrf("unknown option: %s", e.opt)
 	}
 }
 
@@ -326,12 +326,12 @@ func update(app *app) {
 
 		if app.nav.searchBack {
 			if err := app.nav.searchPrev(); err != nil {
-				app.ui.printf("search-back: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 				return
 			}
 		} else {
 			if err := app.nav.searchNext(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 				return
 			}
 		}
@@ -347,12 +347,12 @@ func update(app *app) {
 
 		if app.nav.searchBack {
 			if err := app.nav.searchNext(); err != nil {
-				app.ui.printf("search-back: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 				return
 			}
 		} else {
 			if err := app.nav.searchPrev(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 				return
 			}
 		}
@@ -373,7 +373,7 @@ func insert(app *app, arg string) {
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
 			case 0:
-				app.ui.printf("find: pattern not found: %s", app.nav.find)
+				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
 			case 1:
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -388,7 +388,7 @@ func insert(app *app, arg string) {
 			}
 
 			if !app.nav.findNext() {
-				app.ui.printf("find: pattern not found: %s", app.nav.find)
+				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -405,7 +405,7 @@ func insert(app *app, arg string) {
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
 			case 0:
-				app.ui.printf("find-back: pattern not found: %s", app.nav.find)
+				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
 			case 1:
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -420,7 +420,7 @@ func insert(app *app, arg string) {
 			}
 
 			if !app.nav.findPrev() {
-				app.ui.printf("find-back: pattern not found: %s", app.nav.find)
+				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -439,12 +439,12 @@ func insert(app *app, arg string) {
 
 		if arg == "y" {
 			if err := app.nav.del(); err != nil {
-				app.ui.printf("delete: %s", err)
+				app.ui.echoerrf("delete: %s", err)
 				return
 			}
 			app.nav.unselect()
 			if err := remote("send load"); err != nil {
-				app.ui.printf("delete: %s", err)
+				app.ui.echoerrf("delete: %s", err)
 			}
 		}
 	case app.ui.cmdPrefix == "mark-save: ":
@@ -472,11 +472,11 @@ func insert(app *app, arg string) {
 
 		path, ok := app.nav.marks[arg]
 		if !ok {
-			app.ui.print("mark-load: no such mark")
+			app.ui.echoerr("mark-load: no such mark")
 			return
 		}
 		if err := app.nav.cd(path); err != nil {
-			app.ui.printf("%s", err)
+			app.ui.echoerrf("%s", err)
 			return
 		}
 		app.ui.loadFile(app.nav)
@@ -519,7 +519,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "updir":
 		for i := 0; i < e.count; i++ {
 			if err := app.nav.updir(); err != nil {
-				app.ui.printf("%s", err)
+				app.ui.echoerrf("%s", err)
 				return
 			}
 		}
@@ -528,14 +528,14 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "open":
 		curr, err := app.nav.currFile()
 		if err != nil {
-			app.ui.printf("opening: %s", err)
+			app.ui.echoerrf("opening: %s", err)
 			return
 		}
 
 		if curr.IsDir() {
 			err := app.nav.open()
 			if err != nil {
-				app.ui.printf("opening directory: %s", err)
+				app.ui.echoerrf("opening directory: %s", err)
 				return
 			}
 			app.ui.loadFile(app.nav)
@@ -593,27 +593,27 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.unselect()
 	case "copy":
 		if err := app.nav.save(true); err != nil {
-			app.ui.printf("copy: %s", err)
+			app.ui.echoerrf("copy: %s", err)
 			return
 		}
 		app.nav.unselect()
 		if err := remote("send sync"); err != nil {
-			app.ui.printf("copy: %s", err)
+			app.ui.echoerrf("copy: %s", err)
 		}
 	case "cut":
 		if err := app.nav.save(false); err != nil {
-			app.ui.printf("cut: %s", err)
+			app.ui.echoerrf("cut: %s", err)
 			return
 		}
 		app.nav.unselect()
 		if err := remote("send sync"); err != nil {
-			app.ui.printf("cut: %s", err)
+			app.ui.echoerrf("cut: %s", err)
 		}
 	case "paste":
 		if cmd, ok := gOpts.cmds["paste"]; ok {
 			cmd.eval(app, e.args)
 		} else if err := app.nav.paste(app.ui); err != nil {
-			app.ui.printf("paste: %s", err)
+			app.ui.echoerrf("paste: %s", err)
 			return
 		}
 	case "delete":
@@ -621,22 +621,22 @@ func (e *callExpr) eval(app *app, args []string) {
 			cmd.eval(app, e.args)
 			app.nav.unselect()
 			if err := remote("send load"); err != nil {
-				app.ui.printf("delete: %s", err)
+				app.ui.echoerrf("delete: %s", err)
 			}
 		} else {
 			if _, err := app.nav.currFileOrSelections(); err != nil {
-				app.ui.printf("delete: %s", err)
+				app.ui.echoerrf("delete: %s", err)
 				return
 			}
 			app.ui.cmdPrefix = "delete?[y/N]: "
 		}
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {
-			app.ui.printf("clear: %s", err)
+			app.ui.echoerrf("clear: %s", err)
 			return
 		}
 		if err := remote("send sync"); err != nil {
-			app.ui.printf("clear: %s", err)
+			app.ui.echoerrf("clear: %s", err)
 		}
 	case "draw":
 	case "redraw":
@@ -647,7 +647,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.renew()
 	case "reload":
 		if err := app.nav.reload(); err != nil {
-			app.ui.printf("reload: %s", err)
+			app.ui.echoerrf("reload: %s", err)
 		}
 	case "read":
 		app.ui.cmdPrefix = ":"
@@ -701,12 +701,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		for i := 0; i < e.count; i++ {
 			if app.nav.searchBack {
 				if err := app.nav.searchPrev(); err != nil {
-					app.ui.printf("search-back: %s: %s", err, app.nav.search)
+					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 					return
 				}
 			} else {
 				if err := app.nav.searchNext(); err != nil {
-					app.ui.printf("search: %s: %s", err, app.nav.search)
+					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 					return
 				}
 			}
@@ -717,12 +717,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		for i := 0; i < e.count; i++ {
 			if app.nav.searchBack {
 				if err := app.nav.searchNext(); err != nil {
-					app.ui.printf("search-back: %s: %s", err, app.nav.search)
+					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 					return
 				}
 			} else {
 				if err := app.nav.searchPrev(); err != nil {
-					app.ui.printf("search: %s: %s", err, app.nav.search)
+					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 					return
 				}
 			}
@@ -736,10 +736,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = "mark-load: "
 	case "sync":
 		if err := app.nav.sync(); err != nil {
-			app.ui.printf("sync: %s", err)
+			app.ui.echoerrf("sync: %s", err)
 		}
 	case "echo":
-		app.ui.msg = strings.Join(e.args, " ")
+		app.ui.echo(strings.Join(e.args, " "))
+	case "echomsg":
+		app.ui.echomsg(strings.Join(e.args, " "))
+	case "echoerr":
+		app.ui.echoerr(strings.Join(e.args, " "))
 	case "cd":
 		path := "~"
 		if len(e.args) > 0 {
@@ -752,7 +756,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if err := app.nav.cd(path); err != nil {
-			app.ui.printf("%s", err)
+			app.ui.echoerrf("%s", err)
 			return
 		}
 
@@ -770,7 +774,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "select":
 		if len(e.args) != 1 {
-			app.ui.print("select: requires an argument")
+			app.ui.echoerr("select: requires an argument")
 			return
 		}
 
@@ -780,7 +784,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if err := app.nav.sel(e.args[0]); err != nil {
-			app.ui.printf("%s", err)
+			app.ui.echoerrf("%s", err)
 			return
 		}
 
@@ -799,13 +803,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "source":
 		if len(e.args) != 1 {
-			app.ui.print("source: requires an argument")
+			app.ui.echoerr("source: requires an argument")
 			return
 		}
 		app.readFile(strings.Replace(e.args[0], "~", gUser.HomeDir, -1))
 	case "push":
 		if len(e.args) != 1 {
-			app.ui.print("push: requires an argument")
+			app.ui.echoerr("push: requires an argument")
 			return
 		}
 		log.Println("pushing keys", e.args[0])
@@ -864,7 +868,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				p.expr.eval(app, nil)
 			}
 			if p.err != nil {
-				app.ui.printf("%s", p.err)
+				app.ui.echoerrf("%s", p.err)
 			}
 		case "$":
 			log.Printf("shell: %s", s)
@@ -898,7 +902,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if err := app.nav.searchNext(); err != nil {
-				app.ui.printf("search: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -913,7 +917,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if err := app.nav.searchPrev(); err != nil {
-				app.ui.printf("search-back: %s: %s", err, app.nav.search)
+				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 			} else {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
@@ -1137,7 +1141,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
-			app.ui.printf("command not found: %s", e.name)
+			app.ui.echoerrf("command not found: %s", e.name)
 			return
 		}
 		cmd.eval(app, e.args)
