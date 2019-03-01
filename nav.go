@@ -192,8 +192,13 @@ type nav struct {
 	copyBytes     int64
 	copyTotal     int64
 	copyUpdate    int
+	moveCount     int
+	moveTotal     int
+	moveUpdate    int
 	copyBytesChan chan int64
 	copyTotalChan chan int64
+	moveCountChan chan int
+	moveTotalChan chan int
 	dirChan       chan *dir
 	regChan       chan *reg
 	dirCache      map[string]*dir
@@ -278,6 +283,8 @@ func newNav(height int) *nav {
 	nav := &nav{
 		copyBytesChan: make(chan int64, 1024),
 		copyTotalChan: make(chan int64, 1024),
+		moveCountChan: make(chan int, 1024),
+		moveTotalChan: make(chan int, 1024),
 		dirChan:       make(chan *dir),
 		regChan:       make(chan *reg),
 		dirCache:      make(map[string]*dir),
@@ -604,7 +611,6 @@ loop:
 			nav.copyBytesChan <- n
 		case err, ok := <-errs:
 			if !ok {
-				nav.copyTotalChan <- -total
 				break loop
 			}
 			errCount++
@@ -612,6 +618,8 @@ loop:
 			ui.exprChan <- echo
 		}
 	}
+
+	nav.copyTotalChan <- -total
 
 	if err := remote("send load"); err != nil {
 		errCount++
@@ -630,8 +638,12 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		return
 	}
 
+	nav.moveTotalChan <- len(srcs)
+
 	errCount := 0
 	for _, src := range srcs {
+		nav.moveCountChan <- 1
+
 		srcStat, err := os.Stat(src)
 		if err != nil {
 			errCount++
@@ -663,6 +675,8 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 			ui.exprChan <- echo
 		}
 	}
+
+	nav.moveTotalChan <- -len(srcs)
 
 	if err := remote("send load"); err != nil {
 		errCount++

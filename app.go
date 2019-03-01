@@ -195,16 +195,34 @@ func (app *app) loop() {
 
 			return
 		case n := <-app.nav.copyBytesChan:
+			app.nav.copyBytes += n
 			// n is usually 4096B so update roughly per 4096B x 1024 = 4MB copied
 			if app.nav.copyUpdate++; app.nav.copyUpdate >= 1024 {
 				app.nav.copyUpdate = 0
 				app.ui.draw(app.nav)
 			}
-			app.nav.copyBytes += n
 		case n := <-app.nav.copyTotalChan:
 			app.nav.copyTotal += n
 			if n < 0 {
 				app.nav.copyBytes += n
+			}
+			if app.nav.copyTotal == 0 {
+				app.nav.copyUpdate = 0
+			}
+			app.ui.draw(app.nav)
+		case n := <-app.nav.moveCountChan:
+			app.nav.moveCount += n
+			if app.nav.moveUpdate++; app.nav.moveUpdate >= 1000 {
+				app.nav.moveUpdate = 0
+				app.ui.draw(app.nav)
+			}
+		case n := <-app.nav.moveTotalChan:
+			app.nav.moveTotal += n
+			if n < 0 {
+				app.nav.moveCount += n
+			}
+			if app.nav.moveTotal == 0 {
+				app.nav.moveUpdate = 0
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
