@@ -195,7 +195,7 @@ func (app *app) loop() {
 
 			return
 		case n := <-app.nav.copyBytesChan:
-			// n is usually 1024B so update roughly per 1024B x 1024 = 1MB copied
+			// n is usually 4096B so update roughly per 4096B x 1024 = 4MB copied
 			if app.nav.copyUpdate++; app.nav.copyUpdate >= 1024 {
 				app.nav.copyUpdate = 0
 				app.ui.draw(app.nav)

@@ -33,7 +33,7 @@ func copySize(srcs []string) (int64, error) {
 }
 
 func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
-	buf := make([]byte, 1024)
+	buf := make([]byte, 4096)
 
 	r, err := os.Open(src)
 	if err != nil {
