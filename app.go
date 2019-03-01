@@ -168,6 +168,11 @@ func (app *app) loop() {
 				continue
 			}
 
+			if app.nav.moveTotal > 0 {
+				app.ui.echoerr("quit: move operation in progress")
+				continue
+			}
+
 			log.Print("bye!")
 
 			if err := app.nav.writeMarks(); err != nil {
