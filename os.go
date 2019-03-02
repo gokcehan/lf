@@ -114,31 +114,6 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func pasteCommand(list []string, dstDir string, cp bool) *exec.Cmd {
-	var sh string
-	var args []string
-
-	if cp {
-		sh = "cp"
-		args = append(args, "-R")
-	} else {
-		sh = "mv"
-	}
-
-	// XXX: POSIX standard states that -i flag shall do nothing when the
-	// response is not affirmative. Since this command is run with a nil
-	// stdin, it should not give an affirmative answer and in return this
-	// command should not overwrite existing files. Our intention here is
-	// to use the standard -i flag in place of non-standard -n flag to
-	// avoid overwrites.
-	args = append(args, "-i")
-
-	args = append(args, list...)
-	args = append(args, dstDir)
-
-	return exec.Command(sh, args...)
-}
-
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", `$OPENER "$f"`}
 	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}

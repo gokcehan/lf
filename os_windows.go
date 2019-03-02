@@ -89,33 +89,6 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func pasteCommand(list []string, dstDir string, cp bool) *exec.Cmd {
-	var args []string
-
-	sh := "robocopy"
-	if !cp {
-		args = []string{"/move"}
-	}
-	for _, f := range list {
-		stat, err := os.Stat(f)
-		if err != nil {
-			log.Printf("getting file information: %s", err)
-			continue
-		}
-		base := filepath.Base(f)
-		dest := filepath.Dir(f)
-		if stat.IsDir() {
-			exec.Command(sh, append(args, f, filepath.Join(dstDir, base))...).Run()
-		} else {
-			exec.Command(sh, append(args, dest, dstDir, base)...).Run()
-		}
-	}
-
-	// TODO: return 0 on success
-
-	return exec.Command(sh, args...)
-}
-
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", "%OPENER% %f%"}
 	gOpts.keys["e"] = &execExpr{"$", "%EDITOR% %f%"}
