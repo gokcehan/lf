@@ -33,7 +33,7 @@ func appendTransliterate(base, norm string, uppercase bool) {
 	lenNorm := len(normRunes)
 	lenBase := len(baseRunes)
 	if lenNorm != lenBase {
-		panic("Base and normalized strings have differend lenght: base=" + strconv.Itoa(lenBase) + ", norm=" + strconv.Itoa(lenNorm)) // programmer error in constant lenght
+		panic("Base and normalized strings have differend length: base=" + strconv.Itoa(lenBase) + ", norm=" + strconv.Itoa(lenNorm)) // programmer error in constant length
 	}
 
 	for i, baseRune := range baseRunes {

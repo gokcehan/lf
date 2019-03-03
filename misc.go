@@ -133,11 +133,10 @@ func splitWord(s string) (word, rest string) {
 	return
 }
 
-// This function converts a size in bytes to a human readable form. For this
-// purpose metric suffixes are used (e.g. 1K = 1000). For values less than 10
-// the first significant digit is shown, otherwise it is hidden. Numbers are
-// always rounded down. For these reasons this function always show somewhat
-// smaller values but it should be fine for most human beings.
+// This function converts a size in bytes to a human readable form using metric
+// suffixes (e.g. 1K = 1000). For values less than 10 the first significant
+// digit is shown, otherwise it is hidden. Numbers are always rounded down.
+// This should be fine for most human beings.
 func humanize(size int64) string {
 	if size < 1000 {
 		return fmt.Sprintf("%dB", size)

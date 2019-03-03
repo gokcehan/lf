@@ -246,17 +246,13 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		return
 	}
 
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
-
 	if dir.loading {
-		fg = termbox.AttrReverse
-		win.print(2, 0, fg, bg, "loading...")
+		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "loading...")
 		return
 	}
 
 	if len(dir.files) == 0 {
-		fg = termbox.AttrReverse
-		win.print(2, 0, fg, bg, "empty")
+		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "empty")
 		return
 	}
 
@@ -267,8 +263,8 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		return
 	}
 
-	var lnwidth int = 0
-	var lnformat string = ""
+	var lnwidth int
+	var lnformat string
 
 	if gOpts.number || gOpts.relativenumber {
 		lnwidth = 1
@@ -279,7 +275,7 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 	}
 
 	for i, f := range dir.files[beg:end] {
-		fg, bg = colors.get(f)
+		fg, bg := colors.get(f)
 
 		if lnwidth > 0 {
 			var ln string
@@ -862,8 +858,6 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 						log.Printf("converting command count: %s", err)
 					}
 					count = c
-				} else {
-					count = 1
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
 				if e, ok := expr.(*callExpr); ok {
@@ -885,8 +879,6 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 						log.Printf("converting command count: %s", err)
 					}
 					count = c
-				} else {
-					count = 1
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
 				if e, ok := expr.(*callExpr); ok {
