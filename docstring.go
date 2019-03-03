@@ -57,17 +57,17 @@ The following commands are provided by lf with default keybindings:
 
 The following commands are provided by lf without default keybindings:
 
-    draw    draw the ui
-    load    load modified files and directories
-    sync    synchronize copied/cut files with server
-    echo    print arguments to the message line
-    echomsg same as echo but logging
-    echoerr same as echomsg but red color
-    cd      change working directory to the argument
-    select  change current file selection to the argument
-    source  read the configuration file in the argument
-    push    simulate key pushes given in the argument
-    delete  remove the current file or selected file(s)
+    draw     draw the ui
+    load     load modified files and directories
+    sync     synchronize copied/cut files with server
+    echo     print arguments to the message line
+    echomsg  same as echo but logging
+    echoerr  same as echomsg but red color
+    cd       change working directory to the argument
+    select   change current file selection to the argument
+    source   read the configuration file in the argument
+    push     simulate key pushes given in the argument
+    delete   remove the current file or selected file(s)
 
 The following command line commands are provided by lf with default
 keybindings:
