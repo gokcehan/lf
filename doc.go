@@ -16,117 +16,117 @@ Reference
 
 The following commands are provided by lf with default keybindings:
 
-    up                    (default 'k' and '<up>')
-    half-up               (default '<c-u>')
-    page-up               (default '<c-b>' and '<pgup>')
-    down                  (default 'j' and '<down>')
-    half-down             (default '<c-d>')
-    page-down             (default '<c-f>' and '<pgdn>')
-    updir                 (default 'h' and '<left>')
-    open                  (default 'l' and '<right>')
-    quit                  (default 'q')
-    top                   (default 'gg' and '<home>')
-    bottom                (default 'G' and '<end>')
-    toggle                (default '<space>')
-    invert                (default 'v')
-    unselect              (default 'u')
-    copy                  (default 'y')
-    cut                   (default 'd')
-    paste                 (default 'p')
-    clear                 (default 'c')
-    redraw                (default '<c-l>')
-    reload                (default '<c-r>')
-    read                  (default ':')
-    shell                 (default '$')
-    shell-pipe            (default '%')
-    shell-wait            (default '!')
-    shell-async           (default '&')
-    find                  (default 'f')
-    find-back             (default 'F')
-    find-next             (default ';')
-    find-prev             (default ',')
-    search                (default '/')
-    search-back           (default '?')
-    search-next           (default 'n')
-    search-prev           (default 'N')
-    mark-save             (default 'm')
-    mark-load             (default "'")
+    up                       (default 'k' and '<up>')
+    half-up                  (default '<c-u>')
+    page-up                  (default '<c-b>' and '<pgup>')
+    down                     (default 'j' and '<down>')
+    half-down                (default '<c-d>')
+    page-down                (default '<c-f>' and '<pgdn>')
+    updir                    (default 'h' and '<left>')
+    open                     (default 'l' and '<right>')
+    quit                     (default 'q')
+    top                      (default 'gg' and '<home>')
+    bottom                   (default 'G' and '<end>')
+    toggle                   (default '<space>')
+    invert                   (default 'v')
+    unselect                 (default 'u')
+    copy                     (default 'y')
+    cut                      (default 'd')
+    paste                    (default 'p')
+    clear                    (default 'c')
+    redraw                   (default '<c-l>')
+    reload                   (default '<c-r>')
+    read                     (default ':')
+    shell                    (default '$')
+    shell-pipe               (default '%')
+    shell-wait               (default '!')
+    shell-async              (default '&')
+    find                     (default 'f')
+    find-back                (default 'F')
+    find-next                (default ';')
+    find-prev                (default ',')
+    search                   (default '/')
+    search-back              (default '?')
+    search-next              (default 'n')
+    search-prev              (default 'N')
+    mark-save                (default 'm')
+    mark-load                (default "'")
 
 The following commands are provided by lf without default keybindings:
 
     draw    draw the ui
     load    load modified files and directories
-    sync    synchronizes copied/cut files with server
-    echo    prints its arguments to the message line
+    sync    synchronize copied/cut files with server
+    echo    print arguments to the message line
     echomsg same as echo but logging
     echoerr same as echomsg but red color
-    cd      changes working directory to its argument
-    select  changes current file selection to its argument
-    source  reads the configuration file in its argument
-    push    simulates key pushes given in its argument
-    delete  deletes the current file or selected file(s)
+    cd      change working directory to the argument
+    select  change current file selection to the argument
+    source  read the configuration file in the argument
+    push    simulate key pushes given in the argument
+    delete  remove the current file or selected file(s)
 
 The following command line commands are provided by lf with default
 keybindings:
 
-    cmd-escape            (default '<esc>')
-    cmd-complete          (default '<tab>')
-    cmd-enter             (default '<c-j>' and '<enter>')
-    cmd-history-next      (default '<c-n>')
-    cmd-history-prev      (default '<c-p>')
-    cmd-delete            (default '<c-d>' and '<delete>')
-    cmd-delete-back       (default '<bs>' and '<bs2>')
-    cmd-left              (default '<c-b>' and '<left>')
-    cmd-right             (default '<c-f>' and '<right>')
-    cmd-home              (default '<c-a>' and '<home>')
-    cmd-end               (default '<c-e>' and '<end>')
-    cmd-delete-home       (default '<c-u>')
-    cmd-delete-end        (default '<c-k>')
-    cmd-delete-unix-word  (default '<c-w>')
-    cmd-yank              (default '<c-y>')
-    cmd-transpose         (default '<c-t>')
-    cmd-interrupt         (default '<c-c>')
-    cmd-word              (default '<a-f>')
-    cmd-word-back         (default '<a-b>')
-    cmd-capitalize-word   (default '<a-c>')
-    cmd-delete-word       (default '<a-d>')
-    cmd-uppercase-word    (default '<a-u>')
-    cmd-lowercase-word    (default '<a-l>')
-    cmd-transpose-word    (default '<a-t>')
+    cmd-escape               (default '<esc>')
+    cmd-complete             (default '<tab>')
+    cmd-enter                (default '<c-j>' and '<enter>')
+    cmd-history-next         (default '<c-n>')
+    cmd-history-prev         (default '<c-p>')
+    cmd-delete               (default '<c-d>' and '<delete>')
+    cmd-delete-back          (default '<bs>' and '<bs2>')
+    cmd-left                 (default '<c-b>' and '<left>')
+    cmd-right                (default '<c-f>' and '<right>')
+    cmd-home                 (default '<c-a>' and '<home>')
+    cmd-end                  (default '<c-e>' and '<end>')
+    cmd-delete-home          (default '<c-u>')
+    cmd-delete-end           (default '<c-k>')
+    cmd-delete-unix-word     (default '<c-w>')
+    cmd-yank                 (default '<c-y>')
+    cmd-transpose            (default '<c-t>')
+    cmd-interrupt            (default '<c-c>')
+    cmd-word                 (default '<a-f>')
+    cmd-word-back            (default '<a-b>')
+    cmd-capitalize-word      (default '<a-c>')
+    cmd-delete-word          (default '<a-d>')
+    cmd-uppercase-word       (default '<a-u>')
+    cmd-lowercase-word       (default '<a-l>')
+    cmd-transpose-word       (default '<a-t>')
 
 The following options can be used to customize the behavior of lf:
 
-    anchorfind      boolean   (default on)
-    color256        boolean   (default off)
-    dircounts       boolean   (default off)
-    dirfirst        boolean   (default on)
-    drawbox         boolean   (default off)
-    globsearch      boolean   (default off)
-    hidden          boolean   (default off)
-    ignorecase      boolean   (default on)
-    ignoredia       boolean   (default off)
-    incsearch       boolean   (default off)
-    preview         boolean   (default on)
-    reverse         boolean   (default off)
-    smartcase       boolean   (default on)
-    smartdia        boolean   (default off)
-    wrapscan        boolean   (default on)
-    number          boolean   (default off)
-    relativenumber  boolean   (default off)
-    findlen         integer   (default 1) (zero to prompt until single match)
-    period          integer   (default 0) (zero to disable periodic loading)
-    scrolloff       integer   (default 0)
-    tabstop         integer   (default 8)
-    filesep         string    (default "\n")
-    ifs             string    (default '') (not exported if empty)
-    previewer       string    (default '') (not filtered if empty)
-    promptfmt       string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
-    shell           string    (default 'sh')
-    sortby          string    (default 'natural')
-    timefmt         string    (default 'Mon Jan _2 15:04:05 2006')
-    ratios          string    (default '1:2:3')
-    info            string    (default '')
-    shellopts       string    (default '')
+    anchorfind      boolean  (default on)
+    color256        boolean  (default off)
+    dircounts       boolean  (default off)
+    dirfirst        boolean  (default on)
+    drawbox         boolean  (default off)
+    globsearch      boolean  (default off)
+    hidden          boolean  (default off)
+    ignorecase      boolean  (default on)
+    ignoredia       boolean  (default off)
+    incsearch       boolean  (default off)
+    preview         boolean  (default on)
+    reverse         boolean  (default off)
+    smartcase       boolean  (default on)
+    smartdia        boolean  (default off)
+    wrapscan        boolean  (default on)
+    number          boolean  (default off)
+    relativenumber  boolean  (default off)
+    findlen         integer  (default 1) (zero to prompt until single match)
+    period          integer  (default 0) (zero to disable periodic loading)
+    scrolloff       integer  (default 0)
+    tabstop         integer  (default 8)
+    filesep         string   (default "\n")
+    ifs             string   (default '') (not exported if empty)
+    previewer       string   (default '') (not filtered if empty)
+    promptfmt       string   (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
+    shell           string   (default 'sh')
+    sortby          string   (default 'natural')
+    timefmt         string   (default 'Mon Jan _2 15:04:05 2006')
+    ratios          string   (default '1:2:3')
+    info            string   (default '')
+    shellopts       string   (default '')
 
 The following variables are exported for shell commands:
 
@@ -519,33 +519,48 @@ should not be needed for users.
 
 File Operations
 
-lf uses the underlying 'cp' and 'mv' shell commands for file operations. For
-this purpose, when you 'copy' a file, it doesn't actually copy the file on the
-disk, but only records its name to memory. The actual file operation takes
-place when you 'paste' in which case the 'cp' command is used. Similarly the
-'mv' command is used for 'cut' followed by 'paste'.
+lf uses its own builtin copy and move operations by default. These are
+implemented as asynchronous operations and progress is shown in the bottom
+ruler. These commands do not overwrite existing files or directories with the
+same name. Instead, a suffix that is compatible with '--backup=numbered' option
+in GNU cp is added to the new files or directories. Only file modes are
+preserved and all other attributes are ignored including ownership, timestamps,
+context, links, and xattr. Special files such as character and block devices,
+named pipes, and sockets are skipped and links are followed. Moving is
+performed using the rename operation of the underlying OS. This can fail to
+move files between different partitions when it needs to copy files. For these
+cases, users are expected to explicitly copy files and then delete the old ones
+manually. Operation errors are shown in the message line as well as the log
+file and they do not preemptively finish the corresponding file operation.
 
-You can customize these operations by defining a 'paste' command. This is a
-special command that is called when it is defined instead of the builtin
-implementation. The default behavior is similar to the following command:
+File operations can be performed on the current selected file or alternatively
+on multiple files by marking them first. When you 'copy' a file, lf doesn't
+actually copy the file on the disk, but only records its name to memory. The
+actual file copying takes place when you 'paste'. Similarly 'paste' after a
+'cut' operation moves the file.
+
+You can customize copy and move operations by defining a 'paste' command. This
+is a special command that is called when it is defined instead of the builtin
+implementation. You can use the following example as a starting point:
 
     cmd paste %{{
         load=$(lf -remote 'load')
         mode=$(echo "$load" | sed -n '1p')
         list=$(echo "$load" | sed '1d')
         if [ $mode = 'copy' ]; then
-            cp -R -n $list .
+            cp -R $list .
         elif [ $mode = 'move' ]; then
-            mv -n $list .
+            mv $list .
         fi
         lf -remote 'send load'
         lf -remote 'send clear'
     }}
 
-Some useful things are to use the backup option ('--backup') with 'cp' and 'mv'
-commands if they support it (i.e. GNU implementation), change the command type
-to asynchronous, or use 'rsync' command with progress bar option for copying
-and feed the progress to the client periodically with remote 'echo' calls.
+Some useful things to be considered are to use the backup ('--backup') and/or
+preserve attributes ('-a') options with 'cp' and 'mv' commands if they support
+it (i.e. GNU implementation), change the command type to asynchronous, or use
+'rsync' command with progress bar option for copying and feed the progress to
+the client periodically with remote 'echo' calls.
 
 By default, lf does not assign 'delete' command to a key to protect new users.
 You can customize file deletion by defining a 'delete' command. You can also
