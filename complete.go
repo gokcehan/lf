@@ -321,6 +321,44 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 	return
 }
 
+func completeFile(acc []rune) (matches []string, longestAcc []rune) {
+	s := string(acc)
+
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
+
+	files, err := ioutil.ReadDir(wd)
+	if err != nil {
+		log.Printf("reading directory: %s", err)
+	}
+
+	var longest string
+
+	for _, f := range files {
+		if !strings.HasPrefix(f.Name(), s) {
+			continue
+		}
+
+		matches = append(matches, f.Name())
+
+		if longest != "" {
+			longest = matchLongest(longest, f.Name())
+		} else if s != "" {
+			longest = f.Name()
+		}
+	}
+
+	if longest == "" {
+		longest = s
+	}
+
+	longestAcc = []rune(longest)
+
+	return
+}
+
 func completeShell(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)

@@ -839,10 +839,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = ""
 	case "cmd-complete":
 		var matches []string
-		if app.ui.cmdPrefix == ":" {
+		switch app.ui.cmdPrefix {
+		case ":":
 			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdAccLeft)
-		} else {
+		case "/", "?":
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdAccLeft)
+		case "$", "%", "!", "&":
 			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdAccLeft)
+		default:
+			return
 		}
 		app.ui.draw(app.nav)
 		if len(matches) > 1 {
