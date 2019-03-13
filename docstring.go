@@ -557,7 +557,7 @@ as well as the log file and they do not preemptively finish the
 corresponding file operation.
 
 File operations can be performed on the current selected file or
-alternatively on multiple files by marking them first. When you 'copy' a
+alternatively on multiple files by selecting them first. When you 'copy' a
 file, lf doesn't actually copy the file on the disk, but only records its
 name to memory. The actual file copying takes place when you 'paste'.
 Similarly 'paste' after a 'cut' operation moves the file.
