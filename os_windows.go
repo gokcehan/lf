@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"os/exec"
@@ -36,7 +37,7 @@ var (
 
 func init() {
 	if envOpener == "" {
-		envOpener = "start"
+		envOpener = `start ""`
 	}
 
 	if envEditor == "" {
@@ -115,4 +116,23 @@ func isExecutable(f os.FileInfo) bool {
 		}
 	}
 	return false
+}
+
+func exportFiles(f string, fs []string) {
+	envFile := fmt.Sprintf(`"%s"`, f)
+
+	var quotedFiles []string
+	for _, f := range fs {
+		quotedFiles = append(quotedFiles, fmt.Sprintf(`"%s"`, f))
+	}
+	envFiles := strings.Join(quotedFiles, gOpts.filesep)
+
+	os.Setenv("f", envFile)
+	os.Setenv("fs", envFiles)
+
+	if len(fs) == 0 {
+		os.Setenv("fx", envFile)
+	} else {
+		os.Setenv("fx", envFiles)
+	}
 }

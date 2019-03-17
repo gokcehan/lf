@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strings"
 )
 
 var (
@@ -132,4 +133,18 @@ func moveCursor(y, x int) {
 
 func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
+}
+
+func exportFiles(f string, fs []string) {
+	envFile := f
+	envFiles := strings.Join(fs, gOpts.filesep)
+
+	os.Setenv("f", envFile)
+	os.Setenv("fs", envFiles)
+
+	if len(fs) == 0 {
+		os.Setenv("fx", envFile)
+	} else {
+		os.Setenv("fx", envFiles)
+	}
 }

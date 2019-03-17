@@ -283,23 +283,14 @@ func (app *app) loop() {
 }
 
 func (app *app) exportFiles() {
-	var envFile string
+	var currFile string
 	if f, err := app.nav.currFile(); err == nil {
-		envFile = f.path
+		currFile = f.path
 	}
 
-	selections := app.nav.currSelections()
+	currSelections := app.nav.currSelections()
 
-	envFiles := strings.Join(selections, gOpts.filesep)
-
-	os.Setenv("f", envFile)
-	os.Setenv("fs", envFiles)
-
-	if len(selections) == 0 {
-		os.Setenv("fx", envFile)
-	} else {
-		os.Setenv("fx", envFiles)
-	}
+	exportFiles(currFile, currSelections)
 }
 
 func waitKey() error {
