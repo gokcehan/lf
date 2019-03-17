@@ -69,6 +69,8 @@ func init() {
 
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gHistoryPath = filepath.Join(data, "lf", "history")
+
+	exportEnvVars()
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {

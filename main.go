@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"runtime/pprof"
+	"strconv"
 )
 
 var (
@@ -40,6 +41,24 @@ func init() {
 	if envLevel == "" {
 		envLevel = "0"
 	}
+}
+
+func exportEnvVars() {
+	os.Setenv("id", strconv.Itoa(gClientID))
+
+	os.Setenv("OPENER", envOpener)
+	os.Setenv("EDITOR", envEditor)
+	os.Setenv("PAGER", envPager)
+	os.Setenv("SHELL", envShell)
+
+	level, err := strconv.Atoi(envLevel)
+	if err != nil {
+		log.Printf("reading lf level: %s", err)
+	}
+
+	level++
+
+	os.Setenv("LF_LEVEL", strconv.Itoa(level))
 }
 
 func startServer() {

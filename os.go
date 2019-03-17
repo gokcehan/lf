@@ -84,6 +84,8 @@ func init() {
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
 	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
+
+	exportEnvVars()
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {

@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -283,7 +282,7 @@ func (app *app) loop() {
 	}
 }
 
-func (app *app) exportVars() {
+func (app *app) exportFiles() {
 	var envFile string
 	if f, err := app.nav.currFile(); err == nil {
 		envFile = f.path
@@ -301,22 +300,6 @@ func (app *app) exportVars() {
 	} else {
 		os.Setenv("fx", envFiles)
 	}
-
-	os.Setenv("id", strconv.Itoa(gClientID))
-
-	os.Setenv("OPENER", envOpener)
-	os.Setenv("EDITOR", envEditor)
-	os.Setenv("PAGER", envPager)
-	os.Setenv("SHELL", envShell)
-
-	level, err := strconv.Atoi(envLevel)
-	if err != nil {
-		log.Printf("reading lf level: %s", err)
-	}
-
-	level++
-
-	os.Setenv("LF_LEVEL", strconv.Itoa(level))
 }
 
 func waitKey() error {
@@ -341,7 +324,7 @@ func waitKey() error {
 //     !       Yes   No     Yes    Yes     Yes     Pause and then resume
 //     &       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
-	app.exportVars()
+	app.exportFiles()
 
 	cmd := shellCommand(s, args)
 
