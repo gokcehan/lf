@@ -120,6 +120,7 @@ The following options can be used to customize the behavior of lf:
     period          integer  (default 0) (zero to disable periodic loading)
     scrolloff       integer  (default 0)
     tabstop         integer  (default 8)
+    errorfmt        string   (default "\033[7;31;47m%s\033[0m")
     filesep         string   (default "\n")
     ifs             string   (default ”) (not exported if empty)
     previewer       string   (default ”) (not filtered if empty)

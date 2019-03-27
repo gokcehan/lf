@@ -499,7 +499,7 @@ func (ui *ui) echomsgf(format string, a ...interface{}) {
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.msg = fmt.Sprintf("\033[7;31;47m%s\033[0m", msg)
+	ui.msg = fmt.Sprintf(gOpts.errorfmt, msg)
 	log.Printf("error: %s", msg)
 }
 

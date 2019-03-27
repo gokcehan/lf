@@ -118,6 +118,7 @@ var (
 		"period",
 		"scrolloff",
 		"tabstop",
+		"errorfmt",
 		"filesep",
 		"ifs",
 		"previewer",
