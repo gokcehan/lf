@@ -80,8 +80,8 @@ func init() {
 	gOpts.tabstop = 8
 	gOpts.errorfmt = "\033[7;31;47m%s\033[0m"
 	gOpts.filesep = "\n"
-	gOpts.ifs = nil
-	gOpts.previewer = nil
+	gOpts.ifs = ""
+	gOpts.previewer = ""
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m"
 	gOpts.shell = gDefaultShell
 	gOpts.timefmt = time.ANSIC
