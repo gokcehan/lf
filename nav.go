@@ -150,7 +150,7 @@ func (dir *dir) sort() {
 			return isHidden(dir.files[i])
 		})
 		for i, f := range dir.files {
-			if isHidden(f) {
+			if !isHidden(f) {
 				dir.files = dir.files[i:]
 				return
 			}
