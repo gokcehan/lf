@@ -181,6 +181,8 @@ func main() {
 			os.Exit(2)
 		}
 
+		exportEnvVars()
+
 		run()
 	}
 
