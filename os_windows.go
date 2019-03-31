@@ -116,6 +116,11 @@ func isExecutable(f os.FileInfo) bool {
 	return false
 }
 
+func isHidden(f os.FileInfo) bool {
+	// TODO: implement
+	return false
+}
+
 func exportFiles(f string, fs []string) {
 	envFile := fmt.Sprintf(`"%s"`, f)
 

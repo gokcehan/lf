@@ -133,6 +133,10 @@ func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
 }
 
+func isHidden(f os.FileInfo) bool {
+	return f.Name()[0] == '.'
+}
+
 func exportFiles(f string, fs []string) {
 	envFile := f
 	envFiles := strings.Join(fs, gOpts.filesep)
