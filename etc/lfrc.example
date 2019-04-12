@@ -46,6 +46,39 @@ cmd open ${{
 cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 map r push :rename<space>
 
+# interactively rename the selected files or all files in the directory
+cmd bulkrename !{{
+	tmp() { umask 077; mktemp /tmp/lf-bulkrename-index.XXXXXXXXXX; }
+	index_a="$(tmp)"
+	index_b="$(tmp)"
+	trap 'rm "$index_a" "$index_b"' EXIT INT QUIT
+	if [ -n "${fs:-}" ]; then
+		printf '%s\n' "$fs" > "$index_a"
+	else
+		ls -1Ap > "$index_a"
+	fi
+	cat "$index_a" > "$index_b"
+	"$EDITOR" "$index_b"
+	if [ "$(wc -l "$index_a" "$index_b" |
+		awk 'NR==1 {a=$1} NR==2 {b=$1} END {print a-b}' )" -ne 0 ]; then
+		echo "Number of lines must stay the same." >&2
+		exit 1
+	fi
+	tty="$(tty)"
+	line=0
+	paste -d "\n" "$index_a" "$index_b" | while read -r name; do
+		: $((line += 1))
+		if [ $((line % 2)) -eq 1 ]; then
+			a="$name"; continue
+		else
+			b="$name"
+		fi
+		[ "$a" = "$b" ] && continue
+		mv -vi -- "$a" "$b" < "$tty"
+	done
+}}
+map R bulkrename
+
 # make sure trash folder exists
 # %mkdir -p ~/.trash
 
