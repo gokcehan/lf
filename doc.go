@@ -106,6 +106,7 @@ The following options can be used to customize the behavior of lf:
     ignorecase      boolean  (default on)
     ignoredia       boolean  (default off)
     incsearch       boolean  (default off)
+		icons 					boolean  (default off)
     preview         boolean  (default on)
     reverse         boolean  (default off)
     smartcase       boolean  (default on)

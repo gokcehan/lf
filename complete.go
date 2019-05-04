@@ -63,6 +63,9 @@ var (
 	}
 
 	gOptWords = []string{
+		"icons",
+		"noicons",
+		"icons!",
 		"anchorfind",
 		"noanchorfind",
 		"anchorfind!",

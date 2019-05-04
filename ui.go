@@ -80,6 +80,222 @@ var gKeyVal = map[termbox.Key]string{
 	termbox.KeyBackspace2:     "<bs2>",
 }
 
+var gDirExactIcons = map[string]rune{
+
+	  ".git"                             : '',
+    "Desktop"                          : '',
+    "Documents"                        : '',
+    "Downloads"                        : '',
+    "Dotfiles"                         : '',
+    "Dropbox"                          : '',
+    "Music"                            : '',
+    "Pictures"                         : '',
+    "Public"                           : '',
+    "Templates"                        : '',
+    "Videos"                           : '',
+// Spanish
+    "Escritorio"                       : '',
+    "Documentos"                       : '',
+    "Descargas"                        : '',
+    "Música"                           : '',
+    "Imágenes"                         : '',
+    "Plantillas"                       : '',
+// French
+    "Bureau"                           : '',
+    "Images"                           : '',
+    "Musique"                          : '',
+    "Publique"                         : '',
+    "Téléchargements"                  : '',
+    "Vidéos"                           : '',
+// Portuguese
+    "Imagens"                          : '',
+    "Modelos"                          : '',
+    "Público"                          : '',
+    "Área de trabalho"                 : '',
+// Italian
+    "Documenti"                        : '',
+    "Immagini"                         : '',
+    "Pubblici"                         : '',
+    "Scaricati"                        : '',
+    "Scrivania"                        : '',
+    "Video"                            : '',
+// German
+    "Bilder"                           : '',
+    "Dokumente"                        : '',
+    "Musik"                            : '',
+    "Schreibtisch"                     : '',
+    "Vorlagen"                         : '',
+    "Öffentlich"                       : '',
+// Hungarian
+    "Dokumentumok"                     : '',
+    "Képek"                            : '',
+    "Modelli"                          : '',
+    "Zene"                             : '',
+    "Letöltések"                       : '',
+    "Számítógép"                        : '',
+		"Videók" 														: '',
+}
+
+var gExtensionIcons = map[string]rune{
+		"7z"       : '',
+    "a"        : '',
+    "ai"       : '',
+    "apk"      : '',
+    "asm"      : '',
+    "asp"      : '',
+    "aup"      : '',
+    "avi"      : '',
+    "bat"      : '',
+    "bmp"      : '',
+    "bz2"      : '',
+    "c"        : '',
+    "c++"      : '',
+    "cab"      : '',
+    "cbr"      : '',
+    "cbz"      : '',
+    "cc"       : '',
+    "class"    : '',
+    "clj"      : '',
+    "cljc"     : '',
+    "cljs"     : '',
+    "cmake"    : '',
+    "coffee"   : '',
+    "conf"     : '',
+    "cp"       : '',
+    "cpio"     : '',
+    "cpp"      : '',
+    "css"      : '',
+    "cue"      : '',
+    "cvs"      : '',
+    "cxx"      : '',
+    "d"        : '',
+    "dart"     : '',
+    "db"       : '',
+    "deb"      : '',
+    "diff"     : '',
+    "dll"      : '',
+    "doc"      : '',
+    "docx"     : '',
+    "dump"     : '',
+    "edn"      : '',
+    "efi"      : '',
+    "ejs"      : '',
+    "elf"      : '',
+    "epub"     : '',
+    "erl"      : '',
+    "exe"      : '',
+    "f#"       : '',
+    "fifo"     : '|',
+    "fish"     : '',
+    "flac"     : '',
+    "flv"      : '',
+    "fs"       : '',
+    "fsi"      : '',
+    "fsscript" : '',
+    "fsx"      : '',
+    "gem"      : '',
+    "gif"      : '',
+    "go"       : '',
+    "gz"       : '',
+    "gzip"     : '',
+    "h"        : '',
+    "hbs"      : '',
+    "hrl"      : '',
+    "hs"       : '',
+    "htaccess" : '',
+    "htpasswd" : '',
+    "htm"      : '',
+    "html"     : '',
+    "ico"      : '',
+    "img"      : '',
+    "ini"      : '',
+    "iso"      : '',
+    "jar"      : '',
+    "java"     : '',
+    "jl"       : '',
+    "jpeg"     : '',
+    "jpg"      : '',
+    "js"       : '',
+    "json"     : '',
+    "jsx"      : '',
+    "key"      : '',
+    "less"     : '',
+    "lha"      : '',
+    "lhs"      : '',
+    "log"      : '',
+    "lua"      : '',
+    "lzh"      : '',
+    "lzma"     : '',
+    "m4a"      : '',
+    "m4v"      : '',
+    "markdown" : '',
+    "md"       : '',
+    "mkv"      : '',
+    "ml"       : 'λ',
+    "mli"      : 'λ',
+    "mov"      : '',
+    "mp3"      : '',
+    "mp4"      : '',
+    "mpeg"     : '',
+    "mpg"      : '',
+    "msi"      : '',
+    "mustache" : '',
+    "o"        : '',
+    "ogg"      : '',
+    "pdf"      : '',
+    "php"      : '',
+    "pl"       : '',
+    "pm"       : '',
+    "png"      : '',
+    "pub"      : '',
+    "ppt"      : '',
+    "pptx"     : '',
+    "psb"      : '',
+    "psd"      : '',
+    "py"       : '',
+    "pyc"      : '',
+    "pyd"      : '',
+    "pyo"      : '',
+    "rar"      : '',
+    "rb"       : '',
+    "rc"       : '',
+    "rlib"     : '',
+    "rom"      : '',
+    "rpm"      : '',
+    "rs"       : '',
+    "rss"      : '',
+    "rtf"      : '',
+    "s"        : '',
+    "so"       : '',
+    "scala"    : '',
+    "scss"     : '',
+    "sh"       : '',
+    "slim"     : '',
+    "sln"      : '',
+    "sql"      : '',
+    "styl"     : '',
+    "suo"      : '',
+    "t"        : '',
+    "tar"      : '',
+    "tgz"      : '',
+    "ts"       : '',
+    "twig"     : '',
+    "vim"      : '',
+    "vimrc"    : '',
+    "wav"      : '',
+    "webm"     : '',
+    "xbps"     : '',
+    "xhtml"    : '',
+    "xls"      : '',
+    "xlsx"     : '',
+    "xml"      : '',
+    "xul"      : '',
+    "xz"       : '',
+    "yaml"     : '',
+    "yml"      : '',
+		"zip" 		 : '',
+}
+
 var gValKey map[string]termbox.Key
 
 func init() {
@@ -241,6 +457,31 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
+func getEmoji(f *file) rune{
+
+	if f.IsDir() {
+		if val, ok := gDirExactIcons[f.Name()]; ok{
+			return val
+		}else{
+			return ''
+		}
+		
+	}else{
+		li := strings.LastIndex(f.Name(),".")
+		if li == -1{
+			return ''
+		}
+		var ext = f.Name()[li+1:]
+		if icon, ok := gExtensionIcons[ext]; ok{
+			return icon
+		}else{
+			return ''
+		}
+
+	}
+
+}
+
 func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]bool, colors colorMap) {
 	if win.w < 5 || dir == nil {
 		return
@@ -312,6 +553,12 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		var s []rune
 
 		s = append(s, ' ')
+
+		if gOpts.icons{
+			var emoji = getEmoji(f)
+			s = append(s, emoji);
+			s = append(s, ' ')
+		}
 
 		for _, r := range f.Name() {
 			s = append(s, r)

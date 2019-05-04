@@ -20,6 +20,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.anchorfind = false
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
+	case "icons":
+		gOpts.icons = true
+	case "noicons":
+		gOpts.icons = false
+	case "icons!":
+		gOpts.icons = !gOpts.icons
 	case "color256":
 		gOpts.color256 = true
 		setColorMode()
