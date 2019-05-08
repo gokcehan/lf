@@ -37,6 +37,7 @@ var gOpts struct {
 	ignoredia      bool
 	smartdia       bool
 	wrapscan       bool
+	wrapscroll     bool
 	number         bool
 	relativenumber bool
 	findlen        int
@@ -72,6 +73,7 @@ func init() {
 	gOpts.ignoredia = false
 	gOpts.smartdia = false
 	gOpts.wrapscan = true
+	gOpts.wrapscroll = false
 	gOpts.number = false
 	gOpts.relativenumber = false
 	gOpts.findlen = 1
