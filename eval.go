@@ -143,6 +143,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscan = false
 	case "wrapscan!":
 		gOpts.wrapscan = !gOpts.wrapscan
+	case "wrapscroll":
+		gOpts.wrapscroll = true
+	case "nowrapscroll":
+		gOpts.wrapscroll = false
+	case "wrapscroll!":
+		gOpts.wrapscroll = !gOpts.wrapscroll
 	case "number":
 		gOpts.number = true
 	case "nonumber":

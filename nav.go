@@ -445,6 +445,9 @@ func (nav *nav) up(dist int) {
 	dir := nav.currDir()
 
 	if dir.ind == 0 {
+		if gOpts.wrapscroll {
+			nav.bottom()
+		}
 		return
 	}
 
@@ -462,6 +465,9 @@ func (nav *nav) down(dist int) {
 	maxind := len(dir.files) - 1
 
 	if dir.ind >= maxind {
+		if gOpts.wrapscroll {
+			nav.top()
+		}
 		return
 	}
 

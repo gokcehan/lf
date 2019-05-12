@@ -111,6 +111,7 @@ The following options can be used to customize the behavior of lf:
     smartcase       boolean  (default on)
     smartdia        boolean  (default off)
     wrapscan        boolean  (default on)
+    wrapscroll      boolean  (default off)
     number          boolean  (default off)
     relativenumber  boolean  (default off)
     findlen         integer  (default 1) (zero to prompt until single match)
