@@ -949,7 +949,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuBuf = nil
 			app.ui.cmdAccLeft = nil
 			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
+			app.ui.cmdPrefix = ":"
 			return
 		}
 		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
