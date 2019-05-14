@@ -370,6 +370,13 @@ func update(app *app) {
 	}
 }
 
+func normal(app *app) {
+	app.ui.menuBuf = nil
+	app.ui.cmdAccLeft = nil
+	app.ui.cmdAccRight = nil
+	app.ui.cmdPrefix = ""
+}
+
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
@@ -403,10 +410,7 @@ func insert(app *app, arg string) {
 			}
 		}
 
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 	case app.ui.cmdPrefix == "find-back: ":
 		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
 
@@ -435,15 +439,9 @@ func insert(app *app, arg string) {
 			}
 		}
 
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 	case app.ui.cmdPrefix == "delete?[y/N]: ":
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 
 		if arg == "y" {
 			if err := app.nav.del(); err != nil {
@@ -456,10 +454,7 @@ func insert(app *app, arg string) {
 			}
 		}
 	case app.ui.cmdPrefix == "mark-save: ":
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 
 		wd, err := os.Getwd()
 		if err != nil {
@@ -468,10 +463,7 @@ func insert(app *app, arg string) {
 		}
 		app.nav.marks[arg] = wd
 	case app.ui.cmdPrefix == "mark-load: ":
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 
 		wd, err := os.Getwd()
 		if err != nil {
@@ -501,30 +493,51 @@ func insert(app *app, arg string) {
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
 	case "up":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.up(e.count)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "half-up":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.up(e.count * app.nav.height / 2)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "page-up":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.up(e.count * app.nav.height)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "down":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.down(e.count)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "half-down":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.down(e.count * app.nav.height / 2)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "page-down":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.down(e.count * app.nav.height)
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "updir":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		for i := 0; i < e.count; i++ {
 			if err := app.nav.updir(); err != nil {
 				app.ui.echoerrf("%s", err)
@@ -534,6 +547,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "open":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		curr, err := app.nav.currFile()
 		if err != nil {
 			app.ui.echoerrf("opening: %s", err)
@@ -841,10 +857,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
 		}
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 	case "cmd-complete":
 		var matches []string
 		switch app.ui.cmdPrefix {
@@ -946,10 +959,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.cmdHistoryInd--
 		}
 		if app.cmdHistoryInd == 0 {
-			app.ui.menuBuf = nil
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdPrefix = ""
+			normal(app)
 			return
 		}
 		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
@@ -1035,10 +1045,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.cmd != nil {
 			app.cmd.Process.Kill()
 		}
-		app.ui.menuBuf = nil
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
-		app.ui.cmdPrefix = ""
+		normal(app)
 	case "cmd-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
