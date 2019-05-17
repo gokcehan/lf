@@ -244,11 +244,9 @@ The following command prefixes are used by lf:
     %  shell-pipe      shell command running with the ui
     !  shell-wait      shell command waiting for key press
     &  shell-async     shell command running asynchronously
-    /  search          search file in current directory
-    ?  search-back     search file in the reverse order
 .EE
 .PP
-The same evaluator is used for the command line and the configuration file for read and shell commands. The difference is that prefixes are not necessary in the command line. Instead, different modes are provided to read corresponding commands. These modes are mapped to the prefix keys above by default. Searching commands are only used from the command line.
+The same evaluator is used for the command line and the configuration file for read and shell commands. The difference is that prefixes are not necessary in the command line. Instead, different modes are provided to read corresponding commands. These modes are mapped to the prefix keys above by default.
 .SH SYNTAX
 Characters from '#' to newline are comments and ignored:
 .PP
@@ -559,7 +557,14 @@ By default, lf does not assign 'delete' command to a key to protect new users. Y
 .SH SEARCHING FILES
 There are two mechanisms implemented in lf to search a file in the current directory. Searching is the traditional method to move the selection to a file matching a given pattern. Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 .PP
-Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search.
+Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search. Alternatively, you can also map some other commands with 'cmap' to accept the search and execute the command immediately afterwards. Possible candidates are 'up', 'down' and their variants, 'updir', and 'open' commands. For example, you can use arrow keys to finish the search with the following mappings:
+.PP
+.EX
+    cmap <up> up
+    cmap <down> down
+    cmap <left> updir
+    cmap <right> open
+.EE
 .PP
 Finding mechanism is implemented with commands 'find' (default 'f'), 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default ','). You can disable 'anchorfind' option to match a pattern at an arbitrary position in the filename instead of the beginning. You can set the number of keys to match using 'findlen' option. If you set this value to zero, then the the keys are read until there is only a single match. Default values of these two options are set to jump to the first file with the given initial.
 .PP

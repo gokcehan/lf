@@ -215,14 +215,11 @@ The following command prefixes are used by lf:
     %  shell-pipe      shell command running with the ui
     !  shell-wait      shell command waiting for key press
     &  shell-async     shell command running asynchronously
-    /  search          search file in current directory
-    ?  search-back     search file in the reverse order
 
 The same evaluator is used for the command line and the configuration file for
 read and shell commands. The difference is that prefixes are not necessary in
 the command line. Instead, different modes are provided to read corresponding
-commands. These modes are mapped to the prefix keys above by default. Searching
-commands are only used from the command line.
+commands. These modes are mapped to the prefix keys above by default.
 
 Syntax
 
@@ -584,7 +581,16 @@ Globbing supports '*' to match any sequence, '?' to match any character, and
 '[...]' or '[^...] to match character sets or ranges. You can enable
 'incsearch' option to jump to the current match at each keystroke while typing.
 In this mode, you can either use 'cmd-enter' to accept the search or use
-'cmd-escape' to cancel the search.
+'cmd-escape' to cancel the search. Alternatively, you can also map some other
+commands with 'cmap' to accept the search and execute the command immediately
+afterwards. Possible candidates are 'up', 'down' and their variants, 'updir',
+and 'open' commands. For example, you can use arrow keys to finish the search
+with the following mappings:
+
+    cmap <up> up
+    cmap <down> down
+    cmap <left> updir
+    cmap <right> open
 
 Finding mechanism is implemented with commands 'find' (default 'f'),
 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default
