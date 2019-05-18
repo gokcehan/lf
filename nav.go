@@ -768,6 +768,9 @@ func (nav *nav) cd(wd string) error {
 }
 
 func (nav *nav) sel(path string) error {
+	path = strings.Replace(path, "~", gUser.HomeDir, -1)
+	path = filepath.Clean(path)
+
 	lstat, err := os.Stat(path)
 	if err != nil {
 		return fmt.Errorf("select: %s", err)
