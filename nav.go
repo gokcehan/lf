@@ -773,6 +773,12 @@ func (nav *nav) sel(path string) error {
 		return fmt.Errorf("select: %s", err)
 	}
 
+	dir := filepath.Dir(path)
+
+	if err := nav.cd(dir); err != nil {
+		return fmt.Errorf("select: %s", err)
+	}
+
 	base := filepath.Base(path)
 
 	last := nav.dirs[len(nav.dirs)-1]
