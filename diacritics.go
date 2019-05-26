@@ -2,7 +2,7 @@ package main
 
 import (
 	"strconv"
-	"strings"
+	"unicode"
 )
 
 var normMap map[rune]rune
@@ -14,19 +14,17 @@ func init() {
 	appendTransliterate(
 		"ěřůøĉĝĥĵŝŭèùÿėįųāēīūļķņģőűëïąćęłńśźżõșțčďĺľňŕšťýžéíñóúüåäöçîşûğăâđêôơưáàãảạ",
 		"eruocghjsueuyeiuaeiulkngoueiacelnszzostcdllnrstyzeinouuaaocisugaadeoouaaaaa",
-		true,
 	)
 
 	// Vietnamese
 	appendTransliterate(
 		"áạàảãăắặằẳẵâấậầẩẫéẹèẻẽêếệềểễiíịìỉĩoóọòỏõôốộồổỗơớợờởỡúụùủũưứựừửữyýỵỳỷỹđ",
 		"aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiioooooooooooooooooouuuuuuuuuuuyyyyyyd",
-		true,
 	)
 
 }
 
-func appendTransliterate(base, norm string, uppercase bool) {
+func appendTransliterate(base, norm string) {
 	normRunes := []rune(norm)
 	baseRunes := []rune(base)
 
@@ -36,24 +34,20 @@ func appendTransliterate(base, norm string, uppercase bool) {
 		panic("Base and normalized strings have differend length: base=" + strconv.Itoa(lenBase) + ", norm=" + strconv.Itoa(lenNorm)) // programmer error in constant length
 	}
 
-	for i, baseRune := range baseRunes {
-		normMap[baseRune] = normRunes[i]
-	}
+	for i := 0; i < lenBase; i++ {
+		normMap[baseRunes[i]] = normRunes[i]
 
-	if uppercase {
-		upperBase := strings.ToUpper(base)
-		upperNorm := strings.ToUpper(norm)
-		normRune := []rune(upperNorm)
-		for i, baseRune := range []rune(upperBase) {
-			normMap[baseRune] = normRune[i]
-		}
+		baseUpper := unicode.ToUpper(baseRunes[i])
+		normUpper := unicode.ToUpper(normRunes[i])
+
+		normMap[baseUpper] = normUpper
 	}
 }
 
 // Remove diacritics and make lowercase.
 func removeDiacritics(baseString string) string {
 	var normalizedRunes []rune
-	for _, baseRune := range []rune(baseString) {
+	for _, baseRune := range baseString {
 		if normRune, ok := normMap[baseRune]; ok {
 			normalizedRunes = append(normalizedRunes, normRune)
 		} else {
