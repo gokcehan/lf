@@ -108,10 +108,18 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
 	case "preview":
+		if len(gOpts.ratios) < 2 {
+			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+			return
+		}
 		gOpts.preview = true
 	case "nopreview":
 		gOpts.preview = false
 	case "preview!":
+		if len(gOpts.ratios) < 2 {
+			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+			return
+		}
 		gOpts.preview = !gOpts.preview
 	case "reverse":
 		gOpts.sortType.option |= reverseSort
