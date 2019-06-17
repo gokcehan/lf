@@ -568,6 +568,7 @@ func (nav *nav) invert() {
 func (nav *nav) unselect() {
 	nav.selections = make(map[string]int)
 	nav.selectionInd = 0
+    nav.saves = make(map[string]bool)
 }
 
 func (nav *nav) save(cp bool) error {
