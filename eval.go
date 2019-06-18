@@ -833,6 +833,19 @@ func (e *callExpr) eval(app *app, args []string) {
 		if wd != path {
 			app.nav.marks["'"] = wd
 		}
+    case "glob-select":
+		if len(e.args) != 1 {
+			app.ui.echoerr("glob-select: requires a pattern to match")
+			return
+		}
+
+        app.nav.unselect()
+
+		if err := app.nav.globSel(e.args[0]); err != nil {
+			app.ui.echoerrf("%s", err)
+			return
+		}
+
 	case "source":
 		if len(e.args) != 1 {
 			app.ui.echoerr("source: requires an argument")
