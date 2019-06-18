@@ -62,6 +62,7 @@ The following commands are provided by lf without default keybindings:
     echoerr  same as echomsg but red color
     cd       change working directory to the argument
     select   change current file selection to the argument
+    glob-select select files that match the given glob
     source   read the configuration file in the argument
     push     simulate key pushes given in the argument
     delete   remove the current file or selected file(s)
