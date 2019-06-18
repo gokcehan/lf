@@ -795,24 +795,24 @@ func (nav *nav) sel(path string) error {
 }
 
 func (nav *nav) globSel(pattern string) error {
-    curDir := nav.currDir()
-    anyMatches := false
+    	curDir := nav.currDir()
+    	anyMatches := false
 
-    for i := 0; i < len(curDir.files); i++ {
-        match, err := filepath.Match(pattern, curDir.files[i].Name())
+    	for i := 0; i < len(curDir.files); i++ {
+        	match, err := filepath.Match(pattern, curDir.files[i].Name())
 
-        if err != nil {
-            return fmt.Errorf("glob-select: %s", err)
-        }
-        if match {
-            anyMatches = true
-            nav.toggleSelection(filepath.Join(curDir.path, curDir.files[i].Name()))
-        }
-    }
-    if !anyMatches {
-        return fmt.Errorf("glob-select: pattern not found: %s", pattern)
-    }
-    return nil
+        	if err != nil {
+            		return fmt.Errorf("glob-select: %s", err)
+        	}
+        	if match {
+            		anyMatches = true
+            		nav.toggleSelection(filepath.Join(curDir.path, curDir.files[i].Name()))
+        	}
+    	}
+    	if !anyMatches {
+        	return fmt.Errorf("glob-select: pattern not found: %s", pattern)
+    	}
+    	return nil
 }
 
 func findMatch(name, pattern string) bool {
