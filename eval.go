@@ -839,7 +839,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-        app.nav.unselect()
+        	app.nav.unselect()
 
 		if err := app.nav.globSel(e.args[0]); err != nil {
 			app.ui.echoerrf("%s", err)
