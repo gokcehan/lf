@@ -58,6 +58,8 @@ var (
 		"echoerr",
 		"cd",
 		"select",
+		"glob-select",
+		"glob-unselect",
 		"source",
 		"push",
 	}
