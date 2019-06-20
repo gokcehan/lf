@@ -833,7 +833,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if wd != path {
 			app.nav.marks["'"] = wd
 		}
-    case "glob-select":
+	case "glob-select":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-select: requires a pattern to match")
 			return
