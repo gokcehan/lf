@@ -59,6 +59,7 @@ var (
 		"cd",
 		"select",
 		"glob-select",
+		"glob-unselect",
 		"source",
 		"push",
 	}

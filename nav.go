@@ -794,7 +794,7 @@ func (nav *nav) sel(path string) error {
 	return nil
 }
 
-func (nav *nav) globSel(pattern string) error {
+func (nav *nav) globSel(pattern string, invert bool) error {
 	curDir := nav.currDir()
 	anyMatches := false
 
@@ -807,7 +807,7 @@ func (nav *nav) globSel(pattern string) error {
 		if match {
 			anyMatches = true
 			fpath := filepath.Join(curDir.path, curDir.files[i].Name())
-			if _, ok := nav.selections[fpath]; !ok {
+			if _, ok := nav.selections[fpath]; ok == invert {
 				nav.toggleSelection(fpath)
 			}
 		}
