@@ -843,10 +843,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("%s", err)
 			return
 		}
-    case "glob-unselect":
+	case "glob-unselect":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-unselect: requires a pattern to match")
-        }
+		}
 
 		if err := app.nav.globSel(e.args[0], true); err != nil {
 			app.ui.echoerrf("%s", err)
