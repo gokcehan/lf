@@ -806,7 +806,10 @@ func (nav *nav) globSel(pattern string) error {
 		}
 		if match {
 			anyMatches = true
-			nav.toggleSelection(filepath.Join(curDir.path, curDir.files[i].Name()))
+			fpath := filepath.Join(curDir.path, curDir.files[i].Name())
+			if _, ok := nav.selections[fpath]; !ok {
+				nav.toggleSelection(fpath)
+			}
 		}
 	}
 	if !anyMatches {
