@@ -67,6 +67,7 @@ The following commands are provided by lf without default keybindings:
     select   change current file selection to the argument
     glob-select select files that match the given glob
     glob-unselect unselect files that match the given glob
+    mark-clear remove the marks given as argument or all marks if no argument
     source   read the configuration file in the argument
     push     simulate key pushes given in the argument
     delete   remove the current file or selected file(s)
