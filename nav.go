@@ -990,6 +990,9 @@ func (nav *nav) clearMarks(badMarks []string) (string, error) {
 		remoteMsg = "mark-clear"
 	} else { // clear the marks supplied in the arguments
 		for _, v := range badMarks {
+			if len(v) != 1 {
+				return "", fmt.Errorf("wrong argument (must be one character): %s", v)
+			}
 			if _, ok := nav.marks[v]; ok {
 				delete(nav.marks, v)
 				if remoteMsg == "" {
