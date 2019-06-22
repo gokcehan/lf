@@ -975,6 +975,33 @@ func (nav *nav) searchPrev() error {
 	return nil
 }
 
+func (nav *nav) clearMarks(badMarks []string) (string, error) {
+	if len(nav.marks) == 0 { // to stop recursive remote calls
+		return "", nil
+	}
+	remoteMsg := ""
+	if len(badMarks) == 0 {
+		f, err := os.Create(gMarksPath)
+		if err != nil {
+			return "", fmt.Errorf("recreating marks file: %s", err)
+		}
+		defer f.Close()
+		nav.marks = make(map[string]string)
+		remoteMsg = "mark-clear"
+	} else {
+		for _, v := range badMarks {
+			if _, ok := nav.marks[v]; ok {
+				delete(nav.marks, v)
+				if remoteMsg == "" {
+					remoteMsg = "mark-clear"
+				}
+				remoteMsg += " " + v
+			}
+		}
+	}
+	return remoteMsg, nil
+}
+
 func (nav *nav) readMarks() error {
 	f, err := os.Open(gMarksPath)
 	if os.IsNotExist(err) {
