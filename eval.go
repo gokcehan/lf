@@ -470,7 +470,6 @@ func insert(app *app, arg string) {
 			return
 		}
 		app.nav.marks[arg] = wd
-
 	case app.ui.cmdPrefix == "mark-load: ":
 		normal(app)
 
