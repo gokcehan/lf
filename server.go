@@ -113,6 +113,7 @@ func handleConn(c net.Conn) {
 					}
 				}
 			}
+
 		case "quit":
 			gQuitChan <- true
 			for _, c := range gConnList {
