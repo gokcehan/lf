@@ -980,15 +980,7 @@ func (nav *nav) clearMarks(badMarks []string) (string, error) {
 		return "", nil
 	}
 	remoteMsg := ""         // msg that needs to be sent to the server
-	if len(badMarks) == 0 { // clear all marks
-		f, err := os.Create(gMarksPath)
-		if err != nil {
-			return "", fmt.Errorf("recreating marks file: %s", err)
-		}
-		defer f.Close()
-		nav.marks = make(map[string]string)
-		remoteMsg = "mark-clear"
-	} else { // clear the marks supplied in the arguments
+	if len(badMarks) != 0 { // clear the marks supplied in the arguments
 		for _, v := range badMarks {
 			if len(v) != 1 {
 				return "", fmt.Errorf("wrong argument (must be one character): %s", v)
@@ -1000,6 +992,17 @@ func (nav *nav) clearMarks(badMarks []string) (string, error) {
 				}
 				remoteMsg += " " + v
 			}
+		}
+	}
+	if len(badMarks) == 0 || len(nav.marks) == 0 { // clear all marks
+		f, err := os.Create(gMarksPath)
+		if err != nil {
+			return "", fmt.Errorf("recreating marks file: %s", err)
+		}
+		defer f.Close()
+		nav.marks = make(map[string]string)
+		if remoteMsg == "" {
+			remoteMsg = "mark-clear"
 		}
 	}
 	return remoteMsg, nil
