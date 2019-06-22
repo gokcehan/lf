@@ -772,9 +772,15 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("mark-clear: %s", err)
 			return
 		}
-		app.nav.writeMarks()
+		if err := app.nav.writeMarks(); err != nil {
+			app.ui.echoerrf("mark-clear: %s", err)
+			return
+		}
 		if msg != "" {
-			remote("send " + msg)
+			if err := remote("send " + msg); err != nil {
+				app.ui.echoerrf("mark-clear: %s", err)
+				return
+			}
 		}
 	case "sync":
 		if err := app.nav.sync(); err != nil {

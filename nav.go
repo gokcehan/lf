@@ -979,7 +979,7 @@ func (nav *nav) clearMarks(badMarks []string) (string, error) {
 	if len(nav.marks) == 0 { // to stop infinite remote calls
 		return "", nil
 	}
-	remoteMsg := "" // msg that needs to be sent to the server
+	remoteMsg := ""         // msg that needs to be sent to the server
 	if len(badMarks) == 0 { // clear all marks
 		f, err := os.Create(gMarksPath)
 		if err != nil {
