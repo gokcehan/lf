@@ -767,19 +767,27 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
 	case "mark-clear":
-		msg, err := app.nav.clearMarks(e.args)
+		shouldRemote, err := app.nav.clearMarks()
 		if err != nil {
 			app.ui.echoerrf("mark-clear: %s", err)
 			return
 		}
-		if err := app.nav.writeMarks(); err != nil {
-			app.ui.echoerrf("mark-clear: %s", err)
-			return
-		}
-		if msg != "" {
-			if err := remote("send " + msg); err != nil {
+		if shouldRemote {
+			if err := remote("send mark-clear"); err != nil {
 				app.ui.echoerrf("mark-clear: %s", err)
 				return
+			}
+		}
+	case "mark-remove":
+		for _, v := range e.args {
+			if shouldRemote, err := app.nav.removeMark(v); err != nil {
+				app.ui.echoerrf("mark-remove: %s", err)
+				return
+			} else if shouldRemote {
+				if err := remote("send mark-remove " + v); err != nil {
+					app.ui.echoerrf("mark-remove: %s", err)
+					return
+				}
 			}
 		}
 	case "sync":

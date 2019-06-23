@@ -52,6 +52,7 @@ var (
 		"search-prev",
 		"mark-save",
 		"mark-clear",
+		"mark-remove",
 		"mark-load",
 		"sync",
 		"echo",

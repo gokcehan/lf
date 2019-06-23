@@ -975,37 +975,38 @@ func (nav *nav) searchPrev() error {
 	return nil
 }
 
-func (nav *nav) clearMarks(badMarks []string) (string, error) {
+func (nav *nav) clearMarks() (bool, error) {
 	if len(nav.marks) == 0 { // to stop infinite remote calls
-		return "", nil
+		return false, nil
 	}
-	remoteMsg := ""         // msg that needs to be sent to the server
-	if len(badMarks) != 0 { // clear the marks supplied in the arguments
-		for _, v := range badMarks {
-			if len(v) != 1 {
-				return "", fmt.Errorf("wrong argument (must be one character): %s", v)
-			}
-			if _, ok := nav.marks[v]; ok {
-				delete(nav.marks, v)
-				if remoteMsg == "" {
-					remoteMsg = "mark-clear"
-				}
-				remoteMsg += " " + v
-			}
-		}
+    resetMarksFile()
+	nav.marks = make(map[string]string)
+	return true, nil
+}
+
+func (nav *nav) removeMark(mark string) (bool, error) {
+	if len(mark) != 1 {
+		return false, fmt.Errorf("wrong argument (must be one character): %s", mark)
 	}
-	if len(badMarks) == 0 || len(nav.marks) == 0 { // clear all marks
-		f, err := os.Create(gMarksPath)
-		if err != nil {
-			return "", fmt.Errorf("recreating marks file: %s", err)
-		}
-		defer f.Close()
-		nav.marks = make(map[string]string)
-		if remoteMsg == "" {
-			remoteMsg = "mark-clear"
-		}
+	_, ok := nav.marks[mark]
+	if ok {
+		delete(nav.marks, mark)
 	}
-	return remoteMsg, nil
+    if len(nav.marks) == 0 { // writeMarks will not process these marks
+        if err := resetMarksFile(); err != nil {
+            return false, err
+        }
+    }
+	return ok, nil
+}
+
+func resetMarksFile() error {
+	f, err := os.Create(gMarksPath)
+	if err != nil {
+		return fmt.Errorf("recreating marks file: %s", err)
+	}
+	f.Close()
+    return nil
 }
 
 func (nav *nav) readMarks() error {
@@ -1036,10 +1037,6 @@ func (nav *nav) readMarks() error {
 func (nav *nav) writeMarks() error {
 	if len(nav.marks) == 0 {
 		return nil
-	}
-
-	if err := nav.readMarks(); err != nil {
-		return fmt.Errorf("reading marks file: %s", err)
 	}
 
 	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
