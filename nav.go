@@ -979,7 +979,7 @@ func (nav *nav) clearMarks() (bool, error) {
 	if len(nav.marks) == 0 { // to stop infinite remote calls
 		return false, nil
 	}
-    resetMarksFile()
+	resetMarksFile()
 	nav.marks = make(map[string]string)
 	return true, nil
 }
@@ -992,11 +992,11 @@ func (nav *nav) removeMark(mark string) (bool, error) {
 	if ok {
 		delete(nav.marks, mark)
 	}
-    if len(nav.marks) == 0 { // writeMarks will not process these marks
-        if err := resetMarksFile(); err != nil {
-            return false, err
-        }
-    }
+	if len(nav.marks) == 0 { // writeMarks will not process these marks
+		if err := resetMarksFile(); err != nil {
+			return false, err
+		}
+	}
 	return ok, nil
 }
 
@@ -1006,7 +1006,7 @@ func resetMarksFile() error {
 		return fmt.Errorf("recreating marks file: %s", err)
 	}
 	f.Close()
-    return nil
+	return nil
 }
 
 func (nav *nav) readMarks() error {
