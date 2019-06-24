@@ -137,6 +137,7 @@ func init() {
 	gOpts.keys["N"] = &callExpr{"search-prev", nil, 1}
 	gOpts.keys["m"] = &callExpr{"mark-save", nil, 1}
 	gOpts.keys["'"] = &callExpr{"mark-load", nil, 1}
+	gOpts.keys[`"`] = &callExpr{"mark-remove", nil, 1}
 	gOpts.keys["<c-n>"] = &callExpr{"cmd-history-next", nil, 1}
 	gOpts.keys["<c-p>"] = &callExpr{"cmd-history-prev", nil, 1}
 

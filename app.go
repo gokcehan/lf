@@ -181,10 +181,6 @@ func (app *app) loop() {
 
 			log.Print("bye!")
 
-			if err := app.nav.writeMarks(); err != nil {
-				log.Printf("writing marks file: %s", err)
-			}
-
 			if err := app.writeHistory(); err != nil {
 				log.Printf("writing history file: %s", err)
 			}

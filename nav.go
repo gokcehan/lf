@@ -747,6 +747,8 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
+	nav.readMarks()
+
 	return nil
 }
 
@@ -975,41 +977,17 @@ func (nav *nav) searchPrev() error {
 	return nil
 }
 
-func (nav *nav) clearMarks() (bool, error) {
-	if len(nav.marks) == 0 { // to stop infinite remote calls
-		return false, nil
-	}
-	resetMarksFile()
-	nav.marks = make(map[string]string)
-	return true, nil
-}
-
-func (nav *nav) removeMark(mark string) (bool, error) {
-	if len(mark) != 1 {
-		return false, fmt.Errorf("wrong argument (must be one character): %s", mark)
-	}
-	_, ok := nav.marks[mark]
-	if ok {
+func (nav *nav) removeMark(mark string) error {
+	if _, ok := nav.marks[mark]; ok {
 		delete(nav.marks, mark)
+		return nil
+	} else {
+		return fmt.Errorf("no such mark")
 	}
-	if len(nav.marks) == 0 { // writeMarks will not process these marks
-		if err := resetMarksFile(); err != nil {
-			return false, err
-		}
-	}
-	return ok, nil
-}
-
-func resetMarksFile() error {
-	f, err := os.Create(gMarksPath)
-	if err != nil {
-		return fmt.Errorf("recreating marks file: %s", err)
-	}
-	f.Close()
-	return nil
 }
 
 func (nav *nav) readMarks() error {
+	nav.marks = make(map[string]string)
 	f, err := os.Open(gMarksPath)
 	if os.IsNotExist(err) {
 		return nil
@@ -1034,9 +1012,18 @@ func (nav *nav) readMarks() error {
 	return nil
 }
 
+func resetMarksFile() error {
+	f, err := os.Create(gMarksPath)
+	if err != nil {
+		return fmt.Errorf("recreating marks file: %s", err)
+	}
+	f.Close()
+	return nil
+}
+
 func (nav *nav) writeMarks() error {
 	if len(nav.marks) == 0 {
-		return nil
+		return resetMarksFile()
 	}
 
 	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
