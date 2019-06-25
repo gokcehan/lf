@@ -1010,20 +1010,7 @@ func (nav *nav) readMarks() error {
 	return nil
 }
 
-func resetMarksFile() error {
-	f, err := os.Create(gMarksPath)
-	if err != nil {
-		return fmt.Errorf("recreating marks file: %s", err)
-	}
-	f.Close()
-	return nil
-}
-
 func (nav *nav) writeMarks() error {
-	if len(nav.marks) == 0 {
-		return resetMarksFile()
-	}
-
 	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
 		return fmt.Errorf("creating data directory: %s", err)
 	}
