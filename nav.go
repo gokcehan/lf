@@ -747,9 +747,7 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
-	nav.readMarks()
-
-	return nil
+	return nav.readMarks()
 }
 
 func (nav *nav) cd(wd string) error {
