@@ -51,6 +51,7 @@ The following commands are provided by lf with default keybindings:
     search-prev              (default 'N')
     mark-save                (default 'm')
     mark-load                (default "'")
+    mark-remove              (default `"`)
 
 The following commands are provided by lf without default keybindings:
 

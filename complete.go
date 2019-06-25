@@ -51,6 +51,7 @@ var (
 		"search-next",
 		"search-prev",
 		"mark-save",
+		"mark-remove",
 		"mark-load",
 		"sync",
 		"echo",

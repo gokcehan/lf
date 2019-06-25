@@ -747,7 +747,7 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
-	return nil
+	return nav.readMarks()
 }
 
 func (nav *nav) cd(wd string) error {
@@ -975,7 +975,17 @@ func (nav *nav) searchPrev() error {
 	return nil
 }
 
+func (nav *nav) removeMark(mark string) error {
+	if _, ok := nav.marks[mark]; ok {
+		delete(nav.marks, mark)
+		return nil
+	} else {
+		return fmt.Errorf("no such mark")
+	}
+}
+
 func (nav *nav) readMarks() error {
+	nav.marks = make(map[string]string)
 	f, err := os.Open(gMarksPath)
 	if os.IsNotExist(err) {
 		return nil
@@ -1001,14 +1011,6 @@ func (nav *nav) readMarks() error {
 }
 
 func (nav *nav) writeMarks() error {
-	if len(nav.marks) == 0 {
-		return nil
-	}
-
-	if err := nav.readMarks(); err != nil {
-		return fmt.Errorf("reading marks file: %s", err)
-	}
-
 	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
 		return fmt.Errorf("creating data directory: %s", err)
 	}

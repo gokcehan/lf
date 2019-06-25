@@ -470,6 +470,12 @@ func insert(app *app, arg string) {
 			return
 		}
 		app.nav.marks[arg] = wd
+		if err := app.nav.writeMarks(); err != nil {
+			app.ui.echoerrf("mark-save: %s", err)
+		}
+		if err := remote("send sync"); err != nil {
+			app.ui.echoerrf("mark-save: %s", err)
+		}
 	case app.ui.cmdPrefix == "mark-load: ":
 		normal(app)
 
@@ -493,6 +499,20 @@ func insert(app *app, arg string) {
 		if wd != path {
 			app.nav.marks["'"] = wd
 		}
+	case app.ui.cmdPrefix == "mark-remove: ":
+		normal(app)
+		if err := app.nav.removeMark(arg); err != nil {
+			app.ui.echoerrf("mark-remove: %s", err)
+			return
+		}
+		if err := app.nav.writeMarks(); err != nil {
+			app.ui.echoerrf("mark-remove: %s", err)
+			return
+		}
+		if err := remote("send sync"); err != nil {
+			app.ui.echoerrf("mark-remove: %s", err)
+		}
+
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
@@ -766,6 +786,9 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "mark-load":
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
+	case "mark-remove":
+		app.ui.menuBuf = listMarks(app.nav.marks)
+		app.ui.cmdPrefix = "mark-remove: "
 	case "sync":
 		if err := app.nav.sync(); err != nil {
 			app.ui.echoerrf("sync: %s", err)
