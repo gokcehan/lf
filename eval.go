@@ -285,31 +285,36 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.shellopts = strings.Split(e.val, ":")
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)
+		return
 	}
+	app.ui.loadFileInfo(app.nav)
 }
 
 func (e *mapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.keys, e.keys)
-		return
+	} else {
+		gOpts.keys[e.keys] = e.expr
 	}
-	gOpts.keys[e.keys] = e.expr
+	app.ui.loadFileInfo(app.nav)
 }
 
 func (e *cmapExpr) eval(app *app, args []string) {
 	if e.cmd == "" {
 		delete(gOpts.cmdkeys, e.key)
-		return
+	} else {
+		gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil, 1}
 	}
-	gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil, 1}
+	app.ui.loadFileInfo(app.nav)
 }
 
 func (e *cmdExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.cmds, e.name)
-		return
+	} else {
+		gOpts.cmds[e.name] = e.expr
 	}
-	gOpts.cmds[e.name] = e.expr
+	app.ui.loadFileInfo(app.nav)
 }
 
 func splitKeys(s string) (keys []string) {
@@ -641,8 +646,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "invert":
 		app.nav.invert()
+		app.ui.loadFileInfo(app.nav)
 	case "unselect":
 		app.nav.unselect()
+		app.ui.loadFileInfo(app.nav)
 	case "copy":
 		if err := app.nav.save(true); err != nil {
 			app.ui.echoerrf("copy: %s", err)
@@ -651,7 +658,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.unselect()
 		if err := remote("send sync"); err != nil {
 			app.ui.echoerrf("copy: %s", err)
+			return
 		}
+		app.ui.loadFileInfo(app.nav)
 	case "cut":
 		if err := app.nav.save(false); err != nil {
 			app.ui.echoerrf("cut: %s", err)
@@ -660,7 +669,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.unselect()
 		if err := remote("send sync"); err != nil {
 			app.ui.echoerrf("cut: %s", err)
+			return
 		}
+		app.ui.loadFileInfo(app.nav)
 	case "paste":
 		if cmd, ok := gOpts.cmds["paste"]; ok {
 			cmd.eval(app, e.args)
@@ -668,12 +679,15 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("paste: %s", err)
 			return
 		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "delete":
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)
 			app.nav.unselect()
 			if err := remote("send load"); err != nil {
 				app.ui.echoerrf("delete: %s", err)
+				return
 			}
 		} else {
 			if _, err := app.nav.currFileOrSelections(); err != nil {
@@ -682,6 +696,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.cmdPrefix = "delete?[y/N]: "
 		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "clear":
 		if err := saveFiles(nil, false); err != nil {
 			app.ui.echoerrf("clear: %s", err)
@@ -689,18 +705,24 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		if err := remote("send sync"); err != nil {
 			app.ui.echoerrf("clear: %s", err)
+			return
 		}
+		app.ui.loadFileInfo(app.nav)
 	case "draw":
 	case "redraw":
 		app.ui.sync()
 		app.ui.renew()
 		app.nav.height = app.ui.wins[0].h
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "load":
 		app.nav.renew()
 	case "reload":
 		if err := app.nav.reload(); err != nil {
 			app.ui.echoerrf("reload: %s", err)
 		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "read":
 		app.ui.cmdPrefix = ":"
 	case "shell":
@@ -861,28 +883,28 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerr("glob-select: requires a pattern to match")
 			return
 		}
-
 		if err := app.nav.globSel(e.args[0], false); err != nil {
 			app.ui.echoerrf("%s", err)
 			return
 		}
+		app.ui.loadFileInfo(app.nav)
 	case "glob-unselect":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-unselect: requires a pattern to match")
 			return
 		}
-
 		if err := app.nav.globSel(e.args[0], true); err != nil {
 			app.ui.echoerrf("%s", err)
 			return
 		}
-
+		app.ui.loadFileInfo(app.nav)
 	case "source":
 		if len(e.args) != 1 {
 			app.ui.echoerr("source: requires an argument")
 			return
 		}
 		app.readFile(strings.Replace(e.args[0], "~", gUser.HomeDir, -1))
+		app.ui.loadFileInfo(app.nav)
 	case "push":
 		if len(e.args) != 1 {
 			app.ui.echoerr("push: requires an argument")
