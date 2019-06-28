@@ -30,6 +30,7 @@ var gOpts struct {
 	dircounts      bool
 	drawbox        bool
 	globsearch     bool
+	icons          bool
 	ignorecase     bool
 	incsearch      bool
 	preview        bool
@@ -66,6 +67,7 @@ func init() {
 	gOpts.dircounts = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
+	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.incsearch = false
 	gOpts.preview = true

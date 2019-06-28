@@ -241,7 +241,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]bool, colors colorMap) {
+func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]bool, colors colorMap, icons iconMap) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -313,6 +313,11 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 
 		s = append(s, ' ')
 
+		if gOpts.icons {
+			s = append(s, []rune(icons.get(f))...)
+			s = append(s, ' ')
+		}
+
 		for _, r := range f.Name() {
 			s = append(s, r)
 		}
@@ -367,6 +372,7 @@ type ui struct {
 	keyAcc      []rune
 	keyCount    []rune
 	colors      colorMap
+	icons       iconMap
 }
 
 func getWidths(wtot int) []int {
@@ -448,6 +454,7 @@ func newUI() *ui {
 		keyChan:   make(chan string, 1000),
 		evChan:    evChan,
 		colors:    parseColors(),
+		icons:     parseIcons(),
 	}
 }
 
@@ -653,7 +660,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.selections, nav.saves, ui.colors)
+		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.selections, nav.saves, ui.colors, ui.icons)
 	}
 
 	switch ui.cmdPrefix {
@@ -679,7 +686,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if f.IsDir() {
-				preview.printDir(ui.dirPrev, nav.selections, nav.saves, ui.colors)
+				preview.printDir(ui.dirPrev, nav.selections, nav.saves, ui.colors, ui.icons)
 			} else if f.Mode().IsRegular() {
 				preview.printReg(ui.regPrev)
 			}

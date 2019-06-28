@@ -71,6 +71,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.globsearch = false
 	case "globsearch!":
 		gOpts.globsearch = !gOpts.globsearch
+	case "icons":
+		gOpts.icons = true
+	case "noicons":
+		gOpts.icons = false
+	case "icons!":
+		gOpts.icons = !gOpts.icons
 	case "hidden":
 		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()

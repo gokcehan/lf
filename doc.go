@@ -105,6 +105,7 @@ The following options can be used to customize the behavior of lf:
     dirfirst        boolean  (default on)
     drawbox         boolean  (default off)
     globsearch      boolean  (default off)
+    icons           boolean  (default off)
     hidden          boolean  (default off)
     ignorecase      boolean  (default on)
     ignoredia       boolean  (default off)
