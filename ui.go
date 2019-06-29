@@ -667,7 +667,6 @@ func (ui *ui) draw(nav *nav) {
 		ui.msgWin.print(len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
 		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
 	default:
-		ui.msg = ""
 		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
 		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, string(ui.cmdAccLeft))
 		ui.msgWin.print(len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
