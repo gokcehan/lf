@@ -496,6 +496,7 @@ func insert(app *app, arg string) {
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
+	app.ui.loadFileInfo(app.nav)
 }
 
 func (e *callExpr) eval(app *app, args []string) {
