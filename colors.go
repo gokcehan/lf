@@ -199,6 +199,10 @@ func (cm colorMap) get(f *file) (termbox.Attribute, termbox.Attribute) {
 	var key string
 
 	switch {
+	case f.linkState == working:
+		key = "ln"
+	case f.linkState == broken:
+		key = "or"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
 		key = "tw"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0:
@@ -207,10 +211,6 @@ func (cm colorMap) get(f *file) (termbox.Attribute, termbox.Attribute) {
 		key = "ow"
 	case f.IsDir():
 		key = "di"
-	case f.linkState == working:
-		key = "ln"
-	case f.linkState == broken:
-		key = "or"
 	case f.Mode()&os.ModeNamedPipe != 0:
 		key = "pi"
 	case f.Mode()&os.ModeSocket != 0:
