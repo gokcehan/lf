@@ -524,8 +524,6 @@ func insert(app *app, arg string) {
 		if err := remote("send sync"); err != nil {
 			app.ui.echoerrf("mark-remove: %s", err)
 		}
-	case strings.HasPrefix(app.ui.cmdPrefix, "rename"):
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
@@ -1042,8 +1040,18 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "rename: ":
 			app.ui.cmdPrefix = ""
-			// TODO: do rename
-			return
+			if curr, err := app.nav.currFile(); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+			} else {
+				wd, _ := os.Getwd()
+				oldPathTo := filepath.Join(wd, curr.Name())
+				newPathTo := filepath.Join(wd, s)
+				// TODO: make directories if necessary
+				if err := os.Rename(oldPathTo, newPathTo); err != nil {
+					app.ui.echoerrf("rename: %s", err)
+				}
+				// TODO: change selection
+			}
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
