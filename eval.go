@@ -387,6 +387,7 @@ func update(app *app) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	}
+
 }
 
 func normal(app *app) {
@@ -523,7 +524,8 @@ func insert(app *app, arg string) {
 		if err := remote("send sync"); err != nil {
 			app.ui.echoerrf("mark-remove: %s", err)
 		}
-
+	case strings.HasPrefix(app.ui.cmdPrefix, "rename"):
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
@@ -818,6 +820,15 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "mark-remove":
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
+	case "rename":
+		if curr, err := app.nav.currFile(); err != nil {
+			app.ui.echoerrf("rename: %s:", err)
+			return
+		} else {
+			app.ui.cmdPrefix = "rename: "
+			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+		}
+
 	case "sync":
 		if err := app.nav.sync(); err != nil {
 			app.ui.echoerrf("sync: %s", err)
@@ -1029,6 +1040,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
 			}
+		case "rename: ":
+			app.ui.cmdPrefix = ""
+			// TODO: do rename
+			return
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}

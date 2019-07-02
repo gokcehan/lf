@@ -53,6 +53,7 @@ var (
 		"mark-save",
 		"mark-remove",
 		"mark-load",
+		"rename",
 		"sync",
 		"echo",
 		"echomsg",
