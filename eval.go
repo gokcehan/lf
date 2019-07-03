@@ -1046,6 +1046,11 @@ func (e *callExpr) eval(app *app, args []string) {
 				wd, _ := os.Getwd()
 				oldPathTo := filepath.Join(wd, curr.Name())
 				newPathTo := filepath.Join(wd, s)
+
+				if dir, _ := filepath.Split(newPathTo); dir != "" {
+					os.MkdirAll(dir, os.ModePerm)
+				}
+
 				// TODO: make directories if necessary
 				if err := os.Rename(oldPathTo, newPathTo); err != nil {
 					app.ui.echoerrf("rename: %s", err)
