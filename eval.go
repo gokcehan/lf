@@ -473,6 +473,21 @@ func insert(app *app, arg string) {
 				app.ui.echoerrf("delete: %s", err)
 			}
 		}
+	case strings.HasPrefix(app.ui.cmdPrefix, "replace"):
+		normal(app)
+
+		if arg == "y" {
+			if err := os.Remove(app.nav.renameCache[1]); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+			if err := app.nav.rename(app.nav.renameCache[0],
+				app.nav.renameCache[1], app.ui); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+		}
+
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
@@ -1043,7 +1058,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			if curr, err := app.nav.currFile(); err != nil {
 				app.ui.echoerrf("rename: %s", err)
 			} else {
-				wd, _ := os.Getwd()
+				wd, err := os.Getwd()
+				if err != nil {
+					log.Printf("getting current directory: %s", err)
+					return
+				}
 				oldPathTo := filepath.Join(wd, curr.Name())
 				newPathTo := filepath.Join(wd, s)
 
@@ -1052,12 +1071,16 @@ func (e *callExpr) eval(app *app, args []string) {
 					os.MkdirAll(dir, os.ModePerm)
 				}
 
-				// TODO: prompt if such renamed file exists alrdy
+				if _, err := os.Stat(newPathTo); err == nil { // file exists
+					app.ui.cmdPrefix = "replace " + s + "?[y/N]"
+					app.nav.renameCache = []string{oldPathTo, newPathTo}
+					return
+				}
 
-				if err := os.Rename(oldPathTo, newPathTo); err != nil {
+				if err := app.nav.rename(oldPathTo, newPathTo, app.ui); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 				}
-				// TODO: change selection
+
 			}
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)

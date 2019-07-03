@@ -205,6 +205,7 @@ type nav struct {
 	regCache      map[string]*reg
 	saves         map[string]bool
 	marks         map[string]string
+	renameCache   []string
 	selections    map[string]int
 	selectionInd  int
 	height        int
@@ -291,6 +292,7 @@ func newNav(height int) *nav {
 		regCache:      make(map[string]*reg),
 		saves:         make(map[string]bool),
 		marks:         make(map[string]string),
+		renameCache:   make([]string, 2),
 		selections:    make(map[string]int),
 		selectionInd:  0,
 		height:        height,
@@ -732,6 +734,17 @@ func (nav *nav) del() error {
 			return err
 		}
 	}
+
+	return nil
+}
+
+func (nav *nav) rename(oldPath, newPath string, ui *ui) error {
+	if err := os.Rename(oldPath, newPath); err != nil {
+		return err
+	}
+	// TODO: change selection
+	ui.loadFile(nav)
+	ui.loadFileInfo(nav)
 
 	return nil
 }
