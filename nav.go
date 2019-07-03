@@ -738,7 +738,18 @@ func (nav *nav) del() error {
 	return nil
 }
 
-func (nav *nav) rename(oldPath, newPath string, ui *ui) error {
+func (nav *nav) rename(ui *ui) error {
+	oldPath := nav.renameCache[0]
+	newPath := nav.renameCache[1]
+	if dir, _ := filepath.Split(newPath); dir != "" {
+		os.MkdirAll(dir, os.ModePerm)
+	}
+
+	if _, err := os.Stat(newPath); err == nil { // file exists
+		if err := os.Remove(newPath); err != nil {
+			return err
+		}
+	}
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
 	}

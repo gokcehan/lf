@@ -473,16 +473,12 @@ func insert(app *app, arg string) {
 				app.ui.echoerrf("delete: %s", err)
 			}
 		}
-	case strings.HasPrefix(app.ui.cmdPrefix, "replace"):
+	case strings.HasPrefix(app.ui.cmdPrefix, "replace") ||
+		strings.HasPrefix(app.ui.cmdPrefix, "create path"):
 		normal(app)
 
 		if arg == "y" {
-			if err := os.Remove(app.nav.renameCache[1]); err != nil {
-				app.ui.echoerrf("rename: %s", err)
-				return
-			}
-			if err := app.nav.rename(app.nav.renameCache[0],
-				app.nav.renameCache[1], app.ui); err != nil {
+			if err := app.nav.rename(app.ui); err != nil {
 				app.ui.echoerrf("rename: %s", err)
 				return
 			}
@@ -1065,19 +1061,21 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 				oldPathTo := filepath.Join(wd, curr.Name())
 				newPathTo := filepath.Join(wd, s)
+				app.nav.renameCache = []string{oldPathTo, newPathTo}
 
-				if dir, _ := filepath.Split(newPathTo); dir != "" {
-					// TODO: prompt
-					os.MkdirAll(dir, os.ModePerm)
+				if dir, _ := filepath.Split(s); dir != "" {
+					if _, err := os.Stat(filepath.Join(wd, dir)); err != nil {
+						app.ui.cmdPrefix = "create path " + dir + "?[y/N]"
+						return
+					}
 				}
 
 				if _, err := os.Stat(newPathTo); err == nil { // file exists
 					app.ui.cmdPrefix = "replace " + s + "?[y/N]"
-					app.nav.renameCache = []string{oldPathTo, newPathTo}
 					return
 				}
 
-				if err := app.nav.rename(oldPathTo, newPathTo, app.ui); err != nil {
+				if err := app.nav.rename(app.ui); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 				}
 
