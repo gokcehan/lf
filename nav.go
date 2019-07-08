@@ -741,9 +741,8 @@ func (nav *nav) del() error {
 func (nav *nav) rename(ui *ui) error {
 	oldPath := nav.renameCache[0]
 	newPath := nav.renameCache[1]
-	if dir, _ := filepath.Split(newPath); dir != "" {
-		os.MkdirAll(dir, os.ModePerm)
-	}
+	dir, _ := filepath.Split(newPath)
+	os.MkdirAll(dir, os.ModePerm)
 
 	if _, err := os.Stat(newPath); err == nil { // file exists
 		if err := os.Remove(newPath); err != nil {
@@ -753,10 +752,11 @@ func (nav *nav) rename(ui *ui) error {
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
 	}
+	nav.renew()
 	// TODO: change selection
-	ui.loadFile(nav)
-	ui.loadFileInfo(nav)
-
+	if err := nav.sel(newPath); err != nil {
+		return err
+	}
 	return nil
 }
 
