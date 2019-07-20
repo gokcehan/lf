@@ -251,6 +251,11 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		return
 	}
 
+	if dir.noPerm {
+		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "permission denied")
+		return
+	}
+
 	if len(dir.files) == 0 {
 		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "empty")
 		return

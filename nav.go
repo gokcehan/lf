@@ -82,6 +82,7 @@ type dir struct {
 	files    []*file   // displayed files in directory including or excluding hidden ones
 	allFiles []*file   // all files in directory including hidden ones (same array as files)
 	sortType sortType  // sort method and options from last sort
+	noPerm   bool      // whether lf has no permission to open the directory
 }
 
 func newDir(path string) *dir {
@@ -97,6 +98,7 @@ func newDir(path string) *dir {
 		path:     path,
 		files:    files,
 		allFiles: files,
+		noPerm:   os.IsPermission(err),
 	}
 }
 
