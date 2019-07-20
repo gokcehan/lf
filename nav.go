@@ -757,6 +757,8 @@ func (nav *nav) rename(ui *ui) error {
 	if err := nav.sel(newPath); err != nil {
 		return err
 	}
+	ui.loadFile(nav)
+	ui.loadFileInfo(nav)
 	return nil
 }
 

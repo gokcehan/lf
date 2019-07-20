@@ -37,6 +37,7 @@ The following commands are provided by lf with default keybindings:
     redraw                   (default '<c-l>')
     reload                   (default '<c-r>')
     read                     (default ':')
+    rename                   (default 'r')
     shell                    (default '$')
     shell-pipe               (default '%')
     shell-wait               (default '!')

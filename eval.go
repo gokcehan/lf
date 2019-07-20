@@ -387,7 +387,6 @@ func update(app *app) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	}
-
 }
 
 func normal(app *app) {
