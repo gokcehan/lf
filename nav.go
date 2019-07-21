@@ -751,16 +751,16 @@ func (nav *nav) rename(ui *ui) error {
 			return err
 		}
 	}
+
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
 	}
-	nav.renew()
+
 	// TODO: change selection
 	if err := nav.sel(newPath); err != nil {
 		return err
 	}
-	ui.loadFile(nav)
-	ui.loadFileInfo(nav)
+
 	return nil
 }
 

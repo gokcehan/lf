@@ -470,7 +470,10 @@ func insert(app *app, arg string) {
 			app.nav.unselect()
 			if err := remote("send load"); err != nil {
 				app.ui.echoerrf("delete: %s", err)
+				return
 			}
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		}
 	case strings.HasPrefix(app.ui.cmdPrefix, "replace") ||
 		strings.HasPrefix(app.ui.cmdPrefix, "create path"):
@@ -481,8 +484,13 @@ func insert(app *app, arg string) {
 				app.ui.echoerrf("rename: %s", err)
 				return
 			}
+			if err := remote("send load"); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
 		}
-
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
@@ -829,14 +837,23 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
 	case "rename":
-		if curr, err := app.nav.currFile(); err != nil {
-			app.ui.echoerrf("rename: %s:", err)
-			return
+		if cmd, ok := gOpts.cmds["rename"]; ok {
+			cmd.eval(app, e.args)
+			if err := remote("send load"); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
 		} else {
+			curr, err := app.nav.currFile()
+			if err != nil {
+				app.ui.echoerrf("rename: %s:", err)
+				return
+			}
 			app.ui.cmdPrefix = "rename: "
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 		}
-
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "sync":
 		if err := app.nav.sync(); err != nil {
 			app.ui.echoerrf("sync: %s", err)
@@ -1076,8 +1093,16 @@ func (e *callExpr) eval(app *app, args []string) {
 
 				if err := app.nav.rename(app.ui); err != nil {
 					app.ui.echoerrf("rename: %s", err)
+					return
 				}
 
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("rename: %s", err)
+					return
+				}
+
+				app.ui.loadFile(app.nav)
+				app.ui.loadFileInfo(app.nav)
 			}
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
