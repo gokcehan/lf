@@ -459,7 +459,7 @@ func insert(app *app, arg string) {
 		}
 
 		normal(app)
-	case app.ui.cmdPrefix == "delete?[y/N]: ":
+	case strings.HasPrefix(app.ui.cmdPrefix, "delete"):
 		normal(app)
 
 		if arg == "y" {
@@ -715,11 +715,18 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 		} else {
-			if _, err := app.nav.currFileOrSelections(); err != nil {
+			fileOrSelections, err := app.nav.currFileOrSelections()
+
+			if err != nil {
 				app.ui.echoerrf("delete: %s", err)
 				return
 			}
-			app.ui.cmdPrefix = "delete?[y/N]: "
+
+			if selections := len(fileOrSelections); selections == 1 {
+				app.ui.cmdPrefix = "delete " + fileOrSelections[0] + " [y/N]? "
+			} else {
+				app.ui.cmdPrefix = "delete " + strconv.Itoa(selections) + " items [y/N]? "
+			}
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
