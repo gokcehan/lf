@@ -102,6 +102,12 @@ var gEvalTests = []struct {
 	},
 
 	{
+		`echo hello\\world`,
+		[]string{"echo", `hello\world`, "\n"},
+		[]expr{&callExpr{"echo", []string{`hello\world`}, 1}},
+	},
+
+	{
 		`echo hello\zworld`,
 		[]string{"echo", "helloworld", "\n"},
 		[]expr{&callExpr{"echo", []string{"helloworld"}, 1}},

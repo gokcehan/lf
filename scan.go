@@ -293,7 +293,7 @@ scan:
 		for !s.eof && !isSpace(s.chr) && s.chr != ';' && s.chr != '#' {
 			if s.chr == '\\' {
 				s.next()
-				if isSpace(s.chr) {
+				if isSpace(s.chr) || s.chr == '\\' {
 					buf = append(buf, s.chr)
 					s.next()
 				} else {
