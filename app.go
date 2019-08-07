@@ -32,7 +32,9 @@ type app struct {
 
 func newApp() *app {
 	ui := newUI()
-	nav := newNav(ui.wins[0].h)
+	// TODO: is this really the right way?
+	lastWin := ui.wins[len(ui.wins)-1]
+	nav := newNav(lastWin.w, lastWin.h, lastWin.x, lastWin.y)
 
 	return &app{
 		ui:       ui,

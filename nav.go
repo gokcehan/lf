@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 )
 
@@ -210,7 +211,10 @@ type nav struct {
 	renameCache   []string
 	selections    map[string]int
 	selectionInd  int
+	width         int
 	height        int
+	x             int
+	y             int
 	find          string
 	findBack      bool
 	search        string
@@ -277,7 +281,7 @@ func (nav *nav) getDirs(wd string) {
 	nav.dirs = dirs
 }
 
-func newNav(height int) *nav {
+func newNav(width, height, x, y int) *nav {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Printf("getting current directory: %s", err)
@@ -297,7 +301,10 @@ func newNav(height int) *nav {
 		renameCache:   make([]string, 2),
 		selections:    make(map[string]int),
 		selectionInd:  0,
+		width:         width,
 		height:        height,
+		x:             x,
+		y:             y,
 	}
 
 	nav.getDirs(wd)
@@ -360,6 +367,13 @@ func (nav *nav) position() {
 	}
 }
 
+func (nav *nav) previewClear() {
+	// TODO: maybe add an option for this to reduce calls?
+	if len(gOpts.previewer) != 0 {
+		exec.Command(gOpts.previewer, "--clear", strconv.Itoa(gClientID)).Start()
+	}
+}
+
 func (nav *nav) preview() {
 	curr, err := nav.currFile()
 	if err != nil {
@@ -369,7 +383,9 @@ func (nav *nav) preview() {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
+		cmd := exec.Command(gOpts.previewer, curr.path,
+			strconv.Itoa(nav.height), strconv.Itoa(nav.width),
+			strconv.Itoa(nav.x), strconv.Itoa(nav.y), strconv.Itoa(gClientID))
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -380,8 +396,25 @@ func (nav *nav) preview() {
 			log.Printf("previewing file: %s", err)
 		}
 
-		defer cmd.Wait()
-		defer out.Close()
+		defer func() {
+			if err := cmd.Wait(); err != nil {
+				if exiterr, ok := err.(*exec.ExitError); ok {
+					if stat, ok := exiterr.Sys().(syscall.WaitStatus); ok {
+						status := stat.ExitStatus()
+						if status == 5 {
+							nav.regCache[curr.path].volatile = true
+							nav.regCache[curr.path].loading = false
+							nav.regChan <- nav.regCache[curr.path]
+						}
+					}
+				} else {
+					log.Printf("previewing file: %s", err)
+				}
+			}
+
+			out.Close()
+		}()
+
 		reader = out
 	} else {
 		f, err := os.Open(curr.path)
@@ -416,8 +449,9 @@ func (nav *nav) preview() {
 }
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
+	go nav.previewClear()
 	r, ok := nav.regCache[path]
-	if !ok {
+	if !ok || r.volatile {
 		go nav.preview()
 		r := &reg{loading: true, path: path}
 		nav.regCache[path] = r
