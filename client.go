@@ -52,7 +52,7 @@ func readExpr() <-chan expr {
 
 		c, err := net.Dial(gSocketProt, gSocketPath)
 		for err != nil {
-			log.Printf(fmt.Sprintf("connecting server: %s", err))
+			log.Printf("connecting server: %s", err)
 			time.Sleep(duration)
 			duration *= 2
 			c, err = net.Dial(gSocketProt, gSocketPath)

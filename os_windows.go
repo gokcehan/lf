@@ -18,9 +18,7 @@ var (
 	envShell  = os.Getenv("SHELL")
 )
 
-var (
-	envPathExt = os.Getenv("PATHEXT")
-)
+var envPathExt = os.Getenv("PATHEXT")
 
 var (
 	gDefaultShell      = "cmd"

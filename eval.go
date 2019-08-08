@@ -480,7 +480,7 @@ func insert(app *app, arg string) {
 		normal(app)
 
 		if arg == "y" {
-			if err := app.nav.rename(app.ui); err != nil {
+			if err := app.nav.rename(); err != nil {
 				app.ui.echoerrf("rename: %s", err)
 				return
 			}
@@ -716,7 +716,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		} else {
 			fileOrSelections, err := app.nav.currFileOrSelections()
-
 			if err != nil {
 				app.ui.echoerrf("delete: %s", err)
 				return
@@ -1098,7 +1097,7 @@ func (e *callExpr) eval(app *app, args []string) {
 					return
 				}
 
-				if err := app.nav.rename(app.ui); err != nil {
+				if err := app.nav.rename(); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
