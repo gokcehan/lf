@@ -15,6 +15,9 @@ func parseIcons() iconMap {
 	}
 
 	defaultIcons := []string{
+		"tw=🗀",
+		"st=🗀",
+		"ow=🗀",
 		"di=🗀",
 		"fi=🗎",
 	}
