@@ -415,7 +415,7 @@ func (nav *nav) preview() {
 	nav.regChan <- reg
 }
 
-func (nav *nav) loadReg(ui *ui, path string) *reg {
+func (nav *nav) loadReg(path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok {
 		go nav.preview()
@@ -726,7 +726,6 @@ func (nav *nav) paste(ui *ui) error {
 
 func (nav *nav) del() error {
 	list, err := nav.currFileOrSelections()
-
 	if err != nil {
 		return err
 	}
@@ -740,7 +739,7 @@ func (nav *nav) del() error {
 	return nil
 }
 
-func (nav *nav) rename(ui *ui) error {
+func (nav *nav) rename() error {
 	oldPath := nav.renameCache[0]
 	newPath := nav.renameCache[1]
 	dir, _ := filepath.Split(newPath)
@@ -828,7 +827,6 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 
 	for i := 0; i < len(curDir.files); i++ {
 		match, err := filepath.Match(pattern, curDir.files[i].Name())
-
 		if err != nil {
 			return fmt.Errorf("glob-select: %s", err)
 		}
@@ -1007,9 +1005,8 @@ func (nav *nav) removeMark(mark string) error {
 	if _, ok := nav.marks[mark]; ok {
 		delete(nav.marks, mark)
 		return nil
-	} else {
-		return fmt.Errorf("no such mark")
 	}
+	return fmt.Errorf("no such mark")
 }
 
 func (nav *nav) readMarks() error {

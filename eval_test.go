@@ -298,13 +298,17 @@ var gEvalTests = []struct {
 			cd ~
 			set hidden
 		}}`,
-		[]string{"cmd", "gohome", ":", "{{",
+		[]string{
+			"cmd", "gohome", ":", "{{",
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
-			"}}", "\n"},
-		[]expr{&cmdExpr{"gohome", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}, 1},
-			&setExpr{"hidden", ""}}},
+			"}}", "\n",
+		},
+		[]expr{&cmdExpr{
+			"gohome", &listExpr{[]expr{
+				&callExpr{"cd", []string{"~"}, 1},
+				&setExpr{"hidden", ""},
+			}},
 		}},
 	},
 
@@ -313,13 +317,17 @@ var gEvalTests = []struct {
 			cd ~
 			set hidden
 		}}`,
-		[]string{"map", "gh", ":", "{{",
+		[]string{
+			"map", "gh", ":", "{{",
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
-			"}}", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}, 1},
-			&setExpr{"hidden", ""}}},
+			"}}", "\n",
+		},
+		[]expr{&mapExpr{
+			"gh", &listExpr{[]expr{
+				&callExpr{"cd", []string{"~"}, 1},
+				&setExpr{"hidden", ""},
+			}},
 		}},
 	},
 

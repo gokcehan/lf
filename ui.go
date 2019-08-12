@@ -190,8 +190,6 @@ func (win *win) printReg(reg *reg) {
 	for i, l := range reg.lines {
 		fg, bg = win.print(2, i, fg, bg, l)
 	}
-
-	return
 }
 
 func fileInfo(f *file, d *dir) string {
@@ -539,7 +537,7 @@ func (ui *ui) loadFile(nav *nav) {
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(ui, curr.path)
+		ui.regPrev = nav.loadReg(curr.path)
 	}
 }
 
@@ -617,7 +615,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 	ui.msgWin.printRight(0, fg, bg, ruler)
 }
 
-func (ui *ui) drawBox(nav *nav) {
+func (ui *ui) drawBox() {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	w, h := termbox.Size()
@@ -699,7 +697,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	if gOpts.drawbox {
-		ui.drawBox(nav)
+		ui.drawBox()
 	}
 
 	if ui.menuBuf != nil {
