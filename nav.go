@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 )
 
@@ -398,15 +397,10 @@ func (nav *nav) preview() {
 
 		defer func() {
 			if err := cmd.Wait(); err != nil {
-				if exiterr, ok := err.(*exec.ExitError); ok {
-					if stat, ok := exiterr.Sys().(syscall.WaitStatus); ok {
-						status := stat.ExitStatus()
-						if status == 5 {
-							nav.regCache[curr.path].volatile = true
-							nav.regCache[curr.path].loading = false
-							nav.regChan <- nav.regCache[curr.path]
-						}
-					}
+				if cmd.ProcessState.ExitCode() == 5 {
+					nav.regCache[curr.path].volatile = true
+					nav.regCache[curr.path].loading = false
+					nav.regChan <- nav.regCache[curr.path]
 				} else {
 					log.Printf("previewing file: %s", err)
 				}
