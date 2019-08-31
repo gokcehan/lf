@@ -132,6 +132,7 @@ var (
 		"filesep",
 		"ifs",
 		"previewer",
+		"cleaner",
 		"promptfmt",
 		"shell",
 		"sortby",

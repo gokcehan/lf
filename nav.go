@@ -367,9 +367,8 @@ func (nav *nav) position() {
 }
 
 func (nav *nav) previewClear() {
-	// TODO: maybe add an option for this to reduce calls?
-	if len(gOpts.previewer) != 0 {
-		exec.Command(gOpts.previewer, "--clear", strconv.Itoa(gClientID)).Start()
+	if len(gOpts.cleaner) != 0 {
+		exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Start()
 	}
 }
 
@@ -443,7 +442,7 @@ func (nav *nav) preview() {
 }
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
-	go nav.previewClear()
+	nav.previewClear()
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
 		go nav.preview()
