@@ -231,6 +231,10 @@ func fileInfo(f *file, d *dir) string {
 			}
 		case "time":
 			info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
+		case "atime":
+			info = fmt.Sprintf("%s %12s", info, f.accessTime.Format("Jan _2 15:04"))
+		case "ctime":
+			info = fmt.Sprintf("%s %12s", info, f.changeTime.Format("Jan _2 15:04"))
 		default:
 			log.Printf("unknown info type: %s", s)
 		}

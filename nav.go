@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	times "gopkg.in/djherbis/times.v1"
 )
 
 type linkState byte
@@ -25,9 +27,11 @@ const (
 
 type file struct {
 	os.FileInfo
-	linkState linkState
-	path      string
-	dirCount  int
+	linkState  linkState
+	path       string
+	dirCount   int
+	accessTime time.Time
+	changeTime time.Time
 }
 
 func readdir(path string) ([]*file, error) {
@@ -62,11 +66,24 @@ func readdir(path string) ([]*file, error) {
 			}
 		}
 
+		ts := times.Get(lstat)
+		at := ts.AccessTime()
+		var ct time.Time
+		// from times docs: ChangeTime() panics unless HasChangeTime() is true
+		if ts.HasChangeTime() {
+			ct = ts.ChangeTime()
+		} else {
+			// fall back to ModTime if ChangeTime cannot be determined
+			ct = lstat.ModTime()
+		}
+
 		files = append(files, &file{
-			FileInfo:  lstat,
-			linkState: linkState,
-			path:      fpath,
-			dirCount:  -1,
+			FileInfo:   lstat,
+			linkState:  linkState,
+			path:       fpath,
+			dirCount:   -1,
+			accessTime: at,
+			changeTime: ct,
 		})
 	}
 
@@ -123,6 +140,14 @@ func (dir *dir) sort() {
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+		})
+	case atimeSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+		})
+	case ctimeSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
 		})
 	}
 

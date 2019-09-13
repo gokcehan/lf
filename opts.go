@@ -9,6 +9,8 @@ const (
 	nameSort
 	sizeSort
 	timeSort
+	atimeSort
+	ctimeSort
 )
 
 type sortOption byte
@@ -153,6 +155,8 @@ func init() {
 	gOpts.keys["sn"] = &listExpr{[]expr{&setExpr{"sortby", "natural"}, &setExpr{"info", ""}}}
 	gOpts.keys["ss"] = &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}
 	gOpts.keys["st"] = &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}}
+	gOpts.keys["sa"] = &listExpr{[]expr{&setExpr{"sortby", "atime"}, &setExpr{"info", "atime"}}}
+	gOpts.keys["sc"] = &listExpr{[]expr{&setExpr{"sortby", "ctime"}, &setExpr{"info", "ctime"}}}
 	gOpts.keys["gh"] = &callExpr{"cd", []string{"~"}, 1}
 
 	gOpts.cmdkeys = make(map[string]expr)
