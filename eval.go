@@ -238,10 +238,6 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "shell":
 		gOpts.shell = e.val
 	case "sortby":
-		if e.val != "natural" && e.val != "name" && e.val != "size" && e.val != "time" {
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size' or 'time'")
-			return
-		}
 		switch e.val {
 		case "natural":
 			gOpts.sortType.method = naturalSort
@@ -251,6 +247,13 @@ func (e *setExpr) eval(app *app, args []string) {
 			gOpts.sortType.method = sizeSort
 		case "time":
 			gOpts.sortType.method = timeSort
+		case "ctime":
+			gOpts.sortType.method = ctimeSort
+		case "atime":
+			gOpts.sortType.method = atimeSort
+		default:
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime' or 'ctime'")
+			return
 		}
 		app.nav.sort()
 		app.ui.sort()
@@ -281,8 +284,10 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "info":
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
-			if s != "" && s != "size" && s != "time" {
-				app.ui.echoerr("info: should consist of 'size' or 'time' separated with colon")
+			switch s {
+			case "", "size", "time", "atime", "ctime":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
 				return
 			}
 		}
