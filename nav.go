@@ -32,6 +32,7 @@ type file struct {
 	dirCount   int
 	accessTime time.Time
 	changeTime time.Time
+	ext        string
 }
 
 func readdir(path string) ([]*file, error) {
@@ -77,6 +78,10 @@ func readdir(path string) ([]*file, error) {
 			ct = lstat.ModTime()
 		}
 
+		// returns an empty string if extension could not be determined
+		// i.e. directories, filenames without extensions
+		ext := filepath.Ext(fpath)
+
 		files = append(files, &file{
 			FileInfo:   lstat,
 			linkState:  linkState,
@@ -84,6 +89,7 @@ func readdir(path string) ([]*file, error) {
 			dirCount:   -1,
 			accessTime: at,
 			changeTime: ct,
+			ext:        ext,
 		})
 	}
 
@@ -148,6 +154,26 @@ func (dir *dir) sort() {
 	case ctimeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+		})
+	case extSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			leftExt := strings.ToLower(dir.files[i].ext)
+			rightExt := strings.ToLower(dir.files[j].ext)
+
+			// if the extension could not be determined (directories, files without)
+			// use a zero byte so that these files can be ranked higher
+			if leftExt == "" {
+				leftExt = "\x00"
+			}
+			if rightExt == "" {
+				rightExt = "\x00"
+			}
+
+			// in order to also have natural sorting with the filenames
+			// combine the name with the ext but have the ext at the front
+			left := leftExt + strings.ToLower(dir.files[i].Name())
+			right := rightExt + strings.ToLower(dir.files[j].Name())
+			return left < right
 		})
 	}
 

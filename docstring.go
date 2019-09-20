@@ -179,6 +179,7 @@ The following additional keybindings are provided by default:
     map st :set sortby time; set info time
     map sa :set sortby atime; set info atime
     map sc :set sortby ctime; set info ctime
+	map se :set sortby ext; set info
     map gh cd ~
 
 The following keybindings to applications are provided by default:
