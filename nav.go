@@ -678,6 +678,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 	errCount := 0
 	for _, src := range srcs {
 		nav.moveCountChan <- 1
+		
 		srcStat, err := os.Stat(src)
 		if err != nil {
 			errCount++
@@ -816,6 +817,7 @@ func (nav *nav) paste(ui *ui) error {
 	}
 
 	dstDir := nav.currDir().path
+
 	if cp {
 		go nav.copyAsync(ui, srcs, dstDir)
 	} else {
@@ -838,12 +840,12 @@ func (nav *nav) del(ui *ui) error {
 	if err != nil {
 		return err
 	}
+
 	go nav.delAsync(ui, list)
 
 	if err := remote("send sync"); err != nil {
 		return fmt.Errorf("delete: %s", err)
 	}
-
 
 	return nil
 }
