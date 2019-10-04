@@ -128,15 +128,15 @@ The following options can be used to customize the behavior of lf:
     tabstop         integer  (default 8)
     errorfmt        string   (default "\033[7;31;47m%s\033[0m")
     filesep         string   (default "\n")
-    ifs             string   (default ”) (not exported if empty)
-    previewer       string   (default ”) (not filtered if empty)
+    ifs             string   (default '') (not exported if empty)
+    previewer       string   (default '') (not filtered if empty)
     promptfmt       string   (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
     shell           string   (default 'sh')
     sortby          string   (default 'natural')
     timefmt         string   (default 'Mon Jan _2 15:04:05 2006')
     ratios          string   (default '1:2:3')
-    info            string   (default ”)
-    shellopts       string   (default ”)
+    info            string   (default '')
+    shellopts       string   (default '')
 
 The following variables are exported for shell commands:
 
@@ -179,7 +179,7 @@ The following additional keybindings are provided by default:
     map st :set sortby time; set info time
     map sa :set sortby atime; set info atime
     map sc :set sortby ctime; set info ctime
-	map se :set sortby ext; set info
+    map se :set sortby ext; set info
     map gh cd ~
 
 The following keybindings to applications are provided by default:
