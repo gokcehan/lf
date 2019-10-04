@@ -251,8 +251,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			gOpts.sortType.method = ctimeSort
 		case "atime":
 			gOpts.sortType.method = atimeSort
+		case "ext":
+			gOpts.sortType.method = extSort
 		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime' or 'ctime'")
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
 			return
 		}
 		app.nav.sort()
