@@ -560,7 +560,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	pwd := nav.currDir().path
 	nohome := strings.TrimPrefix(pwd, gUser.HomeDir)
 	if len(nohome) < len(pwd) {
-	  pwd = "~/" + nohome
+		pwd = "~/" + nohome
 	}
 	pwd = filepath.Clean(pwd)
 
