@@ -323,6 +323,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	cmd := shellCommand(s, args)
 
 	var out io.Reader
+	var err error
 	switch prefix {
 	case "$", "!":
 		cmd.Stdin = os.Stdin
@@ -332,6 +333,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()
+
+		err = cmd.Run()
 	case "%":
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -344,13 +347,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
-	}
-
-	var err error
-	switch prefix {
-	case "$", "!":
-		err = cmd.Run()
-	case "%", "&":
+		fallthrough
+	case "&":
 		err = cmd.Start()
 	}
 
