@@ -1,5 +1,14 @@
 #compdef lf
 
+# For using these completions you must: 
+# - rename this file to _lf
+# - add the containing folder to $fpath in .zshrc, like this:
+# '''
+# fpath=(/path/to/folder/containing_lf $fpath)
+# autoload -U compinit
+# compinit
+# '''
+#
 # zsh completions for 'lf'
 # automatically generated with http://github.com/RobSis/zsh-completion-generator
 local arguments
