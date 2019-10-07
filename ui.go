@@ -557,9 +557,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 func (ui *ui) drawPromptLine(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	dir := nav.currDir()
-
-	pwd := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
+	pwd := nav.currDir().path
+	nohome := strings.TrimPrefix(pwd, gUser.HomeDir)
+	if len(nohome) < len(pwd) {
+	  pwd = "~/" + nohome
+	}
 	pwd = filepath.Clean(pwd)
 
 	var fname string
