@@ -638,6 +638,9 @@ You may want to use either file extensions or mime types from 'file' command:
         esac
     }}
 
+You may want to use 'setsid' before your opener command to have persistent
+processes that continue to run after lf quits.
+
 Following command is provided by default:
 
     cmd open &$OPENER $f
