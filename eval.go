@@ -670,6 +670,32 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.bottom()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+	case "next_parent":
+		app.nav.updir()
+		app.nav.down(e.count)
+		curr, _ := app.nav.currFile()
+		if curr.IsDir() {
+			app.nav.open()
+		} else {
+			app.nav.up(e.count)
+			app.nav.open()
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+		return
+	case "prev_parent":
+		app.nav.updir()
+		app.nav.up(e.count)
+		curr, _ := app.nav.currFile()
+		if curr.IsDir() {
+			app.nav.open()
+		} else {
+			app.nav.down(e.count)
+			app.nav.open()
+		}
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
+		return
 	case "toggle":
 		for i := 0; i < e.count; i++ {
 			app.nav.toggle()
