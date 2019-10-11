@@ -222,6 +222,7 @@ type nav struct {
 	moveCount     int
 	moveTotal     int
 	moveUpdate    int
+	deleting      bool
 	copyBytesChan chan int64
 	copyTotalChan chan int64
 	moveCountChan chan int
@@ -755,7 +756,29 @@ func (nav *nav) del(ui *ui) error {
 		return err
 	}
 
-	go nav.delAsync(ui, list) // see delete.go
+	go func() {
+		echo := &callExpr{"echoerr", []string{""}, 1}
+		errs := make(chan error, 1024)
+		errCount := 0
+		nav.deleting = true
+
+		for _, path := range list {
+			if err := os.RemoveAll(path); err != nil {
+				errs <- fmt.Errorf("delete: %s", err)
+			}
+		}
+		nav.deleting = false
+
+		for {
+			err, ok := <-errs
+			if !ok {
+				break
+			}
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+			ui.exprChan <- echo
+		}
+	}()
 
 	if err := remote("send sync"); err != nil {
 		return fmt.Errorf("delete: %s", err)
