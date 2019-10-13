@@ -670,6 +670,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.bottom()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+	case "goto":
+		app.nav.goTo(e.count)
+		app.ui.loadFile(app.nav)
+		app.ui.loadFileInfo(app.nav)
 	case "next_parent":
 		app.nav.updir()
 		app.nav.down(e.count)

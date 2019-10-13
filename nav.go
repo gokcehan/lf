@@ -589,6 +589,20 @@ func (nav *nav) bottom() {
 	dir.pos = min(dir.ind, nav.height-1)
 }
 
+func (nav *nav) goTo(index int) {
+	dir := nav.currDir()
+
+	if index == 0 {
+		dir.ind = 0
+	} else if index >= len(dir.files) {
+		dir.ind = len(dir.files) - 1
+	} else {
+		dir.ind = index - 1
+	}
+
+	dir.pos = min(dir.ind, nav.height-1)
+}
+
 func (nav *nav) toggleSelection(path string) {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)

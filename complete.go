@@ -25,6 +25,7 @@ var (
 		"quit",
 		"top",
 		"bottom",
+		"goto",
 		"next_parent",
 		"prev_parent",
 		"toggle",
