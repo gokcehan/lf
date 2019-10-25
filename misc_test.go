@@ -86,6 +86,7 @@ func TestEscape(t *testing.T) {
 		{`foo#bar`, `foo\#bar`},
 		{`foo\tbar`, `foo\\tbar`},
 		{"foo\tbar", "foo\\\tbar"},
+		{`foo\`, `foo\\`},
 	}
 
 	for _, test := range tests {
@@ -110,6 +111,7 @@ func TestUnescape(t *testing.T) {
 		{`foo\#bar`, `foo#bar`},
 		{`foo\\tbar`, `foo\tbar`},
 		{"foo\\\tbar", "foo\tbar"},
+		{`foo\`, `foo\`},
 	}
 
 	for _, test := range tests {

@@ -75,6 +75,9 @@ func unescape(s string) string {
 		esc = false
 		buf = append(buf, r)
 	}
+	if esc {
+		buf = append(buf, '\\')
+	}
 	return string(buf)
 }
 
