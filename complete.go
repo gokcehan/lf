@@ -262,7 +262,7 @@ func matchFile(s string) (matches []string, longest string) {
 
 		item := f.Name()
 		if f.Mode().IsDir() {
-			item += string(filepath.Separator)
+			item += escape(string(filepath.Separator))
 		}
 		matches = append(matches, item)
 
@@ -272,7 +272,7 @@ func matchFile(s string) (matches []string, longest string) {
 			if f.Mode().IsRegular() {
 				longest = name + " "
 			} else {
-				longest = name + string(filepath.Separator)
+				longest = name + escape(string(filepath.Separator))
 			}
 		}
 	}
