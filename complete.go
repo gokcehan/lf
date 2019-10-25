@@ -256,7 +256,7 @@ func matchFile(s string) (matches []string, longest string) {
 
 		name := f.Name()
 		if isRoot(s) || filepath.Base(s) != s {
-			name = filepath.Join(filepath.Dir(s), f.Name())
+			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
 		}
 		name = escape(name)
 
