@@ -132,6 +132,18 @@ var gEvalTests = []struct {
 	},
 
 	{
+		`set ifs ""`,
+		[]string{"set", "ifs", "", "\n"},
+		[]expr{&setExpr{"ifs", ""}},
+	},
+
+	{
+		`set ifs "\n"`,
+		[]string{"set", "ifs", "\n", "\n"},
+		[]expr{&setExpr{"ifs", "\n"}},
+	},
+
+	{
 		"set ratios 1:2:3",
 		[]string{"set", "ratios", "1:2:3", "\n"},
 		[]expr{&setExpr{"ratios", "1:2:3"}},

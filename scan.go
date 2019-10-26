@@ -249,6 +249,7 @@ scan:
 					buf = append(buf, '\\', s.chr)
 				}
 				s.next()
+				continue
 			}
 			buf = append(buf, s.chr)
 			s.next()
