@@ -758,26 +758,17 @@ func (nav *nav) del(ui *ui) error {
 
 	go func() {
 		echo := &callExpr{"echoerr", []string{""}, 1}
-		errs := make(chan error, 1024)
 		errCount := 0
 		nav.deleting = true
 
 		for _, path := range list {
 			if err := os.RemoveAll(path); err != nil {
-				errs <- fmt.Errorf("delete: %s", err)
+				errCount++
+				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+				ui.exprChan <- echo
 			}
 		}
 		nav.deleting = false
-
-		for {
-			err, ok := <-errs
-			if !ok {
-				break
-			}
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
-		}
 	}()
 
 	if err := remote("send sync"); err != nil {
