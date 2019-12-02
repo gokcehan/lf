@@ -179,7 +179,7 @@ func (app *app) loop() {
 				continue
 			}
 
-			if app.nav.deleting {
+			if app.nav.deleteTotal > 0 {
 				app.ui.echoerr("quit: delete operation in progress")
 				continue
 			}
@@ -235,6 +235,21 @@ func (app *app) loop() {
 			}
 			if app.nav.moveTotal == 0 {
 				app.nav.moveUpdate = 0
+			}
+			app.ui.draw(app.nav)
+		case n := <-app.nav.deleteCountChan:
+			app.nav.deleteCount += n
+			if app.nav.deleteUpdate++; app.nav.deleteUpdate >= 1000 {
+				app.nav.deleteUpdate = 0
+				app.ui.draw(app.nav)
+			}
+		case n := <-app.nav.deleteTotalChan:
+			app.nav.deleteTotal += n
+			if n < 0 {
+				app.nav.deleteCount += n
+			}
+			if app.nav.deleteTotal == 0 {
+				app.nav.deleteUpdate = 0
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:

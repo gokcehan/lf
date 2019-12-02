@@ -616,6 +616,10 @@ func (ui *ui) drawStatLine(nav *nav) {
 		progress += fmt.Sprintf("  [%d/%d]", nav.moveCount, nav.moveTotal)
 	}
 
+	if nav.deleteTotal > 0 {
+		progress += fmt.Sprintf("  [%d/%d]", nav.deleteCount, nav.deleteTotal)
+	}
+
 	ruler := fmt.Sprintf("%s%s  %d/%d", acc, progress, ind, tot)
 
 	ui.msgWin.printRight(0, fg, bg, ruler)

@@ -241,34 +241,38 @@ func (dir *dir) sel(name string, height int) {
 }
 
 type nav struct {
-	dirs          []*dir
-	copyBytes     int64
-	copyTotal     int64
-	copyUpdate    int
-	moveCount     int
-	moveTotal     int
-	moveUpdate    int
-	deleting      bool
-	copyBytesChan chan int64
-	copyTotalChan chan int64
-	moveCountChan chan int
-	moveTotalChan chan int
-	dirChan       chan *dir
-	regChan       chan *reg
-	dirCache      map[string]*dir
-	regCache      map[string]*reg
-	saves         map[string]bool
-	marks         map[string]string
-	renameCache   []string
-	selections    map[string]int
-	selectionInd  int
-	height        int
-	find          string
-	findBack      bool
-	search        string
-	searchBack    bool
-	searchInd     int
-	searchPos     int
+	dirs            []*dir
+	copyBytes       int64
+	copyTotal       int64
+	copyUpdate      int
+	moveCount       int
+	moveTotal       int
+	moveUpdate      int
+	deleteCount     int
+	deleteTotal     int
+	deleteUpdate    int
+	copyBytesChan   chan int64
+	copyTotalChan   chan int64
+	moveCountChan   chan int
+	moveTotalChan   chan int
+	deleteCountChan chan int
+	deleteTotalChan chan int
+	dirChan         chan *dir
+	regChan         chan *reg
+	dirCache        map[string]*dir
+	regCache        map[string]*reg
+	saves           map[string]bool
+	marks           map[string]string
+	renameCache     []string
+	selections      map[string]int
+	selectionInd    int
+	height          int
+	find            string
+	findBack        bool
+	search          string
+	searchBack      bool
+	searchInd       int
+	searchPos       int
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -336,20 +340,22 @@ func newNav(height int) *nav {
 	}
 
 	nav := &nav{
-		copyBytesChan: make(chan int64, 1024),
-		copyTotalChan: make(chan int64, 1024),
-		moveCountChan: make(chan int, 1024),
-		moveTotalChan: make(chan int, 1024),
-		dirChan:       make(chan *dir),
-		regChan:       make(chan *reg),
-		dirCache:      make(map[string]*dir),
-		regCache:      make(map[string]*reg),
-		saves:         make(map[string]bool),
-		marks:         make(map[string]string),
-		renameCache:   make([]string, 2),
-		selections:    make(map[string]int),
-		selectionInd:  0,
-		height:        height,
+		copyBytesChan:   make(chan int64, 1024),
+		copyTotalChan:   make(chan int64, 1024),
+		moveCountChan:   make(chan int, 1024),
+		moveTotalChan:   make(chan int, 1024),
+		deleteCountChan: make(chan int, 1024),
+		deleteTotalChan: make(chan int, 1024),
+		dirChan:         make(chan *dir),
+		regChan:         make(chan *reg),
+		dirCache:        make(map[string]*dir),
+		regCache:        make(map[string]*reg),
+		saves:           make(map[string]bool),
+		marks:           make(map[string]string),
+		renameCache:     make([]string, 2),
+		selections:      make(map[string]int),
+		selectionInd:    0,
+		height:          height,
 	}
 
 	nav.getDirs(wd)
@@ -785,21 +791,27 @@ func (nav *nav) del(ui *ui) error {
 	go func() {
 		echo := &callExpr{"echoerr", []string{""}, 1}
 		errCount := 0
-		nav.deleting = true
+
+		nav.deleteTotalChan <- len(list)
 
 		for _, path := range list {
+			nav.deleteCountChan <- 1
+
 			if err := os.RemoveAll(path); err != nil {
 				errCount++
 				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 				ui.exprChan <- echo
 			}
 		}
-		nav.deleting = false
-	}()
 
-	if err := remote("send sync"); err != nil {
-		return fmt.Errorf("delete: %s", err)
-	}
+		nav.deleteTotalChan <- -len(list)
+
+		if err := remote("send load"); err != nil {
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+			ui.exprChan <- echo
+		}
+	}()
 
 	return nil
 }
