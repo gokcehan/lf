@@ -248,6 +248,7 @@ type nav struct {
 	moveCount     int
 	moveTotal     int
 	moveUpdate    int
+	deleting      bool
 	copyBytesChan chan int64
 	copyTotalChan chan int64
 	moveCountChan chan int
@@ -775,16 +776,29 @@ func (nav *nav) paste(ui *ui) error {
 	return nil
 }
 
-func (nav *nav) del() error {
+func (nav *nav) del(ui *ui) error {
 	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
 
-	for _, path := range list {
-		if err := os.RemoveAll(path); err != nil {
-			return err
+	go func() {
+		echo := &callExpr{"echoerr", []string{""}, 1}
+		errCount := 0
+		nav.deleting = true
+
+		for _, path := range list {
+			if err := os.RemoveAll(path); err != nil {
+				errCount++
+				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+				ui.exprChan <- echo
+			}
 		}
+		nav.deleting = false
+	}()
+
+	if err := remote("send sync"); err != nil {
+		return fmt.Errorf("delete: %s", err)
 	}
 
 	return nil

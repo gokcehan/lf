@@ -179,6 +179,11 @@ func (app *app) loop() {
 				continue
 			}
 
+			if app.nav.deleting {
+				app.ui.echoerr("quit: delete operation in progress")
+				continue
+			}
+
 			log.Print("bye!")
 
 			if err := app.writeHistory(); err != nil {

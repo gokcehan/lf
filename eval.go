@@ -470,7 +470,7 @@ func insert(app *app, arg string) {
 		normal(app)
 
 		if arg == "y" {
-			if err := app.nav.del(); err != nil {
+			if err := app.nav.del(app.ui); err != nil {
 				app.ui.echoerrf("delete: %s", err)
 				return
 			}
