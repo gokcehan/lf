@@ -46,12 +46,23 @@ cmd open ${{
 # cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 # map r push :rename<space>
 
-# make sure trash folder exists
-# %mkdir -p ~/.trash
-
-# move current file or selected files to trash folder
-# (also see 'man mv' for backup/overwrite options)
-cmd trash %set -f; mv $fx ~/.trash
+# Move current file or selected files to trash.  On systems that use GIO (Gnome
+# Input/Output), such as Ubuntu 18.04, `gio trash` should be used for moving
+# files to trash. If GIO is not available fall back to `mv`. Note that `gio
+# trash` creates a separate location for trash on each filesystem, and will not
+# move files between filesystems. `mv` will move files between filesystems with
+# a potentially lengthy copy+delete operation if the trash folder is on a
+# different filesystem that the files being deleted. See `man gio` and `man mv`
+# for backup/overwrite options.
+cmd trash ${{
+    set -f
+    if gio trash 2>/dev/null; then
+        gio trash $fx
+    else
+        mkdir -p ~/.trash
+        mv $fx ~/.trash
+    fi
+}}
 
 # define a custom 'delete' command
 # cmd delete ${{
