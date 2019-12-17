@@ -1090,6 +1090,9 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 				oldPathTo := filepath.Join(wd, curr.Name())
 				newPathTo := filepath.Join(wd, s)
+				if oldPathTo == newPathTo {
+					return
+				}
 				app.nav.renameCache = []string{oldPathTo, newPathTo}
 
 				if dir, _ := filepath.Split(s); dir != "" {
