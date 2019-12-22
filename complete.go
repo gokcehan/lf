@@ -382,7 +382,7 @@ func completeShell(acc []rune) (matches []string, longestAcc []rune) {
 		longestAcc = []rune(longest)
 	default:
 		matches, longest = matchFile(f[len(f)-1])
-		longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+		longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], []rune(longest)...)
 	}
 
 	return

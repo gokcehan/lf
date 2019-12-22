@@ -1204,8 +1204,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		update(app)
 	case "cmd-delete-unix-word":
 		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
-		app.ui.cmdYankBuf = app.ui.cmdAccLeft[ind:]
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
+		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
 		update(app)
 	case "cmd-yank":
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdYankBuf...)
@@ -1230,8 +1230,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := loc[0] + 1
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 	case "cmd-word-back":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
@@ -1242,9 +1242,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		ind := locs[len(locs)-1][1] - 1
 		old := app.ui.cmdAccRight
-		app.ui.cmdAccRight = append([]rune{}, app.ui.cmdAccLeft[ind:]...)
+		app.ui.cmdAccRight = append([]rune{}, []rune(string(app.ui.cmdAccLeft)[ind:])...)
 		app.ui.cmdAccRight = append(app.ui.cmdAccRight, old...)
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
 	case "cmd-capitalize-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -1261,8 +1261,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind = loc[0] + 1
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-delete-word":
 		if len(app.ui.cmdAccRight) == 0 {
@@ -1273,7 +1273,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := loc[0] + 1
-		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
@@ -1284,8 +1284,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := loc[0] + 1
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight[:ind])))...)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight)[:ind]))...)
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-lowercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
@@ -1296,8 +1296,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := loc[0] + 1
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight[:ind])))...)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight)[:ind]))...)
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-transpose-word":
 		if len(app.ui.cmdAccLeft) == 0 {
@@ -1313,8 +1313,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
 			if loc != nil {
 				ind := loc[0] + 1
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:ind]...)
-				app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
+				app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 			}
 		}
 
@@ -1325,11 +1325,11 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		var acc []rune
 
-		acc = append(acc, app.ui.cmdAccLeft[:beg1]...)
-		acc = append(acc, app.ui.cmdAccLeft[beg2:end2]...)
-		acc = append(acc, app.ui.cmdAccLeft[end1:beg2]...)
-		acc = append(acc, app.ui.cmdAccLeft[beg1:end1]...)
-		acc = append(acc, app.ui.cmdAccLeft[end2:]...)
+		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[:beg1])...)
+		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[beg2:end2])...)
+		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[end1:beg2])...)
+		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[beg1:end1])...)
+		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[end2:])...)
 
 		app.ui.cmdAccLeft = acc
 		update(app)
