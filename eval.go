@@ -1225,22 +1225,22 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 		if loc == nil {
 			return
 		}
-		ind := loc[0] + 1
+		ind := loc[3]
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 	case "cmd-word-back":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
 		}
-		locs := reWordBeg.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+		locs := reWordBeg.FindAllStringSubmatchIndex(string(app.ui.cmdAccLeft), -1)
 		if locs == nil {
 			return
 		}
-		ind := locs[len(locs)-1][1] - 1
+		ind := locs[len(locs)-1][3]
 		old := app.ui.cmdAccRight
 		app.ui.cmdAccRight = append([]rune{}, []rune(string(app.ui.cmdAccLeft)[ind:])...)
 		app.ui.cmdAccRight = append(app.ui.cmdAccRight, old...)
@@ -1256,11 +1256,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.ui.cmdAccRight[ind] = unicode.ToUpper(app.ui.cmdAccRight[ind])
-		loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 		if loc == nil {
 			return
 		}
-		ind = loc[0] + 1
+		ind = loc[3]
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
@@ -1268,22 +1268,22 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 		if loc == nil {
 			return
 		}
-		ind := loc[0] + 1
+		ind := loc[3]
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 		if loc == nil {
 			return
 		}
-		ind := loc[0] + 1
+		ind := loc[3]
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight)[:ind]))...)
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
@@ -1291,11 +1291,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 		if loc == nil {
 			return
 		}
-		ind := loc[0] + 1
+		ind := loc[3]
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight)[:ind]))...)
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
@@ -1310,9 +1310,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if len(app.ui.cmdAccRight) > 0 {
-			loc := reWordEnd.FindStringIndex(string(app.ui.cmdAccRight))
+			loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
 			if loc != nil {
-				ind := loc[0] + 1
+				ind := loc[3]
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
 				app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 			}
