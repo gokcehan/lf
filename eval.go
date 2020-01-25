@@ -330,6 +330,12 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func on_chdir(app *app) {
+	if cmd, ok := gOpts.cmds["on_chdir"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func splitKeys(s string) (keys []string) {
 	for i := 0; i < len(s); {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -536,6 +542,7 @@ func insert(app *app, arg string) {
 		if wd != path {
 			app.nav.marks["'"] = wd
 		}
+		on_chdir(app)
 	case app.ui.cmdPrefix == "mark-remove: ":
 		normal(app)
 		if err := app.nav.removeMark(arg); err != nil {
@@ -610,6 +617,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+		on_chdir(app)
 	case "open":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
@@ -628,6 +636,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
+			on_chdir(app)
 			return
 		}
 
@@ -904,6 +913,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if wd != path {
 			app.nav.marks["'"] = wd
 		}
+		on_chdir(app)
 	case "select":
 		if len(e.args) != 1 {
 			app.ui.echoerr("select: requires an argument")
