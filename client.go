@@ -10,7 +10,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/nsf/termbox-go"
+	"github.com/doronbehar/termbox-go"
 )
 
 func run() {
