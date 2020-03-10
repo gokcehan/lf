@@ -746,7 +746,12 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "redraw":
 		app.ui.sync()
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		// TODO: is this really the best way?
+		lastWin := app.ui.wins[len(app.ui.wins) - 1]
+		app.nav.height = lastWin.h
+		app.nav.width = lastWin.w
+		app.nav.x = lastWin.x
+		app.nav.y = lastWin.y
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "load":
