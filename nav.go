@@ -366,9 +366,14 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) previewClear() {
+func (nav *nav) previewClear(wait bool) {
 	if len(gOpts.cleaner) != 0 {
-		exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Start()
+		if wait {
+			// TODO: should this always wait?
+			exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Run()
+		} else {
+			exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Start()
+		}
 	}
 }
 
@@ -442,7 +447,7 @@ func (nav *nav) preview() {
 }
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
-	nav.previewClear()
+	nav.previewClear(false)
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
 		go nav.preview()

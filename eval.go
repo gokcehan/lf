@@ -656,6 +656,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			cmd.eval(app, e.args)
 		}
 	case "quit":
+		app.nav.previewClear(true)
 		app.quitChan <- true
 	case "top":
 		app.nav.top()
