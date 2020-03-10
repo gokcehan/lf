@@ -67,8 +67,8 @@ var gEvalTests = []struct {
 
 	{
 		`echo "hello\zworld"`,
-		[]string{"echo", "helloworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"helloworld"}, 1}},
+		[]string{"echo", `hello\zworld`, "\n"},
+		[]expr{&callExpr{"echo", []string{`hello\zworld`}, 1}},
 	},
 
 	{
@@ -90,7 +90,7 @@ var gEvalTests = []struct {
 	},
 
 	{
-		`echo hello\	world`,
+		"echo hello\\\tworld",
 		[]string{"echo", "hello\tworld", "\n"},
 		[]expr{&callExpr{"echo", []string{"hello\tworld"}, 1}},
 	},
@@ -109,8 +109,8 @@ var gEvalTests = []struct {
 
 	{
 		`echo hello\zworld`,
-		[]string{"echo", "helloworld", "\n"},
-		[]expr{&callExpr{"echo", []string{"helloworld"}, 1}},
+		[]string{"echo", "hellozworld", "\n"},
+		[]expr{&callExpr{"echo", []string{"hellozworld"}, 1}},
 	},
 
 	{
@@ -129,6 +129,18 @@ var gEvalTests = []struct {
 		"set hidden\nset preview",
 		[]string{"set", "hidden", "\n", "set", "preview", "\n"},
 		[]expr{&setExpr{"hidden", ""}, &setExpr{"preview", ""}},
+	},
+
+	{
+		`set ifs ""`,
+		[]string{"set", "ifs", "", "\n"},
+		[]expr{&setExpr{"ifs", ""}},
+	},
+
+	{
+		`set ifs "\n"`,
+		[]string{"set", "ifs", "\n", "\n"},
+		[]expr{&setExpr{"ifs", "\n"}},
 	},
 
 	{
@@ -298,13 +310,17 @@ var gEvalTests = []struct {
 			cd ~
 			set hidden
 		}}`,
-		[]string{"cmd", "gohome", ":", "{{",
+		[]string{
+			"cmd", "gohome", ":", "{{",
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
-			"}}", "\n"},
-		[]expr{&cmdExpr{"gohome", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}, 1},
-			&setExpr{"hidden", ""}}},
+			"}}", "\n",
+		},
+		[]expr{&cmdExpr{
+			"gohome", &listExpr{[]expr{
+				&callExpr{"cd", []string{"~"}, 1},
+				&setExpr{"hidden", ""},
+			}},
 		}},
 	},
 
@@ -313,13 +329,17 @@ var gEvalTests = []struct {
 			cd ~
 			set hidden
 		}}`,
-		[]string{"map", "gh", ":", "{{",
+		[]string{
+			"map", "gh", ":", "{{",
 			"cd", "~", "\n",
 			"set", "hidden", "\n",
-			"}}", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{
-			&callExpr{"cd", []string{"~"}, 1},
-			&setExpr{"hidden", ""}}},
+			"}}", "\n",
+		},
+		[]expr{&mapExpr{
+			"gh", &listExpr{[]expr{
+				&callExpr{"cd", []string{"~"}, 1},
+				&setExpr{"hidden", ""},
+			}},
 		}},
 	},
 

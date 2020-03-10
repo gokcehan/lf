@@ -216,25 +216,24 @@ scan:
 		for !s.eof && s.chr != '"' {
 			if s.chr == '\\' {
 				s.next()
-				switch s.chr {
-				case '"', '\\':
+				switch {
+				case s.chr == '"' || s.chr == '\\':
 					buf = append(buf, s.chr)
-				case 'a':
+				case s.chr == 'a':
 					buf = append(buf, '\a')
-				case 'b':
+				case s.chr == 'b':
 					buf = append(buf, '\b')
-				case 'f':
+				case s.chr == 'f':
 					buf = append(buf, '\f')
-				case 'n':
+				case s.chr == 'n':
 					buf = append(buf, '\n')
-				case 'r':
+				case s.chr == 'r':
 					buf = append(buf, '\r')
-				case 't':
+				case s.chr == 't':
 					buf = append(buf, '\t')
-				case 'v':
+				case s.chr == 'v':
 					buf = append(buf, '\v')
-				}
-				if isDigit(s.chr) {
+				case isDigit(s.chr):
 					var oct []byte
 					for isDigit(s.chr) {
 						oct = append(oct, s.chr)
@@ -245,13 +244,15 @@ scan:
 						log.Printf("scanning: %s", err)
 					}
 					buf = append(buf, byte(n))
-				} else {
-					s.next()
+					continue
+				default:
+					buf = append(buf, '\\', s.chr)
 				}
-			} else {
-				buf = append(buf, s.chr)
 				s.next()
+				continue
 			}
+			buf = append(buf, s.chr)
+			s.next()
 		}
 		s.typ = tokenIdent
 		s.tok = string(buf)
@@ -293,12 +294,9 @@ scan:
 		for !s.eof && !isSpace(s.chr) && s.chr != ';' && s.chr != '#' {
 			if s.chr == '\\' {
 				s.next()
-				if isSpace(s.chr) || s.chr == '\\' {
-					buf = append(buf, s.chr)
-					s.next()
-				} else {
-					s.next()
-				}
+				buf = append(buf, s.chr)
+				s.next()
+				continue
 			}
 			buf = append(buf, s.chr)
 			s.next()

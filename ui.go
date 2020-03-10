@@ -190,8 +190,6 @@ func (win *win) printReg(reg *reg) {
 	for i, l := range reg.lines {
 		fg, bg = win.print(2, i, fg, bg, l)
 	}
-
-	return
 }
 
 func fileInfo(f *file, d *dir) string {
@@ -233,6 +231,10 @@ func fileInfo(f *file, d *dir) string {
 			}
 		case "time":
 			info = fmt.Sprintf("%s %12s", info, f.ModTime().Format("Jan _2 15:04"))
+		case "atime":
+			info = fmt.Sprintf("%s %12s", info, f.accessTime.Format("Jan _2 15:04"))
+		case "ctime":
+			info = fmt.Sprintf("%s %12s", info, f.changeTime.Format("Jan _2 15:04"))
 		default:
 			log.Printf("unknown info type: %s", s)
 		}
@@ -557,9 +559,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 func (ui *ui) drawPromptLine(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	dir := nav.currDir()
-
-	pwd := strings.Replace(dir.path, gUser.HomeDir, "~", -1)
+	pwd := nav.currDir().path
+	nohome := strings.TrimPrefix(pwd, gUser.HomeDir)
+	if len(nohome) < len(pwd) {
+		pwd = "~/" + nohome
+	}
 	pwd = filepath.Clean(pwd)
 
 	var fname string
@@ -614,12 +618,16 @@ func (ui *ui) drawStatLine(nav *nav) {
 		progress += fmt.Sprintf("  [%d/%d]", nav.moveCount, nav.moveTotal)
 	}
 
+	if nav.deleteTotal > 0 {
+		progress += fmt.Sprintf("  [%d/%d]", nav.deleteCount, nav.deleteTotal)
+	}
+
 	ruler := fmt.Sprintf("%s%s  %d/%d", acc, progress, ind, tot)
 
 	ui.msgWin.printRight(0, fg, bg, ruler)
 }
 
-func (ui *ui) drawBox(nav *nav) {
+func (ui *ui) drawBox() {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	w, h := termbox.Size()
@@ -701,7 +709,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	if gOpts.drawbox {
-		ui.drawBox(nav)
+		ui.drawBox()
 	}
 
 	if ui.menuBuf != nil {

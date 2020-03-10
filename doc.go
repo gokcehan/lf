@@ -174,6 +174,9 @@ The following additional keybindings are provided by default:
     map sn :set sortby natural; set info
     map ss :set sortby size; set info size
     map st :set sortby time; set info time
+    map sa :set sortby atime; set info atime
+    map sc :set sortby ctime; set info ctime
+    map se :set sortby ext; set info
     map gh cd ~
 
 The following keybindings to applications are provided by default:
@@ -634,6 +637,9 @@ You may want to use either file extensions or mime types from 'file' command:
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
     }}
+
+You may want to use 'setsid' before your opener command to have persistent
+processes that continue to run after lf quits.
 
 Following command is provided by default:
 

@@ -58,6 +58,7 @@ func listen(l net.Listener) {
 func handleConn(c net.Conn) {
 	s := bufio.NewScanner(c)
 
+Loop:
 	for s.Scan() {
 		log.Printf("listen: %s", s.Text())
 		word, rest := splitWord(s.Text())
@@ -71,7 +72,7 @@ func handleConn(c net.Conn) {
 				gCopyFile = false
 			default:
 				log.Printf("unexpected option to copy file(s): %s", s.Text())
-				break
+				break Loop
 			}
 			gFileList = nil
 			for s.Scan() && s.Text() != "" {
@@ -120,7 +121,7 @@ func handleConn(c net.Conn) {
 				c.Close()
 			}
 			gListener.Close()
-			break
+			break Loop
 		default:
 			log.Printf("listen: unexpected command: %s", word)
 		}

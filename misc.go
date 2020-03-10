@@ -41,22 +41,12 @@ func runeSliceWidthRange(rs []rune, beg, end int) []rune {
 	return nil
 }
 
-// This function is used to escape whitespaces with backlashes in a given
-// string. If a whitespace is already escaped then it is not escaped again.
+// This function is used to escape whitespaces and special characters with
+// backlashes in a given string.
 func escape(s string) string {
-	esc := false
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
-		if r == '\\' {
-			esc = true
-			continue
-		}
-		if esc {
-			esc = false
-			buf = append(buf, '\\', r)
-			continue
-		}
-		if unicode.IsSpace(r) {
+		if unicode.IsSpace(r) || r == '\\' || r == ';' || r == '#' {
 			buf = append(buf, '\\')
 		}
 		buf = append(buf, r)
@@ -65,25 +55,28 @@ func escape(s string) string {
 }
 
 // This function is used to remove backlashes that are used to escape
-// whitespaces in a given string.
+// whitespaces and special characters in a given string.
 func unescape(s string) string {
 	esc := false
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
+		if esc {
+			if !unicode.IsSpace(r) && r != '\\' && r != ';' && r != '#' {
+				buf = append(buf, '\\')
+			}
+			buf = append(buf, r)
+			esc = false
+			continue
+		}
 		if r == '\\' {
 			esc = true
 			continue
 		}
-		if esc {
-			esc = false
-			if unicode.IsSpace(r) {
-				buf = append(buf, r)
-			} else {
-				buf = append(buf, '\\', r)
-			}
-			continue
-		}
+		esc = false
 		buf = append(buf, r)
+	}
+	if esc {
+		buf = append(buf, '\\')
 	}
 	return string(buf)
 }

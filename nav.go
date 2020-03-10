@@ -13,6 +13,8 @@ import (
 	"strconv"
 	"strings"
 	"time"
+
+	times "gopkg.in/djherbis/times.v1"
 )
 
 type linkState byte
@@ -25,9 +27,12 @@ const (
 
 type file struct {
 	os.FileInfo
-	linkState linkState
-	path      string
-	dirCount  int
+	linkState  linkState
+	path       string
+	dirCount   int
+	accessTime time.Time
+	changeTime time.Time
+	ext        string
 }
 
 func readdir(path string) ([]*file, error) {
@@ -62,11 +67,29 @@ func readdir(path string) ([]*file, error) {
 			}
 		}
 
+		ts := times.Get(lstat)
+		at := ts.AccessTime()
+		var ct time.Time
+		// from times docs: ChangeTime() panics unless HasChangeTime() is true
+		if ts.HasChangeTime() {
+			ct = ts.ChangeTime()
+		} else {
+			// fall back to ModTime if ChangeTime cannot be determined
+			ct = lstat.ModTime()
+		}
+
+		// returns an empty string if extension could not be determined
+		// i.e. directories, filenames without extensions
+		ext := filepath.Ext(fpath)
+
 		files = append(files, &file{
-			FileInfo:  lstat,
-			linkState: linkState,
-			path:      fpath,
-			dirCount:  -1,
+			FileInfo:   lstat,
+			linkState:  linkState,
+			path:       fpath,
+			dirCount:   -1,
+			accessTime: at,
+			changeTime: ct,
+			ext:        ext,
 		})
 	}
 
@@ -123,6 +146,34 @@ func (dir *dir) sort() {
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+		})
+	case atimeSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+		})
+	case ctimeSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+		})
+	case extSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			leftExt := strings.ToLower(dir.files[i].ext)
+			rightExt := strings.ToLower(dir.files[j].ext)
+
+			// if the extension could not be determined (directories, files without)
+			// use a zero byte so that these files can be ranked higher
+			if leftExt == "" {
+				leftExt = "\x00"
+			}
+			if rightExt == "" {
+				rightExt = "\x00"
+			}
+
+			// in order to also have natural sorting with the filenames
+			// combine the name with the ext but have the ext at the front
+			left := leftExt + strings.ToLower(dir.files[i].Name())
+			right := rightExt + strings.ToLower(dir.files[j].Name())
+			return left < right
 		})
 	}
 
@@ -190,36 +241,41 @@ func (dir *dir) sel(name string, height int) {
 }
 
 type nav struct {
-	dirs          []*dir
-	copyBytes     int64
-	copyTotal     int64
-	copyUpdate    int
-	moveCount     int
-	moveTotal     int
-	moveUpdate    int
-	copyBytesChan chan int64
-	copyTotalChan chan int64
-	moveCountChan chan int
-	moveTotalChan chan int
-	dirChan       chan *dir
-	regChan       chan *reg
-	dirCache      map[string]*dir
-	regCache      map[string]*reg
-	saves         map[string]bool
-	marks         map[string]string
-	renameCache   []string
-	selections    map[string]int
-	selectionInd  int
-	width         int
-	height        int
-	x             int
-	y             int
-	find          string
-	findBack      bool
-	search        string
-	searchBack    bool
-	searchInd     int
-	searchPos     int
+	dirs            []*dir
+	copyBytes       int64
+	copyTotal       int64
+	copyUpdate      int
+	moveCount       int
+	moveTotal       int
+	moveUpdate      int
+	deleteCount     int
+	deleteTotal     int
+	deleteUpdate    int
+	copyBytesChan   chan int64
+	copyTotalChan   chan int64
+	moveCountChan   chan int
+	moveTotalChan   chan int
+	deleteCountChan chan int
+	deleteTotalChan chan int
+	dirChan         chan *dir
+	regChan         chan *reg
+	dirCache        map[string]*dir
+	regCache        map[string]*reg
+	saves           map[string]bool
+	marks           map[string]string
+	renameCache     []string
+	selections      map[string]int
+	selectionInd    int
+	width           int
+	height          int
+	x               int
+	y               int
+	find            string
+	findBack        bool
+	search          string
+	searchBack      bool
+	searchInd       int
+	searchPos       int
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -756,23 +812,41 @@ func (nav *nav) paste(ui *ui) error {
 	return nil
 }
 
-func (nav *nav) del() error {
+func (nav *nav) del(ui *ui) error {
 	list, err := nav.currFileOrSelections()
-
 	if err != nil {
 		return err
 	}
 
-	for _, path := range list {
-		if err := os.RemoveAll(path); err != nil {
-			return err
+	go func() {
+		echo := &callExpr{"echoerr", []string{""}, 1}
+		errCount := 0
+
+		nav.deleteTotalChan <- len(list)
+
+		for _, path := range list {
+			nav.deleteCountChan <- 1
+
+			if err := os.RemoveAll(path); err != nil {
+				errCount++
+				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+				ui.exprChan <- echo
+			}
 		}
-	}
+
+		nav.deleteTotalChan <- -len(list)
+
+		if err := remote("send load"); err != nil {
+			errCount++
+			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+			ui.exprChan <- echo
+		}
+	}()
 
 	return nil
 }
 
-func (nav *nav) rename(ui *ui) error {
+func (nav *nav) rename() error {
 	oldPath := nav.renameCache[0]
 	newPath := nav.renameCache[1]
 	dir, _ := filepath.Split(newPath)
@@ -860,7 +934,6 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 
 	for i := 0; i < len(curDir.files); i++ {
 		match, err := filepath.Match(pattern, curDir.files[i].Name())
-
 		if err != nil {
 			return fmt.Errorf("glob-select: %s", err)
 		}
@@ -1039,9 +1112,8 @@ func (nav *nav) removeMark(mark string) error {
 	if _, ok := nav.marks[mark]; ok {
 		delete(nav.marks, mark)
 		return nil
-	} else {
-		return fmt.Errorf("no such mark")
 	}
+	return fmt.Errorf("no such mark")
 }
 
 func (nav *nav) readMarks() error {

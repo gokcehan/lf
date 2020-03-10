@@ -181,6 +181,11 @@ func (app *app) loop() {
 				continue
 			}
 
+			if app.nav.deleteTotal > 0 {
+				app.ui.echoerr("quit: delete operation in progress")
+				continue
+			}
+
 			log.Print("bye!")
 
 			if err := app.writeHistory(); err != nil {
@@ -232,6 +237,21 @@ func (app *app) loop() {
 			}
 			if app.nav.moveTotal == 0 {
 				app.nav.moveUpdate = 0
+			}
+			app.ui.draw(app.nav)
+		case n := <-app.nav.deleteCountChan:
+			app.nav.deleteCount += n
+			if app.nav.deleteUpdate++; app.nav.deleteUpdate >= 1000 {
+				app.nav.deleteUpdate = 0
+				app.ui.draw(app.nav)
+			}
+		case n := <-app.nav.deleteTotalChan:
+			app.nav.deleteTotal += n
+			if n < 0 {
+				app.nav.deleteCount += n
+			}
+			if app.nav.deleteTotal == 0 {
+				app.nav.deleteUpdate = 0
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
@@ -325,6 +345,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	cmd := shellCommand(s, args)
 
 	var out io.Reader
+	var err error
 	switch prefix {
 	case "$", "!":
 		cmd.Stdin = os.Stdin
@@ -334,6 +355,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()
+
+		err = cmd.Run()
 	case "%":
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -346,13 +369,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
-	}
-
-	var err error
-	switch prefix {
-	case "$", "!":
-		err = cmd.Run()
-	case "%", "&":
+		fallthrough
+	case "&":
 		err = cmd.Start()
 	}
 

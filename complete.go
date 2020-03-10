@@ -257,13 +257,13 @@ func matchFile(s string) (matches []string, longest string) {
 
 		name := f.Name()
 		if isRoot(s) || filepath.Base(s) != s {
-			name = filepath.Join(filepath.Dir(s), f.Name())
+			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
 		}
 		name = escape(name)
 
 		item := f.Name()
 		if f.Mode().IsDir() {
-			item += string(filepath.Separator)
+			item += escape(string(filepath.Separator))
 		}
 		matches = append(matches, item)
 
@@ -273,7 +273,7 @@ func matchFile(s string) (matches []string, longest string) {
 			if f.Mode().IsRegular() {
 				longest = name + " "
 			} else {
-				longest = name + string(filepath.Separator)
+				longest = name + escape(string(filepath.Separator))
 			}
 		}
 	}
@@ -383,7 +383,7 @@ func completeShell(acc []rune) (matches []string, longestAcc []rune) {
 		longestAcc = []rune(longest)
 	default:
 		matches, longest = matchFile(f[len(f)-1])
-		longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+		longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], []rune(longest)...)
 	}
 
 	return
