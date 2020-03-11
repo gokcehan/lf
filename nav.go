@@ -479,11 +479,10 @@ func (nav *nav) preview() {
 			if err := cmd.Wait(); err != nil {
 				if cmd.ProcessState.ExitCode() == 5 {
 					nav.regCache[curr.path].volatile = true
-					nav.regCache[curr.path].loading = false
-					nav.regChan <- nav.regCache[curr.path]
-				} else {
-					log.Printf("previewing file: %s", err)
 				}
+
+				nav.regCache[curr.path].loading = false
+				nav.regChan <- nav.regCache[curr.path]
 			}
 
 			out.Close()
