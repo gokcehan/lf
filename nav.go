@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	times "gopkg.in/djherbis/times.v1"
@@ -270,6 +271,7 @@ type nav struct {
 	height          int
 	x               int
 	y               int
+	previewBlock    sync.Mutex
 	find            string
 	findBack        bool
 	search          string
@@ -426,6 +428,13 @@ func (nav *nav) previewClear() {
 	if len(gOpts.cleaner) != 0 {
 		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
 
+		nav.previewBlock.Lock()
+		log.Println("previewClear(): locking")
+		defer func () {
+			log.Println("previewClear(): unlocking")
+			nav.previewBlock.Unlock()
+		}()
+
 		if err := cmd.Start(); err != nil {
 			log.Printf("cleaning preview: %s", err)
 		}
@@ -444,7 +453,20 @@ func (nav *nav) preview() {
 		return
 	}
 
+	nav.previewBlock.Lock()
+	log.Println("preview(): locking")
+	defer func () {
+		log.Println("preview(): unlocking")
+		nav.previewBlock.Unlock()
+	}()
+
 	var reader io.Reader
+
+	// Do not load preview if it's a previous file
+	// TODO: find a better way to check
+	if nf, err := nav.currFile(); err != nil || nf.path != curr.path {
+		return
+	}
 
 	if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(gOpts.previewer, curr.path,
