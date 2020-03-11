@@ -461,6 +461,8 @@ func (nav *nav) preview() {
 		return
 	}
 
+	nav.previewClear()
+
 	if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(gOpts.previewer, curr.path,
 			strconv.Itoa(nav.height), strconv.Itoa(nav.width),
