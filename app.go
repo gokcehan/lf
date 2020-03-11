@@ -188,6 +188,8 @@ func (app *app) loop() {
 
 			log.Print("bye!")
 
+			app.nav.previewClear()
+
 			if err := app.writeHistory(); err != nil {
 				log.Printf("writing history file: %s", err)
 			}

@@ -508,7 +508,6 @@ func (nav *nav) preview() {
 }
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
-	nav.previewClear()
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
 		go nav.preview()
