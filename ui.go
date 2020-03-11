@@ -539,9 +539,9 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
-	go nav.previewClear()
 
 	if curr.IsDir() {
+		go nav.previewClear()
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
 		ui.regPrev = nav.loadReg(ui, curr.path)
