@@ -422,14 +422,19 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) previewClear(wait bool) {
+func (nav *nav) previewClear() {
 	if len(gOpts.cleaner) != 0 {
-		if wait {
-			// TODO: should this always wait?
-			exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Run()
-		} else {
-			exec.Command(gOpts.cleaner, strconv.Itoa(gClientID)).Start()
+		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("cleaning preview: %s", err)
 		}
+
+		defer func() {
+			if err := cmd.Wait(); err != nil {
+				log.Printf("cleaning preview %s", err)
+			}
+		}()
 	}
 }
 
@@ -503,7 +508,7 @@ func (nav *nav) preview() {
 }
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
-	nav.previewClear(false)
+	nav.previewClear()
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
 		go nav.preview()
