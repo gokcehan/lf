@@ -428,13 +428,6 @@ func (nav *nav) previewClear() {
 	if len(gOpts.cleaner) != 0 {
 		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
 
-		nav.previewBlock.Lock()
-		log.Println("previewClear(): locking")
-		defer func () {
-			log.Println("previewClear(): unlocking")
-			nav.previewBlock.Unlock()
-		}()
-
 		if err := cmd.Start(); err != nil {
 			log.Printf("cleaning preview: %s", err)
 		}
