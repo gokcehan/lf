@@ -56,15 +56,30 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "drawbox":
 		gOpts.drawbox = true
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		// TODO: is this really the best way?
+		lastWin := app.ui.wins[len(app.ui.wins) - 1]
+		app.nav.height = lastWin.h
+		app.nav.width = lastWin.w
+		app.nav.x = lastWin.x
+		app.nav.y = lastWin.y
 	case "nodrawbox":
 		gOpts.drawbox = false
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		// TODO: is this really the best way?
+		lastWin := app.ui.wins[len(app.ui.wins) - 1]
+		app.nav.height = lastWin.h
+		app.nav.width = lastWin.w
+		app.nav.x = lastWin.x
+		app.nav.y = lastWin.y
 	case "drawbox!":
 		gOpts.drawbox = !gOpts.drawbox
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		// TODO: is this really the best way?
+		lastWin := app.ui.wins[len(app.ui.wins) - 1]
+		app.nav.height = lastWin.h
+		app.nav.width = lastWin.w
+		app.nav.x = lastWin.x
+		app.nav.y = lastWin.y
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":
