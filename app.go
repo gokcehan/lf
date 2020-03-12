@@ -168,6 +168,8 @@ func (app *app) loop() {
 		}
 	}
 
+	go app.nav.previewServ()
+
 	for {
 		select {
 		case <-app.quitChan:

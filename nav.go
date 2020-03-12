@@ -260,6 +260,7 @@ type nav struct {
 	deleteTotalChan chan int
 	dirChan         chan *dir
 	regChan         chan *reg
+	previewChan     chan *reg
 	dirCache        map[string]*dir
 	regCache        map[string]*reg
 	saves           map[string]bool
@@ -351,6 +352,7 @@ func newNav(width, height, x, y int) *nav {
 		moveTotalChan: make(chan int, 1024),
 		dirChan:       make(chan *dir),
 		regChan:       make(chan *reg),
+		previewChan:   make(chan *reg, 1024),
 		dirCache:      make(map[string]*dir),
 		regCache:      make(map[string]*reg),
 		saves:         make(map[string]bool),
@@ -440,67 +442,76 @@ func (nav *nav) previewClear() {
 	}
 }
 
-func (nav *nav) preview() {
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
+func (nav *nav) previewServ() {
+	var cmd *exec.Cmd
+	started := false
+	killed := false
 
-	nav.previewBlock.Lock()
-	log.Println("preview(): locking")
-	defer func () {
-		log.Println("preview(): unlocking")
-		nav.previewBlock.Unlock()
-	}()
-
-	var reader io.Reader
-
-	// Do not load preview if it's a previous file
-	// TODO: find a better way to check
-	if nf, err := nav.currFile(); err != nil || nf.path != curr.path {
-		return
-	}
-
-	nav.previewClear()
-
-	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, curr.path,
-			strconv.Itoa(nav.height), strconv.Itoa(nav.width),
-			strconv.Itoa(nav.x), strconv.Itoa(nav.y), strconv.Itoa(gClientID))
-
-		out, err := cmd.StdoutPipe()
-		if err != nil {
-			log.Printf("previewing file: %s", err)
-		}
-
-		if err := cmd.Start(); err != nil {
-			log.Printf("previewing file: %s", err)
-		}
-
-		defer func() {
-			if err := cmd.Wait(); err != nil {
-				if cmd.ProcessState.ExitCode() == 5 {
-					nav.regCache[curr.path].volatile = true
-				}
-
-				nav.regCache[curr.path].loading = false
-				nav.regChan <- nav.regCache[curr.path]
+	for {
+		select {
+		case r := <-nav.previewChan:
+			if started {
+				killed = true
+				go cmd.Process.Kill()
 			}
 
-			out.Close()
-		}()
+			var reader io.Reader
+			nav.previewClear()
 
-		reader = out
-	} else {
-		f, err := os.Open(curr.path)
-		if err != nil {
-			log.Printf("opening file: %s", err)
+			if len(gOpts.previewer) != 0 {
+				cmd = exec.Command(gOpts.previewer,
+					r.path,
+					strconv.Itoa(nav.height),
+					strconv.Itoa(nav.width),
+					strconv.Itoa(nav.x),
+					strconv.Itoa(nav.y),
+					strconv.Itoa(gClientID))
+
+				out, err := cmd.StdoutPipe()
+				if err != nil {
+					log.Printf("previewing file: %s", err)
+				}
+
+				if err := cmd.Start(); err != nil {
+					log.Printf("previewing file: %s", err)
+				}
+
+				started = true
+				reader = out
+
+				nav.previewRead(r, reader)
+
+				path := r.path
+				go func() {
+					err := cmd.Wait()
+					if err == nil && !killed {
+						nav.regCache[path].volatile = false
+					} else {
+						log.Printf("previewing file: %s", err)
+						nav.regCache[path].volatile = true
+					}
+
+					started = false
+					killed = false
+					nav.regCache[path].loading = false
+				}()
+			} else {
+				f, err := os.Open(r.path)
+				if err != nil {
+					log.Printf("opening file: %s", err)
+				}
+
+				defer f.Close()
+				reader = f
+				nav.previewRead(r, reader)
+				f.Close()
+			}
+
 		}
-
-		defer f.Close()
-		reader = f
 	}
+}
 
+func (nav *nav) previewRead(curr *reg, reader io.Reader) {
 	reg := &reg{loadTime: time.Now(), path: curr.path}
 
 	buf := bufio.NewScanner(reader)
@@ -526,9 +537,9 @@ func (nav *nav) preview() {
 func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
-		go nav.preview()
 		r := &reg{loading: true, path: path}
 		nav.regCache[path] = r
+		nav.previewChan <- r
 		return r
 	}
 
@@ -539,7 +550,7 @@ func (nav *nav) loadReg(ui *ui, path string) *reg {
 
 	if s.ModTime().After(r.loadTime) {
 		r.loadTime = time.Now()
-		go nav.preview()
+		nav.previewChan <- r
 	}
 
 	return r

@@ -539,7 +539,6 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
-
 	if curr.IsDir() {
 		go nav.previewClear()
 		ui.dirPrev = nav.loadDir(curr.path)
