@@ -872,27 +872,6 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 			ui.keyAcc = nil
 			ui.keyCount = nil
 			ui.menuBuf = nil
-		case 1:
-			if ok {
-				if len(ui.keyCount) > 0 {
-					c, err := strconv.Atoi(string(ui.keyCount))
-					if err != nil {
-						log.Printf("converting command count: %s", err)
-					}
-					count = c
-				}
-				expr := gOpts.keys[string(ui.keyAcc)]
-				if e, ok := expr.(*callExpr); ok {
-					e.count = count
-				}
-				ch <- expr
-				ui.keyAcc = nil
-				ui.keyCount = nil
-				ui.menuBuf = nil
-			} else {
-				ui.menuBuf = listBinds(binds)
-				ch <- draw
-			}
 		default:
 			if ok {
 				if len(ui.keyCount) > 0 {
