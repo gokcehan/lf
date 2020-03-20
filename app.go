@@ -42,9 +42,9 @@ func newApp() *app {
 	signal.Notify(osChan, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	go func() {
 		<-osChan
-		nav.copyTotal = 0
-		nav.moveTotal = 0
-		nav.deleteTotal = 0
+		nav.copyTotalChan <- -nav.copyTotal
+		nav.moveTotalChan <- -nav.moveTotal
+		nav.deleteTotalChan <- -nav.deleteTotal
 		quitChan <- true
 		return
 	}()
