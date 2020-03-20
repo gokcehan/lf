@@ -330,6 +330,12 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func onChdir(app *app) {
+	if cmd, ok := gOpts.cmds["on-cd"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func splitKeys(s string) (keys []string) {
 	for i := 0; i < len(s); {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -535,6 +541,7 @@ func insert(app *app, arg string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case app.ui.cmdPrefix == "mark-remove: ":
 		normal(app)
@@ -610,6 +617,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+		onChdir(app)
 	case "open":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
@@ -628,6 +636,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
+			onChdir(app)
 			return
 		}
 
@@ -903,6 +912,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case "select":
 		if len(e.args) != 1 {
@@ -932,6 +942,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case "glob-select":
 		if len(e.args) != 1 {
