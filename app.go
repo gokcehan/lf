@@ -39,7 +39,7 @@ func newApp() *app {
 	quitChan := make(chan bool, 1)
 
 	osChan := make(chan os.Signal, 1)
-	signal.Notify(osChan, os.Interrupt, syscall.SIGHUP, syscall.SIGINT, syscall.SIGTERM)
+	signal.Notify(osChan, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
 	go func() {
 		<-osChan
 		quitChan <- true
