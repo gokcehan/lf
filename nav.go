@@ -4,15 +4,11 @@ import (
 	"bufio"
 	"errors"
 	"fmt"
-	"io"
 	"log"
 	"os"
-	"os/exec"
 	"path/filepath"
 	"sort"
-	"strconv"
 	"strings"
-	"sync"
 	"time"
 
 	times "gopkg.in/djherbis/times.v1"
@@ -272,7 +268,6 @@ type nav struct {
 	height          int
 	x               int
 	y               int
-	previewBlock    sync.Mutex
 	find            string
 	findBack        bool
 	search          string
@@ -339,7 +334,7 @@ func (nav *nav) getDirs(wd string) {
 	nav.dirs = dirs
 }
 
-func newNav(width, height, x, y int) *nav {
+func newNav(height int) *nav {
 	wd, err := os.Getwd()
 	if err != nil {
 		log.Printf("getting current directory: %s", err)
@@ -360,10 +355,7 @@ func newNav(width, height, x, y int) *nav {
 		renameCache:   make([]string, 2),
 		selections:    make(map[string]int),
 		selectionInd:  0,
-		width:         width,
 		height:        height,
-		x:             x,
-		y:             y,
 	}
 
 	nav.getDirs(wd)
@@ -426,117 +418,9 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) previewClear() {
-	if len(gOpts.cleaner) != 0 {
-		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
-
-		if err := cmd.Start(); err != nil {
-			log.Printf("cleaning preview: %s", err)
-		}
-
-		defer func() {
-			if err := cmd.Wait(); err != nil {
-				log.Printf("cleaning preview %s", err)
-			}
-		}()
-	}
-}
-
-func (nav *nav) previewServ() {
-	var cmd *exec.Cmd
-	started := false
-	killed := false
-
-	for {
-		select {
-		case r := <-nav.previewChan:
-			if started {
-				killed = true
-				go cmd.Process.Kill()
-			}
-
-			var reader io.Reader
-			nav.previewClear()
-
-			if len(gOpts.previewer) != 0 {
-				cmd = exec.Command(gOpts.previewer,
-					r.path,
-					strconv.Itoa(nav.height),
-					strconv.Itoa(nav.width),
-					strconv.Itoa(nav.x),
-					strconv.Itoa(nav.y),
-					strconv.Itoa(gClientID))
-
-				out, err := cmd.StdoutPipe()
-				if err != nil {
-					log.Printf("previewing file: %s", err)
-				}
-
-				if err := cmd.Start(); err != nil {
-					log.Printf("previewing file: %s", err)
-				}
-
-				started = true
-				reader = out
-
-				nav.previewRead(r, reader)
-
-				path := r.path
-				go func() {
-					err := cmd.Wait()
-					if err == nil && !killed {
-						nav.regCache[path].volatile = false
-					} else {
-						log.Printf("previewing file: %s", err)
-						nav.regCache[path].volatile = true
-					}
-
-					started = false
-					killed = false
-					nav.regCache[path].loading = false
-				}()
-			} else {
-				f, err := os.Open(r.path)
-				if err != nil {
-					log.Printf("opening file: %s", err)
-				}
-
-				defer f.Close()
-				reader = f
-				nav.previewRead(r, reader)
-				f.Close()
-			}
-
-		}
-	}
-}
-
-func (nav *nav) previewRead(curr *reg, reader io.Reader) {
-	reg := &reg{loadTime: time.Now(), path: curr.path}
-
-	buf := bufio.NewScanner(reader)
-
-	for i := 0; i < nav.height && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
-			if r == 0 {
-				reg.lines = []string{"\033[7mbinary\033[0m"}
-				nav.regChan <- reg
-				return
-			}
-		}
-		reg.lines = append(reg.lines, buf.Text())
-	}
-
-	if buf.Err() != nil {
-		log.Printf("loading file: %s", buf.Err())
-	}
-
-	nav.regChan <- reg
-}
-
 func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
-	if !ok || r.volatile {
+	if !ok {
 		r := &reg{loading: true, path: path}
 		nav.regCache[path] = r
 		nav.previewChan <- r

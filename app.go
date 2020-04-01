@@ -8,6 +8,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -32,9 +33,7 @@ type app struct {
 
 func newApp() *app {
 	ui := newUI()
-	// TODO: is this really the right way?
-	lastWin := ui.wins[len(ui.wins)-1]
-	nav := newNav(lastWin.w, lastWin.h, lastWin.x, lastWin.y)
+	nav := newNav(ui.wins[0].h)
 
 	return &app{
 		ui:       ui,
@@ -168,8 +167,6 @@ func (app *app) loop() {
 		}
 	}
 
-	go app.nav.previewServ()
-
 	for {
 		select {
 		case <-app.quitChan:
@@ -190,7 +187,7 @@ func (app *app) loop() {
 
 			log.Print("bye!")
 
-			app.nav.previewClear()
+			app.previewClear()
 
 			if err := app.writeHistory(); err != nil {
 				log.Printf("writing history file: %s", err)
@@ -307,6 +304,55 @@ func (app *app) loop() {
 			app.nav.renew()
 			app.ui.loadFile(app.nav)
 			app.ui.draw(app.nav)
+		case r := <-app.nav.previewChan:
+			app.previewClear()
+
+			if r == nil {
+				break
+			}
+
+			if len(gOpts.previewer) != 0 {
+				log.Println("previewer: start")
+				lastWin := app.ui.wins[len(app.ui.wins) - 1]
+				cmd := exec.Command(gOpts.previewer,
+					r.path,
+					strconv.Itoa(lastWin.h),
+					strconv.Itoa(lastWin.w),
+					strconv.Itoa(lastWin.x),
+					strconv.Itoa(lastWin.y),
+					strconv.Itoa(gClientID))
+
+				if err := cmd.Start(); err != nil {
+					log.Printf("previewing file: %s", err)
+				}
+
+				defer func() {
+					err := cmd.Wait()
+					if err != nil {
+						log.Printf("previewing file: %s", err)
+					}
+
+					r.loading = false
+					app.nav.regChan <- r
+				}()
+
+				out, err := cmd.StdoutPipe()
+				if err != nil {
+					log.Printf("previewing file: %s", err)
+				}
+
+				defer out.Close()
+
+				app.previewRead(r, out)
+			} else {
+				f, err := os.Open(r.path)
+				if err != nil {
+					log.Printf("opening file: %s", err)
+				}
+
+				defer f.Close()
+				app.previewRead(r, f)
+			}
 		}
 	}
 }
@@ -420,5 +466,39 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
+	}
+}
+
+func (app *app) previewClear() {
+	if len(gOpts.cleaner) != 0 {
+		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("cleaning preview: %s", err)
+		}
+
+		if err := cmd.Wait(); err != nil {
+			log.Printf("cleaning preview %s", err)
+		}
+	}
+}
+
+func (app *app) previewRead(curr *reg, reader io.Reader) {
+	reg := &reg{loadTime: time.Now(), path: curr.path}
+
+	buf := bufio.NewScanner(reader)
+
+	for i := 0; i < app.nav.height && buf.Scan(); i++ {
+		for _, r := range buf.Text() {
+			if r == 0 {
+				reg.lines = []string{"\033[7mbinary\033[0m"}
+				return
+			}
+		}
+		reg.lines = append(reg.lines, buf.Text())
+	}
+
+	if buf.Err() != nil {
+		log.Printf("loading file: %s", buf.Err())
 	}
 }

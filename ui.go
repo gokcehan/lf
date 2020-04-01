@@ -399,7 +399,7 @@ func getWidths(wtot int) []int {
 	widths[wlen-1] = wtot - wsum
 
 	if gOpts.drawbox {
-		widths[wlen-1]--
+		widths[wlen-1] -= 2
 	}
 
 	return widths
@@ -539,8 +539,9 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
+	nav.previewChan <- nil
+
 	if curr.IsDir() {
-		go nav.previewClear()
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
 		ui.regPrev = nav.loadReg(ui, curr.path)
