@@ -311,48 +311,7 @@ func (app *app) loop() {
 				break
 			}
 
-			if len(gOpts.previewer) != 0 {
-				log.Println("previewer: start")
-				lastWin := app.ui.wins[len(app.ui.wins) - 1]
-				cmd := exec.Command(gOpts.previewer,
-					r.path,
-					strconv.Itoa(lastWin.h),
-					strconv.Itoa(lastWin.w),
-					strconv.Itoa(lastWin.x),
-					strconv.Itoa(lastWin.y),
-					strconv.Itoa(gClientID))
-
-				if err := cmd.Start(); err != nil {
-					log.Printf("previewing file: %s", err)
-				}
-
-				defer func() {
-					err := cmd.Wait()
-					if err != nil {
-						log.Printf("previewing file: %s", err)
-					}
-
-					r.loading = false
-					app.nav.regChan <- r
-				}()
-
-				out, err := cmd.StdoutPipe()
-				if err != nil {
-					log.Printf("previewing file: %s", err)
-				}
-
-				defer out.Close()
-
-				app.previewRead(r, out)
-			} else {
-				f, err := os.Open(r.path)
-				if err != nil {
-					log.Printf("opening file: %s", err)
-				}
-
-				defer f.Close()
-				app.previewRead(r, f)
-			}
+			app.preview(r)
 		}
 	}
 }
@@ -483,11 +442,59 @@ func (app *app) previewClear() {
 	}
 }
 
-func (app *app) previewRead(curr *reg, reader io.Reader) {
-	reg := &reg{loadTime: time.Now(), path: curr.path}
+func (app *app) preview(r *reg) {
+	var reader io.Reader
+	reg := &reg{loadTime: time.Now(), path: r.path, volatile: true}
+	defer func() {
+		app.nav.regChan <- reg
+	}()
+
+	if len(gOpts.previewer) != 0 {
+		lastWin := app.ui.wins[len(app.ui.wins) - 1]
+		cmd := exec.Command(gOpts.previewer,
+			r.path,
+			strconv.Itoa(lastWin.h),
+			strconv.Itoa(lastWin.w),
+			strconv.Itoa(lastWin.x),
+			strconv.Itoa(lastWin.y),
+			strconv.Itoa(gClientID))
+
+		out, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+			return
+		}
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("previewing file: %s", err)
+			return
+		}
+
+		defer func() {
+			err := cmd.Wait()
+			reg.loading = false
+
+			if err != nil {
+				log.Printf("previewing file: %s", err)
+			} else if len(reg.lines) > 0 {
+				reg.volatile = false
+			}
+		}()
+
+		defer out.Close()
+		reader = out
+	} else {
+		f, err := os.Open(r.path)
+		if err != nil {
+			log.Printf("opening file: %s", err)
+			return
+		}
+
+		defer f.Close()
+		reader = f
+	}
 
 	buf := bufio.NewScanner(reader)
-
 	for i := 0; i < app.nav.height && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
@@ -500,5 +507,6 @@ func (app *app) previewRead(curr *reg, reader io.Reader) {
 
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
+		return
 	}
 }

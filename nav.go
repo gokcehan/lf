@@ -346,7 +346,7 @@ func newNav(height int) *nav {
 		moveCountChan: make(chan int, 1024),
 		moveTotalChan: make(chan int, 1024),
 		dirChan:       make(chan *dir),
-		regChan:       make(chan *reg),
+		regChan:       make(chan *reg, 1024),
 		previewChan:   make(chan *reg, 1024),
 		dirCache:      make(map[string]*dir),
 		regCache:      make(map[string]*reg),
@@ -420,7 +420,7 @@ func (nav *nav) position() {
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
-	if !ok {
+	if !ok || r.volatile {
 		r := &reg{loading: true, path: path}
 		nav.regCache[path] = r
 		nav.previewChan <- r
