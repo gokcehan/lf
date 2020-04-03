@@ -1,7 +1,9 @@
 package main
 
 import (
+	"bufio"
 	"bytes"
+	"os/exec"
 	"fmt"
 	"io"
 	"log"
@@ -539,6 +541,8 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
+	ui.previewClear()
+
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
@@ -822,6 +826,89 @@ func (ui *ui) pollEvent() termbox.Event {
 		return ev
 	case ev := <-ui.evChan:
 		return ev
+	}
+}
+
+func (ui *ui) previewClear() {
+	if len(gOpts.cleaner) != 0 {
+		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("cleaning preview: %s", err)
+		}
+
+		if err := cmd.Wait(); err != nil {
+			log.Printf("cleaning preview %s", err)
+		}
+	}
+}
+
+func (ui *ui) previewGen(reg *reg) {
+	var reader io.Reader
+
+	if len(gOpts.previewer) != 0 {
+		lastWin := ui.wins[len(ui.wins) - 1]
+		cmd := exec.Command(gOpts.previewer,
+			reg.path,
+			strconv.Itoa(lastWin.h),
+			strconv.Itoa(lastWin.w),
+			strconv.Itoa(lastWin.x),
+			strconv.Itoa(lastWin.y),
+			strconv.Itoa(gClientID))
+
+		out, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+			return
+		}
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("previewing file: %s", err)
+			return
+		}
+
+		defer func() {
+			err := cmd.Wait()
+			reg.loading = false
+
+			if err != nil {
+				log.Printf("previewing file: %s", err)
+			} else if len(reg.lines) > 0 {
+				reg.volatile = false
+			}
+		}()
+
+		defer out.Close()
+		reader = out
+	} else {
+		f, err := os.Open(reg.path)
+		if err != nil {
+			log.Printf("opening file: %s", err)
+			return
+		}
+
+		defer f.Close()
+		reader = f
+	}
+
+	if len(reg.lines) != 0 {
+		return
+	}
+
+	buf := bufio.NewScanner(reader)
+	for i := 0; i < ui.wins[0].h && buf.Scan(); i++ {
+		for _, r := range buf.Text() {
+			if r == 0 {
+				reg.lines = []string{"\033[7mbinary\033[0m"}
+				return
+			}
+		}
+		reg.lines = append(reg.lines, buf.Text())
+	}
+
+	if buf.Err() != nil {
+		log.Printf("loading file: %s", buf.Err())
+		return
 	}
 }
 

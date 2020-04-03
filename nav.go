@@ -256,7 +256,6 @@ type nav struct {
 	deleteTotalChan chan int
 	dirChan         chan *dir
 	regChan         chan *reg
-	previewChan     chan *reg
 	dirCache        map[string]*dir
 	regCache        map[string]*reg
 	saves           map[string]bool
@@ -344,7 +343,6 @@ func newNav(height int) *nav {
 		moveTotalChan: make(chan int, 1024),
 		dirChan:       make(chan *dir),
 		regChan:       make(chan *reg, 1024),
-		previewChan:   make(chan *reg, 1024),
 		dirCache:      make(map[string]*dir),
 		regCache:      make(map[string]*reg),
 		saves:         make(map[string]bool),
@@ -418,9 +416,9 @@ func (nav *nav) position() {
 func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
-		r := &reg{loading: true, path: path}
+		r := &reg{loading: true, path: path, volatile: true, loadTime: time.Now()}
 		nav.regCache[path] = r
-		nav.previewChan <- r
+		nav.regChan <- r
 		return r
 	}
 
@@ -431,7 +429,7 @@ func (nav *nav) loadReg(ui *ui, path string) *reg {
 
 	if s.ModTime().After(r.loadTime) {
 		r.loadTime = time.Now()
-		nav.previewChan <- r
+		nav.regChan <- r
 	}
 
 	return r

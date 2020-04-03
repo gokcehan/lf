@@ -8,7 +8,6 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
-	"strconv"
 	"strings"
 	"time"
 )
@@ -187,7 +186,7 @@ func (app *app) loop() {
 
 			log.Print("bye!")
 
-			app.previewClear()
+			app.ui.previewClear()
 
 			if err := app.writeHistory(); err != nil {
 				log.Printf("writing history file: %s", err)
@@ -256,8 +255,6 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
-			app.previewClear()
-
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
 				d.ind = prev.ind
@@ -286,14 +283,20 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
-			app.nav.regCache[r.path] = r
-
 			curr, err := app.nav.currFile()
-			if err == nil {
-				if r.path == curr.path {
-					app.ui.regPrev = r
-				}
+			if err != nil {
+				log.Printf("regChan, currFile: %s", err)
+				break
 			}
+
+			app.ui.previewGen(r)
+
+			if r.path == curr.path {
+				app.ui.regPrev = r
+			}
+
+			app.nav.regCache[r.path] = r
+			app.ui.regPrev = r
 
 			app.ui.draw(app.nav)
 		case e := <-clientChan:
@@ -306,14 +309,6 @@ func (app *app) loop() {
 			app.nav.renew()
 			app.ui.loadFile(app.nav)
 			app.ui.draw(app.nav)
-		case r := <-app.nav.previewChan:
-			app.previewClear()
-
-			if r == nil {
-				break
-			}
-
-			app.preview(r)
 		}
 	}
 }
@@ -427,88 +422,5 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
-	}
-}
-
-func (app *app) previewClear() {
-	if len(gOpts.cleaner) != 0 {
-		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
-
-		if err := cmd.Start(); err != nil {
-			log.Printf("cleaning preview: %s", err)
-		}
-
-		if err := cmd.Wait(); err != nil {
-			log.Printf("cleaning preview %s", err)
-		}
-	}
-}
-
-func (app *app) preview(r *reg) {
-	var reader io.Reader
-	reg := &reg{loadTime: time.Now(), path: r.path, volatile: true}
-	defer func() {
-		app.nav.regChan <- reg
-	}()
-
-	if len(gOpts.previewer) != 0 {
-		lastWin := app.ui.wins[len(app.ui.wins) - 1]
-		cmd := exec.Command(gOpts.previewer,
-			r.path,
-			strconv.Itoa(lastWin.h),
-			strconv.Itoa(lastWin.w),
-			strconv.Itoa(lastWin.x),
-			strconv.Itoa(lastWin.y),
-			strconv.Itoa(gClientID))
-
-		out, err := cmd.StdoutPipe()
-		if err != nil {
-			log.Printf("previewing file: %s", err)
-			return
-		}
-
-		if err := cmd.Start(); err != nil {
-			log.Printf("previewing file: %s", err)
-			return
-		}
-
-		defer func() {
-			err := cmd.Wait()
-			reg.loading = false
-
-			if err != nil {
-				log.Printf("previewing file: %s", err)
-			} else if len(reg.lines) > 0 {
-				reg.volatile = false
-			}
-		}()
-
-		defer out.Close()
-		reader = out
-	} else {
-		f, err := os.Open(r.path)
-		if err != nil {
-			log.Printf("opening file: %s", err)
-			return
-		}
-
-		defer f.Close()
-		reader = f
-	}
-
-	buf := bufio.NewScanner(reader)
-	for i := 0; i < app.nav.height && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
-			if r == 0 {
-				reg.lines = []string{"\033[7mbinary\033[0m"}
-				return
-			}
-		}
-		reg.lines = append(reg.lines, buf.Text())
-	}
-
-	if buf.Err() != nil {
-		log.Printf("loading file: %s", buf.Err())
-		return
 	}
 }
