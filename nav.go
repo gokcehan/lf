@@ -341,6 +341,8 @@ func newNav(height int) *nav {
 		copyTotalChan: make(chan int64, 1024),
 		moveCountChan: make(chan int, 1024),
 		moveTotalChan: make(chan int, 1024),
+		deleteCountChan: make(chan int, 1024),
+		deleteTotalChan: make(chan int, 1024),
 		dirChan:       make(chan *dir),
 		regChan:       make(chan *reg, 1024),
 		dirCache:      make(map[string]*dir),
