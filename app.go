@@ -256,6 +256,8 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
+			app.previewClear()
+
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
 				d.ind = prev.ind

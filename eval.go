@@ -56,30 +56,15 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "drawbox":
 		gOpts.drawbox = true
 		app.ui.renew()
-		// TODO: is this really the best way?
-		lastWin := app.ui.wins[len(app.ui.wins) - 1]
-		app.nav.height = lastWin.h
-		app.nav.width = lastWin.w
-		app.nav.x = lastWin.x
-		app.nav.y = lastWin.y
+		app.nav.height = app.ui.wins[0].h
 	case "nodrawbox":
 		gOpts.drawbox = false
 		app.ui.renew()
-		// TODO: is this really the best way?
-		lastWin := app.ui.wins[len(app.ui.wins) - 1]
-		app.nav.height = lastWin.h
-		app.nav.width = lastWin.w
-		app.nav.x = lastWin.x
-		app.nav.y = lastWin.y
+		app.nav.height = app.ui.wins[0].h
 	case "drawbox!":
 		gOpts.drawbox = !gOpts.drawbox
 		app.ui.renew()
-		// TODO: is this really the best way?
-		lastWin := app.ui.wins[len(app.ui.wins) - 1]
-		app.nav.height = lastWin.h
-		app.nav.width = lastWin.w
-		app.nav.x = lastWin.x
-		app.nav.y = lastWin.y
+		app.nav.height = app.ui.wins[0].h
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":
@@ -766,12 +751,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "redraw":
 		app.ui.sync()
 		app.ui.renew()
-		// TODO: is this really the best way?
-		lastWin := app.ui.wins[len(app.ui.wins) - 1]
-		app.nav.height = lastWin.h
-		app.nav.width = lastWin.w
-		app.nav.x = lastWin.x
-		app.nav.y = lastWin.y
+		app.nav.height = app.ui.wins[0].h
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "load":

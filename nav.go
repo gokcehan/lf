@@ -264,10 +264,7 @@ type nav struct {
 	renameCache     []string
 	selections      map[string]int
 	selectionInd    int
-	width           int
 	height          int
-	x               int
-	y               int
 	find            string
 	findBack        bool
 	search          string

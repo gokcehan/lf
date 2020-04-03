@@ -539,8 +539,6 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
-	nav.previewChan <- nil
-
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
