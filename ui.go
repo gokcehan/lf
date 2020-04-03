@@ -3,11 +3,11 @@ package main
 import (
 	"bufio"
 	"bytes"
-	"os/exec"
 	"fmt"
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"sort"
 	"strconv"
@@ -847,7 +847,7 @@ func (ui *ui) previewGen(reg *reg) {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
-		lastWin := ui.wins[len(ui.wins) - 1]
+		lastWin := ui.wins[len(ui.wins)-1]
 		cmd := exec.Command(gOpts.previewer,
 			reg.path,
 			strconv.Itoa(lastWin.h),

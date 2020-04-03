@@ -337,22 +337,22 @@ func newNav(height int) *nav {
 	}
 
 	nav := &nav{
-		copyBytesChan: make(chan int64, 1024),
-		copyTotalChan: make(chan int64, 1024),
-		moveCountChan: make(chan int, 1024),
-		moveTotalChan: make(chan int, 1024),
+		copyBytesChan:   make(chan int64, 1024),
+		copyTotalChan:   make(chan int64, 1024),
+		moveCountChan:   make(chan int, 1024),
+		moveTotalChan:   make(chan int, 1024),
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
-		dirChan:       make(chan *dir),
-		regChan:       make(chan *reg, 1024),
-		dirCache:      make(map[string]*dir),
-		regCache:      make(map[string]*reg),
-		saves:         make(map[string]bool),
-		marks:         make(map[string]string),
-		renameCache:   make([]string, 2),
-		selections:    make(map[string]int),
-		selectionInd:  0,
-		height:        height,
+		dirChan:         make(chan *dir),
+		regChan:         make(chan *reg, 1024),
+		dirCache:        make(map[string]*dir),
+		regCache:        make(map[string]*reg),
+		saves:           make(map[string]bool),
+		marks:           make(map[string]string),
+		renameCache:     make([]string, 2),
+		selections:      make(map[string]int),
+		selectionInd:    0,
+		height:          height,
 	}
 
 	nav.getDirs(wd)
