@@ -281,11 +281,6 @@ func (app *app) loop() {
 				}
 			}
 
-			if app.ui.userPreview {
-				app.ui.previewClear()
-			}
-
-			app.ui.userPreview = false
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			curr, err := app.nav.currFile()

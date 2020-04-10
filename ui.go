@@ -457,14 +457,15 @@ func newUI() *ui {
 	}()
 
 	return &ui{
-		wins:      getWins(),
-		promptWin: newWin(wtot, 1, 0, 0),
-		msgWin:    newWin(wtot, 1, 0, htot-1),
-		menuWin:   newWin(wtot, 1, 0, htot-2),
-		keyChan:   make(chan string, 1000),
-		evChan:    evChan,
-		colors:    parseColors(),
-		icons:     parseIcons(),
+		wins:        getWins(),
+		promptWin:   newWin(wtot, 1, 0, 0),
+		msgWin:      newWin(wtot, 1, 0, htot-1),
+		menuWin:     newWin(wtot, 1, 0, htot-2),
+		keyChan:     make(chan string, 1000),
+		evChan:      evChan,
+		colors:      parseColors(),
+		icons:       parseIcons(),
+		userPreview: false,
 	}
 }
 
@@ -540,6 +541,9 @@ func (ui *ui) loadFile(nav *nav) {
 
 	if !gOpts.preview {
 		return
+	}
+	if ui.userPreview {
+		ui.previewClear()
 	}
 
 	if curr.IsDir() {
@@ -830,6 +834,8 @@ func (ui *ui) pollEvent() termbox.Event {
 
 func (ui *ui) previewClear() {
 	if len(gOpts.cleaner) != 0 {
+		ui.userPreview = false
+
 		cmd := exec.Command(gOpts.cleaner, strconv.Itoa(gClientID))
 
 		if err := cmd.Start(); err != nil {
@@ -882,8 +888,6 @@ func (ui *ui) previewGen(reg *reg) {
 		defer out.Close()
 		reader = out
 	} else {
-		ui.userPreview = false
-
 		f, err := os.Open(reg.path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
