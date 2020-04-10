@@ -281,6 +281,11 @@ func (app *app) loop() {
 				}
 			}
 
+			if app.ui.userPreview {
+				app.ui.previewClear()
+			}
+
+			app.ui.userPreview = false
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			curr, err := app.nav.currFile()
@@ -289,7 +294,9 @@ func (app *app) loop() {
 				break
 			}
 
-			app.ui.previewGen(r)
+			if r.volatile {
+				app.ui.previewGen(r)
+			}
 
 			if r.path == curr.path {
 				app.ui.regPrev = r

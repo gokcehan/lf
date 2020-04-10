@@ -382,6 +382,7 @@ type ui struct {
 	keyCount    []rune
 	colors      colorMap
 	icons       iconMap
+	userPreview bool
 }
 
 func getWidths(wtot int) []int {
@@ -540,8 +541,6 @@ func (ui *ui) loadFile(nav *nav) {
 	if !gOpts.preview {
 		return
 	}
-
-	ui.previewClear()
 
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
@@ -847,6 +846,8 @@ func (ui *ui) previewGen(reg *reg) {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
+		ui.userPreview = true
+
 		lastWin := ui.wins[len(ui.wins)-1]
 		cmd := exec.Command(gOpts.previewer,
 			reg.path,
@@ -881,6 +882,8 @@ func (ui *ui) previewGen(reg *reg) {
 		defer out.Close()
 		reader = out
 	} else {
+		ui.userPreview = false
+
 		f, err := os.Open(reg.path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
