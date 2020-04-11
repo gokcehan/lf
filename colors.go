@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/nsf/termbox-go"
+	"github.com/doronbehar/termbox-go"
 )
 
 const gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse

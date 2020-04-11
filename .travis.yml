@@ -1,6 +1,6 @@
 language: go
 install:
-  - go get github.com/nsf/termbox-go
+  - go get github.com/doronbehar/termbox-go
   - go get gopkg.in/djherbis/times.v1
 before_deploy:
   - gen/xbuild.sh

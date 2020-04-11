@@ -3,7 +3,7 @@ package main
 import (
 	"testing"
 
-	"github.com/nsf/termbox-go"
+	"github.com/doronbehar/termbox-go"
 )
 
 func TestApplyAnsiCodes(t *testing.T) {

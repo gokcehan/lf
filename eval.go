@@ -332,6 +332,12 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func onChdir(app *app) {
+	if cmd, ok := gOpts.cmds["on-cd"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func splitKeys(s string) (keys []string) {
 	for i := 0; i < len(s); {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -537,6 +543,7 @@ func insert(app *app, arg string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case app.ui.cmdPrefix == "mark-remove: ":
 		normal(app)
@@ -624,6 +631,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if moved {
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
+      onChdir(app)
 		}
 	case "open":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
@@ -641,9 +649,11 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("opening directory: %s", err)
 				return
 			}
+
 			if moved {
 				app.ui.loadFile(app.nav)
 				app.ui.loadFileInfo(app.nav)
+        onChdir(app)
 			}
 			return
 		}
@@ -919,12 +929,13 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if !filepath.IsAbs(path) {
 			path = filepath.Join(wd, path)
-		} else {
+		} else {ab1b522d6c173576d7798b02ca3e8130e76b45df
 			path = filepath.Clean(path)
 		}
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case "select":
 		if len(e.args) != 1 {
@@ -954,6 +965,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			onChdir(app)
 		}
 	case "glob-select":
 		if len(e.args) != 1 {
