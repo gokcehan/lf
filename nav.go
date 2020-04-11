@@ -445,14 +445,15 @@ func (nav *nav) sort() {
 	}
 }
 
-func (nav *nav) up(dist int) {
+func (nav *nav) up(dist int) bool {
 	dir := nav.currDir()
 
 	if dir.ind == 0 {
 		if gOpts.wrapscroll {
 			nav.bottom()
+			return true
 		}
-		return
+		return false
 	}
 
 	dir.ind -= dist
@@ -461,9 +462,11 @@ func (nav *nav) up(dist int) {
 	dir.pos -= dist
 	edge := min(min(nav.height/2, gOpts.scrolloff), dir.ind)
 	dir.pos = max(dir.pos, edge)
+
+	return true
 }
 
-func (nav *nav) down(dist int) {
+func (nav *nav) down(dist int) bool {
 	dir := nav.currDir()
 
 	maxind := len(dir.files) - 1
@@ -471,8 +474,9 @@ func (nav *nav) down(dist int) {
 	if dir.ind >= maxind {
 		if gOpts.wrapscroll {
 			nav.top()
+			return true
 		}
-		return
+		return false
 	}
 
 	dir.ind += dist
@@ -487,11 +491,13 @@ func (nav *nav) down(dist int) {
 
 	dir.pos = min(dir.pos, nav.height-edge-1)
 	dir.pos = min(dir.pos, maxind)
+
+	return true
 }
 
-func (nav *nav) updir() error {
+func (nav *nav) updir() (bool, error) {
 	if len(nav.dirs) <= 1 {
-		return nil
+		return false, nil
 	}
 
 	dir := nav.currDir()
@@ -499,16 +505,16 @@ func (nav *nav) updir() error {
 	nav.dirs = nav.dirs[:len(nav.dirs)-1]
 
 	if err := os.Chdir(filepath.Dir(dir.path)); err != nil {
-		return fmt.Errorf("updir: %s", err)
+		return false, fmt.Errorf("updir: %s", err)
 	}
 
-	return nil
+	return true, nil
 }
 
-func (nav *nav) open() error {
+func (nav *nav) open() (bool, error) {
 	curr, err := nav.currFile()
 	if err != nil {
-		return fmt.Errorf("open: %s", err)
+		return false, fmt.Errorf("open: %s", err)
 	}
 
 	path := curr.path
@@ -518,24 +524,34 @@ func (nav *nav) open() error {
 	nav.dirs = append(nav.dirs, dir)
 
 	if err := os.Chdir(path); err != nil {
-		return fmt.Errorf("open: %s", err)
+		return false, fmt.Errorf("open: %s", err)
 	}
 
-	return nil
+	return true, nil
 }
 
-func (nav *nav) top() {
+func (nav *nav) top() bool {
 	dir := nav.currDir()
 
-	dir.ind = 0
-	dir.pos = 0
+	if dir.ind != 0 {
+		dir.pos = 0
+		dir.ind = 0
+		return true
+	}
+
+	return false
 }
 
-func (nav *nav) bottom() {
+func (nav *nav) bottom() bool {
 	dir := nav.currDir()
 
-	dir.ind = len(dir.files) - 1
-	dir.pos = min(dir.ind, nav.height-1)
+	if bottom := len(dir.files) - 1; dir.ind != bottom {
+		dir.ind = bottom
+		dir.pos = min(bottom, nav.height-1)
+		return true
+	}
+
+	return false
 }
 
 func (nav *nav) toggleSelection(path string) {
@@ -550,15 +566,15 @@ func (nav *nav) toggleSelection(path string) {
 	}
 }
 
-func (nav *nav) toggle() {
+func (nav *nav) toggle() bool {
 	curr, err := nav.currFile()
 	if err != nil {
-		return
+		return false
 	}
 
 	nav.toggleSelection(curr.path)
 
-	nav.down(1)
+	return nav.down(1)
 }
 
 func (nav *nav) invert() {
