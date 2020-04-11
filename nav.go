@@ -417,7 +417,7 @@ func (nav *nav) position() {
 
 func (nav *nav) loadReg(ui *ui, path string) *reg {
 	r, ok := nav.regCache[path]
-	if !ok || r.volatile {
+	if !ok || r.volatile || len(r.lines) == 0 {
 		r := &reg{loading: true, path: path, volatile: true, loadTime: time.Now()}
 		nav.regCache[path] = r
 		nav.regChan <- r
@@ -432,8 +432,12 @@ func (nav *nav) loadReg(ui *ui, path string) *reg {
 	if s.ModTime().After(r.loadTime) {
 		r.loadTime = time.Now()
 		nav.regChan <- r
+		return r
 	}
 
+	if ui.userPreview {
+		ui.previewClear()
+	}
 	return r
 }
 

@@ -542,11 +542,12 @@ func (ui *ui) loadFile(nav *nav) {
 	if !gOpts.preview {
 		return
 	}
-	if ui.userPreview {
-		ui.previewClear()
-	}
 
 	if curr.IsDir() {
+		if ui.userPreview {
+			ui.previewClear()
+		}
+
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
 		ui.regPrev = nav.loadReg(ui, curr.path)
@@ -880,7 +881,7 @@ func (ui *ui) previewGen(reg *reg) {
 
 			if err != nil {
 				log.Printf("previewing file: %s", err)
-			} else if len(reg.lines) > 0 {
+			} else {
 				reg.volatile = false
 			}
 		}()
