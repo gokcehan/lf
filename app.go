@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"os/exec"
+	"os/signal"
+	"syscall"
 	"path/filepath"
 	"strings"
 	"time"
@@ -34,11 +36,24 @@ func newApp() *app {
 	ui := newUI()
 	nav := newNav(ui.wins[0].h)
 
+	quitChan := make(chan bool, 1)
+
+	osChan := make(chan os.Signal, 1)
+	signal.Notify(osChan, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
+	go func() {
+		<-osChan
+		nav.copyTotalChan <- -nav.copyTotal
+		nav.moveTotalChan <- -nav.moveTotal
+		nav.deleteTotalChan <- -nav.deleteTotal
+		quitChan <- true
+		return
+	}()
+
 	return &app{
 		ui:       ui,
 		nav:      nav,
 		ticker:   new(time.Ticker),
-		quitChan: make(chan bool, 1),
+		quitChan: quitChan,
 	}
 }
 
