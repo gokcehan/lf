@@ -638,6 +638,33 @@ Since this script is called for each file selection change it needs to be as eff
 .EE
 .PP
 Another important consideration for efficiency is the use of programs with short startup times for preview. For this reason, 'highlight' is recommended over 'pygmentize' for syntax highlighting. Besides, it is also important that the application is processing the file on the fly rather than first reading it to the memory and then do the processing afterwards. This is especially relevant for big files. lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read. When everything else fails, you can make use of the height argument to only feed the first portion of the file to a program for preview.
+.SH CHANGING DIRECTORY
+lf changes the working directory of the process to the current directory so that shell commands always work in the displayed directory. After quitting, it returns to the original directory where it is first launched like all shell programs. If you want to stay in the current directory after quitting, you can use one of the example wrapper shell scripts provided in the repository.
+.PP
+There is a special command 'on-cd' that runs a shell command when it is defined and the directory is changed. You can define it just as you would define any other command:
+.PP
+.EX
+    cmd on-cd &{{
+        # display git repository status in your prompt
+        source /usr/share/git/completion/git-prompt.sh
+        GIT_PS1_SHOWDIRTYSTATE=auto
+        GIT_PS1_SHOWSTASHSTATE=auto
+        GIT_PS1_SHOWUNTRACKEDFILES=auto
+        GIT_PS1_SHOWUPSTREAM=auto
+        git=$(__git_ps1 " (%s)") || true
+        fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f$git\e033[0m"
+        lf -remote "send $id set promptfmt \e"$fmt\e""
+    }}
+.EE
+.PP
+This command runs whenever you change directory but not on startup. You can add an extra call to make it run on startup as well:
+.PP
+.EX
+    cmd on-cd &{{ # ... }}
+    on-cd
+.EE
+.PP
+Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
 .SH COLORSCHEMES
 lf tries to automatically adapt its colors to the environment. On startup, first '$LS_COLORS' environment variable is checked. This variable is used by GNU ls to configure its colors based on file types and extensions. The value of this variable is often set by GNU dircolors in a shell configuration file. dircolors program itself can be configured with a configuration file. dircolors supports 256 colors along with common attributes such as bold and underline.
 .PP

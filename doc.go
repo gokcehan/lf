@@ -693,6 +693,39 @@ pipe with a SIGPIPE when enough lines are read. When everything else fails, you
 can make use of the height argument to only feed the first portion of the file
 to a program for preview.
 
+Changing Directory
+
+lf changes the working directory of the process to the current directory so
+that shell commands always work in the displayed directory. After quitting, it
+returns to the original directory where it is first launched like all shell
+programs. If you want to stay in the current directory after quitting, you can
+use one of the example wrapper shell scripts provided in the repository.
+
+There is a special command 'on-cd' that runs a shell command when it is defined
+and the directory is changed. You can define it just as you would define any
+other command:
+
+    cmd on-cd &{{
+        # display git repository status in your prompt
+        source /usr/share/git/completion/git-prompt.sh
+        GIT_PS1_SHOWDIRTYSTATE=auto
+        GIT_PS1_SHOWSTASHSTATE=auto
+        GIT_PS1_SHOWUNTRACKEDFILES=auto
+        GIT_PS1_SHOWUPSTREAM=auto
+        git=$(__git_ps1 " (%s)") || true
+        fmt="\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f$git\033[0m"
+        lf -remote "send $id set promptfmt \"$fmt\""
+    }}
+
+This command runs whenever you change directory but not on startup. You can add
+an extra call to make it run on startup as well:
+
+    cmd on-cd &{{ # ... }}
+    on-cd
+
+Note that all shell commands are possible but `%` and `&` are usually more
+appropriate as `$` and `!` causes flickers and pauses respectively.
+
 Colorschemes
 
 lf tries to automatically adapt its colors to the environment. On startup,
