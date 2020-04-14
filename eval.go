@@ -233,6 +233,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ifs = e.val
 	case "previewer":
 		gOpts.previewer = strings.Replace(e.val, "~", gUser.HomeDir, -1)
+	case "ignorer":
+		gOpts.ignorer = strings.Replace(e.val, "~", gUser.HomeDir, -1)
 	case "promptfmt":
 		gOpts.promptfmt = e.val
 	case "shell":

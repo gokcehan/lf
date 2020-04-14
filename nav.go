@@ -33,6 +33,7 @@ type file struct {
 	accessTime time.Time
 	changeTime time.Time
 	ext        string
+	ignore     bool
 }
 
 func readdir(path string) ([]*file, error) {
@@ -196,16 +197,46 @@ func (dir *dir) sort() {
 	// beginning of our file list and then set the beginning of displayed
 	// files to the first non-hidden file in the list
 	if gOpts.sortType.option&hiddenSort == 0 {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isHidden(dir.files[i]) && isHidden(dir.files[j]) {
-				return i < j
+		if len(gOpts.ignorer) != 0 {
+			cmd := exec.Command(gOpts.ignorer, dir.path)
+			out, err := cmd.Output()
+			if err != nil {
+				log.Printf("sorting files: %s", err)
 			}
-			return isHidden(dir.files[i])
-		})
-		for i, f := range dir.files {
-			if !isHidden(f) {
-				dir.files = dir.files[i:]
-				return
+
+			outSplit := strings.Split(string(out), "\x00")
+			vis := make(map[string]bool, len(outSplit))
+			for _, f := range outSplit {
+				vis[f] = true
+			}
+			for _, f := range dir.allFiles {
+				f.ignore = !vis[f.Name()]
+			}
+
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				if dir.files[i].ignore && dir.files[j].ignore {
+					return i < j
+				}
+				return dir.files[i].ignore
+			})
+			for i, f := range dir.files {
+				if !f.ignore {
+					dir.files = dir.files[i:]
+					return
+				}
+			}
+		} else {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				if isHidden(dir.files[i]) && isHidden(dir.files[j]) {
+					return i < j
+				}
+				return isHidden(dir.files[i])
+			})
+			for i, f := range dir.files {
+				if !isHidden(f) {
+					dir.files = dir.files[i:]
+					return
+				}
 			}
 		}
 		dir.files = dir.files[len(dir.files):]
