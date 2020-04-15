@@ -198,33 +198,8 @@ func (dir *dir) sort() {
 	// files to the first non-hidden file in the list
 	if gOpts.sortType.option&hiddenSort == 0 {
 		if len(gOpts.ignorer) != 0 {
-			cmd := exec.Command(gOpts.ignorer, dir.path)
-			out, err := cmd.Output()
-			if err != nil {
-				log.Printf("sorting files: %s", err)
-			}
-
-			outSplit := strings.Split(string(out), "\x00")
-			vis := make(map[string]bool, len(outSplit))
-			for _, f := range outSplit {
-				vis[f] = true
-			}
-			for _, f := range dir.allFiles {
-				f.ignore = !vis[f.Name()]
-			}
-
-			sort.SliceStable(dir.files, func(i, j int) bool {
-				if dir.files[i].ignore && dir.files[j].ignore {
-					return i < j
-				}
-				return dir.files[i].ignore
-			})
-			for i, f := range dir.files {
-				if !f.ignore {
-					dir.files = dir.files[i:]
-					return
-				}
-			}
+			dir.getIgnore()
+			return
 		} else {
 			sort.SliceStable(dir.files, func(i, j int) bool {
 				if isHidden(dir.files[i]) && isHidden(dir.files[j]) {
@@ -502,6 +477,44 @@ func (nav *nav) preview() {
 	}
 
 	nav.regChan <- reg
+}
+
+func (dir *dir) getIgnore() {
+	cmd := exec.Command(gOpts.ignorer, dir.path)
+	out, err := cmd.StdoutPipe()
+	if err != nil {
+		log.Printf("sorting files: %s", err)
+	}
+	if err := cmd.Start(); err != nil {
+		log.Printf("sorting files: %s", err)
+	}
+	defer out.Close()
+	defer cmd.Wait()
+
+	buf := bufio.NewScanner(out)
+	buf.Split(bufio.ScanLines)
+	vis := make(map[string]bool, len(dir.files))
+
+	for buf.Scan() {
+		vis[buf.Text()] = true
+	}
+	for _, f := range dir.allFiles {
+		f.ignore = !vis[f.Name()]
+	}
+
+	sort.SliceStable(dir.files, func(i, j int) bool {
+		if dir.files[i].ignore && dir.files[j].ignore {
+			return i < j
+		}
+		return dir.files[i].ignore
+	})
+	for i, f := range dir.files {
+		if !f.ignore {
+			dir.files = dir.files[i:]
+			return
+		}
+	}
+	dir.files = dir.files[len(dir.files):]
 }
 
 func (nav *nav) loadReg(path string) *reg {
