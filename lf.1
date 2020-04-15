@@ -142,6 +142,7 @@ The following options can be used to customize the behavior of lf:
     filesep         string   (default "\en")
     ifs             string   (default '') (not exported if empty)
     previewer       string   (default '') (not filtered if empty)
+    ignorer         string   (default '') (not filtered if empty)
     promptfmt       string   (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")
     shell           string   (default 'sh')
     sortby          string   (default 'natural')
@@ -665,6 +666,20 @@ This command runs whenever you change directory but not on startup. You can add 
 .EE
 .PP
 Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
+.SH IGNORING FILES
+You can customize which files qualify as hidden with the 'ignorer' option. If this is not set, the default behavior is for files beginning with prefixed with a '.' to be optionally hidden.
+.PP
+In order to use this feature you need to set the value of 'ignorer' option to the path of an executable file. lf passes a directory's path as the argument. The expected output is a NULL byte seperated list containing the files that should NOT be ignored.
+.PP
+.EX
+    set ignorer ~/.config/lf/ignore.sh
+.EE
+.PP
+This is an example of what an ignorer script might look:
+.EX
+    #!/bin/sh
+    fd -d1 . "$1" | xargs basename | tr "\n" "\0"
+.EE
 .SH COLORSCHEMES
 lf tries to automatically adapt its colors to the environment. On startup, first '$LS_COLORS' environment variable is checked. This variable is used by GNU ls to configure its colors based on file types and extensions. The value of this variable is often set by GNU dircolors in a shell configuration file. dircolors program itself can be configured with a configuration file. dircolors supports 256 colors along with common attributes such as bold and underline.
 .PP
