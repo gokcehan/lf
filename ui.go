@@ -536,6 +536,10 @@ type reg struct {
 func (ui *ui) loadFile(nav *nav) {
 	curr, err := nav.currFile()
 	if err != nil {
+		if ui.userPreview { // Never true if gOpts.preview == false
+			ui.previewClear()
+		}
+
 		return
 	}
 
@@ -1043,6 +1047,10 @@ func setColorMode() {
 }
 
 func (ui *ui) pause() {
+	if ui.userPreview {
+		ui.previewClear()
+	}
+
 	termbox.Close()
 }
 
