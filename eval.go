@@ -929,7 +929,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if !filepath.IsAbs(path) {
 			path = filepath.Join(wd, path)
-		} else {ab1b522d6c173576d7798b02ca3e8130e76b45df
+		} else {
 			path = filepath.Clean(path)
 		}
 
