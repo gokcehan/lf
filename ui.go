@@ -18,7 +18,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/mattn/go-runewidth"
-	"github.com/nsf/termbox-go"
+	"github.com/doronbehar/termbox-go"
 )
 
 const gEscapeCode = 27
