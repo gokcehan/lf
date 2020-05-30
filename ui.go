@@ -275,6 +275,9 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 
 	if gOpts.number || gOpts.relativenumber {
 		lnwidth = 1
+		if gOpts.number && gOpts.relativenumber {
+			lnwidth++
+		}
 		for j := 10; j < len(dir.files); j *= 10 {
 			lnwidth++
 		}
@@ -287,13 +290,18 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 		if lnwidth > 0 {
 			var ln string
 
-			if gOpts.number && (!gOpts.relativenumber || i == dir.pos) {
+			if gOpts.number && (!gOpts.relativenumber) {
 				ln = fmt.Sprintf(lnformat, i+1+beg)
 			} else if gOpts.relativenumber {
-				if i < dir.pos {
+				switch {
+				case i < dir.pos:
 					ln = fmt.Sprintf(lnformat, dir.pos-i)
-				} else {
+				case i > dir.pos:
 					ln = fmt.Sprintf(lnformat, i-dir.pos)
+				case gOpts.number:
+					ln = fmt.Sprintf(fmt.Sprintf("%%%d.d ", lnwidth-1), i+1+beg)
+				default:
+					ln = ""
 				}
 			}
 
@@ -344,9 +352,9 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 
 		if len(info) > 0 && win.w-2 > 2*len(info) {
 			if win.w-2 > w+len(info) {
-				s = runeSliceWidthRange(s, 0, win.w-3-len(info))
+				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
 			} else {
-				s = runeSliceWidthRange(s, 0, win.w-4-len(info))
+				s = runeSliceWidthRange(s, 0, win.w-4-len(info)-lnwidth)
 				s = append(s, '~')
 			}
 			for _, r := range info {
