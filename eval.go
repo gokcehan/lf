@@ -232,7 +232,9 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "ifs":
 		gOpts.ifs = e.val
 	case "previewer":
-		gOpts.previewer = strings.Replace(e.val, "~", gUser.HomeDir, -1)
+		if strings.Index(e.val, "~") == 0 {
+			gOpts.previewer = strings.Replace(e.val, "~", gUser.HomeDir, 1)
+		}
 	case "promptfmt":
 		gOpts.promptfmt = e.val
 	case "shell":
@@ -969,7 +971,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerr("source: requires an argument")
 			return
 		}
-		app.readFile(strings.Replace(e.args[0], "~", gUser.HomeDir, -1))
+		if f := e.args[0]; strings.Index(f, "~") == 0 {
+			f = strings.Replace(f, "~", gUser.HomeDir, 1)
+			app.readFile(f);
+		} else {
+			app.readFile(f);
+		}
 		app.ui.loadFileInfo(app.nav)
 	case "push":
 		if len(e.args) != 1 {
