@@ -551,7 +551,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	ui.echof("%v %4s %v", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt))
+	var linkTarget string
+	if curr.linkTarget != "" {
+		linkTarget = " -> " + curr.linkTarget
+	}
+	ui.echof("%v %4s %v%s", curr.Mode(), humanize(curr.Size()), curr.ModTime().Format(gOpts.timefmt), linkTarget)
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
