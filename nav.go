@@ -855,7 +855,7 @@ func (nav *nav) sync() error {
 }
 
 func (nav *nav) cd(wd string) error {
-	wd = ReplaceTilde(wd)
+	wd = replaceTilde(wd)
 	wd = filepath.Clean(wd)
 
 	if !filepath.IsAbs(wd) {
@@ -872,7 +872,7 @@ func (nav *nav) cd(wd string) error {
 }
 
 func (nav *nav) sel(path string) error {
-	path = ReplaceTilde(path)
+	path = replaceTilde(path)
 	path = filepath.Clean(path)
 
 	lstat, err := os.Stat(path)

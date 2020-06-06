@@ -224,7 +224,7 @@ func matchExec(s string) (matches []string, longest string) {
 }
 
 func matchFile(s string) (matches []string, longest string) {
-	dir := ReplaceTilde(s)
+	dir := replaceTilde(s)
 
 	if !filepath.IsAbs(dir) {
 		wd, err := os.Getwd()

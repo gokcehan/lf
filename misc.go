@@ -207,11 +207,11 @@ func max(a, b int) int {
 	return b
 }
 
-func ReplaceTilde(s string) string {
+func replaceTilde(s string) string {
 	if strings.HasPrefix(s, "~") {
 		s = strings.Replace(s, "~", gUser.HomeDir, 1)
 	}
-	return s;
+	return s
 }
 
 // We don't need no generic code
