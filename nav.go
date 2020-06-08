@@ -28,6 +28,7 @@ const (
 type file struct {
 	os.FileInfo
 	linkState  linkState
+	linkTarget string
 	path       string
 	dirCount   int
 	accessTime time.Time
@@ -56,6 +57,7 @@ func readdir(path string) ([]*file, error) {
 		}
 
 		var linkState linkState
+		var linkTarget string
 
 		if lstat.Mode()&os.ModeSymlink != 0 {
 			stat, err := os.Stat(fpath)
@@ -64,6 +66,10 @@ func readdir(path string) ([]*file, error) {
 				lstat = stat
 			} else {
 				linkState = broken
+			}
+			linkTarget, err = os.Readlink(fpath)
+			if err != nil {
+				return files, err
 			}
 		}
 
@@ -85,6 +91,7 @@ func readdir(path string) ([]*file, error) {
 		files = append(files, &file{
 			FileInfo:   lstat,
 			linkState:  linkState,
+			linkTarget: linkTarget,
 			path:       fpath,
 			dirCount:   -1,
 			accessTime: at,
