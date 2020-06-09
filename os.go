@@ -134,7 +134,7 @@ func isExecutable(f os.FileInfo) bool {
 }
 
 func isHidden(f os.FileInfo, path string) (hidden bool) {
-	for _, pattern := range gOpts.hiddenFiles {
+	for _, pattern := range gOpts.hiddenfiles {
 		if len(pattern) == 0 {
 			continue
 		}

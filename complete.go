@@ -139,7 +139,7 @@ var (
 		"ratios",
 		"info",
 		"shellopts",
-		"hiddenFiles",
+		"hiddenfiles",
 	}
 )
 

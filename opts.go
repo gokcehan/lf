@@ -58,7 +58,7 @@ var gOpts struct {
 	ratios         []int
 	info           []string
 	shellopts      []string
-	hiddenFiles    []string
+	hiddenfiles    []string
 	keys           map[string]expr
 	cmdkeys        map[string]expr
 	cmds           map[string]expr
@@ -96,7 +96,7 @@ func init() {
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.info = nil
 	gOpts.shellopts = nil
-	gOpts.hiddenFiles = []string{".*"}
+	gOpts.hiddenfiles = []string{".*"}
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 
 	gOpts.keys = make(map[string]expr)
