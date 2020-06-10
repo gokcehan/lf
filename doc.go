@@ -134,6 +134,7 @@ The following options can be used to customize the behavior of lf:
     ratios          string   (default '1:2:3')
     info            string   (default '')
     shellopts       string   (default '')
+    hiddenfiles     string   (default '.*')
 
 The following variables are exported for shell commands:
 

@@ -296,6 +296,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.info = toks
 	case "shellopts":
 		gOpts.shellopts = strings.Split(e.val, ":")
+	case "hiddenfiles":
+		gOpts.hiddenfiles = strings.Split(e.val, ":")
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)
 		return

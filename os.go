@@ -133,8 +133,38 @@ func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
 }
 
-func isHidden(f os.FileInfo) bool {
-	return f.Name()[0] == '.'
+func isHidden(f os.FileInfo, path string) (hidden bool) {
+	for _, pattern := range gOpts.hiddenfiles {
+		if len(pattern) == 0 {
+			continue
+		}
+
+		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
+		if pattern[0] == '!' && matched {
+			hidden = false
+		} else if matched {
+			hidden = true
+		}
+	}
+	return hidden
+}
+
+func matchPattern(pattern, name, path string) bool {
+	matchStr := name
+
+	if pattern[0] == '~' {
+		pattern = gUser.HomeDir + strings.TrimPrefix(pattern, "~")
+	}
+	if pattern[0] == filepath.Separator {
+		matchStr = filepath.Join(path, name)
+	}
+
+	isMatch, err := filepath.Match(pattern, matchStr)
+	if err != nil {
+		log.Printf("pattern %s caused error with %s", pattern, matchStr)
+		return false
+	}
+	return isMatch
 }
 
 func exportFiles(f string, fs []string) {

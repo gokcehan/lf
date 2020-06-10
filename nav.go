@@ -204,13 +204,13 @@ func (dir *dir) sort() {
 	// files to the first non-hidden file in the list
 	if gOpts.sortType.option&hiddenSort == 0 {
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isHidden(dir.files[i]) && isHidden(dir.files[j]) {
+			if isHidden(dir.files[i], dir.path) && isHidden(dir.files[j], dir.path) {
 				return i < j
 			}
-			return isHidden(dir.files[i])
+			return isHidden(dir.files[i], dir.path)
 		})
 		for i, f := range dir.files {
-			if !isHidden(f) {
+			if !isHidden(f, dir.path) {
 				dir.files = dir.files[i:]
 				return
 			}
