@@ -297,6 +297,14 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "shellopts":
 		gOpts.shellopts = strings.Split(e.val, ":")
 	case "hiddenfiles":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			_, err := filepath.Match(s, "a")
+			if err != nil {
+				app.ui.echoerrf("hiddenfiles: %s", err)
+				return
+			}
+		}
 		gOpts.hiddenfiles = strings.Split(e.val, ":")
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)

@@ -159,12 +159,10 @@ func matchPattern(pattern, name, path string) bool {
 		matchStr = filepath.Join(path, name)
 	}
 
-	isMatch, err := filepath.Match(pattern, matchStr)
-	if err != nil {
-		log.Printf("pattern %s caused error with %s", pattern, matchStr)
-		return false
-	}
-	return isMatch
+	// pattern errors are checked when 'hiddenfiles' option is set
+	matched, _ := filepath.Match(pattern, matchStr)
+
+	return matched
 }
 
 func exportFiles(f string, fs []string) {
