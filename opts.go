@@ -35,15 +35,15 @@ var gOpts struct {
 	globsearch     bool
 	icons          bool
 	ignorecase     bool
-	incsearch      bool
-	preview        bool
-	smartcase      bool
 	ignoredia      bool
+	incsearch      bool
+	number         bool
+	preview        bool
+	relativenumber bool
+	smartcase      bool
 	smartdia       bool
 	wrapscan       bool
 	wrapscroll     bool
-	number         bool
-	relativenumber bool
 	findlen        int
 	period         int
 	scrolloff      int
@@ -56,9 +56,9 @@ var gOpts struct {
 	shell          string
 	timefmt        string
 	ratios         []int
+	hiddenfiles    []string
 	info           []string
 	shellopts      []string
-	hiddenfiles    []string
 	keys           map[string]expr
 	cmdkeys        map[string]expr
 	cmds           map[string]expr
@@ -73,15 +73,15 @@ func init() {
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
-	gOpts.incsearch = false
-	gOpts.preview = true
-	gOpts.smartcase = true
 	gOpts.ignoredia = false
+	gOpts.incsearch = false
+	gOpts.number = false
+	gOpts.preview = true
+	gOpts.relativenumber = false
+	gOpts.smartcase = true
 	gOpts.smartdia = false
 	gOpts.wrapscan = true
 	gOpts.wrapscroll = false
-	gOpts.number = false
-	gOpts.relativenumber = false
 	gOpts.findlen = 1
 	gOpts.period = 0
 	gOpts.scrolloff = 0
@@ -94,9 +94,9 @@ func init() {
 	gOpts.shell = gDefaultShell
 	gOpts.timefmt = time.ANSIC
 	gOpts.ratios = []int{1, 2, 3}
+	gOpts.hiddenfiles = []string{".*"}
 	gOpts.info = nil
 	gOpts.shellopts = nil
-	gOpts.hiddenfiles = []string{".*"}
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 
 	gOpts.keys = make(map[string]expr)

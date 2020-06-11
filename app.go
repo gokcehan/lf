@@ -8,9 +8,9 @@ import (
 	"os"
 	"os/exec"
 	"os/signal"
-	"syscall"
 	"path/filepath"
 	"strings"
+	"syscall"
 	"time"
 )
 

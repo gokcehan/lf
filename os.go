@@ -133,14 +133,11 @@ func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
 }
 
-func isHidden(f os.FileInfo, path string) (hidden bool) {
+func isHidden(f os.FileInfo, path string) bool {
+	hidden := false
 	for _, pattern := range gOpts.hiddenfiles {
-		if len(pattern) == 0 {
-			continue
-		}
-
 		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if pattern[0] == '!' && matched {
+		if strings.HasPrefix(pattern, "!") && matched {
 			hidden = false
 		} else if matched {
 			hidden = true
@@ -150,17 +147,16 @@ func isHidden(f os.FileInfo, path string) (hidden bool) {
 }
 
 func matchPattern(pattern, name, path string) bool {
-	matchStr := name
+	s := name
 
-	if pattern[0] == '~' {
-		pattern = gUser.HomeDir + strings.TrimPrefix(pattern, "~")
-	}
-	if pattern[0] == filepath.Separator {
-		matchStr = filepath.Join(path, name)
+	pattern = replaceTilde(pattern)
+
+	if filepath.IsAbs(pattern) {
+		s = filepath.Join(path, name)
 	}
 
 	// pattern errors are checked when 'hiddenfiles' option is set
-	matched, _ := filepath.Match(pattern, matchStr)
+	matched, _ := filepath.Match(pattern, s)
 
 	return matched
 }

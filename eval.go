@@ -71,12 +71,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.globsearch = false
 	case "globsearch!":
 		gOpts.globsearch = !gOpts.globsearch
-	case "icons":
-		gOpts.icons = true
-	case "noicons":
-		gOpts.icons = false
-	case "icons!":
-		gOpts.icons = !gOpts.icons
 	case "hidden":
 		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()
@@ -95,6 +89,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app.nav)
+	case "icons":
+		gOpts.icons = true
+	case "noicons":
+		gOpts.icons = false
+	case "icons!":
+		gOpts.icons = !gOpts.icons
 	case "ignorecase":
 		gOpts.ignorecase = true
 	case "noignorecase":
@@ -113,6 +113,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.incsearch = false
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
+	case "number":
+		gOpts.number = true
+	case "nonumber":
+		gOpts.number = false
+	case "number!":
+		gOpts.number = !gOpts.number
 	case "preview":
 		if len(gOpts.ratios) < 2 {
 			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
@@ -127,6 +133,12 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.preview = !gOpts.preview
+	case "relativenumber":
+		gOpts.relativenumber = true
+	case "norelativenumber":
+		gOpts.relativenumber = false
+	case "relativenumber!":
+		gOpts.relativenumber = !gOpts.relativenumber
 	case "reverse":
 		gOpts.sortType.option |= reverseSort
 		app.nav.sort()
@@ -163,18 +175,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscroll = false
 	case "wrapscroll!":
 		gOpts.wrapscroll = !gOpts.wrapscroll
-	case "number":
-		gOpts.number = true
-	case "nonumber":
-		gOpts.number = false
-	case "number!":
-		gOpts.number = !gOpts.number
-	case "relativenumber":
-		gOpts.relativenumber = true
-	case "norelativenumber":
-		gOpts.relativenumber = false
-	case "relativenumber!":
-		gOpts.relativenumber = !gOpts.relativenumber
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -229,14 +229,67 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.errorfmt = e.val
 	case "filesep":
 		gOpts.filesep = e.val
+	case "hiddenfiles":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			if s == "" {
+				app.ui.echoerrf("hiddenfiles: glob should be non-empty")
+				return
+			}
+			_, err := filepath.Match(s, "a")
+			if err != nil {
+				app.ui.echoerrf("hiddenfiles: %s", err)
+				return
+			}
+		}
+		gOpts.hiddenfiles = toks
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav)
 	case "ifs":
 		gOpts.ifs = e.val
+	case "info":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "", "size", "time", "atime", "ctime":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
+				return
+			}
+		}
+		gOpts.info = toks
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
 	case "promptfmt":
 		gOpts.promptfmt = e.val
+	case "ratios":
+		toks := strings.Split(e.val, ":")
+		var rats []int
+		for _, s := range toks {
+			n, err := strconv.Atoi(s)
+			if err != nil {
+				app.ui.echoerrf("ratios: %s", err)
+				return
+			}
+			if n <= 0 {
+				app.ui.echoerr("ratios: value should be a positive number")
+				return
+			}
+			rats = append(rats, n)
+		}
+		if gOpts.preview && len(rats) < 2 {
+			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
+			return
+		}
+		gOpts.ratios = rats
+		app.ui.wins = getWins()
+		app.ui.loadFile(app.nav)
 	case "shell":
 		gOpts.shell = e.val
+	case "shellopts":
+		gOpts.shellopts = strings.Split(e.val, ":")
 	case "sortby":
 		switch e.val {
 		case "natural":
@@ -261,55 +314,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "timefmt":
 		gOpts.timefmt = e.val
-	case "ratios":
-		toks := strings.Split(e.val, ":")
-		var rats []int
-		for _, s := range toks {
-			n, err := strconv.Atoi(s)
-			if err != nil {
-				app.ui.echoerrf("ratios: %s", err)
-				return
-			}
-			if n <= 0 {
-				app.ui.echoerr("ratios: value should be a positive number")
-				return
-			}
-			rats = append(rats, n)
-		}
-		if gOpts.preview && len(rats) < 2 {
-			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
-			return
-		}
-		gOpts.ratios = rats
-		app.ui.wins = getWins()
-		app.ui.loadFile(app.nav)
-	case "info":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "", "size", "time", "atime", "ctime":
-			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
-				return
-			}
-		}
-		gOpts.info = toks
-	case "shellopts":
-		gOpts.shellopts = strings.Split(e.val, ":")
-	case "hiddenfiles":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			_, err := filepath.Match(s, "a")
-			if err != nil {
-				app.ui.echoerrf("hiddenfiles: %s", err)
-				return
-			}
-		}
-		gOpts.hiddenfiles = toks
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app.nav)
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)
 		return

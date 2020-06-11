@@ -13,6 +13,13 @@ import (
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
 
+func replaceTilde(s string) string {
+	if strings.HasPrefix(s, "~") {
+		s = strings.Replace(s, "~", gUser.HomeDir, 1)
+	}
+	return s
+}
+
 func runeSliceWidth(rs []rune) int {
 	w := 0
 	for _, r := range rs {
@@ -205,13 +212,6 @@ func max(a, b int) int {
 		return a
 	}
 	return b
-}
-
-func replaceTilde(s string) string {
-	if strings.HasPrefix(s, "~") {
-		s = strings.Replace(s, "~", gUser.HomeDir, 1)
-	}
-	return s
 }
 
 // We don't need no generic code

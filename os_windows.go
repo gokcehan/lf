@@ -114,9 +114,9 @@ func isExecutable(f os.FileInfo) bool {
 	return false
 }
 
-func isHidden(f os.FileInfo, path string) (hidden bool) {
+func isHidden(f os.FileInfo, path string) bool {
 	// TODO: implement
-	return hidden
+	return false
 }
 
 func exportFiles(f string, fs []string) {
