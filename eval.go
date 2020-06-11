@@ -305,7 +305,11 @@ func (e *setExpr) eval(app *app, args []string) {
 				return
 			}
 		}
-		gOpts.hiddenfiles = strings.Split(e.val, ":")
+		gOpts.hiddenfiles = toks
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav)
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)
 		return
