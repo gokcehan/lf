@@ -622,8 +622,6 @@ func (nav *nav) toggle() {
 	}
 
 	nav.toggleSelection(curr.path)
-
-	nav.down(1)
 }
 
 func (nav *nav) invert() {
