@@ -42,6 +42,10 @@ cmd open ${{
     esac
 }}
 
+#share any file 256.0 MiB limit
+cmd share ${{   curl -F"file=@$fx" https://0x0.st | xclip -selection c 
+}} 
+
 # define a custom 'rename' command without prompt for overwrite
 # cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 # map r push :rename<space>
