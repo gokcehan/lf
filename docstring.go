@@ -30,7 +30,6 @@ The following commands are provided by lf with default keybindings:
     quit                     (default 'q')
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
-    toggle                   (default '<space>')
     invert                   (default 'v')
     unselect                 (default 'u')
     copy                     (default 'y')
@@ -67,6 +66,7 @@ The following commands are provided by lf without default keybindings:
     echoerr        same as echomsg but red color
     cd             change working directory to the argument
     select         change current file selection to the argument
+    toggle         toggle the selection of the current file
     glob-select    select files that match the given glob
     glob-unselect  unselect files that match the given glob
     source         read the configuration file in the argument
@@ -182,6 +182,7 @@ The following additional keybindings are provided by default:
     map sc :set sortby ctime; set info ctime
     map se :set sortby ext; set info
     map gh cd ~
+    map <space> :toggle; down
 
 The following keybindings to applications are provided by default:
 
