@@ -1116,12 +1116,16 @@ func (e *callExpr) eval(app *app, args []string) {
 					log.Printf("getting current directory: %s", err)
 					return
 				}
-				oldPathTo := filepath.Join(wd, curr.Name())
-				newPathTo := filepath.Join(wd, s)
-				if oldPathTo == newPathTo {
+
+				oldPath := filepath.Join(wd, curr.Name())
+				newPath := filepath.Join(wd, s)
+
+				if oldPath == newPath {
 					return
 				}
-				app.nav.renameCache = []string{oldPathTo, newPathTo}
+
+				app.nav.renameOldPath = oldPath
+				app.nav.renameNewPath = newPath
 
 				if dir, _ := filepath.Split(s); dir != "" {
 					if _, err := os.Stat(filepath.Join(wd, dir)); err != nil {
@@ -1130,7 +1134,13 @@ func (e *callExpr) eval(app *app, args []string) {
 					}
 				}
 
-				if _, err := os.Stat(newPathTo); err == nil { // file exists
+				oldStat, err := os.Stat(oldPath)
+				if err != nil {
+					app.ui.echoerrf("rename: %s", err)
+					return
+				}
+
+				if newStat, err := os.Stat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
 					app.ui.cmdPrefix = "replace " + s + "?[y/N]"
 					return
 				}
