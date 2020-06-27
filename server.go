@@ -2,22 +2,27 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"net"
 	"os"
+	"path/filepath"
 	"strconv"
 )
 
 var (
-	gCopyFile bool
-	gFileList []string
-	gConnList = make(map[int]net.Conn)
-	gQuitChan = make(chan bool, 1)
-	gListener net.Listener
+	gCopyFile          bool
+	gFileList          []string
+	gConnList          = make(map[int]net.Conn)
+	gQuitChan          = make(chan bool, 1)
+	gListener          net.Listener
+	gConnectionCount   int
+	gSelectedFilesPath string
 )
 
 func serve() {
+	gSelectedFilesPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.files", gUser.Username))
 	f, err := os.Create(gServerLogPath)
 	if err != nil {
 		panic(err)
@@ -26,6 +31,13 @@ func serve() {
 	log.SetOutput(f)
 
 	log.Print("hi!")
+	if _, err := os.Stat(gSelectedFilesPath); err == nil {
+		if err := getSelectedFiles(); err != nil {
+			log.Printf("failed to obtain the previously selected files: %s", err.Error())
+		} else {
+			log.Printf("read previously selected files from: %s", gSelectedFilesPath)
+		}
+	}
 
 	l, err := net.Listen(gSocketProt, gSocketPath)
 	if err != nil {
@@ -52,6 +64,7 @@ func listen(l net.Listener) {
 			}
 		}
 		log.Println("accepted new connection")
+		gConnectionCount++
 		go handleConn(c)
 	}
 }
@@ -116,7 +129,7 @@ Loop:
 				}
 			}
 		case "quit":
-			gQuitChan <- true
+			close(gQuitChan)
 			for _, c := range gConnList {
 				fmt.Fprintln(c, "echo server is quitting...")
 				c.Close()
@@ -132,5 +145,65 @@ Loop:
 		log.Printf("listening: %s", s.Err())
 	}
 
+	gConnectionCount--
+	if gConnectionCount == 0 {
+		if gFileList == nil {
+			if _, err := os.Stat(gSelectedFilesPath); err == nil {
+				if err := os.Remove(gSelectedFilesPath); err != nil {
+					log.Printf("failed to remove %s: %s", gSelectedFilesPath, err)
+				} else {
+					close(gQuitChan)
+					gListener.Close()
+				}
+			} else {
+				close(gQuitChan)
+				gListener.Close()
+			}
+		} else {
+			if err := writeSelectedFiles(); err != nil {
+				log.Printf("failed to save selected files: %s", err)
+			} else {
+				close(gQuitChan)
+				gListener.Close()
+			}
+		}
+	}
 	c.Close()
+}
+
+func getSelectedFiles() error {
+	f, err := os.Open(gSelectedFilesPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	s := bufio.NewScanner(f)
+
+	if !s.Scan() {
+		return errors.New("failed to read " + gSelectedFilesPath)
+	}
+	gCopyFile, err = strconv.ParseBool(s.Text())
+	if err != nil {
+		return err
+	}
+	for s.Scan() {
+		gFileList = append(gFileList, s.Text())
+	}
+	return s.Err()
+}
+
+func writeSelectedFiles() error {
+	f, err := os.Create(gSelectedFilesPath)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+
+	w := bufio.NewWriter(f)
+	fmt.Fprintln(w, strconv.FormatBool(gCopyFile))
+	for _, line := range gFileList {
+		fmt.Fprintln(w, line)
+	}
+	return w.Flush()
 }

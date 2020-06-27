@@ -48,7 +48,7 @@ func readExpr() <-chan expr {
 	ch := make(chan expr)
 
 	go func() {
-		duration := 1 * time.Second
+		duration := 10 * time.Millisecond
 
 		c, err := net.Dial(gSocketProt, gSocketPath)
 		for err != nil {
