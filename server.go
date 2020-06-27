@@ -48,9 +48,10 @@ func listen(l net.Listener) {
 				log.Printf("bye!")
 				return
 			default:
-				log.Printf("accepting connection: %s", err)
+				log.Printf("failed to accept connection: %s", err)
 			}
 		}
+		log.Println("accepted new connection")
 		go handleConn(c)
 	}
 }
