@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -212,6 +213,11 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+func checkFileExists(path string) bool {
+	_, err := os.Stat(path)
+	return !os.IsNotExist(err)
 }
 
 // We don't need no generic code

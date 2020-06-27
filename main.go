@@ -70,7 +70,7 @@ func startServer() {
 
 func checkServer() {
 	if gSocketProt == "unix" {
-		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
+		if !checkFileExists(gSocketPath) {
 			startServer()
 		} else if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
 			os.Remove(gSocketPath)
@@ -162,7 +162,7 @@ func main() {
 
 		gClientID = 1000
 		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
-		for _, err := os.Stat(gLogPath); !os.IsNotExist(err); _, err = os.Stat(gLogPath) {
+		for checkFileExists(gLogPath) {
 			gClientID++
 			gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
 		}

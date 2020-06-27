@@ -11,12 +11,11 @@ func copySize(srcs []string) (int64, error) {
 	var total int64
 
 	for _, src := range srcs {
-		_, err := os.Stat(src)
-		if os.IsNotExist(err) {
+		if !checkFileExists(src) {
 			return total, fmt.Errorf("src does not exist: %q", src)
 		}
 
-		err = filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+		err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 			if err != nil {
 				return fmt.Errorf("walk: %s", err)
 			}
@@ -86,12 +85,10 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 		for _, src := range srcs {
 			dst := filepath.Join(dstDir, filepath.Base(src))
 
-			_, err := os.Stat(dst)
-			if !os.IsNotExist(err) {
-				var newPath string
-				for i := 1; !os.IsNotExist(err); i++ {
+			if checkFileExists(dst) {
+				newPath := fmt.Sprintf("%s.~%d~", dst, 1)
+				for i := 2; checkFileExists(newPath); i++ {
 					newPath = fmt.Sprintf("%s.~%d~", dst, i)
-					_, err = os.Stat(newPath)
 				}
 				dst = newPath
 			}

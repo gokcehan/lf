@@ -180,7 +180,7 @@ func matchExec(s string) (matches []string, longest string) {
 	paths := strings.Split(envPath, string(filepath.ListSeparator))
 
 	for _, p := range paths {
-		if _, err := os.Stat(p); os.IsNotExist(err) {
+		if !checkFileExists(p) {
 			continue
 		}
 

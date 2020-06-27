@@ -31,9 +31,9 @@ func serve() {
 	log.SetOutput(f)
 
 	log.Print("hi!")
-	if _, err := os.Stat(gSelectedFilesPath); err == nil {
+	if checkFileExists(gSelectedFilesPath) {
 		if err := getSelectedFiles(); err != nil {
-			log.Printf("failed to obtain the previously selected files: %s", err.Error())
+			log.Printf("failed to read the previously selected files from: %s", err.Error())
 		} else {
 			log.Printf("read previously selected files from: %s", gSelectedFilesPath)
 		}
@@ -129,12 +129,11 @@ Loop:
 				}
 			}
 		case "quit":
-			close(gQuitChan)
+			killServer()
 			for _, c := range gConnList {
 				fmt.Fprintln(c, "echo server is quitting...")
 				c.Close()
 			}
-			gListener.Close()
 			break Loop
 		default:
 			log.Printf("listen: unexpected command: %s", word)
@@ -148,23 +147,20 @@ Loop:
 	gConnectionCount--
 	if gConnectionCount == 0 {
 		if gFileList == nil {
-			if _, err := os.Stat(gSelectedFilesPath); err == nil {
+			if checkFileExists(gSelectedFilesPath) {
 				if err := os.Remove(gSelectedFilesPath); err != nil {
 					log.Printf("failed to remove %s: %s", gSelectedFilesPath, err)
 				} else {
-					close(gQuitChan)
-					gListener.Close()
+					killServer()
 				}
 			} else {
-				close(gQuitChan)
-				gListener.Close()
+				killServer()
 			}
 		} else {
 			if err := writeSelectedFiles(); err != nil {
 				log.Printf("failed to save selected files: %s", err)
 			} else {
-				close(gQuitChan)
-				gListener.Close()
+				killServer()
 			}
 		}
 	}
@@ -206,4 +202,9 @@ func writeSelectedFiles() error {
 		fmt.Fprintln(w, line)
 	}
 	return w.Flush()
+}
+
+func killServer() {
+	close(gQuitChan)
+	gListener.Close()
 }

@@ -1128,7 +1128,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.renameNewPath = newPath
 
 				if dir, _ := filepath.Split(s); dir != "" {
-					if _, err := os.Stat(filepath.Join(wd, dir)); err != nil {
+					if !checkFileExists(filepath.Join(wd, dir)) {
 						app.ui.cmdPrefix = "create path " + dir + "?[y/N]"
 						return
 					}

@@ -164,7 +164,7 @@ func (app *app) loop() {
 	}
 
 	for _, path := range gConfigPaths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
+		if checkFileExists(path) {
 			app.readFile(path)
 		}
 	}

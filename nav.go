@@ -389,7 +389,7 @@ func (nav *nav) renew() {
 	}
 
 	for m := range nav.selections {
-		if _, err := os.Stat(m); os.IsNotExist(err) {
+		if !checkFileExists(m) {
 			delete(nav.selections, m)
 		}
 	}
@@ -734,10 +734,9 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 			ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
-			var newPath string
-			for i := 1; !os.IsNotExist(err); i++ {
+			newPath := fmt.Sprintf("%s.~%d~", dst, 1)
+			for i := 2; checkFileExists(newPath); i++ {
 				newPath = fmt.Sprintf("%s.~%d~", dst, i)
-				_, err = os.Stat(newPath)
 			}
 			dst = newPath
 		}
