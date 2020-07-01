@@ -120,7 +120,7 @@ func init() {
 	gOpts.keys["<home>"] = &callExpr{"top", nil, 1}
 	gOpts.keys["G"] = &callExpr{"bottom", nil, 1}
 	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 1}
-	gOpts.keys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}}
+	gOpts.keys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
 	gOpts.keys["v"] = &callExpr{"invert", nil, 1}
 	gOpts.keys["u"] = &callExpr{"unselect", nil, 1}
 	gOpts.keys["y"] = &callExpr{"copy", nil, 1}
@@ -155,12 +155,12 @@ func init() {
 	gOpts.keys["zs"] = &setExpr{"info", "size"}
 	gOpts.keys["zt"] = &setExpr{"info", "time"}
 	gOpts.keys["za"] = &setExpr{"info", "size:time"}
-	gOpts.keys["sn"] = &listExpr{[]expr{&setExpr{"sortby", "natural"}, &setExpr{"info", ""}}}
-	gOpts.keys["ss"] = &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}
-	gOpts.keys["st"] = &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}}
-	gOpts.keys["sa"] = &listExpr{[]expr{&setExpr{"sortby", "atime"}, &setExpr{"info", "atime"}}}
-	gOpts.keys["sc"] = &listExpr{[]expr{&setExpr{"sortby", "ctime"}, &setExpr{"info", "ctime"}}}
-	gOpts.keys["se"] = &listExpr{[]expr{&setExpr{"sortby", "ext"}, &setExpr{"info", ""}}}
+	gOpts.keys["sn"] = &listExpr{[]expr{&setExpr{"sortby", "natural"}, &setExpr{"info", ""}}, 1}
+	gOpts.keys["ss"] = &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}, 1}
+	gOpts.keys["st"] = &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}, 1}
+	gOpts.keys["sa"] = &listExpr{[]expr{&setExpr{"sortby", "atime"}, &setExpr{"info", "atime"}}, 1}
+	gOpts.keys["sc"] = &listExpr{[]expr{&setExpr{"sortby", "ctime"}, &setExpr{"info", "ctime"}}, 1}
+	gOpts.keys["se"] = &listExpr{[]expr{&setExpr{"sortby", "ext"}, &setExpr{"info", ""}}, 1}
 	gOpts.keys["gh"] = &callExpr{"cd", []string{"~"}, 1}
 
 	gOpts.cmdkeys = make(map[string]expr)
