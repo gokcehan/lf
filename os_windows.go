@@ -115,8 +115,15 @@ func isExecutable(f os.FileInfo) bool {
 }
 
 func isHidden(f os.FileInfo, path string) bool {
-	// TODO: implement
-	return false
+	ptr, err := syscall.UTF16PtrFromString(filepath.Join(path, f.Name()))
+	if err != nil {
+		return false
+	}
+	attrs, err := syscall.GetFileAttributes(ptr)
+	if err != nil {
+		return false
+	}
+	return attrs&syscall.FILE_ATTRIBUTE_HIDDEN != 0
 }
 
 func errCrossDevice(err error) bool {
