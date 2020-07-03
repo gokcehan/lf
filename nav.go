@@ -12,6 +12,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	times "gopkg.in/djherbis/times.v1"
@@ -743,9 +744,48 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		}
 
 		if err := os.Rename(src, dst); err != nil {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
+			if err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV {
+				total, err := copySize([]string{src})
+				if err != nil {
+					echo.args[0] = err.Error()
+					ui.exprChan <- echo
+					continue
+				}
+
+				nav.copyTotalChan <- total
+
+				nums, errs := copyAll([]string{src}, dstDir)
+
+				oldCount := errCount
+			loop:
+				for {
+					select {
+					case n := <-nums:
+						nav.copyBytesChan <- n
+					case err, ok := <-errs:
+						if !ok {
+							break loop
+						}
+						errCount++
+						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+						ui.exprChan <- echo
+					}
+				}
+
+				nav.copyTotalChan <- -total
+
+				if errCount == oldCount {
+					if err := os.RemoveAll(src); err != nil {
+						errCount++
+						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+						ui.exprChan <- echo
+					}
+				}
+			} else {
+				errCount++
+				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
+				ui.exprChan <- echo
+			}
 		}
 	}
 
