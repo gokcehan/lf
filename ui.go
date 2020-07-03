@@ -746,11 +746,6 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	termbox.Flush()
-
-	if ui.cmdPrefix == "" {
-		// leave the cursor at the beginning of the current file for screen readers
-		moveCursor(ui.wins[woff+length-1].y+nav.dirs[doff+length-1].pos+1, ui.wins[woff+length-1].x+1)
-	}
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {

@@ -126,10 +126,6 @@ func setDefaults() {
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 }
 
-func moveCursor(y, x int) {
-	fmt.Printf("\033[%d;%dH", y, x)
-}
-
 func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
 }
