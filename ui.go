@@ -153,7 +153,11 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Att
 		i += w - 1
 
 		if r == '\t' {
-			x += gOpts.tabstop - (x-off)%gOpts.tabstop
+			s := gOpts.tabstop - (x-off)%gOpts.tabstop
+			for i := 0; i < s && x+i < win.w; i++ {
+				termbox.SetCell(win.x+x+i, win.y+y, ' ', fg, bg)
+			}
+			x += s
 		} else {
 			x += runewidth.RuneWidth(r)
 		}
