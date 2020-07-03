@@ -894,6 +894,8 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				expr := gOpts.keys[string(ui.keyAcc)]
 				if e, ok := expr.(*callExpr); ok {
 					e.count = count
+				} else if e, ok := expr.(*listExpr); ok {
+					e.count = count
 				}
 				ch <- expr
 				ui.keyAcc = nil

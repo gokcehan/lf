@@ -697,9 +697,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
-		for i := 0; i < e.count; i++ {
-			app.nav.toggle()
-		}
+		app.nav.toggle()
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "invert":
@@ -1401,7 +1399,9 @@ func (e *execExpr) eval(app *app, args []string) {
 }
 
 func (e *listExpr) eval(app *app, args []string) {
-	for _, expr := range e.exprs {
-		expr.eval(app, nil)
+	for i := 0; i < e.count; i++ {
+		for _, expr := range e.exprs {
+			expr.eval(app, nil)
+		}
 	}
 }

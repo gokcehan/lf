@@ -114,6 +114,7 @@ func (e *execExpr) String() string {
 
 type listExpr struct {
 	exprs []expr
+	count int
 }
 
 func (e *listExpr) String() string {
@@ -265,7 +266,7 @@ func (p *parser) parseExpr() expr {
 
 		s.scan()
 
-		result = &listExpr{exprs}
+		result = &listExpr{exprs, 1}
 	case tokenPrefix:
 		var expr string
 

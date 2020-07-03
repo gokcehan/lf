@@ -158,25 +158,25 @@ var gEvalTests = []struct {
 	{
 		":set ratios 1:2:3",
 		[]string{":", "set", "ratios", "1:2:3", "\n", "\n"},
-		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}}},
+		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}, 1}},
 	},
 
 	{
 		":set ratios 1:2:3\nset hidden",
 		[]string{":", "set", "ratios", "1:2:3", "\n", "\n", "set", "hidden", "\n"},
-		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}}, &setExpr{"hidden", ""}},
+		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}, 1}, &setExpr{"hidden", ""}},
 	},
 
 	{
 		":set ratios 1:2:3;",
 		[]string{":", "set", "ratios", "1:2:3", ";", "\n"},
-		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}}},
+		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}, 1}},
 	},
 
 	{
 		":set ratios 1:2:3;\nset hidden",
 		[]string{":", "set", "ratios", "1:2:3", ";", "\n", "set", "hidden", "\n"},
-		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}}, &setExpr{"hidden", ""}},
+		[]expr{&listExpr{[]expr{&setExpr{"ratios", "1:2:3"}}, 1}, &setExpr{"hidden", ""}},
 	},
 
 	{
@@ -194,13 +194,13 @@ var gEvalTests = []struct {
 	{
 		"map gh :cd ~",
 		[]string{"map", "gh", ":", "cd", "~", "\n", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}}}},
+		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}, 1}}},
 	},
 
 	{
 		"map gh :cd ~;",
 		[]string{"map", "gh", ":", "cd", "~", ";", "\n"},
-		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}}}},
+		[]expr{&mapExpr{"gh", &listExpr{[]expr{&callExpr{"cd", []string{"~"}, 1}}, 1}}},
 	},
 
 	{
@@ -236,13 +236,13 @@ var gEvalTests = []struct {
 	{
 		"map u :usage",
 		[]string{"map", "u", ":", "usage", "\n", "\n"},
-		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}}}},
+		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}, 1}}},
 	},
 
 	{
 		"map u :usage;",
 		[]string{"map", "u", ":", "usage", ";", "\n"},
-		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}}}},
+		[]expr{&mapExpr{"u", &listExpr{[]expr{&callExpr{"usage", nil, 1}}, 1}}},
 	},
 
 	{
@@ -266,13 +266,13 @@ var gEvalTests = []struct {
 	{
 		"map r :push :rename<space>",
 		[]string{"map", "r", ":", "push", ":rename<space>", "\n", "\n"},
-		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}}}}},
+		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}}, 1}}},
 	},
 
 	{
 		"map r :push :rename<space> ; set hidden",
 		[]string{"map", "r", ":", "push", ":rename<space>", ";", "set", "hidden", "\n", "\n"},
-		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}, &setExpr{"hidden", ""}}}}},
+		[]expr{&mapExpr{"r", &listExpr{[]expr{&callExpr{"push", []string{":rename<space>"}, 1}, &setExpr{"hidden", ""}}, 1}}},
 	},
 
 	{
@@ -296,13 +296,13 @@ var gEvalTests = []struct {
 	{
 		"map ss :set sortby size; set info size",
 		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "info", "size", "\n", "\n"},
-		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}}},
+		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}, 1}}},
 	},
 
 	{
 		"map ss :set sortby size; set info size;",
 		[]string{"map", "ss", ":", "set", "sortby", "size", ";", "set", "info", "size", ";", "\n"},
-		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}}}},
+		[]expr{&mapExpr{"ss", &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}, 1}}},
 	},
 
 	{
@@ -320,7 +320,7 @@ var gEvalTests = []struct {
 			"gohome", &listExpr{[]expr{
 				&callExpr{"cd", []string{"~"}, 1},
 				&setExpr{"hidden", ""},
-			}},
+			}, 1},
 		}},
 	},
 
@@ -339,7 +339,7 @@ var gEvalTests = []struct {
 			"gh", &listExpr{[]expr{
 				&callExpr{"cd", []string{"~"}, 1},
 				&setExpr{"hidden", ""},
-			}},
+			}, 1},
 		}},
 	},
 
