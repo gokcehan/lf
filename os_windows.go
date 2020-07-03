@@ -119,6 +119,10 @@ func isHidden(f os.FileInfo, path string) bool {
 	return false
 }
 
+func errCrossDevice(err error) bool {
+	return err.(*os.LinkError).Err.(syscall.Errno) == 17
+}
+
 func exportFiles(f string, fs []string) {
 	envFile := fmt.Sprintf(`"%s"`, f)
 

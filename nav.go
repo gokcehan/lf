@@ -12,7 +12,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	times "gopkg.in/djherbis/times.v1"
@@ -744,7 +743,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		}
 
 		if err := os.Rename(src, dst); err != nil {
-			if err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV {
+			if errCrossDevice(err) {
 				total, err := copySize([]string{src})
 				if err != nil {
 					echo.args[0] = err.Error()

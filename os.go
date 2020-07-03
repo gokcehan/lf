@@ -11,6 +11,7 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+	"syscall"
 )
 
 var (
@@ -159,6 +160,10 @@ func matchPattern(pattern, name, path string) bool {
 	matched, _ := filepath.Match(pattern, s)
 
 	return matched
+}
+
+func errCrossDevice(err error) bool {
+	return err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV
 }
 
 func exportFiles(f string, fs []string) {
