@@ -63,6 +63,7 @@ func exportEnvVars() {
 
 func startServer() {
 	cmd := detachedCommand(os.Args[0], "-server")
+	cmd.Dir = gUser.HomeDir
 	if err := cmd.Start(); err != nil {
 		log.Printf("starting server: %s", err)
 	}
