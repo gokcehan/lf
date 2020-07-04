@@ -382,16 +382,9 @@ func update(app *app) {
 		last.ind = app.nav.searchInd
 		last.pos = app.nav.searchPos
 
-		if app.nav.searchBack {
-			if err := app.nav.searchPrev(); err != nil {
-				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
-				return
-			}
-		} else {
-			if err := app.nav.searchNext(); err != nil {
-				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-				return
-			}
+		if err := app.nav.searchNext(); err != nil {
+			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
+			return
 		}
 
 		app.ui.loadFile(app.nav)
@@ -403,16 +396,9 @@ func update(app *app) {
 		last.ind = app.nav.searchInd
 		last.pos = app.nav.searchPos
 
-		if app.nav.searchBack {
-			if err := app.nav.searchNext(); err != nil {
-				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
-				return
-			}
-		} else {
-			if err := app.nav.searchPrev(); err != nil {
-				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-				return
-			}
+		if err := app.nav.searchPrev(); err != nil {
+			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
+			return
 		}
 
 		app.ui.loadFile(app.nav)
