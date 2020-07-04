@@ -177,9 +177,6 @@ scan:
 		s.tok = string(s.buf[beg:s.off])
 		s.cmd = false
 		s.sem = true
-	case s.chr == '\r':
-		s.next()
-		goto scan
 	case s.chr == '\n':
 		if s.sem {
 			s.typ = tokenSemicolon
@@ -196,7 +193,7 @@ scan:
 		}
 		goto scan
 	case isSpace(s.chr):
-		for !s.eof && isSpace(s.chr) {
+		for !s.eof && isSpace(s.chr) && s.chr != '\n' {
 			s.next()
 		}
 		goto scan

@@ -180,6 +180,18 @@ var gEvalTests = []struct {
 	},
 
 	{
+		"set ratios 1:2:3\n set hidden",
+		[]string{"set", "ratios", "1:2:3", "\n", "set", "hidden", "\n"},
+		[]expr{&setExpr{"ratios", "1:2:3"}, &setExpr{"hidden", ""}},
+	},
+
+	{
+		"set ratios 1:2:3 \nset hidden",
+		[]string{"set", "ratios", "1:2:3", "\n", "set", "hidden", "\n"},
+		[]expr{&setExpr{"ratios", "1:2:3"}, &setExpr{"hidden", ""}},
+	},
+
+	{
 		"map gh cd ~",
 		[]string{"map", "gh", "cd", "~", "\n"},
 		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}, 1}}},
