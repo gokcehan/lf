@@ -66,7 +66,8 @@ The following commands are provided by lf without default keybindings:
     echoerr        same as echomsg but red color
     cd             change working directory to the argument
     select         change current file selection to the argument
-    toggle         toggle the selection of the current file
+    toggle         toggle the selection of the current file or,
+                   when passed arguments, of its arguments
     glob-select    select files that match the given glob
     glob-unselect  unselect files that match the given glob
     source         read the configuration file in the argument
