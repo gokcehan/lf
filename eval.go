@@ -683,15 +683,21 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "toggle":
-		app.nav.toggle()
-		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
+		if len(e.args) == 0 {
+			app.nav.toggle()
+		} else {
+			for _, path := range e.args {
+				if _, err := os.Stat(path); err == nil {
+					app.nav.toggleSelection(path)
+				} else {
+					log.Printf("toggle: %s", err)
+				}
+			}
+		}
 	case "invert":
 		app.nav.invert()
-		app.ui.loadFileInfo(app.nav)
 	case "unselect":
 		app.nav.unselect()
-		app.ui.loadFileInfo(app.nav)
 	case "copy":
 		if err := app.nav.save(true); err != nil {
 			app.ui.echoerrf("copy: %s", err)
