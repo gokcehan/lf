@@ -429,5 +429,11 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
+	case "&":
+		go func() {
+			if err := cmd.Wait(); err != nil {
+				log.Printf("running shell: %s", err)
+			}
+		}()
 	}
 }
