@@ -507,7 +507,7 @@ func insert(app *app, arg string) {
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
 		}
-	case strings.HasPrefix(app.ui.cmdPrefix, "create path"):
+	case strings.HasPrefix(app.ui.cmdPrefix, "create"):
 		normal(app)
 
 		if arg == "y" {
@@ -1126,7 +1126,11 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 
 				oldPath := filepath.Join(wd, curr.Name())
-				newPath := filepath.Join(wd, s)
+
+				newPath := filepath.Clean(s)
+				if !filepath.IsAbs(newPath) {
+					newPath = filepath.Join(wd, newPath)
+				}
 
 				if oldPath == newPath {
 					return
@@ -1137,7 +1141,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 				newDir := filepath.Dir(newPath)
 				if _, err := os.Stat(newDir); os.IsNotExist(err) {
-					app.ui.cmdPrefix = "create path " + newDir + "?[y/N]"
+					app.ui.cmdPrefix = "create " + newDir + "?[y/N]"
 					return
 				}
 
@@ -1148,7 +1152,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 
 				if newStat, err := os.Stat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
-					app.ui.cmdPrefix = "replace " + s + "?[y/N]"
+					app.ui.cmdPrefix = "replace " + newPath + "?[y/N]"
 					return
 				}
 
