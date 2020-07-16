@@ -297,6 +297,8 @@ func (nav *nav) loadDir(path string) *dir {
 		return d
 	}
 
+	nav.checkDir(d)
+
 	return d
 }
 
@@ -476,6 +478,8 @@ func (nav *nav) loadReg(path string) *reg {
 		go nav.preview()
 		return r
 	}
+
+	nav.checkReg(r)
 
 	return r
 }
@@ -866,8 +870,6 @@ func (nav *nav) rename() error {
 	dir := nav.loadDir(filepath.Dir(newPath))
 	dir.files = append(dir.files, &file{FileInfo: lstat})
 	dir.sel(lstat.Name(), nav.height)
-
-	nav.checkDir(dir)
 
 	return nil
 }
