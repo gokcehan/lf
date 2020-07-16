@@ -763,9 +763,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 
 			if selections := len(fileOrSelections); selections == 1 {
-				app.ui.cmdPrefix = "delete " + fileOrSelections[0] + " [y/N]? "
+				app.ui.cmdPrefix = "delete '" + fileOrSelections[0] + "' ? [y/N] "
 			} else {
-				app.ui.cmdPrefix = "delete " + strconv.Itoa(selections) + " items [y/N]? "
+				app.ui.cmdPrefix = "delete " + strconv.Itoa(selections) + " items? [y/N] "
 			}
 		}
 		app.ui.loadFile(app.nav)
@@ -1141,7 +1141,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 				newDir := filepath.Dir(newPath)
 				if _, err := os.Stat(newDir); os.IsNotExist(err) {
-					app.ui.cmdPrefix = "create " + newDir + "?[y/N]"
+					app.ui.cmdPrefix = "create '" + newDir + "' ? [y/N] "
 					return
 				}
 
@@ -1152,7 +1152,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 
 				if newStat, err := os.Stat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
-					app.ui.cmdPrefix = "replace " + newPath + "?[y/N]"
+					app.ui.cmdPrefix = "replace '" + newPath + "' ? [y/N] "
 					return
 				}
 
