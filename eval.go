@@ -492,11 +492,29 @@ func insert(app *app, arg string) {
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
 		}
-	case strings.HasPrefix(app.ui.cmdPrefix, "replace") ||
-		strings.HasPrefix(app.ui.cmdPrefix, "create path"):
+	case strings.HasPrefix(app.ui.cmdPrefix, "replace"):
 		normal(app)
 
 		if arg == "y" {
+			if err := app.nav.rename(); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+			if err := remote("send load"); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+			app.ui.loadFile(app.nav)
+			app.ui.loadFileInfo(app.nav)
+		}
+	case strings.HasPrefix(app.ui.cmdPrefix, "create path"):
+		normal(app)
+
+		if arg == "y" {
+			if err := os.MkdirAll(filepath.Dir(app.nav.renameNewPath), os.ModePerm); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
 			if err := app.nav.rename(); err != nil {
 				app.ui.echoerrf("rename: %s", err)
 				return
@@ -1117,11 +1135,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.renameOldPath = oldPath
 				app.nav.renameNewPath = newPath
 
-				if dir, _ := filepath.Split(s); dir != "" {
-					if _, err := os.Stat(filepath.Join(wd, dir)); err != nil {
-						app.ui.cmdPrefix = "create path " + dir + "?[y/N]"
-						return
-					}
+				newDir := filepath.Dir(newPath)
+				if _, err := os.Stat(newDir); os.IsNotExist(err) {
+					app.ui.cmdPrefix = "create path " + newDir + "?[y/N]"
+					return
 				}
 
 				oldStat, err := os.Stat(oldPath)

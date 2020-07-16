@@ -854,17 +854,20 @@ func (nav *nav) rename() error {
 	oldPath := nav.renameOldPath
 	newPath := nav.renameNewPath
 
-	dir, _ := filepath.Split(newPath)
-	os.MkdirAll(dir, os.ModePerm)
-
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
 	}
 
-	// TODO: change selection
-	if err := nav.sel(newPath); err != nil {
+	lstat, err := os.Lstat(newPath)
+	if err != nil {
 		return err
 	}
+
+	dir := nav.loadDir(filepath.Dir(newPath))
+	dir.files = append(dir.files, &file{FileInfo: lstat})
+	dir.sel(lstat.Name(), nav.height)
+
+	nav.checkDir(dir)
 
 	return nil
 }
