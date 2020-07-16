@@ -477,7 +477,7 @@ func newUI() *ui {
 	}
 }
 
-func (ui *ui) renew() {
+func (ui *ui) renew(nav *nav) {
 	wtot, htot := termbox.Size()
 
 	widths := getWidths(wtot)

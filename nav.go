@@ -286,43 +286,43 @@ type nav struct {
 func (nav *nav) loadDir(path string) *dir {
 	d, ok := nav.dirCache[path]
 	if !ok {
+		d := &dir{loading: true, loadTime: time.Now(), path: path, sortType: gOpts.sortType}
+		nav.dirCache[path] = d
 		go func() {
 			d := newDir(path)
 			d.sort()
 			d.ind, d.pos = 0, 0
 			nav.dirChan <- d
 		}()
-		d := &dir{loading: true, path: path, sortType: gOpts.sortType}
-		nav.dirCache[path] = d
 		return d
-	}
-
-	s, err := os.Stat(d.path)
-	if err != nil {
-		return d
-	}
-
-	switch {
-	case s.ModTime().After(d.loadTime):
-		go func() {
-			d.loadTime = time.Now()
-			nd := newDir(path)
-			nd.sort()
-			nd.sel(d.name(), nav.height)
-			nav.dirChan <- nd
-		}()
-	case d.sortType != gOpts.sortType:
-		go func() {
-			d.loading = true
-			name := d.name()
-			d.sort()
-			d.sel(name, nav.height)
-			d.loading = false
-			nav.dirChan <- d
-		}()
 	}
 
 	return d
+}
+
+func (nav *nav) checkDir(dir *dir) {
+	s, err := os.Stat(dir.path)
+	if err != nil {
+		log.Printf("getting directory info: %s", err)
+		return
+	}
+
+	switch {
+	case s.ModTime().After(dir.loadTime):
+		go func() {
+			dir.loadTime = time.Now()
+			nd := newDir(dir.path)
+			nd.sort()
+			nav.dirChan <- nd
+		}()
+	case dir.sortType != gOpts.sortType:
+		go func() {
+			dir.loading = true
+			dir.sort()
+			dir.loading = false
+			nav.dirChan <- dir
+		}()
+	}
 }
 
 func (nav *nav) getDirs(wd string) {
@@ -372,20 +372,7 @@ func newNav(height int) *nav {
 
 func (nav *nav) renew() {
 	for _, d := range nav.dirs {
-		go func(d *dir) {
-			s, err := os.Stat(d.path)
-			if err != nil {
-				log.Printf("getting directory info: %s", err)
-				return
-			}
-			if d.loadTime.After(s.ModTime()) {
-				return
-			}
-			d.loadTime = time.Now()
-			nd := newDir(d.path)
-			nd.sort()
-			nav.dirChan <- nd
-		}(d)
+		nav.checkDir(d)
 	}
 
 	for m := range nav.selections {
@@ -393,6 +380,7 @@ func (nav *nav) renew() {
 			delete(nav.selections, m)
 		}
 	}
+
 	if len(nav.selections) == 0 {
 		nav.selectionInd = 0
 	}
@@ -431,6 +419,8 @@ func (nav *nav) preview() {
 		return
 	}
 
+	reg := &reg{loadTime: time.Now(), path: curr.path}
+
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
@@ -458,8 +448,6 @@ func (nav *nav) preview() {
 		reader = f
 	}
 
-	reg := &reg{loadTime: time.Now(), path: curr.path}
-
 	buf := bufio.NewScanner(reader)
 
 	for i := 0; i < nav.height && buf.Scan(); i++ {
@@ -483,23 +471,25 @@ func (nav *nav) preview() {
 func (nav *nav) loadReg(path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok {
-		go nav.preview()
-		r := &reg{loading: true, path: path}
+		r := &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
-		return r
-	}
-
-	s, err := os.Stat(r.path)
-	if err != nil {
-		return r
-	}
-
-	if s.ModTime().After(r.loadTime) {
-		r.loadTime = time.Now()
 		go nav.preview()
+		return r
 	}
 
 	return r
+}
+
+func (nav *nav) checkReg(reg *reg) {
+	s, err := os.Stat(reg.path)
+	if err != nil {
+		return
+	}
+
+	if s.ModTime().After(reg.loadTime) {
+		reg.loadTime = time.Now()
+		go nav.preview()
+	}
 }
 
 func (nav *nav) sort() {
