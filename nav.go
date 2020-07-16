@@ -311,15 +311,16 @@ func (nav *nav) checkDir(dir *dir) {
 
 	switch {
 	case s.ModTime().After(dir.loadTime):
+		dir.loading = true
+		dir.loadTime = time.Now()
 		go func() {
-			dir.loadTime = time.Now()
 			nd := newDir(dir.path)
 			nd.sort()
 			nav.dirChan <- nd
 		}()
 	case dir.sortType != gOpts.sortType:
+		dir.loading = true
 		go func() {
-			dir.loading = true
 			dir.sort()
 			dir.loading = false
 			nav.dirChan <- dir
@@ -868,7 +869,11 @@ func (nav *nav) rename() error {
 	}
 
 	dir := nav.loadDir(filepath.Dir(newPath))
-	dir.files = append(dir.files, &file{FileInfo: lstat})
+
+	if dir.loading {
+		dir.files = append(dir.files, &file{FileInfo: lstat})
+	}
+
 	dir.sel(lstat.Name(), nav.height)
 
 	return nil
@@ -923,11 +928,12 @@ func (nav *nav) sel(path string) error {
 	base := filepath.Base(path)
 
 	last := nav.dirs[len(nav.dirs)-1]
+
 	if last.loading {
 		last.files = append(last.files, &file{FileInfo: lstat})
-	} else {
-		last.sel(base, nav.height)
 	}
+
+	last.sel(base, nav.height)
 
 	return nil
 }
