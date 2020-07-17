@@ -139,6 +139,7 @@ The following options can be used to customize the behavior of lf:
     shellopts       string   (default '')
     sortby          string   (default 'natural')
     timefmt         string   (default 'Mon Jan _2 15:04:05 2006')
+    truncatechar    string   (default '~')
 
 The following variables are exported for shell commands:
 
