@@ -345,7 +345,7 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 
 		if w > win.w-3 {
 			s = runeSliceWidthRange(s, 0, win.w-4)
-			s = append(s, '~')
+			s = append(s, []rune(gOpts.truncatechar)...)
 		} else {
 			for i := 0; i < win.w-3-w; i++ {
 				s = append(s, ' ')
@@ -359,7 +359,7 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
 			} else {
 				s = runeSliceWidthRange(s, 0, win.w-4-len(info)-lnwidth)
-				s = append(s, '~')
+				s = append(s, []rune(gOpts.truncatechar)...)
 			}
 			for _, r := range info {
 				s = append(s, r)
