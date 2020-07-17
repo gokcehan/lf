@@ -314,6 +314,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "timefmt":
 		gOpts.timefmt = e.val
+	case "truncatechar":
+		gOpts.truncatechar = e.val
 	default:
 		app.ui.echoerrf("unknown option: %s", e.opt)
 		return
