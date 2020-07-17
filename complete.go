@@ -140,6 +140,7 @@ var (
 		"shellopts",
 		"sortby",
 		"timefmt",
+		"truncatechar",
 	}
 )
 
