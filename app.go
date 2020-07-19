@@ -333,6 +333,14 @@ func (app *app) exportFiles() {
 	currSelections := app.nav.currSelections()
 
 	exportFiles(currFile, currSelections)
+
+	var files = app.nav.currDir().files
+	var filesString string
+	filesString = ""
+	for _, file := range files {
+		filesString += file.path + "\n"
+	}
+	os.Setenv("a", filesString)
 }
 
 func waitKey() error {
