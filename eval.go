@@ -233,7 +233,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			if s == "" {
-				app.ui.echoerrf("hiddenfiles: glob should be non-empty")
+				app.ui.echoerr("hiddenfiles: glob should be non-empty")
 				return
 			}
 			_, err := filepath.Match(s, "a")
@@ -315,8 +315,8 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
-		if runeSliceWidth([]rune(e.val)) > 1 {
-			app.ui.echoerr("truncatechar: value should be 1 character long")
+		if runeSliceWidth([]rune(e.val)) != 1 {
+			app.ui.echoerr("truncatechar: value should be a single character")
 			return
 		}
 
