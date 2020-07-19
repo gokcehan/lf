@@ -315,7 +315,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
-		if len(e.val) > 1 {
+		if runeSliceWidth([]rune(e.val)) > 1 {
 			app.ui.echoerr("truncatechar: value should be 1 character long")
 			return
 		}
