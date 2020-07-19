@@ -712,7 +712,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.toggle()
 		} else {
 			for _, path := range e.args {
-				if _, err := os.Stat(path); err == nil {
+				if _, err := os.Lstat(path); err == nil {
 					app.nav.toggleSelection(path)
 				} else {
 					log.Printf("toggle: %s", err)

@@ -86,12 +86,12 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 		for _, src := range srcs {
 			dst := filepath.Join(dstDir, filepath.Base(src))
 
-			_, err := os.Stat(dst)
+			_, err := os.Lstat(dst)
 			if !os.IsNotExist(err) {
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {
 					newPath = fmt.Sprintf("%s.~%d~", dst, i)
-					_, err = os.Stat(newPath)
+					_, err = os.Lstat(newPath)
 				}
 				dst = newPath
 			}

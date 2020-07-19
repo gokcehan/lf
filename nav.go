@@ -379,7 +379,7 @@ func (nav *nav) renew() {
 	}
 
 	for m := range nav.selections {
-		if _, err := os.Stat(m); os.IsNotExist(err) {
+		if _, err := os.Lstat(m); os.IsNotExist(err) {
 			delete(nav.selections, m)
 		}
 	}
@@ -732,7 +732,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
 				newPath = fmt.Sprintf("%s.~%d~", dst, i)
-				_, err = os.Stat(newPath)
+				_, err = os.Lstat(newPath)
 			}
 			dst = newPath
 		}
@@ -914,7 +914,7 @@ func (nav *nav) sel(path string) error {
 	path = replaceTilde(path)
 	path = filepath.Clean(path)
 
-	lstat, err := os.Stat(path)
+	lstat, err := os.Lstat(path)
 	if err != nil {
 		return fmt.Errorf("select: %s", err)
 	}

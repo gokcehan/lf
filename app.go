@@ -152,10 +152,10 @@ func (app *app) loop() {
 
 	if gSelect != "" {
 		go func() {
-			stat, err := os.Stat(gSelect)
+			lstat, err := os.Lstat(gSelect)
 			if err != nil {
 				app.ui.exprChan <- &callExpr{"echoerr", []string{err.Error()}, 1}
-			} else if stat.IsDir() {
+			} else if lstat.IsDir() {
 				app.ui.exprChan <- &callExpr{"cd", []string{gSelect}, 1}
 			} else {
 				app.ui.exprChan <- &callExpr{"select", []string{gSelect}, 1}
