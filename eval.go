@@ -711,11 +711,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) == 0 {
 			app.nav.toggle()
 		} else {
+			curr := app.nav.currDir()
 			for _, path := range e.args {
-				if _, err := os.Lstat(path); err == nil {
+				if !filepath.IsAbs(path) {
+					path = filepath.Join(curr.path, path)
+				}
+				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					app.nav.toggleSelection(path)
 				} else {
-					log.Printf("toggle: %s", err)
+					app.ui.echoerrf("toggle: %s", err)
 				}
 			}
 		}
