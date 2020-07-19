@@ -574,11 +574,18 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
 	pwd := nav.currDir().path
-	nohome := strings.TrimPrefix(pwd, gUser.HomeDir)
-	if len(nohome) < len(pwd) {
-		pwd = "~/" + nohome
+
+	if strings.HasPrefix(pwd, gUser.HomeDir) {
+		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
 	}
+
 	pwd = filepath.Clean(pwd)
+
+	sep := string(filepath.Separator)
+
+	if !strings.HasSuffix(pwd, sep) {
+		pwd += sep
+	}
 
 	var fname string
 	curr, err := nav.currFile()
@@ -593,9 +600,11 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	prompt = strings.Replace(prompt, "%f", fname, -1)
 
 	if printLength(strings.Replace(prompt, "%w", pwd, -1)) > ui.promptWin.w {
-		sep := string(filepath.Separator)
 		names := strings.Split(pwd, sep)
 		for i := range names {
+			if names[i] == "" {
+				continue
+			}
 			r, _ := utf8.DecodeRuneInString(names[i])
 			names[i] = string(r)
 			if printLength(strings.Replace(prompt, "%w", strings.Join(names, sep), -1)) <= ui.promptWin.w {

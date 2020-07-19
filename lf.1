@@ -151,6 +151,7 @@ The following options can be used to customize the behavior of lf:
     shellopts       string   (default '')
     sortby          string   (default 'natural')
     timefmt         string   (default 'Mon Jan _2 15:04:05 2006')
+    truncatechar    string   (default '~')
 .EE
 .PP
 The following variables are exported for shell commands:
@@ -655,7 +656,7 @@ There is a special command 'on-cd' that runs a shell command when it is defined 
         GIT_PS1_SHOWUNTRACKEDFILES=auto
         GIT_PS1_SHOWUPSTREAM=auto
         git=$(__git_ps1 " (%s)") || true
-        fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f$git\e033[0m"
+        fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w\e033[0m\e033[1m%f$git\e033[0m"
         lf -remote "send $id set promptfmt \e"$fmt\e""
     }}
 .EE
