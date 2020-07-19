@@ -816,7 +816,7 @@ func (ui *ui) pollEvent() termbox.Event {
 	case key := <-ui.keyChan:
 		ev := termbox.Event{Type: termbox.EventKey}
 
-		if len(key) == 1 {
+		if utf8.RuneCountInString(key) == 1 {
 			ev.Ch, _ = utf8.DecodeRuneInString(key)
 		} else {
 			switch {
