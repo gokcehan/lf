@@ -385,9 +385,9 @@ func update(app *app) {
 	case gOpts.incsearch && app.ui.cmdPrefix == "/":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
 
-		last := app.nav.currDir()
-		last.ind = app.nav.searchInd
-		last.pos = app.nav.searchPos
+		dir := app.nav.currDir()
+		dir.ind = app.nav.searchInd
+		dir.pos = app.nav.searchPos
 
 		if err := app.nav.searchNext(); err != nil {
 			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
@@ -399,9 +399,9 @@ func update(app *app) {
 	case gOpts.incsearch && app.ui.cmdPrefix == "?":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
 
-		last := app.nav.currDir()
-		last.ind = app.nav.searchInd
-		last.pos = app.nav.searchPos
+		dir := app.nav.currDir()
+		dir.ind = app.nav.searchInd
+		dir.pos = app.nav.searchPos
 
 		if err := app.nav.searchPrev(); err != nil {
 			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
@@ -711,10 +711,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) == 0 {
 			app.nav.toggle()
 		} else {
-			curr := app.nav.currDir()
+			dir := app.nav.currDir()
 			for _, path := range e.args {
 				if !filepath.IsAbs(path) {
-					path = filepath.Join(curr.path, path)
+					path = filepath.Join(dir.path, path)
 				}
 				if _, err := os.Lstat(path); !os.IsNotExist(err) {
 					app.nav.toggleSelection(path)
@@ -767,16 +767,16 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 		} else {
-			fileOrSelections, err := app.nav.currFileOrSelections()
+			list, err := app.nav.currFileOrSelections()
 			if err != nil {
 				app.ui.echoerrf("delete: %s", err)
 				return
 			}
 
-			if selections := len(fileOrSelections); selections == 1 {
-				app.ui.cmdPrefix = "delete '" + fileOrSelections[0] + "' ? [y/N] "
+			if len(list) == 1 {
+				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
 			} else {
-				app.ui.cmdPrefix = "delete " + strconv.Itoa(selections) + " items? [y/N] "
+				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
 			}
 		}
 		app.ui.loadFile(app.nav)
@@ -851,16 +851,16 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "search":
 		app.ui.cmdPrefix = "/"
-		last := app.nav.currDir()
-		app.nav.searchInd = last.ind
-		app.nav.searchPos = last.pos
+		dir := app.nav.currDir()
+		app.nav.searchInd = dir.ind
+		app.nav.searchPos = dir.pos
 		app.nav.searchBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
 		app.ui.cmdPrefix = "?"
-		last := app.nav.currDir()
-		app.nav.searchInd = last.ind
-		app.nav.searchPos = last.pos
+		dir := app.nav.currDir()
+		app.nav.searchInd = dir.ind
+		app.nav.searchPos = dir.pos
 		app.nav.searchBack = true
 		app.ui.loadFileInfo(app.nav)
 	case "search-next":
@@ -1034,9 +1034,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
-			last := app.nav.currDir()
-			last.ind = app.nav.searchInd
-			last.pos = app.nav.searchPos
+			dir := app.nav.currDir()
+			dir.ind = app.nav.searchInd
+			dir.pos = app.nav.searchPos
 
 			app.ui.loadFile(app.nav)
 			app.ui.loadFileInfo(app.nav)
@@ -1104,9 +1104,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.runShell(s, nil, "&")
 		case "/":
 			if gOpts.incsearch {
-				last := app.nav.currDir()
-				last.ind = app.nav.searchInd
-				last.pos = app.nav.searchPos
+				dir := app.nav.currDir()
+				dir.ind = app.nav.searchInd
+				dir.pos = app.nav.searchPos
 			}
 			log.Printf("search: %s", s)
 			app.ui.cmdPrefix = ""
@@ -1119,9 +1119,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "?":
 			if gOpts.incsearch {
-				last := app.nav.currDir()
-				last.ind = app.nav.searchInd
-				last.pos = app.nav.searchPos
+				dir := app.nav.currDir()
+				dir.ind = app.nav.searchInd
+				dir.pos = app.nav.searchPos
 			}
 			log.Printf("search-back: %s", s)
 			app.ui.cmdPrefix = ""

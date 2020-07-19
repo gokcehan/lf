@@ -579,8 +579,6 @@ func (ui *ui) drawPromptLine(nav *nav) {
 		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
 	}
 
-	pwd = filepath.Clean(pwd)
-
 	sep := string(filepath.Separator)
 
 	if !strings.HasSuffix(pwd, sep) {
@@ -622,12 +620,12 @@ func (ui *ui) drawPromptLine(nav *nav) {
 func (ui *ui) drawStatLine(nav *nav) {
 	fg, bg := termbox.ColorDefault, termbox.ColorDefault
 
-	currDir := nav.currDir()
+	dir := nav.currDir()
 
 	ui.msgWin.print(0, 0, fg, bg, ui.msg)
 
-	tot := len(currDir.files)
-	ind := min(currDir.ind+1, tot)
+	tot := len(dir.files)
+	ind := min(dir.ind+1, tot)
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
 	var progress string
@@ -719,13 +717,13 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	if gOpts.preview {
-		f, err := nav.currFile()
+		curr, err := nav.currFile()
 		if err == nil {
 			preview := ui.wins[len(ui.wins)-1]
 
-			if f.IsDir() {
+			if curr.IsDir() {
 				preview.printDir(ui.dirPrev, nav.selections, nav.saves, ui.colors, ui.icons)
-			} else if f.Mode().IsRegular() {
+			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.regPrev)
 			}
 		}

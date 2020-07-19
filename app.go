@@ -212,9 +212,7 @@ func (app *app) loop() {
 				}
 				defer f.Close()
 
-				dir := app.nav.currDir()
-
-				_, err = f.WriteString(dir.path)
+				_, err = f.WriteString(app.nav.currDir().path)
 				if err != nil {
 					log.Printf("writing last dir file: %s", err)
 				}
@@ -326,8 +324,8 @@ func (app *app) loop() {
 
 func (app *app) exportFiles() {
 	var currFile string
-	if f, err := app.nav.currFile(); err == nil {
-		currFile = f.path
+	if curr, err := app.nav.currFile(); err == nil {
+		currFile = curr.path
 	}
 
 	currSelections := app.nav.currSelections()

@@ -620,9 +620,9 @@ func (nav *nav) toggle() {
 }
 
 func (nav *nav) invert() {
-	last := nav.currDir()
-	for _, f := range last.files {
-		path := filepath.Join(last.path, f.Name())
+	dir := nav.currDir()
+	for _, f := range dir.files {
+		path := filepath.Join(dir.path, f.Name())
 		nav.toggleSelection(path)
 	}
 }
@@ -939,25 +939,27 @@ func (nav *nav) sel(path string) error {
 }
 
 func (nav *nav) globSel(pattern string, invert bool) error {
-	curDir := nav.currDir()
-	anyMatches := false
+	dir := nav.currDir()
+	anyMatched := false
 
-	for i := 0; i < len(curDir.files); i++ {
-		match, err := filepath.Match(pattern, curDir.files[i].Name())
+	for i := 0; i < len(dir.files); i++ {
+		matched, err := filepath.Match(pattern, dir.files[i].Name())
 		if err != nil {
 			return fmt.Errorf("glob-select: %s", err)
 		}
-		if match {
-			anyMatches = true
-			fpath := filepath.Join(curDir.path, curDir.files[i].Name())
+		if matched {
+			anyMatched = true
+			fpath := filepath.Join(dir.path, dir.files[i].Name())
 			if _, ok := nav.selections[fpath]; ok == invert {
 				nav.toggleSelection(fpath)
 			}
 		}
 	}
-	if !anyMatches {
+
+	if !anyMatched {
 		return fmt.Errorf("glob-select: pattern not found: %s", pattern)
 	}
+
 	return nil
 }
 
@@ -985,9 +987,9 @@ func findMatch(name, pattern string) bool {
 func (nav *nav) findSingle() int {
 	count := 0
 	index := 0
-	last := nav.currDir()
-	for i := 0; i < len(last.files); i++ {
-		if findMatch(last.files[i].Name(), nav.find) {
+	dir := nav.currDir()
+	for i := 0; i < len(dir.files); i++ {
+		if findMatch(dir.files[i].Name(), nav.find) {
 			count++
 			if count > 1 {
 				return count
@@ -996,27 +998,27 @@ func (nav *nav) findSingle() int {
 		}
 	}
 	if count == 1 {
-		if index > last.ind {
-			nav.down(index - last.ind)
+		if index > dir.ind {
+			nav.down(index - dir.ind)
 		} else {
-			nav.up(last.ind - index)
+			nav.up(dir.ind - index)
 		}
 	}
 	return count
 }
 
 func (nav *nav) findNext() bool {
-	last := nav.currDir()
-	for i := last.ind + 1; i < len(last.files); i++ {
-		if findMatch(last.files[i].Name(), nav.find) {
-			nav.down(i - last.ind)
+	dir := nav.currDir()
+	for i := dir.ind + 1; i < len(dir.files); i++ {
+		if findMatch(dir.files[i].Name(), nav.find) {
+			nav.down(i - dir.ind)
 			return true
 		}
 	}
 	if gOpts.wrapscan {
-		for i := 0; i < last.ind; i++ {
-			if findMatch(last.files[i].Name(), nav.find) {
-				nav.up(last.ind - i)
+		for i := 0; i < dir.ind; i++ {
+			if findMatch(dir.files[i].Name(), nav.find) {
+				nav.up(dir.ind - i)
 				return true
 			}
 		}
@@ -1025,17 +1027,17 @@ func (nav *nav) findNext() bool {
 }
 
 func (nav *nav) findPrev() bool {
-	last := nav.currDir()
-	for i := last.ind - 1; i >= 0; i-- {
-		if findMatch(last.files[i].Name(), nav.find) {
-			nav.up(last.ind - i)
+	dir := nav.currDir()
+	for i := dir.ind - 1; i >= 0; i-- {
+		if findMatch(dir.files[i].Name(), nav.find) {
+			nav.up(dir.ind - i)
 			return true
 		}
 	}
 	if gOpts.wrapscan {
-		for i := len(last.files) - 1; i > last.ind; i-- {
-			if findMatch(last.files[i].Name(), nav.find) {
-				nav.down(i - last.ind)
+		for i := len(dir.files) - 1; i > dir.ind; i-- {
+			if findMatch(dir.files[i].Name(), nav.find) {
+				nav.down(i - dir.ind)
 				return true
 			}
 		}
@@ -1065,25 +1067,25 @@ func searchMatch(name, pattern string) (matched bool, err error) {
 }
 
 func (nav *nav) searchNext() error {
-	last := nav.currDir()
-	for i := last.ind + 1; i < len(last.files); i++ {
-		matched, err := searchMatch(last.files[i].Name(), nav.search)
+	dir := nav.currDir()
+	for i := dir.ind + 1; i < len(dir.files); i++ {
+		matched, err := searchMatch(dir.files[i].Name(), nav.search)
 		if err != nil {
 			return err
 		}
 		if matched {
-			nav.down(i - last.ind)
+			nav.down(i - dir.ind)
 			return nil
 		}
 	}
 	if gOpts.wrapscan {
-		for i := 0; i < last.ind; i++ {
-			matched, err := searchMatch(last.files[i].Name(), nav.search)
+		for i := 0; i < dir.ind; i++ {
+			matched, err := searchMatch(dir.files[i].Name(), nav.search)
 			if err != nil {
 				return err
 			}
 			if matched {
-				nav.up(last.ind - i)
+				nav.up(dir.ind - i)
 				return nil
 			}
 		}
@@ -1092,25 +1094,25 @@ func (nav *nav) searchNext() error {
 }
 
 func (nav *nav) searchPrev() error {
-	last := nav.currDir()
-	for i := last.ind - 1; i >= 0; i-- {
-		matched, err := searchMatch(last.files[i].Name(), nav.search)
+	dir := nav.currDir()
+	for i := dir.ind - 1; i >= 0; i-- {
+		matched, err := searchMatch(dir.files[i].Name(), nav.search)
 		if err != nil {
 			return err
 		}
 		if matched {
-			nav.up(last.ind - i)
+			nav.up(dir.ind - i)
 			return nil
 		}
 	}
 	if gOpts.wrapscan {
-		for i := len(last.files) - 1; i > last.ind; i-- {
-			matched, err := searchMatch(last.files[i].Name(), nav.search)
+		for i := len(dir.files) - 1; i > dir.ind; i-- {
+			matched, err := searchMatch(dir.files[i].Name(), nav.search)
 			if err != nil {
 				return err
 			}
 			if matched {
-				nav.down(i - last.ind)
+				nav.down(i - dir.ind)
 				return nil
 			}
 		}
@@ -1184,12 +1186,12 @@ func (nav *nav) currDir() *dir {
 }
 
 func (nav *nav) currFile() (*file, error) {
-	last := nav.dirs[len(nav.dirs)-1]
+	dir := nav.dirs[len(nav.dirs)-1]
 
-	if len(last.files) == 0 {
+	if len(dir.files) == 0 {
 		return nil, fmt.Errorf("empty directory")
 	}
-	return last.files[last.ind], nil
+	return dir.files[dir.ind], nil
 }
 
 type indexedSelections struct {
