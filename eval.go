@@ -804,20 +804,27 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "read":
 		app.ui.cmdPrefix = ":"
+		app.ui.loadFileInfo(app.nav)
 	case "shell":
 		app.ui.cmdPrefix = "$"
+		app.ui.loadFileInfo(app.nav)
 	case "shell-pipe":
 		app.ui.cmdPrefix = "%"
+		app.ui.loadFileInfo(app.nav)
 	case "shell-wait":
 		app.ui.cmdPrefix = "!"
+		app.ui.loadFileInfo(app.nav)
 	case "shell-async":
 		app.ui.cmdPrefix = "&"
+		app.ui.loadFileInfo(app.nav)
 	case "find":
 		app.ui.cmdPrefix = "find: "
 		app.nav.findBack = false
+		app.ui.loadFileInfo(app.nav)
 	case "find-back":
 		app.ui.cmdPrefix = "find-back: "
 		app.nav.findBack = true
+		app.ui.loadFileInfo(app.nav)
 	case "find-next":
 		for i := 0; i < e.count; i++ {
 			if app.nav.findBack {
@@ -844,12 +851,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchInd = last.ind
 		app.nav.searchPos = last.pos
 		app.nav.searchBack = false
+		app.ui.loadFileInfo(app.nav)
 	case "search-back":
 		app.ui.cmdPrefix = "?"
 		last := app.nav.currDir()
 		app.nav.searchInd = last.ind
 		app.nav.searchPos = last.pos
 		app.nav.searchBack = true
+		app.ui.loadFileInfo(app.nav)
 	case "search-next":
 		for i := 0; i < e.count; i++ {
 			if app.nav.searchBack {
@@ -986,7 +995,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("%s", err)
 			return
 		}
-		app.ui.loadFileInfo(app.nav)
 	case "glob-unselect":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-unselect: requires a pattern to match")
@@ -996,7 +1004,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("%s", err)
 			return
 		}
-		app.ui.loadFileInfo(app.nav)
 	case "source":
 		if len(e.args) != 1 {
 			app.ui.echoerr("source: requires an argument")
