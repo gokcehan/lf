@@ -693,7 +693,9 @@ loop:
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
-	} else {
+	}
+
+	if errCount == 0 {
 		ui.echof("\033[0;32mCopied successfully\033[0m")
 	}
 }
@@ -791,7 +793,9 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
-	} else {
+	}
+
+	if errCount == 0 {
 		ui.echof("\033[0;32mMoved successfully\033[0m")
 	}
 }
