@@ -696,7 +696,10 @@ loop:
 	}
 
 	if errCount == 0 {
-		ui.echof("\033[0;32mCopied successfully\033[0m")
+		echosuccess := &callExpr{"echo", []string{""}, 1}
+		echosuccess.args[0] = "\033[0;32mCopied successfully\033[0m"
+
+		ui.exprChan <- echosuccess
 	}
 }
 
@@ -796,7 +799,10 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 	}
 
 	if errCount == 0 {
-		ui.echof("\033[0;32mMoved successfully\033[0m")
+		echosuccess := &callExpr{"echo", []string{""}, 1}
+		echosuccess.args[0] = "\033[0;32mMoved successfully\033[0m"
+
+		ui.exprChan <- echosuccess
 	}
 }
 
