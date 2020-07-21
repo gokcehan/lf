@@ -693,9 +693,9 @@ loop:
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
+	} else {
+		ui.echof("\033[0;32m%d file(s) copied\033[0m", len(srcs))
 	}
-
-	ui.echof("\033[0;32m%d file(s) copied\033[0m", len(srcs))
 }
 
 func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
@@ -791,9 +791,9 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		errCount++
 		echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 		ui.exprChan <- echo
+	} else {
+		ui.echof("\033[0;32m%d file(s) moved\033[0m", len(srcs))
 	}
-
-	ui.echof("\033[0;32m%d file(s) moved\033[0m", len(srcs))
 }
 
 func (nav *nav) paste(ui *ui) error {
