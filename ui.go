@@ -870,6 +870,8 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ch <- draw
 				ui.keyAcc = nil
 				ui.keyCount = nil
+				ui.menuBuf = nil
+				return
 			}
 			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 		}
