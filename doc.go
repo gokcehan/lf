@@ -63,8 +63,7 @@ The following commands are provided by lf without default keybindings:
     echoerr        same as echomsg but red color
     cd             change working directory to the argument
     select         change current file selection to the argument
-    toggle         toggle the selection of the current file or,
-                   when passed arguments, of its arguments
+    toggle         toggle the selection of the current file or its arguments
     glob-select    select files that match the given glob
     glob-unselect  unselect files that match the given glob
     source         read the configuration file in the argument
@@ -538,11 +537,10 @@ in GNU cp is added to the new files or directories. Only file modes are
 preserved and all other attributes are ignored including ownership, timestamps,
 context, links, and xattr. Special files such as character and block devices,
 named pipes, and sockets are skipped and links are followed. Moving is
-performed using the rename operation of the underlying OS. This can fail to
-move files between different partitions when it needs to copy files. For these
-cases, users are expected to explicitly copy files and then delete the old ones
-manually. Operation errors are shown in the message line as well as the log
-file and they do not preemptively finish the corresponding file operation.
+performed using the rename operation of the underlying OS. For cross-device
+moving, lf falls back to copying and then deletes the original files if there
+are no errors. Operation errors are shown in the message line as well as the
+log file and they do not preemptively finish the corresponding file operation.
 
 File operations can be performed on the current selected file or alternatively
 on multiple files by selecting them first. When you 'copy' a file, lf doesn't
