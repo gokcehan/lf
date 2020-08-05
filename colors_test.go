@@ -3,75 +3,79 @@ package main
 import (
 	"testing"
 
-	"github.com/doronbehar/termbox-go"
+	"github.com/gdamore/tcell"
 )
 
 func TestApplyAnsiCodes(t *testing.T) {
-	none := termbox.ColorDefault
+	none := tcell.StyleDefault
 
 	tests := []struct {
 		s     string
-		fg    termbox.Attribute
-		bg    termbox.Attribute
-		fgExp termbox.Attribute
-		bgExp termbox.Attribute
+		st    tcell.Style
+		stExp tcell.Style
 	}{
-		{"", none, none, none, none},
-		{"", termbox.ColorRed, termbox.ColorRed, none, none},
-		{"", termbox.AttrBold, none, none, none},
-		{"", termbox.ColorRed | termbox.AttrBold, none, none, none},
+		{"", none, none},
+		{"", none.Foreground(tcell.ColorMaroon).Background(tcell.ColorMaroon), none},
+		{"", none.Bold(true), none},
+		{"", none.Foreground(tcell.ColorMaroon).Bold(true), none},
 
-		{"0", none, none, none, none},
-		{"0", termbox.ColorRed, termbox.ColorRed, none, none},
-		{"0", termbox.AttrBold, none, none, none},
-		{"0", termbox.ColorRed | termbox.AttrBold, none, none, none},
+		{"0", none, none},
+		{"0", none.Foreground(tcell.ColorMaroon).Background(tcell.ColorMaroon), none},
+		{"0", none.Bold(true), none},
+		{"0", none.Foreground(tcell.ColorMaroon).Bold(true), none},
 
-		{"1", none, none, termbox.AttrBold, none},
-		{"4", none, none, termbox.AttrUnderline, none},
-		{"7", none, none, termbox.AttrReverse, none},
+		{"1", none, none.Bold(true)},
+		{"4", none, none.Underline(true)},
+		{"7", none, none.Reverse(true)},
 
-		{"1", termbox.ColorRed, none, termbox.ColorRed | termbox.AttrBold, none},
-		{"4", termbox.ColorRed, none, termbox.ColorRed | termbox.AttrUnderline, none},
-		{"7", termbox.ColorRed, none, termbox.ColorRed | termbox.AttrReverse, none},
+		{"1", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"4", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Underline(true)},
+		{"7", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Reverse(true)},
 
-		{"4", termbox.AttrBold, none, termbox.AttrBold | termbox.AttrUnderline, none},
-		{"4", termbox.ColorRed | termbox.AttrBold, none, termbox.ColorRed | termbox.AttrBold | termbox.AttrUnderline, none},
+		{"4", none.Bold(true), none.Bold(true).Underline(true)},
+		{"4", none.Foreground(tcell.ColorMaroon).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true).Underline(true)},
 
-		{"31", none, none, termbox.ColorRed, none},
-		{"31", termbox.ColorGreen, none, termbox.ColorRed, none},
-		{"31", termbox.ColorGreen | termbox.AttrBold, none, termbox.ColorRed | termbox.AttrBold, none},
+		{"31", none, none.Foreground(tcell.ColorMaroon)},
+		{"31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon)},
+		{"31", none.Foreground(tcell.ColorGreen).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true)},
 
-		{"41", none, none, none, termbox.ColorRed},
-		{"41", none, termbox.ColorGreen, none, termbox.ColorRed},
+		{"41", none, none.Background(tcell.ColorMaroon)},
+		{"41", none.Background(tcell.ColorGreen), none.Background(tcell.ColorMaroon)},
 
-		{"1;31", none, none, termbox.ColorRed | termbox.AttrBold, none},
-		{"1;31", termbox.ColorGreen, none, termbox.ColorRed | termbox.AttrBold, none},
+		{"1;31", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"1;31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
 
-		{"38;5;0", none, none, termbox.ColorBlack, none},
-		{"38;5;1", none, none, termbox.ColorRed, none},
-		{"38;5;8", none, none, termbox.Attribute(9), none},
-		{"38;5;16", none, none, termbox.Attribute(17), none},
-		{"38;5;232", none, none, termbox.Attribute(233), none},
+		{"38;5;0", none, none.Foreground(tcell.ColorBlack)},
+		{"38;5;1", none, none.Foreground(tcell.ColorMaroon)},
+		{"38;5;8", none, none.Foreground(tcell.Color(8))},
+		{"38;5;16", none, none.Foreground(tcell.Color(16))},
+		{"38;5;232", none, none.Foreground(tcell.Color(232))},
 
-		{"38;5;1", termbox.ColorGreen, none, termbox.ColorRed, none},
-		{"38;5;1", termbox.ColorGreen | termbox.AttrBold, none, termbox.ColorRed | termbox.AttrBold, none},
+		{"38;5;1", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon)},
+		{"38;5;1", none.Foreground(tcell.ColorGreen).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true)},
 
-		{"48;5;0", none, none, none, termbox.ColorBlack},
-		{"48;5;1", none, none, none, termbox.ColorRed},
-		{"48;5;8", none, none, none, termbox.Attribute(9)},
-		{"48;5;16", none, none, none, termbox.Attribute(17)},
-		{"48;5;232", none, none, none, termbox.Attribute(233)},
+		{"48;5;0", none, none.Background(tcell.ColorBlack)},
+		{"48;5;1", none, none.Background(tcell.ColorMaroon)},
+		{"48;5;8", none, none.Background(tcell.Color(8))},
+		{"48;5;16", none, none.Background(tcell.Color(16))},
+		{"48;5;232", none, none.Background(tcell.Color(232))},
 
-		{"48;5;1", none, termbox.ColorGreen, none, termbox.ColorRed},
+		{"48;5;1", none.Background(tcell.ColorGreen), none.Background(tcell.ColorMaroon)},
 
-		{"1;38;5;1", none, none, termbox.ColorRed | termbox.AttrBold, none},
-		{"1;38;5;1", termbox.ColorGreen, none, termbox.ColorRed | termbox.AttrBold, none},
+		{"1;38;5;1", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"1;38;5;1", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
+
+		{"38;2;5;102;8", none, none.Foreground(tcell.NewRGBColor(5, 102, 8))},
+		{"48;2;0;48;143", none, none.Background(tcell.NewRGBColor(0, 48, 143))},
+
+		// Fixes color construction issue: https://github.com/gokcehan/lf/pull/439#issuecomment-674409446
+		{"38;5;34;1", none, none.Foreground(tcell.Color(34)).Bold(true)},
 	}
 
 	for _, test := range tests {
-		if fgGot, bgGot := applyAnsiCodes(test.s, test.fg, test.bg); fgGot != test.fgExp || bgGot != test.bgExp {
-			t.Errorf("at input '%s' with '%d' and '%d' expected '%d' and '%d' but got '%d' and '%d'",
-				test.s, test.fg, test.bg, test.fgExp, test.bgExp, fgGot, bgGot)
+		if stGot := applyAnsiCodes(test.s, test.st); stGot != test.stExp {
+			t.Errorf("at input '%s' with '%d' expected '%d' but got '%d'",
+				test.s, test.st, test.stExp, stGot)
 		}
 	}
 }

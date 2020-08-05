@@ -21,20 +21,11 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
 	case "color256":
-		gOpts.color256 = true
-		setColorMode()
-		app.ui.pause()
-		app.ui.resume()
+		app.ui.echoerr("option color256 is depreciated")
 	case "nocolor256":
-		gOpts.color256 = false
-		setColorMode()
-		app.ui.pause()
-		app.ui.resume()
+		app.ui.echoerr("option nocolor256 is depreciated")
 	case "color256!":
-		gOpts.color256 = !gOpts.color256
-		setColorMode()
-		app.ui.pause()
-		app.ui.resume()
+		app.ui.echoerr("option color256! is depreciated")
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":
@@ -284,7 +275,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.ratios = rats
-		app.ui.wins = getWins()
+		app.ui.wins = getWins(app.ui.screen)
 		app.ui.loadFile(app.nav)
 	case "shell":
 		gOpts.shell = e.val
@@ -793,8 +784,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "draw":
 	case "redraw":
-		app.ui.sync()
 		app.ui.renew()
+		app.ui.screen.Sync()
 		app.nav.height = app.ui.wins[0].h
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
@@ -1056,7 +1047,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.draw(app.nav)
 		if len(matches) > 1 {
-			app.ui.menuBuf = listMatches(matches)
+			app.ui.menuBuf = listMatches(app.ui.screen, matches)
 		} else {
 			app.ui.menuBuf = nil
 		}

@@ -15,75 +15,75 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/doronbehar/termbox-go"
+	"github.com/gdamore/tcell"
 	"github.com/mattn/go-runewidth"
 )
 
 const gEscapeCode = 27
 
-var gKeyVal = map[termbox.Key]string{
-	termbox.KeyF1:             "<f-1>",
-	termbox.KeyF2:             "<f-2>",
-	termbox.KeyF3:             "<f-3>",
-	termbox.KeyF4:             "<f-4>",
-	termbox.KeyF5:             "<f-5>",
-	termbox.KeyF6:             "<f-6>",
-	termbox.KeyF7:             "<f-7>",
-	termbox.KeyF8:             "<f-8>",
-	termbox.KeyF9:             "<f-9>",
-	termbox.KeyF10:            "<f-10>",
-	termbox.KeyF11:            "<f-11>",
-	termbox.KeyF12:            "<f-12>",
-	termbox.KeyInsert:         "<insert>",
-	termbox.KeyDelete:         "<delete>",
-	termbox.KeyHome:           "<home>",
-	termbox.KeyEnd:            "<end>",
-	termbox.KeyPgup:           "<pgup>",
-	termbox.KeyPgdn:           "<pgdn>",
-	termbox.KeyArrowUp:        "<up>",
-	termbox.KeyArrowDown:      "<down>",
-	termbox.KeyArrowLeft:      "<left>",
-	termbox.KeyArrowRight:     "<right>",
-	termbox.KeyCtrlSpace:      "<c-space>",
-	termbox.KeyCtrlA:          "<c-a>",
-	termbox.KeyCtrlB:          "<c-b>",
-	termbox.KeyCtrlC:          "<c-c>",
-	termbox.KeyCtrlD:          "<c-d>",
-	termbox.KeyCtrlE:          "<c-e>",
-	termbox.KeyCtrlF:          "<c-f>",
-	termbox.KeyCtrlG:          "<c-g>",
-	termbox.KeyBackspace:      "<bs>",
-	termbox.KeyTab:            "<tab>",
-	termbox.KeyCtrlJ:          "<c-j>",
-	termbox.KeyCtrlK:          "<c-k>",
-	termbox.KeyCtrlL:          "<c-l>",
-	termbox.KeyEnter:          "<enter>",
-	termbox.KeyCtrlN:          "<c-n>",
-	termbox.KeyCtrlO:          "<c-o>",
-	termbox.KeyCtrlP:          "<c-p>",
-	termbox.KeyCtrlQ:          "<c-q>",
-	termbox.KeyCtrlR:          "<c-r>",
-	termbox.KeyCtrlS:          "<c-s>",
-	termbox.KeyCtrlT:          "<c-t>",
-	termbox.KeyCtrlU:          "<c-u>",
-	termbox.KeyCtrlV:          "<c-v>",
-	termbox.KeyCtrlW:          "<c-w>",
-	termbox.KeyCtrlX:          "<c-x>",
-	termbox.KeyCtrlY:          "<c-y>",
-	termbox.KeyCtrlZ:          "<c-z>",
-	termbox.KeyEsc:            "<esc>",
-	termbox.KeyCtrlBackslash:  "<c-\\>",
-	termbox.KeyCtrlRsqBracket: "<c-]>",
-	termbox.KeyCtrl6:          "<c-6>",
-	termbox.KeyCtrlSlash:      "<c-/>",
-	termbox.KeySpace:          "<space>",
-	termbox.KeyBackspace2:     "<bs2>",
+var gKeyVal = map[tcell.Key]string{
+	tcell.KeyF1:            "<f-1>",
+	tcell.KeyF2:            "<f-2>",
+	tcell.KeyF3:            "<f-3>",
+	tcell.KeyF4:            "<f-4>",
+	tcell.KeyF5:            "<f-5>",
+	tcell.KeyF6:            "<f-6>",
+	tcell.KeyF7:            "<f-7>",
+	tcell.KeyF8:            "<f-8>",
+	tcell.KeyF9:            "<f-9>",
+	tcell.KeyF10:           "<f-10>",
+	tcell.KeyF11:           "<f-11>",
+	tcell.KeyF12:           "<f-12>",
+	tcell.KeyInsert:        "<insert>",
+	tcell.KeyDelete:        "<delete>",
+	tcell.KeyHome:          "<home>",
+	tcell.KeyEnd:           "<end>",
+	tcell.KeyPgUp:          "<pgup>",
+	tcell.KeyPgDn:          "<pgdn>",
+	tcell.KeyUp:            "<up>",
+	tcell.KeyDown:          "<down>",
+	tcell.KeyLeft:          "<left>",
+	tcell.KeyRight:         "<right>",
+	tcell.KeyCtrlSpace:     "<c-space>",
+	tcell.KeyCtrlA:         "<c-a>",
+	tcell.KeyCtrlB:         "<c-b>",
+	tcell.KeyCtrlC:         "<c-c>",
+	tcell.KeyCtrlD:         "<c-d>",
+	tcell.KeyCtrlE:         "<c-e>",
+	tcell.KeyCtrlF:         "<c-f>",
+	tcell.KeyCtrlG:         "<c-g>",
+	tcell.KeyBackspace:     "<bs>",
+	tcell.KeyTab:           "<tab>",
+	tcell.KeyCtrlJ:         "<c-j>",
+	tcell.KeyCtrlK:         "<c-k>",
+	tcell.KeyCtrlL:         "<c-l>",
+	tcell.KeyEnter:         "<enter>",
+	tcell.KeyCtrlN:         "<c-n>",
+	tcell.KeyCtrlO:         "<c-o>",
+	tcell.KeyCtrlP:         "<c-p>",
+	tcell.KeyCtrlQ:         "<c-q>",
+	tcell.KeyCtrlR:         "<c-r>",
+	tcell.KeyCtrlS:         "<c-s>",
+	tcell.KeyCtrlT:         "<c-t>",
+	tcell.KeyCtrlU:         "<c-u>",
+	tcell.KeyCtrlV:         "<c-v>",
+	tcell.KeyCtrlW:         "<c-w>",
+	tcell.KeyCtrlX:         "<c-x>",
+	tcell.KeyCtrlY:         "<c-y>",
+	tcell.KeyCtrlZ:         "<c-z>",
+	tcell.KeyEsc:           "<esc>",
+	tcell.KeyCtrlBackslash: "<c-\\>",
+	tcell.KeyCtrlRightSq:   "<c-]>",
+	// TODO: compatability only, they are discouraged
+	tcell.KeyCtrlCarat:      "<c-6>",
+	tcell.KeyCtrlUnderscore: "<c-/>",
+	tcell.KeyBackspace2:     "<bs2>",
 }
 
-var gValKey map[string]termbox.Key
+var gValKey map[string]tcell.Key
 
 func init() {
-	gValKey = make(map[string]termbox.Key)
+	gValKey = make(map[string]tcell.Key)
 	for k, v := range gKeyVal {
 		gValKey[v] = k
 	}
@@ -129,7 +129,7 @@ func printLength(s string) int {
 	return ind
 }
 
-func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Attribute, termbox.Attribute) {
+func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
 	off := x
 	for i := 0; i < len(s); i++ {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -140,14 +140,14 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Att
 				continue
 			}
 
-			fg, bg = applyAnsiCodes(s[i+2:i+j], fg, bg)
+			st = applyAnsiCodes(s[i+2:i+j], st)
 
 			i += j
 			continue
 		}
 
 		if x < win.w {
-			termbox.SetCell(win.x+x, win.y+y, r, fg, bg)
+			screen.SetContent(win.x+x, win.y+y, r, nil, st)
 		}
 
 		i += w - 1
@@ -155,7 +155,7 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Att
 		if r == '\t' {
 			s := gOpts.tabstop - (x-off)%gOpts.tabstop
 			for i := 0; i < s && x+i < win.w; i++ {
-				termbox.SetCell(win.x+x+i, win.y+y, ' ', fg, bg)
+				screen.SetContent(win.x+x+i, win.y+y, ' ', nil, st)
 			}
 			x += s
 		} else {
@@ -163,36 +163,40 @@ func (win *win) print(x, y int, fg, bg termbox.Attribute, s string) (termbox.Att
 		}
 	}
 
-	return fg, bg
+	return st
 }
 
-func (win *win) printf(x, y int, fg, bg termbox.Attribute, format string, a ...interface{}) {
-	win.print(x, y, fg, bg, fmt.Sprintf(format, a...))
+func (win *win) printf(screen tcell.Screen, x, y int, st tcell.Style, format string, a ...interface{}) {
+	win.print(screen, x, y, st, fmt.Sprintf(format, a...))
 }
 
-func (win *win) printLine(x, y int, fg, bg termbox.Attribute, s string) {
-	win.printf(x, y, fg, bg, "%s%*s", s, win.w-len(s), "")
+func (win *win) printLine(screen tcell.Screen, x, y int, st tcell.Style, s string) {
+	win.printf(screen, x, y, st, "%s%*s", s, win.w-len(s), "")
 }
 
-func (win *win) printRight(y int, fg, bg termbox.Attribute, s string) {
-	win.print(win.w-len(s), y, fg, bg, s)
+func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string) {
+	win.print(screen, win.w-len(s), y, st, s)
 }
 
-func (win *win) printReg(reg *reg) {
+func (win *win) printReg(screen tcell.Screen, reg *reg) {
 	if reg == nil {
 		return
 	}
 
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	st := tcell.StyleDefault
 
 	if reg.loading {
-		fg = termbox.AttrReverse
-		win.print(2, 0, fg, bg, "loading...")
+		st = st.Reverse(true)
+		win.print(screen, 2, 0, st, "loading...")
 		return
 	}
 
 	for i, l := range reg.lines {
-		fg, bg = win.print(2, i, fg, bg, l)
+		if i > win.h-1 {
+			break
+		}
+
+		st = win.print(screen, 2, i, st, l)
 	}
 }
 
@@ -247,23 +251,23 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]bool, colors colorMap, icons iconMap) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, colors styleMap, icons iconMap) {
 	if win.w < 5 || dir == nil {
 		return
 	}
 
 	if dir.loading {
-		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "loading...")
+		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
 		return
 	}
 
 	if dir.noPerm {
-		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "permission denied")
+		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
 		return
 	}
 
 	if len(dir.files) == 0 {
-		win.print(2, 0, termbox.AttrReverse, termbox.ColorDefault, "empty")
+		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "empty")
 		return
 	}
 
@@ -289,7 +293,7 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 	}
 
 	for i, f := range dir.files[beg:end] {
-		fg, bg := colors.get(f)
+		st := colors.get(f)
 
 		if lnwidth > 0 {
 			var ln string
@@ -309,23 +313,23 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 				}
 			}
 
-			win.print(0, i, termbox.ColorYellow, bg, ln)
+			win.print(screen, 0, i, st.Foreground(tcell.ColorOlive), ln)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
 
 		if _, ok := selections[path]; ok {
-			win.print(lnwidth, i, fg, termbox.ColorMagenta, " ")
+			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
 		} else if cp, ok := saves[path]; ok {
 			if cp {
-				win.print(lnwidth, i, fg, termbox.ColorYellow, " ")
+				win.print(screen, lnwidth, i, st.Background(tcell.ColorOlive), " ")
 			} else {
-				win.print(lnwidth, i, fg, termbox.ColorRed, " ")
+				win.print(screen, lnwidth, i, st.Background(tcell.ColorMaroon), " ")
 			}
 		}
 
 		if i == dir.pos {
-			fg |= termbox.AttrReverse
+			st = st.Reverse(true)
 		}
 
 		var s []rune
@@ -368,11 +372,12 @@ func (win *win) printDir(dir *dir, selections map[string]int, saves map[string]b
 
 		s = append(s, ' ')
 
-		win.print(lnwidth+1, i, fg, bg, string(s))
+		win.print(screen, lnwidth+1, i, st, string(s))
 	}
 }
 
 type ui struct {
+	screen      tcell.Screen
 	wins        []*win
 	promptWin   *win
 	msgWin      *win
@@ -382,7 +387,7 @@ type ui struct {
 	dirPrev     *dir
 	exprChan    chan expr
 	keyChan     chan string
-	evChan      chan termbox.Event
+	evChan      chan tcell.Event
 	menuBuf     *bytes.Buffer
 	cmdPrefix   string
 	cmdAccLeft  []rune
@@ -390,7 +395,7 @@ type ui struct {
 	cmdYankBuf  []rune
 	keyAcc      []rune
 	keyCount    []rune
-	colors      colorMap
+	styles      styleMap
 	icons       iconMap
 }
 
@@ -417,8 +422,8 @@ func getWidths(wtot int) []int {
 	return widths
 }
 
-func getWins() []*win {
-	wtot, htot := termbox.Size()
+func getWins(screen tcell.Screen) []*win {
+	wtot, htot := screen.Size()
 
 	var wins []*win
 
@@ -438,47 +443,76 @@ func getWins() []*win {
 	return wins
 }
 
-func newUI() *ui {
-	wtot, htot := termbox.Size()
-
-	evQueue := make(chan termbox.Event)
+func startEventListening(screen tcell.Screen) chan tcell.Event {
+	evQueue := make(chan tcell.Event)
 	go func() {
+		var ev tcell.Event
 		for {
-			evQueue <- termbox.PollEvent()
+			ev = screen.PollEvent()
+			evQueue <- ev
+
+			if ev == nil {
+				return
+			}
 		}
 	}()
 
-	evChan := make(chan termbox.Event)
+	evChan := make(chan tcell.Event)
 	go func() {
 		for {
 			ev := <-evQueue
-			if ev.Type == termbox.EventKey && ev.Key == termbox.KeyEsc {
-				select {
-				case ev2 := <-evQueue:
-					ev2.Mod = termbox.ModAlt
-					evChan <- ev2
-					continue
-				case <-time.After(100 * time.Millisecond):
+			// .(type) can't be used outside a switch
+			switch tev := ev.(type) {
+			case *tcell.EventKey:
+				// tcell.KeyESC is one of the few cases we don't need Rune() for
+				if tev.Key() == tcell.KeyESC {
+					select {
+					case ev2 := <-evQueue:
+						switch tev2 := ev2.(type) {
+						case *tcell.EventKey:
+							evChan <- tcell.NewEventKey(tev2.Key(), tev2.Rune(), tcell.ModAlt)
+						default:
+							evChan <- ev2
+						}
+
+						if ev2 == nil {
+							return
+						}
+
+						continue
+					case <-time.After(100 * time.Millisecond):
+					}
 				}
 			}
 			evChan <- ev
+
+			if ev == nil {
+				return
+			}
 		}
 	}()
 
+	return evChan
+}
+
+func newUI(screen tcell.Screen) *ui {
+	wtot, htot := screen.Size()
+
 	return &ui{
-		wins:      getWins(),
+		screen:    screen,
+		wins:      getWins(screen),
 		promptWin: newWin(wtot, 1, 0, 0),
 		msgWin:    newWin(wtot, 1, 0, htot-1),
 		menuWin:   newWin(wtot, 1, 0, htot-2),
 		keyChan:   make(chan string, 1000),
-		evChan:    evChan,
-		colors:    parseColors(),
+		evChan:    startEventListening(screen),
+		styles:    parseStyles(),
 		icons:     parseIcons(),
 	}
 }
 
 func (ui *ui) renew() {
-	wtot, htot := termbox.Size()
+	wtot, htot := ui.screen.Size()
 
 	widths := getWidths(wtot)
 
@@ -571,7 +605,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	st := tcell.StyleDefault
 
 	pwd := nav.currDir().path
 
@@ -614,15 +648,15 @@ func (ui *ui) drawPromptLine(nav *nav) {
 
 	prompt = strings.Replace(prompt, "%w", pwd, -1)
 
-	ui.promptWin.print(0, 0, fg, bg, prompt)
+	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
 func (ui *ui) drawStatLine(nav *nav) {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	st := tcell.StyleDefault
 
 	dir := nav.currDir()
 
-	ui.msgWin.print(0, 0, fg, bg, ui.msg)
+	ui.msgWin.print(ui.screen, 0, 0, st, ui.msg)
 
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
@@ -645,44 +679,49 @@ func (ui *ui) drawStatLine(nav *nav) {
 
 	ruler := fmt.Sprintf("%s%s  %d/%d", acc, progress, ind, tot)
 
-	ui.msgWin.printRight(0, fg, bg, ruler)
+	ui.msgWin.printRight(ui.screen, 0, st, ruler)
 }
 
 func (ui *ui) drawBox() {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	st := tcell.StyleDefault
 
-	w, h := termbox.Size()
+	w, h := ui.screen.Size()
 
 	for i := 1; i < w-1; i++ {
-		termbox.SetCell(i, 1, '─', fg, bg)
-		termbox.SetCell(i, h-2, '─', fg, bg)
+		ui.screen.SetContent(i, 1, '─', nil, st)
+		ui.screen.SetContent(i, h-2, '─', nil, st)
 	}
 
 	for i := 2; i < h-2; i++ {
-		termbox.SetCell(0, i, '│', fg, bg)
-		termbox.SetCell(w-1, i, '│', fg, bg)
+		ui.screen.SetContent(0, i, '│', nil, st)
+		ui.screen.SetContent(w-1, i, '│', nil, st)
 	}
 
-	termbox.SetCell(0, 1, '┌', fg, bg)
-	termbox.SetCell(w-1, 1, '┐', fg, bg)
-	termbox.SetCell(0, h-2, '└', fg, bg)
-	termbox.SetCell(w-1, h-2, '┘', fg, bg)
+	ui.screen.SetContent(0, 1, '┌', nil, st)
+	ui.screen.SetContent(w-1, 1, '┐', nil, st)
+	ui.screen.SetContent(0, h-2, '└', nil, st)
+	ui.screen.SetContent(w-1, h-2, '┘', nil, st)
 
 	wacc := 0
 	for wind := 0; wind < len(ui.wins)-1; wind++ {
 		wacc += ui.wins[wind].w
-		termbox.SetCell(wacc, 1, '┬', fg, bg)
+		ui.screen.SetContent(wacc, 1, '┬', nil, st)
 		for i := 2; i < h-2; i++ {
-			termbox.SetCell(wacc, i, '│', fg, bg)
+			ui.screen.SetContent(wacc, i, '│', nil, st)
 		}
-		termbox.SetCell(wacc, h-2, '┴', fg, bg)
+		ui.screen.SetContent(wacc, h-2, '┴', nil, st)
 	}
 }
 
 func (ui *ui) draw(nav *nav) {
-	fg, bg := termbox.ColorDefault, termbox.ColorDefault
+	st := tcell.StyleDefault
 
-	termbox.Clear(fg, bg)
+	wtot, htot := ui.screen.Size()
+	for i := 0; i < wtot; i++ {
+		for j := 0; j < htot; j++ {
+			ui.screen.SetContent(i, j, ' ', nil, st)
+		}
+	}
 
 	ui.drawPromptLine(nav)
 
@@ -696,24 +735,24 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(nav.dirs[doff+i], nav.selections, nav.saves, ui.colors, ui.icons)
+		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, ui.styles, ui.icons)
 	}
 
 	switch ui.cmdPrefix {
 	case "":
 		ui.drawStatLine(nav)
-		termbox.HideCursor()
+		ui.screen.HideCursor()
 	case ">":
-		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
-		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, ui.msg)
-		ui.msgWin.print(len(ui.cmdPrefix)+len(ui.msg), 0, fg, bg, string(ui.cmdAccLeft))
-		ui.msgWin.print(len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
-		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
+		ui.msgWin.printLine(ui.screen, 0, 0, st, ui.cmdPrefix)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, ui.msg)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg), 0, st, string(ui.cmdAccLeft))
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), 0, st, string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
 	default:
-		ui.msgWin.printLine(0, 0, fg, bg, ui.cmdPrefix)
-		ui.msgWin.print(len(ui.cmdPrefix), 0, fg, bg, string(ui.cmdAccLeft))
-		ui.msgWin.print(len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, fg, bg, string(ui.cmdAccRight))
-		termbox.SetCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
+		ui.msgWin.printLine(ui.screen, 0, 0, st, ui.cmdPrefix)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, string(ui.cmdAccLeft))
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, st, string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
 	}
 
 	if gOpts.preview {
@@ -722,9 +761,9 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.dirPrev, nav.selections, nav.saves, ui.colors, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, ui.styles, ui.icons)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.regPrev)
+				preview.printReg(ui.screen, ui.regPrev)
 			}
 		}
 	}
@@ -745,14 +784,14 @@ func (ui *ui) draw(nav *nav) {
 			ui.menuWin.y += 2
 		}
 
-		ui.menuWin.printLine(0, 0, termbox.AttrBold, termbox.AttrBold, lines[0])
+		ui.menuWin.printLine(ui.screen, 0, 0, st.Bold(true), lines[0])
 		for i, line := range lines[1:] {
-			ui.menuWin.printLine(0, i+1, fg, bg, "")
-			ui.menuWin.print(0, i+1, fg, bg, line)
+			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
+			ui.menuWin.print(ui.screen, 0, i+1, st, line)
 		}
 	}
 
-	termbox.Flush()
+	ui.screen.Show()
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
@@ -809,34 +848,36 @@ func listMarks(marks map[string]string) *bytes.Buffer {
 	return b
 }
 
-func (ui *ui) pollEvent() termbox.Event {
+func (ui *ui) pollEvent() tcell.Event {
 	select {
 	case key := <-ui.keyChan:
-		ev := termbox.Event{Type: termbox.EventKey}
+		var ch rune
+		var mod tcell.ModMask
+		var Key tcell.Key
 
 		if utf8.RuneCountInString(key) == 1 {
-			ev.Ch, _ = utf8.DecodeRuneInString(key)
+			ch, _ = utf8.DecodeRuneInString(key)
 		} else {
 			switch {
 			case key == "<lt>":
-				ev.Ch = '<'
+				ch = '<'
 			case key == "<gt>":
-				ev.Ch = '>'
+				ch = '>'
 			case reAltKey.MatchString(key):
 				match := reAltKey.FindStringSubmatch(key)[1]
-				ev.Ch, _ = utf8.DecodeRuneInString(match)
-				ev.Mod = termbox.ModAlt
+				ch, _ = utf8.DecodeRuneInString(match)
+				mod = tcell.ModMask(tcell.ModAlt)
 			default:
 				if val, ok := gValKey[key]; ok {
-					ev.Key = val
+					Key = val
 				} else {
-					ev.Key = termbox.KeyEsc
+					Key = tcell.KeyESC
 					ui.echoerrf("unknown key: %s", key)
 				}
 			}
 		}
 
-		return ev
+		return tcell.NewEventKey(Key, ch, mod)
 	case ev := <-ui.evChan:
 		return ev
 	}
@@ -845,27 +886,34 @@ func (ui *ui) pollEvent() termbox.Event {
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
+func (ui *ui) readEvent(ch chan<- expr, ev tcell.Event) {
+	if ev == nil {
+		return
+	}
+
 	draw := &callExpr{"draw", nil, 1}
 	count := 1
 
-	switch ev.Type {
-	case termbox.EventKey:
-		if ev.Ch != 0 {
+	switch tev := ev.(type) {
+	case *tcell.EventKey:
+		// KeyRune is a regular character
+		if tev.Key() == tcell.KeyRune {
 			switch {
-			case ev.Ch == '<':
+			case tev.Rune() == '<':
 				ui.keyAcc = append(ui.keyAcc, []rune("<lt>")...)
-			case ev.Ch == '>':
+			case tev.Rune() == '>':
 				ui.keyAcc = append(ui.keyAcc, []rune("<gt>")...)
-			case ev.Mod == termbox.ModAlt:
-				ui.keyAcc = append(ui.keyAcc, '<', 'a', '-', ev.Ch, '>')
-			case unicode.IsDigit(ev.Ch) && len(ui.keyAcc) == 0:
-				ui.keyCount = append(ui.keyCount, ev.Ch)
+			case tev.Rune() == ' ':
+				ui.keyAcc = append(ui.keyAcc, []rune("<space>")...)
+			case tev.Modifiers() == tcell.ModAlt:
+				ui.keyAcc = append(ui.keyAcc, '<', 'a', '-', tev.Rune(), '>')
+			case unicode.IsDigit(tev.Rune()) && len(ui.keyAcc) == 0:
+				ui.keyCount = append(ui.keyCount, tev.Rune())
 			default:
-				ui.keyAcc = append(ui.keyAcc, ev.Ch)
+				ui.keyAcc = append(ui.keyAcc, tev.Rune())
 			}
 		} else {
-			val := gKeyVal[ev.Key]
+			val := gKeyVal[tev.Key()]
 			if val == "<esc>" {
 				ch <- draw
 				ui.keyAcc = nil
@@ -914,25 +962,34 @@ func (ui *ui) readEvent(ch chan<- expr, ev termbox.Event) {
 				ch <- draw
 			}
 		}
-	case termbox.EventResize:
+	case *tcell.EventResize:
 		ch <- &callExpr{"redraw", nil, 1}
+	case *tcell.EventError:
+		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
+		return
+	case *tcell.EventInterrupt:
+		log.Printf("Got EventInterrupt: at %s", tev.When())
+		return
 	}
 }
 
-func readCmdEvent(ch chan<- expr, ev termbox.Event) {
-	if ev.Ch != 0 {
-		if ev.Mod == termbox.ModAlt {
-			val := string([]rune{'<', 'a', '-', ev.Ch, '>'})
+func readCmdEvent(ch chan<- expr, ev tcell.Event) {
+	switch tev := ev.(type) {
+	case *tcell.EventKey:
+		if tev.Key() == tcell.KeyRune {
+			if tev.Modifiers() == tcell.ModMask(tcell.ModAlt) {
+				val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
+				if expr, ok := gOpts.cmdkeys[val]; ok {
+					ch <- expr
+				}
+			} else {
+				ch <- &callExpr{"cmd-insert", []string{string(tev.Rune())}, 1}
+			}
+		} else {
+			val := gKeyVal[tev.Key()]
 			if expr, ok := gOpts.cmdkeys[val]; ok {
 				ch <- expr
 			}
-		} else {
-			ch <- &callExpr{"cmd-insert", []string{string(ev.Ch)}, 1}
-		}
-	} else {
-		val := gKeyVal[ev.Key]
-		if expr, ok := gOpts.cmdkeys[val]; ok {
-			ch <- expr
 		}
 	}
 }
@@ -948,9 +1005,12 @@ func (ui *ui) readExpr() <-chan expr {
 		for {
 			ev := ui.pollEvent()
 
-			if ui.cmdPrefix != "" && ev.Type == termbox.EventKey {
-				readCmdEvent(ch, ev)
-				continue
+			switch ev.(type) {
+			case *tcell.EventKey:
+				if ui.cmdPrefix != "" {
+					readCmdEvent(ch, ev)
+					continue
+				}
 			}
 
 			ui.readEvent(ch, ev)
@@ -960,34 +1020,29 @@ func (ui *ui) readExpr() <-chan expr {
 	return ch
 }
 
-func setColorMode() {
-	if gOpts.color256 {
-		termbox.SetOutputMode(termbox.Output256)
-	} else {
-		termbox.SetOutputMode(termbox.OutputNormal)
-	}
-}
-
 func (ui *ui) pause() {
-	termbox.Close()
+	ui.screen.Fini()
 }
 
 func (ui *ui) resume() {
-	if err := termbox.Init(); err != nil {
-		log.Fatalf("initializing termbox: %s", err)
+	var err error
+
+	if ui.screen, err = tcell.NewScreen(); err != nil {
+		log.Fatalf("creating screen: %s", err)
+	} else if err = ui.screen.Init(); err != nil {
+		log.Fatalf("initializing screen: %s", err)
 	}
+
+	close(ui.evChan)
+	ui.evChan = startEventListening(ui.screen)
+
+	ui.renew()
 }
 
-func (ui *ui) sync() {
-	if err := termbox.Sync(); err != nil {
-		log.Printf("syncing termbox: %s", err)
-	}
-}
-
-func listMatches(matches []string) *bytes.Buffer {
+func listMatches(screen tcell.Screen, matches []string) *bytes.Buffer {
 	b := new(bytes.Buffer)
 
-	wtot, _ := termbox.Size()
+	wtot, _ := screen.Size()
 
 	wcol := 0
 	for _, m := range matches {

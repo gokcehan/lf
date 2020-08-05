@@ -10,16 +10,17 @@ import (
 	"strings"
 	"time"
 
-	"github.com/doronbehar/termbox-go"
+	"github.com/gdamore/tcell"
 )
 
 func run() {
-	if err := termbox.Init(); err != nil {
-		log.Fatalf("initializing termbox: %s", err)
+	var screen tcell.Screen
+	var err error
+	if screen, err = tcell.NewScreen(); err != nil {
+		log.Fatalf("creating screen: %s", err)
+	} else if err = screen.Init(); err != nil {
+		log.Fatalf("initializing screen: %s", err)
 	}
-	defer termbox.Close()
-
-	setColorMode()
 
 	f, err := os.Create(gLogPath)
 	if err != nil {
@@ -31,7 +32,7 @@ func run() {
 
 	log.Print("hi!")
 
-	app := newApp()
+	app := newApp(screen)
 
 	if err := app.nav.readMarks(); err != nil {
 		app.ui.echoerrf("reading marks file: %s", err)
@@ -42,6 +43,7 @@ func run() {
 	}
 
 	app.loop()
+	app.ui.screen.Fini()
 }
 
 func readExpr() <-chan expr {

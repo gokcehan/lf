@@ -7,48 +7,18 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/doronbehar/termbox-go"
+	"github.com/gdamore/tcell"
 )
 
-const gAnsiColorResetMask = termbox.AttrBold | termbox.AttrUnderline | termbox.AttrReverse
+type styleMap map[string]tcell.Style
 
-var gAnsiCodes = map[int]termbox.Attribute{
-	0:  termbox.ColorDefault,
-	1:  termbox.AttrBold,
-	4:  termbox.AttrUnderline,
-	7:  termbox.AttrReverse,
-	30: termbox.ColorBlack,
-	31: termbox.ColorRed,
-	32: termbox.ColorGreen,
-	33: termbox.ColorYellow,
-	34: termbox.ColorBlue,
-	35: termbox.ColorMagenta,
-	36: termbox.ColorCyan,
-	37: termbox.ColorWhite,
-	40: termbox.ColorBlack,
-	41: termbox.ColorRed,
-	42: termbox.ColorGreen,
-	43: termbox.ColorYellow,
-	44: termbox.ColorBlue,
-	45: termbox.ColorMagenta,
-	46: termbox.ColorCyan,
-	47: termbox.ColorWhite,
-}
-
-type colorEntry struct {
-	fg termbox.Attribute
-	bg termbox.Attribute
-}
-
-type colorMap map[string]colorEntry
-
-func parseColors() colorMap {
+func parseStyles() styleMap {
 	if env := os.Getenv("LS_COLORS"); env != "" {
-		return parseColorsGNU(env)
+		return parseStylesGNU(env)
 	}
 
 	if env := os.Getenv("LSCOLORS"); env != "" {
-		return parseColorsBSD(env)
+		return parseStylesBSD(env)
 	}
 
 	// default values from dircolors with removed background colors
@@ -73,10 +43,10 @@ func parseColors() colorMap {
 		"ex=01;32",
 	}
 
-	return parseColorsGNU(strings.Join(defaultColors, ":"))
+	return parseStylesGNU(strings.Join(defaultColors, ":"))
 }
 
-func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, termbox.Attribute) {
+func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
 	var nums []int
@@ -93,43 +63,63 @@ func applyAnsiCodes(s string, fg, bg termbox.Attribute) (termbox.Attribute, term
 		nums = append(nums, n)
 	}
 
+	// ECMA-48 details the standard
 	for i := 0; i < len(nums); i++ {
 		n := nums[i]
 		switch {
-		case n == 38 && i+2 < len(nums) && nums[i+1] == 5:
-			fg &= gAnsiColorResetMask
-			fg |= termbox.Attribute(nums[i+2] + 1)
-			i += 2
-			continue
-		case n == 48 && i+2 < len(nums) && nums[i+1] == 5:
-			bg = termbox.Attribute(nums[i+2] + 1)
-			i += 2
-			continue
-		}
-		attr, ok := gAnsiCodes[n]
-		if !ok {
-			log.Printf("unknown ansi code: %d", n)
-			continue
-		}
-		switch {
 		case n == 0:
-			fg, bg = attr, attr
-		case n == 1 || n == 4 || n == 7:
-			fg |= attr
-		case 30 <= n && n <= 37:
-			fg &= gAnsiColorResetMask
-			fg |= attr
-		case 40 <= n && n <= 47:
-			bg = attr
+			st = tcell.StyleDefault
+		case n == 1:
+			st = st.Bold(true)
+		case n == 2:
+			st = st.Dim(true)
+		case n == 4:
+			st = st.Underline(true)
+		case n == 5 || n == 6:
+			st = st.Blink(true)
+		case n == 7:
+			st = st.Reverse(true)
+		case n >= 30 && n <= 37:
+			st = st.Foreground(tcell.Color(n - 30))
+		case n == 38:
+			if i+3 <= len(nums) && nums[i+1] == 5 {
+				st = st.Foreground(tcell.Color(nums[i+2]))
+				i += 2
+			} else if i+5 <= len(nums) && nums[i+1] == 2 {
+				st = st.Foreground(tcell.NewRGBColor(
+					int32(nums[i+2]),
+					int32(nums[i+3]),
+					int32(nums[i+4])))
+				i += 4
+			} else {
+				log.Printf("unknown ansi code or incorrect form: %d", n)
+			}
+		case n >= 40 && n <= 47:
+			st = st.Background(tcell.Color(n - 40))
+		case n == 48:
+			if i+3 <= len(nums) && nums[i+1] == 5 {
+				st = st.Background(tcell.Color(nums[i+2]))
+				i += 2
+			} else if i+5 <= len(nums) && nums[i+1] == 2 {
+				st = st.Background(tcell.NewRGBColor(
+					int32(nums[i+2]),
+					int32(nums[i+3]),
+					int32(nums[i+4])))
+				i += 4
+			} else {
+				log.Printf("unknown ansi code or incorrect form: %d", n)
+			}
+		default:
+			log.Printf("unknown ansi code: %d", n)
 		}
 	}
 
-	return fg, bg
+	return st
 }
 
 // This function parses $LS_COLORS environment variable.
-func parseColorsGNU(env string) colorMap {
-	colors := make(colorMap)
+func parseStylesGNU(env string) styleMap {
+	styles := make(styleMap)
 
 	entries := strings.Split(env, ":")
 	for _, entry := range entries {
@@ -139,63 +129,62 @@ func parseColorsGNU(env string) colorMap {
 		pair := strings.Split(entry, "=")
 		if len(pair) != 2 {
 			log.Printf("invalid $LS_COLORS entry: %s", entry)
-			return colors
+			return styles
 		}
 		key, val := pair[0], pair[1]
-		fg, bg := applyAnsiCodes(val, termbox.ColorDefault, termbox.ColorDefault)
-		colors[key] = colorEntry{fg: fg, bg: bg}
+		styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
 	}
 
-	return colors
+	return styles
 }
 
 // This function parses $LSCOLORS environment variable.
-func parseColorsBSD(env string) colorMap {
-	colors := make(colorMap)
+func parseStylesBSD(env string) styleMap {
+	styles := make(styleMap)
 
 	if len(env) != 22 {
 		log.Printf("invalid $LSCOLORS variable: %s", env)
-		return colors
+		return styles
 	}
 
 	colorNames := []string{"di", "ln", "so", "pi", "ex", "bd", "cd", "su", "sg", "tw", "ow"}
-	colorCodes := map[byte]termbox.Attribute{
-		'a': termbox.ColorBlack,
-		'b': termbox.ColorRed,
-		'c': termbox.ColorGreen,
-		'd': termbox.ColorYellow, // brown
-		'e': termbox.ColorBlue,
-		'f': termbox.ColorMagenta,
-		'g': termbox.ColorCyan,
-		'h': termbox.ColorWhite, // light grey
-		'A': termbox.AttrBold | termbox.ColorBlack,
-		'B': termbox.AttrBold | termbox.ColorRed,
-		'C': termbox.AttrBold | termbox.ColorGreen,
-		'D': termbox.AttrBold | termbox.ColorYellow, // brown
-		'E': termbox.AttrBold | termbox.ColorBlue,
-		'F': termbox.AttrBold | termbox.ColorMagenta,
-		'G': termbox.AttrBold | termbox.ColorCyan,
-		'H': termbox.AttrBold | termbox.ColorWhite, // light grey
-		'x': termbox.ColorDefault,
-	}
 
-	getColor := func(r byte) termbox.Attribute {
-		if color, ok := colorCodes[r]; ok {
-			return color
+	getStyle := func(r1, r2 byte) tcell.Style {
+		st := tcell.StyleDefault
+
+		switch {
+		case r1 == 'x':
+			st = st.Foreground(tcell.ColorDefault)
+		case 'A' <= r1 && r1 <= 'H':
+			st = st.Foreground(tcell.Color(r1 - 'A')).Bold(true)
+		case 'a' <= r1 && r1 <= 'h':
+			st = st.Foreground(tcell.Color(r1 - 'a'))
+		default:
+			log.Printf("invalid $LSCOLORS entry: %c", r1)
+			return tcell.StyleDefault
 		}
 
-		log.Printf("invalid $LSCOLORS entry: %c", r)
-		return termbox.ColorDefault
+		switch {
+		case r2 == 'x':
+			st = st.Background(tcell.ColorDefault)
+		case 'a' <= r2 && r2 <= 'h':
+			st = st.Background(tcell.Color(r2 - 'a'))
+		default:
+			log.Printf("invalid $LSCOLORS entry: %c", r2)
+			return tcell.StyleDefault
+		}
+
+		return st
 	}
 
 	for i, key := range colorNames {
-		colors[key] = colorEntry{fg: getColor(env[i*2]), bg: getColor(env[i*2+1])}
+		styles[key] = getStyle(env[i*2], env[i*2+1])
 	}
 
-	return colors
+	return styles
 }
 
-func (cm colorMap) get(f *file) (termbox.Attribute, termbox.Attribute) {
+func (cm styleMap) get(f *file) tcell.Style {
 	var key string
 
 	switch {
@@ -230,12 +219,12 @@ func (cm colorMap) get(f *file) (termbox.Attribute, termbox.Attribute) {
 	}
 
 	if val, ok := cm[key]; ok {
-		return val.fg, val.bg
+		return val
 	}
 
 	if val, ok := cm["fi"]; ok {
-		return val.fg, val.bg
+		return val
 	}
 
-	return termbox.ColorDefault, termbox.ColorDefault
+	return tcell.StyleDefault
 }

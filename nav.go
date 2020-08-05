@@ -69,7 +69,7 @@ func readdir(path string) ([]*file, error) {
 			}
 			linkTarget, err = os.Readlink(fpath)
 			if err != nil {
-				return files, err
+				log.Printf("reading link target: %s", err)
 			}
 		}
 

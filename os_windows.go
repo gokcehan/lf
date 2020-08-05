@@ -16,6 +16,7 @@ var (
 	envEditor = os.Getenv("EDITOR")
 	envPager  = os.Getenv("PAGER")
 	envShell  = os.Getenv("SHELL")
+	envTcellTruecolor = os.Getenv("TCELL_TRUECOLOR")
 )
 
 var envPathExt = os.Getenv("PATHEXT")
@@ -48,6 +49,10 @@ func init() {
 
 	if envShell == "" {
 		envShell = "cmd"
+	}
+
+	if envTcellTruecolor == "" {
+		envTcellTruecolor = "disable"
 	}
 
 	u, err := user.Current()
