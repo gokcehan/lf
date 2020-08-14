@@ -342,6 +342,11 @@ func (app *app) exportOpts() {
 		name := e.Type().Field(i).Name
 		name = fmt.Sprintf("lf_%s", name)
 
+		// Not exported
+		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" || name == "lf_sortType" {
+			continue
+		}
+
 		// Get value
 		field := e.Field(i)
 		kind := field.Kind()
