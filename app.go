@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"syscall"
 	"time"
@@ -333,6 +334,36 @@ func (app *app) exportFiles() {
 	exportFiles(currFile, currSelections)
 }
 
+func (app *app) exportOpts() {
+	e := reflect.ValueOf(&gOpts).Elem()
+
+	for i := 0; i < e.NumField(); i++ {
+		// Get name
+		name := e.Type().Field(i).Name
+		name = fmt.Sprintf("lf_%s", name)
+
+		// Get value
+		field := e.Field(i)
+		kind := field.Kind()
+		var value string
+
+		switch kind {
+		case reflect.Int:
+			value = string(e.Field(i).Int())
+		case reflect.Bool:
+			if e.Field(i).Bool() {
+				value = "1"
+			} else {
+				value = "0"
+			}
+		default:
+			value = field.String()
+		}
+
+		os.Setenv(name, value)
+	}
+}
+
 func waitKey() error {
 	cmd := pauseCommand()
 
@@ -356,6 +387,7 @@ func waitKey() error {
 //     &       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.exportFiles()
+	app.exportOpts()
 
 	cmd := shellCommand(s, args)
 
