@@ -10,6 +10,7 @@ import (
 	"os/signal"
 	"path/filepath"
 	"reflect"
+	"strconv"
 	"strings"
 	"syscall"
 	"time"
@@ -334,6 +335,36 @@ func (app *app) exportFiles() {
 	exportFiles(currFile, currSelections)
 }
 
+func fieldToString(field reflect.Value) string {
+	kind := field.Kind()
+	var value string
+
+	switch kind {
+	case reflect.Int:
+		value = strconv.Itoa(int(field.Int()))
+	case reflect.Bool:
+		if field.Bool() {
+			value = "1"
+		} else {
+			value = "0"
+		}
+	case reflect.Slice:
+		for i := 0; i < field.Len(); i++ {
+			element := field.Index(i)
+
+			if i == 0 {
+				value = fieldToString(element)
+			} else {
+				value += ":" + fieldToString(element)
+			}
+		}
+	default:
+		value = field.String()
+	}
+
+	return value
+}
+
 func (app *app) exportOpts() {
 	e := reflect.ValueOf(&gOpts).Elem()
 
@@ -349,21 +380,7 @@ func (app *app) exportOpts() {
 
 		// Get value
 		field := e.Field(i)
-		kind := field.Kind()
-		var value string
-
-		switch kind {
-		case reflect.Int:
-			value = string(e.Field(i).Int())
-		case reflect.Bool:
-			if e.Field(i).Bool() {
-				value = "1"
-			} else {
-				value = "0"
-			}
-		default:
-			value = field.String()
-		}
+		value := fieldToString(field)
 
 		os.Setenv(name, value)
 	}
