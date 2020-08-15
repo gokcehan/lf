@@ -369,16 +369,16 @@ func (app *app) exportOpts() {
 	e := reflect.ValueOf(&gOpts).Elem()
 
 	for i := 0; i < e.NumField(); i++ {
-		// Get name
+		// Get name and prefix it with lf_
 		name := e.Type().Field(i).Name
 		name = fmt.Sprintf("lf_%s", name)
 
-		// Not exported
+		// Skip maps and custom types
 		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" || name == "lf_sortType" {
 			continue
 		}
 
-		// Get value
+		// Get string representation of the value
 		field := e.Field(i)
 		value := fieldToString(field)
 
