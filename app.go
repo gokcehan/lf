@@ -374,15 +374,73 @@ func (app *app) exportOpts() {
 		name = fmt.Sprintf("lf_%s", name)
 
 		// Skip maps and custom types
-		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" || name == "lf_sortType" {
+		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" {
 			continue
 		}
 
 		// Get string representation of the value
-		field := e.Field(i)
-		value := fieldToString(field)
+		var value string
 
-		os.Setenv(name, value)
+		if name == "lf_sortType" {
+			var sortby string
+
+			switch gOpts.sortType.method {
+			case naturalSort:
+				sortby = "natural"
+			case nameSort:
+				sortby = "name"
+			case sizeSort:
+				sortby = "size"
+			case timeSort:
+				sortby = "time"
+			case ctimeSort:
+				sortby = "ctime"
+			case atimeSort:
+				sortby = "atime"
+			case extSort:
+				sortby = "ext"
+			}
+
+			os.Setenv("lf_sortby", sortby)
+
+			// ---
+			var reverse string
+
+			if gOpts.sortType.option&reverseSort != 0 {
+				reverse = "true"
+			} else {
+				reverse = "false"
+			}
+
+			os.Setenv("lf_reverse", reverse)
+
+			// ---
+			var hidden string
+
+			if gOpts.sortType.option&hiddenSort != 0 {
+				hidden = "true"
+			} else {
+				hidden = "false"
+			}
+
+			os.Setenv("lf_hidden", hidden)
+
+			// ---
+			var dirfirst string
+
+			if gOpts.sortType.option&dirfirstSort != 0 {
+				dirfirst = "true"
+			} else {
+				dirfirst = "false"
+			}
+
+			os.Setenv("lf_dirfirst", dirfirst)
+		} else {
+			field := e.Field(i)
+			value = fieldToString(field)
+
+			os.Setenv(name, value)
+		}
 	}
 }
 
