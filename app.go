@@ -373,7 +373,7 @@ func (app *app) exportOpts() {
 		name := e.Type().Field(i).Name
 		name = fmt.Sprintf("lf_%s", name)
 
-		// Skip maps and custom types
+		// Skip maps
 		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" {
 			continue
 		}
