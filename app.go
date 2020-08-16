@@ -344,9 +344,9 @@ func fieldToString(field reflect.Value) string {
 		value = strconv.Itoa(int(field.Int()))
 	case reflect.Bool:
 		if field.Bool() {
-			value = "1"
+			value = "true"
 		} else {
-			value = "0"
+			value = "false"
 		}
 	case reflect.Slice:
 		for i := 0; i < field.Len(); i++ {
