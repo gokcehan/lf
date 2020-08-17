@@ -379,8 +379,6 @@ func (app *app) exportOpts() {
 		}
 
 		// Get string representation of the value
-		var value string
-
 		if name == "lf_sortType" {
 			var sortby string
 
@@ -437,7 +435,7 @@ func (app *app) exportOpts() {
 			os.Setenv("lf_dirfirst", dirfirst)
 		} else {
 			field := e.Field(i)
-			value = fieldToString(field)
+			value := fieldToString(field)
 
 			os.Setenv(name, value)
 		}
