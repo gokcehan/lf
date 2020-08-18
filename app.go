@@ -343,11 +343,7 @@ func fieldToString(field reflect.Value) string {
 	case reflect.Int:
 		value = strconv.Itoa(int(field.Int()))
 	case reflect.Bool:
-		if field.Bool() {
-			value = "true"
-		} else {
-			value = "false"
-		}
+		value = strconv.FormatBool(field.Bool())
 	case reflect.Slice:
 		for i := 0; i < field.Len(); i++ {
 			element := field.Index(i)
@@ -401,37 +397,13 @@ func (app *app) exportOpts() {
 
 			os.Setenv("lf_sortby", sortby)
 
-			// ---
-			var reverse string
-
-			if gOpts.sortType.option&reverseSort != 0 {
-				reverse = "true"
-			} else {
-				reverse = "false"
-			}
-
+			reverse := strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
 			os.Setenv("lf_reverse", reverse)
 
-			// ---
-			var hidden string
-
-			if gOpts.sortType.option&hiddenSort != 0 {
-				hidden = "true"
-			} else {
-				hidden = "false"
-			}
-
+			hidden := strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
 			os.Setenv("lf_hidden", hidden)
 
-			// ---
-			var dirfirst string
-
-			if gOpts.sortType.option&dirfirstSort != 0 {
-				dirfirst = "true"
-			} else {
-				dirfirst = "false"
-			}
-
+			dirfirst := strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
 			os.Setenv("lf_dirfirst", dirfirst)
 		} else {
 			field := e.Field(i)
