@@ -1,9 +1,11 @@
 language: go
-install:
-  - go get github.com/doronbehar/termbox-go
-  - go get gopkg.in/djherbis/times.v1
+
+go:
+  - 1.15.x
+
 before_deploy:
   - gen/xbuild.sh
+
 deploy:
   provider: releases
   api_key:
