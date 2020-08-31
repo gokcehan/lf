@@ -22,10 +22,11 @@ Source code can be found in the repository at https://github.com/gokcehan/lf.
 This documentation can either be read from terminal using 'lf -doc' or online at https://godoc.org/github.com/gokcehan/lf. You can also use 'doc' command (default '<f-1>') inside lf to view the documentation in a pager.
 .PP
 You can run 'lf -help' to see descriptions of command line options.
-.SH REFERENCE
-The following commands are provided by lf with default keybindings:
+.SH QUICK REFERENCE
+The following commands are provided by lf:
 .PP
 .EX
+    quit                     (default 'q')
     up                       (default 'k' and '<up>')
     half-up                  (default '<c-u>')
     page-up                  (default '<c-b>' and '<pgup>')
@@ -34,19 +35,32 @@ The following commands are provided by lf with default keybindings:
     page-down                (default '<c-f>' and '<pgdn>')
     updir                    (default 'h' and '<left>')
     open                     (default 'l' and '<right>')
-    quit                     (default 'q')
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
+    toggle
     invert                   (default 'v')
     unselect                 (default 'u')
+    glob-select
+    glob-unselect
     copy                     (default 'y')
     cut                      (default 'd')
     paste                    (default 'p')
     clear                    (default 'c')
+    sync
+    draw
     redraw                   (default '<c-l>')
+    load
     reload                   (default '<c-r>')
-    read                     (default ':')
+    echo
+    echomsg
+    echoerr
+    cd
+    select
+    delete
     rename                   (default 'r')
+    source
+    push
+    read                     (default ':')
     shell                    (default '$')
     shell-pipe               (default '%')
     shell-wait               (default '!')
@@ -64,26 +78,7 @@ The following commands are provided by lf with default keybindings:
     mark-remove              (default `"`)
 .EE
 .PP
-The following commands are provided by lf without default keybindings:
-.PP
-.EX
-    draw           draw the ui
-    load           load modified files and directories
-    sync           synchronize copied/cut files with server
-    echo           print arguments to the message line
-    echomsg        same as echo but logging
-    echoerr        same as echomsg but red color
-    cd             change working directory to the argument
-    select         change current file selection to the argument
-    toggle         toggle the selection of the current file or its arguments
-    glob-select    select files that match the given glob
-    glob-unselect  unselect files that match the given glob
-    source         read the configuration file in the argument
-    push           simulate key pushes given in the argument
-    delete         remove the current file or selected file(s)
-.EE
-.PP
-The following command line commands are provided by lf with default keybindings:
+The following command line commands are provided by lf:
 .PP
 .EX
     cmd-escape               (default '<esc>')
@@ -246,6 +241,260 @@ You can configure the default values of following variables to change these loca
 .EE
 .PP
 A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
+.SH COMMANDS
+This section shows information about builtin commands.
+.PP
+.EX
+    quit                     (default 'q')
+.EE
+.PP
+Quit lf and return to the shell.
+.PP
+.EX
+    up                       (default 'k' and '<up>')
+    half-up                  (default '<c-u>')
+    page-up                  (default '<c-b>' and '<pgup>')
+    down                     (default 'j' and '<down>')
+    half-down                (default '<c-d>')
+    page-down                (default '<c-f>' and '<pgdn>')
+.EE
+.PP
+Move the current file selection upwards/downwards by one/half a page/full page.
+.PP
+.EX
+    updir                    (default 'h' and '<left>')
+.EE
+.PP
+Change the current working directory to the parent directory.
+.PP
+.EX
+    open                     (default 'l' and '<right>')
+.EE
+.PP
+If the current file is a directory, then change the current directory to it, otherwise, execute the 'open' command. A default 'open' command is provided to call the default system opener asynchronously with the current file as the argument. A custom 'open' command can be defined to override this default.
+.PP
+(See also 'OPENER' variable and 'Opening Files' section)
+.PP
+.EX
+    top                      (default 'gg' and '<home>')
+    bottom                   (default 'G' and '<end>')
+.EE
+.PP
+Move the current file selection to the top/bottom of the directory.
+.PP
+.EX
+    toggle
+.EE
+.PP
+Toggle the selection of the current file or files given as arguments.
+.PP
+.EX
+    invert                   (default 'v')
+.EE
+.PP
+Reverse the selection of all files in the current directory (i.e. 'toggle' all files). Selections in other directories are not effected by this command. You can define a new command to select all files in the directory by combining 'invert' with 'unselect' (i.e. `cmd select-all :unselect; invert`), though this will also remove selections in other directories.
+.PP
+.EX
+    unselect                 (default 'u')
+.EE
+.PP
+Remove the selection of all files in all directories.
+.PP
+.EX
+    glob-select
+.EE
+.PP
+Select files that match the given glob.
+.PP
+.EX
+    glob-unselect
+.EE
+.PP
+Unselect files that match the given glob.
+.PP
+.EX
+    copy                     (default 'y')
+.EE
+.PP
+If there are no selections, save the path of the current file to the copy buffer, otherwise, copy the paths of selected files.
+.PP
+.EX
+    cut                      (default 'd')
+.EE
+.PP
+If there are no selections, save the path of the current file to the cut buffer, otherwise, copy the paths of selected files.
+.PP
+.EX
+    paste                    (default 'p')
+.EE
+.PP
+Copy/Move files in copy/cut buffer to the current working directory.
+.PP
+.EX
+    clear                    (default 'c')
+.EE
+.PP
+Clear file paths in copy/cut buffer.
+.PP
+.EX
+    sync
+.EE
+.PP
+Synchronize copied/cut files with server. This command is automatically called when required.
+.PP
+.EX
+    draw
+.EE
+.PP
+Draw the screen. This command is automatically called when required.
+.PP
+.EX
+    redraw                   (default '<c-l>')
+.EE
+.PP
+Synchronize the terminal and redraw the screen.
+.PP
+.EX
+    load
+.EE
+.PP
+Load modified files and directories. This command is automatically called when required.
+.PP
+.EX
+    reload                   (default '<c-r>')
+.EE
+.PP
+Flush the cache and reload all files and directories.
+.PP
+.EX
+    echo
+.EE
+.PP
+Print given arguments to the message line at the bottom.
+.PP
+.EX
+    echomsg
+.EE
+.PP
+Print given arguments to the message line at the bottom and also to the log file.
+.PP
+.EX
+    echoerr
+.EE
+.PP
+Print given arguments to the message line at the bottom in red color and also to the log file.
+.PP
+.EX
+    cd
+.EE
+.PP
+Change the working directory to the given argument.
+.PP
+.EX
+    select
+.EE
+.PP
+Change the current file selection to the given argument.
+.PP
+.EX
+    delete
+.EE
+.PP
+Remove the current file or selected file(s).
+.PP
+.EX
+    rename                   (default 'r')
+.EE
+.PP
+Rename the current file using the builtin method. A custom 'rename' command can be defined to override this default.
+.PP
+.EX
+    source
+.EE
+.PP
+Read the configuration file given in the argument.
+.PP
+.EX
+    push
+.EE
+.PP
+Simulate key pushes given in the argument.
+.PP
+.EX
+    read                     (default ':')
+.EE
+.PP
+Read a command to evaluate.
+.PP
+.EX
+    shell                    (default '$')
+.EE
+.PP
+Read a shell command to execute.
+.PP
+(See also 'Prefixes' and 'Shell Commands' sections)
+.PP
+.EX
+    shell-pipe               (default '%')
+.EE
+.PP
+Read a shell command to execute piping its standard I/O to the bottom statline.
+.PP
+(See also 'Prefixes' and 'Piping Shell Commands' sections)
+.PP
+.EX
+    shell-wait               (default '!')
+.EE
+.PP
+Read a shell command to execute and wait for a key press in the end.
+.PP
+(See also 'Prefixes' and 'Waiting Shell Commands' sections)
+.PP
+.EX
+    shell-async              (default '&')
+.EE
+.PP
+Read a shell command to execute synchronously without standard I/O.
+.PP
+.EX
+    find                     (default 'f')
+    find-back                (default 'F')
+    find-next                (default ';')
+    find-prev                (default ',')
+.EE
+.PP
+Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/prev match.
+.PP
+(See also 'anchorfind', 'findlen', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
+.PP
+.EX
+    search                   (default '/')
+    search-back              (default '?')
+    search-next              (default 'n')
+    search-prev              (default 'N')
+.EE
+.PP
+Read a pattern to search for a file name match in the forward/backward direction and jump to the next/prev match.
+.PP
+(See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
+.PP
+.EX
+    mark-save                (default 'm')
+.EE
+.PP
+Save the current directory as a bookmark assigned to the given key.
+.PP
+.EX
+    mark-load                (default "'")
+.EE
+.PP
+Change the current directory to the bookmark assigned to the given key.
+.PP
+.EX
+    mark-remove              (default `"`)
+.EE
+.PP
+Remove a bookmark assigned to the given key.
 .SH PREFIXES
 The following command prefixes are used by lf:
 .PP

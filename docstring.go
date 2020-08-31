@@ -15,10 +15,11 @@ command (default '<f-1>') inside lf to view the documentation in a pager.
 You can run 'lf -help' to see descriptions of command line options.
 
 
-Reference
+Quick Reference
 
-The following commands are provided by lf with default keybindings:
+The following commands are provided by lf:
 
+    quit                     (default 'q')
     up                       (default 'k' and '<up>')
     half-up                  (default '<c-u>')
     page-up                  (default '<c-b>' and '<pgup>')
@@ -27,19 +28,32 @@ The following commands are provided by lf with default keybindings:
     page-down                (default '<c-f>' and '<pgdn>')
     updir                    (default 'h' and '<left>')
     open                     (default 'l' and '<right>')
-    quit                     (default 'q')
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
+    toggle
     invert                   (default 'v')
     unselect                 (default 'u')
+    glob-select
+    glob-unselect
     copy                     (default 'y')
     cut                      (default 'd')
     paste                    (default 'p')
     clear                    (default 'c')
+    sync
+    draw
     redraw                   (default '<c-l>')
+    load
     reload                   (default '<c-r>')
-    read                     (default ':')
+    echo
+    echomsg
+    echoerr
+    cd
+    select
+    delete
     rename                   (default 'r')
+    source
+    push
+    read                     (default ':')
     shell                    (default '$')
     shell-pipe               (default '%')
     shell-wait               (default '!')
@@ -56,25 +70,7 @@ The following commands are provided by lf with default keybindings:
     mark-load                (default "'")
     mark-remove              (default '"')
 
-The following commands are provided by lf without default keybindings:
-
-    draw           draw the ui
-    load           load modified files and directories
-    sync           synchronize copied/cut files with server
-    echo           print arguments to the message line
-    echomsg        same as echo but logging
-    echoerr        same as echomsg but red color
-    cd             change working directory to the argument
-    select         change current file selection to the argument
-    toggle         toggle the selection of the current file or its arguments
-    glob-select    select files that match the given glob
-    glob-unselect  unselect files that match the given glob
-    source         read the configuration file in the argument
-    push           simulate key pushes given in the argument
-    delete         remove the current file or selected file(s)
-
-The following command line commands are provided by lf with default
-keybindings:
+The following command line commands are provided by lf:
 
     cmd-escape               (default '<esc>')
     cmd-complete             (default '<tab>')
@@ -220,6 +216,208 @@ locations:
 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
+
+
+Commands
+
+This section shows information about builtin commands.
+
+    quit                     (default 'q')
+
+Quit lf and return to the shell.
+
+    up                       (default 'k' and '<up>')
+    half-up                  (default '<c-u>')
+    page-up                  (default '<c-b>' and '<pgup>')
+    down                     (default 'j' and '<down>')
+    half-down                (default '<c-d>')
+    page-down                (default '<c-f>' and '<pgdn>')
+
+Move the current file selection upwards/downwards by one/half a page/full
+page.
+
+    updir                    (default 'h' and '<left>')
+
+Change the current working directory to the parent directory.
+
+    open                     (default 'l' and '<right>')
+
+If the current file is a directory, then change the current directory to it,
+otherwise, execute the 'open' command. A default 'open' command is provided
+to call the default system opener asynchronously with the current file as
+the argument. A custom 'open' command can be defined to override this
+default.
+
+(See also 'OPENER' variable and 'Opening Files' section)
+
+    top                      (default 'gg' and '<home>')
+    bottom                   (default 'G' and '<end>')
+
+Move the current file selection to the top/bottom of the directory.
+
+    toggle
+
+Toggle the selection of the current file or files given as arguments.
+
+    invert                   (default 'v')
+
+Reverse the selection of all files in the current directory (i.e. 'toggle'
+all files). Selections in other directories are not effected by this
+command. You can define a new command to select all files in the directory
+by combining 'invert' with 'unselect' (i.e. 'cmd select-all :unselect;
+invert'), though this will also remove selections in other directories.
+
+    unselect                 (default 'u')
+
+Remove the selection of all files in all directories.
+
+    glob-select
+
+Select files that match the given glob.
+
+    glob-unselect
+
+Unselect files that match the given glob.
+
+    copy                     (default 'y')
+
+If there are no selections, save the path of the current file to the copy
+buffer, otherwise, copy the paths of selected files.
+
+    cut                      (default 'd')
+
+If there are no selections, save the path of the current file to the cut
+buffer, otherwise, copy the paths of selected files.
+
+    paste                    (default 'p')
+
+Copy/Move files in copy/cut buffer to the current working directory.
+
+    clear                    (default 'c')
+
+Clear file paths in copy/cut buffer.
+
+    sync
+
+Synchronize copied/cut files with server. This command is automatically
+called when required.
+
+    draw
+
+Draw the screen. This command is automatically called when required.
+
+    redraw                   (default '<c-l>')
+
+Synchronize the terminal and redraw the screen.
+
+    load
+
+Load modified files and directories. This command is automatically called
+when required.
+
+    reload                   (default '<c-r>')
+
+Flush the cache and reload all files and directories.
+
+    echo
+
+Print given arguments to the message line at the bottom.
+
+    echomsg
+
+Print given arguments to the message line at the bottom and also to the log
+file.
+
+    echoerr
+
+Print given arguments to the message line at the bottom in red color and
+also to the log file.
+
+    cd
+
+Change the working directory to the given argument.
+
+    select
+
+Change the current file selection to the given argument.
+
+    delete
+
+Remove the current file or selected file(s).
+
+    rename                   (default 'r')
+
+Rename the current file using the builtin method. A custom 'rename' command
+can be defined to override this default.
+
+    source
+
+Read the configuration file given in the argument.
+
+    push
+
+Simulate key pushes given in the argument.
+
+    read                     (default ':')
+
+Read a command to evaluate.
+
+    shell                    (default '$')
+
+Read a shell command to execute.
+
+(See also 'Prefixes' and 'Shell Commands' sections)
+
+    shell-pipe               (default '%')
+
+Read a shell command to execute piping its standard I/O to the bottom
+statline.
+
+(See also 'Prefixes' and 'Piping Shell Commands' sections)
+
+    shell-wait               (default '!')
+
+Read a shell command to execute and wait for a key press in the end.
+
+(See also 'Prefixes' and 'Waiting Shell Commands' sections)
+
+    shell-async              (default '&')
+
+Read a shell command to execute synchronously without standard I/O.
+
+    find                     (default 'f')
+    find-back                (default 'F')
+    find-next                (default ';')
+    find-prev                (default ',')
+
+Read key(s) to find the appropriate file name match in the forward/backward
+direction and jump to the next/prev match.
+
+(See also 'anchorfind', 'findlen', 'wrapscan', 'ignorecase', 'smartcase',
+'ignoredia', and 'smartdia' options and 'Searching Files' section)
+
+    search                   (default '/')
+    search-back              (default '?')
+    search-next              (default 'n')
+    search-prev              (default 'N')
+
+Read a pattern to search for a file name match in the forward/backward
+direction and jump to the next/prev match.
+
+(See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase',
+'ignoredia', and 'smartdia' options and 'Searching Files' section)
+
+    mark-save                (default 'm')
+
+Save the current directory as a bookmark assigned to the given key.
+
+    mark-load                (default "'")
+
+Change the current directory to the bookmark assigned to the given key.
+
+    mark-remove              (default '"')
+
+Remove a bookmark assigned to the given key.
 
 
 Prefixes
