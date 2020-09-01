@@ -95,6 +95,12 @@ func (app *app) readHistory() error {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		toks := strings.SplitN(scanner.Text(), " ", 2)
+		if toks[0] != ":" && toks[0] != "$" && toks[0] != "%" && toks[0] != "!" && toks[0] != "&" {
+			continue
+		}
+		if len(toks) < 2 {
+			continue
+		}
 		app.cmdHistory = append(app.cmdHistory, cmdItem{toks[0], toks[1]})
 	}
 
