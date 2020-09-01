@@ -24,7 +24,7 @@ var envPathExt = os.Getenv("PATHEXT")
 var (
 	gDefaultShell      = "cmd"
 	gDefaultSocketProt = "tcp"
-	gDefaultSocketPath = ":12345"
+	gDefaultSocketPath = "127.0.0.1:12345"
 )
 
 var (
