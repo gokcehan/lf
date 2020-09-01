@@ -15,10 +15,11 @@ import (
 )
 
 var (
-	envOpener = os.Getenv("OPENER")
-	envEditor = os.Getenv("EDITOR")
-	envPager  = os.Getenv("PAGER")
-	envShell  = os.Getenv("SHELL")
+	envOpener         = os.Getenv("OPENER")
+	envEditor         = os.Getenv("EDITOR")
+	envPager          = os.Getenv("PAGER")
+	envShell          = os.Getenv("SHELL")
+	envTcellTruecolor = os.Getenv("TCELL_TRUECOLOR")
 )
 
 var (
@@ -53,6 +54,10 @@ func init() {
 
 	if envShell == "" {
 		envShell = "sh"
+	}
+
+	if envTcellTruecolor == "" {
+		envTcellTruecolor = "disable"
 	}
 
 	u, err := user.Current()

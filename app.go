@@ -14,6 +14,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/gdamore/tcell"
 )
 
 type cmdItem struct {
@@ -34,8 +36,8 @@ type app struct {
 	cmdHistoryInd int
 }
 
-func newApp() *app {
-	ui := newUI()
+func newApp(screen tcell.Screen) *app {
+	ui := newUI(screen)
 	nav := newNav(ui.wins[0].h)
 
 	quitChan := make(chan bool, 1)

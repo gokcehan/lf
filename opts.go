@@ -29,7 +29,6 @@ type sortType struct {
 
 var gOpts struct {
 	anchorfind     bool
-	color256       bool
 	dircounts      bool
 	drawbox        bool
 	globsearch     bool
@@ -68,7 +67,6 @@ var gOpts struct {
 
 func init() {
 	gOpts.anchorfind = true
-	gOpts.color256 = false
 	gOpts.dircounts = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
