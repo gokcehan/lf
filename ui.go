@@ -443,17 +443,26 @@ func getWins(screen tcell.Screen) []*win {
 	return wins
 }
 
-func startEventListening(screen tcell.Screen) chan tcell.Event {
+func newUI(screen tcell.Screen) *ui {
+	wtot, htot := screen.Size()
+
+	ui := &ui{
+		screen:    screen,
+		wins:      getWins(screen),
+		promptWin: newWin(wtot, 1, 0, 0),
+		msgWin:    newWin(wtot, 1, 0, htot-1),
+		menuWin:   newWin(wtot, 1, 0, htot-2),
+		keyChan:   make(chan string, 1000),
+		styles:    parseStyles(),
+		icons:     parseIcons(),
+	}
+
 	evQueue := make(chan tcell.Event)
 	go func() {
 		var ev tcell.Event
 		for {
-			ev = screen.PollEvent()
+			ev = ui.screen.PollEvent()
 			evQueue <- ev
-
-			if ev == nil {
-				return
-			}
 		}
 	}()
 
@@ -485,30 +494,12 @@ func startEventListening(screen tcell.Screen) chan tcell.Event {
 				}
 			}
 			evChan <- ev
-
-			if ev == nil {
-				return
-			}
 		}
 	}()
 
-	return evChan
-}
+	ui.evChan = evChan
 
-func newUI(screen tcell.Screen) *ui {
-	wtot, htot := screen.Size()
-
-	return &ui{
-		screen:    screen,
-		wins:      getWins(screen),
-		promptWin: newWin(wtot, 1, 0, 0),
-		msgWin:    newWin(wtot, 1, 0, htot-1),
-		menuWin:   newWin(wtot, 1, 0, htot-2),
-		keyChan:   make(chan string, 1000),
-		evChan:    startEventListening(screen),
-		styles:    parseStyles(),
-		icons:     parseIcons(),
-	}
+	return ui
 }
 
 func (ui *ui) renew() {
@@ -1025,16 +1016,15 @@ func (ui *ui) pause() {
 }
 
 func (ui *ui) resume() {
+	var screen tcell.Screen
 	var err error
-
-	if ui.screen, err = tcell.NewScreen(); err != nil {
+	if screen, err = tcell.NewScreen(); err != nil {
 		log.Fatalf("creating screen: %s", err)
-	} else if err = ui.screen.Init(); err != nil {
+	} else if err = screen.Init(); err != nil {
 		log.Fatalf("initializing screen: %s", err)
 	}
 
-	close(ui.evChan)
-	ui.evChan = startEventListening(ui.screen)
+	ui.screen = screen
 
 	ui.renew()
 }
