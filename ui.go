@@ -453,51 +453,18 @@ func newUI(screen tcell.Screen) *ui {
 		msgWin:    newWin(wtot, 1, 0, htot-1),
 		menuWin:   newWin(wtot, 1, 0, htot-2),
 		keyChan:   make(chan string, 1000),
+		evChan:    make(chan tcell.Event),
 		styles:    parseStyles(),
 		icons:     parseIcons(),
 	}
 
-	evQueue := make(chan tcell.Event)
 	go func() {
 		var ev tcell.Event
 		for {
 			ev = ui.screen.PollEvent()
-			evQueue <- ev
+			ui.evChan <- ev
 		}
 	}()
-
-	evChan := make(chan tcell.Event)
-	go func() {
-		for {
-			ev := <-evQueue
-			// .(type) can't be used outside a switch
-			switch tev := ev.(type) {
-			case *tcell.EventKey:
-				// tcell.KeyESC is one of the few cases we don't need Rune() for
-				if tev.Key() == tcell.KeyESC {
-					select {
-					case ev2 := <-evQueue:
-						switch tev2 := ev2.(type) {
-						case *tcell.EventKey:
-							evChan <- tcell.NewEventKey(tev2.Key(), tev2.Rune(), tcell.ModAlt)
-						default:
-							evChan <- ev2
-						}
-
-						if ev2 == nil {
-							return
-						}
-
-						continue
-					case <-time.After(100 * time.Millisecond):
-					}
-				}
-			}
-			evChan <- ev
-		}
-	}()
-
-	ui.evChan = evChan
 
 	return ui
 }
