@@ -808,34 +808,35 @@ func listMarks(marks map[string]string) *bytes.Buffer {
 
 func (ui *ui) pollEvent() tcell.Event {
 	select {
-	case key := <-ui.keyChan:
+	case val := <-ui.keyChan:
 		var ch rune
 		var mod tcell.ModMask
-		var Key tcell.Key
 
-		if utf8.RuneCountInString(key) == 1 {
-			ch, _ = utf8.DecodeRuneInString(key)
+		k := tcell.KeyRune
+
+		if utf8.RuneCountInString(val) == 1 {
+			ch, _ = utf8.DecodeRuneInString(val)
 		} else {
 			switch {
-			case key == "<lt>":
+			case val == "<lt>":
 				ch = '<'
-			case key == "<gt>":
+			case val == "<gt>":
 				ch = '>'
-			case reAltKey.MatchString(key):
-				match := reAltKey.FindStringSubmatch(key)[1]
+			case reAltKey.MatchString(val):
+				match := reAltKey.FindStringSubmatch(val)[1]
 				ch, _ = utf8.DecodeRuneInString(match)
 				mod = tcell.ModMask(tcell.ModAlt)
 			default:
-				if val, ok := gValKey[key]; ok {
-					Key = val
+				if key, ok := gValKey[val]; ok {
+					k = key
 				} else {
-					Key = tcell.KeyESC
-					ui.echoerrf("unknown key: %s", key)
+					k = tcell.KeyESC
+					ui.echoerrf("unknown key: %s", val)
 				}
 			}
 		}
 
-		return tcell.NewEventKey(Key, ch, mod)
+		return tcell.NewEventKey(k, ch, mod)
 	case ev := <-ui.evChan:
 		return ev
 	}

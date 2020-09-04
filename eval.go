@@ -1012,8 +1012,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		log.Println("pushing keys", e.args[0])
-		for _, key := range splitKeys(e.args[0]) {
-			app.ui.keyChan <- key
+		for _, val := range splitKeys(e.args[0]) {
+			app.ui.keyChan <- val
 		}
 	case "cmd-insert":
 		if len(e.args) == 0 {
