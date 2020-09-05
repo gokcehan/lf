@@ -520,15 +520,20 @@ func newUI(screen tcell.Screen) *ui {
 		icons:     parseIcons(),
 	}
 
-	go func() {
-		var ev tcell.Event
-		for {
-			ev = ui.screen.PollEvent()
-			ui.evChan <- ev
-		}
-	}()
+	go ui.pollEvents()
 
 	return ui
+}
+
+func (ui *ui) pollEvents() {
+	var ev tcell.Event
+	for {
+		ev = ui.screen.PollEvent()
+		if ev == nil {
+			return
+		}
+		ui.evChan <- ev
+	}
 }
 
 func (ui *ui) renew() {
@@ -1057,6 +1062,8 @@ func (ui *ui) resume() {
 	}
 
 	ui.screen = screen
+
+	go ui.pollEvents()
 
 	ui.renew()
 }
