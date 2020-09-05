@@ -491,7 +491,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	app.ui.loadFile(app.nav)
-	app.ui.loadFileInfo(app.nav)
 
 	switch prefix {
 	case "%":

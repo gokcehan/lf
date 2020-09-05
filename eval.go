@@ -788,11 +788,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.screen.Sync()
 		app.nav.height = app.ui.wins[0].h
 		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
 	case "load":
 		app.nav.renew()
 		app.ui.loadFile(app.nav)
-		app.ui.loadFileInfo(app.nav)
 	case "reload":
 		if err := app.nav.reload(); err != nil {
 			app.ui.echoerrf("reload: %s", err)
