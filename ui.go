@@ -318,13 +318,13 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		return
 	}
 
-	if dir.loading {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
+	if dir.noPerm {
+		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
 		return
 	}
 
-	if dir.noPerm {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
+	if dir.loading && len(dir.files) == 0 {
+		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
 		return
 	}
 
