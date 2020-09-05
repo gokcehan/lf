@@ -23,11 +23,11 @@ const gEscapeCode = 27
 
 var gKeyVal = map[tcell.Key]string{
 	tcell.KeyEnter:          "<enter>",
-	tcell.KeyBackspace:      "<backspace>",
+	tcell.KeyBackspace:      "<bs>",
 	tcell.KeyTab:            "<tab>",
 	tcell.KeyBacktab:        "<backtab>",
 	tcell.KeyEsc:            "<esc>",
-	tcell.KeyBackspace2:     "<backspace2>",
+	tcell.KeyBackspace2:     "<bs2>",
 	tcell.KeyDelete:         "<delete>",
 	tcell.KeyInsert:         "<insert>",
 	tcell.KeyUp:             "<up>",
