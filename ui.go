@@ -375,7 +375,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 				}
 			}
 
-			win.print(screen, 0, i, (st.Normal()).Foreground(tcell.ColorOlive), ln)
+			win.print(screen, 0, i, tcell.StyleDefault.Foreground(tcell.ColorOlive), ln)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
