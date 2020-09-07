@@ -449,6 +449,7 @@ type ui struct {
 	dirPrev     *dir
 	exprChan    chan expr
 	keyChan     chan string
+	tevChan     chan tcell.Event
 	evChan      chan tcell.Event
 	menuBuf     *bytes.Buffer
 	cmdPrefix   string
@@ -514,8 +515,10 @@ func newUI(screen tcell.Screen) *ui {
 		promptWin: newWin(wtot, 1, 0, 0),
 		msgWin:    newWin(wtot, 1, 0, htot-1),
 		menuWin:   newWin(wtot, 1, 0, htot-2),
+		exprChan:  make(chan expr, 1000),
 		keyChan:   make(chan string, 1000),
-		evChan:    make(chan tcell.Event),
+		tevChan:   make(chan tcell.Event, 1000),
+		evChan:    make(chan tcell.Event, 1000),
 		styles:    parseStyles(),
 		icons:     parseIcons(),
 	}
@@ -532,7 +535,7 @@ func (ui *ui) pollEvents() {
 		if ev == nil {
 			return
 		}
-		ui.evChan <- ev
+		ui.tevChan <- ev
 	}
 }
 
@@ -906,7 +909,7 @@ func (ui *ui) pollEvent() tcell.Event {
 		}
 
 		return tcell.NewEventKey(k, ch, mod)
-	case ev := <-ui.evChan:
+	case ev := <-ui.tevChan:
 		return ev
 	}
 }
@@ -914,11 +917,7 @@ func (ui *ui) pollEvent() tcell.Event {
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readEvent(ch chan<- expr, ev tcell.Event) {
-	if ev == nil {
-		return
-	}
-
+func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 1
 
@@ -943,18 +942,16 @@ func (ui *ui) readEvent(ch chan<- expr, ev tcell.Event) {
 		} else {
 			val := gKeyVal[tev.Key()]
 			if val == "<esc>" {
-				ch <- draw
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
-				return
+				return draw
 			}
 			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 		}
 
 		if len(ui.keyAcc) == 0 {
-			ch <- draw
-			break
+			return draw
 		}
 
 		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
@@ -962,10 +959,10 @@ func (ui *ui) readEvent(ch chan<- expr, ev tcell.Event) {
 		switch len(binds) {
 		case 0:
 			ui.echoerrf("unknown mapping: %s", string(ui.keyAcc))
-			ch <- draw
 			ui.keyAcc = nil
 			ui.keyCount = nil
 			ui.menuBuf = nil
+			return draw
 		default:
 			if ok {
 				if len(ui.keyCount) > 0 {
@@ -981,71 +978,67 @@ func (ui *ui) readEvent(ch chan<- expr, ev tcell.Event) {
 				} else if e, ok := expr.(*listExpr); ok {
 					e.count = count
 				}
-				ch <- expr
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
+				return expr
 			} else {
 				ui.menuBuf = listBinds(binds)
-				ch <- draw
+				return draw
 			}
 		}
 	case *tcell.EventResize:
-		ch <- &callExpr{"redraw", nil, 1}
+		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
-		return
+		return nil
 	case *tcell.EventInterrupt:
 		log.Printf("Got EventInterrupt: at %s", tev.When())
-		return
+		return nil
 	}
+	return nil
 }
 
-func readCmdEvent(ch chan<- expr, ev tcell.Event) {
+func readCmdEvent(ev tcell.Event) expr {
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
 		if tev.Key() == tcell.KeyRune {
 			if tev.Modifiers() == tcell.ModMask(tcell.ModAlt) {
 				val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
 				if expr, ok := gOpts.cmdkeys[val]; ok {
-					ch <- expr
+					return expr
 				}
 			} else {
-				ch <- &callExpr{"cmd-insert", []string{string(tev.Rune())}, 1}
+				return &callExpr{"cmd-insert", []string{string(tev.Rune())}, 1}
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
 			if expr, ok := gOpts.cmdkeys[val]; ok {
-				ch <- expr
+				return expr
 			}
 		}
 	}
+	return nil
 }
 
-func (ui *ui) readExpr() <-chan expr {
-	ch := make(chan expr)
+func (ui *ui) readEvent(ev tcell.Event) expr {
+	if ev == nil {
+		return nil
+	}
 
-	ui.exprChan = ch
+	if _, ok := ev.(*tcell.EventKey); ok && ui.cmdPrefix != "" {
+		return readCmdEvent(ev)
+	}
 
+	return ui.readNormalEvent(ev)
+}
+
+func (ui *ui) readExpr() {
 	go func() {
-		ch <- &callExpr{"draw", nil, 1}
-
 		for {
-			ev := ui.pollEvent()
-
-			switch ev.(type) {
-			case *tcell.EventKey:
-				if ui.cmdPrefix != "" {
-					readCmdEvent(ch, ev)
-					continue
-				}
-			}
-
-			ui.readEvent(ch, ev)
+			ui.evChan <- ui.pollEvent()
 		}
 	}()
-
-	return ch
 }
 
 func (ui *ui) pause() {

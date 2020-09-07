@@ -157,8 +157,9 @@ func (app *app) writeHistory() error {
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
 func (app *app) loop() {
-	clientChan := app.ui.readExpr()
 	serverChan := readExpr()
+
+	app.ui.readExpr()
 
 	if gSelect != "" {
 		go func() {
@@ -318,7 +319,27 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
-		case e := <-clientChan:
+		case ev := <-app.ui.evChan:
+			e := app.ui.readEvent(ev)
+			if e == nil {
+				continue
+			}
+			e.eval(app, nil)
+		loop:
+			for {
+				select {
+				case ev := <-app.ui.evChan:
+					e = app.ui.readEvent(ev)
+					if e == nil {
+						continue
+					}
+					e.eval(app, nil)
+				default:
+					break loop
+				}
+			}
+			app.ui.draw(app.nav)
+		case e := <-app.ui.exprChan:
 			e.eval(app, nil)
 			app.ui.draw(app.nav)
 		case e := <-serverChan:
