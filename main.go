@@ -64,7 +64,6 @@ func exportEnvVars() {
 
 func startServer() {
 	cmd := detachedCommand(os.Args[0], "-server")
-	cmd.Dir = gUser.HomeDir
 	if err := cmd.Start(); err != nil {
 		log.Printf("starting server: %s", err)
 	}
@@ -157,6 +156,7 @@ func main() {
 			log.Fatalf("remote command: %s", err)
 		}
 	case *serverMode:
+		os.Chdir(gUser.HomeDir)
 		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
 		serve()
 	default:
