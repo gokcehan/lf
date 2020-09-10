@@ -138,10 +138,14 @@ The following variables are exported for shell commands:
     $fs  selected file(s) separated with 'filesep'
     $fx  current file or selected file(s) if any
     $id  id number of the client
+    
+For Windows, the above variables are exported as `%f%`, `%fs`, `%fx%` and `%id%` respectively.
 
 The following variables are set to the corresponding values:
 
     $LF_LEVEL  current nesting level
+
+
 
 The following default values are set to the environmental variables on unix
 when they are not set or empty:
