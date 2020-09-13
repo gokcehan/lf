@@ -72,27 +72,27 @@ The following command line commands are provided by lf:
     cmd-escape               (default '<esc>')
     cmd-complete             (default '<tab>')
     cmd-enter                (default '<c-j>' and '<enter>')
+    cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
     cmd-history-prev         (default '<c-p>')
-    cmd-delete               (default '<c-d>' and '<delete>')
-    cmd-delete-back          (default '<bs>' and '<bs2>')
     cmd-left                 (default '<c-b>' and '<left>')
     cmd-right                (default '<c-f>' and '<right>')
     cmd-home                 (default '<c-a>' and '<home>')
     cmd-end                  (default '<c-e>' and '<end>')
+    cmd-delete               (default '<c-d>' and '<delete>')
+    cmd-delete-back          (default '<bs>' and '<bs2>')
     cmd-delete-home          (default '<c-u>')
     cmd-delete-end           (default '<c-k>')
     cmd-delete-unix-word     (default '<c-w>')
     cmd-yank                 (default '<c-y>')
     cmd-transpose            (default '<c-t>')
-    cmd-interrupt            (default '<c-c>')
+    cmd-transpose-word       (default '<a-t>')
     cmd-word                 (default '<a-f>')
     cmd-word-back            (default '<a-b>')
-    cmd-capitalize-word      (default '<a-c>')
     cmd-delete-word          (default '<a-d>')
+    cmd-capitalize-word      (default '<a-c>')
     cmd-uppercase-word       (default '<a-u>')
     cmd-lowercase-word       (default '<a-l>')
-    cmd-transpose-word       (default '<a-t>')
 
 The following options can be used to customize the behavior of lf:
 
@@ -144,8 +144,6 @@ For Windows, the above variables are exported as `%f%`, `%fs`, `%fx%` and `%id%`
 The following variables are set to the corresponding values:
 
     $LF_LEVEL  current nesting level
-
-
 
 The following default values are set to the environmental variables on unix
 when they are not set or empty:
@@ -379,7 +377,7 @@ Read a shell command to execute synchronously without standard I/O.
     find-next                (default ';')
     find-prev                (default ',')
 
-Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/prev match.
+Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
 
 (See also 'anchorfind', 'findlen', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 
@@ -388,7 +386,7 @@ Read key(s) to find the appropriate file name match in the forward/backward dire
     search-next              (default 'n')
     search-prev              (default 'N')
 
-Read a pattern to search for a file name match in the forward/backward direction and jump to the next/prev match.
+Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
 
 (See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 
@@ -403,6 +401,81 @@ Change the current directory to the bookmark assigned to the given key.
     mark-remove              (default `"`)
 
 Remove a bookmark assigned to the given key.
+
+Command Line Commands
+
+This section shows information about command line commands.
+These should be mostly compatible with readline keybindings.
+A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+
+    cmd-escape               (default '<esc>')
+
+Quit command line mode and return to normal mode.
+
+    cmd-complete             (default '<tab>')
+
+Autocomplete the current word.
+
+    cmd-enter                (default '<c-j>' and '<enter>')
+
+Execute the current line.
+
+    cmd-interrupt            (default '<c-c>')
+
+Interrupt the current shell-pipe command and return to the normal mode.
+
+    cmd-history-next         (default '<c-n>')
+    cmd-history-prev         (default '<c-p>')
+
+Go to next/previous item in the history.
+
+    cmd-left                 (default '<c-b>' and '<left>')
+    cmd-right                (default '<c-f>' and '<right>')
+
+Move the cursor to the left/right.
+
+    cmd-home                 (default '<c-a>' and '<home>')
+    cmd-end                  (default '<c-e>' and '<end>')
+
+Move the cursor to the beginning/end of line.
+
+    cmd-delete               (default '<c-d>' and '<delete>')
+    cmd-delete-back          (default '<bs>' and '<bs2>')
+
+Delete the next character in forward/backward direction.
+
+    cmd-delete-home          (default '<c-u>')
+    cmd-delete-end           (default '<c-k>')
+
+Delete everything up to the beginning/end of line.
+
+    cmd-delete-unix-word     (default '<c-w>')
+
+Delete the previous unix word.
+
+    cmd-yank                 (default '<c-y>')
+
+Paste the buffer content containing the last deleted item.
+
+    cmd-transpose            (default '<c-t>')
+    cmd-transpose-word       (default '<a-t>')
+
+Transpose the positions of last two characters/words.
+
+    cmd-word                 (default '<a-f>')
+    cmd-word-back            (default '<a-b>')
+
+Move the cursor by one word in forward/backward direction.
+
+    cmd-delete-word          (default '<a-d>')
+
+Delete the next word in forward direction.
+
+    cmd-capitalize-word      (default '<a-c>')
+    cmd-uppercase-word       (default '<a-u>')
+    cmd-lowercase-word       (default '<a-l>')
+
+Capitalize/uppercase/lowercase the current word and jump to the next word.
 
 Prefixes
 

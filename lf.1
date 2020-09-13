@@ -84,27 +84,27 @@ The following command line commands are provided by lf:
     cmd-escape               (default '<esc>')
     cmd-complete             (default '<tab>')
     cmd-enter                (default '<c-j>' and '<enter>')
+    cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
     cmd-history-prev         (default '<c-p>')
-    cmd-delete               (default '<c-d>' and '<delete>')
-    cmd-delete-back          (default '<bs>' and '<bs2>')
     cmd-left                 (default '<c-b>' and '<left>')
     cmd-right                (default '<c-f>' and '<right>')
     cmd-home                 (default '<c-a>' and '<home>')
     cmd-end                  (default '<c-e>' and '<end>')
+    cmd-delete               (default '<c-d>' and '<delete>')
+    cmd-delete-back          (default '<bs>' and '<bs2>')
     cmd-delete-home          (default '<c-u>')
     cmd-delete-end           (default '<c-k>')
     cmd-delete-unix-word     (default '<c-w>')
     cmd-yank                 (default '<c-y>')
     cmd-transpose            (default '<c-t>')
-    cmd-interrupt            (default '<c-c>')
+    cmd-transpose-word       (default '<a-t>')
     cmd-word                 (default '<a-f>')
     cmd-word-back            (default '<a-b>')
-    cmd-capitalize-word      (default '<a-c>')
     cmd-delete-word          (default '<a-d>')
+    cmd-capitalize-word      (default '<a-c>')
     cmd-uppercase-word       (default '<a-u>')
     cmd-lowercase-word       (default '<a-l>')
-    cmd-transpose-word       (default '<a-t>')
 .EE
 .PP
 The following options can be used to customize the behavior of lf:
@@ -464,7 +464,7 @@ Read a shell command to execute synchronously without standard I/O.
     find-prev                (default ',')
 .EE
 .PP
-Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/prev match.
+Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
 .PP
 (See also 'anchorfind', 'findlen', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 .PP
@@ -475,7 +475,7 @@ Read key(s) to find the appropriate file name match in the forward/backward dire
     search-prev              (default 'N')
 .EE
 .PP
-Read a pattern to search for a file name match in the forward/backward direction and jump to the next/prev match.
+Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
 .PP
 (See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 .PP
@@ -496,6 +496,107 @@ Change the current directory to the bookmark assigned to the given key.
 .EE
 .PP
 Remove a bookmark assigned to the given key.
+.SH COMMAND LINE COMMANDS
+This section shows information about command line commands. These should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+.PP
+.EX
+    cmd-escape               (default '<esc>')
+.EE
+.PP
+Quit command line mode and return to normal mode.
+.PP
+.EX
+    cmd-complete             (default '<tab>')
+.EE
+.PP
+Autocomplete the current word.
+.PP
+.EX
+    cmd-enter                (default '<c-j>' and '<enter>')
+.EE
+.PP
+Execute the current line.
+.PP
+.EX
+    cmd-interrupt            (default '<c-c>')
+.EE
+.PP
+Interrupt the current shell-pipe command and return to the normal mode.
+.PP
+.EX
+    cmd-history-next         (default '<c-n>')
+    cmd-history-prev         (default '<c-p>')
+.EE
+.PP
+Go to next/previous item in the history.
+.PP
+.EX
+    cmd-left                 (default '<c-b>' and '<left>')
+    cmd-right                (default '<c-f>' and '<right>')
+.EE
+.PP
+Move the cursor to the left/right.
+.PP
+.EX
+    cmd-home                 (default '<c-a>' and '<home>')
+    cmd-end                  (default '<c-e>' and '<end>')
+.EE
+.PP
+Move the cursor to the beginning/end of line.
+.PP
+.EX
+    cmd-delete               (default '<c-d>' and '<delete>')
+    cmd-delete-back          (default '<bs>' and '<bs2>')
+.EE
+.PP
+Delete the next character in forward/backward direction.
+.PP
+.EX
+    cmd-delete-home          (default '<c-u>')
+    cmd-delete-end           (default '<c-k>')
+.EE
+.PP
+Delete everything up to the beginning/end of line.
+.PP
+.EX
+    cmd-delete-unix-word     (default '<c-w>')
+.EE
+.PP
+Delete the previous unix word.
+.PP
+.EX
+    cmd-yank                 (default '<c-y>')
+.EE
+.PP
+Paste the buffer content containing the last deleted item.
+.PP
+.EX
+    cmd-transpose            (default '<c-t>')
+    cmd-transpose-word       (default '<a-t>')
+.EE
+.PP
+Transpose the positions of last two characters/words.
+.PP
+.EX
+    cmd-word                 (default '<a-f>')
+    cmd-word-back            (default '<a-b>')
+.EE
+.PP
+Move the cursor by one word in forward/backward direction.
+.PP
+.EX
+    cmd-delete-word          (default '<a-d>')
+.EE
+.PP
+Delete the next word in forward direction.
+.PP
+.EX
+    cmd-capitalize-word      (default '<a-c>')
+    cmd-uppercase-word       (default '<a-u>')
+    cmd-lowercase-word       (default '<a-l>')
+.EE
+.PP
+Capitalize/uppercase/lowercase the current word and jump to the next word.
 .SH PREFIXES
 The following command prefixes are used by lf:
 .PP
