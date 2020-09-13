@@ -982,10 +982,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 				ui.keyCount = nil
 				ui.menuBuf = nil
 				return expr
-			} else {
-				ui.menuBuf = listBinds(binds)
-				return draw
 			}
+			ui.menuBuf = listBinds(binds)
+			return draw
 		}
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}

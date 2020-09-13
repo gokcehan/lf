@@ -142,6 +142,9 @@ The following variables are exported for shell commands:
     $fx  current file or selected file(s) if any
     $id  id number of the client
 
+For Windows, the above variables are exported as '%f%', '%fs', '%fx%' and
+'%id%' respectively.
+
 The following variables are set to the corresponding values:
 
     $LF_LEVEL  current nesting level
