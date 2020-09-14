@@ -526,19 +526,7 @@ func insert(app *app, arg string) {
 		}
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
-
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Printf("getting current directory: %s", err)
-			return
-		}
-		app.nav.marks[arg] = wd
-		if err := app.nav.writeMarks(); err != nil {
-			app.ui.echoerrf("mark-save: %s", err)
-		}
-		if err := remote("send sync"); err != nil {
-			app.ui.echoerrf("mark-save: %s", err)
-		}
+		app.markSave(arg)
 	case app.ui.cmdPrefix == "mark-load: ":
 		normal(app)
 
@@ -887,7 +875,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
-		app.ui.cmdPrefix = "mark-save: "
+		switch {
+		case len(e.args) == 0:
+			app.ui.cmdPrefix = "mark-save: "
+		case len(e.args[0]) == 1:
+			app.markSave(e.args[0])
+		default:
+			app.ui.echoerr("mark-save: argument should be a single character")
+		}
 	case "mark-load":
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
