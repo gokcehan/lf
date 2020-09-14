@@ -427,6 +427,7 @@ func (nav *nav) preview() {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
+		exportOpts()
 		cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
 
 		out, err := cmd.StdoutPipe()
