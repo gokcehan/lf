@@ -9,8 +9,6 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
-	"reflect"
-	"strconv"
 	"runtime"
 	"strings"
 	"syscall"
@@ -180,84 +178,5 @@ func exportFiles(f string, fs []string) {
 		os.Setenv("fx", envFile)
 	} else {
 		os.Setenv("fx", envFiles)
-	}
-}
-
-func fieldToString(field reflect.Value) string {
-	kind := field.Kind()
-	var value string
-
-	switch kind {
-	case reflect.Int:
-		value = strconv.Itoa(int(field.Int()))
-	case reflect.Bool:
-		value = strconv.FormatBool(field.Bool())
-	case reflect.Slice:
-		for i := 0; i < field.Len(); i++ {
-			element := field.Index(i)
-
-			if i == 0 {
-				value = fieldToString(element)
-			} else {
-				value += ":" + fieldToString(element)
-			}
-		}
-	default:
-		value = field.String()
-	}
-
-	return value
-}
-
-func exportOpts() {
-	e := reflect.ValueOf(&gOpts).Elem()
-
-	for i := 0; i < e.NumField(); i++ {
-		// Get name and prefix it with lf_
-		name := e.Type().Field(i).Name
-		name = fmt.Sprintf("lf_%s", name)
-
-		// Skip maps
-		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" {
-			continue
-		}
-
-		// Get string representation of the value
-		if name == "lf_sortType" {
-			var sortby string
-
-			switch gOpts.sortType.method {
-			case naturalSort:
-				sortby = "natural"
-			case nameSort:
-				sortby = "name"
-			case sizeSort:
-				sortby = "size"
-			case timeSort:
-				sortby = "time"
-			case ctimeSort:
-				sortby = "ctime"
-			case atimeSort:
-				sortby = "atime"
-			case extSort:
-				sortby = "ext"
-			}
-
-			os.Setenv("lf_sortby", sortby)
-
-			reverse := strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
-			os.Setenv("lf_reverse", reverse)
-
-			hidden := strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
-			os.Setenv("lf_hidden", hidden)
-
-			dirfirst := strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
-			os.Setenv("lf_dirfirst", dirfirst)
-		} else {
-			field := e.Field(i)
-			value := fieldToString(field)
-
-			os.Setenv(name, value)
-		}
 	}
 }
