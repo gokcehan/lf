@@ -49,26 +49,26 @@ The following commands are provided by lf:
     echoerr
     cd
     select
-    delete
-    rename                   (default 'r')
+    delete         (modal)
+    rename         (modal)   (default 'r')
     source
     push
-    read                     (default ':')
-    shell                    (default '$')
-    shell-pipe               (default '%')
-    shell-wait               (default '!')
-    shell-async              (default '&')
-    find                     (default 'f')
-    find-back                (default 'F')
+    read           (modal)   (default ':')
+    shell          (modal)   (default '$')
+    shell-pipe     (modal)   (default '%')
+    shell-wait     (modal)   (default '!')
+    shell-async    (modal)   (default '&')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
     find-next                (default ';')
     find-prev                (default ',')
-    search                   (default '/')
-    search-back              (default '?')
+    search         (modal)   (default '/')
+    search-back    (modal)   (default '?')
     search-next              (default 'n')
     search-prev              (default 'N')
-    mark-save                (default 'm')
-    mark-load                (default "'")
-    mark-remove              (default '"')
+    mark-save      (modal)   (default 'm')
+    mark-load      (modal)   (default "'")
+    mark-remove    (modal)   (default '"')
 
 The following command line commands are provided by lf:
 
@@ -222,7 +222,9 @@ https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
 
 Commands
 
-This section shows information about builtin commands.
+This section shows information about builtin commands. Modal commands do not
+take any arguments, but instead change the operation mode to read their
+input conveniently, and so they are meant to be assigned to keybindings.
 
     quit                     (default 'q')
 
@@ -343,11 +345,11 @@ Change the working directory to the given argument.
 
 Change the current file selection to the given argument.
 
-    delete
+    delete         (modal)
 
 Remove the current file or selected file(s).
 
-    rename                   (default 'r')
+    rename         (modal)   (default 'r')
 
 Rename the current file using the builtin method. A custom 'rename' command
 can be defined to override this default.
@@ -360,35 +362,35 @@ Read the configuration file given in the argument.
 
 Simulate key pushes given in the argument.
 
-    read                     (default ':')
+    read           (modal)   (default ':')
 
 Read a command to evaluate.
 
-    shell                    (default '$')
+    shell          (modal)   (default '$')
 
 Read a shell command to execute.
 
 (See also 'Prefixes' and 'Shell Commands' sections)
 
-    shell-pipe               (default '%')
+    shell-pipe     (modal)   (default '%')
 
 Read a shell command to execute piping its standard I/O to the bottom
 statline.
 
 (See also 'Prefixes' and 'Piping Shell Commands' sections)
 
-    shell-wait               (default '!')
+    shell-wait     (modal)   (default '!')
 
 Read a shell command to execute and wait for a key press in the end.
 
 (See also 'Prefixes' and 'Waiting Shell Commands' sections)
 
-    shell-async              (default '&')
+    shell-async    (modal)   (default '&')
 
 Read a shell command to execute synchronously without standard I/O.
 
-    find                     (default 'f')
-    find-back                (default 'F')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
     find-next                (default ';')
     find-prev                (default ',')
 
@@ -409,15 +411,17 @@ direction and jump to the next/previous match.
 (See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase',
 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 
-    mark-save                (default 'm')
+    mark-save      (modal)   (default 'm')
 
 Save the current directory as a bookmark assigned to the given key.
 
-    mark-load                (default "'")
+    mark-load      (modal)   (default "'")
 
-Change the current directory to the bookmark assigned to the given key.
+Change the current directory to the bookmark assigned to the given key. A
+special bookmark "'" holds the previous directory after a 'mark-load', 'cd',
+or 'select' command.
 
-    mark-remove              (default '"')
+    mark-remove    (modal)   (default '"')
 
 Remove a bookmark assigned to the given key.
 

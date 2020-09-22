@@ -56,26 +56,26 @@ The following commands are provided by lf:
     echoerr
     cd
     select
-    delete
-    rename                   (default 'r')
+    delete         (modal)
+    rename         (modal)   (default 'r')
     source
     push
-    read                     (default ':')
-    shell                    (default '$')
-    shell-pipe               (default '%')
-    shell-wait               (default '!')
-    shell-async              (default '&')
-    find                     (default 'f')
-    find-back                (default 'F')
+    read           (modal)   (default ':')
+    shell          (modal)   (default '$')
+    shell-pipe     (modal)   (default '%')
+    shell-wait     (modal)   (default '!')
+    shell-async    (modal)   (default '&')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
     find-next                (default ';')
     find-prev                (default ',')
-    search                   (default '/')
-    search-back              (default '?')
+    search         (modal)   (default '/')
+    search-back    (modal)   (default '?')
     search-next              (default 'n')
     search-prev              (default 'N')
-    mark-save                (default 'm')
-    mark-load                (default "'")
-    mark-remove              (default `"`)
+    mark-save      (modal)   (default 'm')
+    mark-load      (modal)   (default "'")
+    mark-remove    (modal)   (default `"`)
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -243,7 +243,7 @@ You can configure the default values of following variables to change these loca
 .PP
 A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
 .SH COMMANDS
-This section shows information about builtin commands.
+This section shows information about builtin commands. Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
 .PP
 .EX
     quit                     (default 'q')
@@ -398,13 +398,13 @@ Change the working directory to the given argument.
 Change the current file selection to the given argument.
 .PP
 .EX
-    delete
+    delete         (modal)
 .EE
 .PP
 Remove the current file or selected file(s).
 .PP
 .EX
-    rename                   (default 'r')
+    rename         (modal)   (default 'r')
 .EE
 .PP
 Rename the current file using the builtin method. A custom 'rename' command can be defined to override this default.
@@ -422,13 +422,13 @@ Read the configuration file given in the argument.
 Simulate key pushes given in the argument.
 .PP
 .EX
-    read                     (default ':')
+    read           (modal)   (default ':')
 .EE
 .PP
 Read a command to evaluate.
 .PP
 .EX
-    shell                    (default '$')
+    shell          (modal)   (default '$')
 .EE
 .PP
 Read a shell command to execute.
@@ -436,7 +436,7 @@ Read a shell command to execute.
 (See also 'Prefixes' and 'Shell Commands' sections)
 .PP
 .EX
-    shell-pipe               (default '%')
+    shell-pipe     (modal)   (default '%')
 .EE
 .PP
 Read a shell command to execute piping its standard I/O to the bottom statline.
@@ -444,7 +444,7 @@ Read a shell command to execute piping its standard I/O to the bottom statline.
 (See also 'Prefixes' and 'Piping Shell Commands' sections)
 .PP
 .EX
-    shell-wait               (default '!')
+    shell-wait     (modal)   (default '!')
 .EE
 .PP
 Read a shell command to execute and wait for a key press in the end.
@@ -452,14 +452,14 @@ Read a shell command to execute and wait for a key press in the end.
 (See also 'Prefixes' and 'Waiting Shell Commands' sections)
 .PP
 .EX
-    shell-async              (default '&')
+    shell-async    (modal)   (default '&')
 .EE
 .PP
 Read a shell command to execute synchronously without standard I/O.
 .PP
 .EX
-    find                     (default 'f')
-    find-back                (default 'F')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
     find-next                (default ';')
     find-prev                (default ',')
 .EE
@@ -480,19 +480,19 @@ Read a pattern to search for a file name match in the forward/backward direction
 (See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 .PP
 .EX
-    mark-save                (default 'm')
+    mark-save      (modal)   (default 'm')
 .EE
 .PP
 Save the current directory as a bookmark assigned to the given key.
 .PP
 .EX
-    mark-load                (default "'")
+    mark-load      (modal)   (default "'")
 .EE
 .PP
-Change the current directory to the bookmark assigned to the given key.
+Change the current directory to the bookmark assigned to the given key. A special bookmark "'" holds the previous directory after a 'mark-load', 'cd', or 'select' command.
 .PP
 .EX
-    mark-remove              (default `"`)
+    mark-remove    (modal)   (default `"`)
 .EE
 .PP
 Remove a bookmark assigned to the given key.
