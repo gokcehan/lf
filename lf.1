@@ -110,41 +110,41 @@ The following command line commands are provided by lf:
 The following options can be used to customize the behavior of lf:
 .PP
 .EX
-    anchorfind      boolean  (default on)
-    dircounts       boolean  (default off)
-    dirfirst        boolean  (default on)
-    drawbox         boolean  (default off)
-    globsearch      boolean  (default off)
-    hidden          boolean  (default off)
-    icons           boolean  (default off)
-    ignorecase      boolean  (default on)
-    ignoredia       boolean  (default off)
-    incsearch       boolean  (default off)
-    number          boolean  (default off)
-    preview         boolean  (default on)
-    relativenumber  boolean  (default off)
-    reverse         boolean  (default off)
-    smartcase       boolean  (default on)
-    smartdia        boolean  (default off)
-    wrapscan        boolean  (default on)
-    wrapscroll      boolean  (default off)
-    findlen         integer  (default 1) (zero to prompt until single match)
-    period          integer  (default 0) (zero to disable periodic loading)
-    scrolloff       integer  (default 0)
-    tabstop         integer  (default 8)
-    errorfmt        string   (default "\e033[7;31;47m%s\e033[0m")
-    filesep         string   (default "\en")
-    hiddenfiles     string   (default '.*')
-    ifs             string   (default '') (not exported if empty)
-    info            string   (default '')
-    previewer       string   (default '') (not filtered if empty)
-    promptfmt       string   (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")
-    ratios          string   (default '1:2:3')
-    shell           string   (default 'sh')
-    shellopts       string   (default '')
-    sortby          string   (default 'natural')
-    timefmt         string   (default 'Mon Jan _2 15:04:05 2006')
-    truncatechar    string   (default '~')
+    anchorfind     bool      (default on)
+    dircounts      bool      (default off)
+    dirfirst       bool      (default on)
+    drawbox        bool      (default off)
+    errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
+    filesep        string    (default "\en")
+    findlen        int       (default 1)
+    globsearch     bool      (default off)
+    hidden         bool      (default off)
+    hiddenfiles    []string  (default '.*')
+    icons          bool      (default off)
+    ifs            string    (default '')
+    ignorecase     bool      (default on)
+    ignoredia      bool      (default off)
+    incsearch      bool      (default off)
+    info           []string  (default '')
+    number         bool      (default off)
+    period         int       (default 0)
+    preview        bool      (default on)
+    previewer      string    (default '')
+    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")
+    ratios         []int     (default '1:2:3')
+    relativenumber bool      (default off)
+    reverse        bool      (default off)
+    scrolloff      int       (default 0)
+    shell          string    (default 'sh' for unix and 'cmd.exe' for windows)
+    shellopts      []string  (default '')
+    smartcase      bool      (default on)
+    smartdia       bool      (default off)
+    sortby         string    (default 'natural')
+    tabstop        int       (default 8)
+    timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
+    truncatechar   string    (default '~')
+    wrapscan       bool      (default on)
+    wrapscroll     bool      (default off)
 .EE
 .PP
 The following variables are exported for shell commands:
@@ -597,6 +597,218 @@ Delete the next word in forward direction.
 .EE
 .PP
 Capitalize/uppercase/lowercase the current word and jump to the next word.
+.SH OPTIONS
+This section shows information about options to customize the behavior. Character ':' is used as the separator for list options '[]int' and '[]string'.
+.PP
+.EX
+    anchorfind     bool      (default on)
+.EE
+.PP
+When this option is enabled, find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
+.PP
+.EX
+    dircounts      bool      (default off)
+.EE
+.PP
+When this option is enabled, directory sizes show the number of items inside instead of the size of directory file. The former needs to be calculated by reading the directory and counting the items inside. The latter is directly provided by the operating system and it does not require any calculation, though it is non-intuitive and it can often be misleading. This option is disabled by default for performance reasons. This option only has an effect when 'info' has a 'size' field and the pane is wide enough to show the information. A thousand items are counted per directory at most, and bigger directories are shown as '999+'.
+.PP
+.EX
+    dirfirst       bool      (default on)
+.EE
+.PP
+Show directories first above regular files.
+.PP
+.EX
+    drawbox        bool      (default off)
+.EE
+.PP
+Draw boxes around panes with box drawing characters.
+.PP
+.EX
+    errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
+.EE
+.PP
+Format string of error messages shown in the bottom message line.
+.PP
+.EX
+    filesep        string    (default "\en")
+.EE
+.PP
+File separator used in environment variables 'fs' and 'fx'.
+.PP
+.EX
+    findlen        int       (default 1)
+.EE
+.PP
+Number of characters prompted for the find command. When this value is set to 0, find command prompts until there is only a single match left.
+.PP
+.EX
+    globsearch     bool      (default off)
+.EE
+.PP
+When this option is enabled, search command patterns are considered as globs, otherwise they are literals. With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges. Otherwise, these characters are interpreted as they are.
+.PP
+.EX
+    hidden         bool      (default off)
+.EE
+.PP
+Show hidden files. On unix systems, hidden files are determined by the value of 'hiddenfiles'. On windows, only files with hidden attributes are considered hidden files.
+.PP
+.EX
+    hiddenfiles    []string  (default '.*')
+.EE
+.PP
+List of hidden file glob patterns. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+.PP
+.EX
+    icons          bool      (default off)
+.EE
+.PP
+Show icons before each item in the list. By default, only two icons, 🗀 (U+1F5C0) and 🗎 (U+1F5CE), are used for directories and files respectively, as they are supported in the unicode standard. Icons can be configured with an environment variable named 'LF_ICONS'. The syntax of this variable is similar to 'LS_COLORS'. See the wiki page for an example icon configuration.
+.PP
+.EX
+    ifs            string    (default '')
+.EE
+.PP
+Sets 'IFS' variable in shell commands. It works by adding the assignment to the beginning of the command string as 'IFS='...'; ...'. The reason is that 'IFS' variable is not inherited by the shell for security reasons. This method assumes a POSIX shell syntax and so it can fail for non-POSIX shells. This option has no effect when the value is left empty. This option does not have any effect on windows.
+.PP
+.EX
+    ignorecase     bool      (default on)
+.EE
+.PP
+Ignore case in search patterns.
+.PP
+.EX
+    ignoredia      bool      (default off)
+.EE
+.PP
+Ignore diacritics in search patterns.
+.PP
+.EX
+    incsearch      bool      (default off)
+.EE
+.PP
+Jump to the first match after each keystroke during searching.
+.PP
+.EX
+    info           []string  (default '')
+.EE
+.PP
+List of information shown for directory items at the right side of pane. Currently supported information types are 'size', 'time', 'atime', and 'ctime'. Information is only shown when the pane width is more than twice the width of information.
+.PP
+.EX
+    number         bool      (default off)
+.EE
+.PP
+Show the position number for directory items at the left side of pane. When 'relativenumber' is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
+.PP
+.EX
+    period         int       (default 0)
+.EE
+.PP
+Set the interval in seconds for periodic checks of directory updates. This works by periodically calling the 'load' command. Note that directories are already updated automatically in many cases. This option can be useful when there is an external process changing the displayed directory and you are not doing anything in lf. Periodic checks are disabled when the value of this option is set to zero.
+.PP
+.EX
+    preview        bool      (default on)
+.EE
+.PP
+Show previews of files and directories at the right most pane. If the file has more lines than the preview pane, rest of the lines are not read. Files containing the null character (U+0000) in the read portion are considered binary files and displayed as 'binary'.
+.PP
+.EX
+    previewer      string    (default '') (not filtered if empty)
+.EE
+.PP
+Set the path of a previewer file to filter the content of regular files for previewing. The file should be executable. Two arguments are passed to the file, first is the current file name, and second is the height of preview pane. SIGPIPE signal is sent when enough lines are read. Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
+.PP
+.EX
+    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")
+.EE
+.PP
+Format string of the prompt shown in the top line. Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, and '%f' as the file name. Home folder is shown as '~' in the working directory expansion. Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
+.PP
+.EX
+    ratios         []int     (default '1:2:3')
+.EE
+.PP
+List of ratios of pane widths. Number of items in the list determines the number of panes in the ui. When 'preview' option is enabled, the right most number is used for the width of preview pane.
+.PP
+.EX
+    relativenumber bool      (default off)
+.EE
+.PP
+Show the position number relative to the current line. When 'number' is enabled, current line shows the absolute position, otherwise nothing is shown.
+.PP
+.EX
+    reverse        bool      (default off)
+.EE
+.PP
+Reverse the direction of sort.
+.PP
+.EX
+    scrolloff      int       (default 0)
+.EE
+.PP
+Minimum number of offset lines shown at all times in the top and the bottom of the screen when scrolling. The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines. A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
+.PP
+.EX
+    shell          string    (default 'sh' for unix and 'cmd.exe' for windows)
+.EE
+.PP
+Shell executable to use for shell commands. Shell commands are executed as 'shell shellopts -c command -- arguments'. On windows, '/c' is used instead of '-c' which should work in 'cmd.exe' and 'powershell.exe'.
+.PP
+.EX
+    shellopts      []string  (default '')
+.EE
+.PP
+List of shell options to pass to the shell executable.
+.PP
+.EX
+    smartcase      bool      (default on)
+.EE
+.PP
+Override 'ignorecase' option when the pattern contains an uppercase character. This option has no effect when 'ignorecase' is disabled.
+.PP
+.EX
+    smartdia       bool      (default off)
+.EE
+.PP
+Override 'ignoredia' option when the pattern contains a character with diacritic. This option has no effect when 'ignoredia' is disabled.
+.PP
+.EX
+    sortby         string    (default 'natural')
+.EE
+.PP
+Sort type for directories. Currently supported sort types are 'natural', 'name', 'size', 'time', 'ctime', 'atime', and 'ext'.
+.PP
+.EX
+    tabstop        int       (default 8)
+.EE
+.PP
+Number of space characters to show for horizontal tabulation (U+0009) character.
+.PP
+.EX
+    timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
+.EE
+.PP
+Format string of the file modification time shown in the bottom line.
+.PP
+.EX
+    truncatechar   string    (default '~')
+.EE
+.PP
+Truncate character shown at the end when the file name does not fit to the pane.
+.PP
+.EX
+    wrapscan       bool      (default on)
+.EE
+.PP
+Searching can wrap around the file list.
+.PP
+.EX
+    wrapscroll     bool      (default off)
+.EE
+.PP
+Scrolling can wrap around the file list.
 .SH PREFIXES
 The following command prefixes are used by lf:
 .PP
