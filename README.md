@@ -41,13 +41,25 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ## Installation
 
+See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
+
 See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 
-If you like to build from the source:
+If you like to build from the source on unix:
 
-    go get -u github.com/gokcehan/lf
+    env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/gokcehan/lf
 
-See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
+On windows `cmd`:
+
+    set CGO_ENABLED=0
+    set GO111MODULE=on
+    go get -u -ldflags="-s -w" github.com/gokcehan/lf
+
+On windows `powershell`:
+
+    $env:CGO_ENABLED = '0'
+    $env:GO111MODULE = 'on'
+    go get -u -ldflags="-s -w" github.com/gokcehan/lf
 
 ## Usage
 
