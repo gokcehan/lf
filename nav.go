@@ -416,19 +416,14 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) preview() {
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	reg := &reg{loadTime: time.Now(), path: curr.path}
+func (nav *nav) preview(path string) {
+	reg := &reg{loadTime: time.Now(), path: path}
 
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, curr.path, strconv.Itoa(nav.height))
+		cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -443,7 +438,7 @@ func (nav *nav) preview() {
 		defer out.Close()
 		reader = out
 	} else {
-		f, err := os.Open(curr.path)
+		f, err := os.Open(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
 		}
@@ -477,7 +472,7 @@ func (nav *nav) loadReg(path string) *reg {
 	if !ok {
 		r := &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
-		go nav.preview()
+		go nav.preview(path)
 		return r
 	}
 
@@ -494,7 +489,7 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = time.Now()
-		go nav.preview()
+		go nav.preview(reg.path)
 	}
 }
 
