@@ -941,7 +941,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
-			if val == "<esc>" {
+			if val == "<esc>" && string(ui.keyAcc) != "" {
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
