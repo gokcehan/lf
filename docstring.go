@@ -124,7 +124,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber bool      (default off)
     reverse        bool      (default off)
     scrolloff      int       (default 0)
-    shell          string    (default 'sh' for unix and 'cmd.exe' for windows)
+    shell          string    (default 'sh' for unix and 'cmd' for windows)
     shellopts      []string  (default '')
     smartcase      bool      (default on)
     smartdia       bool      (default off)
@@ -135,36 +135,25 @@ The following options can be used to customize the behavior of lf:
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
 
-The following variables are exported for shell commands:
+The following environment variables are exported for shell commands:
 
-    $f   current file
-    $fs  selected file(s) separated with 'filesep'
-    $fx  current file or selected file(s) if any
-    $id  id number of the client
+    f
+    fs
+    fx
+    id
+    LF_LEVEL
+    OPENER
+    EDITOR
+    PAGER
+    SHELL
 
-For Windows, the above variables are exported as '%f%', '%fs', '%fx%' and
-'%id%' respectively.
+The following commands/keybindings are provided by default:
 
-The following variables are set to the corresponding values:
-
-    $LF_LEVEL  current nesting level
-
-The following default values are set to the environmental variables on unix
-when they are not set or empty:
-
-    $OPENER  open      # macos
-    $OPENER  xdg-open  # others
-    $EDITOR  vi
-    $PAGER   less
-    $SHELL   sh
-
-The following default values are set to the environmental variables on
-windows when they are not set or empty:
-
-    %OPENER%  start
-    %EDITOR%  notepad
-    %PAGER%   more
-    %SHELL%   cmd
+    unix                     windows
+    cmd open &$OPENER "$f"   cmd open &%OPENER% %f%
+    map e $$EDITOR "$f"      map e $%EDITOR% %f%
+    map i $$PAGER "$f"       map i !%PAGER% %f%
+    map w $$SHELL            map w $%SHELL%
 
 The following additional keybindings are provided by default:
 
@@ -182,12 +171,6 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
-
-The following keybindings to applications are provided by default:
-
-    map e $$EDITOR $f
-    map i $$PAGER $f
-    map w $$SHELL
 
 
 Configuration
@@ -668,11 +651,11 @@ this option is set to a large value that is bigger than the half of number
 of lines. A smaller offset can be used when the current file is close to the
 beginning or end of the list to show the maximum number of items.
 
-    shell          string    (default 'sh' for unix and 'cmd.exe' for windows)
+    shell          string    (default 'sh' for unix and 'cmd' for windows)
 
 Shell executable to use for shell commands. Shell commands are executed as
 'shell shellopts -c command -- arguments'. On windows, '/c' is used instead
-of '-c' which should work in 'cmd.exe' and 'powershell.exe'.
+of '-c' which should work in 'cmd' and 'powershell'.
 
     shellopts      []string  (default '')
 
@@ -714,6 +697,61 @@ Searching can wrap around the file list.
     wrapscroll     bool      (default off)
 
 Scrolling can wrap around the file list.
+
+
+Environment Variables
+
+The following variables are exported for shell commands: These are referred
+with a '$' prefix on POSIX shells (e.g. '$f'), between '%' characters on
+Windows cmd (e.g. '%f%'), and with a '$env:' prefix on Windows powershell
+(e.g. '$env:f').
+
+    f
+
+Current file selection as a full path.
+
+    fs
+
+Selected file(s) separated with the value of 'filesep' option as full
+path(s).
+
+    fx
+
+Selected file(s) (i.e. 'fs') if there are any selected files, otherwise
+current file selection (i.e. 'f').
+
+    id
+
+Id of the running client.
+
+    LF_LEVEL
+
+The value of this variable is set to the current nesting level when you run
+lf from a shell spawned inside lf. You can add the value of this variable to
+your shell prompt to make it clear that your shell runs inside lf. For
+example, with POSIX shells, you can use '[ -n "$LF_LEVEL" ] &&
+PS1="$PS1""(lf level: $LF_LEVEL) "' in your shell configuration file (e.g.
+'~/.bashrc').
+
+    OPENER
+
+If this variable is set in the environment, use the same value, otherwise
+set the value to 'start' in Windows, 'open' in MacOS, 'xdg-open' in others.
+
+    EDITOR
+
+If this variable is set in the environment, use the same value, otherwise
+set the value to 'vi' on unix, 'notepad' in Windows.
+
+    PAGER
+
+If this variable is set in the environment, use the same value, otherwise
+set the value to 'less' on unix, 'more' in Windows.
+
+    SHELL
+
+If this variable is set in the environment, use the same value, otherwise
+set the value to 'sh' on unix, 'cmd' in Windows.
 
 
 Prefixes
