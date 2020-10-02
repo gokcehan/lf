@@ -9,6 +9,7 @@ import (
 	"os"
 	"os/exec"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -104,15 +105,16 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading  bool      // directory is loading from disk
-	loadTime time.Time // current loading or last load time
-	ind      int       // index of current entry in files
-	pos      int       // position of current entry in ui
-	path     string    // full path of directory
-	files    []*file   // displayed files in directory including or excluding hidden ones
-	allFiles []*file   // all files in directory including hidden ones (same array as files)
-	sortType sortType  // sort method and options from last sort
-	noPerm   bool      // whether lf has no permission to open the directory
+	loading     bool      // directory is loading from disk
+	loadTime    time.Time // current loading or last load time
+	ind         int       // index of current entry in files
+	pos         int       // position of current entry in ui
+	path        string    // full path of directory
+	files       []*file   // displayed files in directory including or excluding hidden ones
+	allFiles    []*file   // all files in directory including hidden ones (same array as files)
+	sortType    sortType  // sort method and options from last sort
+	hiddenfiles []string  // hiddenfiles value from last sort
+	noPerm      bool      // whether lf has no permission to open the directory
 }
 
 func newDir(path string) *dir {
@@ -134,6 +136,7 @@ func newDir(path string) *dir {
 
 func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
+	dir.hiddenfiles = gOpts.hiddenfiles
 
 	dir.files = dir.allFiles
 
@@ -318,7 +321,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.sort()
 			nav.dirChan <- nd
 		}()
-	case dir.sortType != gOpts.sortType:
+	case dir.sortType != gOpts.sortType || !reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles):
 		dir.loading = true
 		go func() {
 			dir.sort()
