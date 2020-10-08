@@ -819,10 +819,29 @@ func (ui *ui) draw(nav *nav) {
 			ui.menuWin.y += 2
 		}
 
+		drawn := 0
+
 		ui.menuWin.printLine(ui.screen, 0, 0, st.Bold(true), lines[0])
+		drawn += len(lines[0])
+
 		for i, line := range lines[1:] {
 			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
+
+			// Handle tab-selected item
+			if ui.menuSelected >= 0 && (ui.menuInd >= drawn && ui.menuInd <= drawn+len(line)) {
+				index := ui.menuInd - drawn - i
+				offset := ui.menuOffset
+
+				ui.menuWin.print(ui.screen, 0, i+1, st, line[:index])
+				ui.menuWin.print(ui.screen, index, i+1, st.Background(tcell.ColorPurple), line[index:index+offset])
+				ui.menuWin.print(ui.screen, index+offset, i+1, st, line[index+offset:])
+
+				drawn += len(line)
+				continue
+			}
+
 			ui.menuWin.print(ui.screen, 0, i+1, st, line)
+			drawn += len(line)
 		}
 	}
 
