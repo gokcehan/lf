@@ -1131,8 +1131,6 @@ func listMatches(ui *ui, matches []string) error {
 		bytesWrote += 1
 	}
 
-	b.WriteString(fmt.Sprintf("%d %d %d\n", ui.menuSelected, ui.menuInd, ui.menuOffset))
-
 	ui.menuBuf = b
 	return nil
 }
