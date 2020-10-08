@@ -406,6 +406,11 @@ func update(app *app) {
 
 func normal(app *app) {
 	app.ui.menuBuf = nil
+
+	app.ui.menuSelected = -2
+	app.ui.menuInd = -1
+	app.ui.menuOffset = 0
+
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
@@ -1045,20 +1050,57 @@ func (e *callExpr) eval(app *app, args []string) {
 		default:
 			return
 		}
+
 		app.ui.draw(app.nav)
+
 		if len(matches) > 1 {
-			app.ui.menuBuf = listMatches(app.ui.screen, matches)
+			step := 1
+
+			// If args were given then
+			// we are in a backtab situation
+			if e.args != nil {
+				step = -1
+			}
+
+			// Check if the tab-selecttion was inited
+			if app.ui.menuSelected == -2 {
+				app.ui.menuSelected = -1
+			} else {
+				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+			}
+
+			if err := listMatches(app.ui, matches); err != nil {
+				app.ui.echoerrf("cmd-complete: %s", err)
+			}
 		} else {
 			app.ui.menuBuf = nil
+
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
 		}
 	case "cmd-enter":
+		// Check if there were temp runes in the
+		// command line
+		if app.ui.cmdTmp != nil {
+			app.ui.cmdAccLeft = app.ui.cmdTmp
+		}
+
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 {
 			return
 		}
+
 		app.ui.menuBuf = nil
+
+		app.ui.menuSelected = -2
+		app.ui.menuInd = -1
+		app.ui.menuOffset = 0
+
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
+		app.ui.cmdTmp = nil
+
 		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
@@ -1190,6 +1232,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		if app.cmdHistoryInd == 0 {
 			app.ui.menuBuf = nil
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
 			app.ui.cmdAccLeft = nil
 			app.ui.cmdAccRight = nil
 			app.ui.cmdPrefix = ":"
@@ -1200,6 +1245,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = []rune(cmd.value)
 		app.ui.cmdAccRight = nil
 		app.ui.menuBuf = nil
+		app.ui.menuSelected = -2
+		app.ui.menuInd = -1
+		app.ui.menuOffset = 0
 	case "cmd-history-prev":
 		if app.ui.cmdPrefix == ">" {
 			return
@@ -1216,6 +1264,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = []rune(cmd.value)
 		app.ui.cmdAccRight = nil
 		app.ui.menuBuf = nil
+		app.ui.menuSelected = -2
+		app.ui.menuInd = -1
+		app.ui.menuOffset = 0
 	case "cmd-delete":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
