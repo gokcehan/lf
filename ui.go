@@ -439,27 +439,31 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 }
 
 type ui struct {
-	screen      tcell.Screen
-	wins        []*win
-	promptWin   *win
-	msgWin      *win
-	menuWin     *win
-	msg         string
-	regPrev     *reg
-	dirPrev     *dir
-	exprChan    chan expr
-	keyChan     chan string
-	tevChan     chan tcell.Event
-	evChan      chan tcell.Event
-	menuBuf     *bytes.Buffer
-	cmdPrefix   string
-	cmdAccLeft  []rune
-	cmdAccRight []rune
-	cmdYankBuf  []rune
-	keyAcc      []rune
-	keyCount    []rune
-	styles      styleMap
-	icons       iconMap
+	screen       tcell.Screen
+	wins         []*win
+	promptWin    *win
+	msgWin       *win
+	menuWin      *win
+	msg          string
+	regPrev      *reg
+	dirPrev      *dir
+	exprChan     chan expr
+	keyChan      chan string
+	tevChan      chan tcell.Event
+	evChan       chan tcell.Event
+	menuBuf      *bytes.Buffer
+	menuSelected int
+	menuInd      int
+	menuOffset   int
+	cmdPrefix    string
+	cmdAccLeft   []rune
+	cmdAccRight  []rune
+	cmdYankBuf   []rune
+	cmdTmp       []rune
+	keyAcc       []rune
+	keyCount     []rune
+	styles       styleMap
+	icons        iconMap
 }
 
 func getWidths(wtot int) []int {
@@ -510,17 +514,20 @@ func newUI(screen tcell.Screen) *ui {
 	wtot, htot := screen.Size()
 
 	ui := &ui{
-		screen:    screen,
-		wins:      getWins(screen),
-		promptWin: newWin(wtot, 1, 0, 0),
-		msgWin:    newWin(wtot, 1, 0, htot-1),
-		menuWin:   newWin(wtot, 1, 0, htot-2),
-		exprChan:  make(chan expr, 1000),
-		keyChan:   make(chan string, 1000),
-		tevChan:   make(chan tcell.Event, 1000),
-		evChan:    make(chan tcell.Event, 1000),
-		styles:    parseStyles(),
-		icons:     parseIcons(),
+		screen:       screen,
+		wins:         getWins(screen),
+		promptWin:    newWin(wtot, 1, 0, 0),
+		msgWin:       newWin(wtot, 1, 0, htot-1),
+		menuWin:      newWin(wtot, 1, 0, htot-2),
+		exprChan:     make(chan expr, 1000),
+		keyChan:      make(chan string, 1000),
+		tevChan:      make(chan tcell.Event, 1000),
+		evChan:       make(chan tcell.Event, 1000),
+		styles:       parseStyles(),
+		icons:        parseIcons(),
+		menuSelected: -2,
+		menuInd:      -1,
+		menuOffset:   0,
 	}
 
 	go ui.pollEvents()
