@@ -1067,10 +1067,10 @@ func (ui *ui) resume() {
 	ui.renew()
 }
 
-func listMatches(screen tcell.Screen, matches []string) *bytes.Buffer {
+func listMatches(ui *ui, matches []string) error {
 	b := new(bytes.Buffer)
 
-	wtot, _ := screen.Size()
+	wtot, _ := ui.screen.Size()
 
 	wcol := 0
 	for _, m := range matches {
@@ -1080,13 +1080,40 @@ func listMatches(screen tcell.Screen, matches []string) *bytes.Buffer {
 
 	ncol := wtot / wcol
 
-	b.WriteString("possible matches\n")
-	for i := 0; i < len(matches); i++ {
-		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
-			b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
-		}
-		b.WriteByte('\n')
+	bytesWrote := 0
+
+	if n, err := b.WriteString("possible matches\n"); err != nil {
+		return err
+	} else {
+		bytesWrote += n
 	}
 
-	return b
+	for i := 0; i < len(matches); i++ {
+		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
+			n, err := b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
+			if err != nil {
+				return err
+			}
+
+			// Handle tab-selected match
+			if ui.menuSelected == i {
+				ui.menuInd = bytesWrote - 1
+				ui.menuOffset = len(matches[i])
+				ui.cmdTmp = []rune(matches[i])
+			}
+
+			bytesWrote += n
+		}
+
+		if err := b.WriteByte('\n'); err != nil {
+			return err
+		}
+
+		bytesWrote += 1
+	}
+
+	b.WriteString(fmt.Sprintf("%d %d %d\n", ui.menuSelected, ui.menuInd, ui.menuOffset))
+
+	ui.menuBuf = b
+	return nil
 }
