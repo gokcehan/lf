@@ -168,6 +168,7 @@ func init() {
 	gOpts.cmdkeys["<space>"] = &callExpr{"cmd-insert", []string{" "}, 1}
 	gOpts.cmdkeys["<esc>"] = &callExpr{"cmd-escape", nil, 1}
 	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-complete", nil, 1}
+	gOpts.cmdkeys["<backtab>"] = &callExpr{"cmd-complete", []string{""}, 1}
 	gOpts.cmdkeys["<enter>"] = &callExpr{"cmd-enter", nil, 1}
 	gOpts.cmdkeys["<c-j>"] = &callExpr{"cmd-enter", nil, 1}
 	gOpts.cmdkeys["<c-n>"] = &callExpr{"cmd-history-next", nil, 1}
