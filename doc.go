@@ -71,6 +71,7 @@ The following command line commands are provided by lf:
 
     cmd-escape               (default '<esc>')
     cmd-complete             (default '<tab>')
+    cmd-complete             (default '<backtab>')
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
@@ -400,7 +401,11 @@ Quit command line mode and return to normal mode.
 
     cmd-complete             (default '<tab>')
 
-Autocomplete the current word.
+Autocomplete the current word. Press it again to cycle completition options.
+
+    cmd-complete             (default '<backtab>')
+
+Autocomplete the current word. Cycle backwards.
 
     cmd-enter                (default '<c-j>' and '<enter>')
 
