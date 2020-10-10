@@ -174,8 +174,8 @@ func init() {
 	gOpts.cmdkeys["<c-p>"] = &callExpr{"cmd-history-prev", nil, 1}
 	gOpts.cmdkeys["<delete>"] = &callExpr{"cmd-delete", nil, 1}
 	gOpts.cmdkeys["<c-d>"] = &callExpr{"cmd-delete", nil, 1}
-	gOpts.cmdkeys["<bs>"] = &callExpr{"cmd-delete-back", nil, 1}
-	gOpts.cmdkeys["<bs2>"] = &callExpr{"cmd-delete-back", nil, 1}
+	gOpts.cmdkeys["<backspace>"] = &callExpr{"cmd-delete-back", nil, 1}
+	gOpts.cmdkeys["<backspace2>"] = &callExpr{"cmd-delete-back", nil, 1}
 	gOpts.cmdkeys["<left>"] = &callExpr{"cmd-left", nil, 1}
 	gOpts.cmdkeys["<c-b>"] = &callExpr{"cmd-left", nil, 1}
 	gOpts.cmdkeys["<right>"] = &callExpr{"cmd-right", nil, 1}
