@@ -413,6 +413,7 @@ func normal(app *app) {
 
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
+	app.ui.cmdTmp = nil
 	app.ui.cmdPrefix = ""
 }
 
@@ -583,6 +584,7 @@ func insert(app *app, arg string) {
 		}
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		app.ui.cmdTmp = app.ui.cmdAccLeft
 	}
 }
 
@@ -1024,6 +1026,17 @@ func (e *callExpr) eval(app *app, args []string) {
 		if len(e.args) == 0 {
 			return
 		}
+
+		// Reset the completition menu as in bash/vim
+		// and update the pertinent variables
+		if app.ui.menuBuf != nil {
+			app.ui.cmdAccLeft = app.ui.cmdTmp
+			app.ui.menuBuf = nil
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
+		}
+
 		insert(app, e.args[0])
 	case "cmd-escape":
 		if app.ui.cmdPrefix == ">" {
@@ -1128,7 +1141,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-enter":
 		// Check if there were temp runes in the
-		// command line
+		// command line, if so append the tmp command value
 		if app.ui.cmdTmp != nil {
 			app.ui.cmdAccLeft = app.ui.cmdTmp
 		}
@@ -1315,12 +1328,30 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menuInd = -1
 		app.ui.menuOffset = 0
 	case "cmd-delete":
+		// Reset menu
+		if app.ui.menuBuf != nil {
+			app.ui.cmdAccLeft = app.ui.cmdTmp
+			app.ui.menuBuf = nil
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
+		}
+
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
 		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
 		update(app)
 	case "cmd-delete-back":
+		// Reset menu
+		if app.ui.menuBuf != nil {
+			app.ui.cmdAccLeft = app.ui.cmdTmp
+			app.ui.menuBuf = nil
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
+		}
+
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
 		}
