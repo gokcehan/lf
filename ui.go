@@ -1113,7 +1113,7 @@ func listMatches(ui *ui, matches []string, isMenu bool) error {
 		bytesWrote += n
 	}
 
-	for i := 0; i < len(matches); i++ {
+	for i := 0; i < len(matches); {
 		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
 			n, err := b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
 			if err != nil {
