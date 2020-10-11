@@ -1129,14 +1129,17 @@ func listMatches(ui *ui, matches []string, isMenu bool) error {
 
 			// Handle menu tab match only if wanted
 			if isMenu && ui.menuSelected == i {
-				if len(matches[i]) == 0 {
-					ui.menuSelected += 1
-					continue
-				}
-
 				ui.menuInd = bytesWrote - 1
 				ui.menuOffset = len(matches[i])
-				ui.cmdTmp = []rune(matches[i])
+
+				toks := tokenize(string(ui.cmdAccLeft))
+				last := toks[len(toks)-1]
+
+				if strings.Contains(matches[i], last) {
+					ui.cmdTmp = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(matches[i])...)
+				} else {
+					ui.cmdTmp = append(ui.cmdAccLeft, []rune(matches[i])...)
+				}
 			}
 
 			bytesWrote += n
