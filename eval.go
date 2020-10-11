@@ -1053,14 +1053,26 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.draw(app.nav)
 
+		if err := listMatches(app.ui, matches, false); err != nil {
+			app.ui.echoerrf("cmd-complete: %s", err)
+		}
+	case "cmd-menu-complete":
+		var matches []string
+		switch app.ui.cmdPrefix {
+		case ":":
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdAccLeft)
+		case "/", "?":
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdAccLeft)
+		case "$", "%", "!", "&":
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdAccLeft)
+		default:
+			return
+		}
+
+		app.ui.draw(app.nav)
+
 		if len(matches) > 1 {
 			step := 1
-
-			// If args were given then
-			// we are in a backtab situation
-			if e.args != nil {
-				step = -1
-			}
 
 			// Check if the tab-selecttion was inited
 			if app.ui.menuSelected == -2 {
@@ -1069,8 +1081,43 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
 			}
 
-			if err := listMatches(app.ui, matches); err != nil {
-				app.ui.echoerrf("cmd-complete: %s", err)
+			if err := listMatches(app.ui, matches, true); err != nil {
+				app.ui.echoerrf("cmd-menu-complete: %s", err)
+			}
+		} else {
+			app.ui.menuBuf = nil
+
+			app.ui.menuSelected = -2
+			app.ui.menuInd = -1
+			app.ui.menuOffset = 0
+		}
+	case "cmd-menu-complete-back":
+		var matches []string
+		switch app.ui.cmdPrefix {
+		case ":":
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdAccLeft)
+		case "/", "?":
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdAccLeft)
+		case "$", "%", "!", "&":
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdAccLeft)
+		default:
+			return
+		}
+
+		app.ui.draw(app.nav)
+
+		if len(matches) > 1 {
+			step := -1
+
+			// Check if the tab-selecttion was inited
+			if app.ui.menuSelected == -2 {
+				app.ui.menuSelected = -1
+			} else {
+				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+			}
+
+			if err := listMatches(app.ui, matches, true); err != nil {
+				app.ui.echoerrf("cmd-menu-complete-back: %s", err)
 			}
 		} else {
 			app.ui.menuBuf = nil

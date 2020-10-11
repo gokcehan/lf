@@ -836,6 +836,12 @@ func (ui *ui) draw(nav *nav) {
 				ui.menuWin.print(ui.screen, index, i+1, st.Background(tcell.ColorPurple), line[index:index+offset])
 				ui.menuWin.print(ui.screen, index+offset, i+1, st, line[index+offset:])
 
+				// ui.cmdAccLeft = ui.cmdTmp
+				ui.msgWin.printLine(ui.screen, 0, 0, st, ui.cmdPrefix)
+				ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, string(ui.cmdTmp))
+				ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+runeSliceWidth(ui.cmdTmp), 0, st, string(ui.cmdAccRight))
+				ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdTmp), ui.msgWin.y)
+
 				drawn += len(line)
 				continue
 			}
@@ -1086,7 +1092,7 @@ func (ui *ui) resume() {
 	ui.renew()
 }
 
-func listMatches(ui *ui, matches []string) error {
+func listMatches(ui *ui, matches []string, isMenu bool) error {
 	b := new(bytes.Buffer)
 
 	wtot, _ := ui.screen.Size()
@@ -1114,8 +1120,13 @@ func listMatches(ui *ui, matches []string) error {
 				return err
 			}
 
-			// Handle tab-selected match
-			if ui.menuSelected == i {
+			// Handle menu tab match only if wanted
+			if isMenu && ui.menuSelected == i {
+				if len(matches[i]) == 0 {
+					ui.menuSelected += 1
+					continue
+				}
+
 				ui.menuInd = bytesWrote - 1
 				ui.menuOffset = len(matches[i])
 				ui.cmdTmp = []rune(matches[i])
