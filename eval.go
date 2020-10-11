@@ -1064,7 +1064,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
+		app.ui.cmdTmp = app.ui.cmdAccLeft
 		app.ui.draw(app.nav)
+
+		if len(matches) <= 1 {
+			app.ui.menuBuf = nil
+			return
+		}
 
 		if err := listMatches(app.ui, matches, false); err != nil {
 			app.ui.echoerrf("cmd-complete: %s", err)
