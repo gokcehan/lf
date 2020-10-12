@@ -833,7 +833,7 @@ func (ui *ui) draw(nav *nav) {
 				offset := ui.menuOffset
 
 				ui.menuWin.print(ui.screen, 0, i+1, st, line[:index])
-				ui.menuWin.print(ui.screen, index, i+1, st.Background(tcell.ColorPurple), line[index:index+offset])
+				ui.menuWin.print(ui.screen, index, i+1, st.Reverse(true), line[index:index+offset])
 				ui.menuWin.print(ui.screen, index+offset, i+1, st, line[index+offset:])
 
 				drawn += len(line)
