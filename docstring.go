@@ -85,7 +85,7 @@ The following command line commands are provided by lf:
     cmd-home                 (default '<c-a>' and '<home>')
     cmd-end                  (default '<c-e>' and '<end>')
     cmd-delete               (default '<c-d>' and '<delete>')
-    cmd-delete-back          (default '<bs>' and '<bs2>')
+    cmd-delete-back          (default '<backspace>' and '<backspace2>')
     cmd-delete-home          (default '<c-u>')
     cmd-delete-end           (default '<c-k>')
     cmd-delete-unix-word     (default '<c-w>')
@@ -460,7 +460,7 @@ Move the cursor to the left/right.
 Move the cursor to the beginning/end of line.
 
     cmd-delete               (default '<c-d>' and '<delete>')
-    cmd-delete-back          (default '<bs>' and '<bs2>')
+    cmd-delete-back          (default '<backspace>' and '<backspace2>')
 
 Delete the next character in forward/backward direction.
 
