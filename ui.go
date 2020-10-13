@@ -453,8 +453,6 @@ type ui struct {
 	evChan       chan tcell.Event
 	menuBuf      *bytes.Buffer
 	menuSelected int
-	menuInd      int
-	menuOffset   int
 	cmdPrefix    string
 	cmdAccLeft   []rune
 	cmdAccRight  []rune
@@ -526,8 +524,6 @@ func newUI(screen tcell.Screen) *ui {
 		styles:       parseStyles(),
 		icons:        parseIcons(),
 		menuSelected: -2,
-		menuInd:      -1,
-		menuOffset:   0,
 	}
 
 	go ui.pollEvents()
@@ -819,40 +815,21 @@ func (ui *ui) draw(nav *nav) {
 			ui.menuWin.y += 2
 		}
 
-		drawn := 0
-
 		ui.menuWin.printLine(ui.screen, 0, 0, st.Bold(true), lines[0])
-		drawn += len(lines[0])
 
 		for i, line := range lines[1:] {
 			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
-
-			// Handle tab-selected item
-			if ui.menuSelected >= 0 && (ui.menuInd >= drawn && ui.menuInd <= drawn+len(line)) {
-				index := ui.menuInd - drawn - i
-				offset := ui.menuOffset
-
-				ui.menuWin.print(ui.screen, 0, i+1, st, line[:index])
-				ui.menuWin.print(ui.screen, index, i+1, st.Reverse(true), line[index:index+offset])
-				ui.menuWin.print(ui.screen, index+offset, i+1, st, line[index+offset:])
-
-				drawn += len(line)
-				continue
-			}
-
 			ui.menuWin.print(ui.screen, 0, i+1, st, line)
-			drawn += len(line)
 		}
 
 		// Append the current menu selection item to the actual left command value
-		// cmdValue := string(ui.cmdAccLeft) + "(" + string(ui.cmdTmp) + ")"
-		cmdValue := string(ui.cmdTmp)
+		cmdValue := string(ui.cmdAccLeft)
 		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, cmdValue)
 
-		leftLen := len(ui.cmdPrefix) + runeSliceWidth(ui.cmdTmp)
+		leftLen := len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
 		ui.msgWin.print(ui.screen, leftLen, 0, st, string(ui.cmdAccRight))
 
-		cursorX := ui.msgWin.x + len(ui.cmdPrefix) + runeSliceWidth(ui.cmdTmp)
+		cursorX := ui.msgWin.x + len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
 		cursorY := ui.msgWin.y
 
 		ui.screen.ShowCursor(cursorX, cursorY)
@@ -1099,7 +1076,40 @@ func (ui *ui) resume() {
 	ui.renew()
 }
 
-func listMatches(ui *ui, matches []string, isMenu bool) error {
+func listMatches(screen tcell.Screen, matches []string) (*bytes.Buffer, error) {
+	b := new(bytes.Buffer)
+
+	wtot, _ := screen.Size()
+	wcol := 0
+
+	for _, m := range matches {
+		wcol = max(wcol, len(m))
+	}
+
+	wcol += gOpts.tabstop - wcol%gOpts.tabstop
+	ncol := wtot / wcol
+
+	if _, err := b.WriteString("possible matches\n"); err != nil {
+		return b, err
+	}
+
+	for i := 0; i < len(matches); {
+		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
+			target := matches[i]
+			if _, err := b.WriteString(fmt.Sprintf("%s%*s", target, wcol-len(target), "")); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := b.WriteByte('\n'); err != nil {
+			return nil, err
+		}
+	}
+
+	return b, nil
+}
+
+func listMatchesMenu(ui *ui, matches []string) error {
 	b := new(bytes.Buffer)
 
 	wtot, _ := ui.screen.Size()
@@ -1122,24 +1132,27 @@ func listMatches(ui *ui, matches []string, isMenu bool) error {
 
 	for i := 0; i < len(matches); {
 		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
-			n, err := b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
-			if err != nil {
-				return err
-			}
+			target := matches[i]
 
 			// Handle menu tab match only if wanted
-			if isMenu && ui.menuSelected == i {
-				ui.menuInd = bytesWrote - 1
-				ui.menuOffset = len(matches[i])
-
+			if ui.menuSelected == i {
 				toks := tokenize(string(ui.cmdAccLeft))
 				last := toks[len(toks)-1]
 
-				if strings.Contains(matches[i], last) {
-					ui.cmdTmp = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(matches[i])...)
+				if strings.Contains(target, last) {
+					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
 				} else {
-					ui.cmdTmp = append(ui.cmdAccLeft, []rune(matches[i])...)
+					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
 				}
+
+				target = fmt.Sprintf("\033[7m%s\033[0m%*s", target, wcol-len(target), "")
+			} else {
+				target = fmt.Sprintf("%s%*s", target, wcol-len(target), "")
+			}
+
+			n, err := b.WriteString(target)
+			if err != nil {
+				return err
 			}
 
 			bytesWrote += n
