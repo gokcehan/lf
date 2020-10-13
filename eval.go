@@ -585,7 +585,6 @@ func insert(app *app, arg string) {
 		}
 	default:
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
-		app.ui.cmdTmp = app.ui.cmdAccLeft
 	}
 }
 
