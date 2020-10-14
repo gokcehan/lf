@@ -439,27 +439,29 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 }
 
 type ui struct {
-	screen      tcell.Screen
-	wins        []*win
-	promptWin   *win
-	msgWin      *win
-	menuWin     *win
-	msg         string
-	regPrev     *reg
-	dirPrev     *dir
-	exprChan    chan expr
-	keyChan     chan string
-	tevChan     chan tcell.Event
-	evChan      chan tcell.Event
-	menuBuf     *bytes.Buffer
-	cmdPrefix   string
-	cmdAccLeft  []rune
-	cmdAccRight []rune
-	cmdYankBuf  []rune
-	keyAcc      []rune
-	keyCount    []rune
-	styles      styleMap
-	icons       iconMap
+	screen       tcell.Screen
+	wins         []*win
+	promptWin    *win
+	msgWin       *win
+	menuWin      *win
+	msg          string
+	regPrev      *reg
+	dirPrev      *dir
+	exprChan     chan expr
+	keyChan      chan string
+	tevChan      chan tcell.Event
+	evChan       chan tcell.Event
+	menuBuf      *bytes.Buffer
+	menuSelected int
+	cmdPrefix    string
+	cmdAccLeft   []rune
+	cmdAccRight  []rune
+	cmdYankBuf   []rune
+	cmdTmp       []rune
+	keyAcc       []rune
+	keyCount     []rune
+	styles       styleMap
+	icons        iconMap
 }
 
 func getWidths(wtot int) []int {
@@ -510,17 +512,18 @@ func newUI(screen tcell.Screen) *ui {
 	wtot, htot := screen.Size()
 
 	ui := &ui{
-		screen:    screen,
-		wins:      getWins(screen),
-		promptWin: newWin(wtot, 1, 0, 0),
-		msgWin:    newWin(wtot, 1, 0, htot-1),
-		menuWin:   newWin(wtot, 1, 0, htot-2),
-		exprChan:  make(chan expr, 1000),
-		keyChan:   make(chan string, 1000),
-		tevChan:   make(chan tcell.Event, 1000),
-		evChan:    make(chan tcell.Event, 1000),
-		styles:    parseStyles(),
-		icons:     parseIcons(),
+		screen:       screen,
+		wins:         getWins(screen),
+		promptWin:    newWin(wtot, 1, 0, 0),
+		msgWin:       newWin(wtot, 1, 0, htot-1),
+		menuWin:      newWin(wtot, 1, 0, htot-2),
+		exprChan:     make(chan expr, 1000),
+		keyChan:      make(chan string, 1000),
+		tevChan:      make(chan tcell.Event, 1000),
+		evChan:       make(chan tcell.Event, 1000),
+		styles:       parseStyles(),
+		icons:        parseIcons(),
+		menuSelected: -2,
 	}
 
 	go ui.pollEvents()
@@ -813,10 +816,23 @@ func (ui *ui) draw(nav *nav) {
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, 0, st.Bold(true), lines[0])
+
 		for i, line := range lines[1:] {
 			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
 			ui.menuWin.print(ui.screen, 0, i+1, st, line)
 		}
+
+		// Append the current menu selection item to the actual left command value
+		cmdValue := string(ui.cmdAccLeft)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, cmdValue)
+
+		leftLen := len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
+		ui.msgWin.print(ui.screen, leftLen, 0, st, string(ui.cmdAccRight))
+
+		cursorX := ui.msgWin.x + len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
+		cursorY := ui.msgWin.y
+
+		ui.screen.ShowCursor(cursorX, cursorY)
 	}
 
 	ui.screen.Show()
@@ -1060,10 +1076,43 @@ func (ui *ui) resume() {
 	ui.renew()
 }
 
-func listMatches(screen tcell.Screen, matches []string) *bytes.Buffer {
+func listMatches(screen tcell.Screen, matches []string) (*bytes.Buffer, error) {
 	b := new(bytes.Buffer)
 
 	wtot, _ := screen.Size()
+	wcol := 0
+
+	for _, m := range matches {
+		wcol = max(wcol, len(m))
+	}
+
+	wcol += gOpts.tabstop - wcol%gOpts.tabstop
+	ncol := wtot / wcol
+
+	if _, err := b.WriteString("possible matches\n"); err != nil {
+		return b, err
+	}
+
+	for i := 0; i < len(matches); {
+		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
+			target := matches[i]
+			if _, err := b.WriteString(fmt.Sprintf("%s%*s", target, wcol-len(target), "")); err != nil {
+				return nil, err
+			}
+		}
+
+		if err := b.WriteByte('\n'); err != nil {
+			return nil, err
+		}
+	}
+
+	return b, nil
+}
+
+func listMatchesMenu(ui *ui, matches []string) error {
+	b := new(bytes.Buffer)
+
+	wtot, _ := ui.screen.Size()
 
 	wcol := 0
 	for _, m := range matches {
@@ -1073,13 +1122,49 @@ func listMatches(screen tcell.Screen, matches []string) *bytes.Buffer {
 
 	ncol := wtot / wcol
 
-	b.WriteString("possible matches\n")
-	for i := 0; i < len(matches); i++ {
-		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
-			b.WriteString(fmt.Sprintf("%s%*s", matches[i], wcol-len(matches[i]), ""))
-		}
-		b.WriteByte('\n')
+	bytesWrote := 0
+
+	if n, err := b.WriteString("possible matches\n"); err != nil {
+		return err
+	} else {
+		bytesWrote += n
 	}
 
-	return b
+	for i := 0; i < len(matches); {
+		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
+			target := matches[i]
+
+			// Handle menu tab match only if wanted
+			if ui.menuSelected == i {
+				toks := tokenize(string(ui.cmdAccLeft))
+				last := toks[len(toks)-1]
+
+				if strings.Contains(target, last) {
+					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
+				} else {
+					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
+				}
+
+				target = fmt.Sprintf("\033[7m%s\033[0m%*s", target, wcol-len(target), "")
+			} else {
+				target = fmt.Sprintf("%s%*s", target, wcol-len(target), "")
+			}
+
+			n, err := b.WriteString(target)
+			if err != nil {
+				return err
+			}
+
+			bytesWrote += n
+		}
+
+		if err := b.WriteByte('\n'); err != nil {
+			return err
+		}
+
+		bytesWrote += 1
+	}
+
+	ui.menuBuf = b
+	return nil
 }
