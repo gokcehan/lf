@@ -821,18 +821,6 @@ func (ui *ui) draw(nav *nav) {
 			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
 			ui.menuWin.print(ui.screen, 0, i+1, st, line)
 		}
-
-		// Append the current menu selection item to the actual left command value
-		cmdValue := string(ui.cmdAccLeft)
-		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, cmdValue)
-
-		leftLen := len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
-		ui.msgWin.print(ui.screen, leftLen, 0, st, string(ui.cmdAccRight))
-
-		cursorX := ui.msgWin.x + len(ui.cmdPrefix) + runeSliceWidth(ui.cmdAccLeft)
-		cursorY := ui.msgWin.y
-
-		ui.screen.ShowCursor(cursorX, cursorY)
 	}
 
 	ui.screen.Show()
