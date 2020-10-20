@@ -40,23 +40,28 @@ func newApp(screen tcell.Screen) *app {
 
 	quitChan := make(chan bool, 1)
 
-	osChan := make(chan os.Signal, 1)
-	signal.Notify(osChan, os.Interrupt, syscall.SIGHUP, syscall.SIGTERM)
-	go func() {
-		<-osChan
-		nav.copyTotalChan <- -nav.copyTotal
-		nav.moveTotalChan <- -nav.moveTotal
-		nav.deleteTotalChan <- -nav.deleteTotal
-		quitChan <- true
-		return
-	}()
-
-	return &app{
+	app := &app{
 		ui:       ui,
 		nav:      nav,
 		ticker:   new(time.Ticker),
 		quitChan: quitChan,
 	}
+
+	sigChan := make(chan os.Signal, 1)
+	signal.Notify(sigChan, os.Interrupt, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
+	go func() {
+		switch <-sigChan {
+		case os.Interrupt:
+			return
+		case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM:
+			app.writeHistory()
+			os.Remove(gLogPath)
+			os.Exit(3)
+			return
+		}
+	}()
+
+	return app
 }
 
 func (app *app) readFile(path string) {
