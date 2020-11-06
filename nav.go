@@ -307,7 +307,15 @@ type nav struct {
 func (nav *nav) loadDir(path string) *dir {
 	d, ok := nav.dirCache[path]
 	if !ok {
-		d := &dir{loading: true, loadTime: time.Now(), path: path, sortType: gOpts.sortType, hiddenfiles: gOpts.hiddenfiles}
+		d := &dir{
+			loading:     true,
+			loadTime:    time.Now(),
+			path:        path,
+			sortType:    gOpts.sortType,
+			hiddenfiles: gOpts.hiddenfiles,
+			ignorecase:  gOpts.ignorecase,
+			ignoredia:   gOpts.ignoredia,
+		}
 		nav.dirCache[path] = d
 		go func() {
 			d := newDir(path)
