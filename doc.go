@@ -552,11 +552,11 @@ This option does not have any effect on windows.
 
     ignorecase     bool      (default on)
 
-Ignore case in search patterns.
+Ignore case in sorting and search patterns.
 
     ignoredia      bool      (default off)
 
-Ignore diacritics in search patterns.
+Ignore diacritics in sorting and search patterns.
 
     incsearch      bool      (default off)
 

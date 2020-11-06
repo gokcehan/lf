@@ -83,6 +83,8 @@ The following command line commands are provided by lf:
 .EX
     cmd-escape               (default '<esc>')
     cmd-complete             (default '<tab>')
+    cmd-menu-complete
+    cmd-menu-complete-back
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
@@ -492,6 +494,18 @@ Quit command line mode and return to normal mode.
 Autocomplete the current word.
 .PP
 .EX
+    cmd-menu-complete
+.EE
+.PP
+Autocomplete the current word, then you can press the binded key/s again to cycle completition options.
+.PP
+.EX
+    cmd-menu-complete-back
+.EE
+.PP
+Autocomplete the current word, then you can press the binded key/s again to cycle completition options backwards.
+.PP
+.EX
     cmd-enter                (default '<c-j>' and '<enter>')
 .EE
 .PP
@@ -656,13 +670,13 @@ Sets 'IFS' variable in shell commands. It works by adding the assignment to the 
     ignorecase     bool      (default on)
 .EE
 .PP
-Ignore case in search patterns.
+Ignore case in sorting and search patterns.
 .PP
 .EX
     ignoredia      bool      (default off)
 .EE
 .PP
-Ignore diacritics in search patterns.
+Ignore diacritics in sorting and search patterns.
 .PP
 .EX
     incsearch      bool      (default off)

@@ -134,6 +134,18 @@ func newDir(path string) *dir {
 	}
 }
 
+func normalize(s1, s2 string) (string, string) {
+	if gOpts.ignorecase {
+		s1 = strings.ToLower(s1)
+		s2 = strings.ToLower(s2)
+	}
+	if gOpts.ignoredia {
+		s1 = removeDiacritics(s1)
+		s2 = removeDiacritics(s2)
+	}
+	return s1, s2
+}
+
 func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
 	dir.hiddenfiles = gOpts.hiddenfiles
@@ -143,11 +155,13 @@ func (dir *dir) sort() {
 	switch gOpts.sortType.method {
 	case naturalSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return naturalLess(strings.ToLower(dir.files[i].Name()), strings.ToLower(dir.files[j].Name()))
+			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name())
+			return naturalLess(s1, s2)
 		})
 	case nameSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return strings.ToLower(dir.files[i].Name()) < strings.ToLower(dir.files[j].Name())
+			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name())
+			return s1 < s2
 		})
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
@@ -167,23 +181,22 @@ func (dir *dir) sort() {
 		})
 	case extSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			leftExt := strings.ToLower(dir.files[i].ext)
-			rightExt := strings.ToLower(dir.files[j].ext)
+			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext)
 
 			// if the extension could not be determined (directories, files without)
 			// use a zero byte so that these files can be ranked higher
-			if leftExt == "" {
-				leftExt = "\x00"
+			if ext1 == "" {
+				ext1 = "\x00"
 			}
-			if rightExt == "" {
-				rightExt = "\x00"
+			if ext2 == "" {
+				ext2 = "\x00"
 			}
+
+			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name())
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
-			left := leftExt + strings.ToLower(dir.files[i].Name())
-			right := rightExt + strings.ToLower(dir.files[j].Name())
-			return left < right
+			return (ext1 + name1) < (ext2 + name2)
 		})
 	}
 

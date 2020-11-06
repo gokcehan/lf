@@ -428,13 +428,13 @@ Autocomplete the current word.
 
     cmd-menu-complete
 
-Autocomplete the current word, then you can press the binded key/s
-again to cycle completition options.
+Autocomplete the current word, then you can press the binded key/s again to
+cycle completition options.
 
     cmd-menu-complete-back
 
-Autocomplete the current word, then you can press the binded key/s
-again to cycle completition options backwards.
+Autocomplete the current word, then you can press the binded key/s again to
+cycle completition options backwards.
 
     cmd-enter                (default '<c-j>' and '<enter>')
 
@@ -582,11 +582,11 @@ have any effect on windows.
 
     ignorecase     bool      (default on)
 
-Ignore case in search patterns.
+Ignore case in sorting and search patterns.
 
     ignoredia      bool      (default off)
 
-Ignore diacritics in search patterns.
+Ignore diacritics in sorting and search patterns.
 
     incsearch      bool      (default off)
 
