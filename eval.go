@@ -88,16 +88,28 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.icons = !gOpts.icons
 	case "ignorecase":
 		gOpts.ignorecase = true
+		app.nav.sort()
+		app.ui.sort()
 	case "noignorecase":
 		gOpts.ignorecase = false
+		app.nav.sort()
+		app.ui.sort()
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
+		app.nav.sort()
+		app.ui.sort()
 	case "ignoredia":
 		gOpts.ignoredia = true
+		app.nav.sort()
+		app.ui.sort()
 	case "noignoredia":
 		gOpts.ignoredia = false
+		app.nav.sort()
+		app.ui.sort()
 	case "ignoredia!":
 		gOpts.ignoredia = !gOpts.ignoredia
+		app.nav.sort()
+		app.ui.sort()
 	case "incsearch":
 		gOpts.incsearch = true
 	case "noincsearch":

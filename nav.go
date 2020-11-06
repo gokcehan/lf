@@ -114,6 +114,8 @@ type dir struct {
 	allFiles    []*file   // all files in directory including hidden ones (same array as files)
 	sortType    sortType  // sort method and options from last sort
 	hiddenfiles []string  // hiddenfiles value from last sort
+	ignorecase  bool      // ignorecase value from last sort
+	ignoredia   bool      // ignoredia value from last sort
 	noPerm      bool      // whether lf has no permission to open the directory
 }
 
@@ -149,6 +151,8 @@ func normalize(s1, s2 string) (string, string) {
 func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
 	dir.hiddenfiles = gOpts.hiddenfiles
+	dir.ignorecase = gOpts.ignorecase
+	dir.ignoredia = gOpts.ignoredia
 
 	dir.files = dir.allFiles
 
@@ -342,7 +346,10 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.sort()
 			nav.dirChan <- nd
 		}()
-	case dir.sortType != gOpts.sortType || !reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles):
+	case dir.sortType != gOpts.sortType ||
+		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
+		dir.ignorecase != gOpts.ignorecase ||
+		dir.ignoredia != gOpts.ignoredia:
 		dir.loading = true
 		go func() {
 			dir.sort()
