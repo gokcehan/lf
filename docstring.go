@@ -114,7 +114,7 @@ The following options can be used to customize the behavior of lf:
     icons          bool      (default off)
     ifs            string    (default '')
     ignorecase     bool      (default on)
-    ignoredia      bool      (default off)
+    ignoredia      bool      (default on)
     incsearch      bool      (default off)
     info           []string  (default '')
     number         bool      (default off)
@@ -584,7 +584,7 @@ have any effect on windows.
 
 Ignore case in sorting and search patterns.
 
-    ignoredia      bool      (default off)
+    ignoredia      bool      (default on)
 
 Ignore diacritics in sorting and search patterns.
 
@@ -665,9 +665,10 @@ beginning or end of the list to show the maximum number of items.
 
     shell          string    (default 'sh' for unix and 'cmd' for windows)
 
-Shell executable to use for shell commands. Shell commands are executed as
-'shell shellopts -c command -- arguments'. On windows, '/c' is used instead
-of '-c' which should work in 'cmd' and 'powershell'.
+Shell executable to use for shell commands. On unix, a POSIX compatible
+shell is required. Shell commands are executed as 'shell shellopts -c
+command -- arguments'. On windows, '/c' is used instead of '-c' which should
+work in 'cmd' and 'powershell'.
 
     shellopts      []string  (default '')
 
