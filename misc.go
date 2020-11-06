@@ -215,7 +215,7 @@ func max(a, b int) int {
 }
 
 func mod(a, b int) int {
-    return (a % b + b) % b
+	return (a%b + b) % b
 }
 
 // We don't need no generic code
