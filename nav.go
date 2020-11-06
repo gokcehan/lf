@@ -327,8 +327,16 @@ func (nav *nav) checkDir(dir *dir) {
 
 	switch {
 	case s.ModTime().After(dir.loadTime):
+		now := time.Now()
+
+		// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
+		// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
+		if s.ModTime().After(now) {
+			return
+		}
+
 		dir.loading = true
-		dir.loadTime = time.Now()
+		dir.loadTime = now
 		go func() {
 			nd := newDir(dir.path)
 			nd.sort()
