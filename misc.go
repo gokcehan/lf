@@ -166,32 +166,45 @@ func humanize(size int64) string {
 	return ""
 }
 
-// This regexp is used to partition a given string as numbers and non-numbers.
-// For instance, if your input is 'foo123bar456' you get a slice of 'foo',
-// '123', 'bar', and '456'. This is useful for natural sorting which takes into
-// account values of numbers within strings.
-var rePart = regexp.MustCompile(`\d+|\D+`)
-
+// This function compares two strings for natural sorting which takes into
+// account values of numbers in strings. For example, '2' is less than '10',
+// and similarly 'foo2bar' is less than 'foo10bar', but 'bar2bar' is greater
+// than 'foo10bar'.
 func naturalLess(s1, s2 string) bool {
-	parts1 := rePart.FindAllString(s1, -1)
-	parts2 := rePart.FindAllString(s2, -1)
+	lo1, lo2, hi1, hi2 := 0, 0, 0, 0
+	for {
+		if hi1 >= len(s1) {
+			return hi2 != len(s2)
+		}
 
-	for i := 0; i < len(parts1) && i < len(parts2); i++ {
-		if parts1[i] == parts2[i] {
+		if hi2 >= len(s2) {
+			return false
+		}
+
+		isDigit1 := isDigit(s1[hi1])
+		isDigit2 := isDigit(s2[hi2])
+
+		for lo1 = hi1; hi1 < len(s1) && isDigit(s1[hi1]) == isDigit1; hi1++ {
+		}
+
+		for lo2 = hi2; hi2 < len(s2) && isDigit(s2[hi2]) == isDigit2; hi2++ {
+		}
+
+		if s1[lo1:hi1] == s2[lo2:hi2] {
 			continue
 		}
 
-		num1, err1 := strconv.Atoi(parts1[i])
-		num2, err2 := strconv.Atoi(parts2[i])
+		if isDigit1 && isDigit2 {
+			num1, err1 := strconv.Atoi(s1[lo1:hi1])
+			num2, err2 := strconv.Atoi(s2[lo2:hi2])
 
-		if err1 == nil && err2 == nil {
-			return num1 < num2
+			if err1 == nil && err2 == nil {
+				return num1 < num2
+			}
 		}
 
-		return parts1[i] < parts2[i]
+		return s1[lo1:hi1] < s2[lo2:hi2]
 	}
-
-	return len(parts1) < len(parts2)
 }
 
 var reAltKey = regexp.MustCompile(`<a-(.)>`)
