@@ -252,6 +252,7 @@ func (dir *dir) sel(name string, height int) {
 		return
 	}
 
+	dir.ind = max(dir.ind, 0)
 	dir.ind = min(dir.ind, len(dir.files)-1)
 
 	if dir.files[dir.ind].Name() != name {
