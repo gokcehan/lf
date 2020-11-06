@@ -111,7 +111,7 @@ The following options can be used to customize the behavior of lf:
     icons          bool      (default off)
     ifs            string    (default '')
     ignorecase     bool      (default on)
-    ignoredia      bool      (default off)
+    ignoredia      bool      (default on)
     incsearch      bool      (default off)
     info           []string  (default '')
     number         bool      (default off)
@@ -554,7 +554,7 @@ This option does not have any effect on windows.
 
 Ignore case in sorting and search patterns.
 
-    ignoredia      bool      (default off)
+    ignoredia      bool      (default on)
 
 Ignore diacritics in sorting and search patterns.
 

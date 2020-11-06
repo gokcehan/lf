@@ -72,7 +72,7 @@ func init() {
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
-	gOpts.ignoredia = false
+	gOpts.ignoredia = true
 	gOpts.incsearch = false
 	gOpts.number = false
 	gOpts.preview = true
