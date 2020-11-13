@@ -7,9 +7,9 @@
 #
 # You may also like to assign a key to this command:
 #
-#     bind \co 'lfcd; commandline -f repaint'
+#     bind \co 'stty sane; lfcd; commandline -f repaint'
 #
-# You need to put this in a function called fish_user_key_bindings.
+# You may put this in a function called fish_user_key_bindings.
 
 function lfcd
     set tmp (mktemp)
