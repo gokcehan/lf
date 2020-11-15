@@ -45,6 +45,17 @@ func parseIconsEnv(env string) iconMap {
 	return icons
 }
 
+func (im iconMap) findkey (filename string) string {
+	for key,_ := range(im) {
+		match, err := filepath.Match(key, filename)
+		if err == nil && match {
+			return key
+		}
+	}
+	// Fallback, if no appropriate key was found
+	return "*" + filepath.Ext(filename)
+}
+
 func (im iconMap) get(f *file) string {
 	var key string
 
@@ -76,7 +87,7 @@ func (im iconMap) get(f *file) string {
 	case f.Mode().IsRegular() && f.Mode()&0111 != 0:
 		key = "ex"
 	default:
-		key = "*" + filepath.Ext(f.Name())
+		key = im.findkey(f.Name())
 	}
 
 	if val, ok := im[key]; ok {
