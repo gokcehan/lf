@@ -184,6 +184,17 @@ func parseStylesBSD(env string) styleMap {
 	return styles
 }
 
+func (cm styleMap) findkey (filename string) string {
+	for key,_ := range(cm) {
+		match, err := filepath.Match(key, filename)
+		if err == nil && match {
+			return key
+		}
+	}
+	// Fallback, if no appropriate key was found
+	return "*" + filepath.Ext(filename)
+}
+
 func (cm styleMap) get(f *file) tcell.Style {
 	var key string
 
@@ -215,7 +226,7 @@ func (cm styleMap) get(f *file) tcell.Style {
 	case f.Mode().IsRegular() && f.Mode()&0111 != 0:
 		key = "ex"
 	default:
-		key = "*" + filepath.Ext(f.Name())
+		key = cm.findkey(f.Name())
 	}
 
 	if val, ok := cm[key]; ok {
