@@ -136,7 +136,7 @@ func newDir(path string) *dir {
 	}
 }
 
-func normalize(s1, s2 string) (string, string) {
+func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 	if gOpts.ignorecase {
 		s1 = strings.ToLower(s1)
 		s2 = strings.ToLower(s2)
@@ -156,15 +156,15 @@ func (dir *dir) sort() {
 
 	dir.files = dir.allFiles
 
-	switch gOpts.sortType.method {
+	switch dir.sortType.method {
 	case naturalSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name())
+			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
 			return naturalLess(s1, s2)
 		})
 	case nameSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name())
+			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
 			return s1 < s2
 		})
 	case sizeSort:
@@ -185,7 +185,7 @@ func (dir *dir) sort() {
 		})
 	case extSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext)
+			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext, dir.ignorecase, dir.ignoredia)
 
 			// if the extension could not be determined (directories, files without)
 			// use a zero byte so that these files can be ranked higher
@@ -196,7 +196,7 @@ func (dir *dir) sort() {
 				ext2 = "\x00"
 			}
 
-			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name())
+			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
@@ -204,13 +204,13 @@ func (dir *dir) sort() {
 		})
 	}
 
-	if gOpts.sortType.option&reverseSort != 0 {
+	if dir.sortType.option&reverseSort != 0 {
 		for i, j := 0, len(dir.files)-1; i < j; i, j = i+1, j-1 {
 			dir.files[i], dir.files[j] = dir.files[j], dir.files[i]
 		}
 	}
 
-	if gOpts.sortType.option&dirfirstSort != 0 {
+	if dir.sortType.option&dirfirstSort != 0 {
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			if dir.files[i].IsDir() == dir.files[j].IsDir() {
 				return i < j
@@ -222,15 +222,15 @@ func (dir *dir) sort() {
 	// when hidden option is disabled, we move hidden files to the
 	// beginning of our file list and then set the beginning of displayed
 	// files to the first non-hidden file in the list
-	if gOpts.sortType.option&hiddenSort == 0 {
+	if dir.sortType.option&hiddenSort == 0 {
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isHidden(dir.files[i], dir.path) && isHidden(dir.files[j], dir.path) {
+			if isHidden(dir.files[i], dir.path, dir.hiddenfiles) && isHidden(dir.files[j], dir.path, dir.hiddenfiles) {
 				return i < j
 			}
-			return isHidden(dir.files[i], dir.path)
+			return isHidden(dir.files[i], dir.path, dir.hiddenfiles)
 		})
 		for i, f := range dir.files {
-			if !isHidden(f, dir.path) {
+			if !isHidden(f, dir.path, dir.hiddenfiles) {
 				dir.files = dir.files[i:]
 				return
 			}
