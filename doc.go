@@ -105,6 +105,8 @@ The following options can be used to customize the behavior of lf:
     errorfmt       string    (default "\033[7;31;47m%s\033[0m")
     filesep        string    (default "\n")
     findlen        int       (default 1)
+    globcolor      bool      (default off)
+    globicon       bool      (default off)
     globsearch     bool      (default off)
     hidden         bool      (default off)
     hiddenfiles    []string  (default '.*')
@@ -514,11 +516,19 @@ File separator used in environment variables 'fs' and 'fx'.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
+    globcolor      bool      (default off)
+When this option is enabled, the items in LS_COLORS are considered as globs, otherwise they are only considered to be the extension of a filename.
+With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges.
+Otherwise, these characters are interpreted as they are.
+
+    globicon       bool      (default off)
+When this option is enabled, the items in LF_ICONS are considered as globs, otherwise they are only considered to be the extension of a filename.
+See 'globcolor' for an explanation of globs.
+
     globsearch     bool      (default off)
 
 When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
-With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges.
-Otherwise, these characters are interpreted as they are.
+See 'globcolor' for an explanation of globs.
 
     hidden         bool      (default off)
 
