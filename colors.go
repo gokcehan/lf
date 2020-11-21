@@ -226,7 +226,11 @@ func (cm styleMap) get(f *file) tcell.Style {
 	case f.Mode().IsRegular() && f.Mode()&0111 != 0:
 		key = "ex"
 	default:
-		key = cm.findkey(f.Name())
+		if (gOpts.globcolor) {
+			key = cm.findkey(f.Name())
+		} else {
+			key = "*" + filepath.Ext(f.Name())
+		}
 	}
 
 	if val, ok := cm[key]; ok {

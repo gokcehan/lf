@@ -56,6 +56,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.drawbox = !gOpts.drawbox
 		app.ui.renew()
 		app.nav.height = app.ui.wins[0].h
+	case "globcolor":
+		gOpts.globcolor = true
+	case "noglobcolor":
+		gOpts.globcolor = false
+	case "globcolor!":
+		gOpts.globcolor = !gOpts.globcolor
+	case "globicon":
+		gOpts.globicon = true
+	case "noglobicon":
+		gOpts.globicon = false
+	case "globicon!":
+		gOpts.globicon = !gOpts.globicon
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":

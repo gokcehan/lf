@@ -31,6 +31,8 @@ var gOpts struct {
 	anchorfind     bool
 	dircounts      bool
 	drawbox        bool
+	globcolor      bool
+	globicon       bool
 	globsearch     bool
 	icons          bool
 	ignorecase     bool
@@ -69,6 +71,8 @@ func init() {
 	gOpts.anchorfind = true
 	gOpts.dircounts = false
 	gOpts.drawbox = false
+	gOpts.globcolor = false
+	gOpts.globicon = false
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true

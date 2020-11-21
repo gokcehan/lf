@@ -87,7 +87,11 @@ func (im iconMap) get(f *file) string {
 	case f.Mode().IsRegular() && f.Mode()&0111 != 0:
 		key = "ex"
 	default:
-		key = im.findkey(f.Name())
+		if (gOpts.globicon) {
+			key = im.findkey(f.Name())
+		} else {
+			key = "*" + filepath.Ext(f.Name())
+		}
 	}
 
 	if val, ok := im[key]; ok {
