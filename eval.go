@@ -82,6 +82,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav)
 	case "icons":
 		gOpts.icons = true
+	case "iconsdir":
+		gOpts.iconsdir = true
 	case "noicons":
 		gOpts.icons = false
 	case "icons!":

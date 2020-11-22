@@ -60,11 +60,18 @@ var iconKeyGenerators []iconKeyGenerator = []iconKeyGenerator{
 		if strings.HasPrefix(path, home) {
 			path = "~" + path[len(home):]
 		}
+		if gOpts.iconsdir && f.IsDir() {
+			path += string(os.PathSeparator)
+		}
 		return path, true
 	},
 	// The exact basename of the file.
 	func(f *file) (string, bool) {
-		return filepath.Base(f.Name()), true
+		base := filepath.Base(f.Name())
+		if gOpts.iconsdir && f.IsDir() {
+			base += string(os.PathSeparator)
+		}
+		return base, true
 	},
 	// The basename of the file excluding the extension
 	func(f *file) (string, bool) {

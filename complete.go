@@ -86,6 +86,7 @@ var (
 		"nohidden",
 		"hidden!",
 		"icons",
+		"iconsdir",
 		"noicons",
 		"icons!",
 		"ignorecase",
