@@ -445,17 +445,25 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.cmdPrefix = ">"
 
 		go func() {
+			eol := false
 			reader := bufio.NewReader(out)
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
 					break
 				}
-				app.cmdOutBuf = append(app.cmdOutBuf, b)
-				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
-				if b == '\n' || b == '\r' {
+				if eol {
+					eol = false
 					app.cmdOutBuf = nil
 				}
+				app.cmdOutBuf = append(app.cmdOutBuf, b)
+				if b == '\n' || b == '\r' {
+					eol = true
+				}
+				if reader.Buffered() > 0 {
+					continue
+				}
+				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
 			}
 
 			if err := cmd.Wait(); err != nil {
