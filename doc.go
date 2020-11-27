@@ -118,7 +118,7 @@ The following options can be used to customize the behavior of lf:
     period         int       (default 0)
     preview        bool      (default on)
     previewer      string    (default '')
-    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
+    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
     reverse        bool      (default off)
