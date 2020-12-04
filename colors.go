@@ -7,7 +7,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/gdamore/tcell"
+	"github.com/gdamore/tcell/v2"
 )
 
 type styleMap map[string]tcell.Style
@@ -64,6 +64,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	}
 
 	// ECMA-48 details the standard
+	// TODO: should we support turning off attributes?
+	//    Probably because this is used for previewers too
 	for i := 0; i < len(nums); i++ {
 		n := nums[i]
 		switch {
@@ -79,11 +81,17 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			st = st.Blink(true)
 		case n == 7:
 			st = st.Reverse(true)
+		case n == 8:
+			// TODO: tcell PR for proper conceal
+			_, bg, _ := st.Decompose()
+			st = st.Foreground(bg)
+		case n == 9:
+			st = st.StrikeThrough(true)
 		case n >= 30 && n <= 37:
-			st = st.Foreground(tcell.Color(n - 30))
+			st = st.Foreground(tcell.PaletteColor(n - 30))
 		case n == 38:
 			if i+3 <= len(nums) && nums[i+1] == 5 {
-				st = st.Foreground(tcell.Color(nums[i+2]))
+				st = st.Foreground(tcell.PaletteColor(nums[i+2]))
 				i += 2
 			} else if i+5 <= len(nums) && nums[i+1] == 2 {
 				st = st.Foreground(tcell.NewRGBColor(
@@ -95,10 +103,10 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 				log.Printf("unknown ansi code or incorrect form: %d", n)
 			}
 		case n >= 40 && n <= 47:
-			st = st.Background(tcell.Color(n - 40))
+			st = st.Background(tcell.PaletteColor(n - 40))
 		case n == 48:
 			if i+3 <= len(nums) && nums[i+1] == 5 {
-				st = st.Background(tcell.Color(nums[i+2]))
+				st = st.Background(tcell.PaletteColor(nums[i+2]))
 				i += 2
 			} else if i+5 <= len(nums) && nums[i+1] == 2 {
 				st = st.Background(tcell.NewRGBColor(

@@ -51,7 +51,6 @@ func exportEnvVars() {
 	os.Setenv("EDITOR", envEditor)
 	os.Setenv("PAGER", envPager)
 	os.Setenv("SHELL", envShell)
-	os.Setenv("TCELL_TRUECOLOR", envTcellTruecolor)
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {

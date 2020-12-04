@@ -12,11 +12,10 @@ import (
 )
 
 var (
-	envOpener         = os.Getenv("OPENER")
-	envEditor         = os.Getenv("EDITOR")
-	envPager          = os.Getenv("PAGER")
-	envShell          = os.Getenv("SHELL")
-	envTcellTruecolor = os.Getenv("TCELL_TRUECOLOR")
+	envOpener = os.Getenv("OPENER")
+	envEditor = os.Getenv("EDITOR")
+	envPager  = os.Getenv("PAGER")
+	envShell  = os.Getenv("SHELL")
 )
 
 var envPathExt = os.Getenv("PATHEXT")
