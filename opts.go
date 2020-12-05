@@ -38,6 +38,7 @@ var gOpts struct {
 	incsearch      bool
 	number         bool
 	preview        bool
+	previewcache   bool
 	relativenumber bool
 	smartcase      bool
 	smartdia       bool
@@ -76,6 +77,7 @@ func init() {
 	gOpts.incsearch = false
 	gOpts.number = false
 	gOpts.preview = true
+	gOpts.previewcache = true
 	gOpts.relativenumber = false
 	gOpts.smartcase = true
 	gOpts.smartdia = false

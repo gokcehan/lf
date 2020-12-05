@@ -136,6 +136,12 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.preview = !gOpts.preview
+	case "previewcache":
+		gOpts.previewcache = true
+	case "nopreviewcache":
+		gOpts.previewcache = false
+	case "previewcache!":
+		gOpts.previewcache = !gOpts.previewcache
 	case "relativenumber":
 		gOpts.relativenumber = true
 	case "norelativenumber":

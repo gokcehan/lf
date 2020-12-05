@@ -516,7 +516,13 @@ func (nav *nav) loadReg(path string) *reg {
 		return r
 	}
 
-	nav.checkReg(r)
+	if gOpts.previewcache {
+		nav.checkReg(r)
+	} else {
+		r.loading = true
+		r.loadTime = time.Now()
+		go nav.preview(path)
+	}
 
 	return r
 }

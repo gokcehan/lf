@@ -120,6 +120,7 @@ The following options can be used to customize the behavior of lf:
     number         bool      (default off)
     period         int       (default 0)
     preview        bool      (default on)
+    previewcache   bool      (default on)
     previewer      string    (default '')
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
@@ -620,6 +621,12 @@ Show previews of files and directories at the right most pane. If the file
 has more lines than the preview pane, rest of the lines are not read. Files
 containing the null character (U+0000) in the read portion are considered
 binary files and displayed as 'binary'.
+
+    previewcache   bool      (default on)
+
+Use a cache when generating previews. If this option is off, the previewer
+will be called each time a file is selected regardless of whether or not a
+preview has previously been read in.
 
     previewer      string    (default '') (not filtered if empty)
 
