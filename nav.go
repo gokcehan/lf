@@ -458,6 +458,7 @@ func (nav *nav) position() {
 
 func (nav *nav) preview(path string) {
 	reg := &reg{loadTime: time.Now(), path: path}
+	defer func() { nav.regChan <- reg }()
 
 	var reader io.Reader
 
@@ -468,10 +469,13 @@ func (nav *nav) preview(path string) {
 		out, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Printf("previewing file: %s", err)
+			return
 		}
 
 		if err := cmd.Start(); err != nil {
 			log.Printf("previewing file: %s", err)
+			out.Close()
+			return
 		}
 
 		defer cmd.Wait()
@@ -481,6 +485,7 @@ func (nav *nav) preview(path string) {
 		f, err := os.Open(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
+			return
 		}
 
 		defer f.Close()
@@ -493,7 +498,6 @@ func (nav *nav) preview(path string) {
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
-				nav.regChan <- reg
 				return
 			}
 		}
@@ -503,8 +507,6 @@ func (nav *nav) preview(path string) {
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
 	}
-
-	nav.regChan <- reg
 }
 
 func (nav *nav) loadReg(path string) *reg {
