@@ -213,6 +213,8 @@ func (app *app) loop() {
 				continue
 			}
 
+			go app.nav.previewClear()
+
 			log.Print("bye!")
 
 			if err := app.writeHistory(); err != nil {
@@ -405,6 +407,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
+		go app.nav.previewClear()
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()

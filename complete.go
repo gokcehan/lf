@@ -131,6 +131,7 @@ var (
 		"ifs",
 		"info",
 		"previewer",
+		"cleaner",
 		"promptfmt",
 		"ratios",
 		"shell",

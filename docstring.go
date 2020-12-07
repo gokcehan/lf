@@ -121,6 +121,7 @@ The following options can be used to customize the behavior of lf:
     period         int       (default 0)
     preview        bool      (default on)
     previewer      string    (default '')
+    cleaner        string    (default '')
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
@@ -632,6 +633,13 @@ previewer returns a non-zero exit code, then the preview cache for the given
 file is disabled. This means that if the file is selected in the future, the
 previewer is called once again. Preview filtering is disabled and files are
 displayed as they are when the value of this option is left empty.
+
+    cleaner        string    (default '') (not called if empty)
+
+Set the path of a cleaner file. This file will be called if previewing is
+enabled, the previewer is set, and the previously selected file had its
+preview cache disabled. The file should be executable. Preview clearing is
+disabled when the value of this option is left empty.
 
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
 

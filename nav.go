@@ -302,6 +302,7 @@ type nav struct {
 	searchBack      bool
 	searchInd       int
 	searchPos       int
+	volatilePreview bool
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -486,6 +487,7 @@ func (nav *nav) preview(path string, win *win) {
 			if err := cmd.Wait(); err != nil {
 				if e, ok := err.(*exec.ExitError); ok {
 					if e.ExitCode() != 0 {
+						nav.volatilePreview = true
 						reg.volatile = true
 					}
 				} else {
@@ -520,6 +522,17 @@ func (nav *nav) preview(path string, win *win) {
 
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
+	}
+}
+
+func (nav *nav) previewClear() {
+	if len(gOpts.cleaner) != 0 && nav.volatilePreview {
+		nav.volatilePreview = false
+
+		cmd := exec.Command(gOpts.cleaner)
+		if err := cmd.Run(); err != nil {
+			log.Printf("cleaning preview: %s", err)
+		}
 	}
 }
 
