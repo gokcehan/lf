@@ -482,7 +482,17 @@ func (nav *nav) preview(path string, win *win) {
 			return
 		}
 
-		defer cmd.Wait()
+		defer func() {
+			if err := cmd.Wait(); err != nil {
+				if e, ok := err.(*exec.ExitError); ok {
+					if e.ExitCode() != 0 {
+						reg.volatile = true
+					}
+				} else {
+					log.Printf("loading file: %s", err)
+				}
+			}
+		}()
 		defer out.Close()
 		reader = out
 	} else {
@@ -515,8 +525,8 @@ func (nav *nav) preview(path string, win *win) {
 
 func (nav *nav) loadReg(path string, win *win) *reg {
 	r, ok := nav.regCache[path]
-	if !ok {
-		r := &reg{loading: true, loadTime: time.Now(), path: path}
+	if !ok || r.volatile {
+		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
 		go nav.preview(path, win)
 		return r

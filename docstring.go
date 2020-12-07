@@ -624,11 +624,14 @@ binary files and displayed as 'binary'.
     previewer      string    (default '') (not filtered if empty)
 
 Set the path of a previewer file to filter the content of regular files for
-previewing. The file should be executable. Two arguments are passed to the
-file, first is the current file name, and second is the height of preview
-pane. SIGPIPE signal is sent when enough lines are read. Preview filtering
-is disabled and files are displayed as they are when the value of this
-option is left empty.
+previewing. The file should be executable. Five arguments are passed to the
+file, first is the current file name; the second, third, fourth, and fifth
+are height, width, horizontal position, and vertical position of preview
+pane respectively. SIGPIPE signal is sent when enough lines are read. If the
+previewer returns a non-zero exit code, then the preview cache for the given
+file is disabled. This means that if the file is selected in the future, the
+previewer is called once again. Preview filtering is disabled and files are
+displayed as they are when the value of this option is left empty.
 
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
 

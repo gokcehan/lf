@@ -609,6 +609,7 @@ func (ui *ui) echoerrf(format string, a ...interface{}) {
 
 type reg struct {
 	loading  bool
+	volatile bool
 	loadTime time.Time
 	path     string
 	lines    []string
