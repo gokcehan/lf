@@ -311,7 +311,8 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			if app.nav.checkReg(r) {
-				go app.nav.preview(r.path)
+				win := app.ui.wins[len(app.ui.wins)-1]
+				go app.nav.preview(r.path, win)
 			}
 
 			app.nav.regCache[r.path] = r

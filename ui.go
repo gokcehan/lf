@@ -627,7 +627,8 @@ func (ui *ui) loadFile(nav *nav) {
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(curr.path)
+		win := ui.wins[len(ui.wins)-1]
+		ui.regPrev = nav.loadReg(curr.path, win)
 	}
 }
 

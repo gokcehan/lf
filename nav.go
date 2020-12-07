@@ -456,7 +456,7 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) preview(path string) {
+func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -464,7 +464,11 @@ func (nav *nav) preview(path string) {
 
 	if len(gOpts.previewer) != 0 {
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
+		cmd := exec.Command(gOpts.previewer, path,
+			strconv.Itoa(win.w),
+			strconv.Itoa(win.h),
+			strconv.Itoa(win.x),
+			strconv.Itoa(win.y))
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -494,7 +498,7 @@ func (nav *nav) preview(path string) {
 
 	buf := bufio.NewScanner(reader)
 
-	for i := 0; i < nav.height && buf.Scan(); i++ {
+	for i := 0; i < win.h && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
@@ -509,17 +513,17 @@ func (nav *nav) preview(path string) {
 	}
 }
 
-func (nav *nav) loadReg(path string) *reg {
+func (nav *nav) loadReg(path string, win *win) *reg {
 	r, ok := nav.regCache[path]
 	if !ok {
 		r := &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
-		go nav.preview(path)
+		go nav.preview(path, win)
 		return r
 	}
 
 	if nav.checkReg(r) {
-		go nav.preview(path)
+		go nav.preview(path, win)
 	}
 
 	return r
