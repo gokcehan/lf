@@ -121,7 +121,7 @@ The following options can be used to customize the behavior of lf:
     period         int       (default 0)
     preview        bool      (default on)
     previewer      string    (default '')
-    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
+    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
     reverse        bool      (default off)
@@ -1344,11 +1344,7 @@ for fine grained customization. This is useful to change colors used for
 different file types and extensions. '$LS_COLORS' is more powerful than
 '$LSCOLORS' and it can be used even when GNU programs are not installed on
 the system. You can combine this second method with the first method for
-best results. lf can also be configured to ignore your terminal theme and
-output colors "as they were intended" by translating all numbered colors
-into a 24-bit output that matches the description; this can be enabled by
-setting the environment variable '$TCELL_TRUECOLOR' to "on" (or any text
-except ""/nothing or "disable").
+best results.
 
 Lastly, you may also want to configure the colors of the prompt line to
 match the rest of the colors. Colors of the prompt line can be configured
