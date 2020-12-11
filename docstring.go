@@ -1243,6 +1243,13 @@ any:
     set previewer ~/.config/lf/pv.sh
     map i $~/.config/lf/pv.sh $f | less -R
 
+For 'less' pager, you may instead utilize 'LESSOPEN' mechanism so that
+useful information about the file such as the full path of the file can be
+displayed in the statusline below:
+
+    set previewer ~/.config/lf/pv.sh
+    map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
+
 Since this script is called for each file selection change it needs to be as
 efficient as possible and this responsibility is left to the user. You may
 use file extensions to determine the type of file more efficiently compared
@@ -1269,6 +1276,11 @@ especially relevant for big files. lf automatically closes the previewer
 script output pipe with a SIGPIPE when enough lines are read. When
 everything else fails, you can make use of the height argument to only feed
 the first portion of the file to a program for preview.
+
+You may also use an existing preview filter as you like. Your system may
+already come with a preview filter named 'lesspipe'. These filters may have
+a mechanism to add user customizations as well. See the related
+documentations for more information.
 
 
 Changing Directory

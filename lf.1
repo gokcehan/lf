@@ -1236,6 +1236,13 @@ In order to use this feature you need to set the value of 'previewer' option to 
     map i $~/.config/lf/pv.sh $f | less -R
 .EE
 .PP
+For 'less' pager, you may instead utilize 'LESSOPEN' mechanism so that useful information about the file such as the full path of the file can be displayed in the statusline below:
+.PP
+.EX
+    set previewer ~/.config/lf/pv.sh
+    map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
+.EE
+.PP
 Since this script is called for each file selection change it needs to be as efficient as possible and this responsibility is left to the user. You may use file extensions to determine the type of file more efficiently compared to obtaining mime types from 'file' command. Extensions can then be used to match cleanly within a conditional:
 .PP
 .EX
@@ -1254,6 +1261,8 @@ Since this script is called for each file selection change it needs to be as eff
 .EE
 .PP
 Another important consideration for efficiency is the use of programs with short startup times for preview. For this reason, 'highlight' is recommended over 'pygmentize' for syntax highlighting. Besides, it is also important that the application is processing the file on the fly rather than first reading it to the memory and then do the processing afterwards. This is especially relevant for big files. lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read. When everything else fails, you can make use of the height argument to only feed the first portion of the file to a program for preview.
+.PP
+You may also use an existing preview filter as you like. Your system may already come with a preview filter named 'lesspipe'. These filters may have a mechanism to add user customizations as well. See the related documentations for more information.
 .SH CHANGING DIRECTORY
 lf changes the working directory of the process to the current directory so that shell commands always work in the displayed directory. After quitting, it returns to the original directory where it is first launched like all shell programs. If you want to stay in the current directory after quitting, you can use one of the example wrapper shell scripts provided in the repository.
 .PP
