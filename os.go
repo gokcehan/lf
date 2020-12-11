@@ -89,7 +89,9 @@ func init() {
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
-	return exec.Command(name, arg...)
+	cmd := exec.Command(name, arg...)
+	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	return cmd
 }
 
 func pauseCommand() *exec.Cmd {
