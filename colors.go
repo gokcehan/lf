@@ -164,9 +164,9 @@ func parseStylesBSD(env string) styleMap {
 		case r1 == 'x':
 			st = st.Foreground(tcell.ColorDefault)
 		case 'A' <= r1 && r1 <= 'H':
-			st = st.Foreground(tcell.Color(r1 - 'A')).Bold(true)
+			st = st.Foreground(tcell.PaletteColor(int(r1 - 'A'))).Bold(true)
 		case 'a' <= r1 && r1 <= 'h':
-			st = st.Foreground(tcell.Color(r1 - 'a'))
+			st = st.Foreground(tcell.PaletteColor(int(r1 - 'a')))
 		default:
 			log.Printf("invalid $LSCOLORS entry: %c", r1)
 			return tcell.StyleDefault
@@ -176,7 +176,7 @@ func parseStylesBSD(env string) styleMap {
 		case r2 == 'x':
 			st = st.Background(tcell.ColorDefault)
 		case 'a' <= r2 && r2 <= 'h':
-			st = st.Background(tcell.Color(r2 - 'a'))
+			st = st.Background(tcell.PaletteColor(int(r2 - 'a')))
 		default:
 			log.Printf("invalid $LSCOLORS entry: %c", r2)
 			return tcell.StyleDefault
