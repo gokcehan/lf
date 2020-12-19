@@ -20,12 +20,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.anchorfind = false
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
-	case "color256":
-		app.ui.echoerr("option color256 is deprecated")
-	case "nocolor256":
-		app.ui.echoerr("option nocolor256 is deprecated")
-	case "color256!":
-		app.ui.echoerr("option color256! is deprecated")
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":
