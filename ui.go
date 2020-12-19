@@ -1119,13 +1119,12 @@ func listMatchesMenu(ui *ui, matches []string) error {
 
 	ncol := wtot / wcol
 
-	bytesWrote := 0
-
-	if n, err := b.WriteString("possible matches\n"); err != nil {
+	n, err := b.WriteString("possible matches\n")
+	if err != nil {
 		return err
-	} else {
-		bytesWrote += n
 	}
+
+	bytesWrote := n
 
 	for i := 0; i < len(matches); {
 		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
