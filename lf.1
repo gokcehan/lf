@@ -1080,7 +1080,7 @@ You can also output error messages in the command and it will show up in the sta
     cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 .EE
 .PP
-One thing to be careful is that although input is still line buffered, output and error are byte buffered and verbose commands will be very slow to display.
+Note that input is line buffered and output and error are byte buffered.
 .SH WAITING SHELL COMMANDS
 Waiting shell commands are similar to regular shell commands except that they wait for a key press when the command is finished. These can be useful to see the output of a program before the ui is resumed. Waiting shell commands are more appropriate than piping shell commands when the command is verbose and the output is best displayed as multiline.
 .SH ASYNCHRONOUS SHELL COMMANDS

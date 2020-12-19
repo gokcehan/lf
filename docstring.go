@@ -996,9 +996,7 @@ statline. For example, an alternative rename command may look like this:
 
     cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
 
-One thing to be careful is that although input is still line buffered,
-output and error are byte buffered and verbose commands will be very slow to
-display.
+Note that input is line buffered and output and error are byte buffered.
 
 
 Waiting Shell Commands
