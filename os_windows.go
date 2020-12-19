@@ -50,10 +50,6 @@ func init() {
 		envShell = "cmd"
 	}
 
-	if envTcellTruecolor == "" {
-		envTcellTruecolor = "disable"
-	}
-
 	u, err := user.Current()
 	if err != nil {
 		log.Printf("user: %s", err)
