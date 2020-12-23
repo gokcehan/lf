@@ -7,7 +7,7 @@
 #
 # You may also like to assign a key to this command:
 #
-#     bind \co 'stty sane; lfcd; commandline -f repaint'
+#     bind \co 'set old_tty (stty -g); stty sane; lfcd; stty $old_tty; commandline -f repaint'
 #
 # You may put this in a function called fish_user_key_bindings.
 
