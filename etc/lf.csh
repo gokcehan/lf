@@ -1,12 +1,15 @@
+# Autocompletion for tcsh shell.
 #
-#	For using these completions you must load it from .tcshrc
+# You need to either copy the content of this file to your shell rc file
+# (e.g. ~/.tcshrc) or source this file directly:
 #
-#		source ~/.config/lf/lf.csh
+#     set LF_COMPLETE = "/path/to/lf.csh"
+#     if ( -f "$LF_COMPLETE" ) then
+#         source "$LF_COMPLETE"
+#     endif
 #
-set lf_args = "-command -cpuprofile -doc --help -last-dir-path -memprofile -remote -selection-path -server -version --version"
 
-uncomplete lf
-uncomplete lfcd
+set LF_ARGS = "-command -cpuprofile -doc -last-dir-path -memprofile -remote -selection-path -server -version -help "
 
-complete lf   "C/-*/(${lf_args})/"
-complete lfcd "C/-*/(${lf_args})/"
+complete lf   "C/-*/(${LF_ARGS})/"
+complete lfcd "C/-*/(${LF_ARGS})/"

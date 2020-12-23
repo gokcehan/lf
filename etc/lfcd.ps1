@@ -4,13 +4,13 @@
 #
 # You may also like to assign a key to this command:
 #
-# You may put this in one of the profiles found in $PROFILE.
-#
 # Set-PSReadLineKeyHandler -Chord Ctrl+o -ScriptBlock {
 #     [Microsoft.PowerShell.PSConsoleReadLine]::RevertLine()
 #     [Microsoft.PowerShell.PSConsoleReadLine]::Insert('lfcd.ps1')
 #     [Microsoft.PowerShell.PSConsoleReadLine]::AcceptLine()
 # }
+#
+# You may put this in one of the profiles found in $PROFILE.
 #
 
 $tmp = [System.IO.Path]::GetTempFileName()
