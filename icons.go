@@ -50,6 +50,12 @@ func (im iconMap) get(f *file) string {
 		return val
 	}
 
+	if f.IsDir() {
+		if val, ok := im[f.Name()+"/"]; ok {
+			return val
+		}
+	}
+
 	if val, ok := im[f.Name()]; ok {
 		return val
 	}

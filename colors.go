@@ -197,6 +197,16 @@ func (cm styleMap) get(f *file) tcell.Style {
 		return val
 	}
 
+	if f.IsDir() {
+		if val, ok := cm[f.Name()+"/"]; ok {
+			return val
+		}
+	}
+
+	if val, ok := cm[f.Name()]; ok {
+		return val
+	}
+
 	if val, ok := cm[f.Name()]; ok {
 		return val
 	}
