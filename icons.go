@@ -38,7 +38,7 @@ func parseIconsEnv(env string) iconMap {
 			log.Printf("invalid $LF_ICONS entry: %s", entry)
 			return icons
 		}
-		key, val := pair[0], pair[1]
+		key, val := replaceTilde(pair[0]), pair[1]
 		icons[key] = val
 	}
 
@@ -46,6 +46,18 @@ func parseIconsEnv(env string) iconMap {
 }
 
 func (im iconMap) get(f *file) string {
+	if val, ok := im[f.path]; ok {
+		return val
+	}
+
+	if val, ok := im[f.Name()]; ok {
+		return val
+	}
+
+	if val, ok := im[filepath.Base(f.Name())+".*"]; ok {
+		return val
+	}
+
 	var key string
 
 	switch {
