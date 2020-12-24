@@ -38,7 +38,11 @@ func parseIconsEnv(env string) iconMap {
 			log.Printf("invalid $LF_ICONS entry: %s", entry)
 			return icons
 		}
-		key, val := filepath.Clean(replaceTilde(pair[0])), pair[1]
+		key, val := pair[0], pair[1]
+		key = replaceTilde(key)
+		if filepath.IsAbs(key) {
+			key = filepath.Clean(key)
+		}
 		icons[key] = val
 	}
 
