@@ -1,7 +1,7 @@
-# Autocompletion for PowerShell.
+# Autocompletion for powershell.
 #
-# You need to either copy the content of this file to $PROFILE
-# or call this script directly.
+# You need to either copy the content of this file to $PROFILE or call this
+# script directly.
 #
 
 using namespace System.Management.Automation
