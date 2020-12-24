@@ -263,6 +263,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.info = toks
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
+	case "cleaner":
+		gOpts.cleaner = replaceTilde(e.val)
 	case "promptfmt":
 		gOpts.promptfmt = e.val
 	case "ratios":

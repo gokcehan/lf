@@ -302,6 +302,7 @@ type nav struct {
 	searchBack      bool
 	searchInd       int
 	searchPos       int
+	volatilePreview bool
 }
 
 func (nav *nav) loadDir(path string) *dir {
@@ -456,31 +457,51 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) preview(path string) {
+func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
+	defer func() { nav.regChan <- reg }()
 
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, path, strconv.Itoa(nav.height))
+		cmd := exec.Command(gOpts.previewer, path,
+			strconv.Itoa(win.w),
+			strconv.Itoa(win.h),
+			strconv.Itoa(win.x),
+			strconv.Itoa(win.y))
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Printf("previewing file: %s", err)
+			return
 		}
 
 		if err := cmd.Start(); err != nil {
 			log.Printf("previewing file: %s", err)
+			out.Close()
+			return
 		}
 
-		defer cmd.Wait()
+		defer func() {
+			if err := cmd.Wait(); err != nil {
+				if e, ok := err.(*exec.ExitError); ok {
+					if e.ExitCode() != 0 {
+						nav.volatilePreview = true
+						reg.volatile = true
+					}
+				} else {
+					log.Printf("loading file: %s", err)
+				}
+			}
+		}()
 		defer out.Close()
 		reader = out
 	} else {
 		f, err := os.Open(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
+			return
 		}
 
 		defer f.Close()
@@ -489,11 +510,10 @@ func (nav *nav) preview(path string) {
 
 	buf := bufio.NewScanner(reader)
 
-	for i := 0; i < nav.height && buf.Scan(); i++ {
+	for i := 0; i < win.h && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
-				nav.regChan <- reg
 				return
 			}
 		}
@@ -503,28 +523,39 @@ func (nav *nav) preview(path string) {
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
 	}
-
-	nav.regChan <- reg
 }
 
-func (nav *nav) loadReg(path string) *reg {
+func (nav *nav) previewClear() {
+	if len(gOpts.cleaner) != 0 && nav.volatilePreview {
+		nav.volatilePreview = false
+
+		cmd := exec.Command(gOpts.cleaner)
+		if err := cmd.Run(); err != nil {
+			log.Printf("cleaning preview: %s", err)
+		}
+	}
+}
+
+func (nav *nav) loadReg(path string, win *win) *reg {
 	r, ok := nav.regCache[path]
-	if !ok {
-		r := &reg{loading: true, loadTime: time.Now(), path: path}
+	if !ok || r.volatile {
+		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
-		go nav.preview(path)
+		go nav.preview(path, win)
 		return r
 	}
 
-	nav.checkReg(r)
+	if nav.checkReg(r) {
+		go nav.preview(path, win)
+	}
 
 	return r
 }
 
-func (nav *nav) checkReg(reg *reg) {
+func (nav *nav) checkReg(reg *reg) bool {
 	s, err := os.Stat(reg.path)
 	if err != nil {
-		return
+		return false
 	}
 
 	now := time.Now()
@@ -532,13 +563,15 @@ func (nav *nav) checkReg(reg *reg) {
 	// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 	// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
 	if s.ModTime().After(now) {
-		return
+		return false
 	}
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		go nav.preview(reg.path)
+		return true
 	}
+
+	return false
 }
 
 func (nav *nav) sort() {

@@ -609,6 +609,7 @@ func (ui *ui) echoerrf(format string, a ...interface{}) {
 
 type reg struct {
 	loading  bool
+	volatile bool
 	loadTime time.Time
 	path     string
 	lines    []string
@@ -624,10 +625,12 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
+	go nav.previewClear()
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(curr.path)
+		win := ui.wins[len(ui.wins)-1]
+		ui.regPrev = nav.loadReg(curr.path, win)
 	}
 }
 

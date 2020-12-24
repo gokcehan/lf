@@ -213,6 +213,8 @@ func (app *app) loop() {
 				continue
 			}
 
+			go app.nav.previewClear()
+
 			log.Print("bye!")
 
 			if err := app.writeHistory(); err != nil {
@@ -310,7 +312,10 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
-			app.nav.checkReg(r)
+			if app.nav.checkReg(r) {
+				win := app.ui.wins[len(app.ui.wins)-1]
+				go app.nav.preview(r.path, win)
+			}
 
 			app.nav.regCache[r.path] = r
 
@@ -402,6 +407,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
+		go app.nav.previewClear()
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()
