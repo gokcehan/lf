@@ -139,7 +139,7 @@ func parseStylesGNU(env string) styleMap {
 			log.Printf("invalid $LS_COLORS entry: %s", entry)
 			return styles
 		}
-		key, val := replaceTilde(pair[0]), pair[1]
+		key, val := filepath.Clean(replaceTilde(pair[0])), pair[1]
 		styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
 	}
 
