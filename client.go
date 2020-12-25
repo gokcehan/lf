@@ -42,6 +42,7 @@ func run() {
 		app.ui.echoerrf("reading history file: %s", err)
 	}
 
+	go app.nav.previewLoop(app.ui)
 	app.loop()
 	app.ui.screen.Fini()
 }

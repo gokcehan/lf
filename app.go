@@ -213,7 +213,7 @@ func (app *app) loop() {
 				continue
 			}
 
-			go app.nav.previewClear()
+			app.nav.previewChan <- ""
 
 			log.Print("bye!")
 
@@ -404,7 +404,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		go app.nav.previewClear()
+		app.nav.previewChan <- ""
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()
