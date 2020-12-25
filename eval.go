@@ -699,7 +699,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				log.Printf("writing selection file: %s", err)
 			}
 
-			app.quitChan <- true
+			app.quitChan <- struct{}{}
 
 			return
 		}
@@ -708,7 +708,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			cmd.eval(app, e.args)
 		}
 	case "quit":
-		app.quitChan <- true
+		app.quitChan <- struct{}{}
 	case "top":
 		app.nav.top()
 		app.ui.loadFile(app.nav)

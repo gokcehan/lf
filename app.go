@@ -25,7 +25,7 @@ type app struct {
 	ui            *ui
 	nav           *nav
 	ticker        *time.Ticker
-	quitChan      chan bool
+	quitChan      chan struct{}
 	cmd           *exec.Cmd
 	cmdIn         io.WriteCloser
 	cmdOutBuf     []byte
@@ -38,7 +38,7 @@ func newApp(screen tcell.Screen) *app {
 	ui := newUI(screen)
 	nav := newNav(ui.wins[0].h)
 
-	quitChan := make(chan bool, 1)
+	quitChan := make(chan struct{}, 1)
 
 	app := &app{
 		ui:       ui,

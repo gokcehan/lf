@@ -13,7 +13,7 @@ var (
 	gCopyFile bool
 	gFileList []string
 	gConnList = make(map[int]net.Conn)
-	gQuitChan = make(chan bool, 1)
+	gQuitChan = make(chan struct{}, 1)
 	gListener net.Listener
 )
 
@@ -115,7 +115,7 @@ Loop:
 				}
 			}
 		case "quit":
-			gQuitChan <- true
+			gQuitChan <- struct{}{}
 			for _, c := range gConnList {
 				fmt.Fprintln(c, "echo server is quitting...")
 				c.Close()
