@@ -471,7 +471,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.preview(p, win)
 			path = p
 		} else if len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			cmd := exec.Command(gOpts.cleaner)
+			cmd := exec.Command(gOpts.cleaner, path)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
 			}
