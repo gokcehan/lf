@@ -200,7 +200,7 @@ func (dir *dir) sort() {
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
-			return (ext1 + name1) < (ext2 + name2)
+			return ext1 < ext2 || ext1 == ext2 && name1 < name2
 		})
 	}
 
