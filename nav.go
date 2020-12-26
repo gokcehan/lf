@@ -545,17 +545,15 @@ func (nav *nav) loadReg(path string, win *win) *reg {
 		return r
 	}
 
-	if nav.checkReg(r) {
-		go nav.preview(path, win)
-	}
+	nav.checkReg(r)
 
 	return r
 }
 
-func (nav *nav) checkReg(reg *reg) bool {
+func (nav *nav) checkReg(reg *reg) {
 	s, err := os.Stat(reg.path)
 	if err != nil {
-		return false
+		return
 	}
 
 	now := time.Now()
@@ -563,15 +561,13 @@ func (nav *nav) checkReg(reg *reg) bool {
 	// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 	// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
 	if s.ModTime().After(now) {
-		return false
+		return
 	}
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		return true
+		go nav.preview(reg.path)
 	}
-
-	return false
 }
 
 func (nav *nav) sort() {
