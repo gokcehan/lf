@@ -68,6 +68,10 @@ func parseStyles() styleMap {
 		sm.parseGNU(env)
 	}
 
+	if env := os.Getenv("LF_COLORS"); env != "" {
+		sm.parseGNU(env)
+	}
+
 	return sm
 }
 
