@@ -21,25 +21,46 @@ func parseStyles() styleMap {
 		return parseStylesBSD(env)
 	}
 
-	// default values from dircolors with removed background colors
+	// Default values from dircolors
+	//
+	// no*  NORMAL                 00
+	// fi   FILE                   00
+	// rs*  RESET                  0
+	// di   DIR                    01;34
+	// ln   LINK                   01;36
+	// mh*  MULTIHARDLINK          00
+	// pi   FIFO                   40;33
+	// so   SOCK                   01;35
+	// do*  DOOR                   01;35
+	// bd   BLK                    40;33;01
+	// cd   CHR                    40;33;01
+	// or   ORPHAN                 40;31;01
+	// mi*  MISSING                00
+	// su   SETUID                 37;41
+	// sg   SETGID                 30;43
+	// ca*  CAPABILITY             30;41
+	// tw   STICKY_OTHER_WRITABLE  30;42
+	// ow   OTHER_WRITABLE         34;42
+	// st   STICKY                 37;44
+	// ex   EXEC                   01;32
+	//
+	// (Entries marked with * are not implemented in lf)
+
+	// default values from dircolors with background colors removed
 	defaultColors := []string{
-		// "rs=0",
+		"fi=00",
 		"di=01;34",
 		"ln=01;36",
-		// "mh=00",
-		"pi=33", // "pi=40;33",
+		"pi=33",
 		"so=01;35",
-		"do=01;35",
-		"bd=33;01", // "bd=40;33;01",
-		"cd=33;01", // "cd=40;33;01",
-		"or=31;01", // "or=40;31;01",
-		// "mi=00",
-		"su=01;32", // "su=37;41",
-		"sg=01;32", // "sg=30;43",
-		// "ca=30;41",
-		"tw=01;34", // "tw=30;42",
-		"ow=01;34", // "ow=34;42",
-		"st=01;34", // "st=37;44",
+		"bd=33;01",
+		"cd=33;01",
+		"or=31;01",
+		"su=01;32",
+		"sg=01;32",
+		"tw=01;34",
+		"ow=01;34",
+		"st=01;34",
 		"ex=01;32",
 	}
 
@@ -219,6 +240,10 @@ func (cm styleMap) get(f *file) tcell.Style {
 		return val
 	}
 
+	if val, ok := cm["*"+f.ext]; ok {
+		return val
+	}
+
 	var key string
 
 	switch {
@@ -228,35 +253,31 @@ func (cm styleMap) get(f *file) tcell.Style {
 		key = "or"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
 		key = "tw"
-	case f.IsDir() && f.Mode()&os.ModeSticky != 0:
-		key = "st"
 	case f.IsDir() && f.Mode()&0002 != 0:
 		key = "ow"
+	case f.IsDir() && f.Mode()&os.ModeSticky != 0:
+		key = "st"
 	case f.IsDir():
 		key = "di"
 	case f.Mode()&os.ModeNamedPipe != 0:
 		key = "pi"
 	case f.Mode()&os.ModeSocket != 0:
 		key = "so"
-	case f.Mode()&os.ModeCharDevice != 0:
-		key = "cd"
 	case f.Mode()&os.ModeDevice != 0:
 		key = "bd"
+	case f.Mode()&os.ModeCharDevice != 0:
+		key = "cd"
 	case f.Mode()&os.ModeSetuid != 0:
 		key = "su"
 	case f.Mode()&os.ModeSetgid != 0:
 		key = "sg"
-	case f.Mode().IsRegular() && f.Mode()&0111 != 0:
+	case f.Mode()&0111 != 0:
 		key = "ex"
 	default:
-		key = "*" + filepath.Ext(f.Name())
+		key = "fi"
 	}
 
 	if val, ok := cm[key]; ok {
-		return val
-	}
-
-	if val, ok := cm["fi"]; ok {
 		return val
 	}
 
