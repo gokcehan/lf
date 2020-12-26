@@ -217,30 +217,30 @@ func parseStylesBSD(env string) styleMap {
 	return styles
 }
 
-func (cm styleMap) get(f *file) tcell.Style {
-	if val, ok := cm[f.path]; ok {
+func (sm styleMap) get(f *file) tcell.Style {
+	if val, ok := sm[f.path]; ok {
 		return val
 	}
 
 	if f.IsDir() {
-		if val, ok := cm[f.Name()+"/"]; ok {
+		if val, ok := sm[f.Name()+"/"]; ok {
 			return val
 		}
 	}
 
-	if val, ok := cm[f.Name()]; ok {
+	if val, ok := sm[f.Name()]; ok {
 		return val
 	}
 
-	if val, ok := cm[f.Name()]; ok {
+	if val, ok := sm[f.Name()]; ok {
 		return val
 	}
 
-	if val, ok := cm[filepath.Base(f.Name())+".*"]; ok {
+	if val, ok := sm[filepath.Base(f.Name())+".*"]; ok {
 		return val
 	}
 
-	if val, ok := cm["*"+f.ext]; ok {
+	if val, ok := sm["*"+f.ext]; ok {
 		return val
 	}
 
@@ -277,7 +277,7 @@ func (cm styleMap) get(f *file) tcell.Style {
 		key = "fi"
 	}
 
-	if val, ok := cm[key]; ok {
+	if val, ok := sm[key]; ok {
 		return val
 	}
 
