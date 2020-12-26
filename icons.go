@@ -10,9 +10,7 @@ import (
 type iconMap map[string]string
 
 func parseIcons() iconMap {
-	if env := os.Getenv("LF_ICONS"); env != "" {
-		return parseIconsEnv(env)
-	}
+	im := make(iconMap)
 
 	defaultIcons := []string{
 		"fi=🗎",
@@ -31,31 +29,38 @@ func parseIcons() iconMap {
 		"ex=🗎",
 	}
 
-	return parseIconsEnv(strings.Join(defaultIcons, ":"))
+	im.parseEnv(strings.Join(defaultIcons, ":"))
+
+	if env := os.Getenv("LF_ICONS"); env != "" {
+		im.parseEnv(env)
+	}
+
+	return im
 }
 
-func parseIconsEnv(env string) iconMap {
-	icons := make(iconMap)
-
-	entries := strings.Split(env, ":")
-	for _, entry := range entries {
+func (im iconMap) parseEnv(env string) {
+	for _, entry := range strings.Split(env, ":") {
 		if entry == "" {
 			continue
 		}
+
 		pair := strings.Split(entry, "=")
+
 		if len(pair) != 2 {
 			log.Printf("invalid $LF_ICONS entry: %s", entry)
-			return icons
+			return
 		}
+
 		key, val := pair[0], pair[1]
+
 		key = replaceTilde(key)
+
 		if filepath.IsAbs(key) {
 			key = filepath.Clean(key)
 		}
-		icons[key] = val
-	}
 
-	return icons
+		im[key] = val
+	}
 }
 
 func (im iconMap) get(f *file) string {

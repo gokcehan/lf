@@ -13,13 +13,7 @@ import (
 type styleMap map[string]tcell.Style
 
 func parseStyles() styleMap {
-	if env := os.Getenv("LS_COLORS"); env != "" {
-		return parseStylesGNU(env)
-	}
-
-	if env := os.Getenv("LSCOLORS"); env != "" {
-		return parseStylesBSD(env)
-	}
+	sm := make(styleMap)
 
 	// Default values from dircolors
 	//
@@ -64,7 +58,17 @@ func parseStyles() styleMap {
 		"ex=01;32",
 	}
 
-	return parseStylesGNU(strings.Join(defaultColors, ":"))
+	sm.parseGNU(strings.Join(defaultColors, ":"))
+
+	if env := os.Getenv("LSCOLORS"); env != "" {
+		sm.parseBSD(env)
+	}
+
+	if env := os.Getenv("LS_COLORS"); env != "" {
+		sm.parseGNU(env)
+	}
+
+	return sm
 }
 
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
@@ -147,37 +151,36 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 }
 
 // This function parses $LS_COLORS environment variable.
-func parseStylesGNU(env string) styleMap {
-	styles := make(styleMap)
-
-	entries := strings.Split(env, ":")
-	for _, entry := range entries {
+func (sm styleMap) parseGNU(env string) {
+	for _, entry := range strings.Split(env, ":") {
 		if entry == "" {
 			continue
 		}
+
 		pair := strings.Split(entry, "=")
+
 		if len(pair) != 2 {
 			log.Printf("invalid $LS_COLORS entry: %s", entry)
-			return styles
+			return
 		}
+
 		key, val := pair[0], pair[1]
+
 		key = replaceTilde(key)
+
 		if filepath.IsAbs(key) {
 			key = filepath.Clean(key)
 		}
-		styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
-	}
 
-	return styles
+		sm[key] = applyAnsiCodes(val, tcell.StyleDefault)
+	}
 }
 
 // This function parses $LSCOLORS environment variable.
-func parseStylesBSD(env string) styleMap {
-	styles := make(styleMap)
-
+func (sm styleMap) parseBSD(env string) {
 	if len(env) != 22 {
 		log.Printf("invalid $LSCOLORS variable: %s", env)
-		return styles
+		return
 	}
 
 	colorNames := []string{"di", "ln", "so", "pi", "ex", "bd", "cd", "su", "sg", "tw", "ow"}
@@ -211,10 +214,8 @@ func parseStylesBSD(env string) styleMap {
 	}
 
 	for i, key := range colorNames {
-		styles[key] = getStyle(env[i*2], env[i*2+1])
+		sm[key] = getStyle(env[i*2], env[i*2+1])
 	}
-
-	return styles
 }
 
 func (sm styleMap) get(f *file) tcell.Style {
