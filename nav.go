@@ -285,6 +285,7 @@ type nav struct {
 	moveTotalChan   chan int
 	deleteCountChan chan int
 	deleteTotalChan chan int
+	previewChan     chan string
 	dirChan         chan *dir
 	regChan         chan *reg
 	dirCache        map[string]*dir
@@ -398,6 +399,7 @@ func newNav(height int) *nav {
 		moveTotalChan:   make(chan int, 1024),
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
+		previewChan:     make(chan string, 1024),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
 		dirCache:        make(map[string]*dir),
@@ -457,6 +459,27 @@ func (nav *nav) position() {
 	}
 }
 
+func (nav *nav) previewLoop(ui *ui) {
+	var path string
+	for {
+		p, ok := <-nav.previewChan
+		if !ok {
+			return
+		}
+		if len(p) != 0 {
+			win := ui.wins[len(ui.wins)-1]
+			nav.preview(p, win)
+			path = p
+		} else if len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			cmd := exec.Command(gOpts.cleaner, path)
+			if err := cmd.Run(); err != nil {
+				log.Printf("cleaning preview: %s", err)
+			}
+			nav.volatilePreview = false
+		}
+	}
+}
+
 func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
@@ -487,8 +510,8 @@ func (nav *nav) preview(path string, win *win) {
 			if err := cmd.Wait(); err != nil {
 				if e, ok := err.(*exec.ExitError); ok {
 					if e.ExitCode() != 0 {
-						nav.volatilePreview = true
 						reg.volatile = true
+						nav.volatilePreview = true
 					}
 				} else {
 					log.Printf("loading file: %s", err)
@@ -525,37 +548,24 @@ func (nav *nav) preview(path string, win *win) {
 	}
 }
 
-func (nav *nav) previewClear() {
-	if len(gOpts.cleaner) != 0 && nav.volatilePreview {
-		nav.volatilePreview = false
-
-		cmd := exec.Command(gOpts.cleaner)
-		if err := cmd.Run(); err != nil {
-			log.Printf("cleaning preview: %s", err)
-		}
-	}
-}
-
-func (nav *nav) loadReg(path string, win *win) *reg {
+func (nav *nav) loadReg(path string) *reg {
 	r, ok := nav.regCache[path]
 	if !ok || r.volatile {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
-		go nav.preview(path, win)
+		nav.previewChan <- path
 		return r
 	}
 
-	if nav.checkReg(r) {
-		go nav.preview(path, win)
-	}
+	nav.checkReg(r)
 
 	return r
 }
 
-func (nav *nav) checkReg(reg *reg) bool {
+func (nav *nav) checkReg(reg *reg) {
 	s, err := os.Stat(reg.path)
 	if err != nil {
-		return false
+		return
 	}
 
 	now := time.Now()
@@ -563,15 +573,13 @@ func (nav *nav) checkReg(reg *reg) bool {
 	// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 	// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
 	if s.ModTime().After(now) {
-		return false
+		return
 	}
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		return true
+		nav.previewChan <- reg.path
 	}
-
-	return false
 }
 
 func (nav *nav) sort() {

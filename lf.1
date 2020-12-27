@@ -719,7 +719,7 @@ Set the path of a previewer file to filter the content of regular files for prev
     cleaner        string    (default '') (not called if empty)
 .EE
 .PP
-Set the path of a cleaner file. This file will be called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. The file should be executable. Preview clearing is disabled when the value of this option is left empty.
+Set the path of a cleaner file. This file will be called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. The file should be executable. One argument is passed to the file; the path to the file whose preview should be cleaned. Preview clearing is disabled when the value of this option is left empty.
 .PP
 .EX
     promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")

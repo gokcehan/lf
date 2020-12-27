@@ -25,7 +25,7 @@ type app struct {
 	ui            *ui
 	nav           *nav
 	ticker        *time.Ticker
-	quitChan      chan bool
+	quitChan      chan struct{}
 	cmd           *exec.Cmd
 	cmdIn         io.WriteCloser
 	cmdOutBuf     []byte
@@ -38,7 +38,7 @@ func newApp(screen tcell.Screen) *app {
 	ui := newUI(screen)
 	nav := newNav(ui.wins[0].h)
 
-	quitChan := make(chan bool, 1)
+	quitChan := make(chan struct{}, 1)
 
 	app := &app{
 		ui:       ui,
@@ -213,7 +213,7 @@ func (app *app) loop() {
 				continue
 			}
 
-			go app.nav.previewClear()
+			app.nav.previewChan <- ""
 
 			log.Print("bye!")
 
@@ -312,10 +312,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
-			if app.nav.checkReg(r) {
-				win := app.ui.wins[len(app.ui.wins)-1]
-				go app.nav.preview(r.path, win)
-			}
+			app.nav.checkReg(r)
 
 			app.nav.regCache[r.path] = r
 
@@ -407,7 +404,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		go app.nav.previewClear()
+		app.nav.previewChan <- ""
 		app.ui.pause()
 		defer app.ui.resume()
 		defer app.nav.renew()

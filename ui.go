@@ -625,12 +625,11 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
-	go nav.previewClear()
+	nav.previewChan <- ""
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		win := ui.wins[len(ui.wins)-1]
-		ui.regPrev = nav.loadReg(curr.path, win)
+		ui.regPrev = nav.loadReg(curr.path)
 	}
 }
 

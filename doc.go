@@ -601,6 +601,7 @@ Preview filtering is disabled and files are displayed as they are when the value
 
 Set the path of a cleaner file. This file will be called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled.
 The file should be executable.
+One argument is passed to the file; the path to the file whose preview should be cleaned.
 Preview clearing is disabled when the value of this option is left empty.
 
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
