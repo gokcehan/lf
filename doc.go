@@ -1183,38 +1183,135 @@ You can add an extra call to make it run on startup as well:
 
 Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
 
-Colorschemes
+Colors
 
 lf tries to automatically adapt its colors to the environment.
-On startup, first '$LS_COLORS' environment variable is checked.
-This variable is used by GNU ls to configure its colors based on file types and extensions.
-The value of this variable is often set by GNU dircolors in a shell configuration file.
-dircolors program itself can be configured with a configuration file.
-dircolors supports 256 colors along with common attributes such as bold and underline.
+It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values.
+Colors are set in the following order:
 
-If '$LS_COLORS' variable is not set, '$LSCOLORS' variable is checked instead.
-This variable is used by ls programs on unix systems such as Mac and BSDs.
-This variable has a simple syntax and supports 8 colors and bold attribute.
+    1. default
+    2. LSCOLORS (Mac/BSD ls)
+    3. LS_COLORS (GNU ls)
+    4. LF_COLORS (lf specific)
 
-If both of these environment variables are not set, then lf fallbacks to its default colorscheme.
-Default lf colors are taken from GNU dircolors defaults.
-These defaults use 8 basic colors and bold attribute.
+Please refer to the corresponding man pages for more information about 'LSCOLORS' and 'LS_COLORS'.
+'LF_COLORS' is provided with the same syntax as 'LS_COLORS' in case you want to configure colors only for lf but not ls.
+This can be useful since there are some differences between ls and lf, though one should expect the same behavior for common cases.
 
-It is worth noting that lf uses as many colors are advertised by your terminal's entry in your systems terminfo or infocmp database, if this is not present lf will default to an internal database.
-For terminals supporting 24-bit (or "true") color that do not have a database entry (or one that does not advertise all capabilities), support can be enabled by either setting the '$COLORTERM' variable to "truecolor" or ensuring '$TERM' is set to a value that ends with "-truecolor".
-
-Keeping this in mind, you can configure lf colors in two different ways.
-First, you can configure 8 basic colors used by your terminal and lf should pick up those colors automatically.
+You can configure lf colors in two different ways.
+First, you can only configure 8 basic colors used by your terminal and lf should pick up those colors automatically.
 Depending on your terminal, you should be able to select your colors from a 24-bit palette.
 This is the recommended approach as colors used by other programs will also match each other.
 
 Second, you can set the values of environmental variables mentioned above for fine grained customization.
-This is useful to change colors used for different file types and extensions.
-'$LS_COLORS' is more powerful than '$LSCOLORS' and it can be used even when GNU programs are not installed on the system.
+Note that 'LS_COLORS/LF_COLORS' are more powerful than 'LSCOLORS' and they can be used even when GNU programs are not installed on the system.
 You can combine this second method with the first method for best results.
 
 Lastly, you may also want to configure the colors of the prompt line to match the rest of the colors.
 Colors of the prompt line can be configured using the 'promptfmt' option which can include hardcoded colors as ansi escapes.
 See the default value of this option to have an idea about how to color this line.
+
+It is worth noting that lf uses as many colors are advertised by your terminal's entry in your systems terminfo or infocmp database, if this is not present lf will default to an internal database.
+For terminals supporting 24-bit (or "true") color that do not have a database entry (or one that does not advertise all capabilities), support can be enabled by either setting the '$COLORTERM' variable to "truecolor" or ensuring '$TERM' is set to a value that ends with "-truecolor".
+
+Default lf colors are mostly taken from GNU dircolors defaults.
+These defaults use 8 basic colors and bold attribute.
+Default dircolors entries with background colors are simplified to avoid confusion with current file selection in lf.
+Similarly, there are only file type matchings and extension matchings are left out for simplicity.
+Default values are as follows given with their matching order in lf:
+
+    ln  01;36
+    or  31;01
+    tw  01;34
+    ow  01;34
+    st  01;34
+    di  01;34
+    pi  33
+    so  01;35
+    bd  33;01
+    cd  33;01
+    su  01;32
+    sg  01;32
+    ex  01;32
+    fi  00
+
+Note that, lf first tries matching file names and then falls back to file types.
+The full order of matchings from most specific to least are as follows:
+
+    1. Full Path (e.g. '~/.config/lf/lfrc')
+    2. Dir Name  (e.g. '.git/') (only matches dirs with a trailing slash at the end)
+    3. File Name (e.g. '.git')
+    4. Base Name (e.g. 'README.*')
+    5. Extension (e.g. '*.txt')
+    6. File Type (e.g. 'ln')
+
+For example, given a regular text file '/path/to/README.txt', the following entries are checked in the configuration and the first one to match is used:
+
+    1. '/path/to/README.txt'
+    2. 'README.txt/' (skipped since the file is not a directory)
+    3. 'README.txt'
+    4. 'README.*'
+    5. '*.txt'
+    6. 'fi'
+
+Note that glob-like patterns do not actually perform glob matching due to performance reasons.
+
+For example, you can set a variable as follows:
+
+    export LF_COLORS="~/Documents=01;31:~/Downloads=01;31:~/.local/share=01;31:~/.config/lf/lfrc=31:.git/=01;32:.git=32:.gitignore=32:Makefile=32:README.*=33:*.txt=34:*.md=34:ln=01;36:di=01;34:ex=01;32:"
+
+Having all entries on a single line can make it hard to read.
+You may instead divide it to multiple lines in between double quotes by escaping newlines with backslashes as follows:
+
+    export LF_COLORS="\
+    ~/Documents=01;31:\
+    ~/Downloads=01;31:\
+    ~/.local/share=01;31:\
+    ~/.config/lf/lfrc=31:\
+    .git/=01;32:\
+    .git=32:\
+    .gitignore=32:\
+    Makefile=32:\
+    README.*=33:\
+    *.txt=34:\
+    *.md=34:\
+    ln=01;36:\
+    di=01;34:\
+    ex=01;32:\
+    "
+
+Having such a long variable definition in a shell configuration file might be undesirable.
+You may instead put this definition in a separate file and source it in your shell configuration file as follows:
+
+    [ -f "/path/to/colors" ] && source "/path/to/colors"
+
+See the wiki page for ansi escape codes
+https://en.wikipedia.org/wiki/ANSI_escape_code.
+
+Icons
+
+Icons are configured using 'LF_ICONS' environment variable.
+This variable uses the same syntax as 'LS_COLORS/LF_COLORS'.
+Instead of colors, you should put a single characters as values of entries.
+Do not forget to enable 'icons' option to see the icons.
+Default values are as follows given with their matching order in lf:
+
+    ln  🗎
+    or  🗎
+    tw  🗀
+    ow  🗀
+    st  🗀
+    di  🗀
+    pi  🗎
+    so  🗎
+    bd  🗎
+    cd  🗎
+    su  🗎
+    sg  🗎
+    ex  🗎
+    fi  🗎
+
+See the wiki page for an example icons configuration
+https://github.com/gokcehan/lf/wiki/Icons.
 */
 package main
