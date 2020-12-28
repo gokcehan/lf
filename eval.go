@@ -26,6 +26,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.dircounts = false
 	case "dircounts!":
 		gOpts.dircounts = !gOpts.dircounts
+    case "dirsizetool":
+        gOpts.dirsizetool = replaceTilde(e.val)
 	case "dirfirst":
 		gOpts.sortType.option |= dirfirstSort
 		app.nav.sort()
@@ -816,6 +818,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav)
 		app.ui.loadFileInfo(app.nav)
+    case "update-dirsize":
+        app.nav.updateDirsize()
 	case "read":
 		app.ui.cmdPrefix = ":"
 		app.ui.loadFileInfo(app.nav)

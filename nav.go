@@ -32,6 +32,8 @@ type file struct {
 	linkTarget string
 	path       string
 	dirCount   int
+    dirSize    int64
+    size       int64
 	accessTime time.Time
 	changeTime time.Time
 	ext        string
@@ -89,19 +91,45 @@ func readdir(path string) ([]*file, error) {
 		// i.e. directories, filenames without extensions
 		ext := filepath.Ext(fpath)
 
-		files = append(files, &file{
+        f := file{
 			FileInfo:   lstat,
 			linkState:  linkState,
 			linkTarget: linkTarget,
 			path:       fpath,
 			dirCount:   -1,
+            dirSize:    -1,
+            size:       -1,
 			accessTime: at,
 			changeTime: ct,
 			ext:        ext,
-		})
+		}
+		files = append(files, &f)
+        if lstat.IsDir() {
+            go fetchDirsize(&f)
+        }
 	}
 
 	return files, err
+}
+
+func fetchDirsize(f *file) {
+    if len(gOpts.dirsizetool) == 0 {
+        return
+    }
+    fmtDirsizetool := fmt.Sprintf("\"%s\" \"%s\"", gOpts.dirsizetool, string(f.path))
+    cmd := exec.Command(gOpts.shell, "-c", fmtDirsizetool)
+    out, err := cmd.Output()
+    if err != nil {
+        log.Printf("fetching directory size: %s", err)
+		return
+    }
+    out_as_string := strings.TrimSuffix(string(out), "\n")
+    log.Printf("fetching directory size: %s", out_as_string)
+    out_as_int, err := strconv.ParseInt(out_as_string, 10, 64)
+    if err != nil {
+        log.Printf("fetching directory size: %s", err)
+    }
+    f.dirSize = out_as_int
 }
 
 type dir struct {
@@ -169,7 +197,7 @@ func (dir *dir) sort() {
 		})
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].Size() < dir.files[j].Size()
+			return dir.files[i].size < dir.files[j].size
 		})
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
@@ -449,6 +477,16 @@ func (nav *nav) reload() error {
 	}
 
 	return nil
+}
+
+func (nav *nav) updateDirsize() {
+    for _, d := range nav.dirs {
+        for _, f := range d.files {
+            if f.IsDir() && (f.size < 0) {
+                go fetchDirsize(f)
+            }
+        }
+    }
 }
 
 func (nav *nav) position() {

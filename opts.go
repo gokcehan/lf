@@ -30,6 +30,7 @@ type sortType struct {
 var gOpts struct {
 	anchorfind     bool
 	dircounts      bool
+    dirsizetool    string
 	drawbox        bool
 	globsearch     bool
 	icons          bool
@@ -69,6 +70,7 @@ var gOpts struct {
 func init() {
 	gOpts.anchorfind = true
 	gOpts.dircounts = false
+    gOpts.dirsizetool = ""
 	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.icons = false

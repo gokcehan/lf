@@ -41,6 +41,7 @@ The following commands are provided by lf:
     redraw                   (default '<c-l>')
     load
     reload                   (default '<c-r>')
+    update-dirsize
     echo
     echomsg
     echoerr
@@ -100,6 +101,7 @@ The following options can be used to customize the behavior of lf:
 
     anchorfind     bool      (default on)
     dircounts      bool      (default off)
+    dirsizetool    string    (default '')
     dirfirst       bool      (default on)
     drawbox        bool      (default off)
     errorfmt       string    (default "\033[7;31;47m%s\033[0m")

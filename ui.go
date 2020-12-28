@@ -279,28 +279,27 @@ func fileInfo(f *file, d *dir) string {
 	for _, s := range gOpts.info {
 		switch s {
 		case "size":
-			if !(gOpts.dircounts && f.IsDir()) {
-				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
-				continue
-			}
-
-			if f.dirCount == -1 {
+            switch {
+            case !f.IsDir() || (!gOpts.dircounts && (len(gOpts.dirsizetool) == 0)):
+                f.size = f.Size()
+            case f.dirSize >= 0:
+                f.size = f.dirSize
+            case gOpts.dircounts && (f.dirCount < 0):
 				d, err := os.Open(path)
 				if err != nil {
 					f.dirCount = -2
 				}
-
 				names, err := d.Readdirnames(1000)
 				d.Close()
-
 				if names == nil && err != io.EOF {
 					f.dirCount = -2
 				} else {
 					f.dirCount = len(names)
 				}
-			}
-
+            }
 			switch {
+            case f.size >= 0:
+				info = fmt.Sprintf("%s %4s", info, humanize(f.size))
 			case f.dirCount < 0:
 				info = fmt.Sprintf("%s    ?", info)
 			case f.dirCount < 1000:
