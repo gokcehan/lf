@@ -689,8 +689,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	}
 
 	prompt = strings.Replace(prompt, "%w", pwd, -1)
-	if pwd != "/" {
-		// Don't remove root folder
+	if pwd != sep { // Don't remove root folder
 		pwd = strings.TrimSuffix(pwd, sep)
 	}
 	prompt = strings.Replace(prompt, "%W", pwd, -1)
