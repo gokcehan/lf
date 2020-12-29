@@ -615,7 +615,7 @@ type reg struct {
 	lines    []string
 }
 
-func (ui *ui) loadFile(nav *nav) {
+func (ui *ui) loadFile(nav *nav, volatile bool) {
 	curr, err := nav.currFile()
 	if err != nil {
 		return
@@ -625,11 +625,14 @@ func (ui *ui) loadFile(nav *nav) {
 		return
 	}
 
-	nav.previewChan <- ""
+	if volatile {
+		nav.previewChan <- ""
+	}
+
 	if curr.IsDir() {
 		ui.dirPrev = nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(curr.path)
+		ui.regPrev = nav.loadReg(curr.path, volatile)
 	}
 }
 
