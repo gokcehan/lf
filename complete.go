@@ -133,6 +133,7 @@ var (
 		"previewer",
 		"cleaner",
 		"promptfmt",
+		"titlefmt",
 		"ratios",
 		"shell",
 		"shellopts",

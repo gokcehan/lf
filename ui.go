@@ -693,6 +693,34 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
+func setWinTitle(nav *nav) {
+	pwd := nav.currDir().path
+
+	if strings.HasPrefix(pwd, gUser.HomeDir) {
+		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
+	}
+
+	sep := string(filepath.Separator)
+
+	if !strings.HasSuffix(pwd, sep) {
+		pwd += sep
+	}
+
+	var fname string
+	curr, err := nav.currFile()
+	if err == nil {
+		fname = filepath.Base(curr.path)
+	}
+
+	var title string
+	title = strings.Replace(gOpts.titlefmt, "%u", gUser.Username, -1)
+	title = strings.Replace(title, "%h", gHostname, -1)
+	title = strings.Replace(title, "%f", fname, -1)
+	title = strings.Replace(title, "%w", pwd, -1)
+
+	fmt.Printf("\033]2;%s\a", title)
+}
+
 func (ui *ui) drawStatLine(nav *nav) {
 	st := tcell.StyleDefault
 
@@ -766,6 +794,9 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.drawPromptLine(nav)
+	if gOpts.titlefmt != "" {
+		setWinTitle(nav)
+	}
 
 	length := min(len(ui.wins), len(nav.dirs))
 	woff := len(ui.wins) - length

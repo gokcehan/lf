@@ -267,6 +267,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cleaner = replaceTilde(e.val)
 	case "promptfmt":
 		gOpts.promptfmt = e.val
+	case "titlefmt":
+		gOpts.titlefmt = e.val
 	case "ratios":
 		toks := strings.Split(e.val, ":")
 		var rats []int
