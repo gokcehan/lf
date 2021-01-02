@@ -242,13 +242,8 @@ func main() {
 	default:
 		checkServer()
 
-		gClientID = 1000
+		gClientID = os.Getpid()
 		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
-		for _, err := os.Stat(gLogPath); !os.IsNotExist(err); _, err = os.Stat(gLogPath) {
-			gClientID++
-			gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
-		}
-
 		switch flag.NArg() {
 		case 0:
 			_, err := os.Getwd()
