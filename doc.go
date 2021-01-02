@@ -592,7 +592,7 @@ Files containing the null character (U+0000) in the read portion are considered 
 
 Set the path of a previewer file to filter the content of regular files for previewing.
 The file should be executable.
-Five arguments are passed to the file, first is the current file name; the second, third, fourth, and fifth are height, width, horizontal position, and vertical position of preview pane respectively.
+Five arguments are passed to the file, first is the current file name; the second, third, fourth, and fifth are width, height, horizontal position, and vertical position of preview pane respectively.
 SIGPIPE signal is sent when enough lines are read.
 If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled. This means that if the file is selected in the future, the previewer is called once again.
 Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.

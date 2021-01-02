@@ -627,7 +627,7 @@ binary files and displayed as 'binary'.
 Set the path of a previewer file to filter the content of regular files for
 previewing. The file should be executable. Five arguments are passed to the
 file, first is the current file name; the second, third, fourth, and fifth
-are height, width, horizontal position, and vertical position of preview
+are width, height, horizontal position, and vertical position of preview
 pane respectively. SIGPIPE signal is sent when enough lines are read. If the
 previewer returns a non-zero exit code, then the preview cache for the given
 file is disabled. This means that if the file is selected in the future, the
