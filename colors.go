@@ -233,22 +233,6 @@ func (sm styleMap) get(f *file) tcell.Style {
 		}
 	}
 
-	if val, ok := sm[f.Name()]; ok {
-		return val
-	}
-
-	if val, ok := sm[f.Name()]; ok {
-		return val
-	}
-
-	if val, ok := sm[filepath.Base(f.Name())+".*"]; ok {
-		return val
-	}
-
-	if val, ok := sm["*"+f.ext]; ok {
-		return val
-	}
-
 	var key string
 
 	switch {
@@ -278,11 +262,25 @@ func (sm styleMap) get(f *file) tcell.Style {
 		key = "sg"
 	case f.Mode()&0111 != 0:
 		key = "ex"
-	default:
-		key = "fi"
 	}
 
 	if val, ok := sm[key]; ok {
+		return val
+	}
+
+	if val, ok := sm[f.Name()]; ok {
+		return val
+	}
+
+	if val, ok := sm[filepath.Base(f.Name())+".*"]; ok {
+		return val
+	}
+
+	if val, ok := sm["*"+f.ext]; ok {
+		return val
+	}
+
+	if val, ok := sm["fi"]; ok {
 		return val
 	}
 

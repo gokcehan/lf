@@ -74,18 +74,6 @@ func (im iconMap) get(f *file) string {
 		}
 	}
 
-	if val, ok := im[f.Name()]; ok {
-		return val
-	}
-
-	if val, ok := im[filepath.Base(f.Name())+".*"]; ok {
-		return val
-	}
-
-	if val, ok := im["*"+f.ext]; ok {
-		return val
-	}
-
 	var key string
 
 	switch {
@@ -115,11 +103,25 @@ func (im iconMap) get(f *file) string {
 		key = "sg"
 	case f.Mode()&0111 != 0:
 		key = "ex"
-	default:
-		key = "fi"
 	}
 
 	if val, ok := im[key]; ok {
+		return val
+	}
+
+	if val, ok := im[f.Name()]; ok {
+		return val
+	}
+
+	if val, ok := im[filepath.Base(f.Name())+".*"]; ok {
+		return val
+	}
+
+	if val, ok := im["*"+f.ext]; ok {
+		return val
+	}
+
+	if val, ok := im["fi"]; ok {
 		return val
 	}
 
