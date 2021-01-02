@@ -407,9 +407,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		s = append(s, ' ')
 
+		var iwidth int
+
 		if gOpts.icons {
 			s = append(s, []rune(icons.get(f))...)
 			s = append(s, ' ')
+			iwidth = 2
 		}
 
 		for _, r := range f.Name() {
@@ -429,7 +432,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		info := fileInfo(f, dir)
 
-		if len(info) > 0 && win.w-2 > 2*len(info) {
+		if len(info) > 0 && win.w-lnwidth-iwidth-2 > 2*len(info) {
 			if win.w-2 > w+len(info) {
 				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
 			} else {
