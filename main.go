@@ -11,12 +11,15 @@ import (
 	"runtime"
 	"runtime/pprof"
 	"strconv"
+	"strings"
 )
 
 var (
 	envPath  = os.Getenv("PATH")
 	envLevel = os.Getenv("LF_LEVEL")
 )
+
+type arrayFlag []string
 
 var (
 	gClientID      int
@@ -28,9 +31,18 @@ var (
 	gLogPath       string
 	gServerLogPath string
 	gSelect        string
-	gCommand       string
+	gCommands      arrayFlag
 	gVersion       string
 )
+
+func (a *arrayFlag) Set(v string) error {
+	*a = append(*a, v)
+	return nil
+}
+
+func (a *arrayFlag) String() string {
+	return strings.Join(*a, ", ")
+}
 
 func init() {
 	h, err := os.Hostname()
@@ -205,9 +217,8 @@ func main() {
 		"",
 		"path to the file to write selected files on open (to use as open file dialog)")
 
-	flag.StringVar(&gCommand,
+	flag.Var(&gCommands,
 		"command",
-		"",
 		"command to execute on client initialization")
 
 	flag.Parse()

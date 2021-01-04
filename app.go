@@ -183,8 +183,8 @@ func (app *app) loop() {
 		}
 	}
 
-	if gCommand != "" {
-		p := newParser(strings.NewReader(gCommand))
+	for _, cmd := range gCommands {
+		p := newParser(strings.NewReader(cmd))
 
 		for p.parse() {
 			p.expr.eval(app, nil)
