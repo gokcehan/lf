@@ -548,9 +548,9 @@ func (nav *nav) preview(path string, win *win) {
 	}
 }
 
-func (nav *nav) loadReg(path string) *reg {
+func (nav *nav) loadReg(path string, volatile bool) *reg {
 	r, ok := nav.regCache[path]
-	if !ok || r.volatile {
+	if !ok || (volatile && r.volatile) {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
 		nav.previewChan <- path
