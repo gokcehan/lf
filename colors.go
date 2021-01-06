@@ -268,7 +268,7 @@ func (sm styleMap) get(f *file) tcell.Style {
 		return val
 	}
 
-	if val, ok := sm[f.Name()]; ok {
+	if val, ok := sm[f.Name()+"*"]; ok {
 		return val
 	}
 

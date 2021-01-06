@@ -109,7 +109,7 @@ func (im iconMap) get(f *file) string {
 		return val
 	}
 
-	if val, ok := im[f.Name()]; ok {
+	if val, ok := im[f.Name()+"*"]; ok {
 		return val
 	}
 
