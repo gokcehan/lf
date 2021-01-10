@@ -663,10 +663,6 @@ func (ui *ui) drawPromptLine(nav *nav) {
 
 	sep := string(filepath.Separator)
 
-	if !strings.HasSuffix(pwd, sep) {
-		pwd += sep
-	}
-
 	var fname string
 	curr, err := nav.currFile()
 	if err == nil {
@@ -679,7 +675,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	prompt = strings.Replace(prompt, "%h", gHostname, -1)
 	prompt = strings.Replace(prompt, "%f", fname, -1)
 
-	if printLength(strings.Replace(prompt, "%w", pwd, -1)) > ui.promptWin.w {
+	if printLength(strings.Replace(strings.Replace(prompt, "%w", pwd, -1), "%d", pwd, -1)) > ui.promptWin.w {
 		names := strings.Split(pwd, sep)
 		for i := range names {
 			if names[i] == "" {
@@ -687,7 +683,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 			}
 			r, _ := utf8.DecodeRuneInString(names[i])
 			names[i] = string(r)
-			if printLength(strings.Replace(prompt, "%w", strings.Join(names, sep), -1)) <= ui.promptWin.w {
+			if printLength(strings.Replace(strings.Replace(prompt, "%w", strings.Join(names, sep), -1), "%d", strings.Join(names, sep), -1)) <= ui.promptWin.w {
 				break
 			}
 		}
@@ -695,6 +691,10 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	}
 
 	prompt = strings.Replace(prompt, "%w", pwd, -1)
+	if !strings.HasSuffix(pwd, sep) {
+		pwd += sep
+	}
+	prompt = strings.Replace(prompt, "%d", pwd, -1)
 
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
