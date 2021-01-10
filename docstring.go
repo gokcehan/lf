@@ -122,7 +122,7 @@ The following options can be used to customize the behavior of lf:
     preview        bool      (default on)
     previewer      string    (default '')
     cleaner        string    (default '')
-    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f\033[0m")
+    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
     reverse        bool      (default off)
@@ -642,7 +642,7 @@ preview cache disabled. The file should be executable. One argument is
 passed to the file; the path to the file whose preview should be cleaned.
 Preview clearing is disabled when the value of this option is left empty.
 
-    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%w/\033[0m\033[1m%f\033[0m")
+    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d/\033[0m\033[1m%f\033[0m")
 
 Format string of the prompt shown in the top line. Special expansions are
 provided, '%u' as the user name, '%h' as the host name, '%w' as the working
@@ -1314,7 +1314,7 @@ define any other command:
         GIT_PS1_SHOWUNTRACKEDFILES=auto
         GIT_PS1_SHOWUPSTREAM=auto
         git=$(__git_ps1 " (%s)") || true
-        fmt="\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f$git\033[0m"
+        fmt="\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f$git\033[0m"
         lf -remote "send $id set promptfmt \"$fmt\""
     }}
 

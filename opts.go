@@ -91,7 +91,7 @@ func init() {
 	gOpts.ifs = ""
 	gOpts.previewer = ""
 	gOpts.cleaner = ""
-	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%w\033[0m\033[1m%f\033[0m"
+	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
 	gOpts.shell = gDefaultShell
 	gOpts.timefmt = time.ANSIC
 	gOpts.truncatechar = "~"

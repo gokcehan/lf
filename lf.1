@@ -133,7 +133,7 @@ The following options can be used to customize the behavior of lf:
     preview        bool      (default on)
     previewer      string    (default '')
     cleaner        string    (default '')
-    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w\e033[0m\e033[1m%f\e033[0m")
+    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f\e033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
     reverse        bool      (default off)
@@ -722,7 +722,7 @@ Set the path of a previewer file to filter the content of regular files for prev
 Set the path of a cleaner file. This file will be called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. The file should be executable. One argument is passed to the file; the path to the file whose preview should be cleaned. Preview clearing is disabled when the value of this option is left empty.
 .PP
 .EX
-    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w/\e033[0m\e033[1m%f\e033[0m")
+    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d/\e033[0m\e033[1m%f\e033[0m")
 .EE
 .PP
 Format string of the prompt shown in the top line. Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, and '%f' as the file name. Home folder is shown as '~' in the working directory expansion. Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
@@ -1284,7 +1284,7 @@ There is a special command 'on-cd' that runs a shell command when it is defined 
         GIT_PS1_SHOWUNTRACKEDFILES=auto
         GIT_PS1_SHOWUPSTREAM=auto
         git=$(__git_ps1 " (%s)") || true
-        fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%w\e033[0m\e033[1m%f$git\e033[0m"
+        fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f$git\e033[0m"
         lf -remote "send $id set promptfmt \e"$fmt\e""
     }}
 .EE
