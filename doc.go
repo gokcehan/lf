@@ -604,7 +604,7 @@ The file should be executable.
 One argument is passed to the file; the path to the file whose preview should be cleaned.
 Preview clearing is disabled when the value of this option is left empty.
 
-    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d/\033[0m\033[1m%f\033[0m")
+    promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
 
 Format string of the prompt shown in the top line.
 Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, '%d' as the working directory with a trailing path separator, and '%f' as the file name.
