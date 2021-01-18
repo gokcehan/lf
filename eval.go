@@ -719,16 +719,18 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.top()
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.top() {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "bottom":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.bottom()
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.bottom() {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "toggle":
 		if len(e.args) == 0 {
 			app.nav.toggle()

@@ -677,18 +677,26 @@ func (nav *nav) open() error {
 	return nil
 }
 
-func (nav *nav) top() {
+func (nav *nav) top() bool {
 	dir := nav.currDir()
+
+	old := dir.ind
 
 	dir.ind = 0
 	dir.pos = 0
+
+	return old != dir.ind
 }
 
-func (nav *nav) bottom() {
+func (nav *nav) bottom() bool {
 	dir := nav.currDir()
+
+	old := dir.ind
 
 	dir.ind = len(dir.files) - 1
 	dir.pos = min(dir.ind, nav.height-1)
+
+	return old != dir.ind
 }
 
 func (nav *nav) toggleSelection(path string) {
