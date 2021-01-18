@@ -211,7 +211,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 
 		for {
 			rc, wc := utf8.DecodeRuneInString(s[i+w:])
-			if rc == gEscapeCode || runewidth.RuneWidth(rc) != 0 {
+			if rc == gEscapeCode || rc == '\t' || runewidth.RuneWidth(rc) != 0 {
 				break
 			}
 			comb = append(comb, rc)
