@@ -193,6 +193,7 @@ func printLength(s string) int {
 
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
 	off := x
+	var comb []rune
 	for i := 0; i < len(s); i++ {
 		r, w := utf8.DecodeRuneInString(s[i:])
 
@@ -208,8 +209,18 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 			continue
 		}
 
+		for {
+			rc, wc := utf8.DecodeRuneInString(s[i+w:])
+			if rc == gEscapeCode || runewidth.RuneWidth(rc) != 0 {
+				break
+			}
+			comb = append(comb, rc)
+			i += wc
+		}
+
 		if x < win.w {
-			screen.SetContent(win.x+x, win.y+y, r, nil, st)
+			screen.SetContent(win.x+x, win.y+y, r, comb, st)
+			comb = nil
 		}
 
 		i += w - 1
