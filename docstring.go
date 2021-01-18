@@ -1286,7 +1286,16 @@ reading it to the memory and then do the processing afterwards. This is
 especially relevant for big files. lf automatically closes the previewer
 script output pipe with a SIGPIPE when enough lines are read. When
 everything else fails, you can make use of the height argument to only feed
-the first portion of the file to a program for preview.
+the first portion of the file to a program for preview. Note that some
+programs may not respond well to SIGPIPE to exit with a non-zero return code
+and avoid caching. You may trap SIGPIPE in your preview script to avoid
+error propogation:
+
+    #!/bin/sh
+
+    trap "" PIPE
+
+    ...
 
 You may also use an existing preview filter as you like. Your system may
 already come with a preview filter named 'lesspipe'. These filters may have
