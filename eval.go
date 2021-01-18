@@ -606,44 +606,50 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.up(e.count)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.up(e.count) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "half-up":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.up(e.count * app.nav.height / 2)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.up(e.count * app.nav.height / 2) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "page-up":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.up(e.count * app.nav.height)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.up(e.count * app.nav.height) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "down":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.down(e.count)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.down(e.count) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "half-down":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.down(e.count * app.nav.height / 2)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.down(e.count * app.nav.height / 2) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "page-down":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
-		app.nav.down(e.count * app.nav.height)
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if app.nav.down(e.count * app.nav.height) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "updir":
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)

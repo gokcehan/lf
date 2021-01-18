@@ -590,14 +590,16 @@ func (nav *nav) sort() {
 	}
 }
 
-func (nav *nav) up(dist int) {
+func (nav *nav) up(dist int) bool {
 	dir := nav.currDir()
+
+	old := dir.ind
 
 	if dir.ind == 0 {
 		if gOpts.wrapscroll {
 			nav.bottom()
 		}
-		return
+		return old != dir.ind
 	}
 
 	dir.ind -= dist
@@ -606,10 +608,14 @@ func (nav *nav) up(dist int) {
 	dir.pos -= dist
 	edge := min(min(nav.height/2, gOpts.scrolloff), dir.ind)
 	dir.pos = max(dir.pos, edge)
+
+	return old != dir.ind
 }
 
-func (nav *nav) down(dist int) {
+func (nav *nav) down(dist int) bool {
 	dir := nav.currDir()
+
+	old := dir.ind
 
 	maxind := len(dir.files) - 1
 
@@ -617,7 +623,7 @@ func (nav *nav) down(dist int) {
 		if gOpts.wrapscroll {
 			nav.top()
 		}
-		return
+		return old != dir.ind
 	}
 
 	dir.ind += dist
@@ -632,6 +638,8 @@ func (nav *nav) down(dist int) {
 
 	dir.pos = min(dir.pos, nav.height-edge-1)
 	dir.pos = min(dir.pos, maxind)
+
+	return old != dir.ind
 }
 
 func (nav *nav) updir() error {
