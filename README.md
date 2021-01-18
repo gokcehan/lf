@@ -33,11 +33,6 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 - Tabs or windows (handled by window manager or terminal multiplexer)
 - Builtin pager/editor (handled by your pager/editor of choice)
-- Image previews (cool but no standard available)
-
-## May-Futures
-
-- Mouse control
 
 ## Installation
 
