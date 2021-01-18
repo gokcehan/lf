@@ -1194,12 +1194,12 @@ while typing. In this mode, you can either use 'cmd-enter' to accept the
 search or use 'cmd-escape' to cancel the search. Alternatively, you can also
 map some other commands with 'cmap' to accept the search and execute the
 command immediately afterwards. Possible candidates are 'up', 'down' and
-their variants, 'updir', and 'open' commands. For example, you can use arrow
-keys to finish the search with the following mappings:
+their variants, 'top', 'bottom', 'updir', and 'open' commands. For example,
+you can use arrow keys to finish the search with the following mappings:
 
-    cmap <up> up
-    cmap <down> down
-    cmap <left> updir
+    cmap <up>    up
+    cmap <down>  down
+    cmap <left>  updir
     cmap <right> open
 
 Finding mechanism is implemented with commands 'find' (default 'f'),

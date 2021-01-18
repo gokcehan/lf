@@ -716,10 +716,16 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "quit":
 		app.quitChan <- struct{}{}
 	case "top":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.top()
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "bottom":
+		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
+			normal(app)
+		}
 		app.nav.bottom()
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
