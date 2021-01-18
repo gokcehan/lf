@@ -21,6 +21,7 @@ func run() {
 	} else if err = screen.Init(); err != nil {
 		log.Fatalf("initializing screen: %s", err)
 	}
+	screen.EnableMouse()
 
 	f, err := os.Create(gLogPath)
 	if err != nil {

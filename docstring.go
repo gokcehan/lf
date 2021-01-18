@@ -909,6 +909,24 @@ instead). The easiest way to find the name of a key combination is to press
 the key while lf is running and read the name of the key from the unknown
 mapping error.
 
+Mouse buttons are prefixed with 'm' character:
+
+    map <m-1> down  # primary
+    map <m-2> down  # secondary
+    map <m-3> down  # middle
+    map <m-4> down
+    map <m-5> down
+    map <m-6> down
+    map <m-7> down
+    map <m-8> down
+
+Mouse wheel events are also prefixed with 'm' character:
+
+    map <m-up>    down
+    map <m-down>  down
+    map <m-left>  down
+    map <m-right> down
+
 
 Push Mappings
 

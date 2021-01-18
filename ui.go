@@ -1018,6 +1018,44 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			ui.menuBuf = listBinds(binds)
 			return draw
 		}
+	case *tcell.EventMouse:
+		var button string
+
+		switch tev.Buttons() {
+		case tcell.Button1:
+			button = "<m-1>"
+		case tcell.Button2:
+			button = "<m-2>"
+		case tcell.Button3:
+			button = "<m-3>"
+		case tcell.Button4:
+			button = "<m-4>"
+		case tcell.Button5:
+			button = "<m-5>"
+		case tcell.Button6:
+			button = "<m-6>"
+		case tcell.Button7:
+			button = "<m-7>"
+		case tcell.Button8:
+			button = "<m-8>"
+		case tcell.WheelUp:
+			button = "<m-up>"
+		case tcell.WheelDown:
+			button = "<m-down>"
+		case tcell.WheelLeft:
+			button = "<m-left>"
+		case tcell.WheelRight:
+			button = "<m-right>"
+		case tcell.ButtonNone:
+			return nil
+		}
+
+		expr, ok := gOpts.keys[button]
+		if ok {
+			return expr
+		}
+
+		return nil
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
@@ -1084,6 +1122,7 @@ func (ui *ui) resume() {
 	} else if err = screen.Init(); err != nil {
 		log.Fatalf("initializing screen: %s", err)
 	}
+	screen.EnableMouse()
 
 	ui.screen = screen
 
