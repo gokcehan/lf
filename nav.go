@@ -460,22 +460,34 @@ func (nav *nav) position() {
 }
 
 func (nav *nav) previewLoop(ui *ui) {
-	var path string
-	for {
-		p, ok := <-nav.previewChan
-		if !ok {
-			return
+	var prev string
+	for path := range nav.previewChan {
+		var clear bool
+		if len(path) == 0 {
+			clear = true
 		}
-		if len(p) != 0 {
-			win := ui.wins[len(ui.wins)-1]
-			nav.preview(p, win)
-			path = p
-		} else if len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			cmd := exec.Command(gOpts.cleaner, path)
+	loop:
+		for {
+			select {
+			case path = <-nav.previewChan:
+				if len(path) == 0 {
+					clear = true
+				}
+			default:
+				break loop
+			}
+		}
+		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			cmd := exec.Command(gOpts.cleaner, prev)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
 			}
 			nav.volatilePreview = false
+		}
+		if len(path) != 0 {
+			win := ui.wins[len(ui.wins)-1]
+			nav.preview(path, win)
+			prev = path
 		}
 	}
 }
