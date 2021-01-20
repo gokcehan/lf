@@ -462,17 +462,12 @@ func (nav *nav) position() {
 func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
-		var clear bool
-		if len(path) == 0 {
-			clear = true
-		}
+		clear := len(path) == 0
 	loop:
 		for {
 			select {
 			case path = <-nav.previewChan:
-				if len(path) == 0 {
-					clear = true
-				}
+				clear = clear || len(path) == 0
 			default:
 				break loop
 			}
