@@ -455,9 +455,9 @@ func insert(app *app, arg string) {
 				return
 			}
 
-			if !app.nav.findNext() {
+			if moved, found := app.nav.findNext(); !found {
 				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
-			} else {
+			} else if moved {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -484,9 +484,9 @@ func insert(app *app, arg string) {
 				return
 			}
 
-			if !app.nav.findPrev() {
+			if moved, found := app.nav.findPrev(); !found {
 				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
-			} else {
+			} else if moved {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -854,6 +854,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.findBack = true
 		app.ui.loadFileInfo(app.nav)
 	case "find-next":
+		dir := app.nav.currDir()
+		old := dir.ind
 		for i := 0; i < e.count; i++ {
 			if app.nav.findBack {
 				app.nav.findPrev()
@@ -861,9 +863,13 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.findNext()
 			}
 		}
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "find-prev":
+		dir := app.nav.currDir()
+		old := dir.ind
 		for i := 0; i < e.count; i++ {
 			if app.nav.findBack {
 				app.nav.findNext()
@@ -871,8 +877,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.findPrev()
 			}
 		}
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
+		if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "search":
 		app.ui.cmdPrefix = "/"
 		dir := app.nav.currDir()

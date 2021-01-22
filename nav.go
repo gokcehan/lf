@@ -1123,42 +1123,38 @@ func (nav *nav) findSingle() int {
 	return count
 }
 
-func (nav *nav) findNext() bool {
+func (nav *nav) findNext() (bool, bool) {
 	dir := nav.currDir()
 	for i := dir.ind + 1; i < len(dir.files); i++ {
 		if findMatch(dir.files[i].Name(), nav.find) {
-			nav.down(i - dir.ind)
-			return true
+			return nav.down(i - dir.ind), true
 		}
 	}
 	if gOpts.wrapscan {
 		for i := 0; i < dir.ind; i++ {
 			if findMatch(dir.files[i].Name(), nav.find) {
-				nav.up(dir.ind - i)
-				return true
+				return nav.up(dir.ind - i), true
 			}
 		}
 	}
-	return false
+	return false, false
 }
 
-func (nav *nav) findPrev() bool {
+func (nav *nav) findPrev() (bool, bool) {
 	dir := nav.currDir()
 	for i := dir.ind - 1; i >= 0; i-- {
 		if findMatch(dir.files[i].Name(), nav.find) {
-			nav.up(dir.ind - i)
-			return true
+			return nav.up(dir.ind - i), true
 		}
 	}
 	if gOpts.wrapscan {
 		for i := len(dir.files) - 1; i > dir.ind; i-- {
 			if findMatch(dir.files[i].Name(), nav.find) {
-				nav.down(i - dir.ind)
-				return true
+				return nav.down(i - dir.ind), true
 			}
 		}
 	}
-	return false
+	return false, false
 }
 
 func searchMatch(name, pattern string) (matched bool, err error) {
