@@ -1202,6 +1202,13 @@ You can define it just as you would define any other command:
         lf -remote "send $id set promptfmt \"$fmt\""
     }}
 
+If you want to print escape sequences, you may redirect 'printf' output to '/dev/tty'.
+The following xterm specific escape sequence sets the terminal title to the working directory:
+
+    cmd on-cd &{{
+        printf "\033]0; $PWD\007" > /dev/tty
+    }}
+
 This command runs whenever you change directory but not on startup.
 You can add an extra call to make it run on startup as well:
 
