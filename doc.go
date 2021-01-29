@@ -114,6 +114,7 @@ The following options can be used to customize the behavior of lf:
     ignoredia      bool      (default on)
     incsearch      bool      (default off)
     info           []string  (default '')
+    mouse          bool      (default off)
     number         bool      (default off)
     period         int       (default 0)
     preview        bool      (default on)
@@ -568,6 +569,10 @@ Jump to the first match after each keystroke during searching.
 List of information shown for directory items at the right side of pane.
 Currently supported information types are 'size', 'time', 'atime', and 'ctime'.
 Information is only shown when the pane width is more than twice the width of information.
+
+    mouse          bool      (default off)
+
+Send mouse events as input.
 
     number         bool      (default off)
 

@@ -1122,7 +1122,9 @@ func (ui *ui) resume() {
 	} else if err = screen.Init(); err != nil {
 		log.Fatalf("initializing screen: %s", err)
 	}
-	screen.EnableMouse()
+	if gOpts.mouse {
+		screen.EnableMouse()
+	}
 
 	ui.screen = screen
 

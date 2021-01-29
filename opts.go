@@ -36,6 +36,7 @@ var gOpts struct {
 	ignorecase     bool
 	ignoredia      bool
 	incsearch      bool
+	mouse          bool
 	number         bool
 	preview        bool
 	relativenumber bool
@@ -75,6 +76,7 @@ func init() {
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
 	gOpts.incsearch = false
+	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
 	gOpts.relativenumber = false

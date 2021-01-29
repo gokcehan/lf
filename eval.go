@@ -110,6 +110,24 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.incsearch = false
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
+	case "mouse":
+		if !gOpts.mouse {
+			gOpts.mouse = true
+			app.ui.screen.EnableMouse()
+		}
+	case "nomouse":
+		if gOpts.mouse {
+			gOpts.mouse = false
+			app.ui.screen.DisableMouse()
+		}
+	case "mouse!":
+		if gOpts.mouse {
+			gOpts.mouse = false
+			app.ui.screen.DisableMouse()
+		} else {
+			gOpts.mouse = true
+			app.ui.screen.EnableMouse()
+		}
 	case "number":
 		gOpts.number = true
 	case "nonumber":
