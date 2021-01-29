@@ -1051,11 +1051,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 		}
 
 		expr, ok := gOpts.keys[button]
-		if ok {
-			return expr
+		if !ok {
+			ui.echoerrf("unknown mapping: %s", button)
+			return draw
 		}
 
-		return nil
+		return expr
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
