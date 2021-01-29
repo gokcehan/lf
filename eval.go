@@ -393,30 +393,30 @@ func update(app *app) {
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
 
 		dir := app.nav.currDir()
+		old := dir.ind
 		dir.ind = app.nav.searchInd
 		dir.pos = app.nav.searchPos
 
-		if err := app.nav.searchNext(); err != nil {
+		if _, err := app.nav.searchNext(); err != nil {
 			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-			return
+		} else if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
 		}
-
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
 	case gOpts.incsearch && app.ui.cmdPrefix == "?":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
 
 		dir := app.nav.currDir()
+		old := dir.ind
 		dir.ind = app.nav.searchInd
 		dir.pos = app.nav.searchPos
 
-		if err := app.nav.searchPrev(); err != nil {
+		if _, err := app.nav.searchPrev(); err != nil {
 			app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-			return
+		} else if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
 		}
-
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
 	}
 }
 
@@ -898,35 +898,39 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "search-next":
 		for i := 0; i < e.count; i++ {
 			if app.nav.searchBack {
-				if err := app.nav.searchPrev(); err != nil {
+				if moved, err := app.nav.searchPrev(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
-					return
+				} else if moved {
+					app.ui.loadFile(app.nav, true)
+					app.ui.loadFileInfo(app.nav)
 				}
 			} else {
-				if err := app.nav.searchNext(); err != nil {
+				if moved, err := app.nav.searchNext(); err != nil {
 					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-					return
+				} else if moved {
+					app.ui.loadFile(app.nav, true)
+					app.ui.loadFileInfo(app.nav)
 				}
 			}
 		}
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
 	case "search-prev":
 		for i := 0; i < e.count; i++ {
 			if app.nav.searchBack {
-				if err := app.nav.searchNext(); err != nil {
+				if moved, err := app.nav.searchNext(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
-					return
+				} else if moved {
+					app.ui.loadFile(app.nav, true)
+					app.ui.loadFileInfo(app.nav)
 				}
 			} else {
-				if err := app.nav.searchPrev(); err != nil {
+				if moved, err := app.nav.searchPrev(); err != nil {
 					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-					return
+				} else if moved {
+					app.ui.loadFile(app.nav, true)
+					app.ui.loadFileInfo(app.nav)
 				}
 			}
 		}
-		app.ui.loadFile(app.nav, true)
-		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
@@ -1075,11 +1079,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
 			dir := app.nav.currDir()
-			dir.ind = app.nav.searchInd
 			dir.pos = app.nav.searchPos
-
-			app.ui.loadFile(app.nav, true)
-			app.ui.loadFileInfo(app.nav)
+			if dir.ind != app.nav.searchInd {
+				dir.ind = app.nav.searchInd
+				app.ui.loadFile(app.nav, true)
+				app.ui.loadFileInfo(app.nav)
+			}
 		}
 		normal(app)
 	case "cmd-complete":
@@ -1243,32 +1248,34 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.cmdHistory = append(app.cmdHistory, cmdItem{"&", s})
 			app.runShell(s, nil, "&")
 		case "/":
+			dir := app.nav.currDir()
+			old := dir.ind
 			if gOpts.incsearch {
-				dir := app.nav.currDir()
 				dir.ind = app.nav.searchInd
 				dir.pos = app.nav.searchPos
 			}
 			log.Printf("search: %s", s)
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
-			if err := app.nav.searchNext(); err != nil {
+			if _, err := app.nav.searchNext(); err != nil {
 				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
-			} else {
+			} else if old != dir.ind {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
 		case "?":
+			dir := app.nav.currDir()
+			old := dir.ind
 			if gOpts.incsearch {
-				dir := app.nav.currDir()
 				dir.ind = app.nav.searchInd
 				dir.pos = app.nav.searchPos
 			}
 			log.Printf("search-back: %s", s)
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
-			if err := app.nav.searchPrev(); err != nil {
+			if _, err := app.nav.searchPrev(); err != nil {
 				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
-			} else {
+			} else if old != dir.ind {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
