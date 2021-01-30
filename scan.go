@@ -5,7 +5,6 @@ import (
 	"io/ioutil"
 	"log"
 	"strconv"
-	"unicode"
 )
 
 type tokenType byte
@@ -82,15 +81,23 @@ func (s *scanner) peek() byte {
 }
 
 func isSpace(b byte) bool {
-	return unicode.IsSpace(rune(b))
+	switch b {
+	case '\t', '\n', '\v', '\f', '\r', ' ':
+		return true
+	}
+	return false
 }
 
 func isDigit(b byte) bool {
-	return unicode.IsDigit(rune(b))
+	return '0' <= b && b <= '9'
 }
 
 func isPrefix(b byte) bool {
-	return b == '$' || b == '%' || b == '!' || b == '&'
+	switch b {
+	case '$', '%', '!', '&':
+		return true
+	}
+	return false
 }
 
 func (s *scanner) scan() bool {
