@@ -1163,7 +1163,7 @@ Extensions can then be used to match cleanly within a conditional:
         *.rar) unrar l "$1";;
         *.7z) 7z l "$1";;
         *.pdf) pdftotext "$1" -;;
-        *) highlight -O ansi "$1" || cat "$1";;
+        *) highlight -O ansi "$1";;
     esac
 
 Another important consideration for efficiency is the use of programs with short startup times for preview.
@@ -1173,13 +1173,9 @@ This is especially relevant for big files.
 lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read.
 When everything else fails, you can make use of the height argument to only feed the first portion of the file to a program for preview.
 Note that some programs may not respond well to SIGPIPE to exit with a non-zero return code and avoid caching.
-You may trap SIGPIPE in your preview script to avoid error propogation:
+You may add a trailing '|| true' command to avoid such errors:
 
-    #!/bin/sh
-
-    trap "" PIPE
-
-    ...
+    highlight -O ansi "$1" || true
 
 You may also use an existing preview filter as you like.
 Your system may already come with a preview filter named 'lesspipe'.
