@@ -145,6 +145,31 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	return hidden
 }
 
+func userName(f os.FileInfo) string {
+	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {
+			return fmt.Sprintf("%v ", u.Username)
+		}
+	}
+	return ""
+}
+
+func groupName(f os.FileInfo) string {
+	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+		if g, err := user.LookupGroupId(fmt.Sprint(stat.Gid)); err == nil {
+			return fmt.Sprintf("%v ", g.Name)
+		}
+	}
+	return ""
+}
+
+func linkCount(f os.FileInfo) string {
+	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+		return fmt.Sprintf("%v ", stat.Nlink)
+	}
+	return ""
+}
+
 func matchPattern(pattern, name, path string) bool {
 	s := name
 

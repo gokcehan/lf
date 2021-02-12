@@ -121,6 +121,18 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	return attrs&syscall.FILE_ATTRIBUTE_HIDDEN != 0
 }
 
+func userName(f os.FileInfo) string {
+	return ""
+}
+
+func groupName(f os.FileInfo) string {
+	return ""
+}
+
+func linkCount(f os.FileInfo) string {
+	return ""
+}
+
 func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(syscall.Errno) == 17
 }
