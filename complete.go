@@ -246,10 +246,16 @@ func matchFile(s string) (matches []string, longest string) {
 	}
 
 	for _, f := range files {
-		f, err := os.Stat(filepath.Join(dir, f.Name()))
+		name := filepath.Join(dir, f.Name())
+		f, err := os.Stat(name)
 		if err != nil {
-			log.Printf("getting file information: %s", err)
-			return
+			fl, err := os.Lstat(name)
+			if err == nil && fl.Mode() & os.ModeSymlink != 0 {
+				continue
+			} else {
+				log.Printf("getting file information: %s", err)
+				return
+			}
 		}
 
 		_, last := filepath.Split(s)
@@ -257,7 +263,7 @@ func matchFile(s string) (matches []string, longest string) {
 			continue
 		}
 
-		name := f.Name()
+		name = f.Name()
 		if isRoot(s) || filepath.Base(s) != s {
 			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
 		}

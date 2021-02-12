@@ -824,7 +824,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 	for _, src := range srcs {
 		nav.moveCountChan <- 1
 
-		srcStat, err := os.Stat(src)
+		srcStat, err := os.Lstat(src)
 		if err != nil {
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)

@@ -11,7 +11,7 @@ func copySize(srcs []string) (int64, error) {
 	var total int64
 
 	for _, src := range srcs {
-		_, err := os.Stat(src)
+		_, err := os.Lstat(src)
 		if os.IsNotExist(err) {
 			return total, fmt.Errorf("src does not exist: %q", src)
 		}
@@ -110,6 +110,15 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 				if info.IsDir() {
 					if err := os.MkdirAll(newPath, info.Mode()); err != nil {
 						errs <- fmt.Errorf("mkdir: %s", err)
+					}
+					nums <- info.Size()
+				} else if info.Mode() & os.ModeSymlink != 0 { /* Symlink */
+					if rlink, err := os.Readlink(path); err != nil {
+						errs <- fmt.Errorf("symlink: %s", err)
+					} else {
+						if err := os.Symlink(rlink, newPath); err != nil {
+							errs <- fmt.Errorf("symlink: %s", err)
+						}
 					}
 					nums <- info.Size()
 				} else {

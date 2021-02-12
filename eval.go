@@ -1328,13 +1328,13 @@ func (e *callExpr) eval(app *app, args []string) {
 					return
 				}
 
-				oldStat, err := os.Stat(oldPath)
+				oldStat, err := os.Lstat(oldPath)
 				if err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
 
-				if newStat, err := os.Stat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
+				if newStat, err := os.Lstat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
 					app.ui.cmdPrefix = "replace '" + newPath + "' ? [y/N] "
 					return
 				}
