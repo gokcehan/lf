@@ -76,10 +76,6 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
-func pauseCommand() *exec.Cmd {
-	return exec.Command("cmd", "/c", "pause")
-}
-
 func shellCommand(s string, args []string) *exec.Cmd {
 	args = append([]string{"/c", s}, args...)
 

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
+	"golang.org/x/term"
 )
 
 const gEscapeCode = 27
@@ -1149,6 +1150,18 @@ func (ui *ui) suspend() {
 
 func (ui *ui) resume() {
 	ui.screen.Resume()
+}
+
+func anyKey() {
+	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+	if err != nil {
+		panic(err)
+	}
+	defer term.Restore(int(os.Stdin.Fd()), oldState)
+
+	fmt.Print("Press any key to continue")
+	b := make([]byte, 1)
+	os.Stdin.Read(b)
 }
 
 func listMatches(screen tcell.Screen, matches []string) (*bytes.Buffer, error) {

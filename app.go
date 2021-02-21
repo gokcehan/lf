@@ -366,20 +366,6 @@ func (app *app) exportFiles() {
 	exportFiles(currFile, currSelections)
 }
 
-func waitKey() error {
-	cmd := pauseCommand()
-
-	cmd.Stdin = os.Stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	if err := cmd.Run(); err != nil {
-		return fmt.Errorf("waiting key: %s", err)
-	}
-
-	return nil
-}
-
 // This function is used to run a shell command. Modes are as follows:
 //
 //     Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -430,9 +416,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "!":
-		if err := waitKey(); err != nil {
-			app.ui.echoerrf("waiting key: %s", err)
-		}
+		anyKey()
 	}
 
 	app.ui.loadFile(app.nav, true)

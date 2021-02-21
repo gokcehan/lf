@@ -94,18 +94,6 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
-func pauseCommand() *exec.Cmd {
-	cmd := `echo
-	        echo -n 'Press any key to continue'
-	        old=$(stty -g)
-	        stty raw -echo
-	        eval "ignore=\$(dd bs=1 count=1 2> /dev/null)"
-	        stty $old
-	        echo`
-
-	return exec.Command(gOpts.shell, "-c", cmd)
-}
-
 func shellCommand(s string, args []string) *exec.Cmd {
 	if len(gOpts.ifs) != 0 {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
