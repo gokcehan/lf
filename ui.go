@@ -1143,27 +1143,12 @@ func (ui *ui) readExpr() {
 	}()
 }
 
-func (ui *ui) pause() {
-	ui.screen.Fini()
+func (ui *ui) suspend() {
+	ui.screen.Suspend()
 }
 
 func (ui *ui) resume() {
-	var screen tcell.Screen
-	var err error
-	if screen, err = tcell.NewScreen(); err != nil {
-		log.Fatalf("creating screen: %s", err)
-	} else if err = screen.Init(); err != nil {
-		log.Fatalf("initializing screen: %s", err)
-	}
-	if gOpts.mouse {
-		screen.EnableMouse()
-	}
-
-	ui.screen = screen
-
-	go ui.pollEvents()
-
-	ui.renew()
+	ui.screen.Resume()
 }
 
 func listMatches(screen tcell.Screen, matches []string) (*bytes.Buffer, error) {

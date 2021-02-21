@@ -405,7 +405,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.nav.previewChan <- ""
-		app.ui.pause()
+		app.ui.suspend()
 		defer app.ui.resume()
 		defer app.nav.renew()
 
