@@ -310,6 +310,10 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "shell":
 		gOpts.shell = e.val
 	case "shellopts":
+		if e.val == "" {
+			gOpts.shellopts = nil
+			return
+		}
 		gOpts.shellopts = strings.Split(e.val, ":")
 	case "sortby":
 		switch e.val {
