@@ -250,7 +250,7 @@ func matchFile(s string) (matches []string, longest string) {
 		f, err := os.Stat(name)
 		if err != nil {
 			fl, err := os.Lstat(name)
-			if err == nil && fl.Mode() & os.ModeSymlink != 0 {
+			if err == nil && fl.Mode()&os.ModeSymlink != 0 {
 				continue
 			} else {
 				log.Printf("getting file information: %s", err)

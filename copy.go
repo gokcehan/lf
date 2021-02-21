@@ -112,7 +112,7 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 						errs <- fmt.Errorf("mkdir: %s", err)
 					}
 					nums <- info.Size()
-				} else if info.Mode() & os.ModeSymlink != 0 { /* Symlink */
+				} else if info.Mode()&os.ModeSymlink != 0 { /* Symlink */
 					if rlink, err := os.Readlink(path); err != nil {
 						errs <- fmt.Errorf("symlink: %s", err)
 					} else {

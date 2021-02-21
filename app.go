@@ -12,8 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/gdamore/tcell/v2"
 )
 
 type cmdItem struct {
@@ -34,10 +32,7 @@ type app struct {
 	cmdHistoryInd int
 }
 
-func newApp(screen tcell.Screen) *app {
-	ui := newUI(screen)
-	nav := newNav(ui.wins[0].h)
-
+func newApp(ui *ui, nav *nav) *app {
 	quitChan := make(chan struct{}, 1)
 
 	app := &app{
@@ -160,6 +155,8 @@ func (app *app) writeHistory() error {
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
 func (app *app) loop() {
+	go app.nav.previewLoop(app.ui)
+
 	serverChan := readExpr()
 
 	app.ui.readExpr()

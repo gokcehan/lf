@@ -35,7 +35,9 @@ func run() {
 
 	log.Print("hi!")
 
-	app := newApp(screen)
+	ui := newUI(screen)
+	nav := newNav(ui.wins[0].h)
+	app := newApp(ui, nav)
 
 	if err := app.nav.readMarks(); err != nil {
 		app.ui.echoerrf("reading marks file: %s", err)
@@ -45,8 +47,8 @@ func run() {
 		app.ui.echoerrf("reading history file: %s", err)
 	}
 
-	go app.nav.previewLoop(app.ui)
 	app.loop()
+
 	app.ui.screen.Fini()
 }
 
