@@ -23,6 +23,7 @@ cat << END >> $out
 lf \- terminal file manager
 .SH SYNOPSIS
 .SY lf
+.OP \-command command
 .OP \-cpuprofile path
 .OP \-doc
 .OP \-last-dir-path path
