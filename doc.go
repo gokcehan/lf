@@ -640,7 +640,6 @@ A smaller offset can be used when the current file is close to the beginning or 
     shell          string    (default 'sh' for unix and 'cmd' for windows)
 
 Shell executable to use for shell commands.
-On unix, a POSIX compatible shell is required.
 Shell commands are executed as 'shell shellopts -c command -- arguments'.
 On windows, '/c' is used instead of '-c' which should work in 'cmd' and 'powershell'.
 
