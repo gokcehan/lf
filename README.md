@@ -7,7 +7,7 @@
 
 [![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
-[![GoDoc](https://godoc.org/github.com/gokcehan/lf?status.svg)](https://godoc.org/github.com/gokcehan/lf)
+[![Go Reference](https://pkg.go.dev/badge/github.com/gokcehan/lf.svg)](https://pkg.go.dev/github.com/gokcehan/lf)
 
 > This is a work in progress. Use at your own risk.
 
@@ -62,7 +62,7 @@ After the installation `lf` command should start the application in the current 
 
 Run `lf -help` to see command line options.
 
-Run `lf -doc` to see the [documentation](https://godoc.org/github.com/gokcehan/lf).
+Run `lf -doc` to see the [documentation](https://pkg.go.dev/github.com/gokcehan/lf).
 
 See [etc](etc) directory to integrate `lf` to your shell or editor.
 An example configuration file can also be found in this directory.
