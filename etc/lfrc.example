@@ -1,4 +1,4 @@
-# interpreter for shell commands (needs to be POSIX compatible)
+# interpreter for shell commands
 set shell sh
 
 # set '-eu' options for shell commands
