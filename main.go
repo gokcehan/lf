@@ -31,6 +31,7 @@ var (
 	gLogPath       string
 	gServerLogPath string
 	gSelect        string
+	gCustomConfig  string
 	gCommands      arrayFlag
 	gVersion       string
 )
@@ -216,6 +217,11 @@ func main() {
 		"selection-path",
 		"",
 		"path to the file to write selected files on open (to use as open file dialog)")
+
+	flag.StringVar(&gCustomConfig,
+		"config",
+		"",
+		"path to a custom config file to be used, instead of normal lfrc file")
 
 	flag.Var(&gCommands,
 		"command",

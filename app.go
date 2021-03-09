@@ -174,9 +174,17 @@ func (app *app) loop() {
 		}()
 	}
 
-	for _, path := range gConfigPaths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			app.readFile(path)
+	if gCustomConfig != "" {
+		if _, err := os.Stat(gCustomConfig); !os.IsNotExist(err) {
+			app.readFile(gCustomConfig)
+		} else {
+			log.Printf("Config file does not exist: %s", err)
+		}
+	} else {
+		for _, path := range gConfigPaths {
+			if _, err := os.Stat(path); !os.IsNotExist(err) {
+				app.readFile(path)
+			}
 		}
 	}
 
