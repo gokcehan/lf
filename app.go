@@ -371,7 +371,7 @@ func (app *app) exportFiles() {
 
 	currSelections := app.nav.currSelections()
 
-	exportFiles(currFile, currSelections)
+	exportFiles(currFile, currSelections, app.nav.currDir().path)
 }
 
 // This function is used to run a shell command. Modes are as follows:

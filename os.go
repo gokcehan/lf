@@ -177,12 +177,13 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV
 }
 
-func exportFiles(f string, fs []string) {
+func exportFiles(f string, fs []string, pwd string) {
 	envFile := f
 	envFiles := strings.Join(fs, gOpts.filesep)
 
 	os.Setenv("f", envFile)
 	os.Setenv("fs", envFiles)
+	os.Setenv("PWD", pwd)
 
 	if len(fs) == 0 {
 		os.Setenv("fx", envFile)
