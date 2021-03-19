@@ -142,6 +142,7 @@ The following environment variables are exported for shell commands:
     fs
     fx
     id
+    PWD
     LF_LEVEL
     OPENER
     EDITOR
@@ -702,6 +703,10 @@ Selected file(s) (i.e. 'fs') if there are any selected files, otherwise current 
     id
 
 Id of the running client.
+
+    PWD
+
+Present working directory.
 
     LF_LEVEL
 
