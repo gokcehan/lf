@@ -396,8 +396,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.nav.previewChan <- ""
-		app.ui.suspend()
-		defer app.ui.resume()
+		if err := app.ui.suspend(); err != nil {
+			log.Printf("suspend: %s", err)
+		}
+		defer func() {
+			if err := app.ui.resume(); err != nil {
+				app.writeHistory()
+				os.Remove(gLogPath)
+				os.Exit(3)
+				return
+			}
+		}()
 		defer app.nav.renew()
 
 		err = cmd.Run()

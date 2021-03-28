@@ -1144,12 +1144,12 @@ func (ui *ui) readExpr() {
 	}()
 }
 
-func (ui *ui) suspend() {
-	ui.screen.Suspend()
+func (ui *ui) suspend() error {
+	return ui.screen.Suspend()
 }
 
-func (ui *ui) resume() {
-	ui.screen.Resume()
+func (ui *ui) resume() error {
+	return ui.screen.Resume()
 }
 
 func anyKey() {
