@@ -309,6 +309,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 	case "shell":
 		gOpts.shell = e.val
+	case "shellflag":
+		gOpts.shellflag = e.val
 	case "shellopts":
 		if e.val == "" {
 			gOpts.shellopts = nil

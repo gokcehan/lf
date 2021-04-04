@@ -129,6 +129,7 @@ The following options can be used to customize the behavior of lf:
     reverse        bool      (default off)
     scrolloff      int       (default 0)
     shell          string    (default 'sh' for unix and 'cmd' for windows)
+    shellflag      string    (default '-c' for unix and '/c' for windows)
     shellopts      []string  (default '')
     smartcase      bool      (default on)
     smartdia       bool      (default off)
@@ -685,8 +686,11 @@ beginning or end of the list to show the maximum number of items.
     shell          string    (default 'sh' for unix and 'cmd' for windows)
 
 Shell executable to use for shell commands. Shell commands are executed as
-'shell shellopts -c command -- arguments'. On windows, '/c' is used instead
-of '-c' which should work in 'cmd' and 'powershell'.
+'shell shellopts shellflag command -- arguments'.
+
+    shellflag      string    (default '-c' for unix and '/c' for windows)
+
+Command line flag used to pass shell commands.
 
     shellopts      []string  (default '')
 

@@ -22,6 +22,7 @@ var envPathExt = os.Getenv("PATHEXT")
 
 var (
 	gDefaultShell      = "cmd"
+	gDefaultShellFlag  = "/c"
 	gDefaultSocketProt = "tcp"
 	gDefaultSocketPath = "127.0.0.1:12345"
 )
@@ -77,7 +78,7 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
-	args = append([]string{"/c", s}, args...)
+	args = append([]string{gOpts.shellflag, s}, args...)
 
 	args = append(gOpts.shellopts, args...)
 

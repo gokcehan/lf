@@ -23,6 +23,7 @@ var (
 
 var (
 	gDefaultShell      = "sh"
+	gDefaultShellFlag  = "-c"
 	gDefaultSocketProt = "unix"
 	gDefaultSocketPath string
 )
@@ -99,7 +100,7 @@ func shellCommand(s string, args []string) *exec.Cmd {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
 	}
 
-	args = append([]string{"-c", s, "--"}, args...)
+	args = append([]string{gOpts.shellflag, s, "--"}, args...)
 
 	args = append(gOpts.shellopts, args...)
 

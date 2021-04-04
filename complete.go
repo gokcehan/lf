@@ -138,6 +138,7 @@ var (
 		"promptfmt",
 		"ratios",
 		"shell",
+		"shellflag",
 		"shellopts",
 		"sortby",
 		"timefmt",

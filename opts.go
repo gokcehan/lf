@@ -55,6 +55,7 @@ var gOpts struct {
 	cleaner        string
 	promptfmt      string
 	shell          string
+	shellflag      string
 	timefmt        string
 	truncatechar   string
 	ratios         []int
@@ -95,6 +96,7 @@ func init() {
 	gOpts.cleaner = ""
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
 	gOpts.shell = gDefaultShell
+	gOpts.shellflag = gDefaultShellFlag
 	gOpts.timefmt = time.ANSIC
 	gOpts.truncatechar = "~"
 	gOpts.ratios = []int{1, 2, 3}
