@@ -134,7 +134,7 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(syscall.Errno) == 17
 }
 
-func exportFiles(f string, fs []string) {
+func exportFiles(f string, fs []string, pwd string) {
 	envFile := fmt.Sprintf(`"%s"`, f)
 
 	var quotedFiles []string
@@ -145,6 +145,7 @@ func exportFiles(f string, fs []string) {
 
 	os.Setenv("f", envFile)
 	os.Setenv("fs", envFiles)
+	os.Setenv("PWD", pwd)
 
 	if len(fs) == 0 {
 		os.Setenv("fx", envFile)
