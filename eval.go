@@ -178,6 +178,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.smartdia = false
 	case "smartdia!":
 		gOpts.smartdia = !gOpts.smartdia
+	case "waitmsg":
+		gOpts.waitmsg = e.val
 	case "wrapscan":
 		gOpts.wrapscan = true
 	case "nowrapscan":

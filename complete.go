@@ -118,6 +118,7 @@ var (
 		"smartdia",
 		"nosmartdia",
 		"smartdia!",
+		"waitmsg",
 		"wrapscan",
 		"nowrapscan",
 		"wrapscan!",

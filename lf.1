@@ -149,6 +149,7 @@ The following options can be used to customize the behavior of lf:
     tabstop        int       (default 8)
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar   string    (default '~')
+    waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
 .EE
@@ -814,6 +815,12 @@ Format string of the file modification time shown in the bottom line.
 .EE
 .PP
 Truncate character shown at the end when the file name does not fit to the pane.
+.PP
+.EX
+    waitmsg        string    (default 'Press any key to continue')
+.EE
+.PP
+String shown after commands of shell-wait type.
 .PP
 .EX
     wrapscan       bool      (default on)
