@@ -1153,13 +1153,14 @@ func (ui *ui) resume() error {
 }
 
 func anyKey() {
+	fmt.Print(gOpts.waitmsg)
+	defer fmt.Print("\n")
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-	fmt.Print("Press any key to continue")
 	b := make([]byte, 1)
 	os.Stdin.Read(b)
 }
