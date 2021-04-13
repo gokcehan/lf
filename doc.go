@@ -144,6 +144,7 @@ The following environment variables are exported for shell commands:
     fx
     id
     PWD
+    OLDPWD
     LF_LEVEL
     OPENER
     EDITOR
@@ -715,6 +716,10 @@ Id of the running client.
     PWD
 
 Present working directory.
+
+    OLDPWD
+
+Initial working directory.
 
     LF_LEVEL
 

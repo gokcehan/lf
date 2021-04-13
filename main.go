@@ -65,6 +65,12 @@ func exportEnvVars() {
 	os.Setenv("PAGER", envPager)
 	os.Setenv("SHELL", envShell)
 
+	dir, err := os.Getwd()
+	if err != nil {
+		fmt.Fprintf(os.Stderr, "%s\n", err)
+	}
+	os.Setenv("OLDPWD", dir)
+
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {
 		log.Printf("reading lf level: %s", err)
