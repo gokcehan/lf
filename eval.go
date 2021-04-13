@@ -1235,6 +1235,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menuBuf = nil
 		app.ui.menuSelected = -2
 
+		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = nil
 		app.ui.cmdTmp = nil
 
 		switch app.ui.cmdPrefix {
@@ -1303,6 +1305,22 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
+		case "find: ":
+			app.ui.cmdPrefix = ""
+			if moved, found := app.nav.findNext(); !found {
+				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
+			} else if moved {
+				app.ui.loadFile(app.nav, true)
+				app.ui.loadFileInfo(app.nav)
+			}
+		case "find-back: ":
+			app.ui.cmdPrefix = ""
+			if moved, found := app.nav.findPrev(); !found {
+				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
+			} else if moved {
+				app.ui.loadFile(app.nav, true)
+				app.ui.loadFileInfo(app.nav)
+			}
 		case "rename: ":
 			app.ui.cmdPrefix = ""
 			if curr, err := app.nav.currFile(); err != nil {
@@ -1358,16 +1376,9 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
-		case "find: ", "find-back: ":
-			oldlen := gOpts.findlen
-			gOpts.findlen = len(s)
-			insert(app, "")
-			gOpts.findlen = oldlen
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
 	case "cmd-history-next":
 		if app.ui.cmdPrefix == "" || app.ui.cmdPrefix == ">" {
 			return
