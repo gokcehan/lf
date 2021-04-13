@@ -7,6 +7,7 @@
 #
 
 complete -c lf -o command -r -d 'command to execute on client initialization'
+complete -c lf -o config -r -d 'path to the config file (instead of the usual paths)'
 complete -c lf -o cpuprofile -r -d 'path to the file to write the CPU profile'
 complete -c lf -o doc -d 'show documentation'
 complete -c lf -o last-dir-path -r -d 'path to the file to write the last dir on exit (to use for cd)'

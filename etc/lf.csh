@@ -9,7 +9,7 @@
 #     endif
 #
 
-set LF_ARGS = "-command -cpuprofile -doc -last-dir-path -memprofile -remote -selection-path -server -version -help "
+set LF_ARGS = "-command -config -cpuprofile -doc -last-dir-path -memprofile -remote -selection-path -server -version -help "
 
 complete lf   "C/-*/(${LF_ARGS})/"
 complete lfcd "C/-*/(${LF_ARGS})/"

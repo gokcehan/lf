@@ -14,6 +14,7 @@ local arguments
 
 arguments=(
     '-command[command to execute on client initialization]'
+    '-config[path to the config file (instead of the usual paths)]'
     '-cpuprofile[path to the file to write the CPU profile]'
     '-doc[show documentation]'
     '-last-dir-path[path to the file to write the last dir on exit (to use for cd)]'
@@ -22,6 +23,7 @@ arguments=(
     '-selection-path[path to the file to write selected files on open (to use as open file dialog)]'
     '-server[start server (automatic)]'
     '-version[show version]'
+    '-help[show help]'
     '*:filename:_files'
 )
 

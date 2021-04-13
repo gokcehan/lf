@@ -10,6 +10,7 @@ Register-ArgumentCompleter -Native -CommandName 'lf' -ScriptBlock {
     param($wordToComplete)
     $completions = @(
         [CompletionResult]::new('-command ', '-command', [CompletionResultType]::ParameterName, 'command to execute on client initialization')
+        [CompletionResult]::new('-config ', '-config', [CompletionResultType]::ParameterName, 'path to the config file (instead of the usual paths)')
         [CompletionResult]::new('-cpuprofile ', '-cpuprofile', [CompletionResultType]::ParameterName, 'path to the file to write the CPU profile')
         [CompletionResult]::new('-doc', '-doc', [CompletionResultType]::ParameterName, 'show documentation')
         [CompletionResult]::new('-last-dir-path ', '-last-dir-path', [CompletionResultType]::ParameterName, 'path to the file to write the last dir on exit (to use for cd)')
@@ -18,6 +19,7 @@ Register-ArgumentCompleter -Native -CommandName 'lf' -ScriptBlock {
         [CompletionResult]::new('-selection-path ', '-selection-path', [CompletionResultType]::ParameterName, 'path to the file to write selected files on open (to use as open file dialog)')
         [CompletionResult]::new('-server', '-server', [CompletionResultType]::ParameterName, 'start server (automatic)')
         [CompletionResult]::new('-version', '-version', [CompletionResultType]::ParameterName, 'show version')
+        [CompletionResult]::new('-help', '-help', [CompletionResultType]::ParameterName, 'show help')
     )
 
     if ($wordToComplete.StartsWith('-')) {

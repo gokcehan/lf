@@ -31,7 +31,7 @@ var (
 	gLogPath       string
 	gServerLogPath string
 	gSelect        string
-	gCustomConfig  string
+	gConfigPath    string
 	gCommands      arrayFlag
 	gVersion       string
 )
@@ -188,15 +188,15 @@ func main() {
 		false,
 		"show version")
 
-	remoteCmd := flag.String(
-		"remote",
-		"",
-		"send remote command to server")
-
 	serverMode := flag.Bool(
 		"server",
 		false,
 		"start server (automatic)")
+
+	remoteCmd := flag.String(
+		"remote",
+		"",
+		"send remote command to server")
 
 	cpuprofile := flag.String(
 		"cpuprofile",
@@ -218,10 +218,10 @@ func main() {
 		"",
 		"path to the file to write selected files on open (to use as open file dialog)")
 
-	flag.StringVar(&gCustomConfig,
+	flag.StringVar(&gConfigPath,
 		"config",
 		"",
-		"path to a custom config file to be used, instead of normal lfrc file")
+		"path to the config file (instead of the usual paths)")
 
 	flag.Var(&gCommands,
 		"command",

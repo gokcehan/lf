@@ -9,6 +9,7 @@
 _lf () {
     local -a opts=(
         -command
+        -config
         -cpuprofile
         -doc
         -last-dir-path

@@ -24,6 +24,7 @@ lf \- terminal file manager
 .SH SYNOPSIS
 .SY lf
 .OP \-command command
+.OP \-config path
 .OP \-cpuprofile path
 .OP \-doc
 .OP \-last-dir-path path
@@ -32,6 +33,7 @@ lf \- terminal file manager
 .OP \-selection-path path
 .OP \-server
 .OP \-version
+.OP \-help
 .RI [ directory ]
 .YS
 .SH DESCRIPTION
