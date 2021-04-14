@@ -845,7 +845,10 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "redraw":
 		app.ui.renew()
 		app.ui.screen.Sync()
-		app.nav.height = app.ui.wins[0].h
+		if app.nav.height != app.ui.wins[0].h {
+			app.nav.height = app.ui.wins[0].h
+			app.nav.regCache = make(map[string]*reg)
+		}
 		app.ui.loadFile(app.nav, true)
 	case "load":
 		app.nav.renew()
