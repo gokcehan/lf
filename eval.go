@@ -41,15 +41,27 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "drawbox":
 		gOpts.drawbox = true
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		if app.nav.height != app.ui.wins[0].h {
+			app.nav.height = app.ui.wins[0].h
+			app.nav.regCache = make(map[string]*reg)
+		}
+		app.ui.loadFile(app.nav, true)
 	case "nodrawbox":
 		gOpts.drawbox = false
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		if app.nav.height != app.ui.wins[0].h {
+			app.nav.height = app.ui.wins[0].h
+			app.nav.regCache = make(map[string]*reg)
+		}
+		app.ui.loadFile(app.nav, true)
 	case "drawbox!":
 		gOpts.drawbox = !gOpts.drawbox
 		app.ui.renew()
-		app.nav.height = app.ui.wins[0].h
+		if app.nav.height != app.ui.wins[0].h {
+			app.nav.height = app.ui.wins[0].h
+			app.nav.regCache = make(map[string]*reg)
+		}
+		app.ui.loadFile(app.nav, true)
 	case "globsearch":
 		gOpts.globsearch = true
 	case "noglobsearch":
