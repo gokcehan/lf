@@ -243,6 +243,10 @@ func (dir *dir) name() string {
 	if len(dir.files) == 0 {
 		return ""
 	}
+
+	dir.ind = max(dir.ind, 0)
+	dir.ind = min(dir.ind, len(dir.files)-1)
+
 	return dir.files[dir.ind].Name()
 }
 
