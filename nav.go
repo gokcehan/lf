@@ -1010,7 +1010,13 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
-	return nav.readMarks()
+	path, ok := nav.marks["'"]
+	err = nav.readMarks()
+	if ok {
+		nav.marks["'"] = path
+	}
+
+	return err
 }
 
 func (nav *nav) cd(wd string) error {
