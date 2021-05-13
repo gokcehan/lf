@@ -499,7 +499,7 @@ func getWidths(wtot int) []int {
 
 	wsum := 0
 	for i := 0; i < wlen-1; i++ {
-		widths[i] = gOpts.ratios[i] * (wtot / rsum)
+		widths[i] = gOpts.ratios[i] * wtot / rsum
 		wsum += widths[i]
 	}
 	widths[wlen-1] = wtot - wsum
