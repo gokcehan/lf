@@ -99,6 +99,12 @@ Loop:
 					}
 				}
 			}
+		case "quit":
+			if len(gConnList) == 0 {
+				gQuitChan <- struct{}{}
+				gListener.Close()
+				break Loop
+			}
 		case "quit!":
 			gQuitChan <- struct{}{}
 			for _, c := range gConnList {
