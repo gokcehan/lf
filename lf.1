@@ -116,6 +116,7 @@ The following options can be used to customize the behavior of lf:
 .PP
 .EX
     anchorfind     bool      (default on)
+    autoquit       bool      (default off)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     drawbox        bool      (default off)
@@ -608,6 +609,12 @@ This section shows information about options to customize the behavior. Characte
 .EE
 .PP
 When this option is enabled, find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
+.PP
+.EX
+    autoquit       bool      (default off)
+.EE
+.PP
+Automatically quit server when there are no clients left connected.
 .PP
 .EX
     dircounts      bool      (default off)

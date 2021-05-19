@@ -20,6 +20,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.anchorfind = false
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
+	case "autoquit":
+		gOpts.autoquit = true
+	case "noautoquit":
+		gOpts.autoquit = false
+	case "autoquit!":
+		gOpts.autoquit = !gOpts.autoquit
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":

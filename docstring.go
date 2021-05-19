@@ -102,6 +102,7 @@ The following command line commands are provided by lf:
 The following options can be used to customize the behavior of lf:
 
     anchorfind     bool      (default on)
+    autoquit       bool      (default off)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     drawbox        bool      (default off)
@@ -514,6 +515,10 @@ Character ':' is used as the separator for list options '[]int' and
 
 When this option is enabled, find command starts matching patterns from the
 beginning of file names, otherwise, it can match at an arbitrary position.
+
+    autoquit       bool      (default off)
+
+Automatically quit server when there are no clients left connected.
 
     dircounts      bool      (default off)
 

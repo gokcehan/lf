@@ -59,11 +59,16 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
+	if err := app.writeHistory(); err != nil {
+		log.Printf("writing history file: %s", err)
+	}
 	if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
 		log.Printf("dropping connection: %s", err)
 	}
-	if err := app.writeHistory(); err != nil {
-		log.Printf("writing history file: %s", err)
+	if gOpts.autoquit {
+		if err := remote("quit"); err != nil {
+			log.Printf("auto quitting server: %s", err)
+		}
 	}
 	os.Remove(gLogPath)
 }
