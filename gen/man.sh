@@ -32,6 +32,7 @@ lf \- terminal file manager
 .OP \-remote command
 .OP \-selection-path path
 .OP \-server
+.OP \-single
 .OP \-version
 .OP \-help
 .RI [ directory ]

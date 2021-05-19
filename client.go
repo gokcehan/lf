@@ -38,6 +38,10 @@ func run() {
 	nav := newNav(ui.wins[0].h)
 	app := newApp(ui, nav)
 
+	if err := nav.sync(); err != nil {
+		app.ui.echoerrf("sync: %s", err)
+	}
+
 	if err := app.nav.readMarks(); err != nil {
 		app.ui.echoerrf("reading marks file: %s", err)
 	}

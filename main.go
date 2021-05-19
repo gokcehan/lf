@@ -22,6 +22,7 @@ var (
 type arrayFlag []string
 
 var (
+	gSingleMode    bool
 	gClientID      int
 	gHostname      string
 	gLastDirPath   string
@@ -199,6 +200,11 @@ func main() {
 		false,
 		"start server (automatic)")
 
+	singleMode := flag.Bool(
+		"single",
+		false,
+		"start a client without server")
+
 	remoteCmd := flag.String(
 		"remote",
 		"",
@@ -263,7 +269,11 @@ func main() {
 		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
 		serve()
 	default:
-		checkServer()
+		gSingleMode = *singleMode
+
+		if !gSingleMode {
+			checkServer()
+		}
 
 		gClientID = os.Getpid()
 		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))

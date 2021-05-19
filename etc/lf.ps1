@@ -18,6 +18,7 @@ Register-ArgumentCompleter -Native -CommandName 'lf' -ScriptBlock {
         [CompletionResult]::new('-remote ', '-remote', [CompletionResultType]::ParameterName, 'send remote command to server')
         [CompletionResult]::new('-selection-path ', '-selection-path', [CompletionResultType]::ParameterName, 'path to the file to write selected files on open (to use as open file dialog)')
         [CompletionResult]::new('-server', '-server', [CompletionResultType]::ParameterName, 'start server (automatic)')
+        [CompletionResult]::new('-single', '-single', [CompletionResultType]::ParameterName, 'start a client without server')
         [CompletionResult]::new('-version', '-version', [CompletionResultType]::ParameterName, 'show version')
         [CompletionResult]::new('-help', '-help', [CompletionResultType]::ParameterName, 'show help')
     )

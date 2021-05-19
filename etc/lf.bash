@@ -17,6 +17,7 @@ _lf () {
         -remote
         -selection-path
         -server
+        -single
         -version
         -help
     )

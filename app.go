@@ -62,12 +62,14 @@ func (app *app) quit() {
 	if err := app.writeHistory(); err != nil {
 		log.Printf("writing history file: %s", err)
 	}
-	if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
-		log.Printf("dropping connection: %s", err)
-	}
-	if gOpts.autoquit {
-		if err := remote("quit"); err != nil {
-			log.Printf("auto quitting server: %s", err)
+	if !gSingleMode {
+		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
+			log.Printf("dropping connection: %s", err)
+		}
+		if gOpts.autoquit {
+			if err := remote("quit"); err != nil {
+				log.Printf("auto quitting server: %s", err)
+			}
 		}
 	}
 	os.Remove(gLogPath)
@@ -233,7 +235,10 @@ func (app *app) writeHistory() error {
 func (app *app) loop() {
 	go app.nav.previewLoop(app.ui)
 
-	serverChan := readExpr()
+	var serverChan <-chan expr
+	if !gSingleMode {
+		serverChan = readExpr()
+	}
 
 	app.ui.readExpr()
 

@@ -22,6 +22,7 @@ arguments=(
     '-remote[send remote command to server]'
     '-selection-path[path to the file to write selected files on open (to use as open file dialog)]'
     '-server[start server (automatic)]'
+    '-single[start a client without server]'
     '-version[show version]'
     '-help[show help]'
     '*:filename:_files'
