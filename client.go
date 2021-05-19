@@ -29,7 +29,6 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
-	defer os.Remove(gLogPath)
 	defer f.Close()
 	log.SetOutput(f)
 

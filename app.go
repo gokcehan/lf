@@ -49,14 +49,23 @@ func newApp(ui *ui, nav *nav) *app {
 		case os.Interrupt:
 			return
 		case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM:
-			app.writeHistory()
-			os.Remove(gLogPath)
+			app.quit()
 			os.Exit(3)
 			return
 		}
 	}()
 
 	return app
+}
+
+func (app *app) quit() {
+	if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
+		log.Printf("dropping connection: %s", err)
+	}
+	if err := app.writeHistory(); err != nil {
+		log.Printf("writing history file: %s", err)
+	}
+	os.Remove(gLogPath)
 }
 
 func (app *app) readFile(path string) {
@@ -280,13 +289,11 @@ func (app *app) loop() {
 				continue
 			}
 
+			app.quit()
+
 			app.nav.previewChan <- ""
 
 			log.Print("bye!")
-
-			if err := app.writeHistory(); err != nil {
-				log.Printf("writing history file: %s", err)
-			}
 
 			if gLastDirPath != "" {
 				f, err := os.Create(gLastDirPath)
@@ -463,8 +470,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}
 		defer func() {
 			if err := app.ui.resume(); err != nil {
-				app.writeHistory()
-				os.Remove(gLogPath)
+				app.quit()
 				os.Exit(3)
 				return
 			}

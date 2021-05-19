@@ -73,6 +73,18 @@ Loop:
 			} else {
 				log.Print("listen: conn: requires a client id")
 			}
+		case "drop":
+			if rest != "" {
+				word2, _ := splitWord(rest)
+				id, err := strconv.Atoi(word2)
+				if err != nil {
+					log.Print("listen: drop: client id should be a number")
+				} else {
+					delete(gConnList, id)
+				}
+			} else {
+				log.Print("listen: drop: requires a client id")
+			}
 		case "send":
 			if rest != "" {
 				word2, rest2 := splitWord(rest)
