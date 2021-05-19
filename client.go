@@ -85,69 +85,6 @@ func readExpr() <-chan expr {
 	return ch
 }
 
-func saveFiles(list []string, cp bool) error {
-	c, err := net.Dial(gSocketProt, gSocketPath)
-	if err != nil {
-		return fmt.Errorf("dialing to save files: %s", err)
-	}
-	defer c.Close()
-
-	log.Printf("saving files: %v", list)
-
-	fmt.Fprintln(c, "save")
-
-	if cp {
-		fmt.Fprintln(c, "copy")
-	} else {
-		fmt.Fprintln(c, "move")
-	}
-
-	for _, f := range list {
-		fmt.Fprintln(c, f)
-	}
-	fmt.Fprintln(c)
-
-	return nil
-}
-
-func loadFiles() (list []string, cp bool, err error) {
-	c, e := net.Dial(gSocketProt, gSocketPath)
-	if e != nil {
-		err = fmt.Errorf("dialing to load files: %s", e)
-		return
-	}
-	defer c.Close()
-
-	fmt.Fprintln(c, "load")
-
-	s := bufio.NewScanner(c)
-
-	s.Scan()
-
-	switch s.Text() {
-	case "copy":
-		cp = true
-	case "move":
-		cp = false
-	default:
-		err = fmt.Errorf("unexpected option to copy file(s): %s", s.Text())
-		return
-	}
-
-	for s.Scan() && s.Text() != "" {
-		list = append(list, s.Text())
-	}
-
-	if s.Err() != nil {
-		err = fmt.Errorf("scanning file list: %s", s.Err())
-		return
-	}
-
-	log.Printf("loading files: %v", list)
-
-	return
-}
-
 func remote(cmd string) error {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {

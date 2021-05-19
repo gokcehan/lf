@@ -31,6 +31,7 @@ var (
 var (
 	gUser        *user.User
 	gConfigPaths []string
+	gFilesPath   string
 	gMarksPath   string
 	gHistoryPath string
 )
@@ -83,6 +84,7 @@ func init() {
 		data = filepath.Join(gUser.HomeDir, ".local", "share")
 	}
 
+	gFilesPath = filepath.Join(data, "lf", "files")
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 

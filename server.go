@@ -10,8 +10,6 @@ import (
 )
 
 var (
-	gCopyFile bool
-	gFileList []string
 	gConnList = make(map[int]net.Conn)
 	gQuitChan = make(chan struct{}, 1)
 	gListener net.Listener
@@ -63,31 +61,6 @@ Loop:
 		log.Printf("listen: %s", s.Text())
 		word, rest := splitWord(s.Text())
 		switch word {
-		case "save":
-			s.Scan()
-			switch s.Text() {
-			case "copy":
-				gCopyFile = true
-			case "move":
-				gCopyFile = false
-			default:
-				log.Printf("unexpected option to copy file(s): %s", s.Text())
-				break Loop
-			}
-			gFileList = nil
-			for s.Scan() && s.Text() != "" {
-				gFileList = append(gFileList, s.Text())
-			}
-		case "load":
-			if gCopyFile {
-				fmt.Fprintln(c, "copy")
-			} else {
-				fmt.Fprintln(c, "move")
-			}
-			for _, f := range gFileList {
-				fmt.Fprintln(c, f)
-			}
-			fmt.Fprintln(c)
 		case "conn":
 			if rest != "" {
 				word2, _ := splitWord(rest)
