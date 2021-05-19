@@ -99,7 +99,7 @@ Loop:
 					}
 				}
 			}
-		case "quit":
+		case "quit!":
 			gQuitChan <- struct{}{}
 			for _, c := range gConnList {
 				fmt.Fprintln(c, "echo server is quitting...")
