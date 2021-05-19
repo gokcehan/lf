@@ -190,6 +190,11 @@ Configuration files should be located at:
     unix     /etc/lf/lfrc            ~/.config/lf/lfrc
     windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
+Selection file should be located at:
+
+    unix     ~/.local/share/lf/files
+    windows  C:\Users\<user>\AppData\Local\lf\files
+
 Marks file should be located at:
 
     unix     ~/.local/share/lf/marks
@@ -851,7 +856,7 @@ command, custom command, or shell command:
     map gh cd ~        # builtin command
     map D trash        # custom command
     map i $less $f     # shell command
-    map U !du -sh      # waiting shell command
+    map U !du -csh *   # waiting shell command
 
 Command 'cmap' is used to bind a key to a command line command which can
 only be one of the builtin commands:
@@ -1100,11 +1105,12 @@ In this command 'send' is used to send the rest of the string as a command
 to all connected clients. You can optionally give it an id number to send a
 command to a single client:
 
-    lf -remote 'send 1000 echo hello world'
+    lf -remote 'send 1234 echo hello world'
 
 All clients have a unique id number but you may not be aware of the id
 number when you are writing a command. For this purpose, an '$id' variable
-is exported to the environment for shell commands. You can use it to send a
+is exported to the environment for shell commands. The value of this
+variable is set to the process id of the client. You can use it to send a
 remote command from a client to the server which in return sends a command
 back to itself. So now you can display a message in the current client by
 calling the following in a shell command:
@@ -1126,27 +1132,12 @@ with respect to the terminal width as follows:
         fi
     }}
 
-Besides 'send' command, there are also two commands to get or set the
-current file selection. Two possible modes 'copy' and 'move' specify whether
-selected files are to be copied or moved. File names are separated by
-newline character. Setting the file selection is done with 'save' command:
-
-    lf -remote "$(printf 'save\ncopy\nfoo.txt\nbar.txt\nbaz.txt\n')"
-
-Getting the file selection is similarly done with 'load' command:
-
-    load=$(lf -remote 'load')
-    mode=$(echo "$load" | sed -n '1p')
-    list=$(echo "$load" | sed '1d')
-    if [ $mode = 'copy' ]; then
-        # do something with $list
-    elif [ $mode = 'move' ]; then
-        # do something else with $list
-    fi
-
-There is a 'quit' command to close client connections and quit the server:
+Besides 'send' command, there is a 'quit' command to quit the server when
+there are no connected clients left, and a 'quit!' command to force quit the
+server by closing client connections first:
 
     lf -remote 'quit'
+    lf -remote 'quit!'
 
 Lastly, there is a 'conn' command to connect the server as a client. This
 should not be needed for users.
@@ -1171,7 +1162,7 @@ corresponding file operation.
 File operations can be performed on the current selected file or
 alternatively on multiple files by selecting them first. When you 'copy' a
 file, lf doesn't actually copy the file on the disk, but only records its
-name to memory. The actual file copying takes place when you 'paste'.
+name to a file. The actual file copying takes place when you 'paste'.
 Similarly 'paste' after a 'cut' operation moves the file.
 
 You can customize copy and move operations by defining a 'paste' command.
@@ -1179,18 +1170,18 @@ This is a special command that is called when it is defined instead of the
 builtin implementation. You can use the following example as a starting
 point:
 
-    cmd paste %{{
-        load=$(lf -remote 'load')
-        mode=$(echo "$load" | sed -n '1p')
-        list=$(echo "$load" | sed '1d')
-        if [ $mode = 'copy' ]; then
-            cp -R $list .
-        elif [ $mode = 'move' ]; then
-            mv $list .
-        fi
-        lf -remote 'send load'
-        lf -remote 'send clear'
-    }}
+        cmd paste %{{
+            load=$(cat ~/.local/share/lf/files)
+            mode=$(echo "$load" | sed -n '1p')
+            list=$(echo "$load" | sed '1d')
+            if [ $mode = 'copy' ]; then
+                cp -R $list .
+            elif [ $mode = 'move' ]; then
+                mv $list .
+            fi
+    	rm ~/.local/share/lf/files
+            lf -remote 'send clear'
+        }}
 
 Some useful things to be considered are to use the backup ('--backup')
 and/or preserve attributes ('-a') options with 'cp' and 'mv' commands if

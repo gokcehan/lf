@@ -210,6 +210,13 @@ Configuration files should be located at:
     windows  C:\eProgramData\elf\elfrc  C:\eUsers\e<user>\eAppData\eLocal\elf\elfrc
 .EE
 .PP
+Selection file should be located at:
+.PP
+.EX
+    unix     ~/.local/share/lf/files
+    windows  C:\eUsers\e<user>\eAppData\eLocal\elf\efiles
+.EE
+.PP
 Marks file should be located at:
 .PP
 .EX
@@ -950,7 +957,7 @@ Command 'map' is used to bind a key to a command which can be builtin command, c
     map gh cd ~        # builtin command
     map D trash        # custom command
     map i $less $f     # shell command
-    map U !du -sh      # waiting shell command
+    map U !du -csh *   # waiting shell command
 .EE
 .PP
 Command 'cmap' is used to bind a key to a command line command which can only be one of the builtin commands:
@@ -1177,10 +1184,10 @@ Since such a client may not be available everywhere, lf comes bundled with a com
 In this command 'send' is used to send the rest of the string as a command to all connected clients. You can optionally give it an id number to send a command to a single client:
 .PP
 .EX
-    lf -remote 'send 1000 echo hello world'
+    lf -remote 'send 1234 echo hello world'
 .EE
 .PP
-All clients have a unique id number but you may not be aware of the id number when you are writing a command. For this purpose, an '$id' variable is exported to the environment for shell commands. You can use it to send a remote command from a client to the server which in return sends a command back to itself. So now you can display a message in the current client by calling the following in a shell command:
+All clients have a unique id number but you may not be aware of the id number when you are writing a command. For this purpose, an '$id' variable is exported to the environment for shell commands. The value of this variable is set to the process id of the client. You can use it to send a remote command from a client to the server which in return sends a command back to itself. So now you can display a message in the current client by calling the following in a shell command:
 .PP
 .EX
     lf -remote "send $id echo hello world"
@@ -1201,52 +1208,34 @@ Since lf does not have control flow syntax, remote commands are used for such ne
     }}
 .EE
 .PP
-Besides 'send' command, there are also two commands to get or set the current file selection. Two possible modes 'copy' and 'move' specify whether selected files are to be copied or moved. File names are separated by newline character. Setting the file selection is done with 'save' command:
-.PP
-.EX
-    lf -remote "$(printf 'save\encopy\enfoo.txt\enbar.txt\enbaz.txt\en')"
-.EE
-.PP
-Getting the file selection is similarly done with 'load' command:
-.PP
-.EX
-    load=$(lf -remote 'load')
-    mode=$(echo "$load" | sed -n '1p')
-    list=$(echo "$load" | sed '1d')
-    if [ $mode = 'copy' ]; then
-        # do something with $list
-    elif [ $mode = 'move' ]; then
-        # do something else with $list
-    fi
-.EE
-.PP
-There is a 'quit' command to close client connections and quit the server:
+Besides 'send' command, there is a 'quit' command to quit the server when there are no connected clients left, and a 'quit!' command to force quit the server by closing client connections first:
 .PP
 .EX
     lf -remote 'quit'
+    lf -remote 'quit!'
 .EE
 .PP
 Lastly, there is a 'conn' command to connect the server as a client. This should not be needed for users.
 .SH FILE OPERATIONS
 lf uses its own builtin copy and move operations by default. These are implemented as asynchronous operations and progress is shown in the bottom ruler. These commands do not overwrite existing files or directories with the same name. Instead, a suffix that is compatible with '--backup=numbered' option in GNU cp is added to the new files or directories. Only file modes are preserved and all other attributes are ignored including ownership, timestamps, context, and xattr. Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed. Moving is performed using the rename operation of the underlying OS. For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors. Operation errors are shown in the message line as well as the log file and they do not preemptively finish the corresponding file operation.
 .PP
-File operations can be performed on the current selected file or alternatively on multiple files by selecting them first. When you 'copy' a file, lf doesn't actually copy the file on the disk, but only records its name to memory. The actual file copying takes place when you 'paste'. Similarly 'paste' after a 'cut' operation moves the file.
+File operations can be performed on the current selected file or alternatively on multiple files by selecting them first. When you 'copy' a file, lf doesn't actually copy the file on the disk, but only records its name to a file. The actual file copying takes place when you 'paste'. Similarly 'paste' after a 'cut' operation moves the file.
 .PP
 You can customize copy and move operations by defining a 'paste' command. This is a special command that is called when it is defined instead of the builtin implementation. You can use the following example as a starting point:
 .PP
 .EX
-    cmd paste %{{
-        load=$(lf -remote 'load')
-        mode=$(echo "$load" | sed -n '1p')
-        list=$(echo "$load" | sed '1d')
-        if [ $mode = 'copy' ]; then
-            cp -R $list .
-        elif [ $mode = 'move' ]; then
-            mv $list .
-        fi
-        lf -remote 'send load'
-        lf -remote 'send clear'
-    }}
+        cmd paste %{{
+            load=$(cat ~/.local/share/lf/files)
+            mode=$(echo "$load" | sed -n '1p')
+            list=$(echo "$load" | sed '1d')
+            if [ $mode = 'copy' ]; then
+                cp -R $list .
+            elif [ $mode = 'move' ]; then
+                mv $list .
+            fi
+    	rm ~/.local/share/lf/files
+            lf -remote 'send clear'
+        }}
 .EE
 .PP
 Some useful things to be considered are to use the backup ('--backup') and/or preserve attributes ('-a') options with 'cp' and 'mv' commands if they support it (i.e. GNU implementation), change the command type to asynchronous, or use 'rsync' command with progress bar option for copying and feed the progress to the client periodically with remote 'echo' calls.
