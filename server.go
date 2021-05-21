@@ -53,6 +53,15 @@ func listen(l net.Listener) {
 	}
 }
 
+func echoerr(c net.Conn, msg string) {
+	fmt.Fprintln(c, msg)
+	log.Printf(msg)
+}
+
+func echoerrf(c net.Conn, format string, a ...interface{}) {
+	echoerr(c, fmt.Sprintf(format, a...))
+}
+
 func handleConn(c net.Conn) {
 	s := bufio.NewScanner(c)
 
@@ -66,24 +75,24 @@ Loop:
 				word2, _ := splitWord(rest)
 				id, err := strconv.Atoi(word2)
 				if err != nil {
-					log.Print("listen: conn: client id should be a number")
+					echoerr(c, "listen: conn: client id should be a number")
 				} else {
 					gConnList[id] = c
 				}
 			} else {
-				log.Print("listen: conn: requires a client id")
+				echoerr(c, "listen: conn: requires a client id")
 			}
 		case "drop":
 			if rest != "" {
 				word2, _ := splitWord(rest)
 				id, err := strconv.Atoi(word2)
 				if err != nil {
-					log.Print("listen: drop: client id should be a number")
+					echoerr(c, "listen: drop: client id should be a number")
 				} else {
 					delete(gConnList, id)
 				}
 			} else {
-				log.Print("listen: drop: requires a client id")
+				echoerr(c, "listen: drop: requires a client id")
 			}
 		case "send":
 			if rest != "" {
@@ -114,12 +123,12 @@ Loop:
 			gListener.Close()
 			break Loop
 		default:
-			log.Printf("listen: unexpected command: %s", word)
+			echoerrf(c, "listen: unexpected command: %s", word)
 		}
 	}
 
 	if s.Err() != nil {
-		log.Printf("listening: %s", s.Err())
+		echoerrf(c, "listening: %s", s.Err())
 	}
 
 	c.Close()
