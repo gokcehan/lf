@@ -1255,6 +1255,7 @@ You may want to use either file extensions or mime types from 'file'
 command:
 
     cmd open ${{
+        test -L $f && f=$(readlink -f $f)
         case $(file --mime-type $f -b) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
