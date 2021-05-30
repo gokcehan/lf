@@ -835,16 +835,22 @@ func (ui *ui) draw(nav *nav) {
 		ui.drawStatLine(nav)
 		ui.screen.HideCursor()
 	case ">":
+		pos := min(runeSliceWidth(ui.cmdAccLeft), ui.msgWin.w-len(ui.cmdPrefix)-1)
+		left := ui.cmdAccLeft[runeSliceWidth(ui.cmdAccLeft)-pos:]
+		right := ui.cmdAccRight
 		ui.msgWin.printLine(ui.screen, 0, 0, st, ui.cmdPrefix)
 		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, ui.msg)
-		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg), 0, st, string(ui.cmdAccLeft))
-		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), 0, st, string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg), 0, st, string(left))
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(left), 0, st, string(right))
+		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+len(ui.msg)+runeSliceWidth(left), ui.msgWin.y)
 	default:
+		pos := min(runeSliceWidth(ui.cmdAccLeft), ui.msgWin.w-len(ui.cmdPrefix)-1)
+		left := ui.cmdAccLeft[runeSliceWidth(ui.cmdAccLeft)-pos:]
+		right := ui.cmdAccRight
 		ui.msgWin.printLine(ui.screen, 0, 0, st, ui.cmdPrefix)
-		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, string(ui.cmdAccLeft))
-		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), 0, st, string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(ui.cmdAccLeft), ui.msgWin.y)
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix), 0, st, string(left))
+		ui.msgWin.print(ui.screen, len(ui.cmdPrefix)+runeSliceWidth(left), 0, st, string(right))
+		ui.screen.ShowCursor(ui.msgWin.x+len(ui.cmdPrefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
 	if gOpts.preview {
