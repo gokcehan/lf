@@ -171,7 +171,7 @@ func printLength(s string) int {
 		r, w := utf8.DecodeRuneInString(s[i:])
 
 		if r == gEscapeCode && i+1 < len(s) && s[i+1] == '[' {
-			j := strings.IndexByte(s[i:min(len(s), i+64)], 'm')
+			j := strings.IndexAny(s[i:min(len(s), i+64)], "mK")
 			if j == -1 {
 				continue
 			}
@@ -199,12 +199,13 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 		r, w := utf8.DecodeRuneInString(s[i:])
 
 		if r == gEscapeCode && i+1 < len(s) && s[i+1] == '[' {
-			j := strings.IndexByte(s[i:min(len(s), i+64)], 'm')
+			j := strings.IndexAny(s[i:min(len(s), i+64)], "mK")
 			if j == -1 {
 				continue
 			}
-
-			st = applyAnsiCodes(s[i+2:i+j], st)
+			if s[i+j] == 'm' {
+				st = applyAnsiCodes(s[i+2:i+j], st)
+			}
 
 			i += j
 			continue
