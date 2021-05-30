@@ -118,6 +118,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			st = st.StrikeThrough(true)
 		case n >= 30 && n <= 37:
 			st = st.Foreground(tcell.PaletteColor(n - 30))
+		case n >= 90 && n <= 97:
+			st = st.Foreground(tcell.PaletteColor(n - 82))
 		case n == 38:
 			if i+3 <= len(nums) && nums[i+1] == 5 {
 				st = st.Foreground(tcell.PaletteColor(nums[i+2]))
@@ -133,6 +135,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			}
 		case n >= 40 && n <= 47:
 			st = st.Background(tcell.PaletteColor(n - 40))
+		case n >= 100 && n <= 107:
+			st = st.Background(tcell.PaletteColor(n - 92))
 		case n == 48:
 			if i+3 <= len(nums) && nums[i+1] == 5 {
 				st = st.Background(tcell.PaletteColor(nums[i+2]))
