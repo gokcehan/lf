@@ -103,8 +103,10 @@ Loop:
 						fmt.Fprintln(c, rest)
 					}
 				} else {
-					if c, ok := gConnList[id]; ok {
-						fmt.Fprintln(c, rest2)
+					if c2, ok := gConnList[id]; ok {
+						fmt.Fprintln(c2, rest2)
+					} else {
+						echoerr(c, "listen: send: no such client id is connected")
 					}
 				}
 			}
