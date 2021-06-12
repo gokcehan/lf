@@ -384,7 +384,7 @@ Read a shell command to execute and wait for a key press in the end.
 
     shell-async    (modal)   (default '&')
 
-Read a shell command to execute synchronously without standard I/O.
+Read a shell command to execute asynchronously without standard I/O.
 
     find           (modal)   (default 'f')
     find-back      (modal)   (default 'F')
