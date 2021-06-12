@@ -137,6 +137,10 @@ func loadFiles() (list []string, cp bool, err error) {
 }
 
 func saveFiles(list []string, cp bool) error {
+	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
+		return fmt.Errorf("creating data directory: %s", err)
+	}
+
 	files, err := os.Create(gFilesPath)
 	if err != nil {
 		return fmt.Errorf("opening file selections file: %s", err)
