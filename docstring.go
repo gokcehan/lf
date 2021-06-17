@@ -134,6 +134,7 @@ The following options can be used to customize the behavior of lf:
     shellopts      []string  (default '')
     smartcase      bool      (default on)
     smartdia       bool      (default off)
+    softwrap       bool      (default off)
     sortby         string    (default 'natural')
     tabstop        int       (default 8)
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')

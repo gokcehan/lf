@@ -43,6 +43,7 @@ var gOpts struct {
 	relativenumber bool
 	smartcase      bool
 	smartdia       bool
+	softwrap       bool
 	waitmsg        string
 	wrapscan       bool
 	wrapscroll     bool
@@ -86,6 +87,7 @@ func init() {
 	gOpts.relativenumber = false
 	gOpts.smartcase = true
 	gOpts.smartdia = false
+	gOpts.softwrap = false
 	gOpts.waitmsg = "Press any key to continue"
 	gOpts.wrapscan = true
 	gOpts.wrapscroll = false

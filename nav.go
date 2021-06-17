@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -551,12 +552,40 @@ func (nav *nav) preview(path string, win *win) {
 				return
 			}
 		}
-		reg.lines = append(reg.lines, buf.Text())
+		if gOpts.softwrap {
+			reg.lines = append(reg.lines, softwrap(buf.Text(), win.w-2)...)
+		} else {
+			reg.lines = append(reg.lines, buf.Text())
+		}
 	}
 
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
 	}
+}
+
+// softwrap returns string divided in an array of strings each
+// with length smaller or equal to maxWidth
+func softwrap(text string, maxWidth int) []string {
+	var numberOfLines int
+	if len(text) == 0 || len(text) < maxWidth {
+		numberOfLines = 1
+	} else {
+		numberOfLines = int(math.Ceil(float64(len(text)) / float64(maxWidth)))
+
+	}
+	lines := make([]string, numberOfLines)
+
+	lineIndex := 0
+	for _, c := range text {
+		lines[lineIndex] = lines[lineIndex] + string(c)
+		if len(lines[lineIndex]) == maxWidth {
+			lines[lineIndex] = lines[lineIndex] + "\n"
+			lineIndex++
+		}
+	}
+
+	return lines
 }
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {

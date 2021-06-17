@@ -196,6 +196,15 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.smartdia = false
 	case "smartdia!":
 		gOpts.smartdia = !gOpts.smartdia
+	case "softwrap":
+		gOpts.softwrap = true
+		app.nav.reload()
+	case "nosoftwrap":
+		gOpts.softwrap = false
+		app.nav.reload()
+	case "softwrap!":
+		gOpts.softwrap = !gOpts.softwrap
+		app.nav.reload()
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	case "wrapscan":
