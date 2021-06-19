@@ -5,7 +5,6 @@
 | [#lf](https://webchat.freenode.net/?channels=lf) (on Freenode)
 | [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
 
-[![Build Status](https://travis-ci.org/gokcehan/lf.svg?branch=master)](https://travis-ci.org/gokcehan/lf)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gokcehan/lf.svg)](https://pkg.go.dev/github.com/gokcehan/lf)
 
