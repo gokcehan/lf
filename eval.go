@@ -605,12 +605,7 @@ func insert(app *app, arg string) {
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Printf("getting current directory: %s", err)
-			return
-		}
-		app.nav.marks[arg] = wd
+		app.nav.marks[arg] = app.nav.currDir().path
 		if err := app.nav.writeMarks(); err != nil {
 			app.ui.echoerrf("mark-save: %s", err)
 		}
