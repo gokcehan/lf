@@ -1427,6 +1427,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
 		case "find: ":
 			app.ui.cmdPrefix = ""
 			if moved, found := app.nav.findNext(); !found {
