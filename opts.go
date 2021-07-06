@@ -62,6 +62,8 @@ var gOpts struct {
 	shell          string
 	shellflag      string
 	timefmt        string
+	timefmtthisy   string
+	timefmtothery  string
 	truncatechar   string
 	ratios         []int
 	hiddenfiles    []string
@@ -109,6 +111,8 @@ func init() {
 	gOpts.shell = gDefaultShell
 	gOpts.shellflag = gDefaultShellFlag
 	gOpts.timefmt = time.ANSIC
+	gOpts.timefmtthisy = "Jan _2 15:04"
+	gOpts.timefmtothery = "Jan _2  2006"
 	gOpts.truncatechar = "~"
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = []string{".*"}

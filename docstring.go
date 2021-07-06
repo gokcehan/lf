@@ -143,6 +143,8 @@ The following options can be used to customize the behavior of lf:
     tabstop        int       (default 8)
     tempmarks      string    (default '')
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
+    timefmtthisy   string    (default 'Jan _2 15:04')
+    timefmtothery  string    (default 'Jan _2  2006')
     truncatechar   string    (default '~')
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
@@ -768,6 +770,16 @@ treated as temporary and does not need to be specified.
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
 
 Format string of the file modification time shown in the bottom line.
+
+    timefmtthisy   string    (default 'Jan _2 15:04')
+
+Format string of the file time shown in the info column when it matches this
+year.
+
+    timefmtothery  string    (default 'Jan _2  2006')
+
+Format string of the file time shown in the info column when it doesn't
+match this year.
 
     truncatechar   string    (default '~')
 
