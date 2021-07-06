@@ -157,6 +157,8 @@ var (
 		"shellopts",
 		"sortby",
 		"timefmt",
+		"timefmtthisy",
+		"timefmtothery",
 		"truncatechar",
 	}
 )

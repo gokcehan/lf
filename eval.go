@@ -412,6 +412,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "timefmt":
 		gOpts.timefmt = e.val
+	case "timefmtthisy":
+		gOpts.timefmtthisy = e.val
+	case "timefmtothery":
+		gOpts.timefmtothery = e.val
 	case "truncatechar":
 		if runeSliceWidth([]rune(e.val)) != 1 {
 			app.ui.echoerr("truncatechar: value should be a single character")

@@ -279,9 +279,9 @@ var gThisYear = time.Now().Year()
 
 func infotimefmt(t time.Time) string {
 	if t.Year() == gThisYear {
-		return t.Format("Jan _2 15:04")
+		return t.Format(gOpts.timefmtthisy)
 	}
-	return t.Format("Jan _2  2006")
+	return t.Format(gOpts.timefmtothery)
 }
 
 func fileInfo(f *file, d *dir) string {
