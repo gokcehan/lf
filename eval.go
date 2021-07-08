@@ -94,10 +94,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 	case "globsearch":
 		gOpts.globsearch = true
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "noglobsearch":
 		gOpts.globsearch = false
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "globsearch!":
 		gOpts.globsearch = !gOpts.globsearch
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "hidden":
 		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()
@@ -126,14 +135,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignorecase = true
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "noignorecase":
 		gOpts.ignorecase = false
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "ignoredia":
 		gOpts.ignoredia = true
 		app.nav.sort()
@@ -210,10 +222,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "smartcase":
 		gOpts.smartcase = true
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "nosmartcase":
 		gOpts.smartcase = false
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "smartcase!":
 		gOpts.smartcase = !gOpts.smartcase
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "smartdia":
 		gOpts.smartdia = true
 	case "nosmartdia":
@@ -1424,7 +1445,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			dir.filter = filter
 			app.nav.sort()
-			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
