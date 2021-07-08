@@ -410,6 +410,7 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.loadTime = now
 		go func() {
 			nd := newDir(dir.path)
+			nd.filter = dir.filter
 			nd.sort()
 			nav.dirChan <- nd
 		}()
