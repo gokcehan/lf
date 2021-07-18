@@ -113,6 +113,7 @@ type dir struct {
 	files       []*file   // displayed files in directory including or excluding hidden ones
 	allFiles    []*file   // all files in directory including hidden ones (same array as files)
 	sortType    sortType  // sort method and options from last sort
+	dironly     bool      // dironly value from last sort
 	hiddenfiles []string  // hiddenfiles value from last sort
 	ignorecase  bool      // ignorecase value from last sort
 	ignoredia   bool      // ignoredia value from last sort
@@ -150,6 +151,7 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 
 func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
+	dir.dironly = gOpts.dironly
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -217,6 +219,26 @@ func (dir *dir) sort() {
 			}
 			return dir.files[i].IsDir()
 		})
+	}
+
+	// when dironly option is enabled, we move files to the beginning of our file
+	// list and then set the beginning of displayed files to the first directory
+	// in the list
+	if dir.dironly {
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			if !dir.files[i].IsDir() && !dir.files[j].IsDir() {
+				return i < j
+			}
+			return !dir.files[i].IsDir()
+		})
+		dir.files = func() []*file {
+			for i, f := range dir.files {
+				if f.IsDir() {
+					return dir.files[i:]
+				}
+			}
+			return dir.files[len(dir.files):]
+		}()
 	}
 
 	// when hidden option is disabled, we move hidden files to the
@@ -362,6 +384,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nav.dirChan <- nd
 		}()
 	case dir.sortType != gOpts.sortType ||
+		dir.dironly != gOpts.dironly ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:

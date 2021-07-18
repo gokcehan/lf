@@ -31,6 +31,7 @@ var gOpts struct {
 	anchorfind     bool
 	autoquit       bool
 	dircounts      bool
+	dironly        bool
 	drawbox        bool
 	globsearch     bool
 	icons          bool
@@ -74,6 +75,7 @@ func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
 	gOpts.dircounts = false
+	gOpts.dironly = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.icons = false

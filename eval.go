@@ -32,6 +32,24 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.dircounts = false
 	case "dircounts!":
 		gOpts.dircounts = !gOpts.dircounts
+	case "dironly":
+		gOpts.dironly = true
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
+	case "nodironly":
+		gOpts.dironly = false
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
+	case "dironly!":
+		gOpts.dironly = !gOpts.dironly
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "dirfirst":
 		gOpts.sortType.option |= dirfirstSort
 		app.nav.sort()
