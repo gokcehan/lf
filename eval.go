@@ -26,6 +26,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.autoquit = false
 	case "autoquit!":
 		gOpts.autoquit = !gOpts.autoquit
+	case "cache":
+		gOpts.nocache = false
+	case "nocache":
+		gOpts.nocache = true
+	case "cache!":
+		gOpts.nocache = !gOpts.nocache
 	case "dircounts":
 		gOpts.dircounts = true
 	case "nodircounts":

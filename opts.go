@@ -28,6 +28,7 @@ type sortType struct {
 }
 
 var gOpts struct {
+	nocache        bool
 	anchorfind     bool
 	autoquit       bool
 	dircounts      bool

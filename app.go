@@ -372,13 +372,15 @@ func (app *app) loop() {
 		case d := <-app.nav.dirChan:
 			app.nav.checkDir(d)
 
-			prev, ok := app.nav.dirCache[d.path]
-			if ok {
-				d.ind = prev.ind
-				d.sel(prev.name(), app.nav.height)
-			}
+			if !gOpts.nocache {
+				prev, ok := app.nav.dirCache[d.path]
+				if ok {
+					d.ind = prev.ind
+					d.sel(prev.name(), app.nav.height)
+				}
 
-			app.nav.dirCache[d.path] = d
+				app.nav.dirCache[d.path] = d
+			}
 
 			for i := range app.nav.dirs {
 				if app.nav.dirs[i].path == d.path {
