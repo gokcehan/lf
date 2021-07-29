@@ -655,6 +655,27 @@ func (nav *nav) sort() {
 	}
 }
 
+func (nav *nav) setFilter(filter []string) error {
+	newfilter := []string{}
+	for _, tok := range filter {
+		_, err := filepath.Match(tok, "a")
+		if err != nil {
+			return err
+		}
+		if tok != "" {
+			newfilter = append(newfilter, tok)
+		}
+	}
+	dir := nav.currDir()
+	dir.filter = newfilter
+
+	// Apply filter, by sorting current dir (see nav.sort())
+	name := dir.name()
+	dir.sort()
+	dir.sel(name, nav.height)
+	return nil
+}
+
 func (nav *nav) up(dist int) bool {
 	dir := nav.currDir()
 

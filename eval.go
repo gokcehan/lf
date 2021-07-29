@@ -1080,6 +1080,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.cmdAccLeft = []rune(strings.Join(e.args, " "))
 		}
 		app.ui.loadFileInfo(app.nav)
+	case "setfilter":
+		log.Printf("filter: %s", e.args)
+		if err := app.nav.setFilter(e.args); err != nil {
+			app.ui.echoerrf("filter: %s", err)
+		}
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
@@ -1436,22 +1443,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		case "filter: ":
 			log.Printf("filter: %s", s)
 			app.ui.cmdPrefix = ""
-			dir := app.nav.currDir()
-			toks := strings.Split(s, " ")
-			filter := []string{}
-			for _, tok := range toks {
-				_, err := filepath.Match(tok, "a")
-				if err != nil {
-					app.ui.echoerrf("filter: %s", err)
-					return
-				}
-				if tok != "" {
-					filter = append(filter, tok)
-				}
+			if err := app.nav.setFilter(strings.Split(s, " ")); err != nil {
+				app.ui.echoerrf("filter: %s", err)
 			}
-			dir.filter = filter
-			app.nav.sort()
-			app.ui.sort()
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		case "find: ":

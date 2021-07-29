@@ -49,6 +49,7 @@ var (
 		"search-next",
 		"search-prev",
 		"filter",
+		"setfilter",
 		"mark-save",
 		"mark-remove",
 		"mark-load",
