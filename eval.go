@@ -1356,7 +1356,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
-		if len(s) == 0 {
+		if len(s) == 0 && app.ui.cmdPrefix != "filter: " {
 			return
 		}
 
