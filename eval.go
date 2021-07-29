@@ -1073,6 +1073,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "filter":
 		app.ui.cmdPrefix = "filter: "
+		if len(e.args) == 0 {
+			dir := app.nav.currDir()
+			app.ui.cmdAccLeft = []rune(strings.Join(dir.filter, " "))
+		} else {
+			app.ui.cmdAccLeft = []rune(strings.Join(e.args, " "))
+		}
 		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
 		app.ui.cmdPrefix = "mark-save: "
