@@ -105,6 +105,7 @@ The following options can be used to customize the behavior of lf:
     autoquit       bool      (default off)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
+    dironly        bool      (default off)
     drawbox        bool      (default off)
     errorfmt       string    (default "\033[7;31;47m%s\033[0m")
     filesep        string    (default "\n")
@@ -540,6 +541,10 @@ directories are shown as '999+'.
     dirfirst       bool      (default on)
 
 Show directories first above regular files.
+
+    dironly        bool      (default off)
+
+Show only directories.
 
     drawbox        bool      (default off)
 

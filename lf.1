@@ -120,6 +120,7 @@ The following options can be used to customize the behavior of lf:
     autoquit       bool      (default off)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
+    dironly        bool      (default off)
     drawbox        bool      (default off)
     errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
     filesep        string    (default "\en")
@@ -635,6 +636,12 @@ When this option is enabled, directory sizes show the number of items inside ins
 .EE
 .PP
 Show directories first above regular files.
+.PP
+.EX
+    dironly        bool      (default off)
+.EE
+.PP
+Show only directories.
 .PP
 .EX
     drawbox        bool      (default off)
