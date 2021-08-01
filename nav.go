@@ -332,31 +332,40 @@ type nav struct {
 	volatilePreview bool
 }
 
-func (nav *nav) loadDir(path string) *dir {
-	d, ok := nav.dirCache[path]
-	if !ok {
-		d := &dir{
-			loading:     true,
-			loadTime:    time.Now(),
-			path:        path,
-			sortType:    gOpts.sortType,
-			hiddenfiles: gOpts.hiddenfiles,
-			ignorecase:  gOpts.ignorecase,
-			ignoredia:   gOpts.ignoredia,
-		}
-		nav.dirCache[path] = d
-		go func() {
-			d := newDir(path)
-			d.sort()
-			d.ind, d.pos = 0, 0
-			nav.dirChan <- d
-		}()
-		return d
+func (nav *nav) loadDirInternal(path string) *dir {
+	d := &dir{
+		loading:     true,
+		loadTime:    time.Now(),
+		path:        path,
+		sortType:    gOpts.sortType,
+		hiddenfiles: gOpts.hiddenfiles,
+		ignorecase:  gOpts.ignorecase,
+		ignoredia:   gOpts.ignoredia,
 	}
-
-	nav.checkDir(d)
-
+	go func() {
+		d := newDir(path)
+		d.sort()
+		d.ind, d.pos = 0, 0
+		nav.dirChan <- d
+	}()
 	return d
+}
+
+func (nav *nav) loadDir(path string) *dir {
+	if gOpts.dircache {
+		d, ok := nav.dirCache[path]
+		if !ok {
+			d = nav.loadDirInternal(path)
+			nav.dirCache[path] = d
+			return d
+		}
+
+		nav.checkDir(d)
+
+		return d
+	} else {
+		return nav.loadDirInternal(path)
+	}
 }
 
 func (nav *nav) checkDir(dir *dir) {

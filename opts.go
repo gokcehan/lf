@@ -30,6 +30,7 @@ type sortType struct {
 var gOpts struct {
 	anchorfind     bool
 	autoquit       bool
+	dircache       bool
 	dircounts      bool
 	dironly        bool
 	drawbox        bool
@@ -74,6 +75,7 @@ var gOpts struct {
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
+	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.dironly = false
 	gOpts.drawbox = false
