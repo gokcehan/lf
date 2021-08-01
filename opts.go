@@ -74,7 +74,7 @@ var gOpts struct {
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
-    gOpts.dircache = true
+	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
