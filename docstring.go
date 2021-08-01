@@ -103,6 +103,7 @@ The following options can be used to customize the behavior of lf:
 
     anchorfind     bool      (default on)
     autoquit       bool      (default off)
+    dircache       bool      (default on)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
@@ -525,6 +526,10 @@ beginning of file names, otherwise, it can match at an arbitrary position.
     autoquit       bool      (default off)
 
 Automatically quit server when there are no clients left connected.
+
+    dircache       bool      (default on)
+
+Cache directory contents.
 
     dircounts      bool      (default off)
 

@@ -118,6 +118,7 @@ The following options can be used to customize the behavior of lf:
 .EX
     anchorfind     bool      (default on)
     autoquit       bool      (default off)
+    dircache       bool      (default on)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
@@ -624,6 +625,12 @@ When this option is enabled, find command starts matching patterns from the begi
 .EE
 .PP
 Automatically quit server when there are no clients left connected.
+.PP
+.EX
+    dircache       bool      (default on)
+.EE
+.PP
+Cache directory contents.
 .PP
 .EX
     dircounts      bool      (default off)
