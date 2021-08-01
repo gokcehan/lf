@@ -372,7 +372,7 @@ func (app *app) loop() {
 		case d := <-app.nav.dirChan:
 			app.nav.checkDir(d)
 
-			if !gOpts.nocache {
+			if gOpts.dircache {
 				prev, ok := app.nav.dirCache[d.path]
 				if ok {
 					d.ind = prev.ind

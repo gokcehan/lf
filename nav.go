@@ -330,9 +330,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 }
 
 func (nav *nav) loadDir(path string) *dir {
-	if gOpts.nocache {
-		return nav.loadDirInternal(path)
-	} else {
+	if gOpts.dircache {
 		d, ok := nav.dirCache[path]
 		if !ok {
 			d = nav.loadDirInternal(path)
@@ -343,6 +341,8 @@ func (nav *nav) loadDir(path string) *dir {
 		nav.checkDir(d)
 
 		return d
+	} else {
+		return nav.loadDirInternal(path)
 	}
 }
 
