@@ -350,6 +350,7 @@ type nav struct {
 	searchBack      bool
 	searchInd       int
 	searchPos       int
+	prevFilter      []string
 	volatilePreview bool
 }
 

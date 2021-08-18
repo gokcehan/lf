@@ -158,6 +158,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignoredia = !gOpts.ignoredia
 		app.nav.sort()
 		app.ui.sort()
+	case "incfilter":
+		gOpts.incfilter = true
+	case "noincfilter":
+		gOpts.incfilter = false
+	case "incfilter!":
+		gOpts.incfilter = !gOpts.incfilter
 	case "incsearch":
 		gOpts.incsearch = true
 	case "noincsearch":
@@ -506,6 +512,17 @@ func update(app *app) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
+	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
+		filter := string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		dir := app.nav.currDir()
+		old := dir.ind
+
+		if err := app.nav.setFilter(strings.Split(filter, " ")); err != nil {
+			app.ui.echoerrf("filter: %s", err)
+		} else if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	}
 }
 
@@ -522,6 +539,9 @@ func normal(app *app) {
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		update(app)
+	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 		update(app)
 	case app.ui.cmdPrefix == "find: ":
@@ -1073,8 +1093,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "filter":
 		app.ui.cmdPrefix = "filter: "
+		dir := app.nav.currDir()
+		app.nav.prevFilter = dir.filter
 		if len(e.args) == 0 {
-			dir := app.nav.currDir()
 			app.ui.cmdAccLeft = []rune(strings.Join(dir.filter, " "))
 		} else {
 			app.ui.cmdAccLeft = []rune(strings.Join(e.args, " "))
@@ -1243,6 +1264,15 @@ func (e *callExpr) eval(app *app, args []string) {
 			dir.pos = app.nav.searchPos
 			if dir.ind != app.nav.searchInd {
 				dir.ind = app.nav.searchInd
+				app.ui.loadFile(app.nav, true)
+				app.ui.loadFileInfo(app.nav)
+			}
+		}
+		if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
+			dir := app.nav.currDir()
+			old := dir.ind
+			app.nav.setFilter(app.nav.prevFilter)
+			if old != dir.ind {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
