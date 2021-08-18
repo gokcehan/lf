@@ -66,6 +66,8 @@ The following commands are provided by lf:
     search-back    (modal)   (default '?')
     search-next              (default 'n')
     search-prev              (default 'N')
+    filter         (modal)
+    setfilter
     mark-save      (modal)   (default 'm')
     mark-load      (modal)   (default "'")
     mark-remove    (modal)   (default '"')
@@ -118,6 +120,7 @@ The following options can be used to customize the behavior of lf:
     ifs            string    (default '')
     ignorecase     bool      (default on)
     ignoredia      bool      (default on)
+    incfilter      bool      (default off)
     incsearch      bool      (default off)
     info           []string  (default '')
     mouse          bool      (default off)
@@ -410,6 +413,17 @@ direction and jump to the next/previous match.
 (See also 'globsearch', 'incsearch', 'wrapscan', 'ignorecase', 'smartcase',
 'ignoredia', and 'smartdia' options and 'Searching Files' section)
 
+    filter         (modal)
+    setfilter
+
+Read a pattern to filter out and only view files matching the pattern.
+setfilter does the same but uses an argument to set the filter immediatly.
+You can supply an argument to filter, in order to use that as the starting
+prompt.
+
+(See also 'globsearch', 'incfilter', 'ignorecase', 'smartcase', 'ignoredia',
+and 'smartdia' options)
+
     mark-save      (modal)   (default 'm')
 
 Save the current directory as a bookmark assigned to the given key.
@@ -617,6 +631,10 @@ Ignore diacritics in sorting and search patterns.
     incsearch      bool      (default off)
 
 Jump to the first match after each keystroke during searching.
+
+    incfilter      bool      (default off)
+
+Apply filter pattern after each keystroke during filtering.
 
     info           []string  (default '')
 
