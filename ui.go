@@ -676,7 +676,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 func (ui *ui) drawPromptLine(nav *nav) {
 	st := tcell.StyleDefault
 
-	pwd := nav.currDir().path
+	dir := nav.currDir()
+	pwd := dir.path
 
 	if strings.HasPrefix(pwd, gUser.HomeDir) {
 		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
@@ -716,6 +717,12 @@ func (ui *ui) drawPromptLine(nav *nav) {
 		pwd += sep
 	}
 	prompt = strings.Replace(prompt, "%d", pwd, -1)
+
+	if len(dir.filter) != 0 {
+		prompt = strings.Replace(prompt, "%F", fmt.Sprint(dir.filter), -1)
+	} else {
+		prompt = strings.Replace(prompt, "%F", "", -1)
+	}
 
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
