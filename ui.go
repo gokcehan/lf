@@ -755,6 +755,10 @@ func (ui *ui) drawStatLine(nav *nav) {
 		selection += fmt.Sprintf("  \033[35;7m %d \033[0m", len(nav.selections))
 	}
 
+	if len(dir.filter) != 0 {
+		selection += "  \033[34;7m F \033[0m"
+	}
+
 	var progress string
 
 	if nav.copyTotal > 0 {
