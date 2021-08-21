@@ -94,10 +94,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 	case "globsearch":
 		gOpts.globsearch = true
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "noglobsearch":
 		gOpts.globsearch = false
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "globsearch!":
 		gOpts.globsearch = !gOpts.globsearch
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "hidden":
 		gOpts.sortType.option |= hiddenSort
 		app.nav.sort()
@@ -126,14 +135,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignorecase = true
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "noignorecase":
 		gOpts.ignorecase = false
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "ignorecase!":
 		gOpts.ignorecase = !gOpts.ignorecase
 		app.nav.sort()
 		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "ignoredia":
 		gOpts.ignoredia = true
 		app.nav.sort()
@@ -146,6 +158,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ignoredia = !gOpts.ignoredia
 		app.nav.sort()
 		app.ui.sort()
+	case "incfilter":
+		gOpts.incfilter = true
+	case "noincfilter":
+		gOpts.incfilter = false
+	case "incfilter!":
+		gOpts.incfilter = !gOpts.incfilter
 	case "incsearch":
 		gOpts.incsearch = true
 	case "noincsearch":
@@ -210,10 +228,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "smartcase":
 		gOpts.smartcase = true
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "nosmartcase":
 		gOpts.smartcase = false
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "smartcase!":
 		gOpts.smartcase = !gOpts.smartcase
+		app.nav.sort()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "smartdia":
 		gOpts.smartdia = true
 	case "nosmartdia":
@@ -485,6 +512,17 @@ func update(app *app) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
+	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
+		filter := string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		dir := app.nav.currDir()
+		old := dir.ind
+
+		if err := app.nav.setFilter(strings.Split(filter, " ")); err != nil {
+			app.ui.echoerrf("filter: %s", err)
+		} else if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	}
 }
 
@@ -501,6 +539,9 @@ func normal(app *app) {
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		update(app)
+	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 		update(app)
 	case app.ui.cmdPrefix == "find: ":
@@ -1050,6 +1091,23 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 			}
 		}
+	case "filter":
+		app.ui.cmdPrefix = "filter: "
+		dir := app.nav.currDir()
+		app.nav.prevFilter = dir.filter
+		if len(e.args) == 0 {
+			app.ui.cmdAccLeft = []rune(strings.Join(dir.filter, " "))
+		} else {
+			app.ui.cmdAccLeft = []rune(strings.Join(e.args, " "))
+		}
+		app.ui.loadFileInfo(app.nav)
+	case "setfilter":
+		log.Printf("filter: %s", e.args)
+		if err := app.nav.setFilter(e.args); err != nil {
+			app.ui.echoerrf("filter: %s", err)
+		}
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
@@ -1210,6 +1268,15 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFileInfo(app.nav)
 			}
 		}
+		if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
+			dir := app.nav.currDir()
+			old := dir.ind
+			app.nav.setFilter(app.nav.prevFilter)
+			if old != dir.ind {
+				app.ui.loadFile(app.nav, true)
+				app.ui.loadFileInfo(app.nav)
+			}
+		}
 		normal(app)
 	case "cmd-complete":
 		var matches []string
@@ -1326,7 +1393,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
-		if len(s) == 0 {
+		if len(s) == 0 && app.ui.cmdPrefix != "filter: " {
 			return
 		}
 
@@ -1403,6 +1470,14 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app.nav, true)
 				app.ui.loadFileInfo(app.nav)
 			}
+		case "filter: ":
+			log.Printf("filter: %s", s)
+			app.ui.cmdPrefix = ""
+			if err := app.nav.setFilter(strings.Split(s, " ")); err != nil {
+				app.ui.echoerrf("filter: %s", err)
+			}
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
 		case "find: ":
 			app.ui.cmdPrefix = ""
 			if moved, found := app.nav.findNext(); !found {

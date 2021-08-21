@@ -38,6 +38,7 @@ var gOpts struct {
 	icons          bool
 	ignorecase     bool
 	ignoredia      bool
+	incfilter      bool
 	incsearch      bool
 	mouse          bool
 	number         bool
@@ -83,6 +84,7 @@ func init() {
 	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
+	gOpts.incfilter = false
 	gOpts.incsearch = false
 	gOpts.mouse = false
 	gOpts.number = false

@@ -676,7 +676,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 func (ui *ui) drawPromptLine(nav *nav) {
 	st := tcell.StyleDefault
 
-	pwd := nav.currDir().path
+	dir := nav.currDir()
+	pwd := dir.path
 
 	if strings.HasPrefix(pwd, gUser.HomeDir) {
 		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
@@ -717,6 +718,12 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	}
 	prompt = strings.Replace(prompt, "%d", pwd, -1)
 
+	if len(dir.filter) != 0 {
+		prompt = strings.Replace(prompt, "%F", fmt.Sprint(dir.filter), -1)
+	} else {
+		prompt = strings.Replace(prompt, "%F", "", -1)
+	}
+
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
@@ -753,6 +760,10 @@ func (ui *ui) drawStatLine(nav *nav) {
 
 	if len(nav.selections) > 0 {
 		selection += fmt.Sprintf("  \033[35;7m %d \033[0m", len(nav.selections))
+	}
+
+	if len(dir.filter) != 0 {
+		selection += "  \033[34;7m F \033[0m"
 	}
 
 	var progress string
