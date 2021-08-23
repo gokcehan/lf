@@ -453,6 +453,12 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func preChdir(app *app) {
+	if cmd, ok := gOpts.cmds["pre-cd"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func onChdir(app *app) {
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
@@ -696,6 +702,11 @@ func insert(app *app, arg string) {
 			app.ui.echoerr("mark-load: no such mark")
 			return
 		}
+
+		if wd != path {
+			preChdir(app)
+		}
+
 		if err := app.nav.cd(path); err != nil {
 			app.ui.echoerrf("%s", err)
 			return
@@ -785,6 +796,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
 			normal(app)
 		}
+		preChdir(app)
 		for i := 0; i < e.count; i++ {
 			if err := app.nav.updir(); err != nil {
 				app.ui.echoerrf("%s", err)
@@ -805,6 +817,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if curr.IsDir() {
+			preChdir(app)
 			err := app.nav.open()
 			if err != nil {
 				app.ui.echoerrf("opening directory: %s", err)
@@ -1160,6 +1173,16 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("getting current directory: %s", err)
 		}
 
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(wd, path)
+		} else {
+			path = filepath.Clean(path)
+		}
+
+		if wd != path {
+			preChdir(app)
+		}
+
 		if err := app.nav.cd(path); err != nil {
 			app.ui.echoerrf("%s", err)
 			return
@@ -1167,12 +1190,6 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
-
-		if !filepath.IsAbs(path) {
-			path = filepath.Join(wd, path)
-		} else {
-			path = filepath.Clean(path)
-		}
 
 		if wd != path {
 			app.nav.marks["'"] = wd
@@ -1189,6 +1206,17 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("getting current directory: %s", err)
 		}
 
+		path := filepath.Dir(e.args[0])
+		if !filepath.IsAbs(path) {
+			path = filepath.Join(wd, path)
+		} else {
+			path = filepath.Clean(path)
+		}
+
+		if wd != path {
+			preChdir(app)
+		}
+
 		if err := app.nav.sel(e.args[0]); err != nil {
 			app.ui.echoerrf("%s", err)
 			return
@@ -1196,13 +1224,6 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
-
-		path := filepath.Dir(e.args[0])
-		if !filepath.IsAbs(path) {
-			path = filepath.Join(wd, path)
-		} else {
-			path = filepath.Clean(path)
-		}
 
 		if wd != path {
 			app.nav.marks["'"] = wd

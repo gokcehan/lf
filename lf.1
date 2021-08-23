@@ -1399,6 +1399,8 @@ This command runs whenever you change directory but not on startup. You can add 
 .EE
 .PP
 Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
+.PP
+There is also a 'pre-cd' command, that works like 'on-cd', but is run before the directory is actually changed. It is generally a bad idea, to put movement commands (like 'up' / 'top' etc.) here.
 .SH COLORS
 lf tries to automatically adapt its colors to the environment. It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values. Colors are set in the following order:
 .PP

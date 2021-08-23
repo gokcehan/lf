@@ -1256,6 +1256,9 @@ You can add an extra call to make it run on startup as well:
 
 Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
 
+There is also a 'pre-cd' command, that works like 'on-cd', but is run before the directory is actually changed.
+It is generally a bad idea, to put movement commands (like 'up' / 'top' etc.) here.
+
 Colors
 
 lf tries to automatically adapt its colors to the environment.
