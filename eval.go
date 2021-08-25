@@ -961,6 +961,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 
+			normal(app)
 			if len(list) == 1 {
 				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
 			} else {
@@ -1005,25 +1006,32 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "read":
+		normal(app)
 		app.ui.cmdPrefix = ":"
 		app.ui.loadFileInfo(app.nav)
 	case "shell":
+		normal(app)
 		app.ui.cmdPrefix = "$"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-pipe":
+		normal(app)
 		app.ui.cmdPrefix = "%"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-wait":
+		normal(app)
 		app.ui.cmdPrefix = "!"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-async":
+		normal(app)
 		app.ui.cmdPrefix = "&"
 		app.ui.loadFileInfo(app.nav)
 	case "find":
+		normal(app)
 		app.ui.cmdPrefix = "find: "
 		app.nav.findBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "find-back":
+		normal(app)
 		app.ui.cmdPrefix = "find-back: "
 		app.nav.findBack = true
 		app.ui.loadFileInfo(app.nav)
@@ -1056,6 +1064,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "search":
+		normal(app)
 		app.ui.cmdPrefix = "/"
 		dir := app.nav.currDir()
 		app.nav.searchInd = dir.ind
@@ -1063,6 +1072,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
+		normal(app)
 		app.ui.cmdPrefix = "?"
 		dir := app.nav.currDir()
 		app.nav.searchInd = dir.ind
@@ -1106,6 +1116,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "filter":
+		normal(app)
 		app.ui.cmdPrefix = "filter: "
 		dir := app.nav.currDir()
 		app.nav.prevFilter = dir.filter
@@ -1123,11 +1134,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
+		normal(app)
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
+		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
 	case "mark-remove":
+		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
 	case "rename":
@@ -1148,6 +1162,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("rename: %s:", err)
 				return
 			}
+			normal(app)
 			app.ui.cmdPrefix = "rename: "
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 		}

@@ -524,6 +524,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "%":
+		normal(app)
 		app.cmd = cmd
 		app.cmdOutBuf = nil
 		app.ui.msg = ""
