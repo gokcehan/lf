@@ -881,6 +881,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		} else {
 			dir := app.nav.currDir()
 			for _, path := range e.args {
+				path = replaceTilde(path)
 				if !filepath.IsAbs(path) {
 					path = filepath.Join(dir.path, path)
 				}
@@ -1173,6 +1174,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("getting current directory: %s", err)
 		}
 
+		path = replaceTilde(path)
 		if !filepath.IsAbs(path) {
 			path = filepath.Join(wd, path)
 		} else {
@@ -1206,7 +1208,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("getting current directory: %s", err)
 		}
 
-		path := filepath.Dir(e.args[0])
+		path := filepath.Dir(replaceTilde(e.args[0]))
 		if !filepath.IsAbs(path) {
 			path = filepath.Join(wd, path)
 		} else {
@@ -1528,7 +1530,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 				oldPath := filepath.Join(wd, curr.Name())
 
-				newPath := filepath.Clean(s)
+				newPath := filepath.Clean(replaceTilde(s))
 				if !filepath.IsAbs(newPath) {
 					newPath = filepath.Join(wd, newPath)
 				}
