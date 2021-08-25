@@ -495,6 +495,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		err = cmd.Run()
 	case "%":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
 			log.Printf("writing stdin: %s", err)

@@ -1028,31 +1028,52 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "read":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = ":"
 		app.ui.loadFileInfo(app.nav)
 	case "shell":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "$"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-pipe":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "%"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-wait":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "!"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-async":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "&"
 		app.ui.loadFileInfo(app.nav)
 	case "find":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "find: "
 		app.nav.findBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "find-back":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "find-back: "
 		app.nav.findBack = true
@@ -1086,6 +1107,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "search":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "/"
 		dir := app.nav.currDir()
@@ -1094,6 +1118,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "?"
 		dir := app.nav.currDir()
@@ -1138,6 +1165,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "filter":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "filter: "
 		dir := app.nav.currDir()
@@ -1156,13 +1186,22 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
 	case "mark-remove":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
 		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
@@ -1182,6 +1221,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			curr, err := app.nav.currFile()
 			if err != nil {
 				app.ui.echoerrf("rename: %s:", err)
+				return
+			}
+			if app.ui.cmdPrefix == ">" {
 				return
 			}
 			normal(app)
