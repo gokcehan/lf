@@ -436,10 +436,10 @@ func (e *mapExpr) eval(app *app, args []string) {
 }
 
 func (e *cmapExpr) eval(app *app, args []string) {
-	if e.cmd == "" {
+	if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
 	} else {
-		gOpts.cmdkeys[e.key] = &callExpr{e.cmd, nil, 1}
+		gOpts.cmdkeys[e.key] = e.expr
 	}
 	app.ui.loadFileInfo(app.nav)
 }
