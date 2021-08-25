@@ -532,7 +532,29 @@ func update(app *app) {
 	}
 }
 
+func resetIncCmd(app *app)  {
+	if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
+		dir := app.nav.currDir()
+		dir.pos = app.nav.searchPos
+		if dir.ind != app.nav.searchInd {
+			dir.ind = app.nav.searchInd
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	} else if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
+		dir := app.nav.currDir()
+		old := dir.ind
+		app.nav.setFilter(app.nav.prevFilter)
+		if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	}
+}
+
 func normal(app *app) {
+	resetIncCmd(app)
+
 	app.ui.menuBuf = nil
 	app.ui.menuSelected = -2
 
@@ -1296,24 +1318,6 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "cmd-escape":
 		if app.ui.cmdPrefix == ">" {
 			return
-		}
-		if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
-			dir := app.nav.currDir()
-			dir.pos = app.nav.searchPos
-			if dir.ind != app.nav.searchInd {
-				dir.ind = app.nav.searchInd
-				app.ui.loadFile(app.nav, true)
-				app.ui.loadFileInfo(app.nav)
-			}
-		}
-		if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
-			dir := app.nav.currDir()
-			old := dir.ind
-			app.nav.setFilter(app.nav.prevFilter)
-			if old != dir.ind {
-				app.ui.loadFile(app.nav, true)
-				app.ui.loadFileInfo(app.nav)
-			}
 		}
 		normal(app)
 	case "cmd-complete":
