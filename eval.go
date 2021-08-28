@@ -782,57 +782,36 @@ func insert(app *app, arg string) {
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
 	case "up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count * app.nav.height / 2) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count * app.nav.height) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count * app.nav.height / 2) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count * app.nav.height) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "updir":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		resetIncCmd(app)
 		preChdir(app)
 		for i := 0; i < e.count; i++ {
@@ -846,9 +825,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		restartIncCmd(app)
 		onChdir(app)
 	case "open":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		curr, err := app.nav.currFile()
 		if err != nil {
 			app.ui.echoerrf("opening: %s", err)
@@ -901,17 +877,11 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "quit":
 		app.quitChan <- struct{}{}
 	case "top":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.top() {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "bottom":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.bottom() {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
