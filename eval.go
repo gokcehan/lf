@@ -972,6 +972,9 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
 			normal(app)
 			if len(list) == 1 {
 				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
