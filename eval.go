@@ -532,7 +532,42 @@ func update(app *app) {
 	}
 }
 
+func restartIncCmd(app *app) {
+	if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
+		dir := app.nav.currDir()
+		app.nav.searchInd = dir.ind
+		app.nav.searchPos = dir.pos
+		update(app)
+	} else if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
+		dir := app.nav.currDir()
+		app.nav.prevFilter = dir.filter
+		update(app)
+	}
+}
+
+func resetIncCmd(app *app)  {
+	if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
+		dir := app.nav.currDir()
+		dir.pos = app.nav.searchPos
+		if dir.ind != app.nav.searchInd {
+			dir.ind = app.nav.searchInd
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	} else if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
+		dir := app.nav.currDir()
+		old := dir.ind
+		app.nav.setFilter(app.nav.prevFilter)
+		if old != dir.ind {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	}
+}
+
 func normal(app *app) {
+	resetIncCmd(app)
+
 	app.ui.menuBuf = nil
 	app.ui.menuSelected = -2
 
@@ -704,6 +739,7 @@ func insert(app *app, arg string) {
 		}
 
 		if wd != path {
+			resetIncCmd(app)
 			preChdir(app)
 		}
 
@@ -716,6 +752,7 @@ func insert(app *app, arg string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			restartIncCmd(app)
 			onChdir(app)
 		}
 	case app.ui.cmdPrefix == "mark-remove: ":
@@ -745,57 +782,37 @@ func insert(app *app, arg string) {
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
 	case "up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count * app.nav.height / 2) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-up":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.up(e.count * app.nav.height) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count * app.nav.height / 2) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-down":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.down(e.count * app.nav.height) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "updir":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
+		resetIncCmd(app)
 		preChdir(app)
 		for i := 0; i < e.count; i++ {
 			if err := app.nav.updir(); err != nil {
@@ -805,11 +822,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
+		restartIncCmd(app)
 		onChdir(app)
 	case "open":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		curr, err := app.nav.currFile()
 		if err != nil {
 			app.ui.echoerrf("opening: %s", err)
@@ -817,6 +832,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if curr.IsDir() {
+			resetIncCmd(app)
 			preChdir(app)
 			err := app.nav.open()
 			if err != nil {
@@ -825,6 +841,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
+			restartIncCmd(app)
 			onChdir(app)
 			return
 		}
@@ -860,17 +877,11 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "quit":
 		app.quitChan <- struct{}{}
 	case "top":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.top() {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "bottom":
-		if app.ui.cmdPrefix != "" && app.ui.cmdPrefix != ">" {
-			normal(app)
-		}
 		if app.nav.bottom() {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
@@ -961,6 +972,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
+			normal(app)
 			if len(list) == 1 {
 				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
 			} else {
@@ -1005,25 +1020,53 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "read":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = ":"
 		app.ui.loadFileInfo(app.nav)
 	case "shell":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "$"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-pipe":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "%"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-wait":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "!"
 		app.ui.loadFileInfo(app.nav)
 	case "shell-async":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "&"
 		app.ui.loadFileInfo(app.nav)
 	case "find":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "find: "
 		app.nav.findBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "find-back":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "find-back: "
 		app.nav.findBack = true
 		app.ui.loadFileInfo(app.nav)
@@ -1056,6 +1099,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "search":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "/"
 		dir := app.nav.currDir()
 		app.nav.searchInd = dir.ind
@@ -1063,6 +1110,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "?"
 		dir := app.nav.currDir()
 		app.nav.searchInd = dir.ind
@@ -1106,6 +1157,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "filter":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "filter: "
 		dir := app.nav.currDir()
 		app.nav.prevFilter = dir.filter
@@ -1123,11 +1178,23 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "mark-save":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
 	case "mark-remove":
+		if app.ui.cmdPrefix == ">" {
+			return
+		}
+		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
 	case "rename":
@@ -1148,6 +1215,10 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("rename: %s:", err)
 				return
 			}
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
+			normal(app)
 			app.ui.cmdPrefix = "rename: "
 			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 		}
@@ -1182,6 +1253,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if wd != path {
+			resetIncCmd(app)
 			preChdir(app)
 		}
 
@@ -1195,6 +1267,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			restartIncCmd(app)
 			onChdir(app)
 		}
 	case "select":
@@ -1216,6 +1289,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if wd != path {
+			resetIncCmd(app)
 			preChdir(app)
 		}
 
@@ -1229,6 +1303,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		if wd != path {
 			app.nav.marks["'"] = wd
+			restartIncCmd(app)
 			onChdir(app)
 		}
 	case "glob-select":
@@ -1281,24 +1356,6 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "cmd-escape":
 		if app.ui.cmdPrefix == ">" {
 			return
-		}
-		if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
-			dir := app.nav.currDir()
-			dir.pos = app.nav.searchPos
-			if dir.ind != app.nav.searchInd {
-				dir.ind = app.nav.searchInd
-				app.ui.loadFile(app.nav, true)
-				app.ui.loadFileInfo(app.nav)
-			}
-		}
-		if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
-			dir := app.nav.currDir()
-			old := dir.ind
-			app.nav.setFilter(app.nav.prevFilter)
-			if old != dir.ind {
-				app.ui.loadFile(app.nav, true)
-				app.ui.loadFileInfo(app.nav)
-			}
 		}
 		normal(app)
 	case "cmd-complete":
@@ -1597,12 +1654,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		normal(app)
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
-		app.ui.cmdAccRight = nil
-		app.ui.cmdTmp = nil
-		app.ui.menuBuf = nil
-		app.ui.menuSelected = -2
 	case "cmd-history-prev":
 		if app.ui.cmdPrefix == ">" {
 			return
@@ -1615,12 +1669,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.cmdHistoryInd++
 		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		normal(app)
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
-		app.ui.cmdAccRight = nil
-		app.ui.cmdTmp = nil
-		app.ui.menuBuf = nil
-		app.ui.menuSelected = -2
 	case "cmd-delete":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
