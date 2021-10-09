@@ -786,7 +786,7 @@ Set the path of a cleaner file. This file will be called if previewing is enable
     promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f\e033[0m")
 .EE
 .PP
-Format string of the prompt shown in the top line. Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, '%d' as the working directory with a trailing path separator, and '%f' as the file name. Home folder is shown as '~' in the working directory expansion. Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
+Format string of the prompt shown in the top line. Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, '%d' as the working directory with a trailing path separator, '%f' as the file name, and '%F' as the current filter. Home folder is shown as '~' in the working directory expansion. Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
 .PP
 .EX
     ratios         []int     (default '1:2:3')

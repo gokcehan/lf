@@ -651,7 +651,7 @@ Preview clearing is disabled when the value of this option is left empty.
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
 
 Format string of the prompt shown in the top line.
-Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, '%d' as the working directory with a trailing path separator, and '%f' as the file name.
+Special expansions are provided, '%u' as the user name, '%h' as the host name, '%w' as the working directory, '%d' as the working directory with a trailing path separator, '%f' as the file name, and '%F' as the current filter.
 Home folder is shown as '~' in the working directory expansion.
 Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
 
