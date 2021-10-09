@@ -280,15 +280,15 @@ func (dir *dir) sort() {
 			dir.files = dir.files[len(dir.files):]
 		}
 	}
+
+	dir.ind = max(dir.ind, 0)
+	dir.ind = min(dir.ind, len(dir.files)-1)
 }
 
 func (dir *dir) name() string {
 	if len(dir.files) == 0 {
 		return ""
 	}
-
-	dir.ind = max(dir.ind, 0)
-	dir.ind = min(dir.ind, len(dir.files)-1)
 
 	return dir.files[dir.ind].Name()
 }
@@ -1414,6 +1414,7 @@ func (nav *nav) currFile() (*file, error) {
 	if len(dir.files) == 0 {
 		return nil, fmt.Errorf("empty directory")
 	}
+
 	return dir.files[dir.ind], nil
 }
 
