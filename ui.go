@@ -465,6 +465,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 type ui struct {
 	screen       tcell.Screen
+	polling      bool
 	wins         []*win
 	promptWin    *win
 	msgWin       *win
@@ -538,6 +539,7 @@ func newUI(screen tcell.Screen) *ui {
 
 	ui := &ui{
 		screen:       screen,
+		polling:      true,
 		wins:         getWins(screen),
 		promptWin:    newWin(wtot, 1, 0, 0),
 		msgWin:       newWin(wtot, 1, 0, htot-1),
@@ -561,6 +563,7 @@ func (ui *ui) pollEvents() {
 	for {
 		ev = ui.screen.PollEvent()
 		if ev == nil {
+			ui.polling = false
 			return
 		}
 		ui.tevChan <- ev
@@ -1169,7 +1172,12 @@ func (ui *ui) suspend() error {
 }
 
 func (ui *ui) resume() error {
-	return ui.screen.Resume()
+	err := ui.screen.Resume()
+	if !ui.polling {
+		go ui.pollEvents()
+		ui.polling = true
+	}
+	return err
 }
 
 func anyKey() {
