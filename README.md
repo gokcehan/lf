@@ -41,7 +41,7 @@ See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 
 If you like to build from the source on unix:
 
-    env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/gokcehan/lf
+    env CGO_ENABLED=0 GO111MODULE=on go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 
 On windows `cmd`:
 
