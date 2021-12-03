@@ -2,7 +2,7 @@
 
 [Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
-| [#lf](https://webchat.freenode.net/?channels=lf) (on Freenode)
+| [#lf](https://web.libera.chat/#lf) (on Libera.Chat)
 | [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
