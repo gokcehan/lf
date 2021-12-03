@@ -3,7 +3,7 @@
 [Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
 | [#lf](https://web.libera.chat/#lf) (on Libera.Chat)
-| [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
+| [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org)
 
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
 [![Go Reference](https://pkg.go.dev/badge/github.com/gokcehan/lf.svg)](https://pkg.go.dev/github.com/gokcehan/lf)
