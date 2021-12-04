@@ -12,6 +12,8 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
+
+	"github.com/adrg/xdg"
 )
 
 var (
@@ -266,7 +268,11 @@ func main() {
 		}
 	case *serverMode:
 		os.Chdir(gUser.HomeDir)
-		gServerLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.server.log", gUser.Username))
+		var err error
+		gServerLogPath, err = xdg.RuntimeFile(filepath.Join("lf", "server.log"))
+		if err != nil {
+			log.Fatal(err)
+		}
 		serve()
 	default:
 		gSingleMode = *singleMode
@@ -276,7 +282,11 @@ func main() {
 		}
 
 		gClientID = os.Getpid()
-		gLogPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.%d.log", gUser.Username, gClientID))
+		var err error
+		gLogPath, err = xdg.RuntimeFile(filepath.Join("lf", fmt.Sprintf("client.%d.log", gClientID)))
+		if err != nil {
+			log.Fatal(err)
+		}
 		switch flag.NArg() {
 		case 0:
 			_, err := os.Getwd()

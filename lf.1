@@ -1205,7 +1205,7 @@ One of the more advanced features in lf is remote commands. All clients connect 
 To use this feature, you need to use a client which supports communicating with a UNIX-domain socket. OpenBSD implementation of netcat (nc) is one such example. You can use it to send a command to the socket file:
 .PP
 .EX
-    echo 'send echo hello world' | nc -U /tmp/lf.${USER}.sock
+    echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/run/user/${UID}}/lf/lf.sock
 .EE
 .PP
 Since such a client may not be available everywhere, lf comes bundled with a command line flag to be used as such. When using lf, you do not need to specify the address of the socket file. This is the recommended way of using remote commands since it is shorter and immune to socket file address changes:

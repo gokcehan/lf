@@ -12,6 +12,8 @@ import (
 	"runtime"
 	"strings"
 	"syscall"
+
+	"github.com/adrg/xdg"
 )
 
 var (
@@ -88,7 +90,10 @@ func init() {
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
+	gDefaultSocketPath, err = xdg.RuntimeFile(filepath.Join("lf", "lf.sock"))
+	if err != nil {
+		log.Fatal(err)
+	}
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
