@@ -115,6 +115,7 @@ type dir struct {
 	sortType    sortType  // sort method and options from last sort
 	dironly     bool      // dironly value from last sort
 	hiddenfiles []string  // hiddenfiles value from last sort
+	dirtyfiles  []string  // files that don't require cleaning
 	filter      []string  // last filter for this directory
 	ignorecase  bool      // ignorecase value from last sort
 	ignoredia   bool      // ignoredia value from last sort
@@ -154,6 +155,7 @@ func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
 	dir.dironly = gOpts.dironly
 	dir.hiddenfiles = gOpts.hiddenfiles
+	dir.dirtyfiles = gOpts.dirtyfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
 
@@ -361,6 +363,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		path:        path,
 		sortType:    gOpts.sortType,
 		hiddenfiles: gOpts.hiddenfiles,
+		dirtyfiles:  gOpts.dirtyfiles,
 		ignorecase:  gOpts.ignorecase,
 		ignoredia:   gOpts.ignoredia,
 	}
@@ -531,7 +534,8 @@ func (nav *nav) previewLoop(ui *ui) {
 				break loop
 			}
 		}
-		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+		dir := nav.currDir()
+		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview && !isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) {
 			cmd := exec.Command(gOpts.cleaner, prev)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)

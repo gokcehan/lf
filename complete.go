@@ -146,6 +146,7 @@ var (
 		"errorfmt",
 		"filesep",
 		"hiddenfiles",
+		"dirtyfiles",
 		"ifs",
 		"info",
 		"previewer",
