@@ -68,6 +68,24 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
+	case "dirtyfiles":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			if s == "" {
+				app.ui.echoerr("dirtyfiles: glob should be non-empty")
+				return
+			}
+			_, err := filepath.Match(s, "a")
+			if err != nil {
+				app.ui.echoerrf("dirtyfiles: %s", err)
+				return
+			}
+		}
+		gOpts.dirtyfiles = toks
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app.nav, true)
 	case "drawbox":
 		gOpts.drawbox = true
 		app.ui.renew()
@@ -329,24 +347,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.hiddenfiles = toks
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app.nav, true)
-	case "dirtyfiles":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			if s == "" {
-				app.ui.echoerr("dirtyfiles: glob should be non-empty")
-				return
-			}
-			_, err := filepath.Match(s, "a")
-			if err != nil {
-				app.ui.echoerrf("dirtyfiles: %s", err)
-				return
-			}
-		}
-		gOpts.dirtyfiles = toks
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
