@@ -537,12 +537,14 @@ func (nav *nav) previewLoop(ui *ui) {
 			}
 		}
 		dir := nav.currDir()
-		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview && (!isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) || forceClear) {
-			cmd := exec.Command(gOpts.cleaner, prev)
-			if err := cmd.Run(); err != nil {
-				log.Printf("cleaning preview: %s", err)
+		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			if forceClear || !isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) {
+				cmd := exec.Command(gOpts.cleaner, prev)
+				if err := cmd.Run(); err != nil {
+					log.Printf("cleaning preview: %s", err)
+				}
+				nav.volatilePreview = false
 			}
-			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
