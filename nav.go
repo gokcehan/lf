@@ -525,17 +525,19 @@ func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
 		clear := len(path) == 0
+		forceClear := path == "!"
 	loop:
 		for {
 			select {
 			case path = <-nav.previewChan:
 				clear = clear || len(path) == 0
+				forceClear = forceClear || path == "!"
 			default:
 				break loop
 			}
 		}
 		dir := nav.currDir()
-		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview && !isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) {
+		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview && (!isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) || forceClear) {
 			cmd := exec.Command(gOpts.cleaner, prev)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
