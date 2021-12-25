@@ -136,6 +136,19 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	return hidden
 }
 
+func isDirty(f os.FileInfo, path string, dirtyfiles []string) bool {
+	dirty := false
+	for _, pattern := range dirtyfiles {
+		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
+		if strings.HasPrefix(pattern, "!") && matched {
+			dirty = false
+		} else if matched {
+			dirty = true
+		}
+	}
+	return dirty
+}
+
 func userName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {

@@ -131,6 +131,7 @@ The following options can be used to customize the behavior of lf:
     globsearch     bool      (default off)
     hidden         bool      (default off)
     hiddenfiles    []string  (default '.*')
+    dirtyfiles     []string  (default '!*')
     icons          bool      (default off)
     ifs            string    (default '')
     ignorecase     bool      (default on)
@@ -703,6 +704,12 @@ Show hidden files. On unix systems, hidden files are determined by the value of 
 .EE
 .PP
 List of hidden file glob patterns. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+.PP
+.EX
+    dirtyfiles    []string  (default '!*')
+.EE
+.PP
+List of dirty file glob patterns. Those files won't have 'cleaner' executed before previewing them. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from dirty files.
 .PP
 .EX
     icons          bool      (default off)

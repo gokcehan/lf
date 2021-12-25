@@ -87,6 +87,7 @@ var (
 		"dironly",
 		"nodironly",
 		"dironly!",
+		"dirtyfiles",
 		"drawbox",
 		"nodrawbox",
 		"drawbox!",

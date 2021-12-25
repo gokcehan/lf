@@ -105,6 +105,7 @@ The following options can be used to customize the behavior of lf:
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
+    dirtyfiles     []string  (default '!*')
     drawbox        bool      (default off)
     errorfmt       string    (default "\033[7;31;47m%s\033[0m")
     filesep        string    (default "\n")
@@ -533,6 +534,14 @@ Show directories first above regular files.
     dironly        bool      (default off)
 
 Show only directories.
+
+    dirtyfiles    []string  (default '!*')
+
+List of dirty file glob patterns.
+These files won't have 'cleaner' executed before previewing them.
+Patterns can be given as relative or absolute paths.
+Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges.
+In addition, if a pattern starts with '!', then its matches are excluded from dirty files.
 
     drawbox        bool      (default off)
 
