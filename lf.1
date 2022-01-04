@@ -124,6 +124,7 @@ The following options can be used to customize the behavior of lf:
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
+    dirtyfiles     []string  (default '!*')
     drawbox        bool      (default off)
     errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
     filesep        string    (default "\en")
@@ -131,7 +132,6 @@ The following options can be used to customize the behavior of lf:
     globsearch     bool      (default off)
     hidden         bool      (default off)
     hiddenfiles    []string  (default '.*')
-    dirtyfiles     []string  (default '!*')
     icons          bool      (default off)
     ifs            string    (default '')
     ignorecase     bool      (default on)
@@ -664,6 +664,12 @@ Show directories first above regular files.
 Show only directories.
 .PP
 .EX
+    dirtyfiles    []string  (default '!*')
+.EE
+.PP
+List of dirty file glob patterns. These files won't have 'cleaner' executed before previewing them. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from dirty files.
+.PP
+.EX
     drawbox        bool      (default off)
 .EE
 .PP
@@ -704,12 +710,6 @@ Show hidden files. On unix systems, hidden files are determined by the value of 
 .EE
 .PP
 List of hidden file glob patterns. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
-.PP
-.EX
-    dirtyfiles    []string  (default '!*')
-.EE
-.PP
-List of dirty file glob patterns. Those files won't have 'cleaner' executed before previewing them. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from dirty files.
 .PP
 .EX
     icons          bool      (default off)
@@ -1264,18 +1264,18 @@ File operations can be performed on the current selected file or alternatively o
 You can customize copy and move operations by defining a 'paste' command. This is a special command that is called when it is defined instead of the builtin implementation. You can use the following example as a starting point:
 .PP
 .EX
-        cmd paste %{{
-            load=$(cat ~/.local/share/lf/files)
-            mode=$(echo "$load" | sed -n '1p')
-            list=$(echo "$load" | sed '1d')
-            if [ $mode = 'copy' ]; then
-                cp -R $list .
-            elif [ $mode = 'move' ]; then
-                mv $list .
-            fi
-    	rm ~/.local/share/lf/files
-            lf -remote 'send clear'
-        }}
+    cmd paste %{{
+        load=$(cat ~/.local/share/lf/files)
+        mode=$(echo "$load" | sed -n '1p')
+        list=$(echo "$load" | sed '1d')
+        if [ $mode = 'copy' ]; then
+            cp -R $list .
+        elif [ $mode = 'move' ]; then
+            mv $list .
+        fi
+        rm ~/.local/share/lf/files
+        lf -remote 'send clear'
+    }}
 .EE
 .PP
 Some useful things to be considered are to use the backup ('--backup') and/or preserve attributes ('-a') options with 'cp' and 'mv' commands if they support it (i.e. GNU implementation), change the command type to asynchronous, or use 'rsync' command with progress bar option for copying and feed the progress to the client periodically with remote 'echo' calls.

@@ -568,12 +568,12 @@ Show only directories.
 
     dirtyfiles    []string  (default '!*')
 
-List of dirty file glob patterns. These files won't have 'cleaner' called
-before previewing them. Patterns can be given as relative or
-absolute paths. Globbing supports the usual special characters, '*' to match
-any sequence, '?' to match any character, and '[...]' or '[^...] to match
-character sets or ranges. In addition, if a pattern starts with '!', then
-its matches are excluded from dirty files.
+List of dirty file glob patterns. These files won't have 'cleaner' executed
+before previewing them. Patterns can be given as relative or absolute paths.
+Globbing supports the usual special characters, '*' to match any sequence,
+'?' to match any character, and '[...]' or '[^...] to match character sets
+or ranges. In addition, if a pattern starts with '!', then its matches are
+excluded from dirty files.
 
     drawbox        bool      (default off)
 
@@ -1208,18 +1208,18 @@ This is a special command that is called when it is defined instead of the
 builtin implementation. You can use the following example as a starting
 point:
 
-        cmd paste %{{
-            load=$(cat ~/.local/share/lf/files)
-            mode=$(echo "$load" | sed -n '1p')
-            list=$(echo "$load" | sed '1d')
-            if [ $mode = 'copy' ]; then
-                cp -R $list .
-            elif [ $mode = 'move' ]; then
-                mv $list .
-            fi
-    	rm ~/.local/share/lf/files
-            lf -remote 'send clear'
-        }}
+    cmd paste %{{
+        load=$(cat ~/.local/share/lf/files)
+        mode=$(echo "$load" | sed -n '1p')
+        list=$(echo "$load" | sed '1d')
+        if [ $mode = 'copy' ]; then
+            cp -R $list .
+        elif [ $mode = 'move' ]; then
+            mv $list .
+        fi
+        rm ~/.local/share/lf/files
+        lf -remote 'send clear'
+    }}
 
 Some useful things to be considered are to use the backup ('--backup')
 and/or preserve attributes ('-a') options with 'cp' and 'mv' commands if

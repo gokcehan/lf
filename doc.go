@@ -1103,7 +1103,7 @@ You can use the following example as a starting point:
         elif [ $mode = 'move' ]; then
             mv $list .
         fi
-	rm ~/.local/share/lf/files
+        rm ~/.local/share/lf/files
         lf -remote 'send clear'
     }}
 
