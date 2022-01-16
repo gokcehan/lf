@@ -2,14 +2,18 @@ name: Go
 
 on:
   push:
-    branches: [ master ]
+    branches: [ master, win-drives ]
   pull_request:
     branches: [ master ]
 
 jobs:
 
   build:
-    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+       os: [ubuntu-latest, windows-latest]
+      fail-fast: true
+    runs-on: ${{matrix.os}}
     steps:
     - uses: actions/checkout@v2
 
