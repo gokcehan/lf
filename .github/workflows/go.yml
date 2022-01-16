@@ -5,6 +5,7 @@ on:
     branches: [ master, win-drives ]
   pull_request:
     branches: [ master ]
+  workflow_dispatch:
 
 jobs:
 
