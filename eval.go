@@ -563,7 +563,7 @@ func restartIncCmd(app *app) {
 	}
 }
 
-func resetIncCmd(app *app)  {
+func resetIncCmd(app *app) {
 	if gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?") {
 		dir := app.nav.currDir()
 		dir.pos = app.nav.searchPos
