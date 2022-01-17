@@ -136,19 +136,6 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	return hidden
 }
 
-func isDirty(f os.FileInfo, path string, dirtyfiles []string) bool {
-	dirty := false
-	for _, pattern := range dirtyfiles {
-		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if strings.HasPrefix(pattern, "!") && matched {
-			dirty = false
-		} else if matched {
-			dirty = true
-		}
-	}
-	return dirty
-}
-
 func userName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {
@@ -172,21 +159,6 @@ func linkCount(f os.FileInfo) string {
 		return fmt.Sprintf("%v ", stat.Nlink)
 	}
 	return ""
-}
-
-func matchPattern(pattern, name, path string) bool {
-	s := name
-
-	pattern = replaceTilde(pattern)
-
-	if filepath.IsAbs(pattern) {
-		s = filepath.Join(path, name)
-	}
-
-	// pattern errors are checked when 'hiddenfiles' option is set
-	matched, _ := filepath.Match(pattern, s)
-
-	return matched
 }
 
 func errCrossDevice(err error) bool {
