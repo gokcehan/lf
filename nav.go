@@ -554,6 +554,34 @@ func (nav *nav) previewLoop(ui *ui) {
 	}
 }
 
+func isDirty(f os.FileInfo, path string, dirtyfiles []string) bool {
+	dirty := false
+	for _, pattern := range dirtyfiles {
+		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
+		if strings.HasPrefix(pattern, "!") && matched {
+			dirty = false
+		} else if matched {
+			dirty = true
+		}
+	}
+	return dirty
+}
+
+func matchPattern(pattern, name, path string) bool {
+	s := name
+
+	pattern = replaceTilde(pattern)
+
+	if filepath.IsAbs(pattern) {
+		s = filepath.Join(path, name)
+	}
+
+	// pattern errors are checked when 'hiddenfiles' option is set
+	matched, _ := filepath.Match(pattern, s)
+
+	return matched
+}
+
 func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
