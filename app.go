@@ -481,7 +481,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.nav.previewChan <- ""
-		app.nav.previewChan <- "!"
 		if err := app.ui.suspend(); err != nil {
 			log.Printf("suspend: %s", err)
 		}
