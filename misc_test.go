@@ -1,13 +1,15 @@
 package main
 
 import (
+	"os"
 	"reflect"
 	"testing"
 )
 
 func TestIsRoot(t *testing.T) {
-	if !isRoot("/") {
-		t.Errorf(`"/" is root`)
+	sep := string(os.PathSeparator)
+	if !isRoot(sep) {
+		t.Errorf(`"%s" is root`, sep)
 	}
 
 	paths := []string{
