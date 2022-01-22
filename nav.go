@@ -115,7 +115,6 @@ type dir struct {
 	sortType    sortType  // sort method and options from last sort
 	dironly     bool      // dironly value from last sort
 	hiddenfiles []string  // hiddenfiles value from last sort
-	dirtyfiles  []string  // files that don't require cleaning
 	filter      []string  // last filter for this directory
 	ignorecase  bool      // ignorecase value from last sort
 	ignoredia   bool      // ignoredia value from last sort
@@ -155,7 +154,6 @@ func (dir *dir) sort() {
 	dir.sortType = gOpts.sortType
 	dir.dironly = gOpts.dironly
 	dir.hiddenfiles = gOpts.hiddenfiles
-	dir.dirtyfiles = gOpts.dirtyfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
 
@@ -363,7 +361,6 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		path:        path,
 		sortType:    gOpts.sortType,
 		hiddenfiles: gOpts.hiddenfiles,
-		dirtyfiles:  gOpts.dirtyfiles,
 		ignorecase:  gOpts.ignorecase,
 		ignoredia:   gOpts.ignoredia,
 	}
@@ -525,26 +522,21 @@ func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
 		clear := len(path) == 0
-		forceClear := path == "!"
 	loop:
 		for {
 			select {
 			case path = <-nav.previewChan:
 				clear = clear || len(path) == 0
-				forceClear = forceClear || path == "!"
 			default:
 				break loop
 			}
 		}
-		dir := nav.currDir()
 		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			if forceClear || !isDirty(dir.files[dir.ind], dir.path, dir.dirtyfiles) {
-				cmd := exec.Command(gOpts.cleaner, prev)
-				if err := cmd.Run(); err != nil {
-					log.Printf("cleaning preview: %s", err)
-				}
-				nav.volatilePreview = false
+			cmd := exec.Command(gOpts.cleaner, prev)
+			if err := cmd.Run(); err != nil {
+				log.Printf("cleaning preview: %s", err)
 			}
+			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
@@ -552,19 +544,6 @@ func (nav *nav) previewLoop(ui *ui) {
 			prev = path
 		}
 	}
-}
-
-func isDirty(f os.FileInfo, path string, dirtyfiles []string) bool {
-	dirty := false
-	for _, pattern := range dirtyfiles {
-		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if strings.HasPrefix(pattern, "!") && matched {
-			dirty = false
-		} else if matched {
-			dirty = true
-		}
-	}
-	return dirty
 }
 
 func matchPattern(pattern, name, path string) bool {
