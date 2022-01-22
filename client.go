@@ -29,6 +29,10 @@ func run() {
 	if err != nil {
 		panic(err)
 	}
+	err = os.Chmod(gLogPath, 0600)
+	if err != nil {
+		panic(err)
+	}
 	defer f.Close()
 	log.SetOutput(f)
 

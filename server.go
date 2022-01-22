@@ -20,6 +20,10 @@ func serve() {
 	if err != nil {
 		panic(err)
 	}
+	err = os.Chmod(gServerLogPath, 0600)
+	if err != nil {
+		panic(err)
+	}
 	defer f.Close()
 	log.SetOutput(f)
 
@@ -29,6 +33,13 @@ func serve() {
 	if err != nil {
 		log.Printf("listening socket: %s", err)
 		return
+	}
+	if gSocketProt == "unix" {
+		err = os.Chmod(gSocketPath, 0600)
+		if err != nil {
+			log.Printf("chmod socket: %s", err)
+			return
+		}
 	}
 	defer l.Close()
 
