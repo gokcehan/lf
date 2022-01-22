@@ -161,6 +161,21 @@ func linkCount(f os.FileInfo) string {
 	return ""
 }
 
+func matchPattern(pattern, name, path string) bool {
+	s := name
+
+	pattern = replaceTilde(pattern)
+
+	if filepath.IsAbs(pattern) {
+		s = filepath.Join(path, name)
+	}
+
+	// pattern errors are checked when 'hiddenfiles' option is set
+	matched, _ := filepath.Match(pattern, s)
+
+	return matched
+}
+
 func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV
 }
@@ -178,4 +193,8 @@ func exportFiles(f string, fs []string, pwd string) {
 	} else {
 		os.Setenv("fx", envFiles)
 	}
+}
+
+func getWinDrives() []string {
+	return []string{}
 }

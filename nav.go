@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -355,6 +356,9 @@ type nav struct {
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
+	if path == "" && runtime.GOOS == "windows" {
+		return nav.fakeRoot()
+	}
 	d := &dir{
 		loading:     true,
 		loadTime:    time.Now(),
@@ -391,6 +395,9 @@ func (nav *nav) loadDir(path string) *dir {
 }
 
 func (nav *nav) checkDir(dir *dir) {
+	if dir.path == "" {
+		return
+	}
 	s, err := os.Stat(dir.path)
 	if err != nil {
 		log.Printf("getting directory info: %s", err)
@@ -429,12 +436,60 @@ func (nav *nav) checkDir(dir *dir) {
 	}
 }
 
+func (nav *nav) fakeRoot() *dir {
+	d := &dir{
+		loading:     true,
+		loadTime:    time.Now(),
+		path:        "",
+		noPerm:      false,
+		sortType:    gOpts.sortType,
+		hiddenfiles: gOpts.hiddenfiles,
+		ignorecase:  gOpts.ignorecase,
+		ignoredia:   gOpts.ignoredia,
+	}
+	files := []*file{}
+	// FIXME: fakeRoot is only called once and cached
+	// remove it from cache everywhere to refetch drives list
+	for _, drive := range getWinDrives() {
+		fname := drive + ":\\"
+		lstat, err := os.Lstat(fname)
+		if os.IsNotExist(err) {
+			continue
+		}
+		if err != nil {
+			continue
+		}
+		files = append(files, &file{
+			FileInfo: lstat,
+			path:     fname,
+			dirCount: -1,
+		})
+	}
+	d.files = files
+	d.allFiles = files
+	d.loading = false
+	d.loadTime = time.Now()
+	d.sort()
+	// FIXME: after sort(), d.files is empty but d.allFiles is not
+	// Because everywhere we use f.Name() which gives "\\" for all drives
+	// must use f.path instead when dealing with drives
+	d.files = d.allFiles
+	d.ind, d.pos = 0, 0
+	return d
+}
+
 func (nav *nav) getDirs(wd string) {
 	var dirs []*dir
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := nav.loadDir(curr)
 		dir.sel(base, nav.height)
+		dirs = append(dirs, dir)
+	}
+
+	if runtime.GOOS == "windows" {
+		dir := nav.loadDir("")
+		dir.sel("", nav.height)
 		dirs = append(dirs, dir)
 	}
 
@@ -544,21 +599,6 @@ func (nav *nav) previewLoop(ui *ui) {
 			prev = path
 		}
 	}
-}
-
-func matchPattern(pattern, name, path string) bool {
-	s := name
-
-	pattern = replaceTilde(pattern)
-
-	if filepath.IsAbs(pattern) {
-		s = filepath.Join(path, name)
-	}
-
-	// pattern errors are checked when 'hiddenfiles' option is set
-	matched, _ := filepath.Match(pattern, s)
-
-	return matched
 }
 
 func (nav *nav) preview(path string, win *win) {

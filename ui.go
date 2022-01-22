@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"sort"
 	"strconv"
 	"strings"
@@ -284,10 +285,18 @@ func infotimefmt(t time.Time) string {
 	return t.Format("Jan _2  2006")
 }
 
+func fileName(f *file, d *dir) (fname string) {
+	fname = f.Name()
+	if d.path == "" && runtime.GOOS == "windows" {
+		fname = f.path
+	}
+	return
+}
+
 func fileInfo(f *file, d *dir) string {
 	var info string
 
-	path := filepath.Join(d.path, f.Name())
+	path := filepath.Join(d.path, fileName(f, d))
 
 	for _, s := range gOpts.info {
 		switch s {
@@ -378,6 +387,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 	for i, f := range dir.files[beg:end] {
 		st := colors.get(f)
+		fname := fileName(f, dir)
 
 		if lnwidth > 0 {
 			var ln string
@@ -400,7 +410,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 			win.print(screen, 0, i, tcell.StyleDefault.Foreground(tcell.ColorOlive), ln)
 		}
 
-		path := filepath.Join(dir.path, f.Name())
+		path := filepath.Join(dir.path, fname)
 
 		if _, ok := selections[path]; ok {
 			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
@@ -428,7 +438,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 			iwidth = 2
 		}
 
-		for _, r := range f.Name() {
+		for _, r := range fname {
 			s = append(s, r)
 		}
 
