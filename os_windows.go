@@ -147,9 +147,11 @@ func exportFiles(f string, fs []string, pwd string) {
 	}
 	envFiles := strings.Join(quotedFiles, gOpts.filesep)
 
+	envPWD := fmt.Sprintf(`"%s"`, pwd)
+
 	os.Setenv("f", envFile)
 	os.Setenv("fs", envFiles)
-	os.Setenv("PWD", pwd)
+	os.Setenv("PWD", envPWD)
 
 	if len(fs) == 0 {
 		os.Setenv("fx", envFile)
