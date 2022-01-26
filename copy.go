@@ -41,7 +41,7 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 	}
 	defer r.Close()
 
-	w, err := os.Create(dst)
+	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, info.Mode())
 	if err != nil {
 		return err
 	}
@@ -66,11 +66,6 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 	}
 
 	if err := w.Close(); err != nil {
-		os.Remove(dst)
-		return err
-	}
-
-	if err := os.Chmod(dst, info.Mode()); err != nil {
 		os.Remove(dst)
 		return err
 	}

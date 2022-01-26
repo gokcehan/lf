@@ -25,11 +25,7 @@ func run() {
 		screen.EnableMouse()
 	}
 
-	f, err := os.Create(gLogPath)
-	if err != nil {
-		panic(err)
-	}
-	err = os.Chmod(gLogPath, 0600)
+	f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		panic(err)
 	}

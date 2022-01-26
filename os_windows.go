@@ -97,6 +97,8 @@ func setDefaults() {
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 }
 
+func setUserUmask() {}
+
 func isExecutable(f os.FileInfo) bool {
 	exts := strings.Split(envPathExt, string(filepath.ListSeparator))
 	for _, e := range exts {

@@ -119,6 +119,10 @@ func setDefaults() {
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 }
 
+func setUserUmask() {
+	syscall.Umask(0077)
+}
+
 func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0111 != 0
 }

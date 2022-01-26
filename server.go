@@ -16,11 +16,7 @@ var (
 )
 
 func serve() {
-	f, err := os.Create(gServerLogPath)
-	if err != nil {
-		panic(err)
-	}
-	err = os.Chmod(gServerLogPath, 0600)
+	f, err := os.OpenFile(gServerLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)
 	if err != nil {
 		panic(err)
 	}
@@ -29,17 +25,14 @@ func serve() {
 
 	log.Print("hi!")
 
+	if gSocketProt == "unix" {
+		setUserUmask()
+	}
+
 	l, err := net.Listen(gSocketProt, gSocketPath)
 	if err != nil {
 		log.Printf("listening socket: %s", err)
 		return
-	}
-	if gSocketProt == "unix" {
-		err = os.Chmod(gSocketPath, 0600)
-		if err != nil {
-			log.Printf("chmod socket: %s", err)
-			return
-		}
 	}
 	defer l.Close()
 
