@@ -448,17 +448,6 @@ func (app *app) loop() {
 	}
 }
 
-func (app *app) exportFiles() {
-	var currFile string
-	if curr, err := app.nav.currFile(); err == nil {
-		currFile = curr.path
-	}
-
-	currSelections := app.nav.currSelections()
-
-	exportFiles(currFile, currSelections, app.nav.currDir().path)
-}
-
 // This function is used to run a shell command. Modes are as follows:
 //
 //     Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -467,7 +456,7 @@ func (app *app) exportFiles() {
 //     !       Yes   No     Yes    Yes     Yes     Pause and then resume
 //     &       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
-	app.exportFiles()
+	app.nav.exportFiles()
 	exportOpts()
 
 	cmd := shellCommand(s, args)

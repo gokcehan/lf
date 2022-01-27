@@ -518,6 +518,17 @@ func (nav *nav) position() {
 	}
 }
 
+func (nav *nav) exportFiles() {
+	var currFile string
+	if curr, err := nav.currFile(); err == nil {
+		currFile = curr.path
+	}
+
+	currSelections := nav.currSelections()
+
+	exportFiles(currFile, currSelections, nav.currDir().path)
+}
+
 func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
@@ -532,6 +543,8 @@ func (nav *nav) previewLoop(ui *ui) {
 			}
 		}
 		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			nav.exportFiles()
+			exportOpts()
 			cmd := exec.Command(gOpts.cleaner, prev)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
@@ -568,6 +581,7 @@ func (nav *nav) preview(path string, win *win) {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
+		nav.exportFiles()
 		exportOpts()
 		cmd := exec.Command(gOpts.previewer, path,
 			strconv.Itoa(win.w),
