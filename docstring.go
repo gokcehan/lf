@@ -141,6 +141,7 @@ The following options can be used to customize the behavior of lf:
     smartdia       bool      (default off)
     sortby         string    (default 'natural')
     tabstop        int       (default 8)
+    tempmarks      []string  (default '')
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar   string    (default '~')
     waitmsg        string    (default 'Press any key to continue')
@@ -755,6 +756,11 @@ Sort type for directories. Currently supported sort types are 'natural',
 
 Number of space characters to show for horizontal tabulation (U+0009)
 character.
+
+    tempmarks      []string  (default '')
+
+List of marks to treat as temporary. They are not synced to other clients
+and are not saved in the bookmarks file.
 
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
 

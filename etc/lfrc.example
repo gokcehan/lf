@@ -10,6 +10,11 @@ set shell sh
 # times.
 set shellopts '-eu'
 
+# set a, s, d and f as temporary marks
+# The specified marks are treated as temporary marks and will not be 
+# synchroized to other clients or saved to the bookmarks file.
+set tempmarks a:s:d:f
+
 # set internal field separator (IFS) to "\n" for shell commands
 # This is useful to automatically split file names in $fs and $fx properly
 # since default file separator used in these variables (i.e. 'filesep' option)

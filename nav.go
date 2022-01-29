@@ -1136,12 +1136,13 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
-	path, ok := nav.marks["'"]
+	oldmarks := nav.marks
 	err = nav.readMarks()
-	if ok {
-		nav.marks["'"] = path
+	for k := range gOpts.tempmarks {
+		if v, e := oldmarks[k]; e {
+			nav.marks[k] = v
+		}
 	}
-
 	return err
 }
 
@@ -1419,7 +1420,9 @@ func (nav *nav) writeMarks() error {
 
 	var keys []string
 	for k := range nav.marks {
-		keys = append(keys, k)
+		if _, e := gOpts.tempmarks[k]; !e {
+			keys = append(keys, k)
+		}
 	}
 	sort.Strings(keys)
 

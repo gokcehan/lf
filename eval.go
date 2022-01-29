@@ -410,6 +410,15 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
+	case "tempmarks":
+		gOpts.tempmarks = map[string]struct{}{"'": {}}
+		if e.val == "" {
+			return
+		}
+		sl := strings.Split(e.val, ":")
+		for _, s := range sl {
+			gOpts.tempmarks[s] = struct{}{}
+		}
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
