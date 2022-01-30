@@ -1138,9 +1138,10 @@ func (nav *nav) sync() error {
 
 	oldmarks := nav.marks
 	err = nav.readMarks()
-	for k := range gOpts.tempmarks {
-		if v, e := oldmarks[k]; e {
-			nav.marks[k] = v
+	for _, ch := range gOpts.tempmarks {
+		tmp := string(ch)
+		if v, e := oldmarks[tmp]; e {
+			nav.marks[tmp] = v
 		}
 	}
 	return err
@@ -1420,7 +1421,7 @@ func (nav *nav) writeMarks() error {
 
 	var keys []string
 	for k := range nav.marks {
-		if _, e := gOpts.tempmarks[k]; !e {
+		if !strings.Contains(gOpts.tempmarks, k) {
 			keys = append(keys, k)
 		}
 	}

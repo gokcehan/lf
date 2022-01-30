@@ -71,7 +71,7 @@ var gOpts struct {
 	cmdkeys        map[string]expr
 	cmds           map[string]expr
 	sortType       sortType
-	tempmarks      map[string]struct{}
+	tempmarks      string
 }
 
 func init() {
@@ -115,7 +115,7 @@ func init() {
 	gOpts.info = nil
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
-	gOpts.tempmarks = map[string]struct{}{"'": {}}
+	gOpts.tempmarks = "'"
 
 	gOpts.keys = make(map[string]expr)
 
