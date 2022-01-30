@@ -157,6 +157,7 @@ var (
 		"shellopts",
 		"sortby",
 		"timefmt",
+		"tempmarks",
 		"truncatechar",
 	}
 )

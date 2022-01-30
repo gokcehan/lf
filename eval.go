@@ -410,6 +410,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
+	case "tempmarks":
+		if e.val != "" {
+			gOpts.tempmarks = "'" + e.val
+		} else {
+			gOpts.tempmarks = "'"
+		}
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
