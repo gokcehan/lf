@@ -1322,10 +1322,11 @@ The full order of matchings from most specific to least are as follows:
     1. Full Path (e.g. '~/.config/lf/lfrc')
     2. Dir Name  (e.g. '.git/') (only matches dirs with a trailing slash at the end)
     3. File Type (e.g. 'ln') (except 'fi')
-    4. File Name (e.g. '.git*') (only matches files with a trailing star at the end)
-    5. Base Name (e.g. 'README.*')
-    6. Extension (e.g. '*.txt')
-    7. Default   (i.e. 'fi')
+    4. File Name (e.g. 'README*')
+    5. File Name (e.g. '*README')
+    6. Base Name (e.g. 'README.*')
+    7. Extension (e.g. '*.txt')
+    8. Default   (i.e. 'fi')
 
 For example, given a regular text file '/path/to/README.txt', the following entries are checked in the configuration and the first one to match is used:
 
@@ -1333,9 +1334,10 @@ For example, given a regular text file '/path/to/README.txt', the following entr
     2. (skipped since the file is not a directory)
     3. (skipped since the file is of type 'fi')
     4. 'README.txt*'
-    5. 'README.*'
-    6. '*.txt'
-    7. 'fi'
+    5. '*README.txt'
+    6. 'README.*'
+    7. '*.txt'
+    8. 'fi'
 
 Given a regular directory '/path/to/example.d', the following entries are checked in the configuration and the first one to match is used:
 
@@ -1343,15 +1345,16 @@ Given a regular directory '/path/to/example.d', the following entries are checke
     2. 'example.d/'
     3. 'di'
     4. 'example.d*'
-    5. 'example.*'
-    6. '*.d'
-    7. 'fi'
+    5. '*example.d'
+    6. 'example.*'
+    7. '*.d'
+    8. 'fi'
 
 Note that glob-like patterns do not actually perform glob matching due to performance reasons.
 
 For example, you can set a variable as follows:
 
-    export LF_COLORS="~/Documents=01;31:~/Downloads=01;31:~/.local/share=01;31:~/.config/lf/lfrc=31:.git/=01;32:.git=32:.gitignore=32:Makefile=32:README.*=33:*.txt=34:*.md=34:ln=01;36:di=01;34:ex=01;32:"
+    export LF_COLORS="~/Documents=01;31:~/Downloads=01;31:~/.local/share=01;31:~/.config/lf/lfrc=31:.git/=01;32:.git*=32:*.gitignore=32:*Makefile=32:README.*=33:*.txt=34:*.md=34:ln=01;36:di=01;34:ex=01;32:"
 
 Having all entries on a single line can make it hard to read.
 You may instead divide it to multiple lines in between double quotes by escaping newlines with backslashes as follows:
@@ -1362,9 +1365,9 @@ You may instead divide it to multiple lines in between double quotes by escaping
     ~/.local/share=01;31:\
     ~/.config/lf/lfrc=31:\
     .git/=01;32:\
-    .git=32:\
-    .gitignore=32:\
-    Makefile=32:\
+    .git*=32:\
+    *.gitignore=32:\
+    *Makefile=32:\
     README.*=33:\
     *.txt=34:\
     *.md=34:\
