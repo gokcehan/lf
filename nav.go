@@ -1043,19 +1043,18 @@ func (nav *nav) paste(ui *ui) error {
 		go nav.copyAsync(ui, srcs, dstDir)
 	} else {
 		go nav.moveAsync(ui, srcs, dstDir)
-	}
-
-	if err := saveFiles(nil, false); err != nil {
-		return fmt.Errorf("clearing copy/cut buffer: %s", err)
-	}
-
-	if gSingleMode {
-		if err := nav.sync(); err != nil {
-			return fmt.Errorf("paste: %s", err)
+		if err := saveFiles(nil, false); err != nil {
+			return fmt.Errorf("clearing copy/cut buffer: %s", err)
 		}
-	} else {
-		if err := remote("send sync"); err != nil {
-			return fmt.Errorf("paste: %s", err)
+
+		if gSingleMode {
+			if err := nav.sync(); err != nil {
+				return fmt.Errorf("paste: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				return fmt.Errorf("paste: %s", err)
+			}
 		}
 	}
 

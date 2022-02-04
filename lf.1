@@ -1272,9 +1272,9 @@ You can customize copy and move operations by defining a 'paste' command. This i
             cp -R $list .
         elif [ $mode = 'move' ]; then
             mv $list .
+            rm ~/.local/share/lf/files
+            lf -remote 'send clear'
         fi
-        rm ~/.local/share/lf/files
-        lf -remote 'send clear'
     }}
 .EE
 .PP

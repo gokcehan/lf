@@ -1215,9 +1215,9 @@ point:
             cp -R $list .
         elif [ $mode = 'move' ]; then
             mv $list .
+            rm ~/.local/share/lf/files
+            lf -remote 'send clear'
         fi
-        rm ~/.local/share/lf/files
-        lf -remote 'send clear'
     }}
 
 Some useful things to be considered are to use the backup ('--backup')

@@ -1098,9 +1098,9 @@ You can use the following example as a starting point:
             cp -R $list .
         elif [ $mode = 'move' ]; then
             mv $list .
+            rm ~/.local/share/lf/files
+            lf -remote 'send clear'
         fi
-        rm ~/.local/share/lf/files
-        lf -remote 'send clear'
     }}
 
 Some useful things to be considered are to use the backup ('--backup') and/or preserve attributes ('-a') options with 'cp' and 'mv' commands if they support it (i.e. GNU implementation), change the command type to asynchronous, or use 'rsync' command with progress bar option for copying and feed the progress to the client periodically with remote 'echo' calls.
