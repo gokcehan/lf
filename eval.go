@@ -913,6 +913,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "unselect":
 		app.nav.unselect()
+	case "get-dirsize":
+		err := app.nav.getDirSize()
+		if err != nil {
+			app.ui.echoerrf("get-dirsize: %s", err)
+			return
+		}
+		app.ui.loadFileInfo(app.nav)
+		app.nav.sort()
+		app.ui.sort()
 	case "copy":
 		if err := app.nav.save(true); err != nil {
 			app.ui.echoerrf("copy: %s", err)
