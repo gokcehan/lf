@@ -158,8 +158,8 @@ var (
 		"sortby",
 		"timefmt",
 		"tempmarks",
-		"timefmtthisy",
-		"timefmtothery",
+		"infotimefmtnew",
+		"infotimefmtold",
 		"truncatechar",
 	}
 )

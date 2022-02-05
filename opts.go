@@ -62,8 +62,8 @@ var gOpts struct {
 	shell          string
 	shellflag      string
 	timefmt        string
-	timefmtthisy   string
-	timefmtothery  string
+	infotimefmtnew string
+	infotimefmtold string
 	truncatechar   string
 	ratios         []int
 	hiddenfiles    []string
@@ -75,6 +75,8 @@ var gOpts struct {
 	sortType       sortType
 	tempmarks      string
 }
+
+var gInfotimefmtMaxLen = 12
 
 func init() {
 	gOpts.anchorfind = true
@@ -111,8 +113,8 @@ func init() {
 	gOpts.shell = gDefaultShell
 	gOpts.shellflag = gDefaultShellFlag
 	gOpts.timefmt = time.ANSIC
-	gOpts.timefmtthisy = "Jan _2 15:04"
-	gOpts.timefmtothery = "Jan _2  2006"
+	gOpts.infotimefmtnew = "Jan _2 15:04"
+	gOpts.infotimefmtold = "Jan _2  2006"
 	gOpts.truncatechar = "~"
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = []string{".*"}
