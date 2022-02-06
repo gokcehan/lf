@@ -1128,7 +1128,7 @@ To use this feature, you need to use a client which supports communicating
 with a UNIX-domain socket. OpenBSD implementation of netcat (nc) is one such
 example. You can use it to send a command to the socket file:
 
-    echo 'send echo hello world' | nc -U /tmp/lf.${USER}.sock
+    echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/tmp}/lf.${USER}.sock
 
 Since such a client may not be available everywhere, lf comes bundled with a
 command line flag to be used as such. When using lf, you do not need to

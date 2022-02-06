@@ -88,7 +88,12 @@ func init() {
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	gDefaultSocketPath = filepath.Join(os.TempDir(), fmt.Sprintf("lf.%s.sock", gUser.Username))
+	runtime := os.Getenv("XDG_RUNTIME_DIR")
+	if runtime == "" {
+		runtime = os.TempDir()
+	}
+
+	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
