@@ -18,6 +18,7 @@ arguments=(
     '-cpuprofile[path to the file to write the CPU profile]'
     '-doc[show documentation]'
     '-last-dir-path[path to the file to write the last dir on exit (to use for cd)]'
+    '-log[path to the log file to write messages]'
     '-memprofile[path to the file to write the memory profile]'
     '-remote[send remote command to server]'
     '-selection-path[path to the file to write selected files on open (to use as open file dialog)]'

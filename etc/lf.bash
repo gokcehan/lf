@@ -13,6 +13,7 @@ _lf () {
         -cpuprofile
         -doc
         -last-dir-path
+        -log
         -memprofile
         -remote
         -selection-path

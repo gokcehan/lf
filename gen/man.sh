@@ -28,6 +28,7 @@ lf \- terminal file manager
 .OP \-cpuprofile path
 .OP \-doc
 .OP \-last-dir-path path
+.OP \-log path
 .OP \-memprofile path
 .OP \-remote command
 .OP \-selection-path path

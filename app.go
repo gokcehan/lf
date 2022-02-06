@@ -72,7 +72,6 @@ func (app *app) quit() {
 			}
 		}
 	}
-	os.Remove(gLogPath)
 }
 
 func (app *app) readFile(path string) {
