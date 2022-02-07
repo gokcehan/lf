@@ -4,6 +4,7 @@ package main
 
 import (
 	"fmt"
+	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"os/exec"
@@ -11,7 +12,6 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
-	"syscall"
 )
 
 var (
@@ -110,7 +110,7 @@ func init() {
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
 	cmd := exec.Command(name, arg...)
-	cmd.SysProcAttr = &syscall.SysProcAttr{Setsid: true}
+	cmd.SysProcAttr = &unix.SysProcAttr{Setsid: true}
 	return cmd
 }
 
@@ -126,6 +126,22 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
+func shellSetPG(cmd *exec.Cmd) {
+	cmd.SysProcAttr = &unix.SysProcAttr{Setpgid: true}
+}
+
+func shellKill(cmd *exec.Cmd) error {
+	pgid, err := unix.Getpgid(cmd.Process.Pid)
+	if err == nil && cmd.Process.Pid == pgid {
+		// kill the process group
+		err = unix.Kill(-pgid, 15)
+		if err == nil {
+			return nil
+		}
+	}
+	return cmd.Process.Kill()
+}
+
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", `$OPENER "$f"`}
 	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}
@@ -137,7 +153,7 @@ func setDefaults() {
 }
 
 func setUserUmask() {
-	syscall.Umask(0077)
+	unix.Umask(0077)
 }
 
 func isExecutable(f os.FileInfo) bool {
@@ -158,7 +174,7 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 }
 
 func userName(f os.FileInfo) string {
-	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+	if stat, ok := f.Sys().(*unix.Stat_t); ok {
 		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {
 			return fmt.Sprintf("%v ", u.Username)
 		}
@@ -167,7 +183,7 @@ func userName(f os.FileInfo) string {
 }
 
 func groupName(f os.FileInfo) string {
-	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+	if stat, ok := f.Sys().(*unix.Stat_t); ok {
 		if g, err := user.LookupGroupId(fmt.Sprint(stat.Gid)); err == nil {
 			return fmt.Sprintf("%v ", g.Name)
 		}
@@ -176,14 +192,14 @@ func groupName(f os.FileInfo) string {
 }
 
 func linkCount(f os.FileInfo) string {
-	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+	if stat, ok := f.Sys().(*unix.Stat_t); ok {
 		return fmt.Sprintf("%v ", stat.Nlink)
 	}
 	return ""
 }
 
 func errCrossDevice(err error) bool {
-	return err.(*os.LinkError).Err.(syscall.Errno) == syscall.EXDEV
+	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }
 
 func exportFiles(f string, fs []string, pwd string) {

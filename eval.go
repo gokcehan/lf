@@ -1772,7 +1772,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		update(app)
 	case "cmd-interrupt":
 		if app.cmd != nil {
-			app.cmd.Process.Kill()
+			err := shellKill(app.cmd)
+			if err != nil {
+				app.ui.echoerrf("kill: %s", err)
+			} else {
+				app.ui.echoerr("process interrupt")
+			}
 		}
 		normal(app)
 	case "cmd-word":
