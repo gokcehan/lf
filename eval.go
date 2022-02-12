@@ -418,6 +418,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "timefmt":
 		gOpts.timefmt = e.val
+	case "infotimefmtnew":
+		gOpts.infotimefmtnew = e.val
+		gInfotimefmtMaxLen = max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold))
+	case "infotimefmtold":
+		gOpts.infotimefmtold = e.val
+		gInfotimefmtMaxLen = max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold))
 	case "truncatechar":
 		if runeSliceWidth([]rune(e.val)) != 1 {
 			app.ui.echoerr("truncatechar: value should be a single character")

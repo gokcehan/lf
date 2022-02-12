@@ -159,6 +159,8 @@ var (
 		"sortby",
 		"timefmt",
 		"tempmarks",
+		"infotimefmtnew",
+		"infotimefmtold",
 		"truncatechar",
 	}
 )

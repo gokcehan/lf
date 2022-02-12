@@ -279,9 +279,9 @@ var gThisYear = time.Now().Year()
 
 func infotimefmt(t time.Time) string {
 	if t.Year() == gThisYear {
-		return t.Format("Jan _2 15:04")
+		return t.Format(gOpts.infotimefmtnew)
 	}
-	return t.Format("Jan _2  2006")
+	return t.Format(gOpts.infotimefmtold)
 }
 
 func fileInfo(f *file, d *dir) string {
@@ -328,11 +328,11 @@ func fileInfo(f *file, d *dir) string {
 				info = fmt.Sprintf("%s 999+", info)
 			}
 		case "time":
-			info = fmt.Sprintf("%s %12s", info, infotimefmt(f.ModTime()))
+			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.ModTime()))
 		case "atime":
-			info = fmt.Sprintf("%s %12s", info, infotimefmt(f.accessTime))
+			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.accessTime))
 		case "ctime":
-			info = fmt.Sprintf("%s %12s", info, infotimefmt(f.changeTime))
+			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.changeTime))
 		default:
 			log.Printf("unknown info type: %s", s)
 		}
