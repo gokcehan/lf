@@ -31,7 +31,7 @@ The following commands are provided by lf:
     unselect                 (default 'u')
     glob-select
     glob-unselect
-    get-dirsize
+    calcdirsize
     copy                     (default 'y')
     cut                      (default 'd')
     paste                    (default 'p')
@@ -277,7 +277,7 @@ Select files that match the given glob.
 
 Unselect files that match the given glob.
 
-    get-dirsize
+    calcdirsize
 
 Get the total size for each of the selected directories.
 

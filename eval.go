@@ -919,10 +919,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "unselect":
 		app.nav.unselect()
-	case "get-dirsize":
+	case "calcdirsize":
 		err := app.nav.getDirSize()
 		if err != nil {
-			app.ui.echoerrf("get-dirsize: %s", err)
+			app.ui.echoerrf("calcdirsize: %s", err)
 			return
 		}
 		app.ui.loadFileInfo(app.nav)
