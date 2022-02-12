@@ -76,8 +76,6 @@ var gOpts struct {
 	tempmarks      string
 }
 
-var gInfotimefmtMaxLen = 12
-
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false

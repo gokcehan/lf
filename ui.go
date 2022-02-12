@@ -328,11 +328,11 @@ func fileInfo(f *file, d *dir) string {
 				info = fmt.Sprintf("%s 999+", info)
 			}
 		case "time":
-			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.ModTime()))
+			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
-			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.accessTime))
+			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.accessTime))
 		case "ctime":
-			info = fmt.Sprintf(fmt.Sprint("%"+"s %", gInfotimefmtMaxLen, "s"), info, infotimefmt(f.changeTime))
+			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.changeTime))
 		default:
 			log.Printf("unknown info type: %s", s)
 		}
