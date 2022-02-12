@@ -32,9 +32,20 @@ type file struct {
 	linkTarget string
 	path       string
 	dirCount   int
+	dirSize    int64
 	accessTime time.Time
 	changeTime time.Time
 	ext        string
+}
+
+func (file *file) TotalSize() int64 {
+	if file.IsDir() {
+		if file.dirSize >= 0 {
+			return file.dirSize
+		}
+		return 0
+	}
+	return file.Size()
 }
 
 func readdir(path string) ([]*file, error) {
@@ -95,6 +106,7 @@ func readdir(path string) ([]*file, error) {
 			linkTarget: linkTarget,
 			path:       fpath,
 			dirCount:   -1,
+			dirSize:    -1,
 			accessTime: at,
 			changeTime: ct,
 			ext:        ext,
@@ -172,7 +184,7 @@ func (dir *dir) sort() {
 		})
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].Size() < dir.files[j].Size()
+			return dir.files[i].TotalSize() < dir.files[j].TotalSize()
 		})
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
@@ -1486,4 +1498,46 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 	}
 
 	return nav.currSelections(), nil
+}
+
+func (nav *nav) getDirSize() error {
+
+	calc := func(f *file) error {
+		if f.IsDir() {
+			total, err := copySize([]string{f.path})
+			if err != nil {
+				return err
+			}
+			f.dirSize = total
+		}
+		return nil
+	}
+
+	if len(nav.selections) == 0 {
+		curr, err := nav.currFile()
+		if err != nil {
+			return errors.New("no file selected")
+		}
+		return calc(curr)
+	} else {
+		for sel, _ := range nav.selections {
+			lstat, err := os.Lstat(sel)
+			if err != nil || !lstat.IsDir() {
+				continue
+			}
+			path, name := filepath.Dir(sel), filepath.Base(sel)
+			dir := nav.loadDir(path)
+
+			for _, f := range dir.files {
+				if f.Name() == name {
+					err := calc(f)
+					if err != nil {
+						return err
+					}
+					break
+				}
+			}
+		}
+	}
+	return nil
 }

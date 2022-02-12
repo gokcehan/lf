@@ -292,8 +292,14 @@ func fileInfo(f *file, d *dir) string {
 	for _, s := range gOpts.info {
 		switch s {
 		case "size":
-			if !(gOpts.dircounts && f.IsDir()) {
-				info = fmt.Sprintf("%s %4s", info, humanize(f.Size()))
+			if !(f.IsDir() && gOpts.dircounts) {
+				var sz string
+				if f.IsDir() && f.dirSize < 0 {
+					sz = "-"
+				} else {
+					sz = humanize(f.TotalSize())
+				}
+				info = fmt.Sprintf("%s %4s", info, sz)
 				continue
 			}
 

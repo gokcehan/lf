@@ -60,6 +60,7 @@ var (
 		"echomsg",
 		"echoerr",
 		"cd",
+		"get-dirsize",
 		"select",
 		"glob-select",
 		"glob-unselect",
