@@ -470,6 +470,7 @@ func preChdir(app *app) {
 }
 
 func onChdir(app *app) {
+	app.nav.addJumpList()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
 	}
@@ -884,6 +885,26 @@ func (e *callExpr) eval(app *app, args []string) {
 		if cmd, ok := gOpts.cmds["open"]; ok {
 			cmd.eval(app, e.args)
 		}
+	case "jump-prev":
+		resetIncCmd(app)
+		preChdir(app)
+		for i := 0; i < e.count; i++ {
+			app.nav.cdJumpListPrev()
+		}
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
+		restartIncCmd(app)
+		onChdir(app)
+	case "jump-next":
+		resetIncCmd(app)
+		preChdir(app)
+		for i := 0; i < e.count; i++ {
+			app.nav.cdJumpListNext()
+		}
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
+		restartIncCmd(app)
+		onChdir(app)
 	case "quit":
 		app.quitChan <- struct{}{}
 	case "top":

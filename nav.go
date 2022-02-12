@@ -364,6 +364,8 @@ type nav struct {
 	searchPos       int
 	prevFilter      []string
 	volatilePreview bool
+	jumpList        []string
+	jumpListInd     int
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
@@ -480,11 +482,44 @@ func newNav(height int) *nav {
 		selections:      make(map[string]int),
 		selectionInd:    0,
 		height:          height,
+		jumpList:        make([]string, 0),
+		jumpListInd:     -1,
 	}
 
 	nav.getDirs(wd)
+	nav.addJumpList()
 
 	return nav
+}
+
+func (nav *nav) addJumpList() {
+	currPath := nav.currDir().path
+	if nav.jumpListInd >= 0 && nav.jumpListInd < len(nav.jumpList)-1 {
+		if nav.jumpList[nav.jumpListInd] == currPath {
+			// walking the jumpList
+			return
+		}
+		nav.jumpList = nav.jumpList[:nav.jumpListInd+1]
+	}
+	if len(nav.jumpList) == 0 || nav.jumpList[len(nav.jumpList)-1] != currPath {
+		nav.jumpList = append(nav.jumpList, currPath)
+	}
+	nav.jumpListInd = len(nav.jumpList) - 1
+}
+
+func (nav *nav) cdJumpListPrev() {
+	// currPath := nav.currDir().path
+	if nav.jumpListInd > 0 {
+		nav.jumpListInd -= 1
+		nav.cd(nav.jumpList[nav.jumpListInd])
+	}
+}
+
+func (nav *nav) cdJumpListNext() {
+	if nav.jumpListInd < len(nav.jumpList)-1 {
+		nav.jumpListInd += 1
+		nav.cd(nav.jumpList[nav.jumpListInd])
+	}
 }
 
 func (nav *nav) renew() {
@@ -1171,7 +1206,7 @@ func (nav *nav) cd(wd string) error {
 	}
 
 	nav.getDirs(wd)
-
+	nav.addJumpList()
 	return nil
 }
 
