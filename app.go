@@ -483,6 +483,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		err = cmd.Run()
 	case "%":
+		shellSetPG(cmd)
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
@@ -499,6 +500,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = cmd.Stdout
 		fallthrough
 	case "&":
+		shellSetPG(cmd)
 		err = cmd.Start()
 	}
 
