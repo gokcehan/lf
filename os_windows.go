@@ -30,6 +30,8 @@ var (
 var (
 	gUser        *user.User
 	gConfigPaths []string
+	gColorsPaths []string
+	gIconsPaths  []string
 	gFilesPath   string
 	gMarksPath   string
 	gHistoryPath string
@@ -66,6 +68,16 @@ func init() {
 	gConfigPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
 		filepath.Join(data, "lf", "lfrc"),
+	}
+
+	gColorsPaths = []string{
+		filepath.Join(os.Getenv("ProgramData"), "lf", "colors"),
+		filepath.Join(data, "lf", "colors"),
+	}
+
+	gIconsPaths = []string{
+		filepath.Join(os.Getenv("ProgramData"), "lf", "icons"),
+		filepath.Join(data, "lf", "icons"),
 	}
 
 	gFilesPath = filepath.Join(data, "lf", "files")

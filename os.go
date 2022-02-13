@@ -31,6 +31,8 @@ var (
 var (
 	gUser        *user.User
 	gConfigPaths []string
+	gColorsPaths []string
+	gIconsPaths  []string
 	gFilesPath   string
 	gMarksPath   string
 	gHistoryPath string
@@ -77,6 +79,16 @@ func init() {
 	gConfigPaths = []string{
 		filepath.Join("/etc", "lf", "lfrc"),
 		filepath.Join(config, "lf", "lfrc"),
+	}
+
+	gColorsPaths = []string{
+		filepath.Join("/etc", "lf", "colors"),
+		filepath.Join(config, "lf", "colors"),
+	}
+
+	gIconsPaths = []string{
+		filepath.Join("/etc", "lf", "icons"),
+		filepath.Join(config, "lf", "icons"),
 	}
 
 	data := os.Getenv("XDG_DATA_HOME")

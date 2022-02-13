@@ -194,6 +194,16 @@ Configuration files should be located at:
     unix     /etc/lf/lfrc            ~/.config/lf/lfrc
     windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
 
+Colors file should be located at:
+
+    unix     ~/.local/share/lf/colors
+    windows  C:\Users\<user>\AppData\Local\lf\colors
+
+Icons file should be located at:
+
+    unix     ~/.local/share/lf/icons
+    windows  C:\Users\<user>\AppData\Local\lf\icons
+
 Selection file should be located at:
 
     unix     ~/.local/share/lf/files
@@ -1297,17 +1307,20 @@ Colors are set in the following order:
     2. LSCOLORS (Mac/BSD ls)
     3. LS_COLORS (GNU ls)
     4. LF_COLORS (lf specific)
+    5. colors file (lf specific)
 
 Please refer to the corresponding man pages for more information about 'LSCOLORS' and 'LS_COLORS'.
 'LF_COLORS' is provided with the same syntax as 'LS_COLORS' in case you want to configure colors only for lf but not ls.
 This can be useful since there are some differences between ls and lf, though one should expect the same behavior for common cases.
+Colors file is provided for easier configuration without environment variables.
+This file should consist of whitespace separated pairs with '#' character to start comments until the end of line.
 
 You can configure lf colors in two different ways.
 First, you can only configure 8 basic colors used by your terminal and lf should pick up those colors automatically.
 Depending on your terminal, you should be able to select your colors from a 24-bit palette.
 This is the recommended approach as colors used by other programs will also match each other.
 
-Second, you can set the values of environmental variables mentioned above for fine grained customization.
+Second, you can set the values of environment variables mentioned above for fine grained customization.
 Note that 'LS_COLORS/LF_COLORS' are more powerful than 'LSCOLORS' and they can be used even when GNU programs are not installed on the system.
 You can combine this second method with the first method for best results.
 
@@ -1409,9 +1422,10 @@ https://en.wikipedia.org/wiki/ANSI_escape_code.
 
 Icons
 
-Icons are configured using 'LF_ICONS' environment variable.
-This variable uses the same syntax as 'LS_COLORS/LF_COLORS'.
+Icons are configured using 'LF_ICONS' environment variable or an icons file.
+The variable uses the same syntax as 'LS_COLORS/LF_COLORS'.
 Instead of colors, you should put a single characters as values of entries.
+Icons file should consist of whitespace separated pairs with '#' character to start comments until the end of line.
 Do not forget to enable 'icons' option to see the icons.
 Default values are as follows given with their matching order in lf:
 

@@ -72,6 +72,12 @@ func parseStyles() styleMap {
 		sm.parseGNU(env)
 	}
 
+	for _, path := range gColorsPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			sm.parseFile(path)
+		}
+	}
+
 	return sm
 }
 
@@ -156,6 +162,35 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	}
 
 	return st
+}
+
+func (sm styleMap) parseFile(path string) {
+	log.Printf("reading file: %s", path)
+
+	f, err := os.Open(path)
+	if err != nil {
+		log.Printf("opening colors file: %s", err)
+		return
+	}
+	defer f.Close()
+
+	pairs, err := readPairs(f)
+	if err != nil {
+		log.Printf("reading colors file: %s", err)
+		return
+	}
+
+	for _, pair := range pairs {
+		key, val := pair[0], pair[1]
+
+		key = replaceTilde(key)
+
+		if filepath.IsAbs(key) {
+			key = filepath.Clean(key)
+		}
+
+		sm[key] = applyAnsiCodes(val, tcell.StyleDefault)
+	}
 }
 
 // This function parses $LS_COLORS environment variable.

@@ -1,7 +1,10 @@
 package main
 
 import (
+	"bufio"
+	"errors"
 	"fmt"
+	"io"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -131,6 +134,60 @@ func splitWord(s string) (word, rest string) {
 	word = s[0:ind]
 	rest = strings.TrimLeftFunc(s[ind:], unicode.IsSpace)
 	return
+}
+
+var reComment = regexp.MustCompile(`#.*$`)
+var reTrailingSpace = regexp.MustCompile(`\s+$`)
+
+func readPairs(r io.Reader) ([][]string, error) {
+	var pairs [][]string
+	s := bufio.NewScanner(r)
+	for s.Scan() {
+		line := s.Text()
+
+		line = reComment.ReplaceAllString(line, "")
+		line = reTrailingSpace.ReplaceAllString(line, "")
+
+		if line == "" {
+			continue
+		}
+
+		squote, dquote := false, false
+		pair := strings.FieldsFunc(line, func(r rune) bool {
+			if r == '\'' && !dquote {
+				squote = !squote
+			} else if r == '"' && !squote {
+				dquote = !dquote
+			}
+			return !squote && !dquote && unicode.IsSpace(r)
+		})
+
+		if len(pair) != 2 {
+			return nil, errors.New(fmt.Sprintf("expected pair but found: %s", s.Text()))
+			continue
+		}
+
+		for i := 0; i < len(pair); i++ {
+			squote, dquote := false, false
+			buf := make([]rune, 0, len(pair[i]))
+			for _, r := range pair[i] {
+				if r == '\'' && !dquote {
+					squote = !squote
+					continue
+				}
+				if r == '"' && !squote {
+					dquote = !dquote
+					continue
+				}
+				buf = append(buf, r)
+			}
+			pair[i] = string(buf)
+		}
+
+		pairs = append(pairs, pair)
+	}
+
+	return pairs, nil
 }
 
 // This function converts a size in bytes to a human readable form using metric

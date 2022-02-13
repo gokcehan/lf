@@ -35,7 +35,42 @@ func parseIcons() iconMap {
 		im.parseEnv(env)
 	}
 
+	for _, path := range gIconsPaths {
+		if _, err := os.Stat(path); !os.IsNotExist(err) {
+			im.parseFile(path)
+		}
+	}
+
 	return im
+}
+
+func (im iconMap) parseFile(path string) {
+	log.Printf("reading file: %s", path)
+
+	f, err := os.Open(path)
+	if err != nil {
+		log.Printf("opening icons file: %s", err)
+		return
+	}
+	defer f.Close()
+
+	pairs, err := readPairs(f)
+	if err != nil {
+		log.Printf("reading icons file: %s", err)
+		return
+	}
+
+	for _, pair := range pairs {
+		key, val := pair[0], pair[1]
+
+		key = replaceTilde(key)
+
+		if filepath.IsAbs(key) {
+			key = filepath.Clean(key)
+		}
+
+		im[key] = val
+	}
 }
 
 func (im iconMap) parseEnv(env string) {
