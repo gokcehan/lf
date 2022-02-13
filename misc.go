@@ -137,8 +137,8 @@ func splitWord(s string) (word, rest string) {
 
 // This function reads whitespace separated string pairs at each line. Single
 // or double quotes can be used to escape whitespaces. Hash characters can be
-// used to add a comment until the end of line. Indentation and trailing space
-// is trimmed. Empty lines are skipped.
+// used to add a comment until the end of line. Leading and trailing space is
+// trimmed. Empty lines are skipped.
 func readPairs(r io.Reader) ([][]string, error) {
 	var pairs [][]string
 	s := bufio.NewScanner(r)
