@@ -142,6 +142,8 @@ func init() {
 	gOpts.keys["<home>"] = &callExpr{"top", nil, 1}
 	gOpts.keys["G"] = &callExpr{"bottom", nil, 1}
 	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 1}
+	gOpts.keys["["] = &callExpr{"jump-prev", nil, 1}
+	gOpts.keys["]"] = &callExpr{"jump-next", nil, 1}
 	gOpts.keys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
 	gOpts.keys["v"] = &callExpr{"invert", nil, 1}
 	gOpts.keys["u"] = &callExpr{"unselect", nil, 1}

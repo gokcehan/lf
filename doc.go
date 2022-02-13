@@ -250,6 +250,14 @@ A custom 'open' command can be defined to override this default.
 
 (See also 'OPENER' variable and 'Opening Files' section)
 
+    jump-prev                (default '[')
+
+Change the current working directory to the previous jumplist item.
+
+    jump-next                (default ']')
+
+Change the current working directory to the next jumplist item.
+
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
 
