@@ -807,6 +807,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
+	case "scrollup":
+		if app.nav.scrollup(e.count) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "down":
 		if app.nav.down(e.count) {
 			app.ui.loadFile(app.nav, true)
@@ -819,6 +824,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "page-down":
 		if app.nav.down(e.count * app.nav.height) {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	case "scrolldown":
+		if app.nav.scrolldown(e.count) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}

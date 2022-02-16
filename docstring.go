@@ -23,9 +23,11 @@ The following commands are provided by lf:
     up                       (default 'k' and '<up>')
     half-up                  (default '<c-u>')
     page-up                  (default '<c-b>' and '<pgup>')
+    scrollup                 (default '<c-y>')
     down                     (default 'j' and '<down>')
     half-down                (default '<c-d>')
     page-down                (default '<c-f>' and '<pgdn>')
+    scrolldown               (default '<c-e>')
     updir                    (default 'h' and '<left>')
     open                     (default 'l' and '<right>')
     top                      (default 'gg' and '<home>')
@@ -249,9 +251,11 @@ Quit lf and return to the shell.
     up                       (default 'k' and '<up>')
     half-up                  (default '<c-u>')
     page-up                  (default '<c-b>' and '<pgup>')
+    scrollup                 (default '<c-y>')
     down                     (default 'j' and '<down>')
     half-down                (default '<c-d>')
     page-down                (default '<c-f>' and '<pgdn>')
+    scrolldown               (default '<c-e>')
 
 Move the current file selection upwards/downwards by one/half a page/full
 page.
