@@ -1405,15 +1405,32 @@ func (nav *nav) searchPrev() (bool, error) {
 }
 
 func isFiltered(f os.FileInfo, filter []string) bool {
+	// cache
+	isMatched := make(map[string]bool)
+
 	for _, pattern := range filter {
 		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"))
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 			return false
 		}
+		isMatched[pattern] = matched
+
+		// explicitly exclude - first priority
 		if strings.HasPrefix(pattern, "!") && matched {
 			return true
-		} else if !strings.HasPrefix(pattern, "!") && !matched {
+		}
+	}
+
+	for _, pattern := range filter {
+		// explicitly include - second
+		if !strings.HasPrefix(pattern, "!") && isMatched[pattern] {
+			return false
+		}
+	}
+	for _, pattern := range filter {
+		// just not matched - third
+		if !strings.HasPrefix(pattern, "!") && !isMatched[pattern] {
 			return true
 		}
 	}
