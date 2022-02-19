@@ -17,6 +17,9 @@ set shell powershell
 # editor keybinding accordingly.
 map e $vim $Env:f
 
+# change the open command to work in PowerShell
+cmd open &start $Env:f
+
 # change the pager used in default pager keybinding
 # The standard pager used in Windows is 'more' which is not a very capable
 # pager. You may instead install a pager of your choice and replace the default
