@@ -1421,6 +1421,7 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 
 	for _, subFilter := range strings.Split(userPatt, "|") {
 		subFiltered := false
+		subFilter = strings.TrimSpace(subFilter)
 
 		for _, pattern := range strings.Split(subFilter, " ") {
 
