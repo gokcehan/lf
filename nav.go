@@ -836,10 +836,15 @@ func (nav *nav) scrollup(dist int) bool {
 
 func (nav *nav) scrolldown(dist int) bool {
 	dir := nav.currDir()
+	maxind := len(dir.files) - 1
+
+	// reached bottom
+	if dir.ind-dir.pos > maxind-nav.height {
+		return false
+	}
 
 	old := dir.ind
 
-	maxind := len(dir.files) - 1
 	minedge := min(nav.height/2, gOpts.scrolloff)
 
 	dir.pos -= dist
@@ -847,7 +852,7 @@ func (nav *nav) scrolldown(dist int) bool {
 	// jump to ensure minedge when edge < minedge
 	delta := min(0, dir.pos-minedge)
 	dir.pos = max(dir.pos, minedge)
-	// update didr.ind accordingly
+	// update dir.ind accordingly
 	dir.ind = dir.ind - delta
 	dir.ind = max(dir.ind, dir.ind-(dir.pos-minedge))
 
