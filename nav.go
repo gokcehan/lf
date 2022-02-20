@@ -1405,35 +1405,58 @@ func (nav *nav) searchPrev() (bool, error) {
 }
 
 func isFiltered(f os.FileInfo, filter []string) bool {
+	// rejoin, makes "AND first, OR second" thing much easier
+	userPatt := strings.Join(filter, " ")
+
+	// NOTE:
+	// `filter: aa bb | qq ee` means
+	// (aa AND bb) OR (qq AND ee)
+	// not
+	// aa AND (bb OR qq) AND ee
+
 	// cache
 	isMatched := make(map[string]bool)
 
-	for _, pattern := range filter {
-		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"))
-		if err != nil {
-			log.Printf("Filter Error: %s", err)
-			return false
-		}
-		isMatched[pattern] = matched
+	var results []bool
 
-		// explicitly exclude - first priority
-		if strings.HasPrefix(pattern, "!") && matched {
-			return true
+	for _, subFilter := range strings.Split(userPatt, "|") {
+		subFiltered := false
+
+		for _, pattern := range strings.Split(subFilter, " ") {
+
+			var matched bool
+			if v, ok := isMatched[pattern]; ok {
+				matched = v
+			} else {
+				var err error
+				matched, err = searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"))
+				if err != nil {
+					log.Printf("Filter Error: %s", err)
+					return false
+				}
+				isMatched[pattern] = matched
+			}
+
+			if strings.HasPrefix(pattern, "!") && matched {
+				subFiltered = true
+			} else if !strings.HasPrefix(pattern, "!") && !matched {
+				subFiltered = true
+			}
 		}
+
+		results = append(results, subFiltered)
 	}
 
-	for _, pattern := range filter {
-		// explicitly include - second
-		if !strings.HasPrefix(pattern, "!") && isMatched[pattern] {
-			return false
+	if len(results) > 0 {
+		// if any of subfilters matched (r = false) - display
+		all := true
+		for _, r := range results {
+			all = all && r
 		}
+
+		return all
 	}
-	for _, pattern := range filter {
-		// just not matched - third
-		if !strings.HasPrefix(pattern, "!") && !isMatched[pattern] {
-			return true
-		}
-	}
+
 	return false
 }
 
