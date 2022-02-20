@@ -1417,9 +1417,10 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 	// cache
 	isMatched := make(map[string]bool)
 
-	var results []bool
+	subFilters := strings.Split(userPatt, "|")
 
-	for _, subFilter := range strings.Split(userPatt, "|") {
+	filtered := true
+	for _, subFilter := range subFilters {
 		subFiltered := false
 		subFilter = strings.TrimSpace(subFilter)
 
@@ -1447,17 +1448,15 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 			}
 		}
 
-		results = append(results, subFiltered)
+		filtered = filtered && subFiltered
+		if !filtered {
+			break
+		}
 	}
 
-	if len(results) > 0 {
+	if len(subFilters) > 0 {
 		// if any of subfilters matched (r = false) - display
-		all := true
-		for _, r := range results {
-			all = all && r
-		}
-
-		return all
+		return filtered
 	}
 
 	return false
