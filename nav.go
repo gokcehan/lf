@@ -1440,8 +1440,10 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 
 			if strings.HasPrefix(pattern, "!") && matched {
 				subFiltered = true
+				break
 			} else if !strings.HasPrefix(pattern, "!") && !matched {
 				subFiltered = true
+				break
 			}
 		}
 
