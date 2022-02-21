@@ -1425,13 +1425,15 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 		subFilter = strings.TrimSpace(subFilter)
 
 		for _, pattern := range strings.Split(subFilter, " ") {
+			excluded := strings.HasPrefix(pattern, "!")
+			pattern = strings.TrimPrefix(pattern, "!")
 
 			var matched bool
 			if v, ok := isMatched[pattern]; ok {
 				matched = v
 			} else {
 				var err error
-				matched, err = searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"))
+				matched, err = searchMatch(f.Name(), pattern)
 				if err != nil {
 					log.Printf("Filter Error: %s", err)
 					return false
@@ -1439,10 +1441,7 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 				isMatched[pattern] = matched
 			}
 
-			if strings.HasPrefix(pattern, "!") && matched {
-				subFiltered = true
-				break
-			} else if !strings.HasPrefix(pattern, "!") && !matched {
+			if (excluded && matched) || (!excluded && !matched) {
 				subFiltered = true
 				break
 			}
