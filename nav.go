@@ -630,7 +630,7 @@ func (nav *nav) preview(path string, win *win) {
 	if len(gOpts.previewer) != 0 {
 		nav.exportFiles()
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, path,
+		cmd := exec.Command(gOpts.shell, gOpts.shellflag, gOpts.previewer, path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
