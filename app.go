@@ -374,6 +374,10 @@ func (app *app) loop() {
 				continue
 			}
 
+			if cmd, ok := gOpts.cmds["on-quit"]; ok {
+				cmd.eval(app, nil)
+			}
+
 			app.quit()
 
 			app.nav.previewChan <- ""
