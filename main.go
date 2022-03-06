@@ -67,7 +67,7 @@ func exportEnvVars() {
 
 	dir, err := os.Getwd()
 	if err != nil {
-		fmt.Fprintf(os.Stderr, "%s\n", err)
+		fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
 	}
 	os.Setenv("OLDPWD", dir)
 
@@ -304,7 +304,7 @@ func main() {
 		case 0:
 			_, err := os.Getwd()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "%s\n", err)
+				fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
 				os.Exit(2)
 			}
 		case 1:
