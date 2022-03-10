@@ -32,24 +32,6 @@ type app struct {
 	cmdHistoryInd int
 }
 
-var gInvalidate struct {
-	sort    bool
-	pos     bool
-	dir     bool
-	navSize bool
-	mouse   bool
-	period  bool
-}
-
-func init() {
-	gInvalidate.sort = true
-	gInvalidate.pos = true
-	gInvalidate.dir = true
-	gInvalidate.navSize = true
-	gInvalidate.mouse = true
-	gInvalidate.period = true
-}
-
 func newApp(ui *ui, nav *nav) *app {
 	quitChan := make(chan struct{}, 1)
 
@@ -263,6 +245,19 @@ func (app *app) loop() {
 
 	app.ui.readExpr()
 
+	if gSelect != "" {
+		go func() {
+			lstat, err := os.Lstat(gSelect)
+			if err != nil {
+				app.ui.exprChan <- &callExpr{"echoerr", []string{err.Error()}, 1}
+			} else if lstat.IsDir() {
+				app.ui.exprChan <- &callExpr{"cd", []string{gSelect}, 1}
+			} else {
+				app.ui.exprChan <- &callExpr{"select", []string{gSelect}, 1}
+			}
+		}()
+	}
+
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
 			app.readFile(gConfigPath)
@@ -277,30 +272,6 @@ func (app *app) loop() {
 		}
 	}
 
-	// config has been read, now initialize nav with the wd
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-	}
-	if gSelect != "" {
-		_, err := os.Lstat(gSelect)
-		if err != nil {
-			app.ui.exprChan <- &callExpr{"echoerr", []string{err.Error()}, 1}
-		} else if abs, err := filepath.Abs(gSelect); err == nil {
-			// if gSelect contains the /. suffix, the directory itself
-			// should be selected
-			if len(gSelect) > 2 && gSelect[len(gSelect)-2:] == "/." {
-				wd = abs
-			} else {
-				wd = filepath.Dir(abs)
-				app.ui.exprChan <- &callExpr{"select", []string{abs}, 1}
-			}
-		}
-	}
-	app.nav.getDirs(wd)
-	app.nav.addJumpList()
-
-	// execute commands from args
 	for _, cmd := range gCommands {
 		p := newParser(strings.NewReader(cmd))
 
@@ -314,49 +285,6 @@ func (app *app) loop() {
 	}
 
 	for {
-
-		// process invalidate flags
-		if gInvalidate.sort {
-			app.nav.sort()
-			app.ui.sort()
-			gInvalidate.sort = false
-		}
-		if gInvalidate.pos {
-			app.nav.position()
-			gInvalidate.pos = false
-		}
-		if gInvalidate.dir {
-			app.ui.loadFile(app.nav, true)
-			app.ui.loadFileInfo(app.nav)
-			app.ui.draw(app.nav)
-			gInvalidate.dir = false
-		}
-		if gInvalidate.navSize {
-			app.ui.renew()
-			if app.nav.height != app.ui.wins[0].h {
-				app.nav.height = app.ui.wins[0].h
-				app.nav.regCache = make(map[string]*reg)
-			}
-			gInvalidate.navSize = false
-		}
-		if gInvalidate.mouse {
-			if gOpts.mouse {
-				app.ui.screen.EnableMouse()
-			} else {
-				app.ui.screen.DisableMouse()
-			}
-			gInvalidate.mouse = false
-		}
-		if gInvalidate.period {
-			if gOpts.period == 0 {
-				app.ticker.Stop()
-			} else {
-				app.ticker.Stop()
-				app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
-			}
-			gInvalidate.period = false
-		}
-
 		select {
 		case <-app.quitChan:
 			if app.nav.copyTotal > 0 {
@@ -445,12 +373,7 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
-
-			if !app.nav.checkDir(d) {
-				log.Printf("debug: dirChan skip/reload %s", d.path)
-				continue
-			}
-			log.Printf("debug: dirChan %s %t", d.path, d.loading)
+			app.nav.checkDir(d)
 
 			if gOpts.dircache {
 				prev, ok := app.nav.dirCache[d.path]

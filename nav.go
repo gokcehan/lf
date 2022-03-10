@@ -163,10 +163,6 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 }
 
 func (dir *dir) sort() {
-	if dir.loading {
-		log.Printf("debug: sort/dir still loading: %s", dir.path)
-		return
-	}
 	dir.sortType = gOpts.sortType
 	dir.dironly = gOpts.dironly
 	dir.hiddenfiles = gOpts.hiddenfiles
@@ -310,10 +306,6 @@ func (dir *dir) name() string {
 }
 
 func (dir *dir) sel(name string, height int) {
-	if dir.loading {
-		//log.Printf("debug: sel/dir still loading: %s", dir.path)
-		return
-	}
 	if len(dir.files) == 0 {
 		dir.ind, dir.pos = 0, 0
 		return
@@ -399,13 +391,11 @@ func (nav *nav) loadDir(path string) *dir {
 	if gOpts.dircache {
 		d, ok := nav.dirCache[path]
 		if !ok {
-			log.Printf("debug: dirCache-new: %s", path)
 			d = nav.loadDirInternal(path)
 			nav.dirCache[path] = d
 			return d
 		}
 
-		log.Printf("debug: dirCache-found: %s", path)
 		nav.checkDir(d)
 
 		return d
@@ -414,16 +404,11 @@ func (nav *nav) loadDir(path string) *dir {
 	}
 }
 
-func (nav *nav) checkDir(dir *dir) bool {
-	if dir.loading {
-		log.Printf("debug: skip loading: %s", dir.path)
-		return false
-	}
-
+func (nav *nav) checkDir(dir *dir) {
 	s, err := os.Stat(dir.path)
 	if err != nil {
 		log.Printf("getting directory info: %s", err)
-		return true
+		return
 	}
 
 	switch {
@@ -433,10 +418,9 @@ func (nav *nav) checkDir(dir *dir) bool {
 		// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 		// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
 		if s.ModTime().After(now) {
-			return true
+			return
 		}
 
-		log.Printf("debug: checkDir-reload: %s time", dir.path)
 		dir.loading = true
 		dir.loadTime = now
 		go func() {
@@ -445,23 +429,18 @@ func (nav *nav) checkDir(dir *dir) bool {
 			nd.sort()
 			nav.dirChan <- nd
 		}()
-		return false
 	case dir.sortType != gOpts.sortType ||
 		dir.dironly != gOpts.dironly ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:
-		log.Printf("debug: checkDir-reload: %s opt", dir.path)
-		sd := dir
 		dir.loading = true
-		dir.loadTime = time.Now()
 		go func() {
-			sd.sort()
-			nav.dirChan <- sd
+			dir.sort()
+			dir.loading = false
+			nav.dirChan <- dir
 		}()
-		return false
 	}
-	return true
 }
 
 func (nav *nav) getDirs(wd string) {
@@ -481,6 +460,10 @@ func (nav *nav) getDirs(wd string) {
 }
 
 func newNav(height int) *nav {
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
 
 	nav := &nav{
 		copyBytesChan:   make(chan int64, 1024),
@@ -503,7 +486,8 @@ func newNav(height int) *nav {
 		jumpListInd:     -1,
 	}
 
-	// do not call nav.getDirs() as our configuration isn't set up yet
+	nav.getDirs(wd)
+	nav.addJumpList()
 
 	return nav
 }
@@ -589,14 +573,7 @@ func (nav *nav) exportFiles() {
 
 	currSelections := nav.currSelections()
 
-	var wd string
-	if currDir := nav.currDir(); currDir != nil {
-		wd = currDir.path
-	} else {
-		wd, _ = os.Getwd()
-	}
-
-	exportFiles(currFile, currSelections, wd)
+	exportFiles(currFile, currSelections, nav.currDir().path)
 }
 
 func (nav *nav) previewLoop(ui *ui) {
@@ -1275,26 +1252,19 @@ func (nav *nav) sync() error {
 }
 
 func (nav *nav) cd(wd string) error {
-
-	currDir := nav.currDir()
-
 	wd = replaceTilde(wd)
 	wd = filepath.Clean(wd)
 
-	if !filepath.IsAbs(wd) && currDir != nil {
-		wd = filepath.Join(currDir.path, wd)
+	if !filepath.IsAbs(wd) {
+		wd = filepath.Join(nav.currDir().path, wd)
 	}
 
 	if err := os.Chdir(wd); err != nil {
 		return fmt.Errorf("cd: %s", err)
 	}
 
-	if currDir == nil || wd != currDir.path {
-		nav.getDirs(wd)
-		nav.addJumpList()
-	} else {
-		log.Printf("debug: skip cd: %s", wd)
-	}
+	nav.getDirs(wd)
+	nav.addJumpList()
 	return nil
 }
 
@@ -1572,16 +1542,13 @@ func (nav *nav) writeMarks() error {
 }
 
 func (nav *nav) currDir() *dir {
-	if len(nav.dirs) == 0 {
-		return nil
-	}
 	return nav.dirs[len(nav.dirs)-1]
 }
 
 func (nav *nav) currFile() (*file, error) {
-	dir := nav.currDir()
+	dir := nav.dirs[len(nav.dirs)-1]
 
-	if dir == nil || len(dir.files) == 0 {
+	if len(dir.files) == 0 {
 		return nil, fmt.Errorf("empty directory")
 	}
 
