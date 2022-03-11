@@ -563,6 +563,10 @@ func (nav *nav) position() {
 }
 
 func (nav *nav) exportFiles() {
+	if (!nav.init) {
+		return
+	}
+
 	var currFile string
 	if curr, err := nav.currFile(); err == nil {
 		currFile = curr.path
