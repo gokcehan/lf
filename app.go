@@ -245,19 +245,6 @@ func (app *app) loop() {
 
 	app.ui.readExpr()
 
-	if gSelect != "" {
-		go func() {
-			lstat, err := os.Lstat(gSelect)
-			if err != nil {
-				app.ui.exprChan <- &callExpr{"echoerr", []string{err.Error()}, 1}
-			} else if lstat.IsDir() {
-				app.ui.exprChan <- &callExpr{"cd", []string{gSelect}, 1}
-			} else {
-				app.ui.exprChan <- &callExpr{"select", []string{gSelect}, 1}
-			}
-		}()
-	}
-
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
 			app.readFile(gConfigPath)
@@ -282,6 +269,28 @@ func (app *app) loop() {
 		if p.err != nil {
 			app.ui.echoerrf("%s", p.err)
 		}
+	}
+
+	wd, err := os.Getwd()
+	if err != nil {
+		log.Printf("getting current directory: %s", err)
+	}
+
+	app.nav.getDirs(wd)
+	app.nav.addJumpList()
+	app.nav.init = true
+
+	if gSelect != "" {
+		go func() {
+			lstat, err := os.Lstat(gSelect)
+			if err != nil {
+				app.ui.exprChan <- &callExpr{"echoerr", []string{err.Error()}, 1}
+			} else if lstat.IsDir() {
+				app.ui.exprChan <- &callExpr{"cd", []string{gSelect}, 1}
+			} else {
+				app.ui.exprChan <- &callExpr{"select", []string{gSelect}, 1}
+			}
+		}()
 	}
 
 	for {

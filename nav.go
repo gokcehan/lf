@@ -328,6 +328,7 @@ func (dir *dir) sel(name string, height int) {
 }
 
 type nav struct {
+	init            bool
 	dirs            []*dir
 	copyBytes       int64
 	copyTotal       int64
@@ -460,11 +461,6 @@ func (nav *nav) getDirs(wd string) {
 }
 
 func newNav(height int) *nav {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-	}
-
 	nav := &nav{
 		copyBytesChan:   make(chan int64, 1024),
 		copyTotalChan:   make(chan int64, 1024),
@@ -485,9 +481,6 @@ func newNav(height int) *nav {
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
-
-	nav.getDirs(wd)
-	nav.addJumpList()
 
 	return nav
 }
@@ -558,6 +551,10 @@ func (nav *nav) reload() error {
 }
 
 func (nav *nav) position() {
+	if (!nav.init) {
+		return
+	}
+
 	path := nav.currDir().path
 	for i := len(nav.dirs) - 2; i >= 0; i-- {
 		nav.dirs[i].sel(filepath.Base(path), nav.height)
@@ -1593,7 +1590,7 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 	return nav.currSelections(), nil
 }
 
-func (nav *nav) getDirSize() error {
+func (nav *nav) calcDirSize() error {
 
 	calc := func(f *file) error {
 		if f.IsDir() {
