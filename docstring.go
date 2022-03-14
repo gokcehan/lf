@@ -166,6 +166,7 @@ The following environment variables are exported for shell commands:
     EDITOR
     PAGER
     SHELL
+    lf_{option}
 
 The following commands/keybindings are provided by default:
 
@@ -887,6 +888,10 @@ set the value to 'less' on unix, 'more' in Windows.
 
 If this variable is set in the environment, use the same value, otherwise
 set the value to 'sh' on unix, 'cmd' in Windows.
+
+    lf_{option}
+
+Value of the {option}.
 
 
 Prefixes
