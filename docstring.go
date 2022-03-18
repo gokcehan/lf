@@ -168,6 +168,17 @@ The following environment variables are exported for shell commands:
     SHELL
     lf_{option}
 
+The following special shell commands are used to customize the behavior of
+lf when defined:
+
+    open
+    paste
+    rename
+    delete
+    pre-cd
+    on-cd
+    on-quit
+
 The following commands/keybindings are provided by default:
 
     unix                     windows
@@ -892,6 +903,50 @@ set the value to 'sh' on unix, 'cmd' in Windows.
     lf_{option}
 
 Value of the {option}.
+
+Special Commands
+
+    open
+
+This shell command can be defined to override the default 'open' command
+when the current file is not a directory.
+
+(See also 'OPENER' variable and 'Opening Files' section)
+
+    paste
+
+This shell command can be defined to override the default 'paste' command.
+
+(See also 'File Operations' section)
+
+    rename
+
+This shell command can be defined to override the default 'paste' command.
+
+(See also 'File Operations' section)
+
+    delete
+
+This shell command can be defined to override the default 'delete' command.
+
+(See also 'File Operations' section)
+
+    pre-cd
+
+This shell command can be defined to be executed before changing a
+directory.
+
+(See also 'Changing Directory' section)
+
+    on-cd
+
+This shell command can be defined to be executed after changing a directory.
+
+(See also 'Changing Directory' section)
+
+    on-quit
+
+This shell command can be defined to be executed before quit.
 
 
 Prefixes

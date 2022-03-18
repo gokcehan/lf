@@ -187,6 +187,18 @@ The following environment variables are exported for shell commands:
     lf_{option}
 .EE
 .PP
+The following special shell commands are used to customize the behavior of lf when defined:
+.PP
+.EX
+    open
+    paste
+    rename
+    delete
+    pre-cd
+    on-cd
+    on-quit
+.EE
+.PP
 The following commands/keybindings are provided by default:
 .PP
 .EX
@@ -1017,6 +1029,60 @@ If this variable is set in the environment, use the same value, otherwise set th
 .EE
 .PP
 Value of the {option}.
+.SH SPECIAL COMMANDS
+.PP
+.EX
+    open
+.EE
+This shell command can be defined to override the default 'open' command when the current file is not a directory.
+.PP
+(See also 'OPENER' variable and 'Opening Files' section)
+.PP
+.EX
+    paste
+.EE
+.PP
+This shell command can be defined to override the default 'paste' command.
+.PP
+(See also 'File Operations' section)
+.PP
+.EX
+    rename
+.EE
+.PP
+This shell command can be defined to override the default 'paste' command.
+.PP
+(See also 'File Operations' section)
+.PP
+.EX
+    delete
+.EE
+.PP
+This shell command can be defined to override the default 'delete' command.
+.PP
+(See also 'File Operations' section)
+.PP
+.EX
+    pre-cd
+.EE
+.PP
+This shell command can be defined to be executed before changing a directory.
+.PP
+(See also 'Changing Directory' section)
+.PP
+.EX
+    on-cd
+.EE
+.PP
+This shell command can be defined to be executed after changing a directory.
+.PP
+(See also 'Changing Directory' section)
+.PP
+.EX
+    on-quit
+.EE
+.PP
+This shell command can be defined to be executed before quit.
 .SH PREFIXES
 The following command prefixes are used by lf:
 .PP
