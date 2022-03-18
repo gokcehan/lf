@@ -65,7 +65,8 @@ func readdir(path string) ([]*file, error) {
 			continue
 		}
 		if err != nil {
-			return files, err
+			log.Printf("getting file information: %s", err)
+			continue
 		}
 
 		var linkState linkState
