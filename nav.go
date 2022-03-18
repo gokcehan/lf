@@ -447,6 +447,8 @@ func (nav *nav) checkDir(dir *dir) {
 func (nav *nav) getDirs(wd string) {
 	var dirs []*dir
 
+	wd = filepath.Clean(wd)
+
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := nav.loadDir(curr)
 		dir.sel(base, nav.height)
