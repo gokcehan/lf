@@ -10,9 +10,7 @@
 
 > This is a work in progress. Use at your own risk.
 
-`lf` (as in "list files") is a terminal file manager written in Go.
-It is heavily inspired by ranger with some missing and extra features.
-Some of the missing features are deliberately omitted since they are better handled by external tools.
+`lf` (as in "list files") is a terminal file manager written in Go with a heavy inspiration from ranger file manager.
 See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
 
 ![multicol-screenshot](http://i.imgur.com/DaTUenu.png)
@@ -20,18 +18,19 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ## Features
 
-- Cross-platform (Linux, OSX, BSDs, Windows (partial))
-- Single binary without any runtime dependencies (except for terminfo database)
-- Fast startup and low memory footprint (due to native code and static binaries)
-- Server/client architecture to share file selection between multiple instances
-- Configuration with shell commands
+- Cross-platform (Linux, MacOS, BSDs, Windows)
+- Single binary without any runtime dependencies
+- Fast startup and low memory footprint due to native code and static binaries
+- Asynchronous IO operations to avoid UI locking
+- Server/client architecture and remote commands to manage multiple instances
+- Extendable and configurable with shell commands
 - Customizable keybindings (vi and readline defaults)
-- Preview filtering (for source highlight, archives, pdfs/images as text etc.)
+- A reasonable set of other features (see the [documentation](https://pkg.go.dev/github.com/gokcehan/lf))
 
 ## Non-Features
 
-- Tabs or windows (handled by window manager or terminal multiplexer)
-- Builtin pager/editor (handled by your pager/editor of choice)
+- Tabs or windows (better handled by window manager or terminal multiplexer)
+- Builtin pager/editor (better handled by your pager/editor of choice)
 
 ## Installation
 
@@ -39,38 +38,46 @@ See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maint
 
 See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 
-If you like to build from the source on unix:
+Building from the source requires [Go](https://go.dev/).
+
+On unix (Go version < 1.17):
 
 ```bash
-# For go version < 1.17
 env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/gokcehan/lf
+```
 
-# For go version >= 1.17
+On unix (Go version >= 1.17):
+
+```bash
 env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On windows `cmd`:
+On windows `cmd` (Go version < 1.17):
 
 ```cmd
-REM For go version < 1.17
 set CGO_ENABLED=0
 set GO111MODULE=on
 go get -u -ldflags="-s -w" github.com/gokcehan/lf
+```
 
-REM For go version >= 1.17
+On windows `cmd` (Go version >= 1.17):
+
+```cmd
 set CGO_ENABLED=0
 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On windows `powershell`:
+On windows `powershell` (Go version < 1.17):
 
 ```powershell
-# For go version < 1.17
 $env:CGO_ENABLED = '0'
 $env:GO111MODULE = 'on'
 go get -u -ldflags="-s -w" github.com/gokcehan/lf
+```
 
-# For go version >= 1.17
+On windows `powershell` (Go version >= 1.17):
+
+```powershell
 $env:CGO_ENABLED = '0'
 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
@@ -83,8 +90,8 @@ Run `lf -help` to see command line options.
 
 Run `lf -doc` to see the [documentation](https://pkg.go.dev/github.com/gokcehan/lf).
 
-See [etc](etc) directory to integrate `lf` to your shell or editor.
-An example configuration file can also be found in this directory.
+See [etc](etc) directory to integrate `lf` to your shell and/or editor.
+Example configuration files along with example colors and icons files can also be found in this directory.
 
 See [integrations](https://github.com/gokcehan/lf/wiki/Integrations) to integrate `lf` to other tools.
 
