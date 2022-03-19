@@ -1491,20 +1491,20 @@ Icons file should consist of whitespace separated pairs with '#' character to st
 Do not forget to enable 'icons' option to see the icons.
 Default values are as follows given with their matching order in lf:
 
-    ln  🗎
-    or  🗎
-    tw  🗀
-    ow  🗀
-    st  🗀
-    di  🗀
-    pi  🗎
-    so  🗎
-    bd  🗎
-    cd  🗎
-    su  🗎
-    sg  🗎
-    ex  🗎
-    fi  🗎
+    ln  l
+    or  l
+    tw  t
+    ow  d
+    st  t
+    di  d
+    pi  p
+    so  s
+    bd  b
+    cd  c
+    su  u
+    sg  g
+    ex  x
+    fi  -
 
 See the wiki page for an example icons configuration
 https://github.com/gokcehan/lf/wiki/Icons.

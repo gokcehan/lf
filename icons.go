@@ -13,20 +13,20 @@ func parseIcons() iconMap {
 	im := make(iconMap)
 
 	defaultIcons := []string{
-		"fi=🗎",
-		"di=🗀",
-		"ln=🗎",
-		"pi=🗎",
-		"so=🗎",
-		"bd=🗎",
-		"cd=🗎",
-		"or=🗎",
-		"su=🗎",
-		"sg=🗎",
-		"tw=🗀",
-		"ow=🗀",
-		"st=🗀",
-		"ex=🗎",
+		"ln=l",
+		"or=l",
+		"tw=t",
+		"ow=d",
+		"st=t",
+		"di=d",
+		"pi=p",
+		"so=s",
+		"bd=b",
+		"cd=c",
+		"su=u",
+		"sg=g",
+		"ex=x",
+		"fi=-",
 	}
 
 	im.parseEnv(strings.Join(defaultIcons, ":"))
