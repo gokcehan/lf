@@ -401,9 +401,8 @@ func (nav *nav) loadDir(path string) *dir {
 		nav.checkDir(d)
 
 		return d
-	} else {
-		return nav.loadDirInternal(path)
 	}
+	return nav.loadDirInternal(path)
 }
 
 func (nav *nav) checkDir(dir *dir) {
@@ -554,7 +553,7 @@ func (nav *nav) reload() error {
 }
 
 func (nav *nav) position() {
-	if (!nav.init) {
+	if !nav.init {
 		return
 	}
 
@@ -566,7 +565,7 @@ func (nav *nav) position() {
 }
 
 func (nav *nav) exportFiles() {
-	if (!nav.init) {
+	if !nav.init {
 		return
 	}
 
@@ -1598,7 +1597,6 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 }
 
 func (nav *nav) calcDirSize() error {
-
 	calc := func(f *file) error {
 		if f.IsDir() {
 			total, err := copySize([]string{f.path})
@@ -1616,25 +1614,26 @@ func (nav *nav) calcDirSize() error {
 			return errors.New("no file selected")
 		}
 		return calc(curr)
-	} else {
-		for sel, _ := range nav.selections {
-			lstat, err := os.Lstat(sel)
-			if err != nil || !lstat.IsDir() {
-				continue
-			}
-			path, name := filepath.Dir(sel), filepath.Base(sel)
-			dir := nav.loadDir(path)
+	}
 
-			for _, f := range dir.files {
-				if f.Name() == name {
-					err := calc(f)
-					if err != nil {
-						return err
-					}
-					break
+	for sel := range nav.selections {
+		lstat, err := os.Lstat(sel)
+		if err != nil || !lstat.IsDir() {
+			continue
+		}
+		path, name := filepath.Dir(sel), filepath.Base(sel)
+		dir := nav.loadDir(path)
+
+		for _, f := range dir.files {
+			if f.Name() == name {
+				err := calc(f)
+				if err != nil {
+					return err
 				}
+				break
 			}
 		}
 	}
+
 	return nil
 }

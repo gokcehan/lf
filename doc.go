@@ -438,7 +438,7 @@ Read a pattern to search for a file name match in the forward/backward direction
     setfilter
 
 Read a pattern to filter out and only view files matching the pattern.
-setfilter does the same but uses an argument to set the filter immediatly.
+setfilter does the same but uses an argument to set the filter immediately.
 You can supply an argument to filter, in order to use that as the starting prompt.
 
 (See also 'globsearch', 'incfilter', 'ignorecase', 'smartcase', 'ignoredia', and 'smartdia' options)

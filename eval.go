@@ -793,7 +793,7 @@ func insert(app *app, arg string) {
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
 	case "up":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.up(e.count) {
@@ -801,7 +801,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-up":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height / 2) {
@@ -809,7 +809,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-up":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height) {
@@ -817,7 +817,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "scrollup":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.scrollup(e.count) {
@@ -825,7 +825,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "down":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.down(e.count) {
@@ -833,7 +833,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "half-down":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height / 2) {
@@ -841,7 +841,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "page-down":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height) {
@@ -849,7 +849,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "scrolldown":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.scrolldown(e.count) {
@@ -857,7 +857,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "updir":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		resetIncCmd(app)
@@ -873,7 +873,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		restartIncCmd(app)
 		onChdir(app)
 	case "open":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		curr, err := app.nav.currFile()
@@ -948,7 +948,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "quit":
 		app.quitChan <- struct{}{}
 	case "top":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.top() {
@@ -956,7 +956,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "bottom":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.nav.bottom() {
@@ -964,7 +964,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "toggle":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if len(e.args) == 0 {
@@ -984,14 +984,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "invert":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		app.nav.invert()
 	case "unselect":
 		app.nav.unselect()
 	case "calcdirsize":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		err := app.nav.calcDirSize()
@@ -1003,7 +1003,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "copy":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 
@@ -1025,7 +1025,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFileInfo(app.nav)
 	case "cut":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 
@@ -1047,7 +1047,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFileInfo(app.nav)
 	case "paste":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 
@@ -1060,7 +1060,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "delete":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 
@@ -1096,7 +1096,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app.nav, true)
 		app.ui.loadFileInfo(app.nav)
 	case "clear":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if err := saveFiles(nil, false); err != nil {
@@ -1117,7 +1117,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 	case "draw":
 	case "redraw":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		app.ui.renew()
@@ -1128,13 +1128,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app.nav, true)
 	case "load":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		app.nav.renew()
 		app.ui.loadFile(app.nav, true)
 	case "reload":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if err := app.nav.reload(); err != nil {
@@ -1194,7 +1194,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.findBack = true
 		app.ui.loadFileInfo(app.nav)
 	case "find-next":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		dir := app.nav.currDir()
@@ -1211,7 +1211,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "find-prev":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		dir := app.nav.currDir()
@@ -1228,7 +1228,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFileInfo(app.nav)
 		}
 	case "search":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.ui.cmdPrefix == ">" {
@@ -1242,7 +1242,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchBack = false
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.ui.cmdPrefix == ">" {
@@ -1256,7 +1256,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchBack = true
 		app.ui.loadFileInfo(app.nav)
 	case "search-next":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		for i := 0; i < e.count; i++ {
@@ -1277,7 +1277,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "search-prev":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		for i := 0; i < e.count; i++ {
@@ -1298,7 +1298,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "filter":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if app.ui.cmdPrefix == ">" {
@@ -1315,7 +1315,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFileInfo(app.nav)
 	case "setfilter":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		log.Printf("filter: %s", e.args)
@@ -1345,7 +1345,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
 	case "rename":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if cmd, ok := gOpts.cmds["rename"]; ok {
@@ -1421,7 +1421,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			onChdir(app)
 		}
 	case "select":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 
@@ -1461,7 +1461,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			onChdir(app)
 		}
 	case "glob-select":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if len(e.args) != 1 {
@@ -1473,7 +1473,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 	case "glob-unselect":
-		if (!app.nav.init) {
+		if !app.nav.init {
 			return
 		}
 		if len(e.args) != 1 {

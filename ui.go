@@ -641,7 +641,7 @@ type reg struct {
 }
 
 func (ui *ui) loadFile(nav *nav, volatile bool) {
-	if (!nav.init) {
+	if !nav.init {
 		return
 	}
 
@@ -666,7 +666,7 @@ func (ui *ui) loadFile(nav *nav, volatile bool) {
 }
 
 func (ui *ui) loadFileInfo(nav *nav) {
-	if (!nav.init) {
+	if !nav.init {
 		return
 	}
 
