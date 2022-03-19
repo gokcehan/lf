@@ -171,14 +171,14 @@ func TestReadPairs(t *testing.T) {
 		s   string
 		exp [][]string
 	}{
-		{"foo bar", [][]string{[]string{"foo", "bar"}}},
-		{"foo bar ", [][]string{[]string{"foo", "bar"}}},
-		{" foo bar", [][]string{[]string{"foo", "bar"}}},
-		{" foo bar ", [][]string{[]string{"foo", "bar"}}},
-		{"foo bar#baz", [][]string{[]string{"foo", "bar"}}},
-		{"foo bar #baz", [][]string{[]string{"foo", "bar"}}},
-		{`'foo#baz' bar`, [][]string{[]string{"foo#baz", "bar"}}},
-		{`"foo#baz" bar`, [][]string{[]string{"foo#baz", "bar"}}},
+		{"foo bar", [][]string{{"foo", "bar"}}},
+		{"foo bar ", [][]string{{"foo", "bar"}}},
+		{" foo bar", [][]string{{"foo", "bar"}}},
+		{" foo bar ", [][]string{{"foo", "bar"}}},
+		{"foo bar#baz", [][]string{{"foo", "bar"}}},
+		{"foo bar #baz", [][]string{{"foo", "bar"}}},
+		{`'foo#baz' bar`, [][]string{{"foo#baz", "bar"}}},
+		{`"foo#baz" bar`, [][]string{{"foo#baz", "bar"}}},
 	}
 
 	for _, test := range tests {
