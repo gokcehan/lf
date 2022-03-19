@@ -4,10 +4,11 @@
 /*
 lf is a terminal file manager.
 
-Source code can be found in the repository at https://github.com/gokcehan/lf.
+Source code can be found in the repository at https://github.com/gokcehan/lf .
 
-This documentation can either be read from terminal using 'lf -doc' or online at https://pkg.go.dev/github.com/gokcehan/lf.
+This documentation can either be read from terminal using 'lf -doc' or online at https://pkg.go.dev/github.com/gokcehan/lf .
 You can also use 'doc' command (default '<f-1>') inside lf to view the documentation in a pager.
+A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1 .
 
 You can run 'lf -help' to see descriptions of command line options.
 
