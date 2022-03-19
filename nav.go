@@ -106,15 +106,15 @@ func readdir(path string) ([]*file, error) {
 			d, err := os.Open(fpath)
 			if err != nil {
 				dirCount = -2
-			}
-
-			names, err := d.Readdirnames(1000)
-			d.Close()
-
-			if names == nil && err != io.EOF {
-				dirCount = -2
 			} else {
-				dirCount = len(names)
+				names, err := d.Readdirnames(1000)
+				d.Close()
+
+				if names == nil && err != io.EOF {
+					dirCount = -2
+				} else {
+					dirCount = len(names)
+				}
 			}
 		}
 
