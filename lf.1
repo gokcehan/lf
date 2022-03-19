@@ -280,7 +280,7 @@ You can configure the default values of following variables to change these loca
     %LOCALAPPDATA%    C:\eUsers\e<user>\eAppData\eLocal
 .EE
 .PP
-A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
+A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example .
 .SH COMMANDS
 This section shows information about builtin commands. Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
 .PP
@@ -1641,13 +1641,7 @@ Having all entries on a single line can make it hard to read. You may instead di
     "
 .EE
 .PP
-Having such a long variable definition in a shell configuration file might be undesirable. You may instead put this definition in a separate file and source it in your shell configuration file as follows:
-.PP
-.EX
-    [ -f "/path/to/colors" ] && source "/path/to/colors"
-.EE
-.PP
-See the wiki page for ansi escape codes https://en.wikipedia.org/wiki/ANSI_escape_code.
+Having such a long variable definition in a shell configuration file might be undesirable. You may instead use the colors file for configuration. A sample colors file can be found at https://github.com/gokcehan/lf/blob/master/etc/colors.example . You may also see the wiki page for ansi escape codes https://en.wikipedia.org/wiki/ANSI_escape_code .
 .SH ICONS
 Icons are configured using 'LF_ICONS' environment variable or an icons file. The variable uses the same syntax as 'LS_COLORS/LF_COLORS'. Instead of colors, you should put a single characters as values of entries. Icons file should consist of whitespace separated pairs with '#' character to start comments until the end of line. Do not forget to enable 'icons' option to see the icons. Default values are as follows given with their matching order in lf:
 .PP
@@ -1668,4 +1662,4 @@ Icons are configured using 'LF_ICONS' environment variable or an icons file. The
     fi  -
 .EE
 .PP
-See the wiki page for an example icons configuration https://github.com/gokcehan/lf/wiki/Icons.
+A sample icons file can be found at https://github.com/gokcehan/lf/blob/master/etc/icons.example .

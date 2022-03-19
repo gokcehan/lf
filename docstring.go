@@ -249,7 +249,7 @@ locations:
     %LOCALAPPDATA%    C:\Users\<user>\AppData\Local
 
 A sample configuration file can be found at
-https://github.com/gokcehan/lf/blob/master/etc/lfrc.example.
+https://github.com/gokcehan/lf/blob/master/etc/lfrc.example .
 
 
 Commands
@@ -1658,13 +1658,11 @@ newlines with backslashes as follows:
     "
 
 Having such a long variable definition in a shell configuration file might
-be undesirable. You may instead put this definition in a separate file and
-source it in your shell configuration file as follows:
-
-    [ -f "/path/to/colors" ] && source "/path/to/colors"
-
-See the wiki page for ansi escape codes
-https://en.wikipedia.org/wiki/ANSI_escape_code.
+be undesirable. You may instead use the colors file for configuration. A
+sample colors file can be found at
+https://github.com/gokcehan/lf/blob/master/etc/colors.example . You may also
+see the wiki page for ansi escape codes
+https://en.wikipedia.org/wiki/ANSI_escape_code .
 
 
 Icons
@@ -1692,6 +1690,6 @@ in lf:
     ex  x
     fi  -
 
-See the wiki page for an example icons configuration
-https://github.com/gokcehan/lf/wiki/Icons.
+A sample icons file can be found at
+https://github.com/gokcehan/lf/blob/master/etc/icons.example .
 `
