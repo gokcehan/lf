@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -287,8 +286,6 @@ func infotimefmt(t time.Time) string {
 func fileInfo(f *file, d *dir) string {
 	var info string
 
-	path := filepath.Join(d.path, f.Name())
-
 	for _, s := range gOpts.info {
 		switch s {
 		case "size":
@@ -303,23 +300,9 @@ func fileInfo(f *file, d *dir) string {
 				continue
 			}
 
-			if f.dirCount == -1 {
-				d, err := os.Open(path)
-				if err != nil {
-					f.dirCount = -2
-				}
-
-				names, err := d.Readdirnames(1000)
-				d.Close()
-
-				if names == nil && err != io.EOF {
-					f.dirCount = -2
-				} else {
-					f.dirCount = len(names)
-				}
-			}
-
 			switch {
+			case f.dirCount < -1:
+				info = fmt.Sprintf("%s    !", info)
 			case f.dirCount < 0:
 				info = fmt.Sprintf("%s    ?", info)
 			case f.dirCount < 1000:

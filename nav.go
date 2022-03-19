@@ -101,12 +101,29 @@ func readdir(path string) ([]*file, error) {
 		// i.e. directories, filenames without extensions
 		ext := filepath.Ext(fpath)
 
+		dirCount := -1
+		if lstat.IsDir() && gOpts.dircounts {
+			d, err := os.Open(fpath)
+			if err != nil {
+				dirCount = -2
+			}
+
+			names, err := d.Readdirnames(1000)
+			d.Close()
+
+			if names == nil && err != io.EOF {
+				dirCount = -2
+			} else {
+				dirCount = len(names)
+			}
+		}
+
 		files = append(files, &file{
 			FileInfo:   lstat,
 			linkState:  linkState,
 			linkTarget: linkTarget,
 			path:       fpath,
-			dirCount:   -1,
+			dirCount:   dirCount,
 			dirSize:    -1,
 			accessTime: at,
 			changeTime: ct,
