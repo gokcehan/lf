@@ -983,6 +983,31 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 			}
 		}
+	case "tag":
+		if !app.nav.init {
+			return
+		}
+		if len(e.args) == 0 {
+			app.nav.toggleTag()
+		} else if len(e.args[0]) == 1 {
+			app.nav.tag(e.args[0][0])
+		} else {
+			app.ui.echoerrf("tag: invalid argument")
+			return
+
+		}
+		if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		}
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		}
 	case "invert":
 		if !app.nav.init {
 			return

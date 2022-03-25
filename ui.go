@@ -324,7 +324,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, colors styleMap, icons iconMap) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]byte, colors styleMap, icons iconMap) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -391,14 +391,23 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		path := filepath.Join(dir.path, f.Name())
 
+
+		st_tag := applyAnsiCodes(gOpts.tagcolor, st)
+		tag, ok := tags[path]
+		if !ok {
+			tag = ' '
+		}
+
 		if _, ok := selections[path]; ok {
-			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
+			win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorPurple), string(tag))
 		} else if cp, ok := saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorOlive), " ")
+				win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorOlive), string(tag))
 			} else {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorMaroon), " ")
+				win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorMaroon), string(tag))
 			}
+		} else {
+			win.print(screen, lnwidth, i, st_tag, string(tag))
 		}
 
 		if i == dir.pos {
@@ -839,7 +848,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, ui.styles, ui.icons)
+		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
 	}
 
 	switch ui.cmdPrefix {
@@ -873,7 +882,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, ui.styles, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, ui.regPrev)
 			}

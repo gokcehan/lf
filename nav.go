@@ -61,6 +61,7 @@ func readdir(path string) ([]*file, error) {
 		fpath := filepath.Join(path, fname)
 
 		lstat, err := os.Lstat(fpath)
+
 		if os.IsNotExist(err) {
 			continue
 		}
@@ -373,6 +374,7 @@ type nav struct {
 	renameOldPath   string
 	renameNewPath   string
 	selections      map[string]int
+	tags            map[string]byte
 	selectionInd    int
 	height          int
 	find            string
@@ -495,6 +497,7 @@ func newNav(height int) *nav {
 		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
+		tags:            make(map[string]byte),
 		selectionInd:    0,
 		height:          height,
 		jumpList:        make([]string, 0),
@@ -961,6 +964,32 @@ func (nav *nav) toggle() {
 	nav.toggleSelection(curr.path)
 }
 
+func (nav *nav) toggleTagSelection(path string) {
+	if _, ok := nav.tags[path]; ok {
+		delete(nav.tags, path)
+	} else {
+		nav.tags[path] = '*'
+	}
+}
+
+func (nav *nav) toggleTag() {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	nav.toggleTagSelection(curr.path)
+}
+
+func (nav *nav) tag(t byte) {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	nav.tags[curr.path] = t
+}
+
 func (nav *nav) invert() {
 	dir := nav.currDir()
 	for _, f := range dir.files {
@@ -1268,6 +1297,7 @@ func (nav *nav) sync() error {
 			nav.marks[tmp] = v
 		}
 	}
+	err = nav.readTags()
 	return err
 }
 
@@ -1555,6 +1585,59 @@ func (nav *nav) writeMarks() error {
 		_, err = f.WriteString(fmt.Sprintf("%s:%s\n", k, nav.marks[k]))
 		if err != nil {
 			return fmt.Errorf("writing marks file: %s", err)
+		}
+	}
+
+	return nil
+}
+
+func (nav *nav) readTags() error {
+	nav.tags = make(map[string]byte)
+	f, err := os.Open(gTagsPath)
+	if os.IsNotExist(err) {
+		return nil
+	}
+	if err != nil {
+		return fmt.Errorf("opening tags file: %s", err)
+	}
+	defer f.Close()
+
+	scanner := bufio.NewScanner(f)
+	for scanner.Scan() {
+		toks := strings.SplitN(scanner.Text(), ":", 2)
+		if _, ok := nav.tags[toks[0]]; !ok {
+			nav.tags[toks[0]] = toks[1][0]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		return fmt.Errorf("reading tags file: %s", err)
+	}
+
+	return nil
+}
+
+func (nav *nav) writeTags() error {
+	if err := os.MkdirAll(filepath.Dir(gTagsPath), os.ModePerm); err != nil {
+		return fmt.Errorf("creating data directory: %s", err)
+	}
+
+	f, err := os.Create(gTagsPath)
+	if err != nil {
+		return fmt.Errorf("creating tags file: %s", err)
+	}
+	defer f.Close()
+
+	var keys []string
+	for k := range nav.tags {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	for _, k := range keys {
+		_, err = f.WriteString(fmt.Sprintf("%s:%c\n", k, nav.tags[k]))
+		if err != nil {
+			return fmt.Errorf("writing tags file: %s", err)
 		}
 	}
 

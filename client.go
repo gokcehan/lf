@@ -51,6 +51,10 @@ func run() {
 		app.ui.echoerrf("reading marks file: %s", err)
 	}
 
+	if err := app.nav.readTags(); err != nil {
+		app.ui.echoerrf("reading tags file: %s", err)
+	}
+
 	if err := app.readHistory(); err != nil {
 		app.ui.echoerrf("reading history file: %s", err)
 	}
