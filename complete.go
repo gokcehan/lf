@@ -69,6 +69,7 @@ var (
 		"source",
 		"push",
 		"delete",
+		"tag",
 	}
 
 	gOptWords = []string{
