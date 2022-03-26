@@ -482,6 +482,14 @@ or 'select' command.
 
 Remove a bookmark assigned to the given key.
 
+    tag            (modal)   (default 'T')
+
+Tag a file with the given key.
+
+    tag-toggle     (modal)   (default 't')
+
+Tag a file with "*" if the file is untagged, otherwise remove the tag.
+
 
 Command Line Commands
 
