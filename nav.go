@@ -374,7 +374,7 @@ type nav struct {
 	renameOldPath   string
 	renameNewPath   string
 	selections      map[string]int
-	tags            map[string]byte
+	tags            map[string]string
 	selectionInd    int
 	height          int
 	find            string
@@ -497,7 +497,7 @@ func newNav(height int) *nav {
 		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
-		tags:            make(map[string]byte),
+		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
 		jumpList:        make([]string, 0),
@@ -964,30 +964,44 @@ func (nav *nav) toggle() {
 	nav.toggleSelection(curr.path)
 }
 
-func (nav *nav) toggleTagSelection(path string) {
+func (nav *nav) toggleTagSelection(path string, tag string) {
 	if _, ok := nav.tags[path]; ok {
 		delete(nav.tags, path)
 	} else {
-		nav.tags[path] = '*'
+		nav.tags[path] = tag
 	}
 }
 
-func (nav *nav) toggleTag() {
-	curr, err := nav.currFile()
+func (nav *nav) toggleTag(tag string) error {
+	list, err := nav.currFileOrSelections()
 	if err != nil {
-		return
+		return err
 	}
 
-	nav.toggleTagSelection(curr.path)
+	if printLength(tag) != 1 {
+		return errors.New("tag should be single width character")
+	}
+
+	for _, path := range list {
+		nav.toggleTagSelection(path, tag)
+	}
+
+	return nil
 }
 
-func (nav *nav) tag(t byte) {
+func (nav *nav) tag(tag string) error {
 	curr, err := nav.currFile()
 	if err != nil {
-		return
+		return err
 	}
 
-	nav.tags[curr.path] = t
+	if printLength(tag) != 1 {
+		return errors.New("tag should be single width character")
+	}
+
+	nav.tags[curr.path] = tag
+
+	return nil
 }
 
 func (nav *nav) invert() {
@@ -1592,7 +1606,7 @@ func (nav *nav) writeMarks() error {
 }
 
 func (nav *nav) readTags() error {
-	nav.tags = make(map[string]byte)
+	nav.tags = make(map[string]string)
 	f, err := os.Open(gTagsPath)
 	if os.IsNotExist(err) {
 		return nil
@@ -1606,7 +1620,7 @@ func (nav *nav) readTags() error {
 	for scanner.Scan() {
 		toks := strings.SplitN(scanner.Text(), ":", 2)
 		if _, ok := nav.tags[toks[0]]; !ok {
-			nav.tags[toks[0]] = toks[1][0]
+			nav.tags[toks[0]] = toks[1]
 		}
 	}
 
@@ -1635,7 +1649,7 @@ func (nav *nav) writeTags() error {
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		_, err = f.WriteString(fmt.Sprintf("%s:%c\n", k, nav.tags[k]))
+		_, err = f.WriteString(fmt.Sprintf("%s:%s\n", k, nav.tags[k]))
 		if err != nil {
 			return fmt.Errorf("writing tags file: %s", err)
 		}

@@ -71,6 +71,8 @@ The following commands are provided by lf:
     mark-save      (modal)   (default 'm')
     mark-load      (modal)   (default "'")
     mark-remove    (modal)   (default `"`)
+	tag-toggle               (default t)
+	tag
 
 The following command line commands are provided by lf:
 
@@ -149,6 +151,7 @@ The following options can be used to customize the behavior of lf:
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
+	tagfmt         string    (default "\033[31m%s\033[0m")
 
 The following environment variables are exported for shell commands:
 
@@ -232,6 +235,11 @@ History file should be located at:
 
     unix     ~/.local/share/lf/history
     windows  C:\Users\<user>\AppData\Local\lf\history
+
+Tags file should be located at:
+
+    unix     ~/.local/share/lf/tags
+    windows  C:\Users\<user>\AppData\Local\lf\tags
 
 You can configure the default values of following variables to change these
 locations:
@@ -457,13 +465,13 @@ A special bookmark "'" holds the previous directory after a 'mark-load', 'cd', o
 
 Remove a bookmark assigned to the given key.
 
-    tag            (modal)   (default 'T')
+    tag
 
-Tag a file with the given key.
+Tag a file with a single width character given in the argument.
 
     tag-toggle     (modal)   (default 't')
 
-Tag a file with "*" if the file is untagged, otherwise remove the tag.
+Tag a file with a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
 Command Line Commands
 
@@ -789,6 +797,10 @@ Searching can wrap around the file list.
     wrapscroll     bool      (default off)
 
 Scrolling can wrap around the file list.
+
+    tagfmt         string    (default "\033[31m%s\033[0m")
+
+Format string of the tags.
 
 Environment Variables
 

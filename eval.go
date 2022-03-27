@@ -719,22 +719,6 @@ func insert(app *app, arg string) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
-	case app.ui.cmdPrefix == "tag: ":
-		normal(app)
-
-		app.nav.tag(arg[0])
-		if err := app.nav.writeTags(); err != nil {
-			app.ui.echoerrf("tag: %s", err)
-		}
-		if gSingleMode {
-			if err := app.nav.sync(); err != nil {
-				app.ui.echoerrf("tag: %s", err)
-			}
-		} else {
-			if err := remote("send sync"); err != nil {
-				app.ui.echoerrf("tag: %s", err)
-			}
-		}
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
@@ -1004,10 +988,36 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		app.nav.toggleTag()
-		if err := app.nav.writeTags(); err != nil {
+		if len(e.args) == 0 {
+			app.ui.echoerr("tag-toggle: missing default tag")
+		} else if err := app.nav.toggleTag(e.args[0]); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		}
+
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
+		}
+	case "tag":
+		if !app.nav.init {
+			return
+		}
+
+		if len(e.args) == 0 {
+			app.ui.echoerr("tag: missing tag")
+		} else if err := app.nav.tag(e.args[0]); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
 			app.ui.echoerrf("tag: %s", err)
 		}
+
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
 				app.ui.echoerrf("tag: %s", err)
@@ -1017,12 +1027,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("tag: %s", err)
 			}
 		}
-	case "tag":
-		if app.ui.cmdPrefix == ">" {
-			return
-		}
-		normal(app)
-		app.ui.cmdPrefix = "tag: "
 	case "invert":
 		if !app.nav.init {
 			return

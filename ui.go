@@ -324,7 +324,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]byte, colors styleMap, icons iconMap) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -391,23 +391,14 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		path := filepath.Join(dir.path, f.Name())
 
-
-		st_tag := applyAnsiCodes(gOpts.tagcolor, st)
-		tag, ok := tags[path]
-		if !ok {
-			tag = ' '
-		}
-
 		if _, ok := selections[path]; ok {
-			win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorPurple), string(tag))
+			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
 		} else if cp, ok := saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorOlive), string(tag))
+				win.print(screen, lnwidth, i, st.Background(tcell.ColorOlive), " ")
 			} else {
-				win.print(screen, lnwidth, i, st_tag.Background(tcell.ColorMaroon), string(tag))
+				win.print(screen, lnwidth, i, st.Background(tcell.ColorMaroon), " ")
 			}
-		} else {
-			win.print(screen, lnwidth, i, st_tag, string(tag))
 		}
 
 		if i == dir.pos {
@@ -458,6 +449,18 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		s = append(s, ' ')
 
 		win.print(screen, lnwidth+1, i, st, string(s))
+
+		tag, ok := tags[path]
+		if ok {
+			st = st.Reverse(false)
+			fg, bg, _ := st.Decompose()
+
+			if i == dir.pos {
+				win.print(screen, lnwidth+1, i, st.Background(fg), fmt.Sprintf(gOpts.tagfmt, tag))
+			} else {
+				win.print(screen, lnwidth+1, i, st.Background(bg), fmt.Sprintf(gOpts.tagfmt, tag))
+			}
+		}
 	}
 }
 
