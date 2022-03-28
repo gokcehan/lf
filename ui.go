@@ -452,13 +452,10 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		tag, ok := tags[path]
 		if ok {
-			st = st.Reverse(false)
-			fg, bg, _ := st.Decompose()
-
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st.Background(fg), fmt.Sprintf(gOpts.tagfmt, tag))
+				win.print(screen, lnwidth+1, i, tcell.StyleDefault.Reverse(true), fmt.Sprintf(gOpts.tagfmt, tag))
 			} else {
-				win.print(screen, lnwidth+1, i, st.Background(bg), fmt.Sprintf(gOpts.tagfmt, tag))
+				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
 			}
 		}
 	}

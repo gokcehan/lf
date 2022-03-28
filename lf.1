@@ -31,63 +31,63 @@ You can run 'lf -help' to see descriptions of command line options.
 The following commands are provided by lf:
 .PP
 .EX
-        quit                     (default 'q')
-        up                       (default 'k' and '<up>')
-        half-up                  (default '<c-u>')
-        page-up                  (default '<c-b>' and '<pgup>')
-        scrollup                 (default '<c-y>')
-        down                     (default 'j' and '<down>')
-        half-down                (default '<c-d>')
-        page-down                (default '<c-f>' and '<pgdn>')
-        scrolldown               (default '<c-e>')
-        updir                    (default 'h' and '<left>')
-        open                     (default 'l' and '<right>')
-        top                      (default 'gg' and '<home>')
-        bottom                   (default 'G' and '<end>')
-        toggle
-        invert                   (default 'v')
-        unselect                 (default 'u')
-        glob-select
-        glob-unselect
-        calcdirsize
-        copy                     (default 'y')
-        cut                      (default 'd')
-        paste                    (default 'p')
-        clear                    (default 'c')
-        sync
-        draw
-        redraw                   (default '<c-l>')
-        load
-        reload                   (default '<c-r>')
-        echo
-        echomsg
-        echoerr
-        cd
-        select
-        delete         (modal)
-        rename         (modal)   (default 'r')
-        source
-        push
-        read           (modal)   (default ':')
-        shell          (modal)   (default '$')
-        shell-pipe     (modal)   (default '%')
-        shell-wait     (modal)   (default '!')
-        shell-async    (modal)   (default '&')
-        find           (modal)   (default 'f')
-        find-back      (modal)   (default 'F')
-        find-next                (default ';')
-        find-prev                (default ',')
-        search         (modal)   (default '/')
-        search-back    (modal)   (default '?')
-        search-next              (default 'n')
-        search-prev              (default 'N')
-        filter         (modal)
-        setfilter
-        mark-save      (modal)   (default 'm')
-        mark-load      (modal)   (default "'")
-        mark-remove    (modal)   (default `"`)
-    	tag-toggle               (default t)
-    	tag
+    quit                     (default 'q')
+    up                       (default 'k' and '<up>')
+    half-up                  (default '<c-u>')
+    page-up                  (default '<c-b>' and '<pgup>')
+    scrollup                 (default '<c-y>')
+    down                     (default 'j' and '<down>')
+    half-down                (default '<c-d>')
+    page-down                (default '<c-f>' and '<pgdn>')
+    scrolldown               (default '<c-e>')
+    updir                    (default 'h' and '<left>')
+    open                     (default 'l' and '<right>')
+    top                      (default 'gg' and '<home>')
+    bottom                   (default 'G' and '<end>')
+    toggle
+    invert                   (default 'v')
+    unselect                 (default 'u')
+    glob-select
+    glob-unselect
+    calcdirsize
+    copy                     (default 'y')
+    cut                      (default 'd')
+    paste                    (default 'p')
+    clear                    (default 'c')
+    sync
+    draw
+    redraw                   (default '<c-l>')
+    load
+    reload                   (default '<c-r>')
+    echo
+    echomsg
+    echoerr
+    cd
+    select
+    delete         (modal)
+    rename         (modal)   (default 'r')
+    source
+    push
+    read           (modal)   (default ':')
+    shell          (modal)   (default '$')
+    shell-pipe     (modal)   (default '%')
+    shell-wait     (modal)   (default '!')
+    shell-async    (modal)   (default '&')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
+    find-next                (default ';')
+    find-prev                (default ',')
+    search         (modal)   (default '/')
+    search-back    (modal)   (default '?')
+    search-next              (default 'n')
+    search-prev              (default 'N')
+    filter         (modal)
+    setfilter
+    mark-save      (modal)   (default 'm')
+    mark-load      (modal)   (default "'")
+    mark-remove    (modal)   (default `"`)
+    tag
+    tag-toggle               (default t)
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -124,53 +124,53 @@ The following command line commands are provided by lf:
 The following options can be used to customize the behavior of lf:
 .PP
 .EX
-        anchorfind     bool      (default on)
-        autoquit       bool      (default off)
-        dircache       bool      (default on)
-        dircounts      bool      (default off)
-        dirfirst       bool      (default on)
-        dironly        bool      (default off)
-        drawbox        bool      (default off)
-        errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
-        filesep        string    (default "\en")
-        findlen        int       (default 1)
-        globsearch     bool      (default off)
-        hidden         bool      (default off)
-        hiddenfiles    []string  (default '.*')
-        icons          bool      (default off)
-        ifs            string    (default '')
-        ignorecase     bool      (default on)
-        ignoredia      bool      (default on)
-        incfilter      bool      (default off)
-        incsearch      bool      (default off)
-        info           []string  (default '')
-        mouse          bool      (default off)
-        number         bool      (default off)
-        period         int       (default 0)
-        preview        bool      (default on)
-        previewer      string    (default '')
-        cleaner        string    (default '')
-        promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f\e033[0m")
-        ratios         []int     (default '1:2:3')
-        relativenumber bool      (default off)
-        reverse        bool      (default off)
-        scrolloff      int       (default 0)
-        shell          string    (default 'sh' for unix and 'cmd' for windows)
-        shellflag      string    (default '-c' for unix and '/c' for windows)
-        shellopts      []string  (default '')
-        smartcase      bool      (default on)
-        smartdia       bool      (default off)
-        sortby         string    (default 'natural')
-        tabstop        int       (default 8)
-        tempmarks      string    (default '')
-        timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
-        infotimefmtnew string    (default 'Jan _2 15:04')
-        infotimefmtold string    (default 'Jan _2  2006')
-        truncatechar   string    (default '~')
-        waitmsg        string    (default 'Press any key to continue')
-        wrapscan       bool      (default on)
-        wrapscroll     bool      (default off)
-    	tagfmt         string    (default "\e033[31m%s\e033[0m")
+    anchorfind     bool      (default on)
+    autoquit       bool      (default off)
+    cleaner        string    (default '')
+    dircache       bool      (default on)
+    dircounts      bool      (default off)
+    dirfirst       bool      (default on)
+    dironly        bool      (default off)
+    drawbox        bool      (default off)
+    errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
+    filesep        string    (default "\en")
+    findlen        int       (default 1)
+    globsearch     bool      (default off)
+    hidden         bool      (default off)
+    hiddenfiles    []string  (default '.*')
+    icons          bool      (default off)
+    ifs            string    (default '')
+    ignorecase     bool      (default on)
+    ignoredia      bool      (default on)
+    incfilter      bool      (default off)
+    incsearch      bool      (default off)
+    info           []string  (default '')
+    infotimefmtnew string    (default 'Jan _2 15:04')
+    infotimefmtold string    (default 'Jan _2  2006')
+    mouse          bool      (default off)
+    number         bool      (default off)
+    period         int       (default 0)
+    preview        bool      (default on)
+    previewer      string    (default '')
+    promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f\e033[0m")
+    ratios         []int     (default '1:2:3')
+    relativenumber bool      (default off)
+    reverse        bool      (default off)
+    scrolloff      int       (default 0)
+    shell          string    (default 'sh' for unix and 'cmd' for windows)
+    shellflag      string    (default '-c' for unix and '/c' for windows)
+    shellopts      []string  (default '')
+    smartcase      bool      (default on)
+    smartdia       bool      (default off)
+    sortby         string    (default 'natural')
+    tabstop        int       (default 8)
+    tagfmt         string    (default "\e033[31m%s\e033[0m")
+    tempmarks      string    (default '')
+    timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
+    truncatechar   string    (default '~')
+    waitmsg        string    (default 'Press any key to continue')
+    wrapscan       bool      (default on)
+    wrapscroll     bool      (default off)
 .EE
 .PP
 The following environment variables are exported for shell commands:
@@ -582,7 +582,7 @@ Remove a bookmark assigned to the given key.
 Tag a file with a single width character given in the argument.
 .PP
 .EX
-    tag-toggle     (modal)   (default 't')
+    tag-toggle               (default 't')
 .EE
 .PP
 Tag a file with a single width character given in the argument if the file is untagged, otherwise remove the tag.

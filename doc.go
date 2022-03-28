@@ -71,8 +71,8 @@ The following commands are provided by lf:
     mark-save      (modal)   (default 'm')
     mark-load      (modal)   (default "'")
     mark-remove    (modal)   (default `"`)
-	tag-toggle               (default t)
-	tag
+    tag
+    tag-toggle               (default t)
 
 The following command line commands are provided by lf:
 
@@ -107,6 +107,7 @@ The following options can be used to customize the behavior of lf:
 
     anchorfind     bool      (default on)
     autoquit       bool      (default off)
+    cleaner        string    (default '')
     dircache       bool      (default on)
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
@@ -125,12 +126,13 @@ The following options can be used to customize the behavior of lf:
     incfilter      bool      (default off)
     incsearch      bool      (default off)
     info           []string  (default '')
+    infotimefmtnew string    (default 'Jan _2 15:04')
+    infotimefmtold string    (default 'Jan _2  2006')
     mouse          bool      (default off)
     number         bool      (default off)
     period         int       (default 0)
     preview        bool      (default on)
     previewer      string    (default '')
-    cleaner        string    (default '')
     promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
     ratios         []int     (default '1:2:3')
     relativenumber bool      (default off)
@@ -143,15 +145,13 @@ The following options can be used to customize the behavior of lf:
     smartdia       bool      (default off)
     sortby         string    (default 'natural')
     tabstop        int       (default 8)
+    tagfmt         string    (default "\033[31m%s\033[0m")
     tempmarks      string    (default '')
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
-    infotimefmtnew string    (default 'Jan _2 15:04')
-    infotimefmtold string    (default 'Jan _2  2006')
     truncatechar   string    (default '~')
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
-	tagfmt         string    (default "\033[31m%s\033[0m")
 
 The following environment variables are exported for shell commands:
 
@@ -469,7 +469,7 @@ Remove a bookmark assigned to the given key.
 
 Tag a file with a single width character given in the argument.
 
-    tag-toggle     (modal)   (default 't')
+    tag-toggle               (default 't')
 
 Tag a file with a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
