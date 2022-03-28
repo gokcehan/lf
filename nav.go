@@ -964,7 +964,7 @@ func (nav *nav) toggle() {
 	nav.toggleSelection(curr.path)
 }
 
-func (nav *nav) toggleTagSelection(path string, tag string) {
+func (nav *nav) tagToggleSelection(path string, tag string) {
 	if _, ok := nav.tags[path]; ok {
 		delete(nav.tags, path)
 	} else {
@@ -972,7 +972,7 @@ func (nav *nav) toggleTagSelection(path string, tag string) {
 	}
 }
 
-func (nav *nav) toggleTag(tag string) error {
+func (nav *nav) tagToggle(tag string) error {
 	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
@@ -983,14 +983,14 @@ func (nav *nav) toggleTag(tag string) error {
 	}
 
 	for _, path := range list {
-		nav.toggleTagSelection(path, tag)
+		nav.tagToggleSelection(path, tag)
 	}
 
 	return nil
 }
 
 func (nav *nav) tag(tag string) error {
-	curr, err := nav.currFile()
+	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
@@ -999,7 +999,9 @@ func (nav *nav) tag(tag string) error {
 		return errors.New("tag should be single width character")
 	}
 
-	nav.tags[curr.path] = tag
+	for _, path := range list {
+		nav.tags[path] = tag
+	}
 
 	return nil
 }

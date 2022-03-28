@@ -492,12 +492,12 @@ Remove a bookmark assigned to the given key.
 
     tag
 
-Tag a file with a single width character given in the argument.
+Tag a file with "*" or a single width character given in the argument.
 
     tag-toggle               (default 't')
 
-Tag a file with a single width character given in the argument if the file
-is untagged, otherwise remove the tag.
+Tag a file with "*" or a single width character given in the argument if the
+file is untagged, otherwise remove the tag.
 
 
 Command Line Commands

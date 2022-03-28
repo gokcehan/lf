@@ -988,9 +988,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if len(e.args) == 0 {
-			app.ui.echoerr("tag-toggle: missing default tag")
-		} else if err := app.nav.toggleTag(e.args[0]); err != nil {
+		tag := "*"
+		if len(e.args) != 0 {
+			tag = e.args[0]
+		}
+
+		if err := app.nav.tagToggle(tag); err != nil {
 			app.ui.echoerrf("tag-toggle: %s", err)
 		} else if err := app.nav.writeTags(); err != nil {
 			app.ui.echoerrf("tag-toggle: %s", err)
@@ -1010,9 +1013,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if len(e.args) == 0 {
-			app.ui.echoerr("tag: missing tag")
-		} else if err := app.nav.tag(e.args[0]); err != nil {
+		tag := "*"
+		if len(e.args) != 0 {
+			tag = e.args[0]
+		}
+
+		if err := app.nav.tag(tag); err != nil {
 			app.ui.echoerrf("tag: %s", err)
 		} else if err := app.nav.writeTags(); err != nil {
 			app.ui.echoerrf("tag: %s", err)
