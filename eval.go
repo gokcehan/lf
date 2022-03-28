@@ -983,6 +983,50 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 			}
 		}
+	case "tag-toggle":
+		if !app.nav.init {
+			return
+		}
+
+		if len(e.args) == 0 {
+			app.ui.echoerr("tag-toggle: missing default tag")
+		} else if err := app.nav.toggleTag(e.args[0]); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		}
+
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
+		}
+	case "tag":
+		if !app.nav.init {
+			return
+		}
+
+		if len(e.args) == 0 {
+			app.ui.echoerr("tag: missing tag")
+		} else if err := app.nav.tag(e.args[0]); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		}
+
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		}
 	case "invert":
 		if !app.nav.init {
 			return

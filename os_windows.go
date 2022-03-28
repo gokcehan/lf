@@ -33,6 +33,7 @@ var (
 	gColorsPaths []string
 	gIconsPaths  []string
 	gFilesPath   string
+	gTagsPath    string
 	gMarksPath   string
 	gHistoryPath string
 )
@@ -82,6 +83,7 @@ func init() {
 
 	gFilesPath = filepath.Join(data, "lf", "files")
 	gMarksPath = filepath.Join(data, "lf", "marks")
+	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 }
 

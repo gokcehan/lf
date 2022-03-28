@@ -35,6 +35,7 @@ var (
 	gIconsPaths  []string
 	gFilesPath   string
 	gMarksPath   string
+	gTagsPath    string
 	gHistoryPath string
 )
 
@@ -98,6 +99,7 @@ func init() {
 
 	gFilesPath = filepath.Join(data, "lf", "files")
 	gMarksPath = filepath.Join(data, "lf", "marks")
+	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
 	runtime := os.Getenv("XDG_RUNTIME_DIR")

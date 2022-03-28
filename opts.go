@@ -74,6 +74,7 @@ var gOpts struct {
 	cmds           map[string]expr
 	sortType       sortType
 	tempmarks      string
+	tagfmt         string
 }
 
 func init() {
@@ -120,6 +121,7 @@ func init() {
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"
+	gOpts.tagfmt = "\033[31m%s\033[0m"
 
 	gOpts.keys = make(map[string]expr)
 
@@ -147,6 +149,7 @@ func init() {
 	gOpts.keys["["] = &callExpr{"jump-prev", nil, 1}
 	gOpts.keys["]"] = &callExpr{"jump-next", nil, 1}
 	gOpts.keys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
+	gOpts.keys["t"] = &listExpr{[]expr{&callExpr{"tag-toggle", []string{"*"}, 1}, &callExpr{"down", nil, 1}}, 1}
 	gOpts.keys["v"] = &callExpr{"invert", nil, 1}
 	gOpts.keys["u"] = &callExpr{"unselect", nil, 1}
 	gOpts.keys["y"] = &callExpr{"copy", nil, 1}
