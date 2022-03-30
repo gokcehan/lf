@@ -828,7 +828,7 @@ func (nav *nav) down(dist int) bool {
 	return old != dir.ind
 }
 
-func (nav *nav) scrollup(dist int) bool {
+func (nav *nav) scrollUp(dist int) bool {
 	dir := nav.currDir()
 
 	// when reached top do nothing
@@ -857,7 +857,7 @@ func (nav *nav) scrollup(dist int) bool {
 	return old != dir.ind
 }
 
-func (nav *nav) scrolldown(dist int) bool {
+func (nav *nav) scrollDown(dist int) bool {
 	dir := nav.currDir()
 	maxind := len(dir.files) - 1
 
