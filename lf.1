@@ -927,7 +927,7 @@ Format string of the tags.
     tempmarks      string    (default '')
 .EE
 .PP
-A string that lists all marks to treat as temporary. They are not synced to other clients and are not saved in the bookmarks file. This option should be specified only in the global config file ("lfrc") as it may otherwise cause unintended side effects. Please note that the special bookmark "'" is always treated as temporary and does not need to be specified.
+Marks to be considered temporary (e.g. 'abc' refers to marks 'a', 'b', and 'c'). These marks are not synced to other clients and they are not saved in the bookmarks file. Note that the special bookmark "'" is always treated as temporary and it does not need to be specified.
 .PP
 .EX
     timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
