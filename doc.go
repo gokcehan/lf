@@ -209,19 +209,21 @@ Configuration
 
 Configuration files should be located at:
 
-    OS       system-wide             user-specific
-    Unix     /etc/lf/lfrc            ~/.config/lf/lfrc
-    Windows  C:\ProgramData\lf\lfrc  C:\Users\<user>\AppData\Local\lf\lfrc
+    OS       system-wide               user-specific
+    Unix     /etc/lf/lfrc              ~/.config/lf/lfrc
+    Windows  C:\ProgramData\lf\lfrc    C:\Users\<user>\AppData\Local\lf\lfrc
 
 Colors file should be located at:
 
-    Unix     ~/.local/share/lf/colors
-    Windows  C:\Users\<user>\AppData\Local\lf\colors
+    OS       system-wide               user-specific
+    Unix     /etc/lf/colors            ~/.config/lf/colors
+    Windows  C:\ProgramData\lf\colors  C:\Users\<user>\AppData\Local\lf\colors
 
 Icons file should be located at:
 
-    Unix     ~/.local/share/lf/icons
-    Windows  C:\Users\<user>\AppData\Local\lf\icons
+    OS       system-wide               user-specific
+    Unix     /etc/lf/icons             ~/.config/lf/icons
+    Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Local\lf\icons
 
 Selection file should be located at:
 
