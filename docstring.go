@@ -476,7 +476,9 @@ Remove a bookmark assigned to the given key.
 
     tag
 
-Tag a file with '*' or a single width character given in the argument.
+Tag a file with '*' or a single width character given in the argument. You
+can define a new tag clearing command by combining 'tag' with 'tag-toggle'
+(i.e. 'cmd tag-clear :tag; tag-toggle').
 
     tag-toggle               (default 't')
 
