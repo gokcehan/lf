@@ -36,7 +36,7 @@ lf \- terminal file manager
 .OP \-single
 .OP \-version
 .OP \-help
-.RI [ select-path ]
+.RI [ cd-or-select-path ]
 .YS
 .SH DESCRIPTION
 END
