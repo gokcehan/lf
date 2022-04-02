@@ -4,7 +4,6 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/sys/unix"
 	"log"
 	"os"
 	"os/exec"
@@ -12,6 +11,8 @@ import (
 	"path/filepath"
 	"runtime"
 	"strings"
+
+	"golang.org/x/sys/unix"
 )
 
 var (

@@ -2,13 +2,14 @@ package main
 
 import (
 	"fmt"
-	"golang.org/x/sys/windows"
 	"log"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"strings"
+
+	"golang.org/x/sys/windows"
 )
 
 var (
