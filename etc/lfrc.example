@@ -60,7 +60,7 @@ cmd trash %set -f; mv $fx ~/.trash
 #     printf "$fx\n"
 #     printf "delete?[y/n]"
 #     read ans
-#     [ $ans = "y" ] && rm -rf $fx
+#     [ -n "$ans" ] && [ "$ans" = "y" ] && rm -rf $fx
 # }}
 
 # use '<delete>' key for either 'trash' or 'delete' command
