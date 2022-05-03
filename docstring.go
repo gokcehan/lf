@@ -35,6 +35,9 @@ The following commands are provided by lf:
     jump-prev                (default '[')
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
+    hi-screen                (default 'H')
+    mid-screen               (default 'M')
+    lo-screen                (default 'L')
     toggle
     invert                   (default 'v')
     unselect                 (default 'u')

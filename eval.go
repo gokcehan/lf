@@ -963,6 +963,30 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app.nav, true)
 			app.ui.loadFileInfo(app.nav)
 		}
+	case "hi-screen":
+		if !app.nav.init {
+			return
+		}
+		if app.nav.hiScreen() {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	case "mid-screen":
+		if !app.nav.init {
+			return
+		}
+		if app.nav.midScreen() {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
+	case "lo-screen":
+		if !app.nav.init {
+			return
+		}
+		if app.nav.loScreen() {
+			app.ui.loadFile(app.nav, true)
+			app.ui.loadFileInfo(app.nav)
+		}
 	case "toggle":
 		if !app.nav.init {
 			return

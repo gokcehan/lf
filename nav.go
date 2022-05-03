@@ -943,6 +943,53 @@ func (nav *nav) bottom() bool {
 	return old != dir.ind
 }
 
+func (nav *nav) hiScreen() bool {
+	dir := nav.currDir()
+
+	old := dir.ind
+	beg := max(dir.ind-dir.pos, 0)
+	offs := gOpts.scrolloff
+	if beg == 0 {
+		offs = 0
+	}
+
+	dir.ind = beg + offs
+	dir.pos = offs
+
+	return old != dir.ind
+}
+
+func (nav *nav) midScreen() bool {
+	dir := nav.currDir()
+
+	old := dir.ind
+	beg := max(dir.ind-dir.pos, 0)
+	end := min(beg+nav.height, len(dir.files))
+
+	half := (end - beg) / 2
+	dir.ind = beg + half
+	dir.pos = half
+
+	return old != dir.ind
+}
+
+func (nav *nav) loScreen() bool {
+	dir := nav.currDir()
+
+	old := dir.ind
+	beg := max(dir.ind-dir.pos, 0)
+	end := min(beg+nav.height, len(dir.files))
+	offs := gOpts.scrolloff
+	if end == len(dir.files) {
+		offs = 0
+	}
+
+	dir.ind = end - 1 - offs
+	dir.pos = end - beg - 1 - offs
+
+	return old != dir.ind
+}
+
 func (nav *nav) toggleSelection(path string) {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)
