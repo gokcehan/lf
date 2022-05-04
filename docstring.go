@@ -310,6 +310,12 @@ Change the current working directory to the next/previous jumplist item.
 
 Move the current file selection to the top/bottom of the directory.
 
+    hi-screen                (default 'H')
+    mid-screen               (default 'M')
+    lo-screen                (default 'L')
+
+Move the current file selection to the top/middle/bottom of the screen.
+
     toggle
 
 Toggle the selection of the current file or files given as arguments.
