@@ -943,7 +943,7 @@ func (nav *nav) bottom() bool {
 	return old != dir.ind
 }
 
-func (nav *nav) hiScreen() bool {
+func (nav *nav) high() bool {
 	dir := nav.currDir()
 
 	old := dir.ind
@@ -959,7 +959,7 @@ func (nav *nav) hiScreen() bool {
 	return old != dir.ind
 }
 
-func (nav *nav) midScreen() bool {
+func (nav *nav) middle() bool {
 	dir := nav.currDir()
 
 	old := dir.ind
@@ -973,7 +973,7 @@ func (nav *nav) midScreen() bool {
 	return old != dir.ind
 }
 
-func (nav *nav) loScreen() bool {
+func (nav *nav) low() bool {
 	dir := nav.currDir()
 
 	old := dir.ind
