@@ -971,7 +971,7 @@ Characters from '#' to newline are comments and ignored:
 
     # comments start with '#'
 
-There are three special commands ('set', 'map', 'cmap', and 'cmd') for
+There are four special commands ('set', 'map', 'cmap', and 'cmd') for
 configuration.
 
 Command 'set' is used to set an option which can be boolean, integer, or
