@@ -31,6 +31,9 @@ The following commands are provided by lf:
     jump-prev                (default '[')
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
+    hi-screen                (default 'H')
+    mid-screen               (default 'M')
+    lo-screen                (default 'L')
     toggle
     invert                   (default 'v')
     unselect                 (default 'u')
@@ -294,6 +297,12 @@ Change the current working directory to the next/previous jumplist item.
     bottom                   (default 'G' and '<end>')
 
 Move the current file selection to the top/bottom of the directory.
+
+    hi-screen                (default 'H')
+    mid-screen               (default 'M')
+    lo-screen                (default 'L')
+
+Move the current file selection to the top/middle/bottom of the screen.
 
     toggle
 
