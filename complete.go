@@ -163,6 +163,7 @@ var (
 		"sortby",
 		"timefmt",
 		"tempmarks",
+		"tagfmt",
 		"infotimefmtnew",
 		"infotimefmtold",
 		"truncatechar",

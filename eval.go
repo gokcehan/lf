@@ -416,6 +416,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		} else {
 			gOpts.tempmarks = "'"
 		}
+	case "tagfmt":
+		gOpts.tagfmt = e.val
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "infotimefmtnew":
