@@ -341,7 +341,8 @@ Select/unselect files that match the given glob.
 
 Calculate the total size for each of the selected directories. Option 'info'
 should include 'size' and option 'dircounts' should be disabled to show this
-size.
+size. If the total size of a directory is not calculated, it will be shown
+as '-'.
 
     copy                     (default 'y')
 
@@ -610,13 +611,12 @@ Cache directory contents.
     dircounts      bool      (default off)
 
 When this option is enabled, directory sizes show the number of items inside
-instead of the size of directory file. The former needs to be calculated by
-reading the directory and counting the items inside. The latter is directly
-provided by the operating system and it does not require any calculation,
-though it is non-intuitive and it can often be misleading. This option is
-disabled by default for performance reasons. This option only has an effect
-when 'info' has a 'size' field and the pane is wide enough to show the
-information. A thousand items are counted per directory at most, and bigger
+instead of the total size of the directory, which needs to be calculated for
+each directory using 'calcdirsize'. This information needs to be calculated
+by reading the directory and counting the items inside. Therefore, this
+option is disabled by default for performance reasons. This option only has
+an effect when 'info' has a 'size' field and the pane is wide enough to show
+the information. 999 items are counted per directory at most, and bigger
 directories are shown as '999+'.
 
     dirfirst       bool      (default on)
