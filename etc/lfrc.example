@@ -81,6 +81,29 @@ cmd extract ${{
     esac
 }}
 
+# extract to directory
+
+cmd extract_to_dir ${{
+	case "$f" in
+		*.zip)
+			ans="$(basename -s .zip "$f")"
+			unzip -d "$ans" "$f"
+			;;
+
+		*.rar)
+			ans="$(dirname $f)/$(basename -s .rar $f)/"
+			unrar x $f $ans
+			;;
+		*.7z)
+			ans="$(basename -s .7z "$f")"
+			7z x -o"$ans" "$f"
+			;;
+		*) 
+			echo "Unsupported format"
+			;;
+	esac
+}}
+
 # compress current file or selected files with tar and gunzip
 cmd tar ${{
     set -f
