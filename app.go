@@ -526,7 +526,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		anyKey()
 	}
 
-	app.ui.loadFile(app.nav, true)
+	// do not call loadFile because of race condition with previewer
+	// app.ui.loadFile(app.nav, true)
 
 	switch prefix {
 	case "%":
