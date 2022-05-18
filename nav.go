@@ -150,6 +150,7 @@ type dir struct {
 	ignorecase  bool      // ignorecase value from last sort
 	ignoredia   bool      // ignoredia value from last sort
 	noPerm      bool      // whether lf has no permission to open the directory
+	lines       []string  // lines of text to display if directory previews are enabled
 }
 
 func newDir(path string) *dir {
@@ -404,6 +405,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		d.sort()
 		d.ind, d.pos = 0, 0
 		nav.dirChan <- d
+		nav.previewChan <- path
 	}()
 	return d
 }
@@ -414,6 +416,7 @@ func (nav *nav) loadDir(path string) *dir {
 		if !ok {
 			d = nav.loadDirInternal(path)
 			nav.dirCache[path] = d
+			nav.previewChan <- path
 			return d
 		}
 
@@ -448,6 +451,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.filter = dir.filter
 			nd.sort()
 			nav.dirChan <- nd
+			nav.previewChan <- nd.path
 		}()
 	case dir.sortType != gOpts.sortType ||
 		dir.dironly != gOpts.dironly ||
@@ -459,6 +463,7 @@ func (nav *nav) checkDir(dir *dir) {
 			dir.sort()
 			dir.loading = false
 			nav.dirChan <- dir
+			nav.previewChan <- dir.path
 		}()
 	}
 }
@@ -490,7 +495,7 @@ func newNav(height int) *nav {
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
 		previewChan:     make(chan string, 1024),
-		dirChan:         make(chan *dir),
+		dirChan:         make(chan *dir), // Directory channel, consumed by main loop
 		regChan:         make(chan *reg),
 		dirCache:        make(map[string]*dir),
 		regCache:        make(map[string]*reg),
@@ -644,7 +649,76 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
+func (nav *nav) previewDir(dir *dir, win *win) {
+
+	// At the end, make sure new dir is queued for preview in ui.go's draw-function
+	defer func() { nav.dirChan <- dir }()
+
+	var reader io.Reader
+
+	if len(gOpts.previewer) != 0 {
+		nav.exportFiles()
+		exportOpts()
+		cmd := exec.Command(gOpts.previewer, dir.path,
+			strconv.Itoa(win.w),
+			strconv.Itoa(win.h),
+			strconv.Itoa(win.x),
+			strconv.Itoa(win.y))
+
+		out, err := cmd.StdoutPipe()
+		if err != nil {
+			log.Printf("previewing file: %s", err)
+			return
+		}
+
+		if err := cmd.Start(); err != nil {
+			log.Printf("previewing file: %s", err)
+			out.Close()
+			return
+		}
+
+		defer func() {
+			if err := cmd.Wait(); err != nil {
+				if e, ok := err.(*exec.ExitError); ok {
+					if e.ExitCode() != 0 {
+						// TODO
+						//reg.volatile = true
+						nav.volatilePreview = true
+					}
+				} else {
+					log.Printf("loading file: %s", err)
+				}
+			}
+		}()
+		defer out.Close()
+		reader = out
+		buf := bufio.NewScanner(reader)
+
+		for i := 0; i < win.h && buf.Scan(); i++ {
+			for _, r := range buf.Text() {
+				if r == 0 {
+					dir.lines = []string{"\033[7mbinary\033[0m"}
+					return
+				}
+			}
+			dir.lines = append(dir.lines, buf.Text())
+		}
+
+		if buf.Err() != nil {
+			log.Printf("loading file: %s", buf.Err())
+		}
+	}
+
+}
+
 func (nav *nav) preview(path string, win *win) {
+
+	if dir, ok := nav.dirCache[path]; ok {
+		log.Printf("previewing dir: %s", dir.path);
+		nav.previewDir( dir, win );
+		return;
+	}
+
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -653,7 +727,7 @@ func (nav *nav) preview(path string, win *win) {
 	if len(gOpts.previewer) != 0 {
 		nav.exportFiles()
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, path,
+		cmd := exec.Command(gOpts.previewer, path, // Doing the preview
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
