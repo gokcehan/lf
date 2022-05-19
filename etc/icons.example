@@ -355,3 +355,13 @@ Vagrantfile             
 
 # other formats
 *.pdf   
+
+# You can also set icons to directories
+# 
+# /foo/downloads -> points to a file
+# /foo/downloads/ -> points to a directory
+# .git -> points to a file
+# .git/ -> points to a directory
+
+~/  
+~/.config/  
