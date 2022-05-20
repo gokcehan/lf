@@ -461,8 +461,15 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 	}
 }
 
+type sixel struct {
+	x   int
+	y   int
+	str string
+}
+
 type ui struct {
 	screen       tcell.Screen
+	sixels       []sixel
 	polling      bool
 	wins         []*win
 	promptWin    *win
