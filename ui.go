@@ -271,7 +271,7 @@ func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
 		}
 
 		if a := strings.Index(l, "\x1bP"); a >= 0 {
-			if b := strings.Index(l[a+2:], "\x1b\\"); b >= 0 {
+			if b := strings.Index(l[a+2:], "\x1b"); b >= 0 && l[a+b+3] == '\\' {
 				sixel := sixel{str: l[a : a+b+4], x: win.x + a + 2, y: win.y + i}
 				*sixels = append(*sixels, sixel)
 
