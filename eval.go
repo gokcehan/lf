@@ -1198,6 +1198,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.renew()
 		app.ui.screen.Sync()
+		app.ui.ShowSixels()
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
 			app.nav.regCache = make(map[string]*reg)
