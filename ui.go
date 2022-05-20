@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg) {
+func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
 	if reg == nil {
 		return
 	}
@@ -268,6 +268,15 @@ func (win *win) printReg(screen tcell.Screen, reg *reg) {
 	for i, l := range reg.lines {
 		if i > win.h-1 {
 			break
+		}
+
+		if a := strings.Index(l, "\x1bP"); a >= 0 {
+			if b := strings.Index(l[a+1:len(l)], "\x1b\\"); b >= 0 {
+				sixel := sixel{str: l[a : b+3], x: win.x + 2, y: win.y + i}
+				*sixels = append(*sixels, sixel)
+
+				l = l[:a] + l[b+3:]
+			}
 		}
 
 		st = win.print(screen, 2, i, st, l)
@@ -891,7 +900,7 @@ func (ui *ui) draw(nav *nav) {
 			if curr.IsDir() {
 				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, ui.regPrev)
+				preview.printReg(ui.screen, &ui.sixels, ui.regPrev)
 			}
 		}
 	}
