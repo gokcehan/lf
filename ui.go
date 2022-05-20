@@ -930,6 +930,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
+	ui.ShowSixels()
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
@@ -1305,4 +1306,11 @@ func listMatchesMenu(ui *ui, matches []string) error {
 
 	ui.menuBuf = b
 	return nil
+}
+
+func (ui *ui) ShowSixels() {
+	for _, sixel := range ui.sixels {
+		moveCursor := fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1)
+		os.Stdin.WriteString(moveCursor + sixel.str)
+	}
 }
