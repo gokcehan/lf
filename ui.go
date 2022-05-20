@@ -1314,3 +1314,11 @@ func (ui *ui) ShowSixels() {
 		os.Stdin.WriteString(moveCursor + sixel.str)
 	}
 }
+
+// Placeholder
+func (ui *ui) UnshowSixels() {
+	for _, sixel := range ui.sixels {
+		x, y := sixel.x, sixel.y
+		ui.screen.SetContent(x, y, '\u2800', nil, tcell.StyleDefault)
+	}
+}

@@ -619,6 +619,8 @@ func (nav *nav) previewLoop(ui *ui) {
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
 			}
+			ui.UnshowSixels()
+			ui.sixels = nil
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
