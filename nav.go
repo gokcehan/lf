@@ -714,7 +714,7 @@ func (nav *nav) preview(path string, win *win) {
 				reg.lines = append(reg.lines, buf.Text())
 				continue
 			}
-			sixel.WriteString(buf.Text()[a:])
+			sixel.WriteString(buf.Text())
 			sixelCont = true
 			continue
 		}
