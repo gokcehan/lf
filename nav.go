@@ -162,6 +162,7 @@ func newDir(path string) *dir {
 	}
 
 	return &dir{
+		loading:  gOpts.dirpreviews, // Directory is loaded after previewer function exits.
 		loadTime: time,
 		path:     path,
 		files:    files,
@@ -366,6 +367,7 @@ type nav struct {
 	deleteCountChan chan int
 	deleteTotalChan chan int
 	previewChan     chan string
+	dirPreviewChan  chan *dir
 	dirChan         chan *dir
 	regChan         chan *reg
 	dirCache        map[string]*dir
@@ -404,8 +406,11 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		d := newDir(path)
 		d.sort()
 		d.ind, d.pos = 0, 0
+		if gOpts.dirpreviews {
+			nav.dirPreviewChan <- d
+		}
 		nav.dirChan <- d
-		nav.previewChan <- path
+
 	}()
 	return d
 }
@@ -416,7 +421,6 @@ func (nav *nav) loadDir(path string) *dir {
 		if !ok {
 			d = nav.loadDirInternal(path)
 			nav.dirCache[path] = d
-			nav.previewChan <- path
 			return d
 		}
 
@@ -451,7 +455,6 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.filter = dir.filter
 			nd.sort()
 			nav.dirChan <- nd
-			nav.previewChan <- nd.path
 		}()
 	case dir.sortType != gOpts.sortType ||
 		dir.dironly != gOpts.dironly ||
@@ -463,7 +466,6 @@ func (nav *nav) checkDir(dir *dir) {
 			dir.sort()
 			dir.loading = false
 			nav.dirChan <- dir
-			nav.previewChan <- dir.path
 		}()
 	}
 }
@@ -495,6 +497,7 @@ func newNav(height int) *nav {
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
 		previewChan:     make(chan string, 1024),
+		dirPreviewChan:      make(chan *dir, 1024),
 		dirChan:         make(chan *dir), // Directory channel, consumed by main loop
 		regChan:         make(chan *reg),
 		dirCache:        make(map[string]*dir),
@@ -603,6 +606,26 @@ func (nav *nav) exportFiles() {
 
 	exportFiles(currFile, currSelections, nav.currDir().path)
 }
+func (nav *nav) dirPreviewLoop(ui *ui) {
+	var prevPath string
+	for {
+		select {
+		case dir := <- nav.dirPreviewChan:
+
+			if dir == nil && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+				cmd := exec.Command(gOpts.cleaner, prevPath)
+				if err := cmd.Run(); err != nil {
+					log.Printf("cleaning preview: %s", err)
+				}
+				nav.volatilePreview = false
+			}
+			log.Printf("Dir preview %s", dir.path)
+			win := ui.wins[len(ui.wins)-1]
+			nav.previewDir(dir, win)
+			prevPath = dir.path;
+		}
+	}
+}
 
 func (nav *nav) previewLoop(ui *ui) {
 	var prev string
@@ -652,7 +675,10 @@ func matchPattern(pattern, name, path string) bool {
 func (nav *nav) previewDir(dir *dir, win *win) {
 
 	// At the end, make sure new dir is queued for preview in ui.go's draw-function
-	defer func() { nav.dirChan <- dir }()
+	defer func() {
+		dir.loading = false
+		nav.dirChan <- dir
+	}()
 
 	var reader io.Reader
 
@@ -667,12 +693,12 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
-			log.Printf("previewing file: %s", err)
+			log.Printf("previewing dir: %s", err)
 			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			log.Printf("previewing file: %s", err)
+			log.Printf("previewing dir: %s", err)
 			out.Close()
 			return
 		}
@@ -681,12 +707,10 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 			if err := cmd.Wait(); err != nil {
 				if e, ok := err.(*exec.ExitError); ok {
 					if e.ExitCode() != 0 {
-						// TODO
-						//reg.volatile = true
 						nav.volatilePreview = true
 					}
 				} else {
-					log.Printf("loading file: %s", err)
+					log.Printf("loading dir: %s", err)
 				}
 			}
 		}()
@@ -705,7 +729,7 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 		}
 
 		if buf.Err() != nil {
-			log.Printf("loading file: %s", buf.Err())
+			log.Printf("loading dir: %s", buf.Err())
 		}
 	}
 
