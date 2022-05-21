@@ -700,12 +700,35 @@ func (nav *nav) preview(path string, win *win) {
 
 	buf := bufio.NewScanner(reader)
 
-	for i := 0; i < win.h && buf.Scan(); i++ {
+	var sixel strings.Builder
+	sixelCont := false
+	for i := 0; (sixelCont || i < win.h) && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
 				return
 			}
+		}
+		if a := strings.Index(buf.Text(), "\x1bP"); a >= 0 {
+			if b := strings.Index(buf.Text()[a+2:], "\x1b\\"); b >= 0 {
+				reg.lines = append(reg.lines, buf.Text())
+				continue
+			}
+			sixel.WriteString(buf.Text()[a:])
+			sixelCont = true
+			continue
+		}
+		if sixelCont {
+			if b := strings.Index(buf.Text(), "\x1b\\"); b >= 0 {
+				sixel.WriteString(buf.Text()[:b+2])
+				reg.lines = append(reg.lines, sixel.String(), buf.Text()[b+2:])
+				log.Printf("found multiline: %s", reg.lines[len(reg.lines)-1])
+				sixel.Reset()
+				sixelCont = false
+				continue
+			}
+			sixel.WriteString(buf.Text())
+			continue
 		}
 		reg.lines = append(reg.lines, buf.Text())
 	}
