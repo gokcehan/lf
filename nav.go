@@ -497,7 +497,7 @@ func newNav(height int) *nav {
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
 		previewChan:     make(chan string, 1024),
-		dirPreviewChan:      make(chan *dir, 1024),
+		dirPreviewChan:  make(chan *dir, 1024),
 		dirChan:         make(chan *dir), // Directory channel, consumed by main loop
 		regChan:         make(chan *reg),
 		dirCache:        make(map[string]*dir),
@@ -610,7 +610,7 @@ func (nav *nav) dirPreviewLoop(ui *ui) {
 	var prevPath string
 	for {
 		select {
-		case dir := <- nav.dirPreviewChan:
+		case dir := <-nav.dirPreviewChan:
 
 			if dir == nil && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
 				cmd := exec.Command(gOpts.cleaner, prevPath)
@@ -618,11 +618,11 @@ func (nav *nav) dirPreviewLoop(ui *ui) {
 					log.Printf("cleaning preview: %s", err)
 				}
 				nav.volatilePreview = false
+			} else if dir != nil {
+				win := ui.wins[len(ui.wins)-1]
+				nav.previewDir(dir, win)
+				prevPath = dir.path
 			}
-			log.Printf("Dir preview %s", dir.path)
-			win := ui.wins[len(ui.wins)-1]
-			nav.previewDir(dir, win)
-			prevPath = dir.path;
 		}
 	}
 }
@@ -674,7 +674,6 @@ func matchPattern(pattern, name, path string) bool {
 
 func (nav *nav) previewDir(dir *dir, win *win) {
 
-	// At the end, make sure new dir is queued for preview in ui.go's draw-function
 	defer func() {
 		dir.loading = false
 		nav.dirChan <- dir
@@ -738,9 +737,9 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 func (nav *nav) preview(path string, win *win) {
 
 	if dir, ok := nav.dirCache[path]; ok {
-		log.Printf("previewing dir: %s", dir.path);
-		nav.previewDir( dir, win );
-		return;
+		log.Printf("previewing dir: %s", dir.path)
+		nav.previewDir(dir, win)
+		return
 	}
 
 	reg := &reg{loadTime: time.Now(), path: path}

@@ -324,7 +324,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, previewAllowed  bool) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, previewAllowed bool) {
 
 	if win.w < 5 || dir == nil {
 		return
@@ -335,19 +335,19 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		return
 	}
 
-	if ( dir.loading && len(dir.files) == 0 ) || ( previewAllowed && dir.loading && gOpts.dirpreviews ) {
+	if (dir.loading && len(dir.files) == 0) || (previewAllowed && dir.loading && gOpts.dirpreviews) {
 		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
 		return
 	}
 
-	if( previewAllowed && gOpts.dirpreviews ) {
+	if previewAllowed && gOpts.dirpreviews {
 
 		// Print previewer result instead of default directory print operation.
 		st := tcell.StyleDefault
 		for i, l := range dir.lines {
-		 	if i > win.h-1 {
-		 		break
-		 	}
+			if i > win.h-1 {
+				break
+			}
 
 			st = win.print(screen, 2, i, st, l)
 		}

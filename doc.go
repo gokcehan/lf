@@ -117,6 +117,7 @@ The following options can be used to customize the behavior of lf:
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
+    dirpreviews    bool      (default off)
     drawbox        bool      (default off)
     errorfmt       string    (default "\033[7;31;47m%s\033[0m")
     filesep        string    (default "\n")
@@ -590,6 +591,10 @@ This option only has an effect when 'info' has a 'size' field and the pane is wi
 Show directories first above regular files.
 
     dironly        bool      (default off)
+
+If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+
+    dirpreviews    bool      (default off)
 
 Show only directories.
 

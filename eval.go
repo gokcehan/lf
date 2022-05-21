@@ -44,6 +44,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app.nav, true)
+	case "dirpreviews":
+		gOpts.dirpreviews = true
 	case "nodironly":
 		gOpts.dironly = false
 		app.nav.sort()
