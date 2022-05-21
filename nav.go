@@ -498,7 +498,7 @@ func newNav(height int) *nav {
 		deleteTotalChan: make(chan int, 1024),
 		previewChan:     make(chan string, 1024),
 		dirPreviewChan:  make(chan *dir, 1024),
-		dirChan:         make(chan *dir), // Directory channel, consumed by main loop
+		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
 		dirCache:        make(map[string]*dir),
 		regCache:        make(map[string]*reg),
@@ -744,7 +744,7 @@ func (nav *nav) preview(path string, win *win) {
 	if len(gOpts.previewer) != 0 {
 		nav.exportFiles()
 		exportOpts()
-		cmd := exec.Command(gOpts.previewer, path, // Doing the preview
+		cmd := exec.Command(gOpts.previewer, path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
