@@ -340,7 +340,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		return
 	}
 
-	if previewAllowed && gOpts.dirpreviews {
+	if previewAllowed && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
 
 		// Print previewer result instead of default directory print operation.
 		st := tcell.StyleDefault
