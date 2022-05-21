@@ -736,12 +736,6 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 
 func (nav *nav) preview(path string, win *win) {
 
-	if dir, ok := nav.dirCache[path]; ok {
-		log.Printf("previewing dir: %s", dir.path)
-		nav.previewDir(dir, win)
-		return
-	}
-
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
