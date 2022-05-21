@@ -454,6 +454,9 @@ func (nav *nav) checkDir(dir *dir) {
 			nd := newDir(dir.path)
 			nd.filter = dir.filter
 			nd.sort()
+			if gOpts.dirpreviews {
+				nav.dirPreviewChan <- nd
+			}
 			nav.dirChan <- nd
 		}()
 	case dir.sortType != gOpts.sortType ||
@@ -606,6 +609,7 @@ func (nav *nav) exportFiles() {
 
 	exportFiles(currFile, currSelections, nav.currDir().path)
 }
+
 func (nav *nav) dirPreviewLoop(ui *ui) {
 	var prevPath string
 	for {
