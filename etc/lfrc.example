@@ -82,24 +82,26 @@ cmd extract ${{
 }}
 
 # extract to directory
-
 cmd extract_to_dir ${{
 	case "$f" in
 		*.zip)
-			ans="$(basename -s .zip "$f")"
-			unzip -d "$ans" "$f"
+			ansz=$(basename -s .zip "$f")
+			unzip -d "$ansz" "$f"
+			read -p "Press Enter to Continue"
 			;;
 
 		*.rar)
-			ans="$(dirname $f)/$(basename -s .rar $f)/"
-			unrar x $f $ans
+			ansr=$(dirname "$f")"/"$(basename -s .rar "$f")"/"
+			unrar x "$f" "$ansr"
+			read -p "Press Enter to Continue"
 			;;
 		*.7z)
-			ans="$(basename -s .7z "$f")"
-			7z x -o"$ans" "$f"
+			ans7=$(basename -s .7z "$f")
+			7z x -o"$ans7" "$f"
+			read -p "Press Enter to Continue"
 			;;
 		*) 
-			echo "Unsupported format"
+			read -p "Unsupported format!"
 			;;
 	esac
 }}
