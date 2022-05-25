@@ -220,3 +220,11 @@ func exportFiles(f string, fs []string, pwd string) {
 		os.Setenv("fx", envFiles)
 	}
 }
+
+func getTermPixels(fd int) (w, h int, err error) {
+	ws, err := unix.IoctlGetWinsize(fd, unix.TIOCGWINSZ)
+	if err != nil {
+		return -1, -1, err
+	}
+	return int(ws.Xpixel), int(ws.Ypixel), nil
+}
