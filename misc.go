@@ -299,6 +299,57 @@ func mod(a, b int) int {
 	return (a%b + b) % b
 }
 
+var reNumber = regexp.MustCompile(`^[0-9]+`)
+
+// needs some testing
+func sixelDimPx(s string) (w int, h int) {
+	// TODO maybe take into account pixel aspect ratio (")
+	// TODO handle macro parameters P1 to P3
+	// `DCS P1;P2;P3;q...`
+	a := strings.Index(s, "q") + 1
+	if a == 0 {
+		//syntax error
+	}
+	var wi int
+	for i := a; i < len(s)-2; i++ {
+		c := s[i]
+		switch {
+		case '?' <= c && c <= '~':
+			wi++
+		case c == '-':
+			w = max(w, wi)
+			wi = 0
+			h++
+		case c == '$':
+			w = max(w, wi)
+			wi = 0
+		case c == '!':
+			m := reNumber.FindString(s[i+1:])
+			if m == "" {
+				// syntax error
+			}
+			if s[i+1+len(m)] < '?' || s[i+1+len(m)] > '~' {
+				// syntax error
+			}
+			n, _ := strconv.Atoi(m)
+			wi += n - 1
+		default:
+		}
+	}
+	if s[len(s)-3] != '-' {
+		w = max(w, wi)
+		wi = 0
+		h++ // add newline on last row
+	}
+	return w, h * 6
+}
+
+func pxToCells(x, y, wc, hc, wpx, hpx int) (int, int) {
+	var fw int = wpx / wc
+	var fh int = hpx / hc
+	return x/fw + 1, y/fh + 1 // TODO should probably use ceiling instead of +1
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
