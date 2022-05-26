@@ -15,6 +15,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/gdamore/tcell/v2"
 	times "gopkg.in/djherbis/times.v1"
 )
 
@@ -623,7 +624,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, win)
+			nav.preview(path, ui.screen, win)
 			prev = path
 		}
 	}
@@ -644,7 +645,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, win *win) {
+func (nav *nav) preview(path string, screen tcell.Screen, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -698,9 +699,8 @@ func (nav *nav) preview(path string, win *win) {
 
 	buf := bufio.NewScanner(reader)
 
-	var sixel strings.Builder
-	sixelCont := false
-	for i := 0; (sixelCont || i < win.h) && buf.Scan(); i++ {
+	sixelFrom := -1
+	for i := 0; (sixelFrom != -1 || len(reg.lines) < win.h) && buf.Scan(); i++ {
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
@@ -708,31 +708,46 @@ func (nav *nav) preview(path string, win *win) {
 			}
 		}
 		if a := strings.Index(buf.Text(), "\x1bP"); a >= 0 {
-			if b := strings.Index(buf.Text()[a+2:], "\x1b\\"); b >= 0 {
-				reg.lines = append(reg.lines, buf.Text())
+			if b := strings.Index(buf.Text()[a:], "\x1b\\"); b >= 0 {
+				addSixel(screen, reg, buf.Text()[a:a+b+2], win.x, win.y+len(reg.lines))
+				reg.lines = append(reg.lines, buf.Text()[:a], buf.Text()[a+b+2:])
 				continue
 			}
-			sixel.WriteString(buf.Text())
-			sixelCont = true
+			reg.lines = append(reg.lines, buf.Text()[:a] /*TODO skip empty line*/, buf.Text()[a:])
+			sixelFrom = len(reg.lines) - 1
 			continue
 		}
-		if sixelCont {
+		if sixelFrom != -1 {
 			if b := strings.Index(buf.Text(), "\x1b\\"); b >= 0 {
-				sixel.WriteString(buf.Text()[:b+2])
-				reg.lines = append(reg.lines, sixel.String(), buf.Text()[b+2:])
+				reg.lines = append(reg.lines, buf.Text()[:b+2])
+				sx := strings.Join(reg.lines[sixelFrom:], "")
+				reg.lines = reg.lines[:sixelFrom]
+				addSixel(screen, reg, sx, win.x+2, win.y+len(reg.lines))
+
+				reg.lines = append(reg.lines, buf.Text()[b+2:])
 				log.Printf("found multiline: %s", reg.lines[len(reg.lines)-1])
-				sixel.Reset()
-				sixelCont = false
+				sixelFrom = -1
 				continue
 			}
-			sixel.WriteString(buf.Text())
-			continue
 		}
 		reg.lines = append(reg.lines, buf.Text())
 	}
 
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
+	}
+}
+
+func addSixel(screen tcell.Screen, reg *reg, sx string, x, y int) {
+	Wc, Hc := screen.Size()
+	Wpx, Hpx, _ := getTermPixels(int(os.Stdin.Fd())) //TODO do this elsewhere
+	w, h := sixelDimPx(sx)
+	wc, hc := pxToCells(w, h, Wc, Hc, Wpx, Hpx)
+
+	reg.sixels = append(reg.sixels, sixel{x, y, w, h, sx})
+	fill := strings.Repeat("\u2800", wc)
+	for j := 0; j < hc; j++ {
+		reg.lines = append(reg.lines, fill)
 	}
 }
 
