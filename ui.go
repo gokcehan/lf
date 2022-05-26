@@ -846,6 +846,7 @@ func (ui *ui) draw(nav *nav) {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
+	ui.sixels = nil
 
 	ui.drawPromptLine(nav)
 
