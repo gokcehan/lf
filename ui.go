@@ -473,6 +473,8 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 type sixel struct {
 	x   int
 	y   int
+	wPx int
+	hPx int
 	str string
 }
 
@@ -646,6 +648,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
+	sixels   []sixel
 }
 
 func (ui *ui) loadFile(nav *nav, volatile bool) {
