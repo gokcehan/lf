@@ -19,6 +19,11 @@ import (
 	times "gopkg.in/djherbis/times.v1"
 )
 
+const (
+	gSixelBegin     = "\033P"
+	gSixelTerminate = "\033\\"
+)
+
 type linkState byte
 
 const (
