@@ -384,6 +384,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
 		app.ui.loadFile(app.nav, true)
+	case "selmode":
+		gOpts.selmode = e.val
 	case "shell":
 		gOpts.shell = e.val
 	case "shellflag":

@@ -148,6 +148,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber bool      (default off)
     reverse        bool      (default off)
     scrolloff      int       (default 0)
+    selmode        string    (default 'all')
     shell          string    (default 'sh' for Unix and 'cmd' for Windows)
     shellflag      string    (default '-c' for Unix and '/c' for Windows)
     shellopts      []string  (default '')
@@ -776,6 +777,12 @@ shown.
     reverse        bool      (default off)
 
 Reverse the direction of sort.
+
+    selmode        string    (default 'all')
+
+Selection mode for commands. When set to 'all' it will use the selected
+files from all directories. When set to 'dir' it will only use the selected
+files in the current directory.
 
     scrolloff      int       (default 0)
 
