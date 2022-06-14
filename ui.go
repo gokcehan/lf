@@ -479,6 +479,7 @@ type sixel struct {
 type ui struct {
 	screen       tcell.Screen
 	sixels       []sixel
+	wPx, hPx     int
 	polling      bool
 	wins         []*win
 	promptWin    *win
@@ -549,6 +550,7 @@ func getWins(screen tcell.Screen) []*win {
 }
 
 func newUI(screen tcell.Screen) *ui {
+	var err error
 	wtot, htot := screen.Size()
 
 	ui := &ui{
@@ -565,6 +567,13 @@ func newUI(screen tcell.Screen) *ui {
 		styles:       parseStyles(),
 		icons:        parseIcons(),
 		menuSelected: -2,
+	}
+
+	ui.wPx, ui.hPx, err = getTermPixels()
+   // TODO getting pixel size does not gurantee sixel support
+	if err != nil {
+		ui.wPx, ui.hPx = -1, -1
+		log.Printf("getting terminal pixel size: %s", err)
 	}
 
 	go ui.pollEvents()

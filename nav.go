@@ -629,7 +629,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, ui.screen, win)
+			nav.preview(path, ui.screen, ui.wPx, ui.hPx, win)
 			prev = path
 		}
 	}
@@ -650,7 +650,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, screen tcell.Screen, win *win) {
+func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -756,11 +756,10 @@ func (nav *nav) preview(path string, screen tcell.Screen, win *win) {
 	}
 }
 
-func addSixel(screen tcell.Screen, reg *reg, sx string, x, y int) {
+func addSixel(screen tcell.Screen, wPx, hPx int, reg *reg, sx string, x, y int) {
 	Wc, Hc := screen.Size()
-	Wpx, Hpx, _ := getTermPixels(int(os.Stdin.Fd())) //TODO do this elsewhere
 	w, h := sixelDimPx(sx)
-	wc, hc := pxToCells(w, h, Wc, Hc, Wpx, Hpx)
+	wc, hc := pxToCells(w, h, Wc, Hc, wPx, hPx)
 
 	reg.sixels = append(reg.sixels, sixel{x, y, w, h, sx})
 	fill := strings.Repeat("\u2800", wc)

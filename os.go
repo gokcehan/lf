@@ -221,7 +221,8 @@ func exportFiles(f string, fs []string, pwd string) {
 	}
 }
 
-func getTermPixels(fd int) (w, h int, err error) {
+func getTermPixels() (w, h int, err error) {
+	fd := int(os.Stdin.Fd())
 	ws, err := unix.IoctlGetWinsize(fd, unix.TIOCGWINSZ)
 	if err != nil {
 		return -1, -1, err
