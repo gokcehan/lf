@@ -1323,10 +1323,12 @@ func listMatchesMenu(ui *ui, matches []string) error {
 }
 
 func (ui *ui) showSixels() {
-	os.Stdin.WriteString("\0337")
+   var buf strings.Builder
+	buf.WriteString("\0337")
 	for _, sixel := range ui.sixels {
-		moveCursor := fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1)
-		os.Stdin.WriteString(moveCursor + sixel.str)
+		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
+      buf.WriteString(sixel.str)
 	}
-	os.Stdin.WriteString("\0338")
+	buf.WriteString("\0338")
+   fmt.Print(buf.String())
 }
