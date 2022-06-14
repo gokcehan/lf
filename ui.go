@@ -272,7 +272,13 @@ func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
 
 		st = win.print(screen, 2, i, st, l)
 	}
-	*sixels = reg.sixels
+
+   for _, sx := range reg.sixels {
+      s := sx
+      s.x += win.x
+      s.y += win.y
+      *sixels = append(*sixels, s)
+   }
 }
 
 var gThisYear = time.Now().Year()

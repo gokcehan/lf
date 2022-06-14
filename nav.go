@@ -715,7 +715,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, win *win) {
 		if a := strings.Index(buf.Text(), gSixelBegin); a >= 0 {
 			if b := strings.IndexByte(buf.Text()[a+2:], gEscapeCode); b >= 0 {
 				if buf.Text()[a+b+1] == '\\' {
-					addSixel(screen, reg, buf.Text()[a:a+b+2], win.x, win.y+len(reg.lines))
+					addSixel(screen, wPx, hPx, reg, buf.Text()[a:a+b+2], 2, win.y+len(reg.lines))
 					reg.lines = append(reg.lines, buf.Text()[:a], buf.Text()[a+b+2:])
 					continue
 				} else {
@@ -734,7 +734,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, win *win) {
 					reg.lines = append(reg.lines, buf.Text()[:b+2])
 					sx := strings.Join(reg.lines[sixelFrom:], "")
 					reg.lines = reg.lines[:sixelFrom]
-					addSixel(screen, reg, sx, win.x+2, win.y+len(reg.lines))
+					addSixel(screen, wPx, hPx, reg, sx, 2, len(reg.lines))
 
 					reg.lines = append(reg.lines, buf.Text()[b+2:])
 					sixelFrom = -1
