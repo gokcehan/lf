@@ -1196,12 +1196,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-   var err error
-	app.ui.wPx, app.ui.hPx, err = getTermPixels()
-	if err != nil {
-		app.ui.wPx, app.ui.hPx = -1, -1
-		log.Printf("getting terminal pixel size: %s", err)
-	}
+		var err error
+		app.ui.wPx, app.ui.hPx, err = getTermPixels()
+		if err != nil {
+			app.ui.wPx, app.ui.hPx = -1, -1
+			log.Printf("getting terminal pixel size: %s", err)
+		}
 		app.ui.renew()
 		app.ui.screen.Sync()
 		if app.nav.height != app.ui.wins[0].h {

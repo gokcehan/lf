@@ -273,12 +273,12 @@ func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
 		st = win.print(screen, 2, i, st, l)
 	}
 
-   for _, sx := range reg.sixels {
-      s := sx
-      s.x += win.x
-      s.y += win.y
-      *sixels = append(*sixels, s)
-   }
+	for _, sx := range reg.sixels {
+		s := sx
+		s.x += win.x
+		s.y += win.y
+		*sixels = append(*sixels, s)
+	}
 }
 
 var gThisYear = time.Now().Year()
@@ -469,11 +469,8 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 }
 
 type sixel struct {
-	x   int
-	y   int
-	wPx int
-	hPx int
-	str string
+	x, y, wPx, hPx int
+	str            string
 }
 
 type ui struct {
@@ -570,7 +567,7 @@ func newUI(screen tcell.Screen) *ui {
 	}
 
 	ui.wPx, ui.hPx, err = getTermPixels()
-   // TODO getting pixel size does not gurantee sixel support
+	// TODO getting pixel size does not gurantee sixel support
 	if err != nil {
 		ui.wPx, ui.hPx = -1, -1
 		log.Printf("getting terminal pixel size: %s", err)
@@ -1323,12 +1320,12 @@ func listMatchesMenu(ui *ui, matches []string) error {
 }
 
 func (ui *ui) showSixels() {
-   var buf strings.Builder
+	var buf strings.Builder
 	buf.WriteString("\0337")
 	for _, sixel := range ui.sixels {
 		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
-      buf.WriteString(sixel.str)
+		buf.WriteString(sixel.str)
 	}
 	buf.WriteString("\0338")
-   fmt.Print(buf.String())
+	fmt.Print(buf.String())
 }
