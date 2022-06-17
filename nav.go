@@ -712,35 +712,37 @@ func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win
 				return
 			}
 		}
-		if a := strings.Index(buf.Text(), gSixelBegin); a >= 0 {
-			if b := strings.IndexByte(buf.Text()[a+2:], gEscapeCode); b >= 0 {
-				if buf.Text()[a+b+1] == '\\' {
-					addSixel(screen, wPx, hPx, reg, buf.Text()[a:a+b+2], 2, win.y+len(reg.lines))
-					reg.lines = append(reg.lines, buf.Text()[:a], buf.Text()[a+b+2:])
-					continue
+		if wPx > 0 && hPx > 0 {
+			if a := strings.Index(buf.Text(), gSixelBegin); a >= 0 {
+				if b := strings.IndexByte(buf.Text()[a+2:], gEscapeCode); b >= 0 {
+					if buf.Text()[a+b+1] == '\\' {
+						addSixel(screen, wPx, hPx, reg, buf.Text()[a:a+b+2], 2, win.y+len(reg.lines))
+						reg.lines = append(reg.lines, buf.Text()[:a], buf.Text()[a+b+2:])
+						continue
+					} else {
+						reg.lines = append(reg.lines, buf.Text())
+						continue
+					}
 				} else {
-					reg.lines = append(reg.lines, buf.Text())
+					reg.lines = append(reg.lines, buf.Text()[:a] /*TODO skip empty line*/, buf.Text()[a:])
+					sixelFrom = len(reg.lines) - 1
 					continue
 				}
-			} else {
-				reg.lines = append(reg.lines, buf.Text()[:a] /*TODO skip empty line*/, buf.Text()[a:])
-				sixelFrom = len(reg.lines) - 1
-				continue
 			}
-		}
-		if sixelFrom != -1 {
-			if b := strings.IndexByte(buf.Text(), gEscapeCode); b >= 0 {
-				if buf.Text()[b+1] == '\\' {
-					reg.lines = append(reg.lines, buf.Text()[:b+2])
-					sx := strings.Join(reg.lines[sixelFrom:], "")
-					reg.lines = reg.lines[:sixelFrom]
-					addSixel(screen, wPx, hPx, reg, sx, 2, len(reg.lines))
+			if sixelFrom != -1 {
+				if b := strings.IndexByte(buf.Text(), gEscapeCode); b >= 0 {
+					if buf.Text()[b+1] == '\\' {
+						reg.lines = append(reg.lines, buf.Text()[:b+2])
+						sx := strings.Join(reg.lines[sixelFrom:], "")
+						reg.lines = reg.lines[:sixelFrom]
+						addSixel(screen, wPx, hPx, reg, sx, 2, len(reg.lines))
 
-					reg.lines = append(reg.lines, buf.Text()[b+2:])
-					sixelFrom = -1
-					continue
-				} else {
-					sixelFrom = -1
+						reg.lines = append(reg.lines, buf.Text()[b+2:])
+						sixelFrom = -1
+						continue
+					} else {
+						sixelFrom = -1
+					}
 				}
 			}
 		}
