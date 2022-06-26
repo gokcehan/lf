@@ -1667,9 +1667,12 @@ func (nav *nav) readTags() error {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		toks := strings.SplitN(scanner.Text(), ":", 2)
-		if _, ok := nav.tags[toks[0]]; !ok {
-			nav.tags[toks[0]] = toks[1]
+		text := scanner.Text()
+		ind := strings.LastIndex(text, ":")
+		path := text[0:ind]
+		mark := text[ind+1:]
+		if _, ok := nav.tags[path]; !ok {
+			nav.tags[path] = mark
 		}
 	}
 
