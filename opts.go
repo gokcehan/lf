@@ -28,6 +28,7 @@ type sortType struct {
 }
 
 var gOpts struct {
+	hasfocus       bool
 	anchorfind     bool
 	autoquit       bool
 	dircache       bool
@@ -79,6 +80,7 @@ var gOpts struct {
 }
 
 func init() {
+	gOpts.hasfocus = true
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
 	gOpts.dircache = true
@@ -126,6 +128,10 @@ func init() {
 	gOpts.tagfmt = "\033[31m%s\033[0m"
 
 	gOpts.keys = make(map[string]expr)
+
+	// focus event, sent by the terminal/tmux on focus change
+	gOpts.keys["<a-[>O"] = &callExpr{"focus-off", nil, 1}
+	gOpts.keys["<a-[>I"] = &callExpr{"focus-on", nil, 1}
 
 	gOpts.keys["k"] = &callExpr{"up", nil, 1}
 	gOpts.keys["<up>"] = &callExpr{"up", nil, 1}

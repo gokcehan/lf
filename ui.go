@@ -401,7 +401,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 			}
 		}
 
-		if i == dir.pos {
+		if i == dir.pos && gOpts.hasfocus {
 			st = st.Reverse(true)
 		}
 
@@ -452,7 +452,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		tag, ok := tags[path]
 		if ok {
-			if i == dir.pos {
+			if i == dir.pos && gOpts.hasfocus {
 				win.print(screen, lnwidth+1, i, st.Reverse(true), tag)
 			} else {
 				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))

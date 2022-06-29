@@ -800,6 +800,14 @@ func insert(app *app, arg string) {
 
 func (e *callExpr) eval(app *app, args []string) {
 	switch e.name {
+	case "focus-on":
+		gOpts.hasfocus = true
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
+	case "focus-off":
+		gOpts.hasfocus = false
+		app.ui.loadFile(app.nav, true)
+		app.ui.loadFileInfo(app.nav)
 	case "up":
 		if !app.nav.init {
 			return
