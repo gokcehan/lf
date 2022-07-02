@@ -303,15 +303,55 @@ var reNumber = regexp.MustCompile(`^[0-9]+`)
 
 // needs some testing
 func sixelDimPx(s string) (w int, h int) {
-	// TODO maybe take into account pixel aspect ratio (")
+	// TODO maybe take into account pixel aspect ratio
 	// TODO handle macro parameters P1 to P3
 	// `DCS P1;P2;P3;q...`
-	a := strings.Index(s, "q") + 1
-	if a == 0 {
-		//syntax error
+
+	// General sixel sequence:
+	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>];   <main_body> ST
+	// DCS is "ESC P"
+	// We are not interested in P1~P3
+	// the optional raster attributes may contain the image size in pixels
+	// ST is the terminating string "ESC \"
+	i := strings.Index(s, "q") + 1
+	if i == 0 {
+		// syntax error
+		return -1, -1
 	}
+
+	// Start of (optional) Raster Attributes
+	//    "	Pan	;	Pad;	Ph;	Pv
+	// pixel aspect ratio = Pan/Pad
+	// We are only interested in Ph and Pv (horizontal and vertical size in px)
+	if s[i] == '"' {
+		i++
+		b := strings.Index(s[i:], ";")
+		// pan := strconv.Atoi(s[a:b])
+		i += b + 1
+		b = strings.Index(s[i:], ";")
+		// pad := strconv.Atoi(s[a:b])
+
+		i += b + 1
+		b = strings.Index(s[i:], ";")
+		ph, err1 := strconv.Atoi(s[i : i+b])
+
+		i += b + 1
+		b = strings.Index(s[i:], ";")
+		pv, err2 := strconv.Atoi(s[i : i+b])
+
+		if err1 != nil || err2 != nil {
+			goto main_body // keep trying
+		}
+
+		// TODO
+		// ph and pv are more like suggestions, it's still possible to go over the
+		// reported size, so we might need to parse the entire main body anyway
+		return ph, pv
+	}
+
+main_body:
 	var wi int
-	for i := a; i < len(s)-2; i++ {
+	for ; i < len(s)-2; i++ {
 		c := s[i]
 		switch {
 		case '?' <= c && c <= '~':
@@ -327,9 +367,11 @@ func sixelDimPx(s string) (w int, h int) {
 			m := reNumber.FindString(s[i+1:])
 			if m == "" {
 				// syntax error
+				return -1, -1
 			}
 			if s[i+1+len(m)] < '?' || s[i+1+len(m)] > '~' {
 				// syntax error
+				return -1, -1
 			}
 			n, _ := strconv.Atoi(m)
 			wi += n - 1
@@ -338,7 +380,6 @@ func sixelDimPx(s string) (w int, h int) {
 	}
 	if s[len(s)-3] != '-' {
 		w = max(w, wi)
-		wi = 0
 		h++ // add newline on last row
 	}
 	return w, h * 6
