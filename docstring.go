@@ -161,6 +161,7 @@ The following options can be used to customize the behavior of lf:
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
+    user_{key}     string    (default none)
 
 The following environment variables are exported for shell commands:
 
@@ -176,6 +177,7 @@ The following environment variables are exported for shell commands:
     PAGER
     SHELL
     lf_{option}
+    lf_user_{key}
 
 The following special shell commands are used to customize the behavior of
 lf when defined:
@@ -847,6 +849,13 @@ Searching can wrap around the file list.
     wrapscroll     bool      (default off)
 
 Scrolling can wrap around the file list.
+
+    user_{key}     string    (default none)
+
+Any option that is prefixed with 'user_' is a user defined option and can be
+set to any string. Inside a user defined command the value will be provided
+in the 'lf_user_{key}' environment variable. These options are not used by
+lf and are not persisted.
 
 
 Environment Variables

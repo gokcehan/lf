@@ -72,6 +72,7 @@ var gOpts struct {
 	keys           map[string]expr
 	cmdkeys        map[string]expr
 	cmds           map[string]expr
+	user           map[string]string
 	sortType       sortType
 	tempmarks      string
 	tagfmt         string
@@ -231,6 +232,7 @@ func init() {
 	gOpts.cmdkeys["<a-t>"] = &callExpr{"cmd-transpose-word", nil, 1}
 
 	gOpts.cmds = make(map[string]expr)
+	gOpts.user = make(map[string]string)
 
 	setDefaults()
 }
