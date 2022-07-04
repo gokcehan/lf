@@ -754,10 +754,11 @@ value of this option is left empty.
 Format string of the prompt shown in the top line. Special expansions are
 provided, '%u' as the user name, '%h' as the host name, '%w' as the working
 directory, '%d' as the working directory with a trailing path separator,
-'%f' as the file name, and '%F' as the current filter. Home folder is shown
-as '~' in the working directory expansion. Directory names are automatically
-shortened to a single character starting from the left most parent when the
-prompt does not fit to the screen.
+'%f' as the file name, and '%F' as the current filter. '%S' may be used once
+and will provide a spacer so that the following parts are right aligned on
+the screen. Home folder is shown as '~' in the working directory expansion.
+Directory names are automatically shortened to a single character starting
+from the left most parent when the prompt does not fit to the screen.
 
     ratios         []int     (default '1:2:3')
 

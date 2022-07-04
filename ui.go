@@ -733,6 +733,13 @@ func (ui *ui) drawPromptLine(nav *nav) {
 		prompt = strings.Replace(prompt, "%F", "", -1)
 	}
 
+	// spacer
+	avail := ui.promptWin.w - printLength(prompt) + 2
+	if avail > 0 {
+		prompt = strings.Replace(prompt, "%S", strings.Repeat(" ", avail), 1)
+	}
+	prompt = strings.Replace(prompt, "%S", "", -1)
+
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
