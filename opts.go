@@ -67,6 +67,7 @@ var gOpts struct {
 	truncatechar   string
 	ratios         []int
 	hiddenfiles    []string
+	history        bool
 	info           []string
 	shellopts      []string
 	keys           map[string]expr
@@ -117,6 +118,7 @@ func init() {
 	gOpts.truncatechar = "~"
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = []string{".*"}
+	gOpts.history = true
 	gOpts.info = nil
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}

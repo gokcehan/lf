@@ -125,6 +125,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app.nav, true)
+	case "history":
+		gOpts.history = true
+	case "nohistory":
+		gOpts.history = false
+	case "history!":
+		gOpts.history = !gOpts.history
 	case "icons":
 		gOpts.icons = true
 	case "noicons":
