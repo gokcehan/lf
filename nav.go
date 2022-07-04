@@ -704,8 +704,11 @@ func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win
 
 	buf := bufio.NewScanner(reader)
 
-	sixelFrom := -1
-	for i := 0; (sixelFrom != -1 || len(reg.lines) < win.h) && buf.Scan(); i++ {
+	var sixelBuffer []string
+	processingSixel := false
+	for i := 0; (processingSixel || len(reg.lines) < win.h) && buf.Scan(); i++ {
+		text := buf.Text()
+
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
@@ -713,60 +716,74 @@ func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win
 			}
 		}
 		if wPx > 0 && hPx > 0 {
-			if a := strings.Index(buf.Text(), gSixelBegin); a >= 0 {
-				if b := strings.IndexByte(buf.Text()[a+2:], gEscapeCode); b >= 0 {
-					if buf.Text()[a+b+1] == '\\' {
-						addSixel(screen, wPx, hPx, reg, buf.Text()[a:a+b+2], 2, win.y+len(reg.lines))
-						reg.lines = append(reg.lines, buf.Text()[:a], buf.Text()[a+b+2:])
-						continue
-					} else {
-						reg.lines = append(reg.lines, buf.Text())
-						continue
-					}
-				} else {
-					reg.lines = append(reg.lines, buf.Text()[:a] /*TODO skip empty line*/, buf.Text()[a:])
-					sixelFrom = len(reg.lines) - 1
-					continue
-				}
+			if a := strings.Index(text, gSixelBegin); a >= 0 {
+				reg.lines = append(reg.lines, text[:a])
+				text = text[a:]
+				processingSixel = true
 			}
-			if sixelFrom != -1 {
-				if b := strings.IndexByte(buf.Text(), gEscapeCode); b >= 0 {
-					if buf.Text()[b+1] == '\\' {
-						reg.lines = append(reg.lines, buf.Text()[:b+2])
-						sx := strings.Join(reg.lines[sixelFrom:], "")
-						reg.lines = reg.lines[:sixelFrom]
-						addSixel(screen, wPx, hPx, reg, sx, 2, len(reg.lines))
 
-						reg.lines = append(reg.lines, buf.Text()[b+2:])
-						sixelFrom = -1
+			if processingSixel {
+				var lookFrom int
+				if text[:2] == gSixelBegin {
+					lookFrom = 2
+				}
+				if b := strings.IndexByte(text[lookFrom:], gEscapeCode); b >= 0 {
+					b += lookFrom
+					if len(text) > b && text[b+1] == '\\' {
+						sixelBuffer = append(sixelBuffer, text[:b+2])
+						sx := strings.Join(sixelBuffer, "")
+
+						xoff := runeSliceWidth([]rune(reg.lines[len(reg.lines)-1])) + 2
+						yoff := len(reg.lines) - 1
+						Wc, Hc := screen.Size()
+						w, h := sixelDimPx(sx)
+						if w < 0 || h < 0 {
+							goto discard_sixel
+						}
+						wc, hc := pxToCells(w, h, Wc, Hc, wPx, hPx)
+
+						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
+						fill := strings.Repeat("\u2800", wc)
+						paddedfill := strings.Repeat(" ", xoff) + fill
+						reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
+						for j := 1; j < hc; j++ {
+							reg.lines = append(reg.lines, paddedfill)
+						}
+
+						reg.lines = append(reg.lines, text[b+2:])
+						processingSixel = false
 						continue
-					} else {
-						sixelFrom = -1
+					} else { // deal with unexpected control sequence
+						goto discard_sixel
 					}
 				}
+				sixelBuffer = append(sixelBuffer, text)
+				continue
+
+			discard_sixel:
+				emptyLines := win.h - len(reg.lines)
+				reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
+				if emptyLines > 0 {
+					reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
+				}
+				reg.lines = append(reg.lines, text)
+				processingSixel = false
+				continue
 			}
 		}
-		reg.lines = append(reg.lines, buf.Text())
+		reg.lines = append(reg.lines, text)
 	}
 
-	if len(reg.lines) > win.h {
-		reg.lines = reg.lines[:win.h]
+	if processingSixel && len(sixelBuffer) > 0 {
+		emptyLines := win.h - len(reg.lines)
+		reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
+		if emptyLines > 0 {
+			reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
+		}
 	}
 
 	if buf.Err() != nil {
 		log.Printf("loading file: %s", buf.Err())
-	}
-}
-
-func addSixel(screen tcell.Screen, wPx, hPx int, reg *reg, sx string, x, y int) {
-	Wc, Hc := screen.Size()
-	w, h := sixelDimPx(sx)
-	wc, hc := pxToCells(w, h, Wc, Hc, wPx, hPx)
-
-	reg.sixels = append(reg.sixels, sixel{x, y, w, h, sx})
-	fill := strings.Repeat("\u2800", wc)
-	for j := 0; j < hc; j++ {
-		reg.lines = append(reg.lines, fill)
 	}
 }
 
