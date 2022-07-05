@@ -1068,18 +1068,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
 
-				if e, ok := expr.(*callExpr); ok {
+				if e, ok := expr.(*callExpr); ok && count != 0 {
 					expr = &callExpr{e.name, e.args, e.count}
-
-					if count != 0 {
-						expr.(*callExpr).count = count
-					}
-				} else if e, ok := expr.(*listExpr); ok {
+					expr.(*callExpr).count = count
+				} else if e, ok := expr.(*listExpr); ok && count != 0 {
 					expr = &listExpr{e.exprs, e.count}
-
-					if count != 0 {
-						expr.(*listExpr).count = count
-					}
+					expr.(*listExpr).count = count
 				}
 
 				ui.keyAcc = nil
