@@ -938,7 +938,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if len(ui.sixels) > 0 {
+	if ui.menuBuf == nil && len(ui.sixels) > 0 {
 		ui.showSixels()
 	}
 
