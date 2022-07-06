@@ -304,8 +304,6 @@ var reNumber = regexp.MustCompile(`^[0-9]+`)
 // needs some testing
 func sixelDimPx(s string) (w int, h int) {
 	// TODO maybe take into account pixel aspect ratio
-	// TODO handle macro parameters P1 to P3
-	// `DCS P1;P2;P3;q...`
 
 	// General sixel sequence:
 	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>];   <main_body> ST
@@ -336,8 +334,9 @@ func sixelDimPx(s string) (w int, h int) {
 		ph, err1 := strconv.Atoi(s[i : i+b])
 
 		i += b + 1
-		b = strings.Index(s[i:], ";")
-		pv, err2 := strconv.Atoi(s[i : i+b])
+		n := reNumber.FindString(s[i:]) // use stirngs.Index(s[i:], "#") instead?
+		pv, err2 := strconv.Atoi(n)
+		i += len(n)
 
 		if err1 != nil || err2 != nil {
 			goto main_body // keep trying
