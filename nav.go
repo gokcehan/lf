@@ -24,6 +24,10 @@ const (
 	gSixelTerminate = "\033\\"
 )
 
+var (
+	gSixelFiller = '.'
+)
+
 type linkState byte
 
 const (
@@ -629,7 +633,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, ui.screen, ui.wPx, ui.hPx, win)
+			nav.preview(path, ui.screen, ui.sxScreen, win)
 			prev = path
 		}
 	}
@@ -650,7 +654,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win) {
+func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -715,7 +719,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win
 				return
 			}
 		}
-		if wPx > 0 && hPx > 0 {
+		if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
 			if a := strings.Index(text, gSixelBegin); a >= 0 {
 				reg.lines = append(reg.lines, text[:a])
 				text = text[a:]
@@ -740,7 +744,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, wPx, hPx int, win *win
 						if w < 0 || h < 0 {
 							goto discard_sixel
 						}
-						wc, hc := pxToCells(w, h, Wc, Hc, wPx, hPx)
+						wc, hc := pxToCells(w, h, Wc, Hc, sxScreen.wpx, sxScreen.hpx)
 
 						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
 						fill := strings.Repeat("\u2800", wc)

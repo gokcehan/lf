@@ -1197,9 +1197,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		var err error
-		app.ui.wPx, app.ui.hPx, err = getTermPixels()
+		app.ui.sxScreen.wpx, app.ui.sxScreen.hpx, err = getTermPixels()
 		if err != nil {
-			app.ui.wPx, app.ui.hPx = -1, -1
+			app.ui.sxScreen.wpx, app.ui.sxScreen.hpx = -1, -1
 			log.Printf("getting terminal pixel size: %s", err)
 		}
 		app.ui.renew()

@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
+func (win *win) printReg(screen tcell.Screen, sxs *sixelScreen, reg *reg) {
 	if reg == nil {
 		return
 	}
@@ -277,7 +277,7 @@ func (win *win) printReg(screen tcell.Screen, sixels *[]sixel, reg *reg) {
 		s := sx
 		s.x += win.x
 		s.y += win.y
-		*sixels = append(*sixels, s)
+		sxs.sx = append(sxs.sx, s)
 	}
 }
 
@@ -473,10 +473,16 @@ type sixel struct {
 	str            string
 }
 
+type sixelScreen struct {
+	wpx, hpx int
+	sx       []sixel
+	lastFile string
+	altFill  bool
+}
+
 type ui struct {
 	screen       tcell.Screen
-	sixels       []sixel
-	wPx, hPx     int
+	sxScreen     sixelScreen
 	polling      bool
 	wins         []*win
 	promptWin    *win
@@ -566,10 +572,10 @@ func newUI(screen tcell.Screen) *ui {
 		menuSelected: -2,
 	}
 
-	ui.wPx, ui.hPx, err = getTermPixels()
+	ui.sxScreen.wpx, ui.sxScreen.hpx, err = getTermPixels()
 	// TODO getting pixel size does not gurantee sixel support
 	if err != nil {
-		ui.wPx, ui.hPx = -1, -1
+		ui.sxScreen.wpx, ui.sxScreen.hpx = -1, -1
 		log.Printf("getting terminal pixel size: %s", err)
 	}
 
@@ -858,7 +864,7 @@ func (ui *ui) draw(nav *nav) {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
-	ui.sixels = nil
+	ui.sxScreen.clear()
 
 	ui.drawPromptLine(nav)
 
@@ -908,7 +914,7 @@ func (ui *ui) draw(nav *nav) {
 			if curr.IsDir() {
 				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, &ui.sixels, ui.regPrev)
+				preview.printReg(ui.screen, &ui.sxScreen, ui.regPrev)
 			}
 		}
 	}
@@ -938,7 +944,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && len(ui.sixels) > 0 {
+	if ui.menuBuf == nil && len(ui.sxScreen.sx) > 0 {
 		ui.showSixels()
 	}
 
@@ -1319,10 +1325,14 @@ func listMatchesMenu(ui *ui, matches []string) error {
 	return nil
 }
 
+func (sxs *sixelScreen) clear() {
+	sxs.sx = nil
+}
+
 func (ui *ui) showSixels() {
 	var buf strings.Builder
 	buf.WriteString("\0337")
-	for _, sixel := range ui.sixels {
+	for _, sixel := range ui.sxScreen.sx {
 		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
 		buf.WriteString(sixel.str)
 	}
