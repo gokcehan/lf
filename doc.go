@@ -124,6 +124,7 @@ The following options can be used to customize the behavior of lf:
     globsearch     bool      (default off)
     hidden         bool      (default off)
     hiddenfiles    []string  (default '.*')
+    history        bool      (default on)
     icons          bool      (default off)
     ifs            string    (default '')
     ignorecase     bool      (default on)

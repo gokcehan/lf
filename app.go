@@ -59,8 +59,10 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
-	if err := app.writeHistory(); err != nil {
-		log.Printf("writing history file: %s", err)
+	if gOpts.history {
+		if err := app.writeHistory(); err != nil {
+			log.Printf("writing history file: %s", err)
+		}
 	}
 	if !gSingleMode {
 		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
