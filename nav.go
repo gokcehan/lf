@@ -765,7 +765,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, 
 				continue
 
 			discard_sixel:
-				emptyLines := win.h - len(reg.lines)
+				emptyLines := min(win.h-len(reg.lines), len(sixelBuffer)-1)
 				reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
 				if emptyLines > 0 {
 					reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
@@ -779,7 +779,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, 
 	}
 
 	if processingSixel && len(sixelBuffer) > 0 {
-		emptyLines := win.h - len(reg.lines)
+		emptyLines := min(win.h-len(reg.lines), len(sixelBuffer)-1)
 		reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
 		if emptyLines > 0 {
 			reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
