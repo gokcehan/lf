@@ -1329,6 +1329,8 @@ func (sxs *sixelScreen) clear() {
 	sxs.sx = nil
 }
 
+// fillers are used to control when tcell redraws the region where a sixel image is drawn.
+// alternating between bold("ESC [1m") and regular is to clear the image before drawing a new one.
 func (sxs *sixelScreen) filler(path string, l int) (fill string) {
 	if path != sxs.lastFile {
 		sxs.altFill = !sxs.altFill
