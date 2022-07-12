@@ -633,7 +633,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, ui.screen, ui.sxScreen, win)
+			nav.preview(path, ui.screen, &ui.sxScreen, win)
 			prev = path
 		}
 	}
@@ -654,7 +654,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, win *win) {
+func (nav *nav) preview(path string, screen tcell.Screen, sxScreen *sixelScreen, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -747,7 +747,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, 
 						wc, hc := pxToCells(w, h, Wc, Hc, sxScreen.wpx, sxScreen.hpx)
 
 						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
-						fill := strings.Repeat("\u2800", wc)
+						fill := sxScreen.filler(path, wc)
 						paddedfill := strings.Repeat(" ", xoff) + fill
 						reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
 						for j := 1; j < hc; j++ {

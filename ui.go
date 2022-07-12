@@ -1329,6 +1329,23 @@ func (sxs *sixelScreen) clear() {
 	sxs.sx = nil
 }
 
+func (sxs *sixelScreen) filler(path string, l int) (fill string) {
+	if path != sxs.lastFile {
+		sxs.altFill = !sxs.altFill
+		sxs.lastFile = path
+	}
+
+	if sxs.altFill {
+		fill = "\033[1m"
+		defer func() {
+			fill += "\033[0m"
+		}()
+	}
+
+	fill += strings.Repeat(string(gSixelFiller), l)
+	return
+}
+
 func (ui *ui) showSixels() {
 	var buf strings.Builder
 	buf.WriteString("\0337")
