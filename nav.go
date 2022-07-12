@@ -720,7 +720,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen sixelScreen, 
 			}
 		}
 		if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
-			if a := strings.Index(text, gSixelBegin); a >= 0 {
+			if a := strings.Index(text, gSixelBegin); !processingSixel && a >= 0 {
 				reg.lines = append(reg.lines, text[:a])
 				text = text[a:]
 				processingSixel = true
