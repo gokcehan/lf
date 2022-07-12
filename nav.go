@@ -748,7 +748,7 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen *sixelScreen,
 
 						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
 						fill := sxScreen.filler(path, wc)
-						paddedfill := strings.Repeat(" ", xoff) + fill
+						paddedfill := strings.Repeat(" ", xoff-2) + fill
 						reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
 						for j := 1; j < hc; j++ {
 							reg.lines = append(reg.lines, paddedfill)
