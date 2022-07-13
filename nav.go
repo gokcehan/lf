@@ -25,7 +25,7 @@ const (
 )
 
 var (
-	gSixelFiller = '.'
+	gSixelFiller = '\u2800'
 )
 
 type linkState byte
