@@ -739,10 +739,12 @@ func (nav *nav) preview(path string, screen tcell.Screen, sxScreen *sixelScreen,
 
 						xoff := runeSliceWidth([]rune(reg.lines[len(reg.lines)-1])) + 2
 						yoff := len(reg.lines) - 1
+						maxh := (win.h - yoff) * sxScreen.fonth
 						w, h := sixelDimPx(sx)
 						if w < 0 || h < 0 {
 							goto discard_sixel
 						}
+						sx, h = trimSixelHeight(sx, maxh)
 						wc, hc := sxScreen.pxToCells(w, h)
 
 						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})

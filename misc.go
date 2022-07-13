@@ -384,10 +384,57 @@ main_body:
 	return w, h * 6
 }
 
-func pxToCells(x, y, wc, hc, wpx, hpx int) (int, int) {
-	var fw int = wpx / wc
-	var fh int = hpx / hc
-	return x/fw + 1, y/fh + 1 // TODO should probably use ceiling instead of +1
+// maybe merge with sixelDimPx()
+func trimSixelHeight(s string, maxh int) (string, int) {
+	var h int
+	maxh = maxh - (maxh % 6)
+
+	i := strings.Index(s, "q") + 1
+	if i == 0 {
+		// syntax error
+		return "", -1
+	}
+
+	if s[i] == '"' {
+		i++
+		for j := 0; j < 3; j++ {
+			b := strings.Index(s[i:], ";")
+			i += b + 1
+		}
+		b := strings.Index(s[i:], "#")
+		pv, err := strconv.Atoi(s[i : i+b])
+
+		if err == nil && pv > maxh {
+			mh := strconv.Itoa(maxh)
+			s = s[:i] + mh + s[i+b:]
+			i += len(mh)
+		} else {
+			i += b
+		}
+	}
+
+	for h < maxh {
+		k := strings.IndexRune(s[i+1:], '-')
+		if k == -1 {
+			if s[len(s)-3] != '-' {
+				h += 6
+				i = len(s) - 3
+			}
+			break
+		}
+		i += k + 1
+		h += 6
+	}
+
+	if i == 0 {
+		return s, 6
+	}
+
+	if len(s) > i+3 {
+		return s[:i+1] + "\x1b\\", h
+	}
+
+	return s, h
 }
 
 // We don't need no generic code
