@@ -334,9 +334,9 @@ func sixelDimPx(s string) (w int, h int) {
 		ph, err1 := strconv.Atoi(s[i : i+b])
 
 		i += b + 1
-		n := reNumber.FindString(s[i:]) // use stirngs.Index(s[i:], "#") instead?
-		pv, err2 := strconv.Atoi(n)
-		i += len(n)
+		b = strings.Index(s[i:], "#")
+		pv, err2 := strconv.Atoi(s[i : i+b])
+		i += b
 
 		if err1 != nil || err2 != nil {
 			goto main_body // keep trying
