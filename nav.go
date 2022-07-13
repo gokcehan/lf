@@ -15,7 +15,6 @@ import (
 	"strings"
 	"time"
 
-	"github.com/gdamore/tcell/v2"
 	times "gopkg.in/djherbis/times.v1"
 )
 
@@ -633,7 +632,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, ui.screen, &ui.sxScreen, win)
+			nav.preview(path, &ui.sxScreen, win)
 			prev = path
 		}
 	}
@@ -654,7 +653,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, screen tcell.Screen, sxScreen *sixelScreen, win *win) {
+func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
