@@ -939,7 +939,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && len(ui.sxScreen.sx) > 0 {
+	if ui.menuBuf == nil && ui.cmdPrefix == "" && len(ui.sxScreen.sx) > 0 {
 		ui.showSixels()
 	}
 
