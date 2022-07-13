@@ -474,10 +474,11 @@ type sixel struct {
 }
 
 type sixelScreen struct {
-	wpx, hpx int
-	sx       []sixel
-	lastFile string
-	altFill  bool
+	wpx, hpx     int
+	fontw, fonth int
+	sx           []sixel
+	lastFile     string
+	altFill      bool
 }
 
 type ui struct {
@@ -553,7 +554,6 @@ func getWins(screen tcell.Screen) []*win {
 }
 
 func newUI(screen tcell.Screen) *ui {
-	var err error
 	wtot, htot := screen.Size()
 
 	ui := &ui{
@@ -572,12 +572,7 @@ func newUI(screen tcell.Screen) *ui {
 		menuSelected: -2,
 	}
 
-	ui.sxScreen.wpx, ui.sxScreen.hpx, err = getTermPixels()
-	// TODO getting pixel size does not gurantee sixel support
-	if err != nil {
-		ui.sxScreen.wpx, ui.sxScreen.hpx = -1, -1
-		log.Printf("getting terminal pixel size: %s", err)
-	}
+	ui.sxScreen.updateSizes(screen.Size())
 
 	go ui.pollEvents()
 
@@ -1346,6 +1341,22 @@ func (sxs *sixelScreen) filler(path string, l int) (fill string) {
 
 	fill += strings.Repeat(string(gSixelFiller), l)
 	return
+}
+
+func (sxs *sixelScreen) updateSizes(wc, hc int) {
+	var err error
+	sxs.wpx, sxs.hpx, err = getTermPixels()
+	if err != nil {
+		sxs.wpx, sxs.hpx = -1, -1
+		log.Printf("getting terminal pixel size: %s", err)
+	}
+
+	sxs.fontw = sxs.wpx / wc
+	sxs.fonth = sxs.hpx / hc
+}
+
+func (xsx *sixelScreen) pxToCells(x, y int) (int, int) {
+	return x/xsx.fontw + 1, y/xsx.fonth + 1
 }
 
 func (ui *ui) showSixels() {

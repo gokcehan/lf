@@ -1196,12 +1196,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		var err error
-		app.ui.sxScreen.wpx, app.ui.sxScreen.hpx, err = getTermPixels()
-		if err != nil {
-			app.ui.sxScreen.wpx, app.ui.sxScreen.hpx = -1, -1
-			log.Printf("getting terminal pixel size: %s", err)
-		}
+		app.ui.sxScreen.updateSizes(app.ui.screen.Size())
 		app.ui.renew()
 		app.ui.screen.Sync()
 		if app.nav.height != app.ui.wins[0].h {
