@@ -1,4 +1,6 @@
-# LF
+# LF-sixel
+
+This is a fork of [lf](https://github.com/gokcehan/lf) with support for [sixel](https://wikipedia.org/wiki/Sixel) graphics.
 
 [Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
@@ -34,22 +36,24 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ## Installation
 
-See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
+*This fork does not have pre-built binaries or packages at the moment, please follow the instructions below to build from source*
 
-See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
+<!-- See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages. -->
+
+<!-- See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries. -->
 
 Building from the source requires [Go](https://go.dev/).
 
 On Unix (Go version < 1.17):
 
 ```bash
-env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/gokcehan/lf
+env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/horriblename/lf
 ```
 
 On Unix (Go version >= 1.17):
 
 ```bash
-env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/horriblename/lf@latest
 ```
 
 On Windows `cmd` (Go version < 1.17):
@@ -57,14 +61,14 @@ On Windows `cmd` (Go version < 1.17):
 ```cmd
 set CGO_ENABLED=0
 set GO111MODULE=on
-go get -u -ldflags="-s -w" github.com/gokcehan/lf
+go get -u -ldflags="-s -w" github.com/horriblename/lf
 ```
 
 On Windows `cmd` (Go version >= 1.17):
 
 ```cmd
 set CGO_ENABLED=0
-go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+go install -ldflags="-s -w" github.com/horriblename/lf@latest
 ```
 
 On Windows `powershell` (Go version < 1.17):
@@ -72,14 +76,14 @@ On Windows `powershell` (Go version < 1.17):
 ```powershell
 $env:CGO_ENABLED = '0'
 $env:GO111MODULE = 'on'
-go get -u -ldflags="-s -w" github.com/gokcehan/lf
+go get -u -ldflags="-s -w" github.com/horriblename/lf
 ```
 
 On Windows `powershell` (Go version >= 1.17):
 
 ```powershell
 $env:CGO_ENABLED = '0'
-go install -ldflags="-s -w" github.com/gokcehan/lf@latest
+go install -ldflags="-s -w" github.com/horriblename/lf@latest
 ```
 
 ## Usage
