@@ -225,3 +225,12 @@ func errCrossDevice(err error) bool {
 func quoteString(s string) string {
 	return s
 }
+
+func getTermPixels() (w, h int, err error) {
+	fd := int(os.Stdin.Fd())
+	ws, err := unix.IoctlGetWinsize(fd, unix.TIOCGWINSZ)
+	if err != nil {
+		return -1, -1, err
+	}
+	return int(ws.Xpixel), int(ws.Ypixel), nil
+}

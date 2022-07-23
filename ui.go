@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
 	if reg == nil {
 		return
 	}
@@ -273,6 +273,13 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool) {
 		}
 
 		st = win.print(screen, 2, i, st, l)
+	}
+
+	for _, sx := range reg.sixels {
+		s := sx
+		s.x += win.x
+		s.y += win.y
+		sxs.sx = append(sxs.sx, s)
 	}
 }
 
@@ -556,8 +563,22 @@ func getWins(screen tcell.Screen) []*win {
 	return wins
 }
 
+type sixel struct {
+	x, y, wPx, hPx int
+	str            string
+}
+
+type sixelScreen struct {
+	wpx, hpx     int
+	fontw, fonth int
+	sx           []sixel
+	lastFile     string
+	altFill      bool
+}
+
 type ui struct {
 	screen      tcell.Screen
+	sxScreen    sixelScreen
 	polling     bool
 	wins        []*win
 	promptWin   *win
@@ -601,6 +622,8 @@ func newUI(screen tcell.Screen) *ui {
 		icons:       parseIcons(),
 		currentFile: "",
 	}
+
+	ui.sxScreen.updateSizes(screen.Size())
 
 	go ui.pollEvents()
 
@@ -679,6 +702,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
+	sixels   []sixel
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
@@ -955,6 +979,7 @@ func (ui *ui) draw(nav *nav) {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
+	ui.sxScreen.clear()
 
 	ui.drawPromptLine(nav)
 
@@ -1003,7 +1028,7 @@ func (ui *ui) draw(nav *nav) {
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
 					nav.previewLoading)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading)
+				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			}
 		}
 	}
@@ -1033,6 +1058,10 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
+	if ui.menuBuf == nil && ui.cmdPrefix == "" && len(ui.sxScreen.sx) > 0 {
+		ui.showSixels()
+	}
+
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
@@ -1473,4 +1502,54 @@ func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.
 	}
 
 	return b
+}
+
+func (sxs *sixelScreen) clear() {
+	sxs.sx = nil
+}
+
+// fillers are used to control when tcell redraws the region where a sixel image is drawn.
+// alternating between bold("ESC [1m") and regular is to clear the image before drawing a new one.
+func (sxs *sixelScreen) filler(path string, l int) (fill string) {
+	if path != sxs.lastFile {
+		sxs.altFill = !sxs.altFill
+		sxs.lastFile = path
+	}
+
+	if sxs.altFill {
+		fill = "\033[1m"
+		defer func() {
+			fill += "\033[0m"
+		}()
+	}
+
+	fill += strings.Repeat(string(gSixelFiller), l)
+	return
+}
+
+func (sxs *sixelScreen) updateSizes(wc, hc int) {
+	var err error
+	sxs.wpx, sxs.hpx, err = getTermPixels()
+	if err != nil {
+		sxs.wpx, sxs.hpx = -1, -1
+		log.Printf("getting terminal pixel size: %s", err)
+	}
+
+	sxs.fontw = sxs.wpx / wc
+	sxs.fonth = sxs.hpx / hc
+}
+
+func (xsx *sixelScreen) pxToCells(x, y int) (int, int) {
+	return x/xsx.fontw + 1, y/xsx.fonth + 1
+}
+
+func (ui *ui) showSixels() {
+	var buf strings.Builder
+	buf.WriteString("\0337")
+	for _, sixel := range ui.sxScreen.sx {
+		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
+		buf.WriteString(sixel.str)
+	}
+	buf.WriteString("\0338")
+	fmt.Print(buf.String())
 }

@@ -311,6 +311,148 @@ func max(a, b int) int {
 	return b
 }
 
+func mod(a, b int) int {
+	return (a%b + b) % b
+}
+
+var reNumber = regexp.MustCompile(`^[0-9]+`)
+
+// needs some testing
+func sixelDimPx(s string) (w int, h int) {
+	// TODO maybe take into account pixel aspect ratio
+
+	// General sixel sequence:
+	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>];   <main_body> ST
+	// DCS is "ESC P"
+	// We are not interested in P1~P3
+	// the optional raster attributes may contain the image size in pixels
+	// ST is the terminating string "ESC \"
+	i := strings.Index(s, "q") + 1
+	if i == 0 {
+		// syntax error
+		return -1, -1
+	}
+
+	// Start of (optional) Raster Attributes
+	//    "	Pan	;	Pad;	Ph;	Pv
+	// pixel aspect ratio = Pan/Pad
+	// We are only interested in Ph and Pv (horizontal and vertical size in px)
+	if s[i] == '"' {
+		i++
+		b := strings.Index(s[i:], ";")
+		// pan := strconv.Atoi(s[a:b])
+		i += b + 1
+		b = strings.Index(s[i:], ";")
+		// pad := strconv.Atoi(s[a:b])
+
+		i += b + 1
+		b = strings.Index(s[i:], ";")
+		ph, err1 := strconv.Atoi(s[i : i+b])
+
+		i += b + 1
+		b = strings.Index(s[i:], "#")
+		pv, err2 := strconv.Atoi(s[i : i+b])
+		i += b
+
+		if err1 != nil || err2 != nil {
+			goto main_body // keep trying
+		}
+
+		// TODO
+		// ph and pv are more like suggestions, it's still possible to go over the
+		// reported size, so we might need to parse the entire main body anyway
+		return ph, pv
+	}
+
+main_body:
+	var wi int
+	for ; i < len(s)-2; i++ {
+		c := s[i]
+		switch {
+		case '?' <= c && c <= '~':
+			wi++
+		case c == '-':
+			w = max(w, wi)
+			wi = 0
+			h++
+		case c == '$':
+			w = max(w, wi)
+			wi = 0
+		case c == '!':
+			m := reNumber.FindString(s[i+1:])
+			if m == "" {
+				// syntax error
+				return -1, -1
+			}
+			if s[i+1+len(m)] < '?' || s[i+1+len(m)] > '~' {
+				// syntax error
+				return -1, -1
+			}
+			n, _ := strconv.Atoi(m)
+			wi += n - 1
+		default:
+		}
+	}
+	if s[len(s)-3] != '-' {
+		w = max(w, wi)
+		h++ // add newline on last row
+	}
+	return w, h * 6
+}
+
+// maybe merge with sixelDimPx()
+func trimSixelHeight(s string, maxh int) (string, int) {
+	var h int
+	maxh = maxh - (maxh % 6)
+
+	i := strings.Index(s, "q") + 1
+	if i == 0 {
+		// syntax error
+		return "", -1
+	}
+
+	if s[i] == '"' {
+		i++
+		for j := 0; j < 3; j++ {
+			b := strings.Index(s[i:], ";")
+			i += b + 1
+		}
+		b := strings.Index(s[i:], "#")
+		pv, err := strconv.Atoi(s[i : i+b])
+
+		if err == nil && pv > maxh {
+			mh := strconv.Itoa(maxh)
+			s = s[:i] + mh + s[i+b:]
+			i += len(mh)
+		} else {
+			i += b
+		}
+	}
+
+	for h < maxh {
+		k := strings.IndexRune(s[i+1:], '-')
+		if k == -1 {
+			if s[len(s)-3] != '-' {
+				h += 6
+				i = len(s) - 3
+			}
+			break
+		}
+		i += k + 1
+		h += 6
+	}
+
+	if i == 0 {
+		return s, 6
+	}
+
+	if len(s) > i+3 {
+		return s[:i+1] + "\x1b\\", h
+	}
+
+	return s, h
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
