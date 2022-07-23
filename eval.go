@@ -1202,6 +1202,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
+		app.ui.sxScreen.updateSizes(app.ui.screen.Size())
 		app.ui.renew()
 		app.ui.screen.Sync()
 		if app.nav.height != app.ui.wins[0].h {

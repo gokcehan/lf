@@ -18,6 +18,15 @@ import (
 	times "gopkg.in/djherbis/times.v1"
 )
 
+const (
+	gSixelBegin     = "\033P"
+	gSixelTerminate = "\033\\"
+)
+
+var (
+	gSixelFiller = '\u2800'
+)
+
 type linkState byte
 
 const (
@@ -623,7 +632,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		if len(path) != 0 {
 			win := ui.wins[len(ui.wins)-1]
-			nav.preview(path, win)
+			nav.preview(path, &ui.sxScreen, win)
 			prev = path
 		}
 	}
@@ -644,7 +653,7 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, win *win) {
+func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -698,14 +707,83 @@ func (nav *nav) preview(path string, win *win) {
 
 	buf := bufio.NewScanner(reader)
 
-	for i := 0; i < win.h && buf.Scan(); i++ {
+	var sixelBuffer []string
+	processingSixel := false
+	for i := 0; (processingSixel || len(reg.lines) < win.h) && buf.Scan(); i++ {
+		text := buf.Text()
+
 		for _, r := range buf.Text() {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
 				return
 			}
 		}
-		reg.lines = append(reg.lines, buf.Text())
+		if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+			if a := strings.Index(text, gSixelBegin); !processingSixel && a >= 0 {
+				reg.lines = append(reg.lines, text[:a])
+				text = text[a:]
+				processingSixel = true
+			}
+
+			if processingSixel {
+				var lookFrom int
+				if text[:2] == gSixelBegin {
+					lookFrom = 2
+				}
+				if b := strings.IndexByte(text[lookFrom:], gEscapeCode); b >= 0 {
+					b += lookFrom
+					if len(text) > b && text[b+1] == '\\' {
+						sixelBuffer = append(sixelBuffer, text[:b+2])
+						sx := strings.Join(sixelBuffer, "")
+
+						xoff := runeSliceWidth([]rune(reg.lines[len(reg.lines)-1])) + 2
+						yoff := len(reg.lines) - 1
+						maxh := (win.h - yoff) * sxScreen.fonth
+						w, h := sixelDimPx(sx)
+						if w < 0 || h < 0 {
+							goto discard_sixel
+						}
+						sx, h = trimSixelHeight(sx, maxh)
+						wc, hc := sxScreen.pxToCells(w, h)
+
+						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
+						fill := sxScreen.filler(path, wc)
+						paddedfill := strings.Repeat(" ", xoff-2) + fill
+						reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
+						for j := 1; j < hc; j++ {
+							reg.lines = append(reg.lines, paddedfill)
+						}
+
+						reg.lines = append(reg.lines, text[b+2:])
+						processingSixel = false
+						continue
+					} else { // deal with unexpected control sequence
+						goto discard_sixel
+					}
+				}
+				sixelBuffer = append(sixelBuffer, text)
+				continue
+
+			discard_sixel:
+				emptyLines := min(win.h-len(reg.lines), len(sixelBuffer)-1)
+				reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
+				if emptyLines > 0 {
+					reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
+				}
+				reg.lines = append(reg.lines, text)
+				processingSixel = false
+				continue
+			}
+		}
+		reg.lines = append(reg.lines, text)
+	}
+
+	if processingSixel && len(sixelBuffer) > 0 {
+		emptyLines := min(win.h-len(reg.lines), len(sixelBuffer)-1)
+		reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + sixelBuffer[0]
+		if emptyLines > 0 {
+			reg.lines = append(reg.lines, sixelBuffer[1:emptyLines+1]...)
+		}
 	}
 
 	if buf.Err() != nil {

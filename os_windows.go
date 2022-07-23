@@ -181,3 +181,7 @@ func exportFiles(f string, fs []string, pwd string) {
 		os.Setenv("fx", envFiles)
 	}
 }
+
+func getTermPixels() (w, h int, err error) {
+	return -1, -1, nil
+}
