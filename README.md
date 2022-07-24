@@ -2,6 +2,8 @@
 
 This is a fork of [lf](https://github.com/gokcehan/lf) with support for [sixel](https://wikipedia.org/wiki/Sixel) graphics.
 
+Sixel support requires a sixel-capable terminal and is only available on Unix systems (only tested on Linux but BSD distributions and MacOS should work).
+
 [Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
 | [#lf](https://web.libera.chat/#lf) (on Libera.Chat)
