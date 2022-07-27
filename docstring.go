@@ -995,10 +995,11 @@ command, custom command, or shell command:
     map i $less $f     # shell command
     map U !du -csh *   # waiting shell command
 
-Command 'cmap' is used to bind a key to a command line command which can
-only be one of the builtin commands:
+Command 'cmap' is used to bind a key on the command line to a command line
+command or any other command:
 
     cmap <c-g> cmd-escape
+    cmap <a-i> set incsearch!
 
 You can delete an existing binding by leaving the expression empty:
 
