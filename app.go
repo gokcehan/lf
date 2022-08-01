@@ -448,35 +448,34 @@ func (app *app) loop() {
 				}
 			}
 			app.ui.draw(app.nav)
-			if app.ui.waitOnce {
-				log.Println("need wait", app.ui.waitOnce)
-				waitChan := time.After(500 * time.Millisecond)
-			startwait:
-				select {
-				case <-waitChan:
-					log.Println("wait timeout", app.ui.tempExpr)
-					if app.ui.tempExpr != nil {
-						app.ui.tempExpr.eval(app, nil)
-					}
-					goto endwait
-				case ev := <-app.ui.evChan:
-					e := app.ui.readEvent(ev)
-					log.Println("wait and got new expr", e)
-					if e == nil {
-						continue
-					}
-					e.eval(app, nil)
-					app.ui.draw(app.nav)
-					if app.ui.waitOnce {
-						waitChan = time.After(500 * time.Millisecond)
-						goto startwait
-					}
-				}
-			endwait:
+			if !app.ui.waitOnce {
+				continue
 			}
+			log.Println("several keys matched, waiting for more")
+			waitChan := time.After(100 * time.Millisecond)
+		startwait:
+			select {
+			case <-waitChan:
+				if app.ui.tempExpr != nil {
+					app.ui.tempExpr.eval(app, nil)
+				}
+				goto endwait
+			case ev := <-app.ui.evChan:
+				e := app.ui.readEvent(ev)
+				if e == nil {
+					continue
+				}
+				e.eval(app, nil)
+				if app.ui.waitOnce {
+					waitChan = time.After(100 * time.Millisecond)
+					goto startwait
+				}
+			}
+		endwait:
 			app.ui.waitOnce = false
 			app.ui.tempExpr = nil
 			app.ui.draw(app.nav)
+			normal(app)
 		case e := <-app.ui.exprChan:
 			e.eval(app, nil)
 			app.ui.draw(app.nav)
