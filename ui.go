@@ -475,6 +475,8 @@ type ui struct {
 	keyChan      chan string
 	tevChan      chan tcell.Event
 	evChan       chan tcell.Event
+	waitOnce     bool
+	tempExpr     expr
 	menuBuf      *bytes.Buffer
 	menuSelected int
 	cmdPrefix    string
@@ -546,6 +548,8 @@ func newUI(screen tcell.Screen) *ui {
 		keyChan:      make(chan string, 1000),
 		tevChan:      make(chan tcell.Event, 1000),
 		evChan:       make(chan tcell.Event, 1000),
+		waitOnce:     false,
+		tempExpr:     nil,
 		styles:       parseStyles(),
 		icons:        parseIcons(),
 		menuSelected: -2,
@@ -923,16 +927,21 @@ func (ui *ui) draw(nav *nav) {
 	ui.screen.Show()
 }
 
-func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
+func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool, more bool) {
+	count := 0
 	binds = make(map[string]expr)
 	for key, expr := range keys {
 		if !strings.HasPrefix(key, prefix) {
 			continue
 		}
+		count += 1
 		binds[key] = expr
 		if key == prefix {
 			ok = true
 		}
+	}
+	if count > 1 {
+		more = true
 	}
 	return
 }
@@ -1055,7 +1064,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			return draw
 		}
 
-		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
+		binds, ok, more := findBinds(gOpts.keys, string(ui.keyAcc))
 
 		switch len(binds) {
 		case 0:
@@ -1065,25 +1074,33 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			ui.menuBuf = nil
 			return draw
 		default:
-			if ok {
-				if len(ui.keyCount) > 0 {
-					c, err := strconv.Atoi(string(ui.keyCount))
-					if err != nil {
-						log.Printf("converting command count: %s", err)
-					}
-					count = c
+			if len(ui.keyCount) > 0 {
+				c, err := strconv.Atoi(string(ui.keyCount))
+				if err != nil {
+					log.Printf("converting command count: %s", err)
 				}
-				expr := gOpts.keys[string(ui.keyAcc)]
-				if e, ok := expr.(*callExpr); ok {
-					e.count = count
-				} else if e, ok := expr.(*listExpr); ok {
-					e.count = count
-				}
+				count = c
+			}
+			expr := gOpts.keys[string(ui.keyAcc)]
+			if e, ok := expr.(*callExpr); ok {
+				e.count = count
+			} else if e, ok := expr.(*listExpr); ok {
+				e.count = count
+			}
+			if ok && more {
+				//need wait
+				ui.waitOnce = true
+				ui.tempExpr = expr
+			}
+
+			//fix dual binding keys with default key prefix
+			if ok && !more {
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
 				return expr
 			}
+
 			ui.menuBuf = listBinds(binds)
 			return draw
 		}
