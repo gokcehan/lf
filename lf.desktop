@@ -2,7 +2,7 @@
 Type=Application
 Name=lf
 Comment=Launches the lf file manager
-Icon=utilities-terminal
+Icon=lf
 Terminal=true
 Exec=lf
 Categories=ConsoleOnly;System;FileTools;FileManager
