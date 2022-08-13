@@ -319,7 +319,7 @@ func (sm styleMap) get(f *file) tcell.Style {
 		return val
 	}
 
-	if val, ok := sm["*"+f.ext]; ok {
+	if val, ok := sm["*"+strings.ToLower(f.ext)]; ok {
 		return val
 	}
 
