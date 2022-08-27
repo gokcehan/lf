@@ -26,12 +26,13 @@ Source code can be found in the repository at https://github.com/gokcehan/lf
 .PP
 This documentation can either be read from terminal using 'lf -doc' or online at https://pkg.go.dev/github.com/gokcehan/lf You can also use 'doc' command (default '<f-1>') inside lf to view the documentation in a pager. A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 .PP
-You can run 'lf -help' to see descriptions of command line options.
+You can run 'lf -help' to see descriptions of command line options. The 'keys' command inside lf lists available key bindings.
 .SH QUICK REFERENCE
 The following commands are provided by lf:
 .PP
 .EX
     quit                     (default 'q')
+    keys
     up                       (default 'k' and '<up>')
     half-up                  (default '<c-u>')
     page-up                  (default '<c-b>' and '<pgup>')
@@ -241,6 +242,7 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
+    map <f-1> :doc
 .EE
 .PP
 If the 'mouse' option is enabled, mouse buttons have the following default effects:
@@ -330,6 +332,12 @@ This section shows information about builtin commands. Modal commands do not tak
 .EE
 .PP
 Quit lf and return to the shell.
+.PP
+.EX
+    keys
+.EE
+.PP
+List active key bindings in the pager.
 .PP
 .EX
     up                       (default 'k' and '<up>')

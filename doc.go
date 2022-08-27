@@ -11,12 +11,14 @@ You can also use 'doc' command (default '<f-1>') inside lf to view the documenta
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
 You can run 'lf -help' to see descriptions of command line options.
+The 'keys' command inside lf lists available key bindings.
 
 # Quick Reference
 
 The following commands are provided by lf:
 
 	quit                     (default 'q')
+	keys
 	up                       (default 'k' and '<up>')
 	half-up                  (default '<c-u>')
 	page-up                  (default '<c-b>' and '<pgup>')
@@ -214,6 +216,7 @@ The following additional keybindings are provided by default:
 	map se :set sortby ext; set info
 	map gh cd ~
 	map <space> :toggle; down
+	map <f-1> :doc
 
 If the 'mouse' option is enabled, mouse buttons have the following default effects:
 
@@ -284,6 +287,10 @@ Modal commands do not take any arguments, but instead change the operation mode 
 	quit                     (default 'q')
 
 Quit lf and return to the shell.
+
+	keys
+
+List active key bindings in the pager.
 
 	up                       (default 'k' and '<up>')
 	half-up                  (default '<c-u>')

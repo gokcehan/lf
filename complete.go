@@ -77,6 +77,7 @@ var (
 		"mark-remove",
 		"tag",
 		"tag-toggle",
+		"keys",
 		"cmd-escape",
 		"cmd-complete",
 		"cmd-menu-complete",
