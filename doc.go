@@ -10,7 +10,7 @@ This documentation can either be read from terminal using 'lf -doc' or online at
 You can also use 'doc' command (default '<f-1>') inside lf to view the documentation in a pager.
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
-You can run 'lf -help' to see descriptions of command line options.
+You can run 'lf -help' to see descriptions of command line options. The 'keys' command inside lf lists available key bindings.
 
 Quick Reference
 
@@ -78,6 +78,7 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
+    keys
 
 The following command line commands are provided by lf:
 
@@ -209,6 +210,7 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
+    map <f-1> :doc
 
 Configuration
 
@@ -471,6 +473,10 @@ You can define a new tag clearing command by combining 'tag' with 'tag-toggle' (
     tag-toggle               (default 't')
 
 Tag a file with '*' or a single width character given in the argument if the file is untagged, otherwise remove the tag.
+
+    keys
+
+List active key bindings in the pager.
 
 Command Line Commands
 

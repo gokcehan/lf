@@ -26,7 +26,7 @@ Source code can be found in the repository at https://github.com/gokcehan/lf
 .PP
 This documentation can either be read from terminal using 'lf -doc' or online at https://pkg.go.dev/github.com/gokcehan/lf You can also use 'doc' command (default '<f-1>') inside lf to view the documentation in a pager. A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 .PP
-You can run 'lf -help' to see descriptions of command line options.
+You can run 'lf -help' to see descriptions of command line options. The 'keys' command inside lf lists available key bindings.
 .SH QUICK REFERENCE
 The following commands are provided by lf:
 .PP
@@ -93,6 +93,7 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
+    keys
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -236,6 +237,7 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
+    map <f-1> :doc
 .EE
 .SH CONFIGURATION
 Configuration files should be located at:
@@ -579,6 +581,12 @@ Tag a file with '*' or a single width character given in the argument. You can d
 .EE
 .PP
 Tag a file with '*' or a single width character given in the argument if the file is untagged, otherwise remove the tag.
+.PP
+.EX
+    keys
+.EE
+.PP
+List active key bindings in the pager.
 .SH COMMAND LINE COMMANDS
 This section shows information about command line commands. These should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 .PP
