@@ -13,7 +13,8 @@ command (default '<f-1>') inside lf to view the documentation in a pager. A
 man page with the same content is also available in the repository at
 https://github.com/gokcehan/lf/blob/master/lf.1
 
-You can run 'lf -help' to see descriptions of command line options.
+You can run 'lf -help' to see descriptions of command line options. The
+'keys' command inside lf lists available key bindings.
 
 
 Quick Reference
@@ -82,6 +83,7 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
+    keys
 
 The following command line commands are provided by lf:
 
@@ -89,6 +91,7 @@ The following command line commands are provided by lf:
     cmd-complete             (default '<tab>')
     cmd-menu-complete
     cmd-menu-complete-back
+    cmd-menu-accept
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
@@ -213,6 +216,7 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
+    map <f-1> :doc
 
 
 Configuration
@@ -496,6 +500,10 @@ can define a new tag clearing command by combining 'tag' with 'tag-toggle'
 Tag a file with '*' or a single width character given in the argument if the
 file is untagged, otherwise remove the tag.
 
+    keys
+
+List active key bindings in the pager.
+
 
 Command Line Commands
 
@@ -519,6 +527,10 @@ Autocomplete the current word with menu selection. You need to assign keys
 to these commands (e.g. 'cmap <tab> cmd-menu-complete; cmap <backtab>
 cmd-menu-complete-back'). You can use the assigned keys assigned to display
 the menu and then cycle through completion options.
+
+    cmd-menu-accept
+
+Accept the currently selected match in menu completion and close the menu.
 
     cmd-enter                (default '<c-j>' and '<enter>')
 
@@ -601,9 +613,10 @@ Automatically quit server when there are no clients left connected.
 
 Set the path of a cleaner file. The file should be executable. This file is
 called if previewing is enabled, the previewer is set, and the previously
-selected file had its preview cache disabled. One argument is passed to the
-file, path to the file whose preview should be cleaned. Preview clearing is
-disabled when the value of this option is left empty.
+selected file had its preview cache disabled. Five arguments are passed to
+the file, (1) current file name, (2) width, (3) height, (4) horizontal
+position, and (5) vertical position of preview pane respectively. Preview
+clearing is disabled when the value of this option is left empty.
 
     dircache       bool      (default on)
 
@@ -665,6 +678,10 @@ absolute paths. Globbing supports the usual special characters, '*' to match
 any sequence, '?' to match any character, and '[...]' or '[^...] to match
 character sets or ranges. In addition, if a pattern starts with '!', then
 its matches are excluded from hidden files.
+
+    history        bool      (default on)
+
+Save command history.
 
     icons          bool      (default off)
 
@@ -930,7 +947,7 @@ This shell command can be defined to override the default 'paste' command.
 
     rename
 
-This shell command can be defined to override the default 'paste' command.
+This shell command can be defined to override the default 'rename' command.
 
     delete
 
@@ -1138,7 +1155,7 @@ this:
         if [ -z "$fs" ]; then
             mv "$f" ~/.trash
         else
-            IFS="'printf '\n\t''"; mv $fs ~/.trash
+            IFS="$(printf '\n\t')"; mv $fs ~/.trash
         fi
     }}
 
@@ -1149,7 +1166,7 @@ conditional:
 
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS="'printf '\n\t''"; mv $fx ~/.trash
+        IFS="$(printf '\n\t')"; mv $fx ~/.trash
     }}
 
 The trash directory is checked each time the command is executed. We can
@@ -1157,13 +1174,13 @@ move it outside of the command so it would only run once at startup:
 
     ${{ mkdir -p ~/.trash }}
 
-    cmd trash ${{ IFS="'printf '\n\t''"; mv $fx ~/.trash }}
+    cmd trash ${{ IFS="$(printf '\n\t')"; mv $fx ~/.trash }}
 
 Since these are one liners, we can drop '{{' and '}}':
 
     $mkdir -p ~/.trash
 
-    cmd trash $IFS="'printf '\n\t''"; mv $fx ~/.trash
+    cmd trash $IFS="$(printf '\n\t')"; mv $fx ~/.trash
 
 Finally note that we set 'IFS' variable manually in these commands. Instead
 we could use the 'ifs' option to set it for all shell commands (i.e. 'set
@@ -1348,16 +1365,12 @@ pattern. Globbing supports '*' to match any sequence, '?' to match any
 character, and '[...]' or '[^...] to match character sets or ranges. You can
 enable 'incsearch' option to jump to the current match at each keystroke
 while typing. In this mode, you can either use 'cmd-enter' to accept the
-search or use 'cmd-escape' to cancel the search. Alternatively, you can also
-map some other commands with 'cmap' to accept the search and execute the
-command immediately afterwards. Possible candidates are 'up', 'down' and
-their variants, 'top', 'bottom', 'updir', and 'open' commands. For example,
-you can use arrow keys to finish the search with the following mappings:
+search or use 'cmd-escape' to cancel the search. You can also map some other
+commands with 'cmap' to accept the search and execute the command
+immediately afterwards. For example, you can use the right arrow key to
+finish the search and open the selected file with the following mapping:
 
-    cmap <up>    up
-    cmap <down>  down
-    cmap <left>  updir
-    cmap <right> open
+    cmap <right> :cmd-enter; open
 
 Finding mechanism is implemented with commands 'find' (default 'f'),
 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default
@@ -1393,8 +1406,7 @@ You may want to use either file extensions or mime types from 'file'
 command:
 
     cmd open ${{
-        test -L $f && f=$(readlink -f $f)
-        case $(file --mime-type $f -b) in
+        case $(file --mime-type -Lb $f) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
@@ -1417,7 +1429,7 @@ Previewing Files
 lf previews files on the preview pane by printing the file until the end or
 the preview pane is filled. This output can be enhanced by providing a
 custom preview script for filtering. This can be used to highlight source
-codes, list contents of archive files or view pdf or image files to name
+codes, list contents of archive files or view pdf or image files to name a
 few. For coloring lf recognizes ansi escape codes.
 
 In order to use this feature you need to set the value of 'previewer' option

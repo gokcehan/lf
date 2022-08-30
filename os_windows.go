@@ -109,10 +109,14 @@ func shellKill(cmd *exec.Cmd) error {
 	return cmd.Process.Kill()
 }
 
+func pageFileCommand(filename string) string {
+	return fmt.Sprintf(`%PAGER% "%s"`, filename)
+}
+
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", "%OPENER% %f%"}
 	gOpts.keys["e"] = &execExpr{"$", "%EDITOR% %f%"}
-	gOpts.keys["i"] = &execExpr{"!", "%PAGER% %f%"}
+	gOpts.keys["i"] = &execExpr{"!", pageFileCommand("%f%")}
 	gOpts.keys["w"] = &execExpr{"$", "%SHELL%"}
 
 	gOpts.cmds["doc"] = &execExpr{"!", "lf -doc | %PAGER%"}

@@ -511,6 +511,9 @@ func update(app *app) {
 	switch {
 	case gOpts.incsearch && app.ui.cmdPrefix == "/":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		if app.nav.search == "" {
+			return
+		}
 
 		dir := app.nav.currDir()
 		old := dir.ind
@@ -525,6 +528,9 @@ func update(app *app) {
 		}
 	case gOpts.incsearch && app.ui.cmdPrefix == "?":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		if app.nav.search == "" {
+			return
+		}
 
 		dir := app.nav.currDir()
 		old := dir.ind
@@ -594,6 +600,8 @@ func normal(app *app) {
 	app.ui.cmdAccRight = nil
 	app.ui.cmdTmp = nil
 	app.ui.cmdPrefix = ""
+
+	app.cmdHistoryInd = 0
 }
 
 func insert(app *app, arg string) {
@@ -1474,6 +1482,25 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.echomsg(strings.Join(e.args, " "))
 	case "echoerr":
 		app.ui.echoerr(strings.Join(e.args, " "))
+	case "keys":
+		tempfile, err := os.CreateTemp("", "lf_bindings")
+		if err != nil {
+			app.ui.echoerrf("keys: %s:", err)
+			return
+		}
+		_, err = tempfile.Write(listBinds(gOpts.keys).Bytes())
+		tempfile.Close()
+
+		filename := tempfile.Name()
+		if err == nil {
+			app.runShell(pageFileCommand(filename), e.args, "$")
+		}
+
+		os.Remove(filename)
+		app.ui.loadFile(app.nav, false)
+		if err != nil {
+			app.ui.echoerrf("keys: %s:", err)
+		}
 	case "cd":
 		path := "~"
 		if len(e.args) > 0 {
@@ -1595,7 +1622,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		// Reset the completition menu as in bash/vim
+		// Reset the completion menu as in bash/vim
 		// and update the pertinent variables
 		if app.ui.menuBuf != nil {
 			app.ui.menuBuf = nil
@@ -1636,27 +1663,21 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuBuf = b
 		}
 	case "cmd-menu-complete":
-		var target []rune
-
-		// target will store the current menu query
 		// note that, as we will store the current selected value
 		// in cmdAccLeft, we can not call the complete function with its
-		// value, as it is already a final completition result
+		// value, as it is already a final completion result
 		if app.ui.menuBuf == nil {
-			target = app.ui.cmdAccLeft
 			app.ui.cmdTmp = app.ui.cmdAccLeft
-		} else {
-			target = app.ui.cmdTmp
 		}
 
 		var matches []string
 		switch app.ui.cmdPrefix {
 		case ":":
-			matches, app.ui.cmdAccLeft = completeCmd(target)
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdTmp)
 		case "/", "?":
-			matches, app.ui.cmdAccLeft = completeFile(target)
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdTmp)
 		case "$", "%", "!", "&":
-			matches, app.ui.cmdAccLeft = completeShell(target)
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdTmp)
 		default:
 			return
 		}
@@ -1664,13 +1685,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := 1
-
-			// Check if the tab-selecttion was inited
+			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected++
+				app.ui.menuSelected %= len(matches)
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
@@ -1681,23 +1701,18 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuSelected = -2
 		}
 	case "cmd-menu-complete-back":
-		var target []rune
-
 		if app.ui.menuBuf == nil {
-			target = app.ui.cmdAccLeft
 			app.ui.cmdTmp = app.ui.cmdAccLeft
-		} else {
-			target = app.ui.cmdTmp
 		}
 
 		var matches []string
 		switch app.ui.cmdPrefix {
 		case ":":
-			matches, app.ui.cmdAccLeft = completeCmd(target)
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdTmp)
 		case "/", "?":
-			matches, app.ui.cmdAccLeft = completeFile(target)
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdTmp)
 		case "$", "%", "!", "&":
-			matches, app.ui.cmdAccLeft = completeShell(target)
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdTmp)
 		default:
 			return
 		}
@@ -1705,13 +1720,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := -1
-
-			// Check if the tab-selecttion was inited
+			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
+			} else if app.ui.menuSelected <= 0 {
+				app.ui.menuSelected = len(matches) - 1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected--
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
@@ -1721,6 +1736,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuBuf = nil
 			app.ui.menuSelected = -2
 		}
+	case "cmd-menu-accept":
+		app.ui.menuBuf = nil
+		app.ui.menuSelected = -2
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 && app.ui.cmdPrefix != "filter: " {
@@ -1895,31 +1913,27 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.cmdHistoryInd--
 		}
 		if app.cmdHistoryInd == 0 {
-			app.ui.menuBuf = nil
-			app.ui.menuSelected = -2
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdTmp = nil
+			normal(app)
 			app.ui.cmdPrefix = ":"
 			return
 		}
-		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		historyInd := app.cmdHistoryInd
+		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
+		app.cmdHistoryInd = historyInd
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-history-prev":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
-		if app.ui.cmdPrefix == "" {
-			app.cmdHistoryInd = 0
-		}
 		if app.cmdHistoryInd == len(app.cmdHistory) {
 			return
 		}
-		app.cmdHistoryInd++
-		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		historyInd := app.cmdHistoryInd + 1
+		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
+		app.cmdHistoryInd = historyInd
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-delete":

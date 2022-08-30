@@ -324,23 +324,45 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap) {
+type dirContext struct {
+	selections map[string]int
+	saves      map[string]bool
+	tags       map[string]string
+}
+
+type dirStyle struct {
+	colors       styleMap
+	icons        iconMap
+	activeCursor bool
+}
+
+// These colors are not currently customizeable
+const LineNumberColor = tcell.ColorOlive
+const SelectionColor = tcell.ColorPurple
+const YankColor = tcell.ColorOlive
+const CutColor = tcell.ColorMaroon
+const DimCursorColor = tcell.ColorGrey
+
+func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle) {
 	if win.w < 5 || dir == nil {
 		return
 	}
 
+	messageStyle := tcell.StyleDefault.Reverse(true)
+	if !dirStyle.activeCursor {
+		messageStyle = messageStyle.Foreground(DimCursorColor)
+	}
+
 	if dir.noPerm {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
+		win.print(screen, 2, 0, messageStyle, "permission denied")
 		return
 	}
-
 	if dir.loading && len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
+		win.print(screen, 2, 0, messageStyle, "loading...")
 		return
 	}
-
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "empty")
+		win.print(screen, 2, 0, messageStyle, "empty")
 		return
 	}
 
@@ -366,7 +388,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 	}
 
 	for i, f := range dir.files[beg:end] {
-		st := colors.get(f)
+		st := dirStyle.colors.get(f)
 
 		if lnwidth > 0 {
 			var ln string
@@ -386,23 +408,26 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault.Foreground(tcell.ColorOlive), ln)
+			win.print(screen, 0, i, tcell.StyleDefault.Foreground(LineNumberColor), ln)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := selections[path]; ok {
-			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
-		} else if cp, ok := saves[path]; ok {
+		if _, ok := context.selections[path]; ok {
+			win.print(screen, lnwidth, i, st.Background(SelectionColor), " ")
+		} else if cp, ok := context.saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorOlive), " ")
+				win.print(screen, lnwidth, i, st.Background(YankColor), " ")
 			} else {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorMaroon), " ")
+				win.print(screen, lnwidth, i, st.Background(CutColor), " ")
 			}
 		}
 
 		if i == dir.pos && gOpts.hasfocus {
 			st = st.Reverse(true)
+			if !dirStyle.activeCursor {
+				st = st.Foreground(DimCursorColor)
+			}
 		}
 
 		var s []rune
@@ -412,7 +437,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		var iwidth int
 
 		if gOpts.icons {
-			s = append(s, []rune(icons.get(f))...)
+			s = append(s, []rune(dirStyle.icons.get(f))...)
 			s = append(s, ' ')
 			iwidth = 2
 		}
@@ -450,42 +475,15 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		win.print(screen, lnwidth+1, i, st, string(s))
 
-		tag, ok := tags[path]
+		tag, ok := context.tags[path]
 		if ok {
-			if i == dir.pos && gOpts.hasfocus {
-				win.print(screen, lnwidth+1, i, st.Reverse(true), tag)
+			if i == dir.pos {
+				win.print(screen, lnwidth+1, i, st, tag)
 			} else {
 				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
 			}
 		}
 	}
-}
-
-type ui struct {
-	screen       tcell.Screen
-	polling      bool
-	wins         []*win
-	promptWin    *win
-	msgWin       *win
-	menuWin      *win
-	msg          string
-	regPrev      *reg
-	dirPrev      *dir
-	exprChan     chan expr
-	keyChan      chan string
-	tevChan      chan tcell.Event
-	evChan       chan tcell.Event
-	menuBuf      *bytes.Buffer
-	menuSelected int
-	cmdPrefix    string
-	cmdAccLeft   []rune
-	cmdAccRight  []rune
-	cmdYankBuf   []rune
-	cmdTmp       []rune
-	keyAcc       []rune
-	keyCount     []rune
-	styles       styleMap
-	icons        iconMap
 }
 
 func getWidths(wtot int) []int {
@@ -530,6 +528,33 @@ func getWins(screen tcell.Screen) []*win {
 	}
 
 	return wins
+}
+
+type ui struct {
+	screen       tcell.Screen
+	polling      bool
+	wins         []*win
+	promptWin    *win
+	msgWin       *win
+	menuWin      *win
+	msg          string
+	regPrev      *reg
+	dirPrev      *dir
+	exprChan     chan expr
+	keyChan      chan string
+	tevChan      chan tcell.Event
+	evChan       chan tcell.Event
+	menuBuf      *bytes.Buffer
+	menuSelected int
+	cmdPrefix    string
+	cmdAccLeft   []rune
+	cmdAccRight  []rune
+	cmdYankBuf   []rune
+	cmdTmp       []rune
+	keyAcc       []rune
+	keyCount     []rune
+	styles       styleMap
+	icons        iconMap
 }
 
 func newUI(screen tcell.Screen) *ui {
@@ -609,10 +634,6 @@ func (ui *ui) echof(format string, a ...interface{}) {
 func (ui *ui) echomsg(msg string) {
 	ui.msg = msg
 	log.Print(msg)
-}
-
-func (ui *ui) echomsgf(format string, a ...interface{}) {
-	ui.echomsg(fmt.Sprintf(format, a...))
 }
 
 func (ui *ui) echoerr(msg string) {
@@ -835,6 +856,7 @@ func (ui *ui) drawBox() {
 
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
+	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
 	wtot, htot := ui.screen.Size()
 	for i := 0; i < wtot; i++ {
@@ -855,7 +877,8 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], &context,
+			&dirStyle{colors: ui.styles, icons: ui.icons, activeCursor: true})
 	}
 
 	switch ui.cmdPrefix {
@@ -889,7 +912,8 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, &context,
+					&dirStyle{colors: ui.styles, icons: ui.icons, activeCursor: false})
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, ui.regPrev)
 			}
@@ -1290,13 +1314,14 @@ func listMatchesMenu(ui *ui, matches []string) error {
 
 			// Handle menu tab match only if wanted
 			if ui.menuSelected == i {
+				comp := []rune(escape(target))
 				toks := tokenize(string(ui.cmdAccLeft))
-				last := toks[len(toks)-1]
+				_, last := filepath.Split(toks[len(toks)-1])
 
-				if strings.Contains(target, last) {
-					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
+				if last == "" {
+					ui.cmdAccLeft = append(ui.cmdAccLeft, comp...)
 				} else {
-					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
+					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len([]rune(last))], comp...)
 				}
 
 				target = fmt.Sprintf("\033[7m%s\033[0m%*s", target, wcol-len(target), "")

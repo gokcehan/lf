@@ -156,7 +156,7 @@ func (im iconMap) get(f *file) string {
 		return val
 	}
 
-	if val, ok := im["*"+f.ext]; ok {
+	if val, ok := im["*"+strings.ToLower(f.ext)]; ok {
 		return val
 	}
 
