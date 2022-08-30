@@ -324,24 +324,26 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, previewAllowed bool) {
-
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, previewing bool) {
 	if win.w < 5 || dir == nil {
 		return
 	}
 
+	messageStyle := tcell.StyleDefault.Reverse(true)
+	if previewing {
+		messageStyle = messageStyle.Foreground(tcell.ColorGrey)
+	}
+
 	if dir.noPerm {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
+		win.print(screen, 2, 0, messageStyle, "permission denied")
+		return
+	}
+	if (dir.loading && len(dir.files) == 0) || (previewing && dir.loading && gOpts.dirpreviews) {
+		win.print(screen, 2, 0, messageStyle, "loading...")
 		return
 	}
 
-	if (dir.loading && len(dir.files) == 0) || (previewAllowed && dir.loading && gOpts.dirpreviews) {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
-		return
-	}
-
-	if previewAllowed && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
-
+	if previewing && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
 		// Print previewer result instead of default directory print operation.
 		st := tcell.StyleDefault
 		for i, l := range dir.lines {
@@ -353,9 +355,8 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		}
 		return
 	}
-
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "empty")
+		win.print(screen, 2, 0, messageStyle, "empty")
 		return
 	}
 
@@ -418,6 +419,9 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		if i == dir.pos {
 			st = st.Reverse(true)
+			if previewing {
+				st = st.Foreground(tcell.ColorGrey)
+			}
 		}
 
 		var s []rune
