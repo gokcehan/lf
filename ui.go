@@ -423,7 +423,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		if i == dir.pos && gOpts.hasfocus {
+		if i == dir.pos {
 			st = st.Reverse(true)
 			if !dirStyle.activeCursor {
 				st = st.Foreground(DimCursorColor)
@@ -878,7 +878,7 @@ func (ui *ui) draw(nav *nav) {
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
 		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], &context,
-			&dirStyle{colors: ui.styles, icons: ui.icons, activeCursor: true})
+			&dirStyle{colors: ui.styles, icons: ui.icons, activeCursor: gOpts.hasfocus})
 	}
 
 	switch ui.cmdPrefix {
