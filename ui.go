@@ -324,7 +324,7 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, activeCursor bool) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -403,6 +403,9 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		if i == dir.pos {
 			st = st.Reverse(true)
+			if !activeCursor {
+				st = st.Foreground(tcell.ColorGrey)
+			}
 		}
 
 		var s []rune
@@ -855,7 +858,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons, true)
 	}
 
 	switch ui.cmdPrefix {
@@ -889,7 +892,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons, false)
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, ui.regPrev)
 			}
