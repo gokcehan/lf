@@ -61,7 +61,7 @@ func listen(l net.Listener) {
 
 func echoerr(c net.Conn, msg string) {
 	fmt.Fprintln(c, msg)
-	log.Printf(msg)
+	log.Print(msg)
 }
 
 func echoerrf(c net.Conn, format string, a ...interface{}) {
