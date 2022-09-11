@@ -348,18 +348,21 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		return
 	}
 
+	messageStyle := tcell.StyleDefault.Reverse(true)
+	if !dirStyle.activeCursor {
+		messageStyle = messageStyle.Foreground(DimCursorColor)
+	}
+
 	if dir.noPerm {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
+		win.print(screen, 2, 0, messageStyle, "permission denied")
 		return
 	}
-
 	if dir.loading && len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
+		win.print(screen, 2, 0, messageStyle, "loading...")
 		return
 	}
-
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "empty")
+		win.print(screen, 2, 0, messageStyle, "empty")
 		return
 	}
 
