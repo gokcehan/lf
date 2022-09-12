@@ -1269,7 +1269,7 @@ func listMatchesMenu(ui *ui, matches []string) error {
 				last := toks[len(toks)-1]
 
 				if strings.Contains(target, last) {
-					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
+					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len([]rune(last))], []rune(target)...)
 				} else {
 					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
 				}

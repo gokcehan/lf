@@ -177,7 +177,7 @@ var (
 	}
 )
 
-func matchLongest(s1, s2 string) string {
+func matchLongest(s1, s2 []rune) []rune {
 	i := 0
 	for ; i < len(s1) && i < len(s2); i++ {
 		if s1[i] != s2[i] {
@@ -187,28 +187,28 @@ func matchLongest(s1, s2 string) string {
 	return s1[:i]
 }
 
-func matchWord(s string, words []string) (matches []string, longest string) {
+func matchWord(s string, words []string) (matches []string, longest []rune) {
 	for _, w := range words {
 		if !strings.HasPrefix(w, s) {
 			continue
 		}
 
 		matches = append(matches, w)
-		if longest != "" {
-			longest = matchLongest(longest, w)
+		if len(longest) != 0 {
+			longest = matchLongest(longest, []rune(w))
 		} else if s != "" {
-			longest = w + " "
+			longest = []rune(w + " ")
 		}
 	}
 
-	if longest == "" {
-		longest = s
+	if len(longest) == 0 {
+		longest = []rune(s)
 	}
 
 	return
 }
 
-func matchExec(s string) (matches []string, longest string) {
+func matchExec(s string) (matches []string, longest []rune) {
 	var words []string
 
 	paths := strings.Split(envPath, string(filepath.ListSeparator))
@@ -258,7 +258,7 @@ func matchExec(s string) (matches []string, longest string) {
 	return matchWord(s, words)
 }
 
-func matchFile(s string) (matches []string, longest string) {
+func matchFile(s string) (matches []string, longest []rune) {
 	dir := replaceTilde(s)
 
 	if !filepath.IsAbs(dir) {
@@ -307,19 +307,19 @@ func matchFile(s string) (matches []string, longest string) {
 		}
 		matches = append(matches, item)
 
-		if longest != "" {
-			longest = matchLongest(longest, name)
+		if len(longest) != 0 {
+			longest = matchLongest(longest, []rune(name))
 		} else if s != "" {
 			if f.Mode().IsRegular() {
-				longest = name + " "
+				longest = []rune(name + " ")
 			} else {
-				longest = name + escape(string(filepath.Separator))
+				longest = []rune(name + escape(string(filepath.Separator)))
 			}
 		}
 	}
 
-	if longest == "" {
-		longest = s
+	if len(longest) == 0 {
+		longest = []rune(s)
 	}
 
 	return
@@ -329,7 +329,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
-	var longest string
+	var longest []rune
 
 	switch len(f) {
 	case 1:
@@ -347,18 +347,17 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 			words[i], words[j] = words[j], words[i]
 		}
 		words = words[:j+1]
-		matches, longest = matchWord(s, words)
-		longestAcc = []rune(longest)
+		matches, longestAcc = matchWord(s, words)
 	case 2:
 		switch f[0] {
 		case "set":
 			matches, longest = matchWord(f[1], gOptWords)
-			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		case "map", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
-			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		}
 	default:
 		switch f[0] {
@@ -366,7 +365,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
-			longestAcc = append(acc[:len(acc)-len(f[len(f)-1])], []rune(longest)...)
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		}
 	}
 
@@ -386,8 +385,6 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 		log.Printf("reading directory: %s", err)
 	}
 
-	var longest string
-
 	for _, f := range files {
 		if !strings.HasPrefix(f.Name(), s) {
 			continue
@@ -395,18 +392,16 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 
 		matches = append(matches, f.Name())
 
-		if longest != "" {
-			longest = matchLongest(longest, f.Name())
+		if len(longestAcc) != 0 {
+			longestAcc = matchLongest(longestAcc, []rune(f.Name()))
 		} else if s != "" {
-			longest = f.Name()
+			longestAcc = []rune(f.Name())
 		}
 	}
 
-	if longest == "" {
-		longest = s
+	if len(longestAcc) == 0 {
+		longestAcc = acc
 	}
-
-	longestAcc = []rune(longest)
 
 	return
 }
@@ -415,15 +410,14 @@ func completeShell(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
-	var longest string
+	var longest []rune
 
 	switch len(f) {
 	case 1:
-		matches, longest = matchExec(s)
-		longestAcc = []rune(longest)
+		matches, longestAcc = matchExec(s)
 	default:
 		matches, longest = matchFile(f[len(f)-1])
-		longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], []rune(longest)...)
+		longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 	}
 
 	return
