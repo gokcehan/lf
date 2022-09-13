@@ -306,10 +306,11 @@ func sixelDimPx(s string) (w int, h int) {
 	// TODO maybe take into account pixel aspect ratio
 
 	// General sixel sequence:
-	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>];   <main_body> ST
+	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>]   <main_body> ST
 	// DCS is "ESC P"
 	// We are not interested in P1~P3
-	// the optional raster attributes may contain the image size in pixels
+	// the optional raster attributes may contain the 'reported' image size in pixels
+	// (The actual image can be larger, but is at least this big)
 	// ST is the terminating string "ESC \"
 	i := strings.Index(s, "q") + 1
 	if i == 0 {
