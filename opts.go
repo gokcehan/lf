@@ -205,6 +205,8 @@ func init() {
 
 	gOpts.cmdkeys = make(map[string]expr)
 
+	gOpts.cmdkeys["<a-[>O"] = &callExpr{"focus-off", nil, 1}
+	gOpts.cmdkeys["<a-[>I"] = &callExpr{"focus-on", nil, 1}
 	gOpts.cmdkeys["<space>"] = &callExpr{"cmd-insert", []string{" "}, 1}
 	gOpts.cmdkeys["<esc>"] = &callExpr{"cmd-escape", nil, 1}
 	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-complete", nil, 1}

@@ -59,13 +59,11 @@ func run() {
 		app.ui.echoerrf("reading history file: %s", err)
 	}
 
-	// enable focus reporting
-	fmt.Print("\x1b[?1004h")
+	app.ui.enableFocusReporting()
 
 	app.loop()
 
-	// disable focus reporting
-	fmt.Print("\x1b[?1004l")
+	app.ui.disableFocusReporting()
 
 	app.ui.screen.Fini()
 }

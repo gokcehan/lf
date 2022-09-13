@@ -1138,17 +1138,32 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 	return nil
 }
 
-func readCmdEvent(ev tcell.Event) expr {
+func (ui *ui) readCmdEvent(ev tcell.Event) expr {
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
 		if tev.Key() == tcell.KeyRune {
 			if tev.Modifiers() == tcell.ModMask(tcell.ModAlt) {
-				val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
-				if expr, ok := gOpts.cmdkeys[val]; ok {
-					return expr
+				// support multi-key bindings but only for ESC[ at the moment
+				if tev.Rune() == '[' {
+					ui.keyAcc = append(ui.keyAcc, '<', 'a', '-', tev.Rune(), '>')
+				} else {
+					val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
+					if expr, ok := gOpts.cmdkeys[val]; ok {
+						return expr
+					}
 				}
 			} else {
-				return &callExpr{"cmd-insert", []string{string(tev.Rune())}, 1}
+				// multi-key bindings
+				if ui.keyAcc != nil {
+					ui.keyAcc = append(ui.keyAcc, tev.Rune())
+					val := string(ui.keyAcc)
+					ui.keyAcc = nil
+					if expr, ok := gOpts.cmdkeys[val]; ok {
+						return expr
+					}
+				} else {
+					return &callExpr{"cmd-insert", []string{string(tev.Rune())}, 1}
+				}
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
@@ -1166,7 +1181,7 @@ func (ui *ui) readEvent(ev tcell.Event) expr {
 	}
 
 	if _, ok := ev.(*tcell.EventKey); ok && ui.cmdPrefix != "" {
-		return readCmdEvent(ev)
+		return ui.readCmdEvent(ev)
 	}
 
 	return ui.readNormalEvent(ev)
@@ -1180,12 +1195,22 @@ func (ui *ui) readExpr() {
 	}()
 }
 
+func (ui *ui) enableFocusReporting() {
+	fmt.Print("\x1b[?1004h")
+}
+
+func (ui *ui) disableFocusReporting() {
+	fmt.Print("\x1b[?1004l")
+}
+
 func (ui *ui) suspend() error {
+	ui.disableFocusReporting()
 	return ui.screen.Suspend()
 }
 
 func (ui *ui) resume() error {
 	err := ui.screen.Resume()
+	ui.enableFocusReporting()
 	if !ui.polling {
 		go ui.pollEvents()
 		ui.polling = true
