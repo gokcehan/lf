@@ -719,50 +719,54 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 			}
 		}
 		if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+			var lookFrom int
 			if a := strings.Index(text, gSixelBegin); !processingSixel && a >= 0 {
 				reg.lines = append(reg.lines, text[:a])
 				text = text[a:]
 				processingSixel = true
+				lookFrom = 2
 			}
 
 			if processingSixel {
-				var lookFrom int
-				if text[:2] == gSixelBegin {
-					lookFrom = 2
+				b := strings.IndexByte(text[lookFrom:], gEscapeCode)
+				if b < 0 {
+					sixelBuffer = append(sixelBuffer, text)
+					continue
 				}
-				if b := strings.IndexByte(text[lookFrom:], gEscapeCode); b >= 0 {
-					b += lookFrom
-					if len(text) > b && text[b+1] == '\\' {
-						sixelBuffer = append(sixelBuffer, text[:b+2])
-						sx := strings.Join(sixelBuffer, "")
 
-						xoff := runeSliceWidth([]rune(reg.lines[len(reg.lines)-1])) + 2
-						yoff := len(reg.lines) - 1
-						maxh := (win.h - yoff) * sxScreen.fonth
-						w, h := sixelDimPx(sx)
-						if w < 0 || h < 0 {
-							goto discard_sixel
-						}
-						sx, h = trimSixelHeight(sx, maxh)
-						wc, hc := sxScreen.pxToCells(w, h)
+				b += lookFrom
+				if len(text) > b && text[b+1] == '\\' {
+					sixelBuffer = append(sixelBuffer, text[:b+2])
+					sx := strings.Join(sixelBuffer, "")
 
-						reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
-						fill := sxScreen.filler(path, wc)
-						paddedfill := strings.Repeat(" ", xoff-2) + fill
-						reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
-						for j := 1; j < hc; j++ {
-							reg.lines = append(reg.lines, paddedfill)
-						}
-
-						reg.lines = append(reg.lines, text[b+2:])
-						processingSixel = false
-						continue
-					} else { // deal with unexpected control sequence
+					xoff := runeSliceWidth([]rune(reg.lines[len(reg.lines)-1])) + 2
+					yoff := len(reg.lines) - 1
+					maxh := (win.h - yoff) * sxScreen.fonth
+					w, h := sixelDimPx(sx)
+					if w < 0 || h < 0 {
+						log.Printf("parsing preview of %s: invalid sixel sequence", path) //DEBUG
 						goto discard_sixel
 					}
+					sx, h = trimSixelHeight(sx, maxh)
+					wc, hc := sxScreen.pxToCells(w, h)
+
+					reg.sixels = append(reg.sixels, sixel{xoff, yoff, w, h, sx})
+					fill := sxScreen.filler(path, wc)
+					paddedfill := strings.Repeat(" ", xoff-2) + fill
+					reg.lines[len(reg.lines)-1] = reg.lines[len(reg.lines)-1] + fill
+					for j := 1; j < hc; j++ {
+						reg.lines = append(reg.lines, paddedfill)
+					}
+
+					reg.lines = append(reg.lines, text[b+2:])
+					processingSixel = false
+					continue
+				} else { // deal with unexpected control sequence
+					log.Printf("parsing preview of %s: illegal escape sequence ESC %c", path, text[b+1]) // DEBUG
+					log.Printf("lookFrom %d", lookFrom)
+					log.Printf("full line: %s", text)
+					goto discard_sixel
 				}
-				sixelBuffer = append(sixelBuffer, text)
-				continue
 
 			discard_sixel:
 				emptyLines := min(win.h-len(reg.lines), len(sixelBuffer)-1)
