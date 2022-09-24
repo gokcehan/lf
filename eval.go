@@ -1650,13 +1650,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := 1
-
 			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected++
+				app.ui.menuSelected %= len(matches)
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
@@ -1686,13 +1685,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := -1
-
 			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
+			} else if app.ui.menuSelected <= 0 {
+				app.ui.menuSelected = len(matches) - 1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected--
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
