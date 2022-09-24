@@ -259,6 +259,7 @@ func matchExec(s string) (matches []string, longest []rune) {
 }
 
 func matchFile(s string) (matches []string, longest []rune) {
+	s = unescape(s)
 	dir := replaceTilde(s)
 
 	if !filepath.IsAbs(dir) {
@@ -270,7 +271,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 	}
 
-	dir = unescape(filepath.Dir(dir))
+	dir = filepath.Dir(dir)
 
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -291,13 +292,13 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 
 		_, last := filepath.Split(s)
-		if !strings.HasPrefix(escape(f.Name()), last) {
+		if !strings.HasPrefix(f.Name(), last) {
 			continue
 		}
 
 		name = f.Name()
 		if isRoot(s) || filepath.Base(s) != s {
-			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
+			name = filepath.Join(filepath.Dir(s), f.Name())
 		}
 		name = escape(name)
 

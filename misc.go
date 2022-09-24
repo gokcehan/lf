@@ -91,7 +91,7 @@ func unescape(s string) string {
 }
 
 // This function splits the given string by whitespaces. It is aware of escaped
-// whitespaces so that they are not splitted unintentionally.
+// whitespaces so that they are not split unintentionally.
 func tokenize(s string) []string {
 	esc := false
 	var buf []rune
