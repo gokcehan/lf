@@ -280,15 +280,10 @@ func matchFile(s string) (matches []string, longest []rune) {
 
 	for _, f := range files {
 		name := filepath.Join(dir, f.Name())
-		f, err := os.Stat(name)
+		f, err := os.Lstat(name)
 		if err != nil {
-			fl, err := os.Lstat(name)
-			if err == nil && fl.Mode()&os.ModeSymlink != 0 {
-				continue
-			} else {
-				log.Printf("getting file information: %s", err)
-				return
-			}
+			log.Printf("getting file information: %s", err)
+			continue
 		}
 
 		_, last := filepath.Split(s)
