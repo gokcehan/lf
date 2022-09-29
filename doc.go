@@ -85,6 +85,7 @@ The following command line commands are provided by lf:
     cmd-complete             (default '<tab>')
     cmd-menu-complete
     cmd-menu-complete-back
+    cmd-menu-accept
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
@@ -491,6 +492,10 @@ Autocomplete the current word.
 Autocomplete the current word with menu selection.
 You need to assign keys to these commands (e.g. 'cmap <tab> cmd-menu-complete; cmap <backtab> cmd-menu-complete-back').
 You can use the assigned keys assigned to display the menu and then cycle through completion options.
+
+    cmd-menu-accept
+
+Accept the currently selected match in menu completion and close the menu.
 
     cmd-enter                (default '<c-j>' and '<enter>')
 
