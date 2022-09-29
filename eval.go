@@ -594,6 +594,8 @@ func normal(app *app) {
 	app.ui.cmdAccRight = nil
 	app.ui.cmdTmp = nil
 	app.ui.cmdPrefix = ""
+
+	app.cmdHistoryInd = 0
 }
 
 func insert(app *app, arg string) {
@@ -1887,31 +1889,27 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.cmdHistoryInd--
 		}
 		if app.cmdHistoryInd == 0 {
-			app.ui.menuBuf = nil
-			app.ui.menuSelected = -2
-			app.ui.cmdAccLeft = nil
-			app.ui.cmdAccRight = nil
-			app.ui.cmdTmp = nil
+			normal(app)
 			app.ui.cmdPrefix = ":"
 			return
 		}
-		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		historyInd := app.cmdHistoryInd
+		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
+		app.cmdHistoryInd = historyInd
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-history-prev":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
-		if app.ui.cmdPrefix == "" {
-			app.cmdHistoryInd = 0
-		}
 		if app.cmdHistoryInd == len(app.cmdHistory) {
 			return
 		}
-		app.cmdHistoryInd++
-		cmd := app.cmdHistory[len(app.cmdHistory)-app.cmdHistoryInd]
+		historyInd := app.cmdHistoryInd + 1
+		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
+		app.cmdHistoryInd = historyInd
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-delete":
