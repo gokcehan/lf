@@ -77,6 +77,33 @@ var (
 		"mark-remove",
 		"tag",
 		"tag-toggle",
+		"cmd-escape",
+		"cmd-complete",
+		"cmd-menu-complete",
+		"cmd-menu-complete-back",
+		"cmd-menu-accept",
+		"cmd-enter",
+		"cmd-interrupt",
+		"cmd-history-next",
+		"cmd-history-prev",
+		"cmd-left",
+		"cmd-right",
+		"cmd-home",
+		"cmd-end",
+		"cmd-delete",
+		"cmd-delete-back",
+		"cmd-delete-home",
+		"cmd-delete-end",
+		"cmd-delete-unix-word",
+		"cmd-yank",
+		"cmd-transpose",
+		"cmd-transpose-word",
+		"cmd-word",
+		"cmd-word-back",
+		"cmd-delete-word",
+		"cmd-capitalize-word",
+		"cmd-uppercase-word",
+		"cmd-lowercase-word",
 	}
 
 	gOptWords = []string{
@@ -321,6 +348,25 @@ func matchFile(s string) (matches []string, longest []rune) {
 	return
 }
 
+func matchCmd(s string) (matches []string, longest []rune) {
+	words := gCmdWords
+	for c := range gOpts.cmds {
+		words = append(words, c)
+	}
+	sort.Strings(words)
+	j := 0
+	for i := 1; i < len(words); i++ {
+		if words[j] == words[i] {
+			continue
+		}
+		j++
+		words[i], words[j] = words[j], words[i]
+	}
+	words = words[:j+1]
+	matches, longest = matchWord(s, words)
+	return
+}
+
 func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
@@ -329,35 +375,30 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 
 	switch len(f) {
 	case 1:
-		words := gCmdWords
-		for c := range gOpts.cmds {
-			words = append(words, c)
-		}
-		sort.Strings(words)
-		j := 0
-		for i := 1; i < len(words); i++ {
-			if words[j] == words[i] {
-				continue
-			}
-			j++
-			words[i], words[j] = words[j], words[i]
-		}
-		words = words[:j+1]
-		matches, longestAcc = matchWord(s, words)
+		matches, longestAcc = matchCmd(s)
 	case 2:
 		switch f[0] {
 		case "set":
 			matches, longest = matchWord(f[1], gOptWords)
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "map", "cmd":
+		case "map", "cmap", "cmd":
 			longestAcc = acc
+		default:
+			matches, longest = matchFile(f[len(f)-1])
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
+		}
+	case 3:
+		switch f[0] {
+		case "map", "cmap":
+			matches, longest = matchCmd(f[2])
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		default:
 			matches, longest = matchFile(f[len(f)-1])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		}
 	default:
 		switch f[0] {
-		case "set", "map", "cmd":
+		case "set", "map", "cmap", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
