@@ -511,6 +511,9 @@ func update(app *app) {
 	switch {
 	case gOpts.incsearch && app.ui.cmdPrefix == "/":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		if app.nav.search == "" {
+			return
+		}
 
 		dir := app.nav.currDir()
 		old := dir.ind
@@ -525,6 +528,9 @@ func update(app *app) {
 		}
 	case gOpts.incsearch && app.ui.cmdPrefix == "?":
 		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		if app.nav.search == "" {
+			return
+		}
 
 		dir := app.nav.currDir()
 		old := dir.ind
