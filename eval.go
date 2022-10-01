@@ -1587,7 +1587,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		// Reset the completition menu as in bash/vim
+		// Reset the completion menu as in bash/vim
 		// and update the pertinent variables
 		if app.ui.menuBuf != nil {
 			app.ui.menuBuf = nil
@@ -1628,27 +1628,21 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuBuf = b
 		}
 	case "cmd-menu-complete":
-		var target []rune
-
-		// target will store the current menu query
 		// note that, as we will store the current selected value
 		// in cmdAccLeft, we can not call the complete function with its
-		// value, as it is already a final completition result
+		// value, as it is already a final completion result
 		if app.ui.menuBuf == nil {
-			target = app.ui.cmdAccLeft
 			app.ui.cmdTmp = app.ui.cmdAccLeft
-		} else {
-			target = app.ui.cmdTmp
 		}
 
 		var matches []string
 		switch app.ui.cmdPrefix {
 		case ":":
-			matches, app.ui.cmdAccLeft = completeCmd(target)
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdTmp)
 		case "/", "?":
-			matches, app.ui.cmdAccLeft = completeFile(target)
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdTmp)
 		case "$", "%", "!", "&":
-			matches, app.ui.cmdAccLeft = completeShell(target)
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdTmp)
 		default:
 			return
 		}
@@ -1656,13 +1650,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := 1
-
-			// Check if the tab-selecttion was inited
+			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected++
+				app.ui.menuSelected %= len(matches)
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
@@ -1673,23 +1666,18 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuSelected = -2
 		}
 	case "cmd-menu-complete-back":
-		var target []rune
-
 		if app.ui.menuBuf == nil {
-			target = app.ui.cmdAccLeft
 			app.ui.cmdTmp = app.ui.cmdAccLeft
-		} else {
-			target = app.ui.cmdTmp
 		}
 
 		var matches []string
 		switch app.ui.cmdPrefix {
 		case ":":
-			matches, app.ui.cmdAccLeft = completeCmd(target)
+			matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdTmp)
 		case "/", "?":
-			matches, app.ui.cmdAccLeft = completeFile(target)
+			matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdTmp)
 		case "$", "%", "!", "&":
-			matches, app.ui.cmdAccLeft = completeShell(target)
+			matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdTmp)
 		default:
 			return
 		}
@@ -1697,13 +1685,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.draw(app.nav)
 
 		if len(matches) > 1 {
-			step := -1
-
-			// Check if the tab-selecttion was inited
+			// Check if the tab-selection was inited
 			if app.ui.menuSelected == -2 {
 				app.ui.menuSelected = -1
+			} else if app.ui.menuSelected <= 0 {
+				app.ui.menuSelected = len(matches) - 1
 			} else {
-				app.ui.menuSelected = mod(app.ui.menuSelected+step, len(matches))
+				app.ui.menuSelected--
 			}
 
 			if err := listMatchesMenu(app.ui, matches); err != nil {
@@ -1713,6 +1701,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.menuBuf = nil
 			app.ui.menuSelected = -2
 		}
+	case "cmd-menu-accept":
+		app.ui.menuBuf = nil
+		app.ui.menuSelected = -2
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 && app.ui.cmdPrefix != "filter: " {

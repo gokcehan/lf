@@ -1265,13 +1265,14 @@ func listMatchesMenu(ui *ui, matches []string) error {
 
 			// Handle menu tab match only if wanted
 			if ui.menuSelected == i {
+				comp := []rune(escape(target))
 				toks := tokenize(string(ui.cmdAccLeft))
-				last := toks[len(toks)-1]
+				_, last := filepath.Split(toks[len(toks)-1])
 
-				if strings.Contains(target, last) {
-					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
+				if last == "" {
+					ui.cmdAccLeft = append(ui.cmdAccLeft, comp...)
 				} else {
-					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
+					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len([]rune(last))], comp...)
 				}
 
 				target = fmt.Sprintf("\033[7m%s\033[0m%*s", target, wcol-len(target), "")

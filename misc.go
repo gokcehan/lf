@@ -91,7 +91,7 @@ func unescape(s string) string {
 }
 
 // This function splits the given string by whitespaces. It is aware of escaped
-// whitespaces so that they are not splitted unintentionally.
+// whitespaces so that they are not split unintentionally.
 func tokenize(s string) []string {
 	esc := false
 	var buf []rune
@@ -293,10 +293,6 @@ func max(a, b int) int {
 		return a
 	}
 	return b
-}
-
-func mod(a, b int) int {
-	return (a%b + b) % b
 }
 
 // We don't need no generic code
