@@ -612,17 +612,21 @@ func (nav *nav) previewLoop(ui *ui) {
 				break loop
 			}
 		}
+		win := ui.wins[len(ui.wins)-1]
 		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
 			nav.exportFiles()
 			exportOpts()
-			cmd := exec.Command(gOpts.cleaner, prev)
+			cmd := exec.Command(gOpts.cleaner, prev,
+				strconv.Itoa(win.w),
+				strconv.Itoa(win.h),
+				strconv.Itoa(win.x),
+				strconv.Itoa(win.y))
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
 			}
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			win := ui.wins[len(ui.wins)-1]
 			nav.preview(path, win)
 			prev = path
 		}
