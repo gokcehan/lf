@@ -666,6 +666,10 @@ any sequence, '?' to match any character, and '[...]' or '[^...] to match
 character sets or ranges. In addition, if a pattern starts with '!', then
 its matches are excluded from hidden files.
 
+    history        bool      (default on)
+
+Save command history.
+
     icons          bool      (default off)
 
 Show icons before each item in the list.
@@ -930,7 +934,7 @@ This shell command can be defined to override the default 'paste' command.
 
     rename
 
-This shell command can be defined to override the default 'paste' command.
+This shell command can be defined to override the default 'rename' command.
 
     delete
 
@@ -1138,7 +1142,7 @@ this:
         if [ -z "$fs" ]; then
             mv "$f" ~/.trash
         else
-            IFS="'printf '\n\t''"; mv $fs ~/.trash
+            IFS="$(printf '\n\t')"; mv $fs ~/.trash
         fi
     }}
 
@@ -1149,7 +1153,7 @@ conditional:
 
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS="'printf '\n\t''"; mv $fx ~/.trash
+        IFS="$(printf '\n\t')"; mv $fx ~/.trash
     }}
 
 The trash directory is checked each time the command is executed. We can
@@ -1157,13 +1161,13 @@ move it outside of the command so it would only run once at startup:
 
     ${{ mkdir -p ~/.trash }}
 
-    cmd trash ${{ IFS="'printf '\n\t''"; mv $fx ~/.trash }}
+    cmd trash ${{ IFS="$(printf '\n\t')"; mv $fx ~/.trash }}
 
 Since these are one liners, we can drop '{{' and '}}':
 
     $mkdir -p ~/.trash
 
-    cmd trash $IFS="'printf '\n\t''"; mv $fx ~/.trash
+    cmd trash $IFS="$(printf '\n\t')"; mv $fx ~/.trash
 
 Finally note that we set 'IFS' variable manually in these commands. Instead
 we could use the 'ifs' option to set it for all shell commands (i.e. 'set
@@ -1348,16 +1352,12 @@ pattern. Globbing supports '*' to match any sequence, '?' to match any
 character, and '[...]' or '[^...] to match character sets or ranges. You can
 enable 'incsearch' option to jump to the current match at each keystroke
 while typing. In this mode, you can either use 'cmd-enter' to accept the
-search or use 'cmd-escape' to cancel the search. Alternatively, you can also
-map some other commands with 'cmap' to accept the search and execute the
-command immediately afterwards. Possible candidates are 'up', 'down' and
-their variants, 'top', 'bottom', 'updir', and 'open' commands. For example,
-you can use arrow keys to finish the search with the following mappings:
+search or use 'cmd-escape' to cancel the search. You can also map some other
+commands with 'cmap' to accept the search and execute the command
+immediately afterwards. For example, you can use the right arrow key to
+finish the search and open the selected file with the following mapping:
 
-    cmap <up>    up
-    cmap <down>  down
-    cmap <left>  updir
-    cmap <right> open
+    cmap <right> :cmd-enter; open
 
 Finding mechanism is implemented with commands 'find' (default 'f'),
 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default
@@ -1393,8 +1393,7 @@ You may want to use either file extensions or mime types from 'file'
 command:
 
     cmd open ${{
-        test -L $f && f=$(readlink -f $f)
-        case $(file --mime-type $f -b) in
+        case $(file --mime-type -Lb $f) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
@@ -1417,7 +1416,7 @@ Previewing Files
 lf previews files on the preview pane by printing the file until the end or
 the preview pane is filled. This output can be enhanced by providing a
 custom preview script for filtering. This can be used to highlight source
-codes, list contents of archive files or view pdf or image files to name
+codes, list contents of archive files or view pdf or image files to name a
 few. For coloring lf recognizes ansi escape codes.
 
 In order to use this feature you need to set the value of 'previewer' option

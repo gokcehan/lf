@@ -774,6 +774,12 @@ Show hidden files. On Unix systems, hidden files are determined by the value of 
 List of hidden file glob patterns. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
 .PP
 .EX
+    history        bool      (default on)
+.EE
+.PP
+Save command history.
+.PP
+.EX
     icons          bool      (default off)
 .EE
 .PP
@@ -1061,7 +1067,7 @@ This shell command can be defined to override the default 'paste' command.
     rename
 .EE
 .PP
-This shell command can be defined to override the default 'paste' command.
+This shell command can be defined to override the default 'rename' command.
 .PP
 .EX
     delete
@@ -1278,7 +1284,7 @@ Regular shell commands are the most basic command type that is useful for many p
         if [ -z "$fs" ]; then
             mv "$f" ~/.trash
         else
-            IFS="`printf '\en\et'`"; mv $fs ~/.trash
+            IFS="$(printf '\en\et')"; mv $fs ~/.trash
         fi
     }}
 .EE
@@ -1288,7 +1294,7 @@ We check '$fs' to see if there are any selected files. Otherwise we just delete 
 .EX
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS="`printf '\en\et'`"; mv $fx ~/.trash
+        IFS="$(printf '\en\et')"; mv $fx ~/.trash
     }}
 .EE
 .PP
@@ -1299,7 +1305,7 @@ The trash directory is checked each time the command is executed. We can move it
 .EE
 .PP
 .EX
-    cmd trash ${{ IFS="`printf '\en\et'`"; mv $fx ~/.trash }}
+    cmd trash ${{ IFS="$(printf '\en\et')"; mv $fx ~/.trash }}
 .EE
 .PP
 Since these are one liners, we can drop '{{' and '}}':
@@ -1309,7 +1315,7 @@ Since these are one liners, we can drop '{{' and '}}':
 .EE
 .PP
 .EX
-    cmd trash $IFS="`printf '\en\et'`"; mv $fx ~/.trash
+    cmd trash $IFS="$(printf '\en\et')"; mv $fx ~/.trash
 .EE
 .PP
 Finally note that we set 'IFS' variable manually in these commands. Instead we could use the 'ifs' option to set it for all shell commands (i.e. 'set ifs "\en"'). This can be especially useful for interactive use (e.g. '$rm $f' or '$rm $fs' would simply work). This option is not set by default as it can behave unexpectedly for new users. However, use of this option is highly recommended and it is assumed in the rest of the documentation.
@@ -1413,13 +1419,10 @@ By default, lf does not assign 'delete' command to a key to protect new users. Y
 .SH SEARCHING FILES
 There are two mechanisms implemented in lf to search a file in the current directory. Searching is the traditional method to move the selection to a file matching a given pattern. Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 .PP
-Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search. Alternatively, you can also map some other commands with 'cmap' to accept the search and execute the command immediately afterwards. Possible candidates are 'up', 'down' and their variants, 'top', 'bottom', 'updir', and 'open' commands. For example, you can use arrow keys to finish the search with the following mappings:
+Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search. You can also map some other commands with 'cmap' to accept the search and execute the command immediately afterwards. For example, you can use the right arrow key to finish the search and open the selected file with the following mapping:
 .PP
 .EX
-    cmap <up>    up
-    cmap <down>  down
-    cmap <left>  updir
-    cmap <right> open
+    cmap <right> :cmd-enter; open
 .EE
 .PP
 Finding mechanism is implemented with commands 'find' (default 'f'), 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default ','). You can disable 'anchorfind' option to match a pattern at an arbitrary position in the filename instead of the beginning. You can set the number of keys to match using 'findlen' option. If you set this value to zero, then the the keys are read until there is only a single match. Default values of these two options are set to jump to the first file with the given initial.
@@ -1442,8 +1445,7 @@ You may want to use either file extensions or mime types from 'file' command:
 .PP
 .EX
     cmd open ${{
-        test -L $f && f=$(readlink -f $f)
-        case $(file --mime-type $f -b) in
+        case $(file --mime-type -Lb $f) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
@@ -1460,7 +1462,7 @@ Following command is provided by default:
 .PP
 You may also use any other existing file openers as you like. Possible options are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's default file opener), or 'mimeo' to name a few.
 .SH PREVIEWING FILES
-lf previews files on the preview pane by printing the file until the end or the preview pane is filled. This output can be enhanced by providing a custom preview script for filtering. This can be used to highlight source codes, list contents of archive files or view pdf or image files to name few. For coloring lf recognizes ansi escape codes.
+lf previews files on the preview pane by printing the file until the end or the preview pane is filled. This output can be enhanced by providing a custom preview script for filtering. This can be used to highlight source codes, list contents of archive files or view pdf or image files to name a few. For coloring lf recognizes ansi escape codes.
 .PP
 In order to use this feature you need to set the value of 'previewer' option to the path of an executable file. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. Output of the execution is printed in the preview pane. You may also want to use the same script in your pager mapping as well:
 .PP
