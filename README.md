@@ -18,7 +18,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ## Features
 
-- Cross-platform (Linux, MacOS, BSDs, Windows)
+- Cross-platform (Linux, macOS, BSDs, Windows)
 - Single binary without any runtime dependencies
 - Fast startup and low memory footprint due to native code and static binaries
 - Asynchronous IO operations to avoid UI locking
