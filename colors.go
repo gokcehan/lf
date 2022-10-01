@@ -110,6 +110,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			st = st.Bold(true)
 		case n == 2:
 			st = st.Dim(true)
+		case n == 3:
+			st = st.Italic(true)
 		case n == 4:
 			st = st.Underline(true)
 		case n == 5 || n == 6:
