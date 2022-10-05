@@ -149,6 +149,9 @@ var (
 		"incfilter",
 		"noincfilter",
 		"incfilter!",
+		"compignorecase",
+		"nocompignorecase",
+		"compignorecase!",
 		"mouse",
 		"nomouse",
 		"mouse!",
@@ -312,8 +315,13 @@ func matchFile(s string) (matches []string, longest []rune) {
 			continue
 		}
 
+		name = f.Name()
 		_, last := filepath.Split(s)
-		if !strings.HasPrefix(escape(f.Name()), last) {
+		if gOpts.compignorecase {
+			name = strings.ToLower(name)
+			last = strings.ToLower(last)
+		}
+		if !strings.HasPrefix(escape(name), last) {
 			continue
 		}
 
@@ -329,7 +337,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 		matches = append(matches, item)
 
-		if len(longest) != 0 {
+		if longest != nil {
 			longest = matchLongest(longest, []rune(name))
 		} else if s != "" {
 			if f.Mode().IsRegular() {
@@ -340,7 +348,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 	}
 
-	if len(longest) == 0 {
+	if len(longest) < len([]rune(s)) {
 		longest = []rune(s)
 	}
 
@@ -422,20 +430,26 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 	}
 
 	for _, f := range files {
-		if !strings.HasPrefix(f.Name(), s) {
+		name := f.Name()
+		prefix := s
+		if gOpts.compignorecase {
+			name = strings.ToLower(name)
+			prefix = strings.ToLower(prefix)
+		}
+		if !strings.HasPrefix(name, prefix) {
 			continue
 		}
 
 		matches = append(matches, f.Name())
 
-		if len(longestAcc) != 0 {
+		if longestAcc != nil {
 			longestAcc = matchLongest(longestAcc, []rune(f.Name()))
 		} else if s != "" {
 			longestAcc = []rune(f.Name())
 		}
 	}
 
-	if len(longestAcc) == 0 {
+	if len(longestAcc) < len(acc) {
 		longestAcc = acc
 	}
 
