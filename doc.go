@@ -1,3 +1,4 @@
+//go:generate gen/check_go_version.sh
 //go:generate gen/docstring.sh
 //go:generate gen/man.sh
 
