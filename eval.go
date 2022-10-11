@@ -10,6 +10,8 @@ import (
 	"time"
 	"unicode"
 	"unicode/utf8"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 func (e *setExpr) eval(app *app, args []string) {
@@ -179,7 +181,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "mouse":
 		if !gOpts.mouse {
 			gOpts.mouse = true
-			app.ui.screen.EnableMouse()
+			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
 		}
 	case "nomouse":
 		if gOpts.mouse {
@@ -192,7 +194,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.screen.DisableMouse()
 		} else {
 			gOpts.mouse = true
-			app.ui.screen.EnableMouse()
+			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
 		}
 	case "number":
 		gOpts.number = true
