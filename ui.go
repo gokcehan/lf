@@ -594,6 +594,16 @@ func newUI(screen tcell.Screen) *ui {
 	return ui
 }
 
+func (ui *ui) winAt(x, y int) (int, *win) {
+	for i := len(ui.wins) - 1; i >= 0; i-- {
+		w := ui.wins[i]
+		if x >= w.x && y >= w.y && y < w.y+w.h {
+			return i, w
+		}
+	}
+	return -1, nil
+}
+
 func (ui *ui) pollEvents() {
 	var ev tcell.Event
 	for {
@@ -874,6 +884,18 @@ func (ui *ui) drawBox() {
 	}
 }
 
+func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
+	wins := len(ui.wins)
+	if gOpts.preview {
+		wins--
+	}
+	ind := len(nav.dirs) - wins + wind
+	if ind < 0 {
+		return nil
+	}
+	return nav.dirs[ind]
+}
+
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
@@ -887,18 +909,15 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.drawPromptLine(nav)
 
-	length := min(len(ui.wins), len(nav.dirs))
-	woff := len(ui.wins) - length
-
+	wins := len(ui.wins)
 	if gOpts.preview {
-		length = min(len(ui.wins)-1, len(nav.dirs))
-		woff = len(ui.wins) - 1 - length
+		wins--
 	}
-
-	doff := len(nav.dirs) - length
-	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], &context,
-			&dirStyle{colors: ui.styles, icons: ui.icons, previewing: false})
+	for i := 0; i < wins; i++ {
+		if dir := ui.dirOfWin(nav, i); dir != nil {
+			ui.wins[i].printDir(ui.screen, dir, &context,
+				&dirStyle{colors: ui.styles, icons: ui.icons, previewing: false})
+		}
 	}
 
 	switch ui.cmdPrefix {
@@ -1062,7 +1081,7 @@ func (ui *ui) pollEvent() tcell.Event {
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readNormalEvent(ev tcell.Event) expr {
+func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 0
 
@@ -1136,6 +1155,10 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			return draw
 		}
 	case *tcell.EventMouse:
+		if ui.cmdPrefix != "" {
+			return nil
+		}
+
 		var button string
 
 		switch tev.Buttons() {
@@ -1166,22 +1189,62 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 		case tcell.ButtonNone:
 			return nil
 		}
-
-		expr, ok := gOpts.keys[button]
-		if !ok {
-			ui.echoerrf("unknown mapping: %s", button)
-			return draw
+		if expr, ok := gOpts.keys[button]; ok {
+			return expr
 		}
 
-		return expr
+		if tev.Buttons() != tcell.Button1 && tev.Buttons() != tcell.Button2 {
+			return nil
+		}
+
+		x, y := tev.Position()
+		wind, w := ui.winAt(x, y)
+		if wind == -1 {
+			return nil
+		}
+
+		var dir *dir
+		if gOpts.preview && wind == len(ui.wins)-1 {
+			curr, err := nav.currFile()
+			if err != nil {
+				return nil
+			} else if !curr.IsDir() || gOpts.dirpreviews {
+				return &callExpr{"open", nil, 1}
+			}
+			dir = ui.dirPrev
+		} else {
+			dir = ui.dirOfWin(nav, wind)
+			if dir == nil {
+				return nil
+			}
+		}
+
+		var file *file
+		ind := dir.ind - dir.pos + y - w.y
+		if ind < len(dir.files) {
+			file = dir.files[ind]
+		}
+
+		if file != nil {
+			sel := &callExpr{"select", []string{file.path}, 1}
+
+			if tev.Buttons() == tcell.Button1 {
+				return sel
+			}
+			if file.IsDir() {
+				return &callExpr{"cd", []string{file.path}, 1}
+			}
+			return &listExpr{[]expr{sel, &callExpr{"open", nil, 1}}, 1}
+		}
+		if tev.Buttons() == tcell.Button1 {
+			return &callExpr{"cd", []string{dir.path}, 1}
+		}
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
-		return nil
 	case *tcell.EventInterrupt:
 		log.Printf("Got EventInterrupt: at %s", tev.When())
-		return nil
 	}
 	return nil
 }
@@ -1208,7 +1271,7 @@ func readCmdEvent(ev tcell.Event) expr {
 	return nil
 }
 
-func (ui *ui) readEvent(ev tcell.Event) expr {
+func (ui *ui) readEvent(ev tcell.Event, nav *nav) expr {
 	if ev == nil {
 		return nil
 	}
@@ -1217,7 +1280,7 @@ func (ui *ui) readEvent(ev tcell.Event) expr {
 		return readCmdEvent(ev)
 	}
 
-	return ui.readNormalEvent(ev)
+	return ui.readNormalEvent(ev, nav)
 }
 
 func (ui *ui) readExpr() {

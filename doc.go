@@ -215,6 +215,14 @@ The following additional keybindings are provided by default:
 	map gh cd ~
 	map <space> :toggle; down
 
+If the 'mouse' option is enabled, mouse buttons have the following default effects:
+
+	Left mouse button
+	    Click on a file or directory to select it. To open a file, click on the preview.
+
+	Right mouse button
+	    Enter a directory or open a file.
+
 # Configuration
 
 Configuration files should be located at:
