@@ -442,7 +442,12 @@ func (e *setExpr) eval(app *app, args []string) {
 
 		gOpts.truncatechar = e.val
 	default:
-		app.ui.echoerrf("unknown option: %s", e.opt)
+		// any key with the prefix user_ is accepted as a user defined option
+		if strings.HasPrefix(e.opt, "user_") {
+			gOpts.user[e.opt[5:]] = e.val
+		} else {
+			app.ui.echoerrf("unknown option: %s", e.opt)
+		}
 		return
 	}
 	app.ui.loadFileInfo(app.nav)

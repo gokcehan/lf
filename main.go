@@ -152,6 +152,11 @@ func exportOpts() {
 
 			dirfirst := strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
 			os.Setenv("lf_dirfirst", dirfirst)
+		} else if name == "lf_user" {
+			// set each user option
+			for key, value := range gOpts.user {
+				os.Setenv(name+"_"+key, value)
+			}
 		} else {
 			field := e.Field(i)
 			value := fieldToString(field)
