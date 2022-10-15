@@ -1838,27 +1838,37 @@ func (m indexedSelections) Swap(i, j int) {
 func (m indexedSelections) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
 
 func (nav *nav) currSelections() []string {
+
+	currDirOnly := gOpts.selmode == "dir"
+	currDirPath := ""
+	if currDirOnly {
+		// select only from this directory
+		currDirPath = nav.currDir().path
+	}
+
 	paths := make([]string, 0, len(nav.selections))
 	indices := make([]int, 0, len(nav.selections))
 	for path, index := range nav.selections {
-		paths = append(paths, path)
-		indices = append(indices, index)
+		if !currDirOnly || filepath.Dir(path) == currDirPath {
+			paths = append(paths, path)
+			indices = append(indices, index)
+		}
 	}
 	sort.Sort(indexedSelections{paths: paths, indices: indices})
 	return paths
 }
 
 func (nav *nav) currFileOrSelections() (list []string, err error) {
-	if len(nav.selections) == 0 {
+	sel := nav.currSelections()
+
+	if len(sel) == 0 {
 		curr, err := nav.currFile()
 		if err != nil {
 			return nil, errors.New("no file selected")
 		}
-
 		return []string{curr.path}, nil
 	}
-
-	return nav.currSelections(), nil
+	return sel, nil
 }
 
 func (nav *nav) calcDirSize() error {

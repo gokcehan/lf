@@ -192,6 +192,7 @@ var (
 		"cleaner",
 		"promptfmt",
 		"ratios",
+		"selmode",
 		"shell",
 		"shellflag",
 		"shellopts",
