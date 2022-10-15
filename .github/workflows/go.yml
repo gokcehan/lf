@@ -15,6 +15,8 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
     - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
 
     - name: Set up Go
       uses: actions/setup-go@v2
@@ -26,3 +28,24 @@ jobs:
 
     - name: Test
       run: go test -v ./...
+
+    - uses: dominikh/staticcheck-action@v1.2.0
+      with:
+        version: "2022.1.3"
+        install-go: false
+
+  generate:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+      with:
+        fetch-depth: 1
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+
+    - name: Test `go fmt && go generate` on Go 1.19 creates no diffs
+      run: go fmt && go generate && git diff --exit-code
+
