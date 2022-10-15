@@ -288,7 +288,6 @@ func matchExec(s string) (matches []string, longest []rune) {
 }
 
 func matchFile(s string) (matches []string, longest []rune) {
-	s = unescape(s)
 	dir := replaceTilde(s)
 
 	if !filepath.IsAbs(dir) {
@@ -300,7 +299,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 	}
 
-	dir = filepath.Dir(dir)
+	dir = filepath.Dir(unescape(dir))
 
 	files, err := ioutil.ReadDir(dir)
 	if err != nil {
@@ -315,14 +314,15 @@ func matchFile(s string) (matches []string, longest []rune) {
 			continue
 		}
 
+		name = strings.ToLower(escape(f.Name()))
 		_, last := filepath.Split(s)
-		if !strings.HasPrefix(f.Name(), last) {
+		if !strings.HasPrefix(name, strings.ToLower(last)) {
 			continue
 		}
 
 		name = f.Name()
 		if isRoot(s) || filepath.Base(s) != s {
-			name = filepath.Join(filepath.Dir(s), f.Name())
+			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
 		}
 		name = escape(name)
 
@@ -332,7 +332,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 		matches = append(matches, item)
 
-		if len(longest) != 0 {
+		if longest != nil {
 			longest = matchLongest(longest, []rune(name))
 		} else if s != "" {
 			if f.Mode().IsRegular() {
@@ -343,7 +343,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 	}
 
-	if len(longest) == 0 {
+	if len(longest) < len([]rune(s)) {
 		longest = []rune(s)
 	}
 
@@ -425,20 +425,20 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 	}
 
 	for _, f := range files {
-		if !strings.HasPrefix(f.Name(), s) {
+		if !strings.HasPrefix(strings.ToLower(f.Name()), strings.ToLower(s)) {
 			continue
 		}
 
 		matches = append(matches, f.Name())
 
-		if len(longestAcc) != 0 {
+		if longestAcc != nil {
 			longestAcc = matchLongest(longestAcc, []rune(f.Name()))
 		} else if s != "" {
 			longestAcc = []rune(f.Name())
 		}
 	}
 
-	if len(longestAcc) == 0 {
+	if len(longestAcc) < len(acc) {
 		longestAcc = acc
 	}
 
