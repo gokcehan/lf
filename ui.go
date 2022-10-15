@@ -1036,7 +1036,7 @@ func (ui *ui) pollEvent() tcell.Event {
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 	draw := &callExpr{"draw", nil, 1}
-	count := 1
+	count := 0
 
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
@@ -1090,11 +1090,15 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 					count = c
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
-				if e, ok := expr.(*callExpr); ok {
-					e.count = count
-				} else if e, ok := expr.(*listExpr); ok {
-					e.count = count
+
+				if e, ok := expr.(*callExpr); ok && count != 0 {
+					expr = &callExpr{e.name, e.args, e.count}
+					expr.(*callExpr).count = count
+				} else if e, ok := expr.(*listExpr); ok && count != 0 {
+					expr = &listExpr{e.exprs, e.count}
+					expr.(*listExpr).count = count
 				}
+
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
