@@ -228,6 +228,9 @@ effects:
     Right mouse button
         Enter a directory or open a file.
 
+    Scroll wheel
+        Scroll up or down.
+
 # Configuration
 
 Configuration files should be located at:

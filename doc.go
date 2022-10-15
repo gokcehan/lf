@@ -223,6 +223,9 @@ If the 'mouse' option is enabled, mouse buttons have the following default effec
 	Right mouse button
 	    Enter a directory or open a file.
 
+	Scroll wheel
+	    Scroll up or down.
+
 # Configuration
 
 Configuration files should be located at:
