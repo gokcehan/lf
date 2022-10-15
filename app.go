@@ -239,6 +239,7 @@ func (app *app) writeHistory() error {
 // separate goroutines and sent here for update.
 func (app *app) loop() {
 	go app.nav.previewLoop(app.ui)
+	go app.nav.dirPreviewLoop(app.ui)
 
 	var serverChan <-chan expr
 	if !gSingleMode {
@@ -320,6 +321,7 @@ func (app *app) loop() {
 			app.quit()
 
 			app.nav.previewChan <- ""
+			app.nav.dirPreviewChan <- nil
 
 			log.Print("bye!")
 
@@ -384,6 +386,7 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
+
 			app.nav.checkDir(d)
 
 			if gOpts.dircache {
@@ -484,6 +487,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.nav.previewChan <- ""
+		app.nav.dirPreviewChan <- nil
+
 		if err := app.ui.suspend(); err != nil {
 			log.Printf("suspend: %s", err)
 		}

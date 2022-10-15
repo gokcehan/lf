@@ -324,7 +324,8 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap, previewAllowed bool) {
+
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -334,8 +335,22 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		return
 	}
 
-	if dir.loading && len(dir.files) == 0 {
+	if (dir.loading && len(dir.files) == 0) || (previewAllowed && dir.loading && gOpts.dirpreviews) {
 		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
+		return
+	}
+
+	if previewAllowed && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
+
+		// Print previewer result instead of default directory print operation.
+		st := tcell.StyleDefault
+		for i, l := range dir.lines {
+			if i > win.h-1 {
+				break
+			}
+
+			st = win.print(screen, 2, i, st, l)
+		}
 		return
 	}
 
@@ -855,7 +870,7 @@ func (ui *ui) draw(nav *nav) {
 
 	doff := len(nav.dirs) - length
 	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons, false)
 	}
 
 	switch ui.cmdPrefix {
@@ -889,7 +904,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons, true)
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, ui.regPrev)
 			}

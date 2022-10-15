@@ -33,6 +33,7 @@ var gOpts struct {
 	dircache       bool
 	dircounts      bool
 	dironly        bool
+	dirpreviews    bool
 	drawbox        bool
 	globsearch     bool
 	icons          bool
@@ -84,6 +85,7 @@ func init() {
 	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.dironly = false
+	gOpts.dirpreviews = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.icons = false

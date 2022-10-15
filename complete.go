@@ -123,6 +123,7 @@ var (
 		"nodirfirst",
 		"dirfirst!",
 		"dironly",
+		"dirpreviews",
 		"nodironly",
 		"dironly!",
 		"drawbox",
