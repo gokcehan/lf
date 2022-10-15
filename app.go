@@ -20,16 +20,19 @@ type cmdItem struct {
 }
 
 type app struct {
-	ui            *ui
-	nav           *nav
-	ticker        *time.Ticker
-	quitChan      chan struct{}
-	cmd           *exec.Cmd
-	cmdIn         io.WriteCloser
-	cmdOutBuf     []byte
-	cmdHistory    []cmdItem
-	cmdHistoryBeg int
-	cmdHistoryInd int
+	ui             *ui
+	nav            *nav
+	ticker         *time.Ticker
+	quitChan       chan struct{}
+	cmd            *exec.Cmd
+	cmdIn          io.WriteCloser
+	cmdOutBuf      []byte
+	cmdHistory     []cmdItem
+	cmdHistoryBeg  int
+	cmdHistoryInd  int
+	menuCompActive bool
+	menuComps      []string
+	menuCompInd    int
 }
 
 func newApp(ui *ui, nav *nav) *app {
