@@ -1183,20 +1183,20 @@ func (nav *nav) save(cp bool) error {
 	return nil
 }
 
-func (nav *nav) copyAsync(ui *ui, srcs []string, dstDir string) {
+func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 	echo := &callExpr{"echoerr", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
 		echo.args[0] = err.Error()
-		ui.exprChan <- echo
+		app.ui.exprChan <- echo
 		return
 	}
 
 	total, err := copySize(srcs)
 	if err != nil {
 		echo.args[0] = err.Error()
-		ui.exprChan <- echo
+		app.ui.exprChan <- echo
 		return
 	}
 
@@ -1216,7 +1216,7 @@ loop:
 			}
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
+			app.ui.exprChan <- echo
 		}
 	}
 
@@ -1224,27 +1224,27 @@ loop:
 
 	if gSingleMode {
 		nav.renew()
-		ui.loadFile(nav, true)
+		app.ui.loadFile(app, true)
 	} else {
 		if err := remote("send load"); err != nil {
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
+			app.ui.exprChan <- echo
 		}
 	}
 
 	if errCount == 0 {
-		ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mCopied successfully\033[0m"}, 1}
+		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mCopied successfully\033[0m"}, 1}
 	}
 }
 
-func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
+func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 	echo := &callExpr{"echoerr", []string{""}, 1}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
 		echo.args[0] = err.Error()
-		ui.exprChan <- echo
+		app.ui.exprChan <- echo
 		return
 	}
 
@@ -1258,7 +1258,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		if err != nil {
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
+			app.ui.exprChan <- echo
 			continue
 		}
 
@@ -1268,7 +1268,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 		if os.SameFile(srcStat, dstStat) {
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] rename %s %s: source and destination are the same file", errCount, src, dst)
-			ui.exprChan <- echo
+			app.ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
 			var newPath string
@@ -1284,7 +1284,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 				total, err := copySize([]string{src})
 				if err != nil {
 					echo.args[0] = err.Error()
-					ui.exprChan <- echo
+					app.ui.exprChan <- echo
 					continue
 				}
 
@@ -1304,7 +1304,7 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 						}
 						errCount++
 						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-						ui.exprChan <- echo
+						app.ui.exprChan <- echo
 					}
 				}
 
@@ -1314,13 +1314,13 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 					if err := os.RemoveAll(src); err != nil {
 						errCount++
 						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-						ui.exprChan <- echo
+						app.ui.exprChan <- echo
 					}
 				}
 			} else {
 				errCount++
 				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-				ui.exprChan <- echo
+				app.ui.exprChan <- echo
 			}
 		}
 	}
@@ -1329,21 +1329,21 @@ func (nav *nav) moveAsync(ui *ui, srcs []string, dstDir string) {
 
 	if gSingleMode {
 		nav.renew()
-		ui.loadFile(nav, true)
+		app.ui.loadFile(app, true)
 	} else {
 		if err := remote("send load"); err != nil {
 			errCount++
 			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			ui.exprChan <- echo
+			app.ui.exprChan <- echo
 		}
 	}
 
 	if errCount == 0 {
-		ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mMoved successfully\033[0m"}, 1}
+		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mMoved successfully\033[0m"}, 1}
 	}
 }
 
-func (nav *nav) paste(ui *ui) error {
+func (nav *nav) paste(app *app) error {
 	srcs, cp, err := loadFiles()
 	if err != nil {
 		return err
@@ -1356,9 +1356,9 @@ func (nav *nav) paste(ui *ui) error {
 	dstDir := nav.currDir().path
 
 	if cp {
-		go nav.copyAsync(ui, srcs, dstDir)
+		go nav.copyAsync(app, srcs, dstDir)
 	} else {
-		go nav.moveAsync(ui, srcs, dstDir)
+		go nav.moveAsync(app, srcs, dstDir)
 		if err := saveFiles(nil, false); err != nil {
 			return fmt.Errorf("clearing copy/cut buffer: %s", err)
 		}
@@ -1377,7 +1377,7 @@ func (nav *nav) paste(ui *ui) error {
 	return nil
 }
 
-func (nav *nav) del(ui *ui) error {
+func (nav *nav) del(app *app) error {
 	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
@@ -1395,7 +1395,7 @@ func (nav *nav) del(ui *ui) error {
 			if err := os.RemoveAll(path); err != nil {
 				errCount++
 				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-				ui.exprChan <- echo
+				app.ui.exprChan <- echo
 			}
 		}
 
@@ -1403,12 +1403,12 @@ func (nav *nav) del(ui *ui) error {
 
 		if gSingleMode {
 			nav.renew()
-			ui.loadFile(nav, true)
+			app.ui.loadFile(app, true)
 		} else {
 			if err := remote("send load"); err != nil {
 				errCount++
 				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-				ui.exprChan <- echo
+				app.ui.exprChan <- echo
 			}
 		}
 	}()
