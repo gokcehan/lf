@@ -191,6 +191,7 @@ lf when defined:
     delete
     pre-cd
     on-cd
+    on-select
     on-quit
 
 The following commands/keybindings are provided by default:
@@ -970,6 +971,11 @@ directory.
     on-cd
 
 This shell command can be defined to be executed after changing a directory.
+
+    on-select
+
+This shell command can be defined to be executed after the selection
+changes.
 
     on-quit
 

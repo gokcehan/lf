@@ -500,6 +500,7 @@ type ui struct {
 	keyCount    []rune
 	styles      styleMap
 	icons       iconMap
+	currentFile string
 }
 
 func getWidths(wtot int) []int {
@@ -550,18 +551,19 @@ func newUI(screen tcell.Screen) *ui {
 	wtot, htot := screen.Size()
 
 	ui := &ui{
-		screen:    screen,
-		polling:   true,
-		wins:      getWins(screen),
-		promptWin: newWin(wtot, 1, 0, 0),
-		msgWin:    newWin(wtot, 1, 0, htot-1),
-		menuWin:   newWin(wtot, 1, 0, htot-2),
-		exprChan:  make(chan expr, 1000),
-		keyChan:   make(chan string, 1000),
-		tevChan:   make(chan tcell.Event, 1000),
-		evChan:    make(chan tcell.Event, 1000),
-		styles:    parseStyles(),
-		icons:     parseIcons(),
+		screen:      screen,
+		polling:     true,
+		wins:        getWins(screen),
+		promptWin:   newWin(wtot, 1, 0, 0),
+		msgWin:      newWin(wtot, 1, 0, htot-1),
+		menuWin:     newWin(wtot, 1, 0, htot-2),
+		exprChan:    make(chan expr, 1000),
+		keyChan:     make(chan string, 1000),
+		tevChan:     make(chan tcell.Event, 1000),
+		evChan:      make(chan tcell.Event, 1000),
+		styles:      parseStyles(),
+		icons:       parseIcons(),
+		currentFile: "",
 	}
 
 	go ui.pollEvents()
@@ -645,28 +647,34 @@ type reg struct {
 	lines    []string
 }
 
-func (ui *ui) loadFile(nav *nav, volatile bool) {
-	if !nav.init {
+func (ui *ui) loadFile(app *app, volatile bool) {
+	if !app.nav.init {
 		return
 	}
 
-	curr, err := nav.currFile()
+	curr, err := app.nav.currFile()
 	if err != nil {
 		return
 	}
+
+	if curr.path == ui.currentFile {
+		return
+	}
+	ui.currentFile = curr.path
+	onSelect(app)
 
 	if !gOpts.preview {
 		return
 	}
 
 	if volatile {
-		nav.previewChan <- ""
+		app.nav.previewChan <- ""
 	}
 
 	if curr.IsDir() {
-		ui.dirPrev = nav.loadDir(curr.path)
+		ui.dirPrev = app.nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(curr.path, volatile)
+		ui.regPrev = app.nav.loadReg(curr.path, volatile)
 	}
 }
 

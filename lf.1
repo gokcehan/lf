@@ -209,6 +209,7 @@ The following special shell commands are used to customize the behavior of lf wh
     delete
     pre-cd
     on-cd
+    on-select
     on-quit
 .EE
 .PP
@@ -1108,6 +1109,12 @@ This shell command can be defined to be executed before changing a directory.
 .EE
 .PP
 This shell command can be defined to be executed after changing a directory.
+.PP
+.EX
+    on-select
+.EE
+.PP
+This shell command can be defined to be executed after the selection changes.
 .PP
 .EX
     on-quit
