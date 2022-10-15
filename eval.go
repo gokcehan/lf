@@ -176,12 +176,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.incsearch = false
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
-	case "compignorecase":
-		gOpts.compignorecase = true
-	case "nocompignorecase":
-		gOpts.compignorecase = false
-	case "compignorecase!":
-		gOpts.compignorecase = !gOpts.compignorecase
 	case "mouse":
 		if !gOpts.mouse {
 			gOpts.mouse = true

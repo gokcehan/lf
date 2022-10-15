@@ -149,9 +149,6 @@ var (
 		"incfilter",
 		"noincfilter",
 		"incfilter!",
-		"compignorecase",
-		"nocompignorecase",
-		"compignorecase!",
 		"mouse",
 		"nomouse",
 		"mouse!",
@@ -315,13 +312,9 @@ func matchFile(s string) (matches []string, longest []rune) {
 			continue
 		}
 
-		name = f.Name()
+		name = strings.ToLower(escape(f.Name()))
 		_, last := filepath.Split(s)
-		if gOpts.compignorecase {
-			name = strings.ToLower(name)
-			last = strings.ToLower(last)
-		}
-		if !strings.HasPrefix(escape(name), last) {
+		if !strings.HasPrefix(name, strings.ToLower(last)) {
 			continue
 		}
 
@@ -430,13 +423,7 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 	}
 
 	for _, f := range files {
-		name := f.Name()
-		prefix := s
-		if gOpts.compignorecase {
-			name = strings.ToLower(name)
-			prefix = strings.ToLower(prefix)
-		}
-		if !strings.HasPrefix(name, prefix) {
+		if !strings.HasPrefix(strings.ToLower(f.Name()), strings.ToLower(s)) {
 			continue
 		}
 

@@ -136,7 +136,6 @@ The following options can be used to customize the behavior of lf:
     ignoredia      bool      (default on)
     incfilter      bool      (default off)
     incsearch      bool      (default off)
-    compignorecase bool      (default off)
     info           []string  (default '')
     infotimefmtnew string    (default 'Jan _2 15:04')
     infotimefmtold string    (default 'Jan _2  2006')
@@ -705,10 +704,6 @@ Jump to the first match after each keystroke during searching.
     incfilter      bool      (default off)
 
 Apply filter pattern after each keystroke during filtering.
-
-    compignorecase bool      (default off)
-
-Ignore case when completing file names.
 
     info           []string  (default '')
 
