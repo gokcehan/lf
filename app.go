@@ -470,11 +470,11 @@ func (app *app) loop() {
 
 // This function is used to run a shell command. Modes are as follows:
 //
-//     Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
-//     $       No    No     Yes    Yes     Yes     Pause and then resume
-//     %       No    No     Yes    Yes     Yes     Statline for input/output
-//     !       Yes   No     Yes    Yes     Yes     Pause and then resume
-//     &       No    Yes    No     No      No      Do nothing
+//	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
+//	$       No    No     Yes    Yes     Yes     Pause and then resume
+//	%       No    No     Yes    Yes     Yes     Statline for input/output
+//	!       Yes   No     Yes    Yes     Yes     Pause and then resume
+//	&       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	exportOpts()

@@ -137,6 +137,7 @@ The following options can be used to customize the behavior of lf:
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
+    dirpreviews    bool      (default off)
     drawbox        bool      (default off)
     errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
     filesep        string    (default "\en")
@@ -740,6 +741,12 @@ Show directories first above regular files.
     dironly        bool      (default off)
 .EE
 .PP
+If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+.PP
+.EX
+    dirpreviews    bool      (default off)
+.EE
+.PP
 Show only directories.
 .PP
 .EX
@@ -1074,10 +1081,12 @@ If this variable is set in the environment, use the same value, otherwise set th
 .PP
 Value of the {option}.
 .SH SPECIAL COMMANDS
+This section shows information about special shell commands.
 .PP
 .EX
     open
 .EE
+.PP
 This shell command can be defined to override the default 'open' command when the current file is not a directory.
 .PP
 .EX
@@ -1572,11 +1581,11 @@ There is also a 'pre-cd' command, that works like 'on-cd', but is run before the
 lf tries to automatically adapt its colors to the environment. It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values. Colors are set in the following order:
 .PP
 .EX
-    1. default
-    2. LSCOLORS (Mac/BSD ls)
-    3. LS_COLORS (GNU ls)
-    4. LF_COLORS (lf specific)
-    5. colors file (lf specific)
+ 1. default
+ 2. LSCOLORS (Mac/BSD ls)
+ 3. LS_COLORS (GNU ls)
+ 4. LF_COLORS (lf specific)
+ 5. colors file (lf specific)
 .EE
 .PP
 Please refer to the corresponding man pages for more information about 'LSCOLORS' and 'LS_COLORS'. 'LF_COLORS' is provided with the same syntax as 'LS_COLORS' in case you want to configure colors only for lf but not ls. This can be useful since there are some differences between ls and lf, though one should expect the same behavior for common cases. Colors file is provided for easier configuration without environment variables. This file should consist of whitespace separated pairs with '#' character to start comments until the end of line.
@@ -1611,40 +1620,40 @@ Default lf colors are mostly taken from GNU dircolors defaults. These defaults u
 Note that lf first tries matching file names and then falls back to file types. The full order of matchings from most specific to least are as follows:
 .PP
 .EX
-    1. Full Path (e.g. '~/.config/lf/lfrc')
-    2. Dir Name  (e.g. '.git/') (only matches dirs with a trailing slash at the end)
-    3. File Type (e.g. 'ln') (except 'fi')
-    4. File Name (e.g. 'README*')
-    5. File Name (e.g. '*README')
-    6. Base Name (e.g. 'README.*')
-    7. Extension (e.g. '*.txt')
-    8. Default   (i.e. 'fi')
+ 1. Full Path (e.g. '~/.config/lf/lfrc')
+ 2. Dir Name (e.g. '.git/') (only matches dirs with a trailing slash at the end)
+ 3. File Type (e.g. 'ln') (except 'fi')
+ 4. File Name (e.g. 'README*')
+ 5. File Name (e.g. '*README')
+ 6. Base Name (e.g. 'README.*')
+ 7. Extension (e.g. '*.txt')
+ 8. Default (i.e. 'fi')
 .EE
 .PP
 For example, given a regular text file '/path/to/README.txt', the following entries are checked in the configuration and the first one to match is used:
 .PP
 .EX
-    1. '/path/to/README.txt'
-    2. (skipped since the file is not a directory)
-    3. (skipped since the file is of type 'fi')
-    4. 'README.txt*'
-    5. '*README.txt'
-    6. 'README.*'
-    7. '*.txt'
-    8. 'fi'
+ 1. '/path/to/README.txt'
+ 2. (skipped since the file is not a directory)
+ 3. (skipped since the file is of type 'fi')
+ 4. 'README.txt*'
+ 5. '*README.txt'
+ 6. 'README.*'
+ 7. '*.txt'
+ 8. 'fi'
 .EE
 .PP
 Given a regular directory '/path/to/example.d', the following entries are checked in the configuration and the first one to match is used:
 .PP
 .EX
-    1. '/path/to/example.d'
-    2. 'example.d/'
-    3. 'di'
-    4. 'example.d*'
-    5. '*example.d'
-    6. 'example.*'
-    7. '*.d'
-    8. 'fi'
+ 1. '/path/to/example.d'
+ 2. 'example.d/'
+ 3. 'di'
+ 4. 'example.d*'
+ 5. '*example.d'
+ 6. 'example.*'
+ 7. '*.d'
+ 8. 'fi'
 .EE
 .PP
 Note that glob-like patterns do not actually perform glob matching due to performance reasons.
