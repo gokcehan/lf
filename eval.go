@@ -850,6 +850,13 @@ func insert(app *app, arg string) {
 				app.ui.echoerrf("mark-remove: %s", err)
 			}
 		}
+	case app.ui.cmdPrefix == ":" && len(app.ui.cmdAccLeft) == 0:
+		switch arg {
+		case "!", "$", "%", "&":
+			app.ui.cmdPrefix = arg
+			return
+		}
+		fallthrough
 	default:
 		app.ui.menuBuf = nil
 		app.menuCompActive = false
@@ -1865,7 +1872,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		update(app)
 	case "cmd-delete-back":
 		if len(app.ui.cmdAccLeft) == 0 {
-			normal(app)
+			switch app.ui.cmdPrefix {
+			case "!", "$", "%", "&":
+				app.ui.cmdPrefix = ":"
+			case ">":
+				// Don't mess with the program waiting for input
+			default:
+				normal(app)
+			}
 			return
 		}
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
