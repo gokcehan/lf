@@ -612,21 +612,17 @@ func (nav *nav) exportFiles() {
 
 func (nav *nav) dirPreviewLoop(ui *ui) {
 	var prevPath string
-	for {
-		select {
-		case dir := <-nav.dirPreviewChan:
-
-			if dir == nil && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-				cmd := exec.Command(gOpts.cleaner, prevPath)
-				if err := cmd.Run(); err != nil {
-					log.Printf("cleaning preview: %s", err)
-				}
-				nav.volatilePreview = false
-			} else if dir != nil {
-				win := ui.wins[len(ui.wins)-1]
-				nav.previewDir(dir, win)
-				prevPath = dir.path
+	for dir := range nav.dirPreviewChan {
+		if dir == nil && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			cmd := exec.Command(gOpts.cleaner, prevPath)
+			if err := cmd.Run(); err != nil {
+				log.Printf("cleaning preview: %s", err)
 			}
+			nav.volatilePreview = false
+		} else if dir != nil {
+			win := ui.wins[len(ui.wins)-1]
+			nav.previewDir(dir, win)
+			prevPath = dir.path
 		}
 	}
 }
@@ -665,6 +661,7 @@ func (nav *nav) previewLoop(ui *ui) {
 	}
 }
 
+//lint:ignore U1000 This function is not used on Windows
 func matchPattern(pattern, name, path string) bool {
 	s := name
 
@@ -1452,7 +1449,7 @@ func (nav *nav) sync() error {
 	}
 
 	oldmarks := nav.marks
-	err = nav.readMarks()
+	errMarks := nav.readMarks()
 	for _, ch := range gOpts.tempmarks {
 		tmp := string(ch)
 		if v, e := oldmarks[tmp]; e {
@@ -1460,6 +1457,9 @@ func (nav *nav) sync() error {
 		}
 	}
 	err = nav.readTags()
+	if errMarks != nil {
+		return errMarks
+	}
 	return err
 }
 

@@ -468,7 +468,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		tag, ok := tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st.Reverse(true), tag)
+				win.print(screen, lnwidth+1, i, st, tag)
 			} else {
 				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
 			}
@@ -624,10 +624,6 @@ func (ui *ui) echof(format string, a ...interface{}) {
 func (ui *ui) echomsg(msg string) {
 	ui.msg = msg
 	log.Print(msg)
-}
-
-func (ui *ui) echomsgf(format string, a ...interface{}) {
-	ui.echomsg(fmt.Sprintf(format, a...))
 }
 
 func (ui *ui) echoerr(msg string) {
