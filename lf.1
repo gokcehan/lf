@@ -585,7 +585,11 @@ Tag a file with '*' or a single width character given in the argument. You can d
 .PP
 Tag a file with '*' or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 .SH COMMAND LINE COMMANDS
-This section shows information about command line commands. These should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+The prompt character specifies which of the several command-line modes you are in. For example, the 'read' command takes you to the ':' mode.
+.PP
+When the cursor is at the first character in ':' mode, pressing one of the keys '!', '$', '%', or '&' takes you to the corresponding mode. You can go back with 'cmd-delete-back' ('<backspace>' by default).
+.PP
+The command line commands should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 .PP
 .EX
     cmd-escape               (default '<esc>')
@@ -647,10 +651,15 @@ Move the cursor to the beginning/end of line.
 .PP
 .EX
     cmd-delete               (default '<c-d>' and '<delete>')
+.EE
+.PP
+Delete the next character.
+.PP
+.EX
     cmd-delete-back          (default '<backspace>' and '<backspace2>')
 .EE
 .PP
-Delete the next character in forward/backward direction.
+Delete the previous character. When at the beginning of a prompt, returns either to normal mode or to ':' mode.
 .PP
 .EX
     cmd-delete-home          (default '<c-u>')

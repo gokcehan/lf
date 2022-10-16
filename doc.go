@@ -479,8 +479,13 @@ Tag a file with '*' or a single width character given in the argument if the fil
 
 # Command Line Commands
 
-This section shows information about command line commands.
-These should be mostly compatible with readline keybindings.
+The prompt character specifies which of the several command-line modes you are in.
+For example, the 'read' command takes you to the ':' mode.
+
+When the cursor is at the first character in ':' mode, pressing one of the keys '!', '$', '%', or '&' takes you to the corresponding mode.
+You can go back with 'cmd-delete-back' ('<backspace>' by default).
+
+The command line commands should be mostly compatible with readline keybindings.
 A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 
 	cmd-escape               (default '<esc>')
@@ -526,9 +531,13 @@ Move the cursor to the left/right.
 Move the cursor to the beginning/end of line.
 
 	cmd-delete               (default '<c-d>' and '<delete>')
+
+Delete the next character.
+
 	cmd-delete-back          (default '<backspace>' and '<backspace2>')
 
-Delete the next character in forward/backward direction.
+Delete the previous character.
+When at the beginning of a prompt, returns either to normal mode or to ':' mode.
 
 	cmd-delete-home          (default '<c-u>')
 	cmd-delete-end           (default '<c-k>')
