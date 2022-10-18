@@ -64,12 +64,19 @@ func init() {
 
 	u, err := user.Current()
 	if err != nil {
+		// When the user is not in /etc/passwd (for e.g. LDAP) and CGO_ENABLED=1 in go env,
+		// the cgo implementation of user.Current() fails even when HOME and USER are set.
+
 		log.Printf("user: %s", err)
 		if os.Getenv("HOME") == "" {
-			log.Print("$HOME variable is empty or not set")
+			panic("$HOME variable is empty or not set")
 		}
 		if os.Getenv("USER") == "" {
-			log.Print("$USER variable is empty or not set")
+			panic("$USER variable is empty or not set")
+		}
+		u = &user.User{
+			Username: os.Getenv("USER"),
+			HomeDir:  os.Getenv("HOME"),
 		}
 	}
 	gUser = u
