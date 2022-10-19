@@ -134,12 +134,14 @@ func init() {
 
 	gOpts.keys["k"] = &callExpr{"up", nil, 1}
 	gOpts.keys["<up>"] = &callExpr{"up", nil, 1}
+	gOpts.keys["<m-up>"] = &callExpr{"up", nil, 1}
 	gOpts.keys["<c-u>"] = &callExpr{"half-up", nil, 1}
 	gOpts.keys["<c-b>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<pgup>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<c-y>"] = &callExpr{"scroll-up", nil, 1}
 	gOpts.keys["j"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<down>"] = &callExpr{"down", nil, 1}
+	gOpts.keys["<m-down>"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<c-d>"] = &callExpr{"half-down", nil, 1}
 	gOpts.keys["<c-f>"] = &callExpr{"page-down", nil, 1}
 	gOpts.keys["<pgdn>"] = &callExpr{"page-down", nil, 1}
