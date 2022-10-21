@@ -18,15 +18,6 @@ import (
 	"github.com/djherbis/times"
 )
 
-const (
-	gSixelBegin     = "\033P"
-	gSixelTerminate = "\033\\"
-)
-
-var (
-	gSixelFiller = '\u2800'
-)
-
 type linkState byte
 
 const (
