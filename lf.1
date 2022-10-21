@@ -102,6 +102,7 @@ The following command line commands are provided by lf:
     cmd-complete             (default '<tab>')
     cmd-menu-complete
     cmd-menu-complete-back
+    cmd-menu-accept
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>')
@@ -136,6 +137,7 @@ The following options can be used to customize the behavior of lf:
     dircounts      bool      (default off)
     dirfirst       bool      (default on)
     dironly        bool      (default off)
+    dirpreviews    bool      (default off)
     drawbox        bool      (default off)
     errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
     filesep        string    (default "\en")
@@ -163,6 +165,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber bool      (default off)
     reverse        bool      (default off)
     scrolloff      int       (default 0)
+    selmode        string    (default 'all')
     shell          string    (default 'sh' for Unix and 'cmd' for Windows)
     shellflag      string    (default '-c' for Unix and '/c' for Windows)
     shellopts      []string  (default '')
@@ -177,6 +180,7 @@ The following options can be used to customize the behavior of lf:
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
+    user_{key}     string    (default none)
 .EE
 .PP
 The following environment variables are exported for shell commands:
@@ -194,6 +198,7 @@ The following environment variables are exported for shell commands:
     PAGER
     SHELL
     lf_{option}
+    lf_user_{key}
 .EE
 .PP
 The following special shell commands are used to customize the behavior of lf when defined:
@@ -205,6 +210,7 @@ The following special shell commands are used to customize the behavior of lf wh
     delete
     pre-cd
     on-cd
+    on-select
     on-quit
 .EE
 .PP
@@ -235,6 +241,23 @@ The following additional keybindings are provided by default:
     map se :set sortby ext; set info
     map gh cd ~
     map <space> :toggle; down
+.EE
+.PP
+If the 'mouse' option is enabled, mouse buttons have the following default effects:
+.PP
+.EX
+    Left mouse button
+        Click on a file or directory to select it. To open a file, click on the preview.
+.EE
+.PP
+.EX
+    Right mouse button
+        Enter a directory or open a file.
+.EE
+.PP
+.EX
+    Scroll wheel
+        Scroll up or down.
 .EE
 .SH CONFIGURATION
 Configuration files should be located at:
@@ -579,7 +602,11 @@ Tag a file with '*' or a single width character given in the argument. You can d
 .PP
 Tag a file with '*' or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 .SH COMMAND LINE COMMANDS
-This section shows information about command line commands. These should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+The prompt character specifies which of the several command-line modes you are in. For example, the 'read' command takes you to the ':' mode.
+.PP
+When the cursor is at the first character in ':' mode, pressing one of the keys '!', '$', '%', or '&' takes you to the corresponding mode. You can go back with 'cmd-delete-back' ('<backspace>' by default).
+.PP
+The command line commands should be mostly compatible with readline keybindings. A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 .PP
 .EX
     cmd-escape               (default '<esc>')
@@ -599,6 +626,12 @@ Autocomplete the current word.
 .EE
 .PP
 Autocomplete the current word with menu selection. You need to assign keys to these commands (e.g. 'cmap <tab> cmd-menu-complete; cmap <backtab> cmd-menu-complete-back'). You can use the assigned keys assigned to display the menu and then cycle through completion options.
+.PP
+.EX
+    cmd-menu-accept
+.EE
+.PP
+Accept the currently selected match in menu completion and close the menu.
 .PP
 .EX
     cmd-enter                (default '<c-j>' and '<enter>')
@@ -635,10 +668,15 @@ Move the cursor to the beginning/end of line.
 .PP
 .EX
     cmd-delete               (default '<c-d>' and '<delete>')
+.EE
+.PP
+Delete the next character.
+.PP
+.EX
     cmd-delete-back          (default '<backspace>' and '<backspace2>')
 .EE
 .PP
-Delete the next character in forward/backward direction.
+Delete the previous character. When at the beginning of a prompt, returns either to normal mode or to ':' mode.
 .PP
 .EX
     cmd-delete-home          (default '<c-u>')
@@ -705,7 +743,7 @@ Automatically quit server when there are no clients left connected.
     cleaner        string    (default '') (not called if empty)
 .EE
 .PP
-Set the path of a cleaner file. The file should be executable. This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. One argument is passed to the file, path to the file whose preview should be cleaned. Preview clearing is disabled when the value of this option is left empty.
+Set the path of a cleaner file. The file should be executable. This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. Preview clearing is disabled when the value of this option is left empty.
 .PP
 .EX
     dircache       bool      (default on)
@@ -727,6 +765,12 @@ Show directories first above regular files.
 .PP
 .EX
     dironly        bool      (default off)
+.EE
+.PP
+If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+.PP
+.EX
+    dirpreviews    bool      (default off)
 .EE
 .PP
 Show only directories.
@@ -772,6 +816,12 @@ Show hidden files. On Unix systems, hidden files are determined by the value of 
 .EE
 .PP
 List of hidden file glob patterns. Patterns can be given as relative or absolute paths. Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+.PP
+.EX
+    history        bool      (default on)
+.EE
+.PP
+Save command history.
 .PP
 .EX
     icons          bool      (default off)
@@ -882,6 +932,12 @@ Show the position number relative to the current line. When 'number' is enabled,
 Reverse the direction of sort.
 .PP
 .EX
+    selmode        string    (default 'all')
+.EE
+.PP
+Selection mode for commands. When set to 'all' it will use the selected files from all directories. When set to 'dir' it will only use the selected files in the current directory.
+.PP
+.EX
     scrolloff      int       (default 0)
 .EE
 .PP
@@ -970,6 +1026,12 @@ Searching can wrap around the file list.
 .EE
 .PP
 Scrolling can wrap around the file list.
+.PP
+.EX
+    user_{key}     string    (default none)
+.EE
+.PP
+Any option that is prefixed with 'user_' is a user defined option and can be set to any string. Inside a user defined command the value will be provided in the `lf_user_{key}` environment variable. These options are not used by lf and are not persisted.
 .SH ENVIRONMENT VARIABLES
 The following variables are exported for shell commands: These are referred with a '$' prefix on POSIX shells (e.g. '$f'), between '%' characters on Windows cmd (e.g. '%f%'), and with a '$env:' prefix on Windows powershell (e.g. '$env:f').
 .PP
@@ -1045,10 +1107,12 @@ If this variable is set in the environment, use the same value, otherwise set th
 .PP
 Value of the {option}.
 .SH SPECIAL COMMANDS
+This section shows information about special shell commands.
 .PP
 .EX
     open
 .EE
+.PP
 This shell command can be defined to override the default 'open' command when the current file is not a directory.
 .PP
 .EX
@@ -1061,7 +1125,7 @@ This shell command can be defined to override the default 'paste' command.
     rename
 .EE
 .PP
-This shell command can be defined to override the default 'paste' command.
+This shell command can be defined to override the default 'rename' command.
 .PP
 .EX
     delete
@@ -1080,6 +1144,12 @@ This shell command can be defined to be executed before changing a directory.
 .EE
 .PP
 This shell command can be defined to be executed after changing a directory.
+.PP
+.EX
+    on-select
+.EE
+.PP
+This shell command can be defined to be executed after the selection changes.
 .PP
 .EX
     on-quit
@@ -1278,7 +1348,7 @@ Regular shell commands are the most basic command type that is useful for many p
         if [ -z "$fs" ]; then
             mv "$f" ~/.trash
         else
-            IFS="`printf '\en\et'`"; mv $fs ~/.trash
+            IFS="$(printf '\en\et')"; mv $fs ~/.trash
         fi
     }}
 .EE
@@ -1288,7 +1358,7 @@ We check '$fs' to see if there are any selected files. Otherwise we just delete 
 .EX
     cmd trash ${{
         mkdir -p ~/.trash
-        IFS="`printf '\en\et'`"; mv $fx ~/.trash
+        IFS="$(printf '\en\et')"; mv $fx ~/.trash
     }}
 .EE
 .PP
@@ -1299,7 +1369,7 @@ The trash directory is checked each time the command is executed. We can move it
 .EE
 .PP
 .EX
-    cmd trash ${{ IFS="`printf '\en\et'`"; mv $fx ~/.trash }}
+    cmd trash ${{ IFS="$(printf '\en\et')"; mv $fx ~/.trash }}
 .EE
 .PP
 Since these are one liners, we can drop '{{' and '}}':
@@ -1309,7 +1379,7 @@ Since these are one liners, we can drop '{{' and '}}':
 .EE
 .PP
 .EX
-    cmd trash $IFS="`printf '\en\et'`"; mv $fx ~/.trash
+    cmd trash $IFS="$(printf '\en\et')"; mv $fx ~/.trash
 .EE
 .PP
 Finally note that we set 'IFS' variable manually in these commands. Instead we could use the 'ifs' option to set it for all shell commands (i.e. 'set ifs "\en"'). This can be especially useful for interactive use (e.g. '$rm $f' or '$rm $fs' would simply work). This option is not set by default as it can behave unexpectedly for new users. However, use of this option is highly recommended and it is assumed in the rest of the documentation.
@@ -1413,13 +1483,10 @@ By default, lf does not assign 'delete' command to a key to protect new users. Y
 .SH SEARCHING FILES
 There are two mechanisms implemented in lf to search a file in the current directory. Searching is the traditional method to move the selection to a file matching a given pattern. Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 .PP
-Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search. Alternatively, you can also map some other commands with 'cmap' to accept the search and execute the command immediately afterwards. Possible candidates are 'up', 'down' and their variants, 'top', 'bottom', 'updir', and 'open' commands. For example, you can use arrow keys to finish the search with the following mappings:
+Searching mechanism is implemented with commands 'search' (default '/'), 'search-back' (default '?'), 'search-next' (default 'n'), and 'search-prev' (default 'N'). You can enable 'globsearch' option to match with a glob pattern. Globbing supports '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges. You can enable 'incsearch' option to jump to the current match at each keystroke while typing. In this mode, you can either use 'cmd-enter' to accept the search or use 'cmd-escape' to cancel the search. You can also map some other commands with 'cmap' to accept the search and execute the command immediately afterwards. For example, you can use the right arrow key to finish the search and open the selected file with the following mapping:
 .PP
 .EX
-    cmap <up>    up
-    cmap <down>  down
-    cmap <left>  updir
-    cmap <right> open
+    cmap <right> :cmd-enter; open
 .EE
 .PP
 Finding mechanism is implemented with commands 'find' (default 'f'), 'find-back' (default 'F'), 'find-next' (default ';'), 'find-prev' (default ','). You can disable 'anchorfind' option to match a pattern at an arbitrary position in the filename instead of the beginning. You can set the number of keys to match using 'findlen' option. If you set this value to zero, then the the keys are read until there is only a single match. Default values of these two options are set to jump to the first file with the given initial.
@@ -1442,8 +1509,7 @@ You may want to use either file extensions or mime types from 'file' command:
 .PP
 .EX
     cmd open ${{
-        test -L $f && f=$(readlink -f $f)
-        case $(file --mime-type $f -b) in
+        case $(file --mime-type -Lb $f) in
             text/*) vi $fx;;
             *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
         esac
@@ -1460,7 +1526,7 @@ Following command is provided by default:
 .PP
 You may also use any other existing file openers as you like. Possible options are 'libfile-mimeinfo-perl' (executable name is 'mimeopen'), 'rifle' (ranger's default file opener), or 'mimeo' to name a few.
 .SH PREVIEWING FILES
-lf previews files on the preview pane by printing the file until the end or the preview pane is filled. This output can be enhanced by providing a custom preview script for filtering. This can be used to highlight source codes, list contents of archive files or view pdf or image files to name few. For coloring lf recognizes ansi escape codes.
+lf previews files on the preview pane by printing the file until the end or the preview pane is filled. This output can be enhanced by providing a custom preview script for filtering. This can be used to highlight source codes, list contents of archive files or view pdf or image files to name a few. For coloring lf recognizes ansi escape codes.
 .PP
 In order to use this feature you need to set the value of 'previewer' option to the path of an executable file. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. Output of the execution is printed in the preview pane. You may also want to use the same script in your pager mapping as well:
 .PP
@@ -1541,11 +1607,11 @@ There is also a 'pre-cd' command, that works like 'on-cd', but is run before the
 lf tries to automatically adapt its colors to the environment. It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values. Colors are set in the following order:
 .PP
 .EX
-    1. default
-    2. LSCOLORS (Mac/BSD ls)
-    3. LS_COLORS (GNU ls)
-    4. LF_COLORS (lf specific)
-    5. colors file (lf specific)
+ 1. default
+ 2. LSCOLORS (Mac/BSD ls)
+ 3. LS_COLORS (GNU ls)
+ 4. LF_COLORS (lf specific)
+ 5. colors file (lf specific)
 .EE
 .PP
 Please refer to the corresponding man pages for more information about 'LSCOLORS' and 'LS_COLORS'. 'LF_COLORS' is provided with the same syntax as 'LS_COLORS' in case you want to configure colors only for lf but not ls. This can be useful since there are some differences between ls and lf, though one should expect the same behavior for common cases. Colors file is provided for easier configuration without environment variables. This file should consist of whitespace separated pairs with '#' character to start comments until the end of line.
@@ -1580,40 +1646,40 @@ Default lf colors are mostly taken from GNU dircolors defaults. These defaults u
 Note that lf first tries matching file names and then falls back to file types. The full order of matchings from most specific to least are as follows:
 .PP
 .EX
-    1. Full Path (e.g. '~/.config/lf/lfrc')
-    2. Dir Name  (e.g. '.git/') (only matches dirs with a trailing slash at the end)
-    3. File Type (e.g. 'ln') (except 'fi')
-    4. File Name (e.g. 'README*')
-    5. File Name (e.g. '*README')
-    6. Base Name (e.g. 'README.*')
-    7. Extension (e.g. '*.txt')
-    8. Default   (i.e. 'fi')
+ 1. Full Path (e.g. '~/.config/lf/lfrc')
+ 2. Dir Name (e.g. '.git/') (only matches dirs with a trailing slash at the end)
+ 3. File Type (e.g. 'ln') (except 'fi')
+ 4. File Name (e.g. 'README*')
+ 5. File Name (e.g. '*README')
+ 6. Base Name (e.g. 'README.*')
+ 7. Extension (e.g. '*.txt')
+ 8. Default (i.e. 'fi')
 .EE
 .PP
 For example, given a regular text file '/path/to/README.txt', the following entries are checked in the configuration and the first one to match is used:
 .PP
 .EX
-    1. '/path/to/README.txt'
-    2. (skipped since the file is not a directory)
-    3. (skipped since the file is of type 'fi')
-    4. 'README.txt*'
-    5. '*README.txt'
-    6. 'README.*'
-    7. '*.txt'
-    8. 'fi'
+ 1. '/path/to/README.txt'
+ 2. (skipped since the file is not a directory)
+ 3. (skipped since the file is of type 'fi')
+ 4. 'README.txt*'
+ 5. '*README.txt'
+ 6. 'README.*'
+ 7. '*.txt'
+ 8. 'fi'
 .EE
 .PP
 Given a regular directory '/path/to/example.d', the following entries are checked in the configuration and the first one to match is used:
 .PP
 .EX
-    1. '/path/to/example.d'
-    2. 'example.d/'
-    3. 'di'
-    4. 'example.d*'
-    5. '*example.d'
-    6. 'example.*'
-    7. '*.d'
-    8. 'fi'
+ 1. '/path/to/example.d'
+ 2. 'example.d/'
+ 3. 'di'
+ 4. 'example.d*'
+ 5. '*example.d'
+ 6. 'example.*'
+ 7. '*.d'
+ 8. 'fi'
 .EE
 .PP
 Note that glob-like patterns do not actually perform glob matching due to performance reasons.

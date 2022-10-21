@@ -18,10 +18,11 @@ func TestMatchLongest(t *testing.T) {
 		{"foo", "foobar", "foo"},
 		{"foo", "barfoo", ""},
 		{"foobar", "foobaz", "fooba"},
+		{"год", "гол", "го"},
 	}
 
 	for _, test := range tests {
-		if got := matchLongest(test.s1, test.s2); got != test.exp {
+		if got := string(matchLongest([]rune(test.s1), []rune(test.s2))); got != test.exp {
 			t.Errorf("at input '%s' and '%s' expected '%s' but got '%s'", test.s1, test.s2, test.exp, got)
 		}
 	}
@@ -48,8 +49,8 @@ func TestMatchWord(t *testing.T) {
 			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.matches, m)
 		}
 
-		if l != test.longest {
-			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.longest, l)
+		if ls := string(l); ls != test.longest {
+			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.longest, ls)
 		}
 	}
 }

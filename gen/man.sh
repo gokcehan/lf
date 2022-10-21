@@ -58,7 +58,8 @@ BEGIN {
 }
 
 # heading
-/^[^[:punct:]]*$/ {
+/^# *[^[:punct:]]*$/ {
+    gsub(/# */, "", $0)
     print ".SH", toupper($0)
     start = 1
     next

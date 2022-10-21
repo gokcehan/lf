@@ -331,23 +331,58 @@ func fileInfo(f *file, d *dir) string {
 	return info
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]int, saves map[string]bool, tags map[string]string, colors styleMap, icons iconMap) {
+type dirContext struct {
+	selections map[string]int
+	saves      map[string]bool
+	tags       map[string]string
+}
+
+type dirStyle struct {
+	colors     styleMap
+	icons      iconMap
+	previewing bool
+}
+
+// These colors are not currently customizeable
+const LineNumberColor = tcell.ColorOlive
+const SelectionColor = tcell.ColorPurple
+const YankColor = tcell.ColorOlive
+const CutColor = tcell.ColorMaroon
+const DimCursorColor = tcell.ColorGrey
+
+func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle) {
 	if win.w < 5 || dir == nil {
 		return
 	}
 
+	messageStyle := tcell.StyleDefault.Reverse(true)
+	if dirStyle.previewing {
+		messageStyle = messageStyle.Foreground(DimCursorColor)
+	}
+
 	if dir.noPerm {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "permission denied")
+		win.print(screen, 2, 0, messageStyle, "permission denied")
+		return
+	}
+	if (dir.loading && len(dir.files) == 0) || (dirStyle.previewing && dir.loading && gOpts.dirpreviews) {
+		win.print(screen, 2, 0, messageStyle, "loading...")
 		return
 	}
 
-	if dir.loading && len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "loading...")
+	if dirStyle.previewing && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
+		// Print previewer result instead of default directory print operation.
+		st := tcell.StyleDefault
+		for i, l := range dir.lines {
+			if i > win.h-1 {
+				break
+			}
+
+			st = win.print(screen, 2, i, st, l)
+		}
 		return
 	}
-
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, tcell.StyleDefault.Reverse(true), "empty")
+		win.print(screen, 2, 0, messageStyle, "empty")
 		return
 	}
 
@@ -373,7 +408,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 	}
 
 	for i, f := range dir.files[beg:end] {
-		st := colors.get(f)
+		st := dirStyle.colors.get(f)
 
 		if lnwidth > 0 {
 			var ln string
@@ -393,23 +428,26 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault.Foreground(tcell.ColorOlive), ln)
+			win.print(screen, 0, i, tcell.StyleDefault.Foreground(LineNumberColor), ln)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := selections[path]; ok {
-			win.print(screen, lnwidth, i, st.Background(tcell.ColorPurple), " ")
-		} else if cp, ok := saves[path]; ok {
+		if _, ok := context.selections[path]; ok {
+			win.print(screen, lnwidth, i, st.Background(SelectionColor), " ")
+		} else if cp, ok := context.saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorOlive), " ")
+				win.print(screen, lnwidth, i, st.Background(YankColor), " ")
 			} else {
-				win.print(screen, lnwidth, i, st.Background(tcell.ColorMaroon), " ")
+				win.print(screen, lnwidth, i, st.Background(CutColor), " ")
 			}
 		}
 
 		if i == dir.pos {
 			st = st.Reverse(true)
+			if dirStyle.previewing {
+				st = st.Foreground(DimCursorColor)
+			}
 		}
 
 		var s []rune
@@ -419,7 +457,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 		var iwidth int
 
 		if gOpts.icons {
-			s = append(s, []rune(icons.get(f))...)
+			s = append(s, []rune(dirStyle.icons.get(f))...)
 			s = append(s, ' ')
 			iwidth = 2
 		}
@@ -457,43 +495,15 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, selections map[string]in
 
 		win.print(screen, lnwidth+1, i, st, string(s))
 
-		tag, ok := tags[path]
+		tag, ok := context.tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st.Reverse(true), tag)
+				win.print(screen, lnwidth+1, i, st, tag)
 			} else {
 				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
 			}
 		}
 	}
-}
-
-type ui struct {
-	screen       tcell.Screen
-	sxScreen     sixelScreen
-	polling      bool
-	wins         []*win
-	promptWin    *win
-	msgWin       *win
-	menuWin      *win
-	msg          string
-	regPrev      *reg
-	dirPrev      *dir
-	exprChan     chan expr
-	keyChan      chan string
-	tevChan      chan tcell.Event
-	evChan       chan tcell.Event
-	menuBuf      *bytes.Buffer
-	menuSelected int
-	cmdPrefix    string
-	cmdAccLeft   []rune
-	cmdAccRight  []rune
-	cmdYankBuf   []rune
-	cmdTmp       []rune
-	keyAcc       []rune
-	keyCount     []rune
-	styles       styleMap
-	icons        iconMap
 }
 
 func getWidths(wtot int) []int {
@@ -540,23 +550,51 @@ func getWins(screen tcell.Screen) []*win {
 	return wins
 }
 
+type ui struct {
+	screen      tcell.Screen
+	polling     bool
+	wins        []*win
+	promptWin   *win
+	msgWin      *win
+	menuWin     *win
+	msg         string
+	regPrev     *reg
+	dirPrev     *dir
+	exprChan    chan expr
+	keyChan     chan string
+	tevChan     chan tcell.Event
+	evChan      chan tcell.Event
+	menuBuf     *bytes.Buffer
+	cmdPrefix   string
+	cmdAccLeft  []rune
+	cmdAccRight []rune
+	cmdYankBuf  []rune
+	cmdTmp      []rune
+	keyAcc      []rune
+	keyCount    []rune
+	styles      styleMap
+	icons       iconMap
+	currentFile string
+	sxScreen    sixelScreen
+}
+
 func newUI(screen tcell.Screen) *ui {
 	wtot, htot := screen.Size()
 
 	ui := &ui{
-		screen:       screen,
-		polling:      true,
-		wins:         getWins(screen),
-		promptWin:    newWin(wtot, 1, 0, 0),
-		msgWin:       newWin(wtot, 1, 0, htot-1),
-		menuWin:      newWin(wtot, 1, 0, htot-2),
-		exprChan:     make(chan expr, 1000),
-		keyChan:      make(chan string, 1000),
-		tevChan:      make(chan tcell.Event, 1000),
-		evChan:       make(chan tcell.Event, 1000),
-		styles:       parseStyles(),
-		icons:        parseIcons(),
-		menuSelected: -2,
+		screen:      screen,
+		polling:     true,
+		wins:        getWins(screen),
+		promptWin:   newWin(wtot, 1, 0, 0),
+		msgWin:      newWin(wtot, 1, 0, htot-1),
+		menuWin:     newWin(wtot, 1, 0, htot-2),
+		exprChan:    make(chan expr, 1000),
+		keyChan:     make(chan string, 1000),
+		tevChan:     make(chan tcell.Event, 1000),
+		evChan:      make(chan tcell.Event, 1000),
+		styles:      parseStyles(),
+		icons:       parseIcons(),
+		currentFile: "",
 	}
 
 	ui.sxScreen.updateSizes(screen.Size())
@@ -564,6 +602,16 @@ func newUI(screen tcell.Screen) *ui {
 	go ui.pollEvents()
 
 	return ui
+}
+
+func (ui *ui) winAt(x, y int) (int, *win) {
+	for i := len(ui.wins) - 1; i >= 0; i-- {
+		w := ui.wins[i]
+		if x >= w.x && y >= w.y && y < w.y+w.h {
+			return i, w
+		}
+	}
+	return -1, nil
 }
 
 func (ui *ui) pollEvents() {
@@ -621,10 +669,6 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
-func (ui *ui) echomsgf(format string, a ...interface{}) {
-	ui.echomsg(fmt.Sprintf(format, a...))
-}
-
 func (ui *ui) echoerr(msg string) {
 	ui.msg = fmt.Sprintf(gOpts.errorfmt, msg)
 	log.Printf("error: %s", msg)
@@ -643,28 +687,34 @@ type reg struct {
 	sixels   []sixel
 }
 
-func (ui *ui) loadFile(nav *nav, volatile bool) {
-	if !nav.init {
+func (ui *ui) loadFile(app *app, volatile bool) {
+	if !app.nav.init {
 		return
 	}
 
-	curr, err := nav.currFile()
+	curr, err := app.nav.currFile()
 	if err != nil {
 		return
 	}
+
+	if curr.path == ui.currentFile {
+		return
+	}
+	ui.currentFile = curr.path
+	onSelect(app)
 
 	if !gOpts.preview {
 		return
 	}
 
 	if volatile {
-		nav.previewChan <- ""
+		app.nav.previewChan <- ""
 	}
 
 	if curr.IsDir() {
-		ui.dirPrev = nav.loadDir(curr.path)
+		ui.dirPrev = app.nav.loadDir(curr.path)
 	} else if curr.Mode().IsRegular() {
-		ui.regPrev = nav.loadReg(curr.path, volatile)
+		ui.regPrev = app.nav.loadReg(curr.path, volatile)
 	}
 }
 
@@ -785,8 +835,9 @@ func (ui *ui) drawStatLine(nav *nav) {
 		}
 	}
 
-	if len(nav.selections) > 0 {
-		selection += fmt.Sprintf("  \033[35;7m %d \033[0m", len(nav.selections))
+	currSelections := nav.currSelections()
+	if len(currSelections) > 0 {
+		selection += fmt.Sprintf("  \033[35;7m %d \033[0m", len(currSelections))
 	}
 
 	if len(dir.filter) != 0 {
@@ -844,8 +895,21 @@ func (ui *ui) drawBox() {
 	}
 }
 
+func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
+	wins := len(ui.wins)
+	if gOpts.preview {
+		wins--
+	}
+	ind := len(nav.dirs) - wins + wind
+	if ind < 0 {
+		return nil
+	}
+	return nav.dirs[ind]
+}
+
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
+	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
 	wtot, htot := ui.screen.Size()
 	for i := 0; i < wtot; i++ {
@@ -857,17 +921,15 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.drawPromptLine(nav)
 
-	length := min(len(ui.wins), len(nav.dirs))
-	woff := len(ui.wins) - length
-
+	wins := len(ui.wins)
 	if gOpts.preview {
-		length = min(len(ui.wins)-1, len(nav.dirs))
-		woff = len(ui.wins) - 1 - length
+		wins--
 	}
-
-	doff := len(nav.dirs) - length
-	for i := 0; i < length; i++ {
-		ui.wins[woff+i].printDir(ui.screen, nav.dirs[doff+i], nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+	for i := 0; i < wins; i++ {
+		if dir := ui.dirOfWin(nav, i); dir != nil {
+			ui.wins[i].printDir(ui.screen, dir, &context,
+				&dirStyle{colors: ui.styles, icons: ui.icons, previewing: false})
+		}
 	}
 
 	switch ui.cmdPrefix {
@@ -901,7 +963,8 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, nav.selections, nav.saves, nav.tags, ui.styles, ui.icons)
+				preview.printDir(ui.screen, ui.dirPrev, &context,
+					&dirStyle{colors: ui.styles, icons: ui.icons, previewing: true})
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, &ui.sxScreen, ui.regPrev)
 			}
@@ -1034,9 +1097,9 @@ func (ui *ui) pollEvent() tcell.Event {
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
-func (ui *ui) readNormalEvent(ev tcell.Event) expr {
+func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
-	count := 1
+	count := 0
 
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
@@ -1090,11 +1153,15 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 					count = c
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
-				if e, ok := expr.(*callExpr); ok {
-					e.count = count
-				} else if e, ok := expr.(*listExpr); ok {
-					e.count = count
+
+				if e, ok := expr.(*callExpr); ok && count != 0 {
+					expr = &callExpr{e.name, e.args, e.count}
+					expr.(*callExpr).count = count
+				} else if e, ok := expr.(*listExpr); ok && count != 0 {
+					expr = &listExpr{e.exprs, e.count}
+					expr.(*listExpr).count = count
 				}
+
 				ui.keyAcc = nil
 				ui.keyCount = nil
 				ui.menuBuf = nil
@@ -1104,6 +1171,10 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 			return draw
 		}
 	case *tcell.EventMouse:
+		if ui.cmdPrefix != "" {
+			return nil
+		}
+
 		var button string
 
 		switch tev.Buttons() {
@@ -1134,22 +1205,62 @@ func (ui *ui) readNormalEvent(ev tcell.Event) expr {
 		case tcell.ButtonNone:
 			return nil
 		}
-
-		expr, ok := gOpts.keys[button]
-		if !ok {
-			ui.echoerrf("unknown mapping: %s", button)
-			return draw
+		if expr, ok := gOpts.keys[button]; ok {
+			return expr
 		}
 
-		return expr
+		if tev.Buttons() != tcell.Button1 && tev.Buttons() != tcell.Button2 {
+			return nil
+		}
+
+		x, y := tev.Position()
+		wind, w := ui.winAt(x, y)
+		if wind == -1 {
+			return nil
+		}
+
+		var dir *dir
+		if gOpts.preview && wind == len(ui.wins)-1 {
+			curr, err := nav.currFile()
+			if err != nil {
+				return nil
+			} else if !curr.IsDir() || gOpts.dirpreviews {
+				return &callExpr{"open", nil, 1}
+			}
+			dir = ui.dirPrev
+		} else {
+			dir = ui.dirOfWin(nav, wind)
+			if dir == nil {
+				return nil
+			}
+		}
+
+		var file *file
+		ind := dir.ind - dir.pos + y - w.y
+		if ind < len(dir.files) {
+			file = dir.files[ind]
+		}
+
+		if file != nil {
+			sel := &callExpr{"select", []string{file.path}, 1}
+
+			if tev.Buttons() == tcell.Button1 {
+				return sel
+			}
+			if file.IsDir() {
+				return &callExpr{"cd", []string{file.path}, 1}
+			}
+			return &listExpr{[]expr{sel, &callExpr{"open", nil, 1}}, 1}
+		}
+		if tev.Buttons() == tcell.Button1 {
+			return &callExpr{"cd", []string{dir.path}, 1}
+		}
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
-		return nil
 	case *tcell.EventInterrupt:
 		log.Printf("Got EventInterrupt: at %s", tev.When())
-		return nil
 	}
 	return nil
 }
@@ -1176,7 +1287,7 @@ func readCmdEvent(ev tcell.Event) expr {
 	return nil
 }
 
-func (ui *ui) readEvent(ev tcell.Event) expr {
+func (ui *ui) readEvent(ev tcell.Event, nav *nav) expr {
 	if ev == nil {
 		return nil
 	}
@@ -1185,7 +1296,7 @@ func (ui *ui) readEvent(ev tcell.Event) expr {
 		return readCmdEvent(ev)
 	}
 
-	return ui.readNormalEvent(ev)
+	return ui.readNormalEvent(ev, nav)
 }
 
 func (ui *ui) readExpr() {
@@ -1222,94 +1333,35 @@ func anyKey() {
 	os.Stdin.Read(b)
 }
 
-func listMatches(screen tcell.Screen, matches []string) (*bytes.Buffer, error) {
+func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.Buffer {
+	if len(matches) < 2 {
+		return nil
+	}
 	b := new(bytes.Buffer)
 
 	wtot, _ := screen.Size()
 	wcol := 0
-
-	for _, m := range matches {
-		wcol = max(wcol, len(m))
-	}
-
-	wcol += gOpts.tabstop - wcol%gOpts.tabstop
-	ncol := wtot / wcol
-
-	if _, err := b.WriteString("possible matches\n"); err != nil {
-		return b, err
-	}
-
-	for i := 0; i < len(matches); {
-		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
-			target := matches[i]
-			if _, err := b.WriteString(fmt.Sprintf("%s%*s", target, wcol-len(target), "")); err != nil {
-				return nil, err
-			}
-		}
-
-		if err := b.WriteByte('\n'); err != nil {
-			return nil, err
-		}
-	}
-
-	return b, nil
-}
-
-func listMatchesMenu(ui *ui, matches []string) error {
-	b := new(bytes.Buffer)
-
-	wtot, _ := ui.screen.Size()
-
-	wcol := 0
 	for _, m := range matches {
 		wcol = max(wcol, len(m))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
-
 	ncol := wtot / wcol
 
-	n, err := b.WriteString("possible matches\n")
-	if err != nil {
-		return err
-	}
-
-	bytesWrote := n
+	b.WriteString("possible matches\n")
 
 	for i := 0; i < len(matches); {
 		for j := 0; j < ncol && i < len(matches); i, j = i+1, j+1 {
 			target := matches[i]
 
-			// Handle menu tab match only if wanted
-			if ui.menuSelected == i {
-				toks := tokenize(string(ui.cmdAccLeft))
-				last := toks[len(toks)-1]
-
-				if strings.Contains(target, last) {
-					ui.cmdAccLeft = append(ui.cmdAccLeft[:len(ui.cmdAccLeft)-len(last)], []rune(target)...)
-				} else {
-					ui.cmdAccLeft = append(ui.cmdAccLeft, []rune(target)...)
-				}
-
+			if selectedInd == i {
 				target = fmt.Sprintf("\033[7m%s\033[0m%*s", target, wcol-len(target), "")
 			} else {
 				target = fmt.Sprintf("%s%*s", target, wcol-len(target), "")
 			}
-
-			n, err := b.WriteString(target)
-			if err != nil {
-				return err
-			}
-
-			bytesWrote += n
+			b.WriteString(target)
 		}
-
-		if err := b.WriteByte('\n'); err != nil {
-			return err
-		}
-
-		bytesWrote += 1
+		b.WriteByte('\n')
 	}
 
-	ui.menuBuf = b
-	return nil
+	return b
 }

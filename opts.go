@@ -33,6 +33,7 @@ var gOpts struct {
 	dircache       bool
 	dircounts      bool
 	dironly        bool
+	dirpreviews    bool
 	drawbox        bool
 	globsearch     bool
 	icons          bool
@@ -59,6 +60,7 @@ var gOpts struct {
 	previewer      string
 	cleaner        string
 	promptfmt      string
+	selmode        string
 	shell          string
 	shellflag      string
 	timefmt        string
@@ -73,6 +75,7 @@ var gOpts struct {
 	keys           map[string]expr
 	cmdkeys        map[string]expr
 	cmds           map[string]expr
+	user           map[string]string
 	sortType       sortType
 	tempmarks      string
 	tagfmt         string
@@ -84,6 +87,7 @@ func init() {
 	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.dironly = false
+	gOpts.dirpreviews = false
 	gOpts.drawbox = false
 	gOpts.globsearch = false
 	gOpts.icons = false
@@ -110,6 +114,7 @@ func init() {
 	gOpts.previewer = ""
 	gOpts.cleaner = ""
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
+	gOpts.selmode = "all"
 	gOpts.shell = gDefaultShell
 	gOpts.shellflag = gDefaultShellFlag
 	gOpts.timefmt = time.ANSIC
@@ -129,12 +134,14 @@ func init() {
 
 	gOpts.keys["k"] = &callExpr{"up", nil, 1}
 	gOpts.keys["<up>"] = &callExpr{"up", nil, 1}
+	gOpts.keys["<m-up>"] = &callExpr{"up", nil, 1}
 	gOpts.keys["<c-u>"] = &callExpr{"half-up", nil, 1}
 	gOpts.keys["<c-b>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<pgup>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<c-y>"] = &callExpr{"scroll-up", nil, 1}
 	gOpts.keys["j"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<down>"] = &callExpr{"down", nil, 1}
+	gOpts.keys["<m-down>"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<c-d>"] = &callExpr{"half-down", nil, 1}
 	gOpts.keys["<c-f>"] = &callExpr{"page-down", nil, 1}
 	gOpts.keys["<pgdn>"] = &callExpr{"page-down", nil, 1}
@@ -233,6 +240,7 @@ func init() {
 	gOpts.cmdkeys["<a-t>"] = &callExpr{"cmd-transpose-word", nil, 1}
 
 	gOpts.cmds = make(map[string]expr)
+	gOpts.user = make(map[string]string)
 
 	setDefaults()
 }
