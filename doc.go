@@ -218,10 +218,10 @@ The following additional keybindings are provided by default:
 If the 'mouse' option is enabled, mouse buttons have the following default effects:
 
 	Left mouse button
-	    Click on a file or directory to select it. To open a file, click on the preview.
+	    Click on a file or directory to select it.
 
 	Right mouse button
-	    Enter a directory or open a file.
+	    Enter a directory or open a file. Also works on the preview window.
 
 	Scroll wheel
 	    Scroll up or down.
