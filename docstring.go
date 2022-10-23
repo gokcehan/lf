@@ -1286,7 +1286,8 @@ Since lf does not have control flow syntax, remote commands are used for such
 needs. For example, you can configure the number of columns in the ui with
 respect to the terminal width as follows:
 
-    cmd recol %{{
+    cmd recol ${{
+        # Use ${{ instead of %{{ to work around https://github.com/gokcehan/lf/issues/718.
         w=$(tput cols)
         if [ $w -le 80 ]; then
             lf -remote "send $id set ratios 1:2"
