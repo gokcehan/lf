@@ -124,6 +124,8 @@ var (
 		"dirfirst!",
 		"dironly",
 		"dirpreviews",
+		"nodirpreviews",
+		"dirpreviews!",
 		"nodironly",
 		"dironly!",
 		"drawbox",
