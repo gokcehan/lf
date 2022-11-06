@@ -51,7 +51,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "nodirpreviews":
 		gOpts.dirpreviews = false
 	case "dirpreviews!":
-		gOpts.dirpreviews = false
+		gOpts.dirpreviews = !gOpts.dirpreviews
 	case "nodironly":
 		gOpts.dironly = false
 		app.nav.sort()
