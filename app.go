@@ -414,7 +414,9 @@ func (app *app) loop() {
 			if err == nil {
 				if d.path == app.nav.currDir().path {
 					app.ui.loadFile(app, true)
-					app.ui.loadFileInfo(app.nav)
+					if app.ui.msg == "" {
+						app.ui.loadFileInfo(app.nav)
+					}
 				}
 				if d.path == curr.path {
 					app.ui.dirPrev = d
