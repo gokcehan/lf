@@ -1099,14 +1099,18 @@ Regular shell commands are the most basic command type that is useful for many p
 For example, we can write a shell command to move selected file(s) to trash.
 A first attempt to write such a command may look like this:
 
-	cmd trash ${{
-	    mkdir -p ~/.trash
-	    if [ -z "$fs" ]; then
-	        mv "$f" ~/.trash
-	    else
-	        IFS="$(printf '\n\t')"; mv $fs ~/.trash
-	    fi
-	}}
+    cmd trash ${{
+        trash_root_directory="$HOME/.Trash"
+        trash_time_directory="$(date +%Y%m%d-%H-%M-%s)"
+        trash_directory="$trash_root_directory/$trash_time_directory"
+        mkdir -pv "$trash_directory"
+
+        if [ -z "$fs" ]; then
+            mv -v "$f" "$trash_directory"
+        else
+            IFS="$(printf '\n\t')"; mv $fs "$trash_directory"
+        fi
+    }}
 
 We check '$fs' to see if there are any selected files.
 Otherwise we just delete the current file.
