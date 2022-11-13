@@ -218,10 +218,10 @@ The following additional keybindings are provided by default:
 If the 'mouse' option is enabled, mouse buttons have the following default effects:
 
 	Left mouse button
-	    Click on a file or directory to select it. To open a file, click on the preview.
+	    Click on a file or directory to select it.
 
 	Right mouse button
-	    Enter a directory or open a file.
+	    Enter a directory or open a file. Also works on the preview window.
 
 	Scroll wheel
 	    Scroll up or down.
@@ -1204,7 +1204,8 @@ So now you can display a message in the current client by calling the following 
 Since lf does not have control flow syntax, remote commands are used for such needs.
 For example, you can configure the number of columns in the ui with respect to the terminal width as follows:
 
-	cmd recol %{{
+	cmd recol ${{
+	    # Use ${{ instead of %{{ to work around https://github.com/gokcehan/lf/issues/718.
 	    w=$(tput cols)
 	    if [ $w -le 80 ]; then
 	        lf -remote "send $id set ratios 1:2"

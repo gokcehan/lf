@@ -1209,6 +1209,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if err != nil {
 				return nil
 			} else if !curr.IsDir() || gOpts.dirpreviews {
+				if tev.Buttons() != tcell.Button2 {
+					return nil
+				}
 				return &callExpr{"open", nil, 1}
 			}
 			dir = ui.dirPrev
