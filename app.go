@@ -480,6 +480,7 @@ func (app *app) loop() {
 //	&       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
+	app.ui.exportSizes()
 	exportOpts()
 
 	cmd := shellCommand(s, args)

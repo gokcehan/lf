@@ -1307,6 +1307,12 @@ func (ui *ui) resume() error {
 	return err
 }
 
+func (ui *ui) exportSizes() {
+	w, h := ui.screen.Size()
+	os.Setenv("lf_width", strconv.Itoa(w))
+	os.Setenv("lf_height", strconv.Itoa(h))
+}
+
 func anyKey() {
 	fmt.Print(gOpts.waitmsg)
 	defer fmt.Print("\n")

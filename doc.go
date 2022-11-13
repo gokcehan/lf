@@ -161,7 +161,7 @@ The following options can be used to customize the behavior of lf:
 	waitmsg        string    (default 'Press any key to continue')
 	wrapscan       bool      (default on)
 	wrapscroll     bool      (default off)
-	user_{key}     string    (default none)
+	user_{option}  string    (default none)
 
 The following environment variables are exported for shell commands:
 
@@ -177,7 +177,9 @@ The following environment variables are exported for shell commands:
 	PAGER
 	SHELL
 	lf_{option}
-	lf_user_{key}
+	lf_user_{option}
+	lf_width
+	lf_height
 
 The following special shell commands are used to customize the behavior of lf when defined:
 
@@ -840,10 +842,10 @@ Searching can wrap around the file list.
 
 Scrolling can wrap around the file list.
 
-	user_{key}     string    (default none)
+	user_{option}  string    (default none)
 
 Any option that is prefixed with 'user_' is a user defined option and can be set to any string.
-Inside a user defined command the value will be provided in the `lf_user_{key}` environment variable.
+Inside a user defined command the value will be provided in the `lf_user_{option}` environment variable.
 These options are not used by lf and are not persisted.
 
 # Environment Variables
@@ -900,6 +902,15 @@ If this variable is set in the environment, use the same value, otherwise set th
 	lf_{option}
 
 Value of the {option}.
+
+	lf_user_{option}
+
+Value of the user_{option}.
+
+	lf_width
+	lf_height
+
+Width/Height of the terminal.
 
 # Special Commands
 
@@ -1204,12 +1215,10 @@ So now you can display a message in the current client by calling the following 
 Since lf does not have control flow syntax, remote commands are used for such needs.
 For example, you can configure the number of columns in the ui with respect to the terminal width as follows:
 
-	cmd recol ${{
-	    # Use ${{ instead of %{{ to work around https://github.com/gokcehan/lf/issues/718.
-	    w=$(tput cols)
-	    if [ $w -le 80 ]; then
+	cmd recol %{{
+	    if [ $lf_width -le 80 ]; then
 	        lf -remote "send $id set ratios 1:2"
-	    elif [ $w -le 160 ]; then
+	    elif [ $lf_width -le 160 ]; then
 	        lf -remote "send $id set ratios 1:2:3"
 	    else
 	        lf -remote "send $id set ratios 1:2:3:5"
