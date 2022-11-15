@@ -1429,6 +1429,22 @@ You may want to use either file extensions or mime types from 'file' command:
 You may want to use 'setsid' before your opener command to have persistent
 processes that continue to run after lf quits.
 
+Regular shell commands (i.e. '$') drop to terminal which results in a flicker
+for commands that finishes immediately (e.g. 'xdg-open' in the above example).
+If you want to use asynchronous shell commands (i.e. '&') but also want to use
+the terminal when necessary (e.g. 'vi' in the above exxample), you can use a
+remote command:
+
+    cmd open &{{
+        case $(file --mime-type -Lb $f) in
+            text/*) lf -remote "send $id \$vi \$fx";;
+            *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+        esac
+    }}
+
+Note, asynchronous shell commands run in their own process group by default so
+they do not require the manual use of 'setsid'.
+
 Following command is provided by default:
 
     cmd open &$OPENER $f
