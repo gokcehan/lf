@@ -261,7 +261,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg) {
 
 	if reg.loading {
 		st = st.Reverse(true)
-		win.print(screen, 2, 0, st, "loading...")
+		win.print(screen, 1, 0, st, "loading...")
 		return
 	}
 
@@ -270,7 +270,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg) {
 			break
 		}
 
-		st = win.print(screen, 2, i, st, l)
+		st = win.print(screen, 1, i, st, l)
 	}
 }
 
@@ -354,11 +354,11 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 	}
 
 	if dir.noPerm {
-		win.print(screen, 2, 0, messageStyle, "permission denied")
+		win.print(screen, 1, 0, messageStyle, "permission denied")
 		return
 	}
 	if (dir.loading && len(dir.files) == 0) || (dirStyle.previewing && dir.loading && gOpts.dirpreviews) {
-		win.print(screen, 2, 0, messageStyle, "loading...")
+		win.print(screen, 1, 0, messageStyle, "loading...")
 		return
 	}
 
@@ -370,12 +370,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 				break
 			}
 
-			st = win.print(screen, 2, i, st, l)
+			st = win.print(screen, 1, i, st, l)
 		}
 		return
 	}
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, messageStyle, "empty")
+		win.print(screen, 1, 0, messageStyle, "empty")
 		return
 	}
 
