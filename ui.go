@@ -474,9 +474,9 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		if len(info) > 0 && win.w-lnwidth-iwidth-2 > 2*len(info) {
 			if win.w-2 > w+len(info) {
-				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
+				s = runeSliceWidthRange(s, 0, win.w-2-len(info)-lnwidth)
 			} else {
-				s = runeSliceWidthRange(s, 0, win.w-4-len(info)-lnwidth)
+				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
 				s = append(s, []rune(gOpts.truncatechar)...)
 			}
 			for _, r := range info {
@@ -486,7 +486,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		s = append(s, ' ')
 
-		win.print(screen, lnwidth+1, i, st, string(s))
+		win.print(screen, lnwidth, i, st, string(s))
 
 		tag, ok := context.tags[path]
 		if ok {
