@@ -497,6 +497,21 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.ruler = toks
+	case "preserve":
+		if e.val == "" {
+			gOpts.preserve = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _,s := range toks {
+			switch s {
+			case "mode", "timestamps":
+			default:
+				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
+				return
+			}
+		}
+		gOpts.preserve = toks
 	case "infotimefmtnew":
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":

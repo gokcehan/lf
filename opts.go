@@ -75,6 +75,7 @@ var gOpts struct {
 	history          bool
 	info             []string
 	ruler            []string
+	preserve         []string
 	shellopts        []string
 	keys             map[string]expr
 	cmdkeys          map[string]expr
@@ -134,6 +135,7 @@ func init() {
 	gOpts.history = true
 	gOpts.info = nil
 	gOpts.ruler = []string{"acc", "progress", "selection", "filter", "ind"}
+	gOpts.preserve= []string{"mode"}
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"

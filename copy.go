@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"github.com/djherbis/times"
 )
 
 func copySize(srcs []string) (int64, error) {
@@ -33,6 +34,17 @@ func copySize(srcs []string) (int64, error) {
 }
 
 func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
+	var dst_mode os.FileMode = 0600
+	preserve_timestamps := false
+	for _, s := range gOpts.preserve {
+		switch s {
+		case "timestamps":
+			preserve_timestamps = true
+		case "mode":
+			dst_mode = info.Mode()
+		}
+	}
+
 	buf := make([]byte, 4096)
 
 	r, err := os.Open(src)
@@ -41,7 +53,7 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 	}
 	defer r.Close()
 
-	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, info.Mode())
+	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dst_mode)
 	if err != nil {
 		return err
 	}
@@ -68,6 +80,16 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 	if err := w.Close(); err != nil {
 		os.Remove(dst)
 		return err
+	}
+
+	if preserve_timestamps {
+		ts := times.Get(info)
+		mtime := info.ModTime();
+		atime := ts.AccessTime();
+		if err := os.Chtimes(dst, atime, mtime); err != nil {
+			os.Remove(dst)
+			return err
+		}
 	}
 
 	return nil
