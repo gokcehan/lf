@@ -175,6 +175,7 @@ The following options can be used to customize the behavior of lf:
     tempmarks        string    (default '')
     timefmt          string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar     string    (default '~')
+    truncatepct      int       (default 100)
     waitmsg          string    (default 'Press any key to continue')
     wrapscan         bool      (default true)
     wrapscroll       bool      (default false)
@@ -1012,6 +1013,26 @@ Format string of the file modification time shown in the bottom line.
     truncatechar   string    (default '~')
 
 Truncate character shown at the end when the file name does not fit to the pane.
+
+    truncatepct  int       (default 100)
+
+When a filename is too long to be shown completely, the available space is
+partitioned in two pieces. truncatepct defines a fraction (in percent between
+0 and 100) for the size of the first piece, which will show the beginning of
+the filename. The second piece will show the end of the filename and will use
+the rest of the available space. Both pieces are separated by the truncation
+character (truncatechar). A value of 100 will only show the beginning of the
+filename (as before), while a value of 0 will only show the end of the filename,
+e.g.:
+
+  - 'set truncatepct 100' -> "very-long-filename-tr~" (default, as before)
+
+  - 'set truncatepct 50' -> "very-long-f~-truncated"
+
+  - 'set truncatepct 0' -> "~ng-filename-truncated"
+
+The default of 100 means no change in behaviour to before the introduction of
+the truncatepct option.
 
     waitmsg        string    (default 'Press any key to continue')
 

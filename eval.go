@@ -831,6 +831,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 
 		gOpts.truncatechar = e.val
+	case "truncatepct":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("truncatepct: %s", err)
+			return
+		}
+		if n < 0 || n > 100 {
+			app.ui.echoerr("truncatepct: must be between 0 and 100 (both inclusive)")
+			return
+		}
+		gOpts.truncatepct = n
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	case "wrapscan":
