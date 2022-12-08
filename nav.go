@@ -1018,25 +1018,12 @@ func (nav *nav) open() error {
 }
 
 func (nav *nav) top() bool {
-	dir := nav.currDir()
-
-	old := dir.ind
-
-	dir.ind = 0
-	dir.pos = 0
-
-	return old != dir.ind
+  return nav.goToIndex(0)
 }
 
 func (nav *nav) bottom() bool {
-	dir := nav.currDir()
-
-	old := dir.ind
-
-	dir.ind = len(dir.files) - 1
-	dir.pos = min(dir.ind, nav.height-1)
-
-	return old != dir.ind
+  dir := nav.currDir()
+  return nav.goToIndex(len(dir.files) - 1)
 }
 
 func (nav *nav) high() bool {
@@ -1688,6 +1675,45 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 		}
 	}
 	return false
+}
+
+func (nav *nav) displace(displacement int) bool {
+
+	dir := nav.currDir()
+	index := dir.ind + displacement
+
+	return nav.goToIndex(index)
+}
+
+func (nav *nav) goToIndex(index int) bool {
+
+	dir := nav.currDir()
+
+	old := dir.ind
+
+	maxind := len(dir.files) - 1
+
+	if gOpts.wrapscroll {
+		index = mod(index, maxind+1)
+	} else {
+		index = max(index, 0)
+		index = min(index, maxind)
+	}
+
+	dir.ind = index
+	dir.ind = min(maxind, dir.ind)
+
+	dir.pos = index
+	edge := min(min(nav.height/2, gOpts.scrolloff), maxind-dir.ind)
+
+	// use a smaller value when the height is even and scrolloff is maxed
+	// in order to stay at the same row as much as possible while up/down
+	edge = min(edge, nav.height/2+nav.height%2-1)
+
+	dir.pos = min(dir.pos, nav.height-edge-1)
+	dir.pos = min(dir.pos, maxind)
+
+	return old != dir.ind
 }
 
 func (nav *nav) removeMark(mark string) error {

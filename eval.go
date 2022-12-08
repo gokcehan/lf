@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"regexp"
 	"strconv"
 	"strings"
 	"time"
@@ -1037,7 +1038,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		if app.nav.top() {
+
+		var moved bool
+		if e.count == 0 {
+			moved = app.nav.top()
+		} else {
+			moved = app.nav.goToIndex(e.count - 1)
+		}
+
+		if moved {
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1045,7 +1054,15 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		if app.nav.bottom() {
+
+		var moved bool
+		if e.count == 0 { 
+			moved = app.nav.bottom()
+		} else {
+			moved = app.nav.goToIndex(e.count - 1)
+		}
+
+		if moved {
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -2065,6 +2082,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = acc
 		update(app)
 	default:
+
+		if _, err := strconv.Atoi(e.name); err == nil {
+			moveTo(app, e.name)
+			return
+		}
+
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
 			app.ui.echoerrf("command not found: %s", e.name)
@@ -2072,6 +2095,34 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		cmd.eval(app, e.args)
 	}
+}
+
+func moveTo(app *app, numInput string) {
+
+	if !app.nav.init {
+		return
+	}
+
+	num, err := strconv.Atoi(numInput)
+	if err != nil {
+		return
+	}
+
+	//check if the displacement is relative by looking for + or - signs
+	relative, _ := regexp.MatchString("^[+|-][0-9]+$", numInput)
+
+	var hasMoved bool
+	if relative {
+		hasMoved = app.nav.displace(num)
+	} else {
+		hasMoved = app.nav.goToIndex(num - 1)
+	}
+
+	if hasMoved {
+		app.ui.loadFile(app, true)
+		app.ui.loadFileInfo(app.nav)
+	}
+	return
 }
 
 func (e *execExpr) eval(app *app, args []string) {

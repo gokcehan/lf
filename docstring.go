@@ -325,7 +325,8 @@ Change the current working directory to the next/previous jumplist item.
     top                      (default 'gg' and '<home>')
     bottom                   (default 'G' and '<end>')
 
-Move the current file selection to the top/bottom of the directory.
+Move the current file selection to the top/bottom of the directory. 
+Type a count before to go to a specific index (absolute or relative) 
 
     high                     (default 'H')
     middle                   (default 'M')
@@ -608,6 +609,9 @@ Delete the next word in forward direction.
     cmd-lowercase-word       (default '<a-l>')
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
+
+Type a number to move to the file with that position (absolute 
+or relative). This is useful while using the 'number' and 'relativenumber' options
 
 # Options
 
