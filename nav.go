@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	times "gopkg.in/djherbis/times.v1"
+	times "github.com/djherbis/times"
 )
 
 type linkState byte

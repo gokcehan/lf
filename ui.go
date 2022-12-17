@@ -1225,6 +1225,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if err != nil {
 				return nil
 			} else if !curr.IsDir() || gOpts.dirpreviews {
+				if tev.Buttons() != tcell.Button2 {
+					return nil
+				}
 				return &callExpr{"open", nil, 1}
 			}
 			dir = ui.dirPrev
@@ -1318,6 +1321,12 @@ func (ui *ui) resume() error {
 		ui.polling = true
 	}
 	return err
+}
+
+func (ui *ui) exportSizes() {
+	w, h := ui.screen.Size()
+	os.Setenv("lf_width", strconv.Itoa(w))
+	os.Setenv("lf_height", strconv.Itoa(h))
 }
 
 func anyKey() {

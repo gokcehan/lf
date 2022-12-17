@@ -164,7 +164,7 @@ The following options can be used to customize the behavior of lf:
     waitmsg        string    (default 'Press any key to continue')
     wrapscan       bool      (default on)
     wrapscroll     bool      (default off)
-    user_{key}     string    (default none)
+    user_{option}  string    (default none)
 
 The following environment variables are exported for shell commands:
 
@@ -180,7 +180,9 @@ The following environment variables are exported for shell commands:
     PAGER
     SHELL
     lf_{option}
-    lf_user_{key}
+    lf_user_{option}
+    lf_width
+    lf_height
 
 The following special shell commands are used to customize the behavior of lf
 when defined:
@@ -223,10 +225,10 @@ If the 'mouse' option is enabled, mouse buttons have the following default
 effects:
 
     Left mouse button
-        Click on a file or directory to select it. To open a file, click on the preview.
+        Click on a file or directory to select it.
 
     Right mouse button
-        Enter a directory or open a file.
+        Enter a directory or open a file. Also works on the preview window.
 
     Scroll wheel
         Scroll up or down.
@@ -887,12 +889,12 @@ Searching can wrap around the file list.
 
 Scrolling can wrap around the file list.
 
-    user_{key}     string    (default none)
+    user_{option}  string    (default none)
 
 Any option that is prefixed with 'user_' is a user defined option and can be set
 to any string. Inside a user defined command the value will be provided in the
-'lf_user_{key}' environment variable. These options are not used by lf and are
-not persisted.
+'lf_user_{option}' environment variable. These options are not used by lf and
+are not persisted.
 
 # Environment Variables
 
@@ -956,6 +958,15 @@ the value to 'sh' on Unix, 'cmd' in Windows.
     lf_{option}
 
 Value of the {option}.
+
+    lf_user_{option}
+
+Value of the user_{option}.
+
+    lf_width
+    lf_height
+
+Width/Height of the terminal.
 
 # Special Commands
 
@@ -1287,10 +1298,9 @@ needs. For example, you can configure the number of columns in the ui with
 respect to the terminal width as follows:
 
     cmd recol %{{
-        w=$(tput cols)
-        if [ $w -le 80 ]; then
+        if [ $lf_width -le 80 ]; then
             lf -remote "send $id set ratios 1:2"
-        elif [ $w -le 160 ]; then
+        elif [ $lf_width -le 160 ]; then
             lf -remote "send $id set ratios 1:2:3"
         else
             lf -remote "send $id set ratios 1:2:3:5"
@@ -1418,6 +1428,22 @@ You may want to use either file extensions or mime types from 'file' command:
 
 You may want to use 'setsid' before your opener command to have persistent
 processes that continue to run after lf quits.
+
+Regular shell commands (i.e. '$') drop to terminal which results in a flicker
+for commands that finishes immediately (e.g. 'xdg-open' in the above example).
+If you want to use asynchronous shell commands (i.e. '&') but also want to use
+the terminal when necessary (e.g. 'vi' in the above exxample), you can use a
+remote command:
+
+    cmd open &{{
+        case $(file --mime-type -Lb $f) in
+            text/*) lf -remote "send $id \$vi \$fx";;
+            *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+        esac
+    }}
+
+Note, asynchronous shell commands run in their own process group by default so
+they do not require the manual use of 'setsid'.
 
 Following command is provided by default:
 
