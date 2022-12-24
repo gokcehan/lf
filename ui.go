@@ -341,7 +341,6 @@ const LineNumberColor = tcell.ColorOlive
 const SelectionColor = tcell.ColorPurple
 const YankColor = tcell.ColorOlive
 const CutColor = tcell.ColorMaroon
-const DimCursorColor = tcell.ColorGrey
 
 func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle) {
 	if win.w < 5 || dir == nil {
@@ -349,9 +348,6 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 	}
 
 	messageStyle := tcell.StyleDefault.Reverse(true)
-	if dirStyle.previewing {
-		messageStyle = messageStyle.Foreground(DimCursorColor)
-	}
 
 	if dir.noPerm {
 		win.print(screen, 2, 0, messageStyle, "permission denied")
@@ -438,9 +434,6 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		if i == dir.pos {
 			st = st.Reverse(true)
-			if dirStyle.previewing {
-				st = st.Foreground(DimCursorColor)
-			}
 		}
 
 		var s []rune
