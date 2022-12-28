@@ -433,7 +433,11 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		}
 
 		if i == dir.pos {
-			st = st.Reverse(true)
+			if dirStyle.previewing {
+				st = st.Underline(true)
+			} else {
+				st = st.Reverse(true)
+			}
 		}
 
 		var s []rune
