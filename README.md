@@ -4,6 +4,8 @@ This is a fork of [lf](https://github.com/gokcehan/lf) with support for [sixel](
 
 Sixel support requires a sixel-capable terminal and is only available on Unix systems (only tested on Linux but BSD distributions and MacOS should work).
 
+![sixel-screenshot](https://i.imgur.com/5RGKrw2.png)
+
 ## For lf users moving to lf-sixel...
 
 Sixel sequences can be passed directly to lf for displaying, cleaning, and caching. An example config based on cirala's lfimg can be found [here](https://github.com/horriblename/lfimg-sixel). For those managing their own previewer:
