@@ -1,6 +1,13 @@
 # interpreter for shell commands
 set shell cmd
 
+# To preview the content of files with syntax highlighting and to preview PDF in
+# plain text, uncomment the following line and set the full path pointing to the
+# address of your scope.bat file. Get this script in the /etc/ directory of the
+# repo and paste it into your LF config path. ATENTION: This script requires "bat"
+# and "xpdf-utils" installed on your system. Find them in chocolatey and install them.
+# set previewer 'C:/ProgramData/lf/scope.bat'
+
 # Shell commands with multiline definitions and/or positional arguments and/or
 # quotes do not work in Windows. For anything but the simplest shell commands,
 # it is recommended to create separate script files and simply call them here
