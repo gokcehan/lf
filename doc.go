@@ -663,8 +663,8 @@ On Windows, only files with hidden attributes are considered hidden files.
 
 List of hidden file glob patterns.
 Patterns can be given as relative or absolute paths.
-Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges.
-In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...]' to match character sets or ranges.
+In addition, if a pattern starts with '!', then its matches are excluded from hidden files. To add multiple patterns, use ':' as a separator. Example: '.*:lost+found:*.bak'
 
 	history        bool      (default on)
 
