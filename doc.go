@@ -650,7 +650,7 @@ When this value is set to 0, find command prompts until there is only a single m
 	globsearch     bool      (default off)
 
 When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
-With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges.
+With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...]' matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
 
 	hidden         bool      (default off)
