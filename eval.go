@@ -26,6 +26,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.autoquit = true
 	case "noautoquit":
 		gOpts.autoquit = false
+	case "cursorfmt":
+		gOpts.cursorfmt = e.val
+	case "cursorpreviewfmt":
+		gOpts.cursorpreviewfmt = e.val
 	case "autoquit!":
 		gOpts.autoquit = !gOpts.autoquit
 	case "dircache":

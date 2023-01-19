@@ -432,10 +432,6 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		if i == dir.pos {
-			st = st.Reverse(true)
-		}
-
 		var s []rune
 
 		s = append(s, ' ')
@@ -477,14 +473,23 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		s = append(s, ' ')
+		cursorescapefmt := "%s"
+		if i == dir.pos {
+			if dirStyle.previewing {
+				cursorescapefmt = gOpts.cursorpreviewfmt
+			} else {
+				cursorescapefmt = gOpts.cursorfmt
+			}
+		}
 
-		win.print(screen, lnwidth+1, i, st, string(s))
+		s = append(s, ' ')
+		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
+		win.print(screen, lnwidth+1, i, st, styledFilename)
 
 		tag, ok := context.tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st, tag)
+				win.print(screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
 			} else {
 				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
 			}
