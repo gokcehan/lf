@@ -473,14 +473,15 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		cursorescapefmt := "%s"
+		ce := ""
 		if i == dir.pos {
 			if dirStyle.previewing {
-				cursorescapefmt = gOpts.cursorpreviewfmt
+				ce = gOpts.cursorpreviewfmt
 			} else {
-				cursorescapefmt = gOpts.cursorfmt
+				ce = gOpts.cursorfmt
 			}
 		}
+		cursorescapefmt := optionToFmtstr(ce)
 
 		s = append(s, ' ')
 		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
@@ -491,7 +492,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			if i == dir.pos {
 				win.print(screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
 			} else {
-				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
+				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
 			}
 		}
 	}
@@ -657,8 +658,16 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
+func optionToFmtstr(optstr string) string {
+	if !strings.Contains(optstr, "%s") {
+		return optstr + "%s\033[0m"
+	} else {
+		return optstr
+	}
+}
+
 func (ui *ui) echoerr(msg string) {
-	ui.msg = fmt.Sprintf(gOpts.errorfmt, msg)
+	ui.msg = fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg)
 	log.Printf("error: %s", msg)
 }
 

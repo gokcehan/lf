@@ -117,15 +117,15 @@ The following options can be used to customize the behavior of lf:
     anchorfind       bool      (default on)
     autoquit         bool      (default off)
     cleaner          string    (default '')
-    cursorfmt        string    (default "\033[7m%s\033[0m")
-    cursorpreviewfmt string    (default "\033[4m%s\033[0m")
+    cursorfmt        string    (default "\033[7m")
+    cursorpreviewfmt string    (default "\033[4m")
     dircache         bool      (default on)
     dircounts        bool      (default off)
     dirfirst         bool      (default on)
     dironly          bool      (default off)
     dirpreviews      bool      (default off)
     drawbox          bool      (default off)
-    errorfmt         string    (default "\033[7;31;47m%s\033[0m")
+    errorfmt         string    (default "\033[7;31;47m")
     filesep          string    (default "\n")
     findlen          int       (default 1)
     globsearch       bool      (default off)
@@ -159,7 +159,7 @@ The following options can be used to customize the behavior of lf:
     smartdia         bool      (default off)
     sortby           string    (default 'natural')
     tabstop          int       (default 8)
-    tagfmt           string    (default "\033[31m%s\033[0m")
+    tagfmt           string    (default "\033[31m")
     tempmarks        string    (default '')
     timefmt          string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar     string    (default '~')
@@ -634,8 +634,8 @@ file, (1) current file name, (2) width, (3) height, (4) horizontal position,
 and (5) vertical position of preview pane respectively. Preview clearing is
 disabled when the value of this option is left empty.
 
-    cursorfmt         string    (default "\033[7m%s\033[0m")
-    cursorpreviewfmt  string    (default "\033[4m%s\033[0m")
+    cursorfmt         string    (default "\033[7m")
+    cursorpreviewfmt  string    (default "\033[4m")
 
 Format strings for highlighting the cursor. 'cursorpreviewfmt' applies in panes
 that preview directories, and 'cursorfmt' applies in all other panes.
@@ -643,10 +643,13 @@ that preview directories, and 'cursorfmt' applies in all other panes.
 The default is to make the normal cursor inverted and the preview cursor
 underlined.
 
-Some other possibilities to consider for the preview cursor: "%s" for no cursor,
-"\033[7;2m%s\044[0m" for dimmed inverted text (visibility varies by terminal),
-"\033[7;90m%s\044[0m" for inverted text with grey (aka "brightblack")
-background.
+Some other possibilities to consider for the preview cursor: an empty string for
+no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal),
+"\033[7;90m" for inverted text with grey (aka "brightblack") background.
+
+If the format string contains the characters '%s', it is interpreted as a format
+string for 'fmt.Sprintf'. Such a string should end with the terminal reset
+sequence. For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
     dircache       bool      (default on)
 
@@ -680,9 +683,13 @@ Show only directories.
 
 Draw boxes around panes with box drawing characters.
 
-    errorfmt       string    (default "\033[7;31;47m%s\033[0m")
+    errorfmt       string    (default "\033[7;31;47m")
 
 Format string of error messages shown in the bottom message line.
+
+If the format string contains the characters '%s', it is interpreted as a format
+string for 'fmt.Sprintf'. Such a string should end with the terminal reset
+sequence. For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
     filesep        string    (default "\n")
 
@@ -874,9 +881,13 @@ Sort type for directories. Currently supported sort types are 'natural', 'name',
 
 Number of space characters to show for horizontal tabulation (U+0009) character.
 
-    tagfmt         string    (default "\033[31m%s\033[0m")
+    tagfmt         string    (default "\033[31m")
 
 Format string of the tags.
+
+If the format string contains the characters '%s', it is interpreted as a format
+string for 'fmt.Sprintf'. Such a string should end with the terminal reset
+sequence. For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
     tempmarks      string    (default '')
 

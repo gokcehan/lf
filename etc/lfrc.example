@@ -21,7 +21,7 @@ set ifs "\n"
 set scrolloff 10
 
 # Use the `dim` attribute instead of underline for the cursor in the preview pane
-set cursorpreviewfmt "\033[7;2m%s\033[0m"
+set cursorpreviewfmt "\033[7;2m"
 
 # use enter for shell commands
 map <enter> shell

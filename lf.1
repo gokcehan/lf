@@ -133,15 +133,15 @@ The following options can be used to customize the behavior of lf:
     anchorfind       bool      (default on)
     autoquit         bool      (default off)
     cleaner          string    (default '')
-    cursorfmt        string    (default "\e033[7m%s\e033[0m")
-    cursorpreviewfmt string    (default "\e033[4m%s\e033[0m")
+    cursorfmt        string    (default "\e033[7m")
+    cursorpreviewfmt string    (default "\e033[4m")
     dircache         bool      (default on)
     dircounts        bool      (default off)
     dirfirst         bool      (default on)
     dironly          bool      (default off)
     dirpreviews      bool      (default off)
     drawbox          bool      (default off)
-    errorfmt         string    (default "\e033[7;31;47m%s\e033[0m")
+    errorfmt         string    (default "\e033[7;31;47m")
     filesep          string    (default "\en")
     findlen          int       (default 1)
     globsearch       bool      (default off)
@@ -175,7 +175,7 @@ The following options can be used to customize the behavior of lf:
     smartdia         bool      (default off)
     sortby           string    (default 'natural')
     tabstop          int       (default 8)
-    tagfmt           string    (default "\e033[31m%s\e033[0m")
+    tagfmt           string    (default "\e033[31m")
     tempmarks        string    (default '')
     timefmt          string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar     string    (default '~')
@@ -750,15 +750,17 @@ Automatically quit server when there are no clients left connected.
 Set the path of a cleaner file. The file should be executable. This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. Preview clearing is disabled when the value of this option is left empty.
 .PP
 .EX
-    cursorfmt         string    (default "\e033[7m%s\e033[0m")
-    cursorpreviewfmt  string    (default "\e033[4m%s\e033[0m")
+    cursorfmt         string    (default "\e033[7m")
+    cursorpreviewfmt  string    (default "\e033[4m")
 .EE
 .PP
 Format strings for highlighting the cursor. `cursorpreviewfmt` applies in panes that preview directories, and `cursorfmt` applies in all other panes.
 .PP
 The default is to make the normal cursor inverted and the preview cursor underlined.
 .PP
-Some other possibilities to consider for the preview cursor: "%s" for no cursor, "\e033[7;2m%s\e044[0m" for dimmed inverted text (visibility varies by terminal), "\e033[7;90m%s\e044[0m" for inverted text with grey (aka "brightblack") background.
+Some other possibilities to consider for the preview cursor: an empty string for no cursor, "\e033[7;2m" for dimmed inverted text (visibility varies by terminal), "\e033[7;90m" for inverted text with grey (aka "brightblack") background.
+.PP
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence. For example, "\e033[4m%s\e033[0m" has the same effect as "\e033[4m".
 .PP
 .EX
     dircache       bool      (default on)
@@ -797,10 +799,12 @@ Show only directories.
 Draw boxes around panes with box drawing characters.
 .PP
 .EX
-    errorfmt       string    (default "\e033[7;31;47m%s\e033[0m")
+    errorfmt       string    (default "\e033[7;31;47m")
 .EE
 .PP
 Format string of error messages shown in the bottom message line.
+.PP
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence. For example, "\e033[4m%s\e033[0m" has the same effect as "\e033[4m".
 .PP
 .EX
     filesep        string    (default "\en")
@@ -1001,10 +1005,12 @@ Sort type for directories. Currently supported sort types are 'natural', 'name',
 Number of space characters to show for horizontal tabulation (U+0009) character.
 .PP
 .EX
-    tagfmt         string    (default "\e033[31m%s\e033[0m")
+    tagfmt         string    (default "\e033[31m")
 .EE
 .PP
 Format string of the tags.
+.PP
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence. For example, "\e033[4m%s\e033[0m" has the same effect as "\e033[4m".
 .PP
 .EX
     tempmarks      string    (default '')

@@ -91,8 +91,8 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
-	gOpts.cursorfmt = "\033[7m%s\033[0m"
-	gOpts.cursorpreviewfmt = "\033[4m%s\033[0m"
+	gOpts.cursorfmt = "\033[7m"
+	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
@@ -112,7 +112,7 @@ func init() {
 	gOpts.period = 0
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
-	gOpts.errorfmt = "\033[7;31;47m%s\033[0m"
+	gOpts.errorfmt = "\033[7;31;47m"
 	gOpts.filesep = "\n"
 	gOpts.ifs = ""
 	gOpts.previewer = ""
@@ -132,7 +132,7 @@ func init() {
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"
-	gOpts.tagfmt = "\033[31m%s\033[0m"
+	gOpts.tagfmt = "\033[31m"
 
 	gOpts.keys = make(map[string]expr)
 
