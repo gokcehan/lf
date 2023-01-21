@@ -28,6 +28,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.autoquit = false
 	case "cursorfmt":
 		gOpts.cursorfmt = e.val
+	case "cursorparentfmt":
+		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
 	case "autoquit!":

@@ -114,6 +114,7 @@ var (
 		"noautoquit",
 		"autoquit!",
 		"cursorfmt",
+		"cursorparentfmt",
 		"cursorpreviewfmt",
 		"dircache",
 		"nodircache",

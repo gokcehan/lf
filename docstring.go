@@ -118,6 +118,7 @@ The following options can be used to customize the behavior of lf:
     autoquit         bool      (default off)
     cleaner          string    (default '')
     cursorfmt        string    (default "\033[7m")
+    cursorparentfmt  string    (default "\033[7m")
     cursorpreviewfmt string    (default "\033[4m")
     dircache         bool      (default on)
     dircounts        bool      (default off)
@@ -635,17 +636,21 @@ and (5) vertical position of preview pane respectively. Preview clearing is
 disabled when the value of this option is left empty.
 
     cursorfmt         string    (default "\033[7m")
+    cursorparentfmt   string    (default "\033[7m")
     cursorpreviewfmt  string    (default "\033[4m")
 
-Format strings for highlighting the cursor. 'cursorpreviewfmt' applies in panes
-that preview directories, and 'cursorfmt' applies in all other panes.
+Format strings for highlighting the cursor. 'cursorfmt' applies in the current
+directory pane, 'cursorparentfmt' applies in panes that show parents of the
+current directory, and 'cursorpreviewfmt' applies in panes that preview
+directories.
 
-The default is to make the normal cursor inverted and the preview cursor
-underlined.
+The default is to make the active cursor and the parent directory cursor
+inverted. The preview cursor is underlined.
 
-Some other possibilities to consider for the preview cursor: an empty string for
-no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal),
-"\033[7;90m" for inverted text with grey (aka "brightblack") background.
+Some other possibilities to consider for the preview or parent cursors: an empty
+string for no cursor, "\033[7;2m" for dimmed inverted text (visibility varies
+by terminal), "\033[7;90m" for inverted text with grey (aka "brightblack")
+background.
 
 If the format string contains the characters '%s', it is interpreted as a format
 string for 'fmt.Sprintf'. Such a string should end with the terminal reset
