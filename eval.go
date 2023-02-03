@@ -1152,6 +1152,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.invert()
+	case "invert-below":
+		if !app.nav.init {
+			return
+		}
+		app.nav.invertBelow()
 	case "unselect":
 		app.nav.unselect()
 	case "calcdirsize":

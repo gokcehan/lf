@@ -1149,12 +1149,20 @@ func (nav *nav) tag(tag string) error {
 	return nil
 }
 
-func (nav *nav) invert() {
+func (nav *nav) invertAfter(ix int) {
 	dir := nav.currDir()
-	for _, f := range dir.files {
+	for _, f := range dir.files[ix:] {
 		path := filepath.Join(dir.path, f.Name())
 		nav.toggleSelection(path)
 	}
+}
+
+func (nav *nav) invert() {
+	nav.invertAfter(0)
+}
+
+func (nav *nav) invertBelow() {
+	nav.invertAfter(nav.currDir().ind)
 }
 
 func (nav *nav) unselect() {
