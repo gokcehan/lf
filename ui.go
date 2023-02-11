@@ -679,11 +679,10 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		return
 	}
 
-	if curr.path == ui.currentFile {
-		return
+	if curr.path != ui.currentFile {
+		ui.currentFile = curr.path
+		onSelect(app)
 	}
-	ui.currentFile = curr.path
-	onSelect(app)
 
 	if !gOpts.preview {
 		return
