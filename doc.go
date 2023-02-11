@@ -650,7 +650,7 @@ When this value is set to 0, find command prompts until there is only a single m
 	globsearch     bool      (default off)
 
 When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
-With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges.
+With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...]' matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
 
 	hidden         bool      (default off)
@@ -663,8 +663,8 @@ On Windows, only files with hidden attributes are considered hidden files.
 
 List of hidden file glob patterns.
 Patterns can be given as relative or absolute paths.
-Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges.
-In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...]' to match character sets or ranges.
+In addition, if a pattern starts with '!', then its matches are excluded from hidden files. To add multiple patterns, use ':' as a separator. Example: '.*:lost+found:*.bak'
 
 	history        bool      (default on)
 
