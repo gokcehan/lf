@@ -1182,12 +1182,18 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		case tcell.ButtonNone:
 			return nil
 		}
+		if tev.Modifiers() == tcell.ModCtrl {
+			button = "<c-" + button[1:]
+		}
 		if expr, ok := gOpts.keys[button]; ok {
 			return expr
 		}
-
-		if tev.Buttons() != tcell.Button1 && tev.Buttons() != tcell.Button2 {
-			return nil
+		if button != "<m-1>" && button != "<m-2>" {
+			ui.echoerrf("unknown mapping: %s", button)
+			ui.keyAcc = nil
+			ui.keyCount = nil
+			ui.menuBuf = nil
+			return draw
 		}
 
 		x, y := tev.Position()

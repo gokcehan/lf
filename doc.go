@@ -226,7 +226,7 @@ If the 'mouse' option is enabled, mouse buttons have the following default effec
 	    Enter a directory or open a file. Also works on the preview window.
 
 	Scroll wheel
-	    Scroll up or down.
+	    Move up or down. If Ctrl is pressed, scroll up or down.
 
 # Configuration
 
