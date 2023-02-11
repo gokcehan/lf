@@ -113,6 +113,8 @@ var (
 		"autoquit",
 		"noautoquit",
 		"autoquit!",
+		"cursorfmt",
+		"cursorpreviewfmt",
 		"dircache",
 		"nodircache",
 		"dircache!",
