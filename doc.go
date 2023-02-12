@@ -639,11 +639,11 @@ Show directories first above regular files.
 
 	dironly        bool      (default off)
 
-If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+Show only directories.
 
 	dirpreviews    bool      (default off)
 
-Show only directories.
+If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
 
 	drawbox        bool      (default off)
 
