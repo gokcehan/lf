@@ -114,7 +114,7 @@ The following options can be used to customize the behavior of lf:
 	anchorfind       bool      (default on)
 	autoquit         bool      (default off)
 	cleaner          string    (default '')
-	cursorfmt        string    (default "\033[7m")
+	cursoractivefmt  string    (default "\033[7m")
 	cursorparentfmt  string    (default "\033[7m")
 	cursorpreviewfmt string    (default "\033[4m")
 	dircache         bool      (default on)
@@ -609,12 +609,12 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 Preview clearing is disabled when the value of this option is left empty.
 
-	cursorfmt         string    (default "\033[7m")
+	cursoractivefmt   string    (default "\033[7m")
 	cursorparentfmt   string    (default "\033[7m")
 	cursorpreviewfmt  string    (default "\033[4m")
 
 Format strings for highlighting the cursor.
-`cursorfmt` applies in the current directory pane,
+`cursoractivefmt` applies in the current directory pane,
 `cursorparentfmt` applies in panes that show parents of the current directory,
 and `cursorpreviewfmt` applies in panes that preview directories.
 

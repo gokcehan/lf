@@ -133,7 +133,7 @@ The following options can be used to customize the behavior of lf:
     anchorfind       bool      (default on)
     autoquit         bool      (default off)
     cleaner          string    (default '')
-    cursorfmt        string    (default "\e033[7m")
+    cursoractivefmt  string    (default "\e033[7m")
     cursorparentfmt  string    (default "\e033[7m")
     cursorpreviewfmt string    (default "\e033[4m")
     dircache         bool      (default on)
@@ -751,12 +751,12 @@ Automatically quit server when there are no clients left connected.
 Set the path of a cleaner file. The file should be executable. This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. Preview clearing is disabled when the value of this option is left empty.
 .PP
 .EX
-    cursorfmt         string    (default "\e033[7m")
+    cursoractivefmt   string    (default "\e033[7m")
     cursorparentfmt   string    (default "\e033[7m")
     cursorpreviewfmt  string    (default "\e033[4m")
 .EE
 .PP
-Format strings for highlighting the cursor. `cursorfmt` applies in the current directory pane, `cursorparentfmt` applies in panes that show parents of the current directory, and `cursorpreviewfmt` applies in panes that preview directories.
+Format strings for highlighting the cursor. `cursoractivefmt` applies in the current directory pane, `cursorparentfmt` applies in panes that show parents of the current directory, and `cursorpreviewfmt` applies in panes that preview directories.
 .PP
 The default is to make the active cursor and the parent directory cursor inverted. The preview cursor is underlined.
 .PP

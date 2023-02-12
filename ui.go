@@ -485,7 +485,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		if i == dir.pos {
 			switch dirStyle.role {
 			case Active:
-				ce = gOpts.cursorfmt
+				ce = gOpts.cursoractivefmt
 			case Parent:
 				ce = gOpts.cursorparentfmt
 			case Preview:
