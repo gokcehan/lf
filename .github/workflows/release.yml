@@ -36,5 +36,4 @@ jobs:
           identifier: gokcehan.lf
           version: ${{ github.ref_name }}
           installers-regex: '-windows-\w+\.zip$'
-          release-tag: ${{ github.ref_name }}
           token: ${{ secrets.WINGET_TOKEN }}
