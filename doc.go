@@ -725,7 +725,8 @@ Information is only shown when the pane width is more than twice the width of in
 
 	infotimefmtnew string    (default 'Jan _2 15:04')
 
-Format string of the file time shown in the info column when it matches this year.
+Format string of the file time shown in the info column when it matches this year. This follows go time package formatting rules. For
+more information check https://pkg.go.dev/time#example-Time.Format.
 
 	infotimefmtold string    (default 'Jan _2  2006')
 
