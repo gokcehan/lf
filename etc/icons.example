@@ -148,7 +148,7 @@ fi             # FILE
 *.tsx           
 *.jl            
 *.pp            
-*.vue           ﵂
+*.vue           
 *.elm           
 *.swift         
 *.xcplayground  
