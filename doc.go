@@ -114,7 +114,8 @@ The following options can be used to customize the behavior of lf:
 	anchorfind       bool      (default on)
 	autoquit         bool      (default off)
 	cleaner          string    (default '')
-	cursorfmt        string    (default "\033[7m")
+	cursoractivefmt  string    (default "\033[7m")
+	cursorparentfmt  string    (default "\033[7m")
 	cursorpreviewfmt string    (default "\033[4m")
 	dircache         bool      (default on)
 	dircounts        bool      (default off)
@@ -608,15 +609,18 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 Preview clearing is disabled when the value of this option is left empty.
 
-	cursorfmt         string    (default "\033[7m")
+	cursoractivefmt   string    (default "\033[7m")
+	cursorparentfmt   string    (default "\033[7m")
 	cursorpreviewfmt  string    (default "\033[4m")
 
 Format strings for highlighting the cursor.
-`cursorpreviewfmt` applies in panes that preview directories, and `cursorfmt` applies in all other panes.
+`cursoractivefmt` applies in the current directory pane,
+`cursorparentfmt` applies in panes that show parents of the current directory,
+and `cursorpreviewfmt` applies in panes that preview directories.
 
-The default is to make the normal cursor inverted and the preview cursor underlined.
+The default is to make the active cursor and the parent directory cursor inverted. The preview cursor is underlined.
 
-Some other possibilities to consider for the preview cursor: an empty string for no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal), "\033[7;90m" for inverted text with grey (aka "brightblack") background.
+Some other possibilities to consider for the preview or parent cursors: an empty string for no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal), "\033[7;90m" for inverted text with grey (aka "brightblack") background.
 
 If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
 For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".

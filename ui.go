@@ -330,10 +330,18 @@ type dirContext struct {
 	tags       map[string]string
 }
 
+type dirRole byte
+
+const (
+	Active dirRole = iota
+	Parent
+	Preview
+)
+
 type dirStyle struct {
-	colors     styleMap
-	icons      iconMap
-	previewing bool
+	colors styleMap
+	icons  iconMap
+	role   dirRole
 }
 
 // These colors are not currently customizeable
@@ -353,12 +361,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		win.print(screen, 2, 0, messageStyle, "permission denied")
 		return
 	}
-	if (dir.loading && len(dir.files) == 0) || (dirStyle.previewing && dir.loading && gOpts.dirpreviews) {
+	if (dir.loading && len(dir.files) == 0) || (dirStyle.role == Preview && dir.loading && gOpts.dirpreviews) {
 		win.print(screen, 2, 0, messageStyle, "loading...")
 		return
 	}
 
-	if dirStyle.previewing && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
+	if dirStyle.role == Preview && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
 		// Print previewer result instead of default directory print operation.
 		st := tcell.StyleDefault
 		for i, l := range dir.lines {
@@ -475,10 +483,13 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		ce := ""
 		if i == dir.pos {
-			if dirStyle.previewing {
+			switch dirStyle.role {
+			case Active:
+				ce = gOpts.cursoractivefmt
+			case Parent:
+				ce = gOpts.cursorparentfmt
+			case Preview:
 				ce = gOpts.cursorpreviewfmt
-			} else {
-				ce = gOpts.cursorfmt
 			}
 		}
 		cursorescapefmt := optionToFmtstr(ce)
@@ -920,9 +931,13 @@ func (ui *ui) draw(nav *nav) {
 		wins--
 	}
 	for i := 0; i < wins; i++ {
+		role := Parent
+		if i == wins-1 {
+			role = Active
+		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
 			ui.wins[i].printDir(ui.screen, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, previewing: false})
+				&dirStyle{colors: ui.styles, icons: ui.icons, role: role})
 		}
 	}
 
@@ -958,7 +973,7 @@ func (ui *ui) draw(nav *nav) {
 
 			if curr.IsDir() {
 				preview.printDir(ui.screen, ui.dirPrev, &context,
-					&dirStyle{colors: ui.styles, icons: ui.icons, previewing: true})
+					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
 			} else if curr.Mode().IsRegular() {
 				preview.printReg(ui.screen, ui.regPrev)
 			}
