@@ -26,3 +26,14 @@ jobs:
         files: dist/*
       env:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  winget:
+    runs-on: windows-latest # Action can only run on Windows
+    needs: build
+    steps:
+      - uses: vedantmgoyal2009/winget-releaser@v2
+        with:
+          identifier: gokcehan.lf
+          version: ${{ github.ref_name }}
+          installers-regex: '-windows-\w+\.zip$'
+          token: ${{ secrets.WINGET_TOKEN }}
