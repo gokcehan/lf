@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"io/ioutil"
 	"log"
 	"strconv"
 )
@@ -38,7 +37,7 @@ type scanner struct {
 }
 
 func newScanner(r io.Reader) *scanner {
-	buf, err := ioutil.ReadAll(r)
+	buf, err := io.ReadAll(r)
 	if err != nil {
 		log.Printf("scanning: %s", err)
 	}
