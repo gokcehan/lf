@@ -40,42 +40,20 @@ See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
 
 Building from the source requires [Go](https://go.dev/).
 
-On Unix (Go version < 1.17):
-
-```bash
-env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/gokcehan/lf
-```
-
-On Unix (Go version >= 1.17):
+On Unix:
 
 ```bash
 env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On Windows `cmd` (Go version < 1.17):
-
-```cmd
-set CGO_ENABLED=0
-set GO111MODULE=on
-go get -u -ldflags="-s -w" github.com/gokcehan/lf
-```
-
-On Windows `cmd` (Go version >= 1.17):
+On Windows `cmd`:
 
 ```cmd
 set CGO_ENABLED=0
 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On Windows `powershell` (Go version < 1.17):
-
-```powershell
-$env:CGO_ENABLED = '0'
-$env:GO111MODULE = 'on'
-go get -u -ldflags="-s -w" github.com/gokcehan/lf
-```
-
-On Windows `powershell` (Go version >= 1.17):
+On Windows `powershell`:
 
 ```powershell
 $env:CGO_ENABLED = '0'
