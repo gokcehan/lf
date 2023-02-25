@@ -91,8 +91,8 @@ The following command line commands are provided by lf:
     cmd-menu-accept
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
-    cmd-history-next         (default '<c-n>')
-    cmd-history-prev         (default '<c-p>')
+    cmd-history-next         (default '<c-n>' and '<down>')
+    cmd-history-prev         (default '<c-p>' and '<up>')
     cmd-left                 (default '<c-b>' and '<left>')
     cmd-right                (default '<c-f>' and '<right>')
     cmd-home                 (default '<c-a>' and '<home>')
@@ -555,8 +555,8 @@ Execute the current line.
 
 Interrupt the current shell-pipe command and return to the normal mode.
 
-    cmd-history-next         (default '<c-n>')
-    cmd-history-prev         (default '<c-p>')
+    cmd-history-next         (default '<c-n>' and '<down>')
+    cmd-history-prev         (default '<c-p>' and '<up>')
 
 Go to next/previous item in the history.
 
