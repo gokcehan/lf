@@ -1,7 +1,6 @@
 package main
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"path/filepath"
@@ -252,7 +251,7 @@ func matchExec(s string) (matches []string, longest []rune) {
 			continue
 		}
 
-		files, err := ioutil.ReadDir(p)
+		files, err := os.ReadDir(p)
 		if err != nil {
 			log.Printf("reading path: %s", err)
 		}
@@ -262,18 +261,18 @@ func matchExec(s string) (matches []string, longest []rune) {
 				continue
 			}
 
-			f, err = os.Stat(filepath.Join(p, f.Name()))
+			finfo, err := f.Info()
 			if err != nil {
 				log.Printf("getting file information: %s", err)
 				continue
 			}
 
-			if !f.Mode().IsRegular() || !isExecutable(f) {
+			if !finfo.Mode().IsRegular() || !isExecutable(finfo) {
 				continue
 			}
 
-			log.Print(f.Name())
-			words = append(words, f.Name())
+			log.Print(finfo.Name())
+			words = append(words, finfo.Name())
 		}
 	}
 
@@ -306,7 +305,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 
 	dir = filepath.Dir(unescape(dir))
 
-	files, err := ioutil.ReadDir(dir)
+	files, err := os.ReadDir(dir)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
@@ -424,7 +423,7 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 		log.Printf("getting current directory: %s", err)
 	}
 
-	files, err := ioutil.ReadDir(wd)
+	files, err := os.ReadDir(wd)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
