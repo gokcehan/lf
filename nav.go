@@ -534,7 +534,6 @@ func (nav *nav) addJumpList() {
 }
 
 func (nav *nav) cdJumpListPrev() {
-	// currPath := nav.currDir().path
 	if nav.jumpListInd > 0 {
 		nav.jumpListInd -= 1
 		nav.cd(nav.jumpList[nav.jumpListInd])
