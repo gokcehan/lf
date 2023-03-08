@@ -1434,6 +1434,7 @@ func (nav *nav) rename() error {
 		return err
 	}
 
+	delete(nav.regCache, newPath)
 	delete(nav.dirCache, newPath)
 	dir := nav.loadDir(filepath.Dir(newPath))
 
