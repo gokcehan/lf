@@ -1312,7 +1312,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reload: %s", err)
 		}
 		app.ui.loadFile(app, true)
-		app.ui.loadFileInfo(app.nav)
+		app.ui.msg = ""
 	case "read":
 		if app.ui.cmdPrefix == ">" {
 			return
