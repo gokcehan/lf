@@ -12,6 +12,7 @@ var (
 	gCmdWords = []string{
 		"set",
 		"map",
+		"maps",
 		"cmap",
 		"cmd",
 		"quit",
