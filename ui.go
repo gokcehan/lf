@@ -398,7 +398,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		if gOpts.number && gOpts.relativenumber {
 			lnwidth++
 		}
-		for j := 10; j < len(dir.files); j *= 10 {
+		for j := 10; j <= len(dir.files); j *= 10 {
 			lnwidth++
 		}
 		lnformat = fmt.Sprintf("%%%d.d ", lnwidth)
