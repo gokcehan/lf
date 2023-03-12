@@ -388,6 +388,8 @@ type nav struct {
 	searchPos       int
 	prevFilter      []string
 	volatilePreview bool
+	previewTimer    *time.Timer
+	previewTimeout  bool
 	jumpList        []string
 	jumpListInd     int
 }
@@ -407,7 +409,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		d.sort()
 		d.ind, d.pos = 0, 0
 		if gOpts.dirpreviews {
-			nav.dirPreviewChan <- d
+			nav.startPreviewDir(d)
 		}
 		nav.dirChan <- d
 
@@ -455,7 +457,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.filter = dir.filter
 			nd.sort()
 			if gOpts.dirpreviews {
-				nav.dirPreviewChan <- nd
+				nav.startPreviewDir(nd)
 			}
 			nav.dirChan <- nd
 		}()
@@ -511,6 +513,7 @@ func newNav(height int) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
+		previewTimer:    time.NewTimer(time.Second),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -814,7 +817,7 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (volatile && r.volatile) {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
-		nav.previewChan <- path
+		nav.startPreviewReg(path)
 		return r
 	}
 
@@ -839,8 +842,24 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		nav.previewChan <- reg.path
+		nav.startPreviewReg(reg.path)
 	}
+}
+
+func (nav *nav) startPreviewReg(path string) {
+	nav.previewTimer.Stop()
+	nav.previewTimeout = false
+	nav.previewTimer.Reset(time.Second)
+
+	nav.previewChan <- path
+}
+
+func (nav *nav) startPreviewDir(dir *dir) {
+	nav.previewTimer.Stop()
+	nav.previewTimeout = false
+	nav.previewTimer.Reset(time.Second)
+
+	nav.dirPreviewChan <- dir
 }
 
 func (nav *nav) sort() {
