@@ -1434,6 +1434,12 @@ func (nav *nav) rename() error {
 		return err
 	}
 
+	// It is possible for newPath to already have cache entries if it previously
+	// existed and was deleted. In this case the cache entries should be deleted
+	// before loading newPath to prevent displaying a stale preview. However,
+	// this clears only the current instance of lf, and not any other instances.
+	delete(nav.regCache, newPath)
+	delete(nav.dirCache, newPath)
 	dir := nav.loadDir(filepath.Dir(newPath))
 
 	if dir.loading {
