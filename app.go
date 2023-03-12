@@ -471,10 +471,6 @@ func (app *app) loop() {
 	}
 }
 
-type cleanFunc func()
-
-var noopCleanFunc = func() {}
-
 // This function is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -482,8 +478,7 @@ var noopCleanFunc = func() {}
 //	%       No    No     Yes    Yes     Yes     Statline for input/output
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
-//	$|      No    No     Pipe   Yes     Yes     Pause, Pipe execute, return cleanup to resume
-func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
+func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
@@ -493,24 +488,6 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 	var out io.Reader
 	var err error
 	switch prefix {
-	case "$|":
-		var stdin io.WriteCloser
-		stdin, err = cmd.StdinPipe()
-		if err != nil {
-			log.Printf("writing stdin: %s", err)
-		}
-		app.cmdIn = stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		app.nav.previewChan <- ""
-		app.nav.dirPreviewChan <- nil
-
-		if err := app.ui.suspend(); err != nil {
-			log.Printf("suspend: %s", err)
-		}
-
-		err = cmd.Start()
 	case "$", "!":
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
@@ -535,7 +512,7 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 	case "%":
 		shellSetPG(cmd)
 		if app.ui.cmdPrefix == ">" {
-			return noopCleanFunc
+			return
 		}
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -608,17 +585,49 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 				log.Printf("running shell: %s", err)
 			}
 		}()
-	case "$|":
-		return func() {
-			if err := cmd.Wait(); err != nil {
-				log.Printf("running shell: %s", err)
-			}
-			app.nav.renew()
-			if err := app.ui.resume(); err != nil {
-				app.quit()
-				os.Exit(3)
-			}
+	}
+}
+
+type cleanFunc func()
+
+// runShellPipeIn starts a shell command and returns a pipe to its stdin and an
+// clean up function.
+//
+// The clean up function should be called after the pipe has finished writing.
+func (app *app) runShellPipeIn(s string, args []string) (io.WriteCloser, cleanFunc) {
+	app.nav.exportFiles()
+	app.ui.exportSizes()
+	exportOpts()
+
+	cmd := shellCommand(s, args)
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		log.Printf("writing stdin: %s", err)
+	}
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	app.nav.previewChan <- ""
+	app.nav.dirPreviewChan <- nil
+
+	if err := app.ui.suspend(); err != nil {
+		log.Printf("suspend: %s", err)
+	}
+
+	err = cmd.Start()
+	if err != nil {
+		app.ui.echoerrf("running shell: %s", err)
+	}
+
+	app.ui.loadFile(app, true)
+	return stdin, func() {
+		if err := cmd.Wait(); err != nil {
+			log.Printf("running shell: %s", err)
+		}
+		app.nav.renew()
+		if err := app.ui.resume(); err != nil {
+			app.quit()
+			os.Exit(3)
 		}
 	}
-	return noopCleanFunc
 }

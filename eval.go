@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -2077,10 +2078,45 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.cmdAccLeft = acc
 		update(app)
-	case "maps":
-		cleanUp := app.runShell("$PAGER", nil, "$|")
-		io.Copy(app.cmdIn, listBinds(gOpts.keys))
-		app.cmdIn.Close()
+	case "list-maps":
+		stdin, cleanUp := app.runShellPipeIn(envPager, nil)
+		io.Copy(stdin, listBinds(gOpts.keys))
+		stdin.Close()
+		cleanUp()
+	case "list-buffers":
+		srcs, cp, err := loadFiles()
+		if err != nil {
+			app.ui.echoerrf("buffers: %s", err)
+		}
+		stdin, cleanUp := app.runShellPipeIn(envPager, nil)
+		if len(srcs) == 0 {
+			fmt.Fprintln(stdin, "buffers: empty")
+		} else {
+			var mode string
+			if cp {
+				mode = "copy"
+			} else {
+				mode = "cut"
+			}
+			fmt.Fprintf(stdin, "buffers (%s):\n", mode)
+			for _, src := range srcs {
+				fmt.Fprintf(stdin, "  %s\n", src)
+			}
+		}
+		stdin.Close()
+		cleanUp()
+	case "list-selections":
+		sels := app.nav.currSelections()
+		stdin, cleanUp := app.runShellPipeIn(envPager, nil)
+		if len(sels) == 0 {
+			fmt.Fprintln(stdin, "selections: empty")
+		} else {
+			fmt.Fprintf(stdin, "selections\n")
+			for _, sel := range sels {
+				fmt.Fprintf(stdin, "  %s\n", sel)
+			}
+		}
+		stdin.Close()
 		cleanUp()
 	default:
 		cmd, ok := gOpts.cmds[e.name]

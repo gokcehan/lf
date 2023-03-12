@@ -12,7 +12,6 @@ var (
 	gCmdWords = []string{
 		"set",
 		"map",
-		"maps",
 		"cmap",
 		"cmd",
 		"quit",
@@ -105,6 +104,9 @@ var (
 		"cmd-capitalize-word",
 		"cmd-uppercase-word",
 		"cmd-lowercase-word",
+		"list-maps",
+		"list-buffers",
+		"list-selections",
 	}
 
 	gOptWords = []string{

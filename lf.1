@@ -94,7 +94,9 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
-    maps
+    list-maps
+    list-buffers
+    list-selections
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -743,10 +745,22 @@ Delete the next word in forward direction.
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 .PP
 .EX
-    maps
+    list-maps
 .EE
 .PP
 List all key mappings.
+.PP
+.EX
+    list-buffers
+.EE
+.PP
+List copy/cut buffers.
+.PP
+.EX
+    list-selections
+.EE
+.PP
+List selections.
 .SH OPTIONS
 This section shows information about options to customize the behavior. Character ':' is used as the separator for list options '[]int' and '[]string'.
 .PP
