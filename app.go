@@ -468,7 +468,7 @@ func (app *app) loop() {
 			app.ui.loadFile(app, false)
 			app.ui.draw(app.nav)
 		case <-app.nav.previewTimer.C:
-			app.nav.previewTimeout = true
+			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
 		}
 	}

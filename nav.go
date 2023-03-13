@@ -348,6 +348,8 @@ func (dir *dir) sel(name string, height int) {
 	dir.pos = min(dir.ind, height-edge-1)
 }
 
+const previewTimeout = 100 * time.Millisecond
+
 type nav struct {
 	init            bool
 	dirs            []*dir
@@ -389,7 +391,7 @@ type nav struct {
 	prevFilter      []string
 	volatilePreview bool
 	previewTimer    *time.Timer
-	previewTimeout  bool
+	previewLoading  bool
 	jumpList        []string
 	jumpListInd     int
 }
@@ -513,7 +515,7 @@ func newNav(height int) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
-		previewTimer:    time.NewTimer(time.Second),
+		previewTimer:    time.NewTimer(previewTimeout),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -847,16 +849,16 @@ func (nav *nav) checkReg(reg *reg) {
 
 func (nav *nav) startPreviewReg(path string) {
 	nav.previewTimer.Stop()
-	nav.previewTimeout = false
-	nav.previewTimer.Reset(time.Second)
+	nav.previewLoading = false
+	nav.previewTimer.Reset(previewTimeout)
 
 	nav.previewChan <- path
 }
 
 func (nav *nav) startPreviewDir(dir *dir) {
 	nav.previewTimer.Stop()
-	nav.previewTimeout = false
-	nav.previewTimer.Reset(time.Second)
+	nav.previewLoading = false
+	nav.previewTimer.Reset(previewTimeout)
 
 	nav.dirPreviewChan <- dir
 }
