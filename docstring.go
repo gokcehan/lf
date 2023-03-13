@@ -82,6 +82,7 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
+    maps
 
 The following command line commands are provided by lf:
 
@@ -626,6 +627,10 @@ Delete the next word in forward direction.
     cmd-lowercase-word       (default '<a-l>')
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
+
+    maps
+
+List all key mappings.
 
 # Options
 

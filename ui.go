@@ -402,7 +402,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		if gOpts.number && gOpts.relativenumber {
 			lnwidth++
 		}
-		for j := 10; j < len(dir.files); j *= 10 {
+		for j := 10; j <= len(dir.files); j *= 10 {
 			lnwidth++
 		}
 		lnformat = fmt.Sprintf("%%%d.d ", lnwidth)
@@ -448,12 +448,9 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		s = append(s, ' ')
 
-		var iwidth int
-
 		if gOpts.icons {
 			s = append(s, []rune(dirStyle.icons.get(f))...)
 			s = append(s, ' ')
-			iwidth = 2
 		}
 
 		for _, r := range f.Name() {
@@ -462,23 +459,30 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		w := runeSliceWidth(s)
 
-		if w > win.w-3 {
-			s = runeSliceWidthRange(s, 0, win.w-4)
+		// make space for select marker, and leave another space at the end
+		maxlength := win.w - lnwidth - 2
+		// make extra space to separate windows if drawbox is not enabled
+		if !gOpts.drawbox {
+			maxlength -= 1
+		}
+
+		if w > maxlength {
+			s = runeSliceWidthRange(s, 0, maxlength-1)
 			s = append(s, []rune(gOpts.truncatechar)...)
 		} else {
-			for i := 0; i < win.w-3-w; i++ {
+			for i := 0; i < maxlength-w; i++ {
 				s = append(s, ' ')
 			}
 		}
 
 		info := fileInfo(f, dir)
 
-		if len(info) > 0 && win.w-lnwidth-iwidth-2 > 2*len(info) {
-			if win.w-2 > w+len(info) {
-				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
-			} else {
-				s = runeSliceWidthRange(s, 0, win.w-4-len(info)-lnwidth)
+		if len(info) > 0 && 2*len(info) < maxlength {
+			if w+len(info) > maxlength {
+				s = runeSliceWidthRange(s, 0, maxlength-len(info)-1)
 				s = append(s, []rune(gOpts.truncatechar)...)
+			} else {
+				s = runeSliceWidthRange(s, 0, maxlength-len(info))
 			}
 			for _, r := range info {
 				s = append(s, r)
@@ -522,16 +526,16 @@ func getWidths(wtot int) []int {
 	wlen := len(gOpts.ratios)
 	widths := make([]int, wlen)
 
+	if gOpts.drawbox {
+		wtot -= (wlen + 1)
+	}
+
 	wsum := 0
 	for i := 0; i < wlen-1; i++ {
 		widths[i] = gOpts.ratios[i] * wtot / rsum
 		wsum += widths[i]
 	}
 	widths[wlen-1] = wtot - wsum
-
-	if gOpts.drawbox {
-		widths[wlen-1]--
-	}
 
 	return widths
 }
@@ -547,7 +551,8 @@ func getWins(screen tcell.Screen) []*win {
 	wlen := len(widths)
 	for i := 0; i < wlen; i++ {
 		if gOpts.drawbox {
-			wins = append(wins, newWin(widths[i], htot-4, wacc+1, 2))
+			wacc++
+			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
 		} else {
 			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
 		}
@@ -631,21 +636,9 @@ func (ui *ui) pollEvents() {
 }
 
 func (ui *ui) renew() {
+	ui.wins = getWins(ui.screen)
+
 	wtot, htot := ui.screen.Size()
-
-	widths := getWidths(wtot)
-
-	wacc := 0
-	wlen := len(widths)
-	for i := 0; i < wlen; i++ {
-		if gOpts.drawbox {
-			ui.wins[i].renew(widths[i], htot-4, wacc+1, 2)
-		} else {
-			ui.wins[i].renew(widths[i], htot-2, wacc, 1)
-		}
-		wacc += widths[i]
-	}
-
 	ui.promptWin.renew(wtot, 1, 0, 0)
 	ui.msgWin.renew(wtot, 1, 0, htot-1)
 	ui.menuWin.renew(wtot, 1, 0, htot-2)
@@ -896,7 +889,7 @@ func (ui *ui) drawBox() {
 
 	wacc := 0
 	for wind := 0; wind < len(ui.wins)-1; wind++ {
-		wacc += ui.wins[wind].w
+		wacc += ui.wins[wind].w + 1
 		ui.screen.SetContent(wacc, 1, '┬', nil, st)
 		for i := 2; i < h-2; i++ {
 			ui.screen.SetContent(wacc, i, '│', nil, st)

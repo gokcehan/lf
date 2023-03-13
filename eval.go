@@ -1312,7 +1312,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reload: %s", err)
 		}
 		app.ui.loadFile(app, true)
-		app.ui.loadFileInfo(app.nav)
+		// clear file information, will be loaded asynchronously
+		app.ui.msg = ""
 	case "read":
 		if app.ui.cmdPrefix == ">" {
 			return
@@ -2076,6 +2077,11 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.cmdAccLeft = acc
 		update(app)
+	case "maps":
+		cleanUp := app.runShell("$PAGER", nil, "$|")
+		io.Copy(app.cmdIn, listBinds(gOpts.keys))
+		app.cmdIn.Close()
+		cleanUp()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

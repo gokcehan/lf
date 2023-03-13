@@ -474,6 +474,10 @@ func (app *app) loop() {
 	}
 }
 
+type cleanFunc func()
+
+var noopCleanFunc = func() {}
+
 // This function is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -481,7 +485,8 @@ func (app *app) loop() {
 //	%       No    No     Yes    Yes     Yes     Statline for input/output
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
-func (app *app) runShell(s string, args []string, prefix string) {
+//	$|      No    No     Pipe   Yes     Yes     Pause, Pipe execute, return cleanup to resume
+func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
@@ -491,6 +496,24 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	var out io.Reader
 	var err error
 	switch prefix {
+	case "$|":
+		var stdin io.WriteCloser
+		stdin, err = cmd.StdinPipe()
+		if err != nil {
+			log.Printf("writing stdin: %s", err)
+		}
+		app.cmdIn = stdin
+		cmd.Stdout = os.Stdout
+		cmd.Stderr = os.Stderr
+
+		app.nav.previewChan <- ""
+		app.nav.dirPreviewChan <- nil
+
+		if err := app.ui.suspend(); err != nil {
+			log.Printf("suspend: %s", err)
+		}
+
+		err = cmd.Start()
 	case "$", "!":
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
@@ -515,7 +538,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	case "%":
 		shellSetPG(cmd)
 		if app.ui.cmdPrefix == ">" {
-			return
+			return noopCleanFunc
 		}
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -588,5 +611,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 				log.Printf("running shell: %s", err)
 			}
 		}()
+	case "$|":
+		return func() {
+			if err := cmd.Wait(); err != nil {
+				log.Printf("running shell: %s", err)
+			}
+			app.nav.renew()
+			if err := app.ui.resume(); err != nil {
+				app.quit()
+				os.Exit(3)
+			}
+		}
 	}
+	return noopCleanFunc
 }
