@@ -26,8 +26,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "noanchorfind":
+		if e.val != "" {
+			app.ui.echoerrf("noanchorfind: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.anchorfind = false
 	case "anchorfind!":
+		if e.val != "" {
+			app.ui.echoerrf("anchorfind!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.anchorfind = !gOpts.anchorfind
 	case "autoquit":
 		if e.val == "" || e.val == "true" {
@@ -39,8 +47,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "noautoquit":
+		if e.val != "" {
+			app.ui.echoerrf("noautoquit: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.autoquit = false
 	case "autoquit!":
+		if e.val != "" {
+			app.ui.echoerrf("autoquit!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.autoquit = !gOpts.autoquit
 	case "cleaner":
 		gOpts.cleaner = replaceTilde(e.val)
@@ -60,8 +76,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nodircache":
+		if e.val != "" {
+			app.ui.echoerrf("nodircache: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dircache = false
 	case "dircache!":
+		if e.val != "" {
+			app.ui.echoerrf("dircache!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dircache = !gOpts.dircache
 	case "dircounts":
 		if e.val == "" || e.val == "true" {
@@ -73,8 +97,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nodircounts":
+		if e.val != "" {
+			app.ui.echoerrf("nodircounts: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dircounts = false
 	case "dircounts!":
+		if e.val != "" {
+			app.ui.echoerrf("dircounts!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
 		if e.val == "" || e.val == "true" {
@@ -88,10 +120,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "nodirfirst":
+		if e.val != "" {
+			app.ui.echoerrf("nodirfirst: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option &= ^dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
 	case "dirfirst!":
+		if e.val != "" {
+			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
@@ -109,12 +149,20 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "nodironly":
+		if e.val != "" {
+			app.ui.echoerrf("nodironly: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dironly = false
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "dironly!":
+		if e.val != "" {
+			app.ui.echoerrf("dironly!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dironly = !gOpts.dironly
 		app.nav.sort()
 		app.nav.position()
@@ -130,8 +178,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nodirpreviews":
+		if e.val != "" {
+			app.ui.echoerrf("nodirpreviews: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dirpreviews = false
 	case "dirpreviews!":
+		if e.val != "" {
+			app.ui.echoerrf("dirpreviews!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.dirpreviews = !gOpts.dirpreviews
 	case "drawbox":
 		if e.val == "" || e.val == "true" {
@@ -149,6 +205,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app, true)
 	case "nodrawbox":
+		if e.val != "" {
+			app.ui.echoerrf("nodrawbox: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.drawbox = false
 		app.ui.renew()
 		if app.nav.height != app.ui.wins[0].h {
@@ -157,6 +217,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app, true)
 	case "drawbox!":
+		if e.val != "" {
+			app.ui.echoerrf("drawbox!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.drawbox = !gOpts.drawbox
 		app.ui.renew()
 		if app.nav.height != app.ui.wins[0].h {
@@ -192,11 +256,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "noglobsearch":
+		if e.val != "" {
+			app.ui.echoerrf("noglobsearch: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.globsearch = false
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "globsearch!":
+		if e.val != "" {
+			app.ui.echoerrf("globsearch!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.globsearch = !gOpts.globsearch
 		app.nav.sort()
 		app.ui.sort()
@@ -215,12 +287,20 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "nohidden":
+		if e.val != "" {
+			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option &= ^hiddenSort
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "hidden!":
+		if e.val != "" {
+			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option ^= hiddenSort
 		app.nav.sort()
 		app.nav.position()
@@ -254,8 +334,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nohistory":
+		if e.val != "" {
+			app.ui.echoerrf("nohistory: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.history = false
 	case "history!":
+		if e.val != "" {
+			app.ui.echoerrf("history!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.history = !gOpts.history
 	case "icons":
 		if e.val == "" || e.val == "true" {
@@ -267,8 +355,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "noicons":
+		if e.val != "" {
+			app.ui.echoerrf("noicons: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.icons = false
 	case "icons!":
+		if e.val != "" {
+			app.ui.echoerrf("icons!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.icons = !gOpts.icons
 	case "ifs":
 		gOpts.ifs = e.val
@@ -285,11 +381,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "noignorecase":
+		if e.val != "" {
+			app.ui.echoerrf("noignorecase: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.ignorecase = false
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "ignorecase!":
+		if e.val != "" {
+			app.ui.echoerrf("ignorecase!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.ignorecase = !gOpts.ignorecase
 		app.nav.sort()
 		app.ui.sort()
@@ -306,10 +410,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "noignoredia":
+		if e.val != "" {
+			app.ui.echoerrf("noignoredia: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.ignoredia = false
 		app.nav.sort()
 		app.ui.sort()
 	case "ignoredia!":
+		if e.val != "" {
+			app.ui.echoerrf("ignoredia!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.ignoredia = !gOpts.ignoredia
 		app.nav.sort()
 		app.ui.sort()
@@ -323,8 +435,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "noincfilter":
+		if e.val != "" {
+			app.ui.echoerrf("noincfilter: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.incfilter = false
 	case "incfilter!":
+		if e.val != "" {
+			app.ui.echoerrf("incfilter!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.incfilter = !gOpts.incfilter
 	case "incsearch":
 		if e.val == "" || e.val == "true" {
@@ -336,8 +456,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "noincsearch":
+		if e.val != "" {
+			app.ui.echoerrf("noincsearch: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.incsearch = false
 	case "incsearch!":
+		if e.val != "" {
+			app.ui.echoerrf("incsearch!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.incsearch = !gOpts.incsearch
 	case "info":
 		if e.val == "" {
@@ -374,11 +502,19 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nomouse":
+		if e.val != "" {
+			app.ui.echoerrf("nomouse: unexpected value: %s", e.val)
+			return
+		}
 		if gOpts.mouse {
 			gOpts.mouse = false
 			app.ui.screen.DisableMouse()
 		}
 	case "mouse!":
+		if e.val != "" {
+			app.ui.echoerrf("mouse!: unexpected value: %s", e.val)
+			return
+		}
 		if gOpts.mouse {
 			gOpts.mouse = false
 			app.ui.screen.DisableMouse()
@@ -396,8 +532,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nonumber":
+		if e.val != "" {
+			app.ui.echoerrf("nonumber: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.number = false
 	case "number!":
+		if e.val != "" {
+			app.ui.echoerrf("number!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.number = !gOpts.number
 	case "period":
 		n, err := strconv.Atoi(e.val)
@@ -430,8 +574,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nopreview":
+		if e.val != "" {
+			app.ui.echoerrf("nopreview: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.preview = false
 	case "preview!":
+		if e.val != "" {
+			app.ui.echoerrf("preview!: unexpected value: %s", e.val)
+			return
+		}
 		if len(gOpts.ratios) < 2 {
 			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
 			return
@@ -473,8 +625,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "norelativenumber":
+		if e.val != "" {
+			app.ui.echoerrf("norelativenumber: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.relativenumber = false
 	case "relativenumber!":
+		if e.val != "" {
+			app.ui.echoerrf("relativenumber!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.relativenumber = !gOpts.relativenumber
 	case "reverse":
 		if e.val == "" || e.val == "true" {
@@ -488,10 +648,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "noreverse":
+		if e.val != "" {
+			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option &= ^reverseSort
 		app.nav.sort()
 		app.ui.sort()
 	case "reverse!":
+		if e.val != "" {
+			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.sortType.option ^= reverseSort
 		app.nav.sort()
 		app.ui.sort()
@@ -531,11 +699,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "nosmartcase":
+		if e.val != "" {
+			app.ui.echoerrf("nosmartcase: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.smartcase = false
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "smartcase!":
+		if e.val != "" {
+			app.ui.echoerrf("smartcase!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.smartcase = !gOpts.smartcase
 		app.nav.sort()
 		app.ui.sort()
@@ -550,8 +726,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nosmartdia":
+		if e.val != "" {
+			app.ui.echoerrf("nosmartdia: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.smartdia = false
 	case "smartdia!":
+		if e.val != "" {
+			app.ui.echoerrf("smartdia!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
 		switch e.val {
@@ -615,8 +799,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nowrapscan":
+		if e.val != "" {
+			app.ui.echoerrf("nowrapscan: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.wrapscan = false
 	case "wrapscan!":
+		if e.val != "" {
+			app.ui.echoerrf("wrapscan!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.wrapscan = !gOpts.wrapscan
 	case "wrapscroll":
 		if e.val == "" || e.val == "true" {
@@ -628,8 +820,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 	case "nowrapscroll":
+		if e.val != "" {
+			app.ui.echoerrf("nowrapscroll: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.wrapscroll = false
 	case "wrapscroll!":
+		if e.val != "" {
+			app.ui.echoerrf("wrapscroll!: unexpected value: %s", e.val)
+			return
+		}
 		gOpts.wrapscroll = !gOpts.wrapscroll
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
