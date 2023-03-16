@@ -17,13 +17,27 @@ import (
 func (e *setExpr) eval(app *app, args []string) {
 	switch e.opt {
 	case "anchorfind":
-		gOpts.anchorfind = true
+		if e.val == "" || e.val == "true" {
+			gOpts.anchorfind = true
+		} else if e.val == "false" {
+			gOpts.anchorfind = false
+		} else {
+			app.ui.echoerr("anchorfind: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "noanchorfind":
 		gOpts.anchorfind = false
 	case "anchorfind!":
 		gOpts.anchorfind = !gOpts.anchorfind
 	case "autoquit":
-		gOpts.autoquit = true
+		if e.val == "" || e.val == "true" {
+			gOpts.autoquit = true
+		} else if e.val == "false" {
+			gOpts.autoquit = false
+		} else {
+			app.ui.echoerr("autoquit: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "noautoquit":
 		gOpts.autoquit = false
 	case "cursoractivefmt":
@@ -35,25 +49,53 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "autoquit!":
 		gOpts.autoquit = !gOpts.autoquit
 	case "dircache":
-		gOpts.dircache = true
+		if e.val == "" || e.val == "true" {
+			gOpts.dircache = true
+		} else if e.val == "false" {
+			gOpts.dircache = false
+		} else {
+			app.ui.echoerr("dircache: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nodircache":
 		gOpts.dircache = false
 	case "dircache!":
 		gOpts.dircache = !gOpts.dircache
 	case "dircounts":
-		gOpts.dircounts = true
+		if e.val == "" || e.val == "true" {
+			gOpts.dircounts = true
+		} else if e.val == "false" {
+			gOpts.dircounts = false
+		} else {
+			app.ui.echoerr("dircounts: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nodircounts":
 		gOpts.dircounts = false
 	case "dircounts!":
 		gOpts.dircounts = !gOpts.dircounts
 	case "dironly":
-		gOpts.dironly = true
+		if e.val == "" || e.val == "true" {
+			gOpts.dironly = true
+		} else if e.val == "false" {
+			gOpts.dironly = false
+		} else {
+			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "dirpreviews":
-		gOpts.dirpreviews = true
+		if e.val == "" || e.val == "true" {
+			gOpts.dirpreviews = true
+		} else if e.val == "false" {
+			gOpts.dirpreviews = false
+		} else {
+			app.ui.echoerr("dirpreviews: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nodirpreviews":
 		gOpts.dirpreviews = false
 	case "dirpreviews!":
@@ -71,7 +113,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "dirfirst":
-		gOpts.sortType.option |= dirfirstSort
+		if e.val == "" || e.val == "true" {
+			gOpts.sortType.option |= dirfirstSort
+		} else if e.val == "false" {
+			gOpts.sortType.option &= ^dirfirstSort
+		} else {
+			app.ui.echoerr("dirfirst: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "nodirfirst":
@@ -83,7 +132,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "drawbox":
-		gOpts.drawbox = true
+		if e.val == "" || e.val == "true" {
+			gOpts.drawbox = true
+		} else if e.val == "false" {
+			gOpts.drawbox = false
+		} else {
+			app.ui.echoerr("drawbox: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.ui.renew()
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
@@ -107,7 +163,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app, true)
 	case "globsearch":
-		gOpts.globsearch = true
+		if e.val == "" || e.val == "true" {
+			gOpts.globsearch = true
+		} else if e.val == "false" {
+			gOpts.globsearch = false
+		} else {
+			app.ui.echoerr("globsearch: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
@@ -122,7 +185,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "hidden":
-		gOpts.sortType.option |= hiddenSort
+		if e.val == "" || e.val == "true" {
+			gOpts.sortType.option |= hiddenSort
+		} else if e.val == "false" {
+			gOpts.sortType.option &= ^hiddenSort
+		} else {
+			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
@@ -140,19 +210,40 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "history":
-		gOpts.history = true
+		if e.val == "" || e.val == "true" {
+			gOpts.history = true
+		} else if e.val == "false" {
+			gOpts.history = false
+		} else {
+			app.ui.echoerr("history: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nohistory":
 		gOpts.history = false
 	case "history!":
 		gOpts.history = !gOpts.history
 	case "icons":
-		gOpts.icons = true
+		if e.val == "" || e.val == "true" {
+			gOpts.icons = true
+		} else if e.val == "false" {
+			gOpts.icons = false
+		} else {
+			app.ui.echoerr("icons: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "noicons":
 		gOpts.icons = false
 	case "icons!":
 		gOpts.icons = !gOpts.icons
 	case "ignorecase":
-		gOpts.ignorecase = true
+		if e.val == "" || e.val == "true" {
+			gOpts.ignorecase = true
+		} else if e.val == "false" {
+			gOpts.ignorecase = false
+		} else {
+			app.ui.echoerr("ignorecase: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
@@ -167,7 +258,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "ignoredia":
-		gOpts.ignoredia = true
+		if e.val == "" || e.val == "true" {
+			gOpts.ignoredia = true
+		} else if e.val == "false" {
+			gOpts.ignoredia = false
+		} else {
+			app.ui.echoerr("ignoredia: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "noignoredia":
@@ -179,21 +277,45 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "incfilter":
-		gOpts.incfilter = true
+		if e.val == "" || e.val == "true" {
+			gOpts.incfilter = true
+		} else if e.val == "false" {
+			gOpts.incfilter = false
+		} else {
+			app.ui.echoerr("incfilter: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "noincfilter":
 		gOpts.incfilter = false
 	case "incfilter!":
 		gOpts.incfilter = !gOpts.incfilter
 	case "incsearch":
-		gOpts.incsearch = true
+		if e.val == "" || e.val == "true" {
+			gOpts.incsearch = true
+		} else if e.val == "false" {
+			gOpts.incsearch = false
+		} else {
+			app.ui.echoerr("incsearch: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "noincsearch":
 		gOpts.incsearch = false
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
 	case "mouse":
-		if !gOpts.mouse {
-			gOpts.mouse = true
-			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
+		if e.val == "" || e.val == "true" {
+			if !gOpts.mouse {
+				gOpts.mouse = true
+				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
+			}
+		} else if e.val == "false" {
+			if gOpts.mouse {
+				gOpts.mouse = false
+				app.ui.screen.DisableMouse()
+			}
+		} else {
+			app.ui.echoerr("mouse: value should be empty, 'true', or 'false'")
+			return
 		}
 	case "nomouse":
 		if gOpts.mouse {
@@ -209,17 +331,31 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
 		}
 	case "number":
-		gOpts.number = true
+		if e.val == "" || e.val == "true" {
+			gOpts.number = true
+		} else if e.val == "false" {
+			gOpts.number = false
+		} else {
+			app.ui.echoerr("number: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nonumber":
 		gOpts.number = false
 	case "number!":
 		gOpts.number = !gOpts.number
 	case "preview":
-		if len(gOpts.ratios) < 2 {
-			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+		if e.val == "" || e.val == "true" {
+			if len(gOpts.ratios) < 2 {
+				app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+				return
+			}
+			gOpts.preview = true
+		} else if e.val == "false" {
+			gOpts.preview = false
+		} else {
+			app.ui.echoerr("preview: value should be empty, 'true', or 'false'")
 			return
 		}
-		gOpts.preview = true
 	case "nopreview":
 		gOpts.preview = false
 	case "preview!":
@@ -229,13 +365,27 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.preview = !gOpts.preview
 	case "relativenumber":
-		gOpts.relativenumber = true
+		if e.val == "" || e.val == "true" {
+			gOpts.relativenumber = true
+		} else if e.val == "false" {
+			gOpts.relativenumber = false
+		} else {
+			app.ui.echoerr("relativenumber: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "norelativenumber":
 		gOpts.relativenumber = false
 	case "relativenumber!":
 		gOpts.relativenumber = !gOpts.relativenumber
 	case "reverse":
-		gOpts.sortType.option |= reverseSort
+		if e.val == "" || e.val == "true" {
+			gOpts.sortType.option |= reverseSort
+		} else if e.val == "false" {
+			gOpts.sortType.option &= ^reverseSort
+		} else {
+			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "noreverse":
@@ -247,7 +397,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "smartcase":
-		gOpts.smartcase = true
+		if e.val == "" || e.val == "true" {
+			gOpts.smartcase = true
+		} else if e.val == "false" {
+			gOpts.smartcase = false
+		} else {
+			app.ui.echoerr("smartcase: value should be empty, 'true', or 'false'")
+			return
+		}
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
@@ -262,7 +419,14 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "smartdia":
-		gOpts.smartdia = true
+		if e.val == "" || e.val == "true" {
+			gOpts.smartdia = true
+		} else if e.val == "false" {
+			gOpts.smartdia = false
+		} else {
+			app.ui.echoerr("smartdia: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nosmartdia":
 		gOpts.smartdia = false
 	case "smartdia!":
@@ -270,13 +434,27 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	case "wrapscan":
-		gOpts.wrapscan = true
+		if e.val == "" || e.val == "true" {
+			gOpts.wrapscan = true
+		} else if e.val == "false" {
+			gOpts.wrapscan = false
+		} else {
+			app.ui.echoerr("wrapscan: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nowrapscan":
 		gOpts.wrapscan = false
 	case "wrapscan!":
 		gOpts.wrapscan = !gOpts.wrapscan
 	case "wrapscroll":
-		gOpts.wrapscroll = true
+		if e.val == "" || e.val == "true" {
+			gOpts.wrapscroll = true
+		} else if e.val == "false" {
+			gOpts.wrapscroll = false
+		} else {
+			app.ui.echoerr("wrapscroll: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "nowrapscroll":
 		gOpts.wrapscroll = false
 	case "wrapscroll!":
