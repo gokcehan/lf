@@ -40,14 +40,16 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "noautoquit":
 		gOpts.autoquit = false
+	case "autoquit!":
+		gOpts.autoquit = !gOpts.autoquit
+	case "cleaner":
+		gOpts.cleaner = replaceTilde(e.val)
 	case "cursoractivefmt":
 		gOpts.cursoractivefmt = e.val
 	case "cursorparentfmt":
 		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
-	case "autoquit!":
-		gOpts.autoquit = !gOpts.autoquit
 	case "dircache":
 		if e.val == "" || e.val == "true" {
 			gOpts.dircache = true
@@ -74,44 +76,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.dircounts = false
 	case "dircounts!":
 		gOpts.dircounts = !gOpts.dircounts
-	case "dironly":
-		if e.val == "" || e.val == "true" {
-			gOpts.dironly = true
-		} else if e.val == "false" {
-			gOpts.dironly = false
-		} else {
-			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "dirpreviews":
-		if e.val == "" || e.val == "true" {
-			gOpts.dirpreviews = true
-		} else if e.val == "false" {
-			gOpts.dirpreviews = false
-		} else {
-			app.ui.echoerr("dirpreviews: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nodirpreviews":
-		gOpts.dirpreviews = false
-	case "dirpreviews!":
-		gOpts.dirpreviews = !gOpts.dirpreviews
-	case "nodironly":
-		gOpts.dironly = false
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "dironly!":
-		gOpts.dironly = !gOpts.dironly
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
 	case "dirfirst":
 		if e.val == "" || e.val == "true" {
 			gOpts.sortType.option |= dirfirstSort
@@ -131,6 +95,44 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
+	case "dironly":
+		if e.val == "" || e.val == "true" {
+			gOpts.dironly = true
+		} else if e.val == "false" {
+			gOpts.dironly = false
+		} else {
+			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
+	case "nodironly":
+		gOpts.dironly = false
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
+	case "dironly!":
+		gOpts.dironly = !gOpts.dironly
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
+	case "dirpreviews":
+		if e.val == "" || e.val == "true" {
+			gOpts.dirpreviews = true
+		} else if e.val == "false" {
+			gOpts.dirpreviews = false
+		} else {
+			app.ui.echoerr("dirpreviews: value should be empty, 'true', or 'false'")
+			return
+		}
+	case "nodirpreviews":
+		gOpts.dirpreviews = false
+	case "dirpreviews!":
+		gOpts.dirpreviews = !gOpts.dirpreviews
 	case "drawbox":
 		if e.val == "" || e.val == "true" {
 			gOpts.drawbox = true
@@ -162,6 +164,21 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.nav.regCache = make(map[string]*reg)
 		}
 		app.ui.loadFile(app, true)
+	case "errorfmt":
+		gOpts.errorfmt = e.val
+	case "filesep":
+		gOpts.filesep = e.val
+	case "findlen":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("findlen: %s", err)
+			return
+		}
+		if n < 0 {
+			app.ui.echoerr("findlen: value should be a non-negative number")
+			return
+		}
+		gOpts.findlen = n
 	case "globsearch":
 		if e.val == "" || e.val == "true" {
 			gOpts.globsearch = true
@@ -209,6 +226,24 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
+	case "hiddenfiles":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			if s == "" {
+				app.ui.echoerr("hiddenfiles: glob should be non-empty")
+				return
+			}
+			_, err := filepath.Match(s, "a")
+			if err != nil {
+				app.ui.echoerrf("hiddenfiles: %s", err)
+				return
+			}
+		}
+		gOpts.hiddenfiles = toks
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
 	case "history":
 		if e.val == "" || e.val == "true" {
 			gOpts.history = true
@@ -235,6 +270,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.icons = false
 	case "icons!":
 		gOpts.icons = !gOpts.icons
+	case "ifs":
+		gOpts.ifs = e.val
 	case "ignorecase":
 		if e.val == "" || e.val == "true" {
 			gOpts.ignorecase = true
@@ -302,6 +339,25 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.incsearch = false
 	case "incsearch!":
 		gOpts.incsearch = !gOpts.incsearch
+	case "info":
+		if e.val == "" {
+			gOpts.info = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "size", "time", "atime", "ctime":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
+				return
+			}
+		}
+		gOpts.info = toks
+	case "infotimefmtnew":
+		gOpts.infotimefmtnew = e.val
+	case "infotimefmtold":
+		gOpts.infotimefmtold = e.val
 	case "mouse":
 		if e.val == "" || e.val == "true" {
 			if !gOpts.mouse {
@@ -343,6 +399,23 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.number = false
 	case "number!":
 		gOpts.number = !gOpts.number
+	case "period":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("period: %s", err)
+			return
+		}
+		if n < 0 {
+			app.ui.echoerr("period: value should be a non-negative number")
+			return
+		}
+		gOpts.period = n
+		if n == 0 {
+			app.ticker.Stop()
+		} else {
+			app.ticker.Stop()
+			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
+		}
 	case "preview":
 		if e.val == "" || e.val == "true" {
 			if len(gOpts.ratios) < 2 {
@@ -364,6 +437,32 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.preview = !gOpts.preview
+	case "previewer":
+		gOpts.previewer = replaceTilde(e.val)
+	case "promptfmt":
+		gOpts.promptfmt = e.val
+	case "ratios":
+		toks := strings.Split(e.val, ":")
+		var rats []int
+		for _, s := range toks {
+			n, err := strconv.Atoi(s)
+			if err != nil {
+				app.ui.echoerrf("ratios: %s", err)
+				return
+			}
+			if n <= 0 {
+				app.ui.echoerr("ratios: value should be a positive number")
+				return
+			}
+			rats = append(rats, n)
+		}
+		if gOpts.preview && len(rats) < 2 {
+			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
+			return
+		}
+		gOpts.ratios = rats
+		app.ui.wins = getWins(app.ui.screen)
+		app.ui.loadFile(app, true)
 	case "relativenumber":
 		if e.val == "" || e.val == "true" {
 			gOpts.relativenumber = true
@@ -396,6 +495,29 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.sortType.option ^= reverseSort
 		app.nav.sort()
 		app.ui.sort()
+	case "scrolloff":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("scrolloff: %s", err)
+			return
+		}
+		if n < 0 {
+			app.ui.echoerr("scrolloff: value should be a non-negative number")
+			return
+		}
+		gOpts.scrolloff = n
+	case "selmode":
+		gOpts.selmode = e.val
+	case "shell":
+		gOpts.shell = e.val
+	case "shellflag":
+		gOpts.shellflag = e.val
+	case "shellopts":
+		if e.val == "" {
+			gOpts.shellopts = nil
+			return
+		}
+		gOpts.shellopts = strings.Split(e.val, ":")
 	case "smartcase":
 		if e.val == "" || e.val == "true" {
 			gOpts.smartcase = true
@@ -431,6 +553,56 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.smartdia = false
 	case "smartdia!":
 		gOpts.smartdia = !gOpts.smartdia
+	case "sortby":
+		switch e.val {
+		case "natural":
+			gOpts.sortType.method = naturalSort
+		case "name":
+			gOpts.sortType.method = nameSort
+		case "size":
+			gOpts.sortType.method = sizeSort
+		case "time":
+			gOpts.sortType.method = timeSort
+		case "ctime":
+			gOpts.sortType.method = ctimeSort
+		case "atime":
+			gOpts.sortType.method = atimeSort
+		case "ext":
+			gOpts.sortType.method = extSort
+		default:
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "tabstop":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("tabstop: %s", err)
+			return
+		}
+		if n <= 0 {
+			app.ui.echoerr("tabstop: value should be a positive number")
+			return
+		}
+		gOpts.tabstop = n
+	case "tagfmt":
+		gOpts.tagfmt = e.val
+	case "tempmarks":
+		if e.val != "" {
+			gOpts.tempmarks = "'" + e.val
+		} else {
+			gOpts.tempmarks = "'"
+		}
+	case "timefmt":
+		gOpts.timefmt = e.val
+	case "truncatechar":
+		if runeSliceWidth([]rune(e.val)) != 1 {
+			app.ui.echoerr("truncatechar: value should be a single character")
+			return
+		}
+
+		gOpts.truncatechar = e.val
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	case "wrapscan":
@@ -459,178 +631,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.wrapscroll = false
 	case "wrapscroll!":
 		gOpts.wrapscroll = !gOpts.wrapscroll
-	case "findlen":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("findlen: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("findlen: value should be a non-negative number")
-			return
-		}
-		gOpts.findlen = n
-	case "period":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("period: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("period: value should be a non-negative number")
-			return
-		}
-		gOpts.period = n
-		if n == 0 {
-			app.ticker.Stop()
-		} else {
-			app.ticker.Stop()
-			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
-		}
-	case "scrolloff":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("scrolloff: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("scrolloff: value should be a non-negative number")
-			return
-		}
-		gOpts.scrolloff = n
-	case "tabstop":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("tabstop: %s", err)
-			return
-		}
-		if n <= 0 {
-			app.ui.echoerr("tabstop: value should be a positive number")
-			return
-		}
-		gOpts.tabstop = n
-	case "errorfmt":
-		gOpts.errorfmt = e.val
-	case "filesep":
-		gOpts.filesep = e.val
-	case "hiddenfiles":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			if s == "" {
-				app.ui.echoerr("hiddenfiles: glob should be non-empty")
-				return
-			}
-			_, err := filepath.Match(s, "a")
-			if err != nil {
-				app.ui.echoerrf("hiddenfiles: %s", err)
-				return
-			}
-		}
-		gOpts.hiddenfiles = toks
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ifs":
-		gOpts.ifs = e.val
-	case "info":
-		if e.val == "" {
-			gOpts.info = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "size", "time", "atime", "ctime":
-			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
-				return
-			}
-		}
-		gOpts.info = toks
-	case "previewer":
-		gOpts.previewer = replaceTilde(e.val)
-	case "cleaner":
-		gOpts.cleaner = replaceTilde(e.val)
-	case "promptfmt":
-		gOpts.promptfmt = e.val
-	case "ratios":
-		toks := strings.Split(e.val, ":")
-		var rats []int
-		for _, s := range toks {
-			n, err := strconv.Atoi(s)
-			if err != nil {
-				app.ui.echoerrf("ratios: %s", err)
-				return
-			}
-			if n <= 0 {
-				app.ui.echoerr("ratios: value should be a positive number")
-				return
-			}
-			rats = append(rats, n)
-		}
-		if gOpts.preview && len(rats) < 2 {
-			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
-			return
-		}
-		gOpts.ratios = rats
-		app.ui.wins = getWins(app.ui.screen)
-		app.ui.loadFile(app, true)
-	case "selmode":
-		gOpts.selmode = e.val
-	case "shell":
-		gOpts.shell = e.val
-	case "shellflag":
-		gOpts.shellflag = e.val
-	case "shellopts":
-		if e.val == "" {
-			gOpts.shellopts = nil
-			return
-		}
-		gOpts.shellopts = strings.Split(e.val, ":")
-	case "sortby":
-		switch e.val {
-		case "natural":
-			gOpts.sortType.method = naturalSort
-		case "name":
-			gOpts.sortType.method = nameSort
-		case "size":
-			gOpts.sortType.method = sizeSort
-		case "time":
-			gOpts.sortType.method = timeSort
-		case "ctime":
-			gOpts.sortType.method = ctimeSort
-		case "atime":
-			gOpts.sortType.method = atimeSort
-		case "ext":
-			gOpts.sortType.method = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "tempmarks":
-		if e.val != "" {
-			gOpts.tempmarks = "'" + e.val
-		} else {
-			gOpts.tempmarks = "'"
-		}
-	case "tagfmt":
-		gOpts.tagfmt = e.val
-	case "timefmt":
-		gOpts.timefmt = e.val
-	case "infotimefmtnew":
-		gOpts.infotimefmtnew = e.val
-	case "infotimefmtold":
-		gOpts.infotimefmtold = e.val
-	case "truncatechar":
-		if runeSliceWidth([]rune(e.val)) != 1 {
-			app.ui.echoerr("truncatechar: value should be a single character")
-			return
-		}
-
-		gOpts.truncatechar = e.val
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
