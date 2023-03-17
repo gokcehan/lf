@@ -196,6 +196,7 @@ var (
 		"info",
 		"previewer",
 		"cleaner",
+		"previewtimeout",
 		"promptfmt",
 		"ratios",
 		"selmode",
