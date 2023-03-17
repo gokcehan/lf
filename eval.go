@@ -1926,7 +1926,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			} else if len(e.args) == 1 && e.args[0] == "ext" {
 				dotidx := strings.LastIndex(curr.Name(), ".")
 				if dotidx < 1 {
-			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+					app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 				} else {
 					app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:dotidx])...)
 					app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(curr.Name()[dotidx:])...)
