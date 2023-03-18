@@ -395,6 +395,8 @@ type nav struct {
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
+	nav.startPreview()
+
 	d := &dir{
 		loading:     true,
 		loadTime:    time.Now(),
@@ -409,7 +411,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		d.sort()
 		d.ind, d.pos = 0, 0
 		if gOpts.dirpreviews {
-			nav.startPreviewDir(d)
+			nav.dirPreviewChan <- d
 		}
 		nav.dirChan <- d
 
@@ -450,6 +452,7 @@ func (nav *nav) checkDir(dir *dir) {
 			return
 		}
 
+		nav.startPreview()
 		dir.loading = true
 		dir.loadTime = now
 		go func() {
@@ -457,7 +460,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nd.filter = dir.filter
 			nd.sort()
 			if gOpts.dirpreviews {
-				nav.startPreviewDir(nd)
+				nav.dirPreviewChan <- nd
 			}
 			nav.dirChan <- nd
 		}()
@@ -817,7 +820,8 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (volatile && r.volatile) {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
-		nav.startPreviewReg(path)
+		nav.startPreview()
+		nav.previewChan <- path
 		return r
 	}
 
@@ -842,28 +846,17 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		nav.startPreviewReg(reg.path)
+		nav.startPreview()
+		nav.previewChan <- reg.path
 	}
 }
 
-func (nav *nav) startPreviewReg(path string) {
+func (nav *nav) startPreview() {
 	if gOpts.previewtimeout > 0 {
 		nav.previewTimer.Stop()
 		nav.previewLoading = false
 		nav.previewTimer.Reset(gOpts.previewtimeout)
 	}
-
-	nav.previewChan <- path
-}
-
-func (nav *nav) startPreviewDir(dir *dir) {
-	if gOpts.previewtimeout > 0 {
-		nav.previewTimer.Stop()
-		nav.previewLoading = false
-		nav.previewTimer.Reset(gOpts.previewtimeout)
-	}
-
-	nav.dirPreviewChan <- dir
 }
 
 func (nav *nav) sort() {
