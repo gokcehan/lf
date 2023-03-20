@@ -1920,7 +1920,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
-			app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+			extension := filepath.Ext(curr.Name())
+			if len(extension) == 0 || extension == curr.Name() {
+				// no extension or .hidden
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+			} else {
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
+				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
+			}
 		}
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
