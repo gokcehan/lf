@@ -563,7 +563,11 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 		anyKey()
 	}
 
-	app.ui.loadFile(app, true)
+	// Asynchronous shell invocations return immediately without waiting for the
+	// command to finish, so there is no point refreshing the preview if nothing
+	// has changed yet.
+	volatile := prefix != "&"
+	app.ui.loadFile(app, volatile)
 
 	switch prefix {
 	case "%":
