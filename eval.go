@@ -1925,7 +1925,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				// no extension or .hidden
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 			} else {
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(extension)])...)
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(extension)-1])...)
 				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
 			}
 		}
