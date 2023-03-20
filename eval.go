@@ -1920,21 +1920,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
-
-			if len(e.args) == 1 && e.args[0] == "start" {
-				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(curr.Name())...)
-			} else if len(e.args) == 1 && e.args[0] == "ext" {
-				dotidx := strings.LastIndex(curr.Name(), ".")
-				if dotidx < 1 {
-					app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
-				} else {
-					app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:dotidx])...)
-					app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(curr.Name()[dotidx:])...)
-				}
-			} else if len(e.args) == 1 && e.args[0] == "cw" {
-				// user types whole word
-			} else {
+			extension := filepath.Ext(curr.Name())
+			if len(extension) == 0 || extension == curr.Name() {
+				// no extension or .hidden
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+			} else {
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(extension)])...)
+				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
 			}
 		}
 		app.ui.loadFile(app, true)
