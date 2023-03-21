@@ -858,7 +858,22 @@ func (ui *ui) drawStatLine(nav *nav) {
 		progress += fmt.Sprintf("  [%d/%d]", nav.deleteCount, nav.deleteTotal)
 	}
 
-	ruler := fmt.Sprintf("%s%s%s  %d/%d", acc, progress, selection, ind, tot)
+	ruler := ""
+	for _, s := range gOpts.infostat {
+		switch s {
+		case "df":
+			ruler = fmt.Sprintf("%s%s", ruler, diskFree(dir.path))
+		case "acc":
+			ruler = fmt.Sprintf("%s%s", ruler, acc)
+		case "progress":
+			ruler = fmt.Sprintf("%s%s", ruler, progress)
+		case "selection":
+			ruler = fmt.Sprintf("%s%s", ruler, selection)
+		case "ind":
+			ruler = fmt.Sprintf("%s  %d/%d", ruler, ind, tot)
+		}
+
+	}
 
 	ui.msgWin.printRight(ui.screen, 0, st, ruler)
 }

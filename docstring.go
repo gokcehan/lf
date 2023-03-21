@@ -142,6 +142,7 @@ The following options can be used to customize the behavior of lf:
     incfilter        bool      (default false)
     incsearch        bool      (default false)
     info             []string  (default '')
+    infostat         []string  (default '')
     infotimefmtnew   string    (default 'Jan _2 15:04')
     infotimefmtold   string    (default 'Jan _2  2006')
     mouse            bool      (default false)
@@ -786,6 +787,11 @@ List of information shown for directory items at the right side of pane.
 Currently supported information types are 'size', 'time', 'atime', and 'ctime'.
 Information is only shown when the pane width is more than twice the width of
 information.
+
+    infostat       []string  (default 'acc:progress:selection:ind')
+
+List of information shown in status line. Currently supported information types
+are 'acc', 'progress', 'selection', 'ind' and 'df'.
 
     infotimefmtnew string    (default 'Jan _2 15:04')
 
