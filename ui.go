@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool) {
 	if reg == nil {
 		return
 	}
@@ -260,8 +260,10 @@ func (win *win) printReg(screen tcell.Screen, reg *reg) {
 	st := tcell.StyleDefault
 
 	if reg.loading {
-		st = st.Reverse(true)
-		win.print(screen, 2, 0, st, "loading...")
+		if previewLoading {
+			st = st.Reverse(true)
+			win.print(screen, 2, 0, st, "loading...")
+		}
 		return
 	}
 
@@ -350,7 +352,7 @@ const SelectionColor = tcell.ColorPurple
 const YankColor = tcell.ColorOlive
 const CutColor = tcell.ColorMaroon
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -362,7 +364,9 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		return
 	}
 	if (dir.loading && len(dir.files) == 0) || (dirStyle.role == Preview && dir.loading && gOpts.dirpreviews) {
-		win.print(screen, 2, 0, messageStyle, "loading...")
+		if dirStyle.role != Preview || previewLoading {
+			win.print(screen, 2, 0, messageStyle, "loading...")
+		}
 		return
 	}
 
@@ -930,7 +934,8 @@ func (ui *ui) draw(nav *nav) {
 		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
 			ui.wins[i].printDir(ui.screen, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, role: role})
+				&dirStyle{colors: ui.styles, icons: ui.icons, role: role},
+				nav.previewLoading)
 		}
 	}
 
@@ -966,9 +971,10 @@ func (ui *ui) draw(nav *nav) {
 
 			if curr.IsDir() {
 				preview.printDir(ui.screen, ui.dirPrev, &context,
-					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
+					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
+					nav.previewLoading)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, ui.regPrev)
+				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading)
 			}
 		}
 	}

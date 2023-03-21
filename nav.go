@@ -388,11 +388,15 @@ type nav struct {
 	searchPos       int
 	prevFilter      []string
 	volatilePreview bool
+	previewTimer    *time.Timer
+	previewLoading  bool
 	jumpList        []string
 	jumpListInd     int
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
+	nav.startPreview()
+
 	d := &dir{
 		loading:     true,
 		loadTime:    time.Now(),
@@ -448,6 +452,7 @@ func (nav *nav) checkDir(dir *dir) {
 			return
 		}
 
+		nav.startPreview()
 		dir.loading = true
 		dir.loadTime = now
 		go func() {
@@ -511,6 +516,7 @@ func newNav(height int) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
+		previewTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -813,6 +819,7 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (volatile && r.volatile) {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
+		nav.startPreview()
 		nav.previewChan <- path
 		return r
 	}
@@ -838,8 +845,15 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
+		nav.startPreview()
 		nav.previewChan <- reg.path
 	}
+}
+
+func (nav *nav) startPreview() {
+	nav.previewTimer.Stop()
+	nav.previewLoading = false
+	nav.previewTimer.Reset(100 * time.Millisecond)
 }
 
 func (nav *nav) sort() {
