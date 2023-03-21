@@ -873,28 +873,28 @@ func (ui *ui) drawBox() {
 	w, h := ui.screen.Size()
 
 	for i := 1; i < w-1; i++ {
-		ui.screen.SetContent(i, 1, '─', nil, st)
-		ui.screen.SetContent(i, h-2, '─', nil, st)
+		ui.screen.SetContent(i, 1, tcell.RuneHLine, nil, st)
+		ui.screen.SetContent(i, h-2, tcell.RuneHLine, nil, st)
 	}
 
 	for i := 2; i < h-2; i++ {
-		ui.screen.SetContent(0, i, '│', nil, st)
-		ui.screen.SetContent(w-1, i, '│', nil, st)
+		ui.screen.SetContent(0, i, tcell.RuneVLine, nil, st)
+		ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
 	}
 
-	ui.screen.SetContent(0, 1, '┌', nil, st)
-	ui.screen.SetContent(w-1, 1, '┐', nil, st)
-	ui.screen.SetContent(0, h-2, '└', nil, st)
-	ui.screen.SetContent(w-1, h-2, '┘', nil, st)
+	ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
+	ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
+	ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
+	ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
 
 	wacc := 0
 	for wind := 0; wind < len(ui.wins)-1; wind++ {
 		wacc += ui.wins[wind].w + 1
-		ui.screen.SetContent(wacc, 1, '┬', nil, st)
+		ui.screen.SetContent(wacc, 1, tcell.RuneTTee, nil, st)
 		for i := 2; i < h-2; i++ {
-			ui.screen.SetContent(wacc, i, '│', nil, st)
+			ui.screen.SetContent(wacc, i, tcell.RuneVLine, nil, st)
 		}
-		ui.screen.SetContent(wacc, h-2, '┴', nil, st)
+		ui.screen.SetContent(wacc, h-2, tcell.RuneBTee, nil, st)
 	}
 }
 
