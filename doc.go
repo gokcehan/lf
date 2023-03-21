@@ -785,12 +785,6 @@ If the previewer returns a non-zero exit code, then the preview cache for the gi
 This means that if the file is selected in the future, the previewer is called once again.
 Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
 
-	previewtimeout int       (default 0)
-
-Amount of time in milliseconds to wait before displaying a loading message when a file or directory is loading.
-Setting this to a low value can cause the loading message to flicker when browsing through files or directories.
-Setting this to a high value can cause the loading message to appear delayed if a file or directory takes a while to load.
-
 	promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
 
 Format string of the prompt shown in the top line.

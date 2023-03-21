@@ -62,7 +62,6 @@ var gOpts struct {
 	ifs              string
 	previewer        string
 	cleaner          string
-	previewtimeout   time.Duration
 	promptfmt        string
 	selmode          string
 	shell            string
@@ -120,7 +119,6 @@ func init() {
 	gOpts.ifs = ""
 	gOpts.previewer = ""
 	gOpts.cleaner = ""
-	gOpts.previewtimeout = 0
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
 	gOpts.selmode = "all"
 	gOpts.shell = gDefaultShell

@@ -516,8 +516,7 @@ func newNav(height int) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
-		previewTimer:    time.NewTimer(gOpts.previewtimeout),
-		previewLoading:  true,
+		previewTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -852,11 +851,9 @@ func (nav *nav) checkReg(reg *reg) {
 }
 
 func (nav *nav) startPreview() {
-	if gOpts.previewtimeout > 0 {
-		nav.previewTimer.Stop()
-		nav.previewLoading = false
-		nav.previewTimer.Reset(gOpts.previewtimeout)
-	}
+	nav.previewTimer.Stop()
+	nav.previewLoading = false
+	nav.previewTimer.Reset(100 * time.Millisecond)
 }
 
 func (nav *nav) sort() {

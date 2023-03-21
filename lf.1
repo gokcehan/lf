@@ -947,12 +947,6 @@ Show previews of files and directories at the right most pane. If the file has m
 Set the path of a previewer file to filter the content of regular files for previewing. The file should be executable. Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively. SIGPIPE signal is sent when enough lines are read. If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled. This means that if the file is selected in the future, the previewer is called once again. Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
 .PP
 .EX
-    previewtimeout int       (default 0)
-.EE
-.PP
-Amount of time in milliseconds to wait before displaying a loading message when a file or directory is loading. Setting this to a low value can cause the loading message to flicker when browsing through files or directories. Setting this to a high value can cause the loading message to appear delayed if a file or directory takes a while to load.
-.PP
-.EX
     promptfmt      string    (default "\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f\e033[0m")
 .EE
 .PP

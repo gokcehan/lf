@@ -591,17 +591,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.preview = !gOpts.preview
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
-	case "previewtimeout":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("previewtimeout: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("previewtimeout: value should be a non-negative number")
-			return
-		}
-		gOpts.previewtimeout = time.Duration(n) * time.Millisecond
 	case "promptfmt":
 		gOpts.promptfmt = e.val
 	case "ratios":
