@@ -74,7 +74,7 @@ var gOpts struct {
 	hiddenfiles      []string
 	history          bool
 	info             []string
-	infostat         []string
+	ruler            []string
 	shellopts        []string
 	keys             map[string]expr
 	cmdkeys          map[string]expr
@@ -132,7 +132,7 @@ func init() {
 	gOpts.hiddenfiles = []string{".*"}
 	gOpts.history = true
 	gOpts.info = nil
-	gOpts.infostat = []string{"acc", "progress", "selection", "ind"}
+	gOpts.ruler = []string{"acc", "progress", "selection", "ind"}
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"

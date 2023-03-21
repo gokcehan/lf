@@ -859,7 +859,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 	}
 
 	ruler := ""
-	for _, s := range gOpts.infostat {
+	for _, s := range gOpts.ruler {
 		switch s {
 		case "df":
 			ruler = fmt.Sprintf("%s%s", ruler, diskFree(dir.path))

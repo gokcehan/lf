@@ -482,9 +482,9 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
-	case "infostat":
+	case "ruler":
 		if e.val == "" {
-			gOpts.infostat = nil
+			gOpts.ruler = nil
 			return
 		}
 		toks := strings.Split(e.val, ":")
@@ -492,11 +492,11 @@ func (e *setExpr) eval(app *app, args []string) {
 			switch s {
 			case "df", "acc", "progress", "selection", "ind", "tot":
 			default:
-				app.ui.echoerr("infostat: should consist of 'df', 'acc', 'progress', 'selection', or 'ind' separated with colon")
+				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', or 'ind' separated with colon")
 				return
 			}
 		}
-		gOpts.infostat = toks
+		gOpts.ruler = toks
 	case "infotimefmtnew":
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":

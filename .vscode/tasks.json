@@ -1,0 +1,18 @@
+{
+	"version": "2.0.0",
+	"tasks": [
+		{
+			"label": "go (debug)",
+			"type": "shell",
+			"command": "go",
+			"args": [
+				"build",
+				"-o",
+				"${workspaceFolder}/__debug_bin"
+			],
+			"options": {
+				"cwd": "${workspaceFolder}"
+			},
+		}
+	]
+}
