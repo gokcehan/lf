@@ -395,7 +395,6 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 	}
 
 	var lnwidth int
-	var lnformat string
 
 	if gOpts.number || gOpts.relativenumber {
 		lnwidth = 1
@@ -405,7 +404,6 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		for j := 10; j <= len(dir.files); j *= 10 {
 			lnwidth++
 		}
-		lnformat = fmt.Sprintf("%%%d.d ", lnwidth)
 	}
 
 	for i, f := range dir.files[beg:end] {
@@ -415,17 +413,17 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			var ln string
 
 			if gOpts.number && (!gOpts.relativenumber) {
-				ln = fmt.Sprintf(lnformat, i+1+beg)
+				ln = fmt.Sprintf("%*d", lnwidth, i+1+beg)
 			} else if gOpts.relativenumber {
 				switch {
 				case i < dir.pos:
-					ln = fmt.Sprintf(lnformat, dir.pos-i)
+					ln = fmt.Sprintf("%*d", lnwidth, dir.pos-i)
 				case i > dir.pos:
-					ln = fmt.Sprintf(lnformat, i-dir.pos)
+					ln = fmt.Sprintf("%*d", lnwidth, i-dir.pos)
 				case gOpts.number:
-					ln = fmt.Sprintf(fmt.Sprintf("%%%d.d ", lnwidth-1), i+1+beg)
+					ln = fmt.Sprintf("%*d ", lnwidth-1, i+1+beg)
 				default:
-					ln = ""
+					ln = fmt.Sprintf("%*d", lnwidth, 0)
 				}
 			}
 
