@@ -914,6 +914,7 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
+	// XXX: manual clean without flush to avoid flicker on Windows
 	wtot, htot := ui.screen.Size()
 	for i := 0; i < wtot; i++ {
 		for j := 0; j < htot; j++ {
