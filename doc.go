@@ -927,19 +927,23 @@ For example, with POSIX shells, you can use '[ -n "$LF_LEVEL" ] && PS1="$PS1""(l
 
 	OPENER
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'start' in Windows, 'open' in MacOS, 'xdg-open' in others.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'start' in Windows, 'open' in MacOS, 'xdg-open' in others.
 
 	EDITOR
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'vi' on Unix, 'notepad' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'vi' on Unix, 'notepad' in Windows.
 
 	PAGER
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'less' on Unix, 'more' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'less' on Unix, 'more' in Windows.
 
 	SHELL
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'sh' on Unix, 'cmd' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'sh' on Unix, 'cmd' in Windows.
+
+	lf
+
+Absolute path to the currently running lf binary, if it can be found. Otherwise, this is set to the string 'lf'.
 
 	lf_{option}
 
