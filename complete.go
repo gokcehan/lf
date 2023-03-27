@@ -55,6 +55,7 @@ var (
 		"cd",
 		"select",
 		"delete",
+		"mkdir",
 		"rename",
 		"source",
 		"push",
