@@ -81,6 +81,7 @@ var gOpts struct {
 	user             map[string]string
 	sortType         sortType
 	tempmarks        string
+	numberfmt        string
 	tagfmt           string
 }
 
@@ -134,6 +135,7 @@ func init() {
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"
+	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
 
 	gOpts.keys = make(map[string]expr)

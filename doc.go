@@ -143,6 +143,7 @@ The following options can be used to customize the behavior of lf:
 	infotimefmtold   string    (default 'Jan _2  2006')
 	mouse            bool      (default false)
 	number           bool      (default false)
+	numberfmt        string    (default "\033[33m")
 	period           int       (default 0)
 	preview          bool      (default true)
 	previewer        string    (default '')
@@ -760,6 +761,10 @@ Send mouse events as input.
 
 Show the position number for directory items at the left side of pane.
 When 'relativenumber' option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
+
+	numberfmt      string    (default "\033[33m")
+
+Format string of the position number for each line.
 
 	period         int       (default 0)
 

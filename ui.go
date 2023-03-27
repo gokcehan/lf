@@ -347,7 +347,6 @@ type dirStyle struct {
 }
 
 // These colors are not currently customizeable
-const LineNumberColor = tcell.ColorOlive
 const SelectionColor = tcell.ColorPurple
 const YankColor = tcell.ColorOlive
 const CutColor = tcell.ColorMaroon
@@ -427,7 +426,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault.Foreground(LineNumberColor), ln)
+			win.print(screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
 		}
 
 		path := filepath.Join(dir.path, f.Name())

@@ -194,6 +194,7 @@ var (
 		"history",
 		"ifs",
 		"info",
+		"numberfmt",
 		"previewer",
 		"cleaner",
 		"promptfmt",
