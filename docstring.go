@@ -19,71 +19,71 @@ You can run 'lf -help' to see descriptions of command line options.
 
 The following commands are provided by lf:
 
-    	quit                     (default 'q')
-    	up                       (default 'k' and '<up>')
-    	half-up                  (default '<c-u>')
-    	page-up                  (default '<c-b>' and '<pgup>')
-    	scroll-up                (default '<c-y>')
-    	down                     (default 'j' and '<down>')
-    	half-down                (default '<c-d>')
-    	page-down                (default '<c-f>' and '<pgdn>')
-    	scroll-down              (default '<c-e>')
-    	updir                    (default 'h' and '<left>')
-    	open                     (default 'l' and '<right>')
-    	jump-next                (default ']')
-    	jump-prev                (default '[')
-    	top                      (default 'gg' and '<home>')
-    	bottom                   (default 'G' and '<end>')
-    	high                     (default 'H')
-    	middle                   (default 'M')
-    	low                      (default 'L')
-    	toggle
-    	invert                   (default 'v')
-    	invert-below
-    	unselect                 (default 'u')
-    	glob-select
-    	glob-unselect
-    	calcdirsize
-    	copy                     (default 'y')
-    	cut                      (default 'd')
-    	paste                    (default 'p')
-    	clear                    (default 'c')
-    	sync
-    	draw
-    	redraw                   (default '<c-l>')
-    	load
-    	reload                   (default '<c-r>')
-    	echo
-    	echomsg
-    	echoerr
-    	cd
-    	select
-    	delete         (modal)
-        mkdir          (modal)   (default 'n')
-    	rename         (modal)   (default 'r')
-    	source
-    	push
-    	read           (modal)   (default ':')
-    	shell          (modal)   (default '$')
-    	shell-pipe     (modal)   (default '%')
-    	shell-wait     (modal)   (default '!')
-    	shell-async    (modal)   (default '&')
-    	find           (modal)   (default 'f')
-    	find-back      (modal)   (default 'F')
-    	find-next                (default ';')
-    	find-prev                (default ',')
-    	search         (modal)   (default '/')
-    	search-back    (modal)   (default '?')
-    	search-next              (default 'n')
-    	search-prev              (default 'N')
-    	filter         (modal)
-    	setfilter
-    	mark-save      (modal)   (default 'm')
-    	mark-load      (modal)   (default "'")
-    	mark-remove    (modal)   (default '"')
-    	tag
-    	tag-toggle               (default 't')
-    	maps
+    quit                     (default 'q')
+    up                       (default 'k' and '<up>')
+    half-up                  (default '<c-u>')
+    page-up                  (default '<c-b>' and '<pgup>')
+    scroll-up                (default '<c-y>')
+    down                     (default 'j' and '<down>')
+    half-down                (default '<c-d>')
+    page-down                (default '<c-f>' and '<pgdn>')
+    scroll-down              (default '<c-e>')
+    updir                    (default 'h' and '<left>')
+    open                     (default 'l' and '<right>')
+    jump-next                (default ']')
+    jump-prev                (default '[')
+    top                      (default 'gg' and '<home>')
+    bottom                   (default 'G' and '<end>')
+    high                     (default 'H')
+    middle                   (default 'M')
+    low                      (default 'L')
+    toggle
+    invert                   (default 'v')
+    invert-below
+    unselect                 (default 'u')
+    glob-select
+    glob-unselect
+    calcdirsize
+    copy                     (default 'y')
+    cut                      (default 'd')
+    paste                    (default 'p')
+    clear                    (default 'c')
+    sync
+    draw
+    redraw                   (default '<c-l>')
+    load
+    reload                   (default '<c-r>')
+    echo
+    echomsg
+    echoerr
+    cd
+    select
+    delete         (modal)
+    mkdir          (modal)   (default 'n')
+    rename         (modal)   (default 'r')
+    source
+    push
+    read           (modal)   (default ':')
+    shell          (modal)   (default '$')
+    shell-pipe     (modal)   (default '%')
+    shell-wait     (modal)   (default '!')
+    shell-async    (modal)   (default '&')
+    find           (modal)   (default 'f')
+    find-back      (modal)   (default 'F')
+    find-next                (default ';')
+    find-prev                (default ',')
+    search         (modal)   (default '/')
+    search-back    (modal)   (default '?')
+    search-next              (default 'n')
+    search-prev              (default 'N')
+    filter         (modal)
+    setfilter
+    mark-save      (modal)   (default 'm')
+    mark-load      (modal)   (default "'")
+    mark-remove    (modal)   (default '"')
+    tag
+    tag-toggle               (default 't')
+    maps
 
 The following command line commands are provided by lf:
 
