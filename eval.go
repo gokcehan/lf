@@ -2209,13 +2209,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "mkdir: ":
 			app.ui.cmdPrefix = ""
-
-			fpath := filepath.Clean(replaceTilde(s))
-			if err := os.MkdirAll(fpath, os.ModePerm); err != nil {
+			filepath := filepath.Clean(replaceTilde(s))
+			if err := os.MkdirAll(filepath, os.ModePerm); err != nil {
 				app.ui.echoerrf("mkdir: %s", err)
 				return
 			}
-
 			if gSingleMode {
 				app.nav.renew()
 				app.ui.loadFile(app, true)
