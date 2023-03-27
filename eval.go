@@ -1894,6 +1894,34 @@ func (e *callExpr) eval(app *app, args []string) {
 		normal(app)
 		app.ui.menuBuf = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
+	case "mkdir":
+		if !app.nav.init {
+			return
+		}
+
+		if cmd, ok := gOpts.cmds["mkdir"]; ok {
+			cmd.eval(app, e.args)
+			if gSingleMode {
+				app.nav.renew()
+				app.ui.loadFile(app, true)
+			} else {
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("mkdir: %s", err)
+					return
+				}
+			}
+		} else {
+
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
+
+			normal(app)
+			app.ui.cmdPrefix = "mkdir: "
+		}
+
+		app.ui.loadFile(app, true)
+		app.ui.loadFileInfo(app.nav)
 	case "rename":
 		if !app.nav.init {
 			return
@@ -2179,6 +2207,24 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
+		case "mkdir: ":
+			app.ui.cmdPrefix = ""
+
+			fpath := filepath.Clean(replaceTilde(s))
+			if err := os.MkdirAll(fpath, os.ModePerm); err != nil {
+				app.ui.echoerrf("mkdir: %s", err)
+				return
+			}
+
+			if gSingleMode {
+				app.nav.renew()
+				app.ui.loadFile(app, true)
+			} else {
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("rename: %s", err)
+					return
+				}
+			}
 		case "rename: ":
 			app.ui.cmdPrefix = ""
 			if curr, err := app.nav.currFile(); err != nil {
@@ -2284,7 +2330,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
-			case ">", "rename: ":
+			case ">", "rename: ", "mkdir: ":
 				// Don't mess with programs waiting for input.
 				// Exiting on backspace is also inconvenient for renames since the text field starts out nonempty.
 			default:
