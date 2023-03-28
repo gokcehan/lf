@@ -2328,7 +2328,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
-			case ">", "rename: ", "mkdir: ":
+			case ">", "rename: ":
 				// Don't mess with programs waiting for input.
 				// Exiting on backspace is also inconvenient for renames since the text field starts out nonempty.
 			default:
