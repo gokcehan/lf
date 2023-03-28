@@ -436,7 +436,7 @@ A custom 'delete' command can be defined to override this default.
 Rename the current file using the builtin method.
 A custom 'rename' command can be defined to override this default.
 
-	mkdir          (modal)   (default 'n')
+	mkdir          (modal)   (default 'a')
 
 Create a new directory using the builtin method.
 A custom 'mkdir' command can be defined to override this default.
