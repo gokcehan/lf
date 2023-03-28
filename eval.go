@@ -1898,7 +1898,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-
 		if cmd, ok := gOpts.cmds["mkdir"]; ok {
 			cmd.eval(app, e.args)
 			if gSingleMode {
@@ -1911,15 +1910,12 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 			}
 		} else {
-
 			if app.ui.cmdPrefix == ">" {
 				return
 			}
-
 			normal(app)
 			app.ui.cmdPrefix = "mkdir: "
 		}
-
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 	case "rename":
@@ -2219,7 +2215,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app, true)
 			} else {
 				if err := remote("send load"); err != nil {
-					app.ui.echoerrf("rename: %s", err)
+					app.ui.echoerrf("mkdir: %s", err)
 					return
 				}
 			}
