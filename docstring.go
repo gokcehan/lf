@@ -59,7 +59,7 @@ The following commands are provided by lf:
     cd
     select
     delete         (modal)
-    mkdir          (modal)   (default 'a')
+    mkdir          (modal)
     rename         (modal)   (default 'r')
     source
     push
@@ -454,7 +454,7 @@ defined to override this default.
 Rename the current file using the builtin method. A custom 'rename' command can
 be defined to override this default.
 
-    mkdir          (modal)   (default 'a')
+    mkdir          (modal)
 
 Create a new directory using the builtin method. A custom 'mkdir' command can be
 defined to override this default.
