@@ -376,6 +376,7 @@ type nav struct {
 	marks           map[string]string
 	renameOldPath   string
 	renameNewPath   string
+	mkdirPath       string
 	selections      map[string]int
 	tags            map[string]string
 	selectionInd    int
@@ -1430,6 +1431,28 @@ func (nav *nav) del(app *app) error {
 			}
 		}
 	}()
+
+	return nil
+}
+
+func (nav *nav) mkdir() error {
+
+	mkdirPath := nav.mkdirPath
+
+	if err := os.MkdirAll(mkdirPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	lstat, err := os.Lstat(mkdirPath)
+	if err != nil {
+		return err
+	}
+
+	dir := nav.currDir()
+
+	dir.files = append(dir.files, &file{FileInfo: lstat})
+
+	dir.sel(lstat.Name(), nav.height)
 
 	return nil
 }
