@@ -1436,19 +1436,17 @@ func (nav *nav) del(app *app) error {
 }
 
 func (nav *nav) mkdir() error {
-	mkdirPath := nav.mkdirPath
-	if err := os.MkdirAll(mkdirPath, os.ModePerm); err != nil {
-		return err
-	}
+	mkdirPath, err := filepath.Abs(nav.mkdirPath)
 
-	lstat, err := os.Lstat(mkdirPath)
 	if err != nil {
 		return err
 	}
 
-	dir := nav.currDir()
-	dir.files = append(dir.files, &file{FileInfo: lstat})
-	dir.sel(lstat.Name(), nav.height)
+	if err := os.MkdirAll(mkdirPath, os.ModePerm); err != nil {
+		return err
+	}
+
+	nav.sel(mkdirPath)
 
 	return nil
 }
