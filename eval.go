@@ -2205,14 +2205,15 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "mkdir: ":
 			app.ui.cmdPrefix = ""
-			filepath := filepath.Clean(replaceTilde(s))
-			if err := os.MkdirAll(filepath, os.ModePerm); err != nil {
+			app.nav.mkdirPath = filepath.Clean(replaceTilde(s))
+			if err := app.nav.mkdir(); err != nil {
 				app.ui.echoerrf("mkdir: %s", err)
 				return
 			}
 			if gSingleMode {
 				app.nav.renew()
-				app.ui.loadFile(app, true)
+				app.ui.loadFile(app, false)
+				app.ui.loadFileInfo(app.nav)
 			} else {
 				if err := remote("send load"); err != nil {
 					app.ui.echoerrf("mkdir: %s", err)
