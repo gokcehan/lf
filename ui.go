@@ -1363,7 +1363,7 @@ func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.
 		wcol = max(wcol, len(m))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
-	ncol := wtot / wcol
+	ncol := max(wtot/wcol, 1)
 
 	b.WriteString("possible matches\n")
 
