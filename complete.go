@@ -338,14 +338,14 @@ func matchFile(s string) (matches []string, longest []rune) {
 		}
 		matches = append(matches, item)
 
-		if longest != nil {
-			longest = matchLongest(longest, []rune(name))
-		} else if s != "" {
+		if longest == nil {
 			if f.Mode().IsRegular() {
 				longest = []rune(name + " ")
 			} else {
 				longest = []rune(name + escape(string(filepath.Separator)))
 			}
+		} else {
+			longest = matchLongest(longest, []rune(name))
 		}
 	}
 
@@ -437,10 +437,10 @@ func completeFile(acc []rune) (matches []string, longestAcc []rune) {
 
 		matches = append(matches, f.Name())
 
-		if longestAcc != nil {
-			longestAcc = matchLongest(longestAcc, []rune(f.Name()))
-		} else if s != "" {
+		if longestAcc == nil {
 			longestAcc = []rune(f.Name())
+		} else {
+			longestAcc = matchLongest(longestAcc, []rune(f.Name()))
 		}
 	}
 
