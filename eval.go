@@ -1263,6 +1263,8 @@ func insert(app *app, arg string) {
 }
 
 func (e *callExpr) eval(app *app, args []string) {
+	os.Setenv("lf_count", strconv.Itoa(e.count))
+
 	switch e.name {
 	case "up":
 		if !app.nav.init {

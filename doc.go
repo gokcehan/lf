@@ -186,6 +186,7 @@ The following environment variables are exported for shell commands:
 	lf_user_{option}
 	lf_width
 	lf_height
+	lf_count
 
 The following special shell commands are used to customize the behavior of lf when defined:
 
@@ -958,6 +959,10 @@ Value of the user_{option}.
 	lf_height
 
 Width/Height of the terminal.
+
+	lf_count
+
+Value of the count associated with the current command.
 
 # Special Commands
 
