@@ -543,6 +543,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.number = !gOpts.number
+	case "numberfmt":
+		gOpts.numberfmt = e.val
 	case "period":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
