@@ -925,11 +925,9 @@ func (nav *nav) down(dist int) bool {
 	dir.ind = min(maxind, dir.ind)
 
 	dir.pos += dist
-	edge := min(min(nav.height/2, gOpts.scrolloff), maxind-dir.ind)
-
 	// use a smaller value when the height is even and scrolloff is maxed
 	// in order to stay at the same row as much as possible while up/down
-	edge = min(edge, nav.height/2+nav.height%2-1)
+	edge := min(min((nav.height-1)/2, gOpts.scrolloff), maxind-dir.ind)
 
 	dir.pos = min(dir.pos, nav.height-edge-1)
 	dir.pos = min(dir.pos, maxind)
