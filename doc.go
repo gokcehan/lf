@@ -324,6 +324,7 @@ Change the current working directory to the next/previous jumplist item.
 	bottom                   (default 'G' and '<end>')
 
 Move the current file selection to the top/bottom of the directory.
+A count can be specified to move to a specific line, for example use `3G` to move to the third line.
 
 	high                     (default 'H')
 	middle                   (default 'M')
