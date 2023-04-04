@@ -1099,6 +1099,19 @@ func (nav *nav) low() bool {
 	return old != dir.ind
 }
 
+func (nav *nav) move(index int) bool {
+	old := nav.currDir().ind
+
+	switch {
+	case index < old:
+		return nav.up(old - index)
+	case index > old:
+		return nav.down(index - old)
+	default:
+		return false
+	}
+}
+
 func (nav *nav) toggleSelection(path string) {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)
