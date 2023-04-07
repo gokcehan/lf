@@ -2471,6 +2471,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		io.Copy(app.cmdIn, listBinds(gOpts.keys))
 		app.cmdIn.Close()
 		cleanUp()
+	case "cmaps":
+		cleanUp := app.runShell(envPager, nil, "$|")
+		io.Copy(app.cmdIn, listBinds(gOpts.cmdkeys))
+		app.cmdIn.Close()
+		cleanUp()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

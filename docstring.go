@@ -83,6 +83,7 @@ The following commands are provided by lf:
     tag
     tag-toggle               (default 't')
     maps
+    cmaps
 
 The following command line commands are provided by lf:
 
@@ -631,8 +632,9 @@ Delete the next word in forward direction.
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
     maps
+    cmaps
 
-List all key mappings.
+List all key mappings in normal mode or command-line editing mode.
 
 # Options
 
