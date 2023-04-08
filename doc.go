@@ -180,6 +180,7 @@ The following environment variables are exported for shell commands:
 	OLDPWD
 	LF_LEVEL
 	OPENER
+	VISUAL
 	EDITOR
 	PAGER
 	SHELL
@@ -940,7 +941,7 @@ If this variable is set in the environment, use the same value. Otherwise, this 
 
 	EDITOR
 
-If this variable is set in the environment, use the same value. Otherwise, this is set to 'vi' on Unix, 'notepad' in Windows.
+If VISUAL is set in the environment, use its value. Otherwise, use the value of the environment variable EDITOR. If neither variable is set, this is set to 'vi' on Unix, 'notepad' in Windows.
 
 	PAGER
 

@@ -14,7 +14,7 @@ import (
 
 var (
 	envOpener = os.Getenv("OPENER")
-	envEditor = os.Getenv("EDITOR")
+	envEditor = os.Getenv("VISUAL")
 	envPager  = os.Getenv("PAGER")
 	envShell  = os.Getenv("SHELL")
 )
@@ -45,7 +45,10 @@ func init() {
 	}
 
 	if envEditor == "" {
-		envEditor = "notepad"
+		envEditor = os.Getenv("EDITOR")
+		if envEditor == "" {
+			envEditor = "notepad"
+		}
 	}
 
 	if envPager == "" {
