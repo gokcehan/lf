@@ -14,14 +14,14 @@ jobs:
       matrix:
         os: [ubuntu-latest, windows-latest]
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 1
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
-        go-version: 1.17
+        go-version: 1.18
 
     - name: Build
       run: go build -v ./...
@@ -29,7 +29,7 @@ jobs:
     - name: Test
       run: go test -v ./...
 
-    - uses: dominikh/staticcheck-action@v1.2.0
+    - uses: dominikh/staticcheck-action@v1.3.0
       with:
         version: "2022.1.3"
         install-go: false
@@ -37,12 +37,12 @@ jobs:
   generate:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 1
 
     - name: Set up Go
-      uses: actions/setup-go@v2
+      uses: actions/setup-go@v4
       with:
         go-version: 1.19
 

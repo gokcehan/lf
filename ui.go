@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, sxs *sixelScreen, reg *reg) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
 	if reg == nil {
 		return
 	}
@@ -260,8 +260,10 @@ func (win *win) printReg(screen tcell.Screen, sxs *sixelScreen, reg *reg) {
 	st := tcell.StyleDefault
 
 	if reg.loading {
-		st = st.Reverse(true)
-		win.print(screen, 2, 0, st, "loading...")
+		if previewLoading {
+			st = st.Reverse(true)
+			win.print(screen, 2, 0, st, "loading...")
+		}
 		return
 	}
 
@@ -337,19 +339,26 @@ type dirContext struct {
 	tags       map[string]string
 }
 
+type dirRole byte
+
+const (
+	Active dirRole = iota
+	Parent
+	Preview
+)
+
 type dirStyle struct {
-	colors     styleMap
-	icons      iconMap
-	previewing bool
+	colors styleMap
+	icons  iconMap
+	role   dirRole
 }
 
 // These colors are not currently customizeable
-const LineNumberColor = tcell.ColorOlive
 const SelectionColor = tcell.ColorPurple
 const YankColor = tcell.ColorOlive
 const CutColor = tcell.ColorMaroon
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle) {
+func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -360,12 +369,14 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		win.print(screen, 2, 0, messageStyle, "permission denied")
 		return
 	}
-	if (dir.loading && len(dir.files) == 0) || (dirStyle.previewing && dir.loading && gOpts.dirpreviews) {
-		win.print(screen, 2, 0, messageStyle, "loading...")
+	if (dir.loading && len(dir.files) == 0) || (dirStyle.role == Preview && dir.loading && gOpts.dirpreviews) {
+		if dirStyle.role != Preview || previewLoading {
+			win.print(screen, 2, 0, messageStyle, "loading...")
+		}
 		return
 	}
 
-	if dirStyle.previewing && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
+	if dirStyle.role == Preview && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
 		// Print previewer result instead of default directory print operation.
 		st := tcell.StyleDefault
 		for i, l := range dir.lines {
@@ -390,17 +401,15 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 	}
 
 	var lnwidth int
-	var lnformat string
 
 	if gOpts.number || gOpts.relativenumber {
 		lnwidth = 1
 		if gOpts.number && gOpts.relativenumber {
 			lnwidth++
 		}
-		for j := 10; j < len(dir.files); j *= 10 {
+		for j := 10; j <= len(dir.files); j *= 10 {
 			lnwidth++
 		}
-		lnformat = fmt.Sprintf("%%%d.d ", lnwidth)
 	}
 
 	for i, f := range dir.files[beg:end] {
@@ -410,21 +419,21 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			var ln string
 
 			if gOpts.number && (!gOpts.relativenumber) {
-				ln = fmt.Sprintf(lnformat, i+1+beg)
+				ln = fmt.Sprintf("%*d", lnwidth, i+1+beg)
 			} else if gOpts.relativenumber {
 				switch {
 				case i < dir.pos:
-					ln = fmt.Sprintf(lnformat, dir.pos-i)
+					ln = fmt.Sprintf("%*d", lnwidth, dir.pos-i)
 				case i > dir.pos:
-					ln = fmt.Sprintf(lnformat, i-dir.pos)
+					ln = fmt.Sprintf("%*d", lnwidth, i-dir.pos)
 				case gOpts.number:
-					ln = fmt.Sprintf(fmt.Sprintf("%%%d.d ", lnwidth-1), i+1+beg)
+					ln = fmt.Sprintf("%*d ", lnwidth-1, i+1+beg)
 				default:
-					ln = ""
+					ln = fmt.Sprintf("%*d", lnwidth, 0)
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault.Foreground(LineNumberColor), ln)
+			win.print(screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
 		}
 
 		path := filepath.Join(dir.path, f.Name())
@@ -439,20 +448,13 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		if i == dir.pos {
-			st = st.Reverse(true)
-		}
-
 		var s []rune
 
 		s = append(s, ' ')
 
-		var iwidth int
-
 		if gOpts.icons {
 			s = append(s, []rune(dirStyle.icons.get(f))...)
 			s = append(s, ' ')
-			iwidth = 2
 		}
 
 		for _, r := range f.Name() {
@@ -461,39 +463,59 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		w := runeSliceWidth(s)
 
-		if w > win.w-3 {
-			s = runeSliceWidthRange(s, 0, win.w-4)
+		// make space for select marker, and leave another space at the end
+		maxlength := win.w - lnwidth - 2
+		// make extra space to separate windows if drawbox is not enabled
+		if !gOpts.drawbox {
+			maxlength -= 1
+		}
+
+		if w > maxlength {
+			s = runeSliceWidthRange(s, 0, maxlength-1)
 			s = append(s, []rune(gOpts.truncatechar)...)
 		} else {
-			for i := 0; i < win.w-3-w; i++ {
+			for i := 0; i < maxlength-w; i++ {
 				s = append(s, ' ')
 			}
 		}
 
 		info := fileInfo(f, dir)
 
-		if len(info) > 0 && win.w-lnwidth-iwidth-2 > 2*len(info) {
-			if win.w-2 > w+len(info) {
-				s = runeSliceWidthRange(s, 0, win.w-3-len(info)-lnwidth)
-			} else {
-				s = runeSliceWidthRange(s, 0, win.w-4-len(info)-lnwidth)
+		if len(info) > 0 && 2*len(info) < maxlength {
+			if w+len(info) > maxlength {
+				s = runeSliceWidthRange(s, 0, maxlength-len(info)-1)
 				s = append(s, []rune(gOpts.truncatechar)...)
+			} else {
+				s = runeSliceWidthRange(s, 0, maxlength-len(info))
 			}
 			for _, r := range info {
 				s = append(s, r)
 			}
 		}
 
-		s = append(s, ' ')
+		ce := ""
+		if i == dir.pos {
+			switch dirStyle.role {
+			case Active:
+				ce = gOpts.cursoractivefmt
+			case Parent:
+				ce = gOpts.cursorparentfmt
+			case Preview:
+				ce = gOpts.cursorpreviewfmt
+			}
+		}
+		cursorescapefmt := optionToFmtstr(ce)
 
-		win.print(screen, lnwidth+1, i, st, string(s))
+		s = append(s, ' ')
+		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
+		win.print(screen, lnwidth+1, i, st, styledFilename)
 
 		tag, ok := context.tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st, tag)
+				win.print(screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
 			} else {
-				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(gOpts.tagfmt, tag))
+				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
 			}
 		}
 	}
@@ -508,16 +530,16 @@ func getWidths(wtot int) []int {
 	wlen := len(gOpts.ratios)
 	widths := make([]int, wlen)
 
+	if gOpts.drawbox {
+		wtot -= (wlen + 1)
+	}
+
 	wsum := 0
 	for i := 0; i < wlen-1; i++ {
 		widths[i] = gOpts.ratios[i] * wtot / rsum
 		wsum += widths[i]
 	}
 	widths[wlen-1] = wtot - wsum
-
-	if gOpts.drawbox {
-		widths[wlen-1]--
-	}
 
 	return widths
 }
@@ -533,7 +555,8 @@ func getWins(screen tcell.Screen) []*win {
 	wlen := len(widths)
 	for i := 0; i < wlen; i++ {
 		if gOpts.drawbox {
-			wins = append(wins, newWin(widths[i], htot-4, wacc+1, 2))
+			wacc++
+			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
 		} else {
 			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
 		}
@@ -620,21 +643,9 @@ func (ui *ui) pollEvents() {
 }
 
 func (ui *ui) renew() {
+	ui.wins = getWins(ui.screen)
+
 	wtot, htot := ui.screen.Size()
-
-	widths := getWidths(wtot)
-
-	wacc := 0
-	wlen := len(widths)
-	for i := 0; i < wlen; i++ {
-		if gOpts.drawbox {
-			ui.wins[i].renew(widths[i], htot-4, wacc+1, 2)
-		} else {
-			ui.wins[i].renew(widths[i], htot-2, wacc, 1)
-		}
-		wacc += widths[i]
-	}
-
 	ui.promptWin.renew(wtot, 1, 0, 0)
 	ui.msgWin.renew(wtot, 1, 0, htot-1)
 	ui.menuWin.renew(wtot, 1, 0, htot-2)
@@ -662,8 +673,16 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
+func optionToFmtstr(optstr string) string {
+	if !strings.Contains(optstr, "%s") {
+		return optstr + "%s\033[0m"
+	} else {
+		return optstr
+	}
+}
+
 func (ui *ui) echoerr(msg string) {
-	ui.msg = fmt.Sprintf(gOpts.errorfmt, msg)
+	ui.msg = fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg)
 	log.Printf("error: %s", msg)
 }
 
@@ -690,11 +709,10 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		return
 	}
 
-	if curr.path == ui.currentFile {
-		return
+	if curr.path != ui.currentFile {
+		ui.currentFile = curr.path
+		onSelect(app)
 	}
-	ui.currentFile = curr.path
-	onSelect(app)
 
 	if !gOpts.preview {
 		return
@@ -863,28 +881,28 @@ func (ui *ui) drawBox() {
 	w, h := ui.screen.Size()
 
 	for i := 1; i < w-1; i++ {
-		ui.screen.SetContent(i, 1, '─', nil, st)
-		ui.screen.SetContent(i, h-2, '─', nil, st)
+		ui.screen.SetContent(i, 1, tcell.RuneHLine, nil, st)
+		ui.screen.SetContent(i, h-2, tcell.RuneHLine, nil, st)
 	}
 
 	for i := 2; i < h-2; i++ {
-		ui.screen.SetContent(0, i, '│', nil, st)
-		ui.screen.SetContent(w-1, i, '│', nil, st)
+		ui.screen.SetContent(0, i, tcell.RuneVLine, nil, st)
+		ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
 	}
 
-	ui.screen.SetContent(0, 1, '┌', nil, st)
-	ui.screen.SetContent(w-1, 1, '┐', nil, st)
-	ui.screen.SetContent(0, h-2, '└', nil, st)
-	ui.screen.SetContent(w-1, h-2, '┘', nil, st)
+	ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
+	ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
+	ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
+	ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
 
 	wacc := 0
 	for wind := 0; wind < len(ui.wins)-1; wind++ {
-		wacc += ui.wins[wind].w
-		ui.screen.SetContent(wacc, 1, '┬', nil, st)
+		wacc += ui.wins[wind].w + 1
+		ui.screen.SetContent(wacc, 1, tcell.RuneTTee, nil, st)
 		for i := 2; i < h-2; i++ {
-			ui.screen.SetContent(wacc, i, '│', nil, st)
+			ui.screen.SetContent(wacc, i, tcell.RuneVLine, nil, st)
 		}
-		ui.screen.SetContent(wacc, h-2, '┴', nil, st)
+		ui.screen.SetContent(wacc, h-2, tcell.RuneBTee, nil, st)
 	}
 }
 
@@ -904,6 +922,7 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
+	// XXX: manual clean without flush to avoid flicker on Windows
 	wtot, htot := ui.screen.Size()
 	for i := 0; i < wtot; i++ {
 		for j := 0; j < htot; j++ {
@@ -919,9 +938,14 @@ func (ui *ui) draw(nav *nav) {
 		wins--
 	}
 	for i := 0; i < wins; i++ {
+		role := Parent
+		if i == wins-1 {
+			role = Active
+		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
 			ui.wins[i].printDir(ui.screen, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, previewing: false})
+				&dirStyle{colors: ui.styles, icons: ui.icons, role: role},
+				nav.previewLoading)
 		}
 	}
 
@@ -957,9 +981,10 @@ func (ui *ui) draw(nav *nav) {
 
 			if curr.IsDir() {
 				preview.printDir(ui.screen, ui.dirPrev, &context,
-					&dirStyle{colors: ui.styles, icons: ui.icons, previewing: true})
+					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
+					nav.previewLoading)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, &ui.sxScreen, ui.regPrev)
+				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			}
 		}
 	}
@@ -1198,12 +1223,18 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		case tcell.ButtonNone:
 			return nil
 		}
+		if tev.Modifiers() == tcell.ModCtrl {
+			button = "<c-" + button[1:]
+		}
 		if expr, ok := gOpts.keys[button]; ok {
 			return expr
 		}
-
-		if tev.Buttons() != tcell.Button1 && tev.Buttons() != tcell.Button2 {
-			return nil
+		if button != "<m-1>" && button != "<m-2>" {
+			ui.echoerrf("unknown mapping: %s", button)
+			ui.keyAcc = nil
+			ui.keyCount = nil
+			ui.menuBuf = nil
+			return draw
 		}
 
 		x, y := tev.Position()
@@ -1347,7 +1378,7 @@ func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.
 		wcol = max(wcol, len(m))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
-	ncol := wtot / wcol
+	ncol := max(wtot/wcol, 1)
 
 	b.WriteString("possible matches\n")
 

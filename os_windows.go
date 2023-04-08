@@ -115,7 +115,7 @@ func setDefaults() {
 	gOpts.keys["i"] = &execExpr{"!", "%PAGER% %f%"}
 	gOpts.keys["w"] = &execExpr{"$", "%SHELL%"}
 
-	gOpts.cmds["doc"] = &execExpr{"!", "lf -doc | %PAGER%"}
+	gOpts.cmds["doc"] = &execExpr{"!", "%lf% -doc | %PAGER%"}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 }
 

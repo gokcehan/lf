@@ -388,11 +388,15 @@ type nav struct {
 	searchPos       int
 	prevFilter      []string
 	volatilePreview bool
+	previewTimer    *time.Timer
+	previewLoading  bool
 	jumpList        []string
 	jumpListInd     int
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
+	nav.startPreview()
+
 	d := &dir{
 		loading:     true,
 		loadTime:    time.Now(),
@@ -448,6 +452,7 @@ func (nav *nav) checkDir(dir *dir) {
 			return
 		}
 
+		nav.startPreview()
 		dir.loading = true
 		dir.loadTime = now
 		go func() {
@@ -511,6 +516,7 @@ func newNav(height int) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
+		previewTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -534,7 +540,6 @@ func (nav *nav) addJumpList() {
 }
 
 func (nav *nav) cdJumpListPrev() {
-	// currPath := nav.currDir().path
 	if nav.jumpListInd > 0 {
 		nav.jumpListInd -= 1
 		nav.cd(nav.jumpList[nav.jumpListInd])
@@ -887,6 +892,7 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (volatile && r.volatile) {
 		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
 		nav.regCache[path] = r
+		nav.startPreview()
 		nav.previewChan <- path
 		return r
 	}
@@ -912,8 +918,15 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
+		nav.startPreview()
 		nav.previewChan <- reg.path
 	}
+}
+
+func (nav *nav) startPreview() {
+	nav.previewTimer.Stop()
+	nav.previewLoading = false
+	nav.previewTimer.Reset(100 * time.Millisecond)
 }
 
 func (nav *nav) sort() {
@@ -1159,6 +1172,19 @@ func (nav *nav) low() bool {
 	return old != dir.ind
 }
 
+func (nav *nav) move(index int) bool {
+	old := nav.currDir().ind
+
+	switch {
+	case index < old:
+		return nav.up(old - index)
+	case index > old:
+		return nav.down(index - old)
+	default:
+		return false
+	}
+}
+
 func (nav *nav) toggleSelection(path string) {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)
@@ -1222,12 +1248,20 @@ func (nav *nav) tag(tag string) error {
 	return nil
 }
 
-func (nav *nav) invert() {
+func (nav *nav) invertAfter(ix int) {
 	dir := nav.currDir()
-	for _, f := range dir.files {
+	for _, f := range dir.files[ix:] {
 		path := filepath.Join(dir.path, f.Name())
 		nav.toggleSelection(path)
 	}
+}
+
+func (nav *nav) invert() {
+	nav.invertAfter(0)
+}
+
+func (nav *nav) invertBelow() {
+	nav.invertAfter(nav.currDir().ind)
 }
 
 func (nav *nav) unselect() {
@@ -1499,6 +1533,12 @@ func (nav *nav) rename() error {
 		return err
 	}
 
+	// It is possible for newPath to already have cache entries if it previously
+	// existed and was deleted. In this case the cache entries should be deleted
+	// before loading newPath to prevent displaying a stale preview. However,
+	// this clears only the current instance of lf, and not any other instances.
+	delete(nav.regCache, newPath)
+	delete(nav.dirCache, newPath)
 	dir := nav.loadDir(filepath.Dir(newPath))
 
 	if dir.loading {

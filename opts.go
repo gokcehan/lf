@@ -28,57 +28,61 @@ type sortType struct {
 }
 
 var gOpts struct {
-	anchorfind     bool
-	autoquit       bool
-	dircache       bool
-	dircounts      bool
-	dironly        bool
-	dirpreviews    bool
-	drawbox        bool
-	globsearch     bool
-	icons          bool
-	ignorecase     bool
-	ignoredia      bool
-	incfilter      bool
-	incsearch      bool
-	mouse          bool
-	number         bool
-	preview        bool
-	relativenumber bool
-	smartcase      bool
-	smartdia       bool
-	waitmsg        string
-	wrapscan       bool
-	wrapscroll     bool
-	findlen        int
-	period         int
-	scrolloff      int
-	tabstop        int
-	errorfmt       string
-	filesep        string
-	ifs            string
-	previewer      string
-	cleaner        string
-	promptfmt      string
-	selmode        string
-	shell          string
-	shellflag      string
-	timefmt        string
-	infotimefmtnew string
-	infotimefmtold string
-	truncatechar   string
-	ratios         []int
-	hiddenfiles    []string
-	history        bool
-	info           []string
-	shellopts      []string
-	keys           map[string]expr
-	cmdkeys        map[string]expr
-	cmds           map[string]expr
-	user           map[string]string
-	sortType       sortType
-	tempmarks      string
-	tagfmt         string
+	anchorfind       bool
+	autoquit         bool
+	cursoractivefmt  string
+	cursorparentfmt  string
+	cursorpreviewfmt string
+	dircache         bool
+	dircounts        bool
+	dironly          bool
+	dirpreviews      bool
+	drawbox          bool
+	globsearch       bool
+	icons            bool
+	ignorecase       bool
+	ignoredia        bool
+	incfilter        bool
+	incsearch        bool
+	mouse            bool
+	number           bool
+	preview          bool
+	relativenumber   bool
+	smartcase        bool
+	smartdia         bool
+	waitmsg          string
+	wrapscan         bool
+	wrapscroll       bool
+	findlen          int
+	period           int
+	scrolloff        int
+	tabstop          int
+	errorfmt         string
+	filesep          string
+	ifs              string
+	previewer        string
+	cleaner          string
+	promptfmt        string
+	selmode          string
+	shell            string
+	shellflag        string
+	timefmt          string
+	infotimefmtnew   string
+	infotimefmtold   string
+	truncatechar     string
+	ratios           []int
+	hiddenfiles      []string
+	history          bool
+	info             []string
+	shellopts        []string
+	keys             map[string]expr
+	cmdkeys          map[string]expr
+	cmds             map[string]expr
+	user             map[string]string
+	sortType         sortType
+	tempmarks        string
+	numberfmt        string
+	tagfmt           string
 }
 
 func init() {
@@ -89,6 +93,9 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
+	gOpts.cursoractivefmt = "\033[7m"
+	gOpts.cursorparentfmt = "\033[7m"
+	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
@@ -108,7 +115,7 @@ func init() {
 	gOpts.period = 0
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
-	gOpts.errorfmt = "\033[7;31;47m%s\033[0m"
+	gOpts.errorfmt = "\033[7;31;47m"
 	gOpts.filesep = "\n"
 	gOpts.ifs = ""
 	gOpts.previewer = ""
@@ -128,7 +135,8 @@ func init() {
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"
-	gOpts.tagfmt = "\033[31m%s\033[0m"
+	gOpts.numberfmt = "\033[33m"
+	gOpts.tagfmt = "\033[31m"
 
 	gOpts.keys = make(map[string]expr)
 
@@ -139,6 +147,7 @@ func init() {
 	gOpts.keys["<c-b>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<pgup>"] = &callExpr{"page-up", nil, 1}
 	gOpts.keys["<c-y>"] = &callExpr{"scroll-up", nil, 1}
+	gOpts.keys["<c-m-up>"] = &callExpr{"scroll-up", nil, 1}
 	gOpts.keys["j"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<down>"] = &callExpr{"down", nil, 1}
 	gOpts.keys["<m-down>"] = &callExpr{"down", nil, 1}
@@ -146,15 +155,16 @@ func init() {
 	gOpts.keys["<c-f>"] = &callExpr{"page-down", nil, 1}
 	gOpts.keys["<pgdn>"] = &callExpr{"page-down", nil, 1}
 	gOpts.keys["<c-e>"] = &callExpr{"scroll-down", nil, 1}
+	gOpts.keys["<c-m-down>"] = &callExpr{"scroll-down", nil, 1}
 	gOpts.keys["h"] = &callExpr{"updir", nil, 1}
 	gOpts.keys["<left>"] = &callExpr{"updir", nil, 1}
 	gOpts.keys["l"] = &callExpr{"open", nil, 1}
 	gOpts.keys["<right>"] = &callExpr{"open", nil, 1}
 	gOpts.keys["q"] = &callExpr{"quit", nil, 1}
-	gOpts.keys["gg"] = &callExpr{"top", nil, 1}
-	gOpts.keys["<home>"] = &callExpr{"top", nil, 1}
-	gOpts.keys["G"] = &callExpr{"bottom", nil, 1}
-	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 1}
+	gOpts.keys["gg"] = &callExpr{"top", nil, 0}
+	gOpts.keys["<home>"] = &callExpr{"top", nil, 0}
+	gOpts.keys["G"] = &callExpr{"bottom", nil, 0}
+	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 0}
 	gOpts.keys["H"] = &callExpr{"high", nil, 1}
 	gOpts.keys["M"] = &callExpr{"middle", nil, 1}
 	gOpts.keys["L"] = &callExpr{"low", nil, 1}
@@ -211,7 +221,9 @@ func init() {
 	gOpts.cmdkeys["<tab>"] = &callExpr{"cmd-complete", nil, 1}
 	gOpts.cmdkeys["<enter>"] = &callExpr{"cmd-enter", nil, 1}
 	gOpts.cmdkeys["<c-j>"] = &callExpr{"cmd-enter", nil, 1}
+	gOpts.cmdkeys["<down>"] = &callExpr{"cmd-history-next", nil, 1}
 	gOpts.cmdkeys["<c-n>"] = &callExpr{"cmd-history-next", nil, 1}
+	gOpts.cmdkeys["<up>"] = &callExpr{"cmd-history-prev", nil, 1}
 	gOpts.cmdkeys["<c-p>"] = &callExpr{"cmd-history-prev", nil, 1}
 	gOpts.cmdkeys["<delete>"] = &callExpr{"cmd-delete", nil, 1}
 	gOpts.cmdkeys["<c-d>"] = &callExpr{"cmd-delete", nil, 1}

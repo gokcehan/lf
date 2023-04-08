@@ -48,6 +48,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 - Tabs or windows (better handled by window manager or terminal multiplexer)
 - Builtin pager/editor (better handled by your pager/editor of choice)
+- Builtin commands for file operations (better handled by the underlying shell tools including but not limited to `mkdir`, `touch`, `chmod`, `chown`, `chgrp`, and `ln`)
 
 ## Installation
 
@@ -57,42 +58,20 @@ See [releases](https://github.com/horriblename/lf/releases) for pre-built binari
 
 Building from the source requires [Go](https://go.dev/).
 
-On Unix (Go version < 1.17):
-
-```bash
-env CGO_ENABLED=0 GO111MODULE=on go get -u -ldflags="-s -w" github.com/horriblename/lf
-```
-
-On Unix (Go version >= 1.17):
+On Unix:
 
 ```bash
 env CGO_ENABLED=0 go install -ldflags="-s -w" github.com/horriblename/lf@latest
 ```
 
-On Windows `cmd` (Go version < 1.17):
-
-```cmd
-set CGO_ENABLED=0
-set GO111MODULE=on
-go get -u -ldflags="-s -w" github.com/horriblename/lf
-```
-
-On Windows `cmd` (Go version >= 1.17):
+On Windows `cmd`:
 
 ```cmd
 set CGO_ENABLED=0
 go install -ldflags="-s -w" github.com/horriblename/lf@latest
 ```
 
-On Windows `powershell` (Go version < 1.17):
-
-```powershell
-$env:CGO_ENABLED = '0'
-$env:GO111MODULE = 'on'
-go get -u -ldflags="-s -w" github.com/horriblename/lf
-```
-
-On Windows `powershell` (Go version >= 1.17):
+On Windows `powershell`:
 
 ```powershell
 $env:CGO_ENABLED = '0'

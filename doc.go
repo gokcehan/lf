@@ -36,6 +36,7 @@ The following commands are provided by lf:
 	low                      (default 'L')
 	toggle
 	invert                   (default 'v')
+	invert-below
 	unselect                 (default 'u')
 	glob-select
 	glob-unselect
@@ -78,6 +79,8 @@ The following commands are provided by lf:
 	mark-remove    (modal)   (default '"')
 	tag
 	tag-toggle               (default 't')
+	maps
+	cmaps
 
 The following command line commands are provided by lf:
 
@@ -88,8 +91,8 @@ The following command line commands are provided by lf:
 	cmd-menu-accept
 	cmd-enter                (default '<c-j>' and '<enter>')
 	cmd-interrupt            (default '<c-c>')
-	cmd-history-next         (default '<c-n>')
-	cmd-history-prev         (default '<c-p>')
+	cmd-history-next         (default '<c-n>' and '<down>')
+	cmd-history-prev         (default '<c-p>' and '<up>')
 	cmd-left                 (default '<c-b>' and '<left>')
 	cmd-right                (default '<c-f>' and '<right>')
 	cmd-home                 (default '<c-a>' and '<home>')
@@ -111,57 +114,61 @@ The following command line commands are provided by lf:
 
 The following options can be used to customize the behavior of lf:
 
-	anchorfind     bool      (default on)
-	autoquit       bool      (default off)
-	cleaner        string    (default '')
-	dircache       bool      (default on)
-	dircounts      bool      (default off)
-	dirfirst       bool      (default on)
-	dironly        bool      (default off)
-	dirpreviews    bool      (default off)
-	drawbox        bool      (default off)
-	errorfmt       string    (default "\033[7;31;47m%s\033[0m")
-	filesep        string    (default "\n")
-	findlen        int       (default 1)
-	globsearch     bool      (default off)
-	hidden         bool      (default off)
-	hiddenfiles    []string  (default '.*')
-	history        bool      (default on)
-	icons          bool      (default off)
-	ifs            string    (default '')
-	ignorecase     bool      (default on)
-	ignoredia      bool      (default on)
-	incfilter      bool      (default off)
-	incsearch      bool      (default off)
-	info           []string  (default '')
-	infotimefmtnew string    (default 'Jan _2 15:04')
-	infotimefmtold string    (default 'Jan _2  2006')
-	mouse          bool      (default off)
-	number         bool      (default off)
-	period         int       (default 0)
-	preview        bool      (default on)
-	previewer      string    (default '')
-	promptfmt      string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
-	ratios         []int     (default '1:2:3')
-	relativenumber bool      (default off)
-	reverse        bool      (default off)
-	scrolloff      int       (default 0)
-	selmode        string    (default 'all')
-	shell          string    (default 'sh' for Unix and 'cmd' for Windows)
-	shellflag      string    (default '-c' for Unix and '/c' for Windows)
-	shellopts      []string  (default '')
-	smartcase      bool      (default on)
-	smartdia       bool      (default off)
-	sortby         string    (default 'natural')
-	tabstop        int       (default 8)
-	tagfmt         string    (default "\033[31m%s\033[0m")
-	tempmarks      string    (default '')
-	timefmt        string    (default 'Mon Jan _2 15:04:05 2006')
-	truncatechar   string    (default '~')
-	waitmsg        string    (default 'Press any key to continue')
-	wrapscan       bool      (default on)
-	wrapscroll     bool      (default off)
-	user_{option}  string    (default none)
+	anchorfind       bool      (default true)
+	autoquit         bool      (default false)
+	cleaner          string    (default '')
+	cursoractivefmt  string    (default "\033[7m")
+	cursorparentfmt  string    (default "\033[7m")
+	cursorpreviewfmt string    (default "\033[4m")
+	dircache         bool      (default true)
+	dircounts        bool      (default false)
+	dirfirst         bool      (default true)
+	dironly          bool      (default false)
+	dirpreviews      bool      (default false)
+	drawbox          bool      (default false)
+	errorfmt         string    (default "\033[7;31;47m")
+	filesep          string    (default "\n")
+	findlen          int       (default 1)
+	globsearch       bool      (default false)
+	hidden           bool      (default false)
+	hiddenfiles      []string  (default '.*')
+	history          bool      (default true)
+	icons            bool      (default false)
+	ifs              string    (default '')
+	ignorecase       bool      (default true)
+	ignoredia        bool      (default true)
+	incfilter        bool      (default false)
+	incsearch        bool      (default false)
+	info             []string  (default '')
+	infotimefmtnew   string    (default 'Jan _2 15:04')
+	infotimefmtold   string    (default 'Jan _2  2006')
+	mouse            bool      (default false)
+	number           bool      (default false)
+	numberfmt        string    (default "\033[33m")
+	period           int       (default 0)
+	preview          bool      (default true)
+	previewer        string    (default '')
+	promptfmt        string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
+	ratios           []int     (default '1:2:3')
+	relativenumber   bool      (default false)
+	reverse          bool      (default false)
+	scrolloff        int       (default 0)
+	selmode          string    (default 'all')
+	shell            string    (default 'sh' for Unix and 'cmd' for Windows)
+	shellflag        string    (default '-c' for Unix and '/c' for Windows)
+	shellopts        []string  (default '')
+	smartcase        bool      (default true)
+	smartdia         bool      (default false)
+	sortby           string    (default 'natural')
+	tabstop          int       (default 8)
+	tagfmt           string    (default "\033[31m")
+	tempmarks        string    (default '')
+	timefmt          string    (default 'Mon Jan _2 15:04:05 2006')
+	truncatechar     string    (default '~')
+	waitmsg          string    (default 'Press any key to continue')
+	wrapscan         bool      (default true)
+	wrapscroll       bool      (default false)
+	user_{option}    string    (default none)
 
 The following environment variables are exported for shell commands:
 
@@ -180,6 +187,7 @@ The following environment variables are exported for shell commands:
 	lf_user_{option}
 	lf_width
 	lf_height
+	lf_count
 
 The following special shell commands are used to customize the behavior of lf when defined:
 
@@ -226,7 +234,7 @@ If the 'mouse' option is enabled, mouse buttons have the following default effec
 	    Enter a directory or open a file. Also works on the preview window.
 
 	Scroll wheel
-	    Scroll up or down.
+	    Move up or down. If Ctrl is pressed, scroll up or down.
 
 # Configuration
 
@@ -317,6 +325,7 @@ Change the current working directory to the next/previous jumplist item.
 	bottom                   (default 'G' and '<end>')
 
 Move the current file selection to the top/bottom of the directory.
+A count can be specified to move to a specific line, for example use `3G` to move to the third line.
 
 	high                     (default 'H')
 	middle                   (default 'M')
@@ -333,6 +342,17 @@ Toggle the selection of the current file or files given as arguments.
 Reverse the selection of all files in the current directory (i.e. 'toggle' all files).
 Selections in other directories are not effected by this command.
 You can define a new command to select all files in the directory by combining 'invert' with 'unselect' (i.e. 'cmd select-all :unselect; invert'), though this will also remove selections in other directories.
+
+	invert-below
+
+Reverse the selection (i.e. 'toggle') of all files at or after the current file in the current directory.
+
+To select a contiguous block of files, use this command on the first file you want to select.
+Then, move down to the first file you do *not* want to select (the one after the end of the desired selection) and use this command again.
+This achieves an effect similar to the visual mode in vim.
+
+This command is experimental and may be removed once a better replacement for the visual mode is implemented in 'lf'.
+If you'd like to experiment with using this command, you should bind it to a key (e.g. 'V') for a better experience.
 
 	unselect                 (default 'u')
 
@@ -528,8 +548,8 @@ Execute the current line.
 
 Interrupt the current shell-pipe command and return to the normal mode.
 
-	cmd-history-next         (default '<c-n>')
-	cmd-history-prev         (default '<c-p>')
+	cmd-history-next         (default '<c-n>' and '<down>')
+	cmd-history-prev         (default '<c-p>' and '<up>')
 
 Go to next/previous item in the history.
 
@@ -585,16 +605,21 @@ Delete the next word in forward direction.
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
+	maps
+	cmaps
+
+List all key mappings in normal mode or command-line editing mode.
+
 # Options
 
 This section shows information about options to customize the behavior.
 Character ':' is used as the separator for list options '[]int' and '[]string'.
 
-	anchorfind     bool      (default on)
+	anchorfind     bool      (default true)
 
 When this option is enabled, find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
 
-	autoquit       bool      (default off)
+	autoquit       bool      (default false)
 
 Automatically quit server when there are no clients left connected.
 
@@ -606,11 +631,27 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 Preview clearing is disabled when the value of this option is left empty.
 
-	dircache       bool      (default on)
+	cursoractivefmt   string    (default "\033[7m")
+	cursorparentfmt   string    (default "\033[7m")
+	cursorpreviewfmt  string    (default "\033[4m")
+
+Format strings for highlighting the cursor.
+`cursoractivefmt` applies in the current directory pane,
+`cursorparentfmt` applies in panes that show parents of the current directory,
+and `cursorpreviewfmt` applies in panes that preview directories.
+
+The default is to make the active cursor and the parent directory cursor inverted. The preview cursor is underlined.
+
+Some other possibilities to consider for the preview or parent cursors: an empty string for no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal), "\033[7;90m" for inverted text with grey (aka "brightblack") background.
+
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
+For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
+
+	dircache       bool      (default true)
 
 Cache directory contents.
 
-	dircounts      bool      (default off)
+	dircounts      bool      (default false)
 
 When this option is enabled, directory sizes show the number of items inside instead of the total size of the directory, which needs to be calculated for each directory using 'calcdirsize'.
 This information needs to be calculated by reading the directory and counting the items inside.
@@ -618,25 +659,28 @@ Therefore, this option is disabled by default for performance reasons.
 This option only has an effect when 'info' has a 'size' field and the pane is wide enough to show the information.
 999 items are counted per directory at most, and bigger directories are shown as '999+'.
 
-	dirfirst       bool      (default on)
+	dirfirst       bool      (default true)
 
 Show directories first above regular files.
 
-	dironly        bool      (default off)
-
-If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
-
-	dirpreviews    bool      (default off)
+	dironly        bool      (default false)
 
 Show only directories.
 
-	drawbox        bool      (default off)
+	dirpreviews    bool      (default false)
+
+If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+
+	drawbox        bool      (default false)
 
 Draw boxes around panes with box drawing characters.
 
-	errorfmt       string    (default "\033[7;31;47m%s\033[0m")
+	errorfmt       string    (default "\033[7;31;47m")
 
 Format string of error messages shown in the bottom message line.
+
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
+For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
 	filesep        string    (default "\n")
 
@@ -647,13 +691,13 @@ File separator used in environment variables 'fs' and 'fx'.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
-	globsearch     bool      (default off)
+	globsearch     bool      (default false)
 
 When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
-With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...] matches character sets or ranges.
+With globbing, '*' matches any sequence, '?' matches any character, and '[...]' or '[^...]' matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
 
-	hidden         bool      (default off)
+	hidden         bool      (default false)
 
 Show hidden files.
 On Unix systems, hidden files are determined by the value of 'hiddenfiles'.
@@ -663,14 +707,14 @@ On Windows, only files with hidden attributes are considered hidden files.
 
 List of hidden file glob patterns.
 Patterns can be given as relative or absolute paths.
-Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...] to match character sets or ranges.
-In addition, if a pattern starts with '!', then its matches are excluded from hidden files.
+Globbing supports the usual special characters, '*' to match any sequence, '?' to match any character, and '[...]' or '[^...]' to match character sets or ranges.
+In addition, if a pattern starts with '!', then its matches are excluded from hidden files. To add multiple patterns, use ':' as a separator. Example: '.*:lost+found:*.bak'
 
-	history        bool      (default on)
+	history        bool      (default true)
 
 Save command history.
 
-	icons          bool      (default off)
+	icons          bool      (default false)
 
 Show icons before each item in the list.
 
@@ -683,19 +727,19 @@ This method assumes a POSIX shell syntax and so it can fail for non-POSIX shells
 This option has no effect when the value is left empty.
 This option does not have any effect on Windows.
 
-	ignorecase     bool      (default on)
+	ignorecase     bool      (default true)
 
 Ignore case in sorting and search patterns.
 
-	ignoredia      bool      (default on)
+	ignoredia      bool      (default true)
 
 Ignore diacritics in sorting and search patterns.
 
-	incsearch      bool      (default off)
+	incsearch      bool      (default false)
 
 Jump to the first match after each keystroke during searching.
 
-	incfilter      bool      (default off)
+	incfilter      bool      (default false)
 
 Apply filter pattern after each keystroke during filtering.
 
@@ -713,14 +757,18 @@ Format string of the file time shown in the info column when it matches this yea
 
 Format string of the file time shown in the info column when it doesn't match this year.
 
-	mouse          bool      (default off)
+	mouse          bool      (default false)
 
 Send mouse events as input.
 
-	number         bool      (default off)
+	number         bool      (default false)
 
 Show the position number for directory items at the left side of pane.
 When 'relativenumber' option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
+
+	numberfmt      string    (default "\033[33m")
+
+Format string of the position number for each line.
 
 	period         int       (default 0)
 
@@ -730,7 +778,7 @@ Note that directories are already updated automatically in many cases.
 This option can be useful when there is an external process changing the displayed directory and you are not doing anything in lf.
 Periodic checks are disabled when the value of this option is set to zero.
 
-	preview        bool      (default on)
+	preview        bool      (default true)
 
 Show previews of files and directories at the right most pane.
 If the file has more lines than the preview pane, rest of the lines are not read.
@@ -759,12 +807,12 @@ List of ratios of pane widths.
 Number of items in the list determines the number of panes in the ui.
 When 'preview' option is enabled, the right most number is used for the width of preview pane.
 
-	relativenumber bool      (default off)
+	relativenumber bool      (default false)
 
 Show the position number relative to the current line.
 When 'number' is enabled, current line shows the absolute position, otherwise nothing is shown.
 
-	reverse        bool      (default off)
+	reverse        bool      (default false)
 
 Reverse the direction of sort.
 
@@ -793,12 +841,12 @@ Command line flag used to pass shell commands.
 
 List of shell options to pass to the shell executable.
 
-	smartcase      bool      (default on)
+	smartcase      bool      (default true)
 
 Override 'ignorecase' option when the pattern contains an uppercase character.
 This option has no effect when 'ignorecase' is disabled.
 
-	smartdia       bool      (default off)
+	smartdia       bool      (default false)
 
 Override 'ignoredia' option when the pattern contains a character with diacritic.
 This option has no effect when 'ignoredia' is disabled.
@@ -812,9 +860,12 @@ Currently supported sort types are 'natural', 'name', 'size', 'time', 'ctime', '
 
 Number of space characters to show for horizontal tabulation (U+0009) character.
 
-	tagfmt         string    (default "\033[31m%s\033[0m")
+	tagfmt         string    (default "\033[31m")
 
 Format string of the tags.
+
+If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
+For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
 	tempmarks      string    (default '')
 
@@ -834,11 +885,11 @@ Truncate character shown at the end when the file name does not fit to the pane.
 
 String shown after commands of shell-wait type.
 
-	wrapscan       bool      (default on)
+	wrapscan       bool      (default true)
 
 Searching can wrap around the file list.
 
-	wrapscroll     bool      (default off)
+	wrapscroll     bool      (default false)
 
 Scrolling can wrap around the file list.
 
@@ -885,19 +936,23 @@ For example, with POSIX shells, you can use '[ -n "$LF_LEVEL" ] && PS1="$PS1""(l
 
 	OPENER
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'start' in Windows, 'open' in MacOS, 'xdg-open' in others.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'start' in Windows, 'open' in MacOS, 'xdg-open' in others.
 
 	EDITOR
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'vi' on Unix, 'notepad' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'vi' on Unix, 'notepad' in Windows.
 
 	PAGER
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'less' on Unix, 'more' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'less' on Unix, 'more' in Windows.
 
 	SHELL
 
-If this variable is set in the environment, use the same value, otherwise set the value to 'sh' on Unix, 'cmd' in Windows.
+If this variable is set in the environment, use the same value. Otherwise, this is set to 'sh' on Unix, 'cmd' in Windows.
+
+	lf
+
+Absolute path to the currently running lf binary, if it can be found. Otherwise, this is set to the string 'lf'.
 
 	lf_{option}
 
@@ -911,6 +966,10 @@ Value of the user_{option}.
 	lf_height
 
 Width/Height of the terminal.
+
+	lf_count
+
+Value of the count associated with the current command.
 
 # Special Commands
 
@@ -973,8 +1032,10 @@ There are four special commands ('set', 'map', 'cmap', and 'cmd') for configurat
 
 Command 'set' is used to set an option which can be boolean, integer, or string:
 
-	set hidden         # boolean on
-	set nohidden       # boolean off
+	set hidden         # boolean enable
+	set hidden true    # boolean enable
+	set nohidden       # boolean disable
+	set hidden false   # boolean disable
 	set hidden!        # boolean toggle
 	set scrolloff 10   # integer value
 	set sortby time    # string value w/o quotes
