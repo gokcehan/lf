@@ -2479,8 +2479,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = acc
 		update(app)
 	case "maps":
-		cleanUp := app.runShell("$PAGER", nil, "$|")
+		cleanUp := app.runShell(envPager, nil, "$|")
 		io.Copy(app.cmdIn, listBinds(gOpts.keys))
+		app.cmdIn.Close()
+		cleanUp()
+	case "cmaps":
+		cleanUp := app.runShell(envPager, nil, "$|")
+		io.Copy(app.cmdIn, listBinds(gOpts.cmdkeys))
 		app.cmdIn.Close()
 		cleanUp()
 	default:
