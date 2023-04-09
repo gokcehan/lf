@@ -470,10 +470,11 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:
 		dir.loading = true
+		sd := *dir
 		go func() {
-			dir.sort()
-			dir.loading = false
-			nav.dirChan <- dir
+			sd.sort()
+			sd.loading = false
+			nav.dirChan <- &sd
 		}()
 	}
 }
