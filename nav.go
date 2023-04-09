@@ -925,15 +925,8 @@ func (nav *nav) down(dist int) bool {
 	dir.ind = min(maxind, dir.ind)
 
 	dir.pos += dist
-	// If scrolloff is set to a large value, then the cursor should be placed in
-	// the middle. If nav.height is an even number, then there are actually two
-	// candidate rows for being the middle. To ensure a smooth scrolling
-	// experience where the cursor doesn't move when scrolling both up and down,
-	// the bottom candidate row is used in both cases, however this means that
-	// the half value has to be adjusted. For example, if the height is 10, then
-	// the cursor should be positioned at index 5, which is 5 rows away from the
-	// top row (relevant when scrolling up), but only 4 rows away from the
-	// bottom row (relevant when scrolling down).
+	// use a smaller value for half when the height is even and scrolloff is
+	// maxed in order to stay at the same row while scrolling up and down
 	half := nav.height / 2
 	if nav.height%2 == 0 {
 		half--
