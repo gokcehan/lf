@@ -482,6 +482,21 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
+	case "ruler":
+		if e.val == "" {
+			gOpts.ruler = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "df", "acc", "progress", "selection", "ind", "tot":
+			default:
+				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', or 'ind' separated with colon")
+				return
+			}
+		}
+		gOpts.ruler = toks
 	case "infotimefmtnew":
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
