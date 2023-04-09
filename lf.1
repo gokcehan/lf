@@ -95,6 +95,7 @@ The following commands are provided by lf:
     tag
     tag-toggle               (default 't')
     maps
+    cmaps
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -200,6 +201,7 @@ The following environment variables are exported for shell commands:
     OLDPWD
     LF_LEVEL
     OPENER
+    VISUAL
     EDITOR
     PAGER
     SHELL
@@ -377,7 +379,7 @@ Change the current working directory to the next/previous jumplist item.
     bottom                   (default 'G' and '<end>')
 .EE
 .PP
-Move the current file selection to the top/bottom of the directory.
+Move the current file selection to the top/bottom of the directory. A count can be specified to move to a specific line, for example use `3G` to move to the third line.
 .PP
 .EX
     high                     (default 'H')
@@ -746,9 +748,10 @@ Capitalize/uppercase/lowercase the current word and jump to the next word.
 .PP
 .EX
     maps
+    cmaps
 .EE
 .PP
-List all key mappings.
+List all key mappings in normal mode or command-line editing mode.
 .SH OPTIONS
 This section shows information about options to customize the behavior. Character ':' is used as the separator for list options '[]int' and '[]string'.
 .PP
@@ -1136,7 +1139,7 @@ If this variable is set in the environment, use the same value. Otherwise, this 
     EDITOR
 .EE
 .PP
-If this variable is set in the environment, use the same value. Otherwise, this is set to 'vi' on Unix, 'notepad' in Windows.
+If VISUAL is set in the environment, use its value. Otherwise, use the value of the environment variable EDITOR. If neither variable is set, this is set to 'vi' on Unix, 'notepad' in Windows.
 .PP
 .EX
     PAGER

@@ -26,6 +26,9 @@ set cursorpreviewfmt "\033[7;2m"
 # use enter for shell commands
 map <enter> shell
 
+# show the result of execution of previous commands
+map ` !true
+
 # execute current file (must be executable)
 map x $$f
 map X !$f
@@ -44,6 +47,9 @@ cmd open &{{
         *) for f in $fx; do $OPENER $f > /dev/null 2> /dev/null & done;;
     esac
 }}
+
+# mkdir command. See wiki if you want it to select created dir
+map a :push %mkdir<space>
 
 # define a custom 'rename' command without prompt for overwrite
 # cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1

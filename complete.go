@@ -14,6 +14,7 @@ var (
 		"map",
 		"maps",
 		"cmap",
+		"cmaps",
 		"cmd",
 		"quit",
 		"up",
