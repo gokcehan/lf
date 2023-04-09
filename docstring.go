@@ -143,7 +143,6 @@ The following options can be used to customize the behavior of lf:
     incfilter        bool      (default false)
     incsearch        bool      (default false)
     info             []string  (default '')
-    ruler            []string  (default '')
     infotimefmtnew   string    (default 'Jan _2 15:04')
     infotimefmtold   string    (default 'Jan _2  2006')
     mouse            bool      (default false)
@@ -156,6 +155,7 @@ The following options can be used to customize the behavior of lf:
     ratios           []int     (default '1:2:3')
     relativenumber   bool      (default false)
     reverse          bool      (default false)
+    ruler            []string  (default 'acc:progress:selection:ind')
     scrolloff        int       (default 0)
     selmode          string    (default 'all')
     shell            string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -795,11 +795,6 @@ Currently supported information types are 'size', 'time', 'atime', and 'ctime'.
 Information is only shown when the pane width is more than twice the width of
 information.
 
-    ruler       []string  (default 'acc:progress:selection:ind')
-
-List of information shown in status line ruler. Currently supported information
-types are 'acc', 'progress', 'selection', 'ind' and 'df'.
-
     infotimefmtnew string    (default 'Jan _2 15:04')
 
 Format string of the file time shown in the info column when it matches this
@@ -877,6 +872,11 @@ current line shows the absolute position, otherwise nothing is shown.
     reverse        bool      (default false)
 
 Reverse the direction of sort.
+
+    ruler          []string  (default 'acc:progress:selection:ind')
+
+List of information shown in status line ruler. Currently supported information
+types are 'acc', 'progress', 'selection', 'ind' and 'df'.
 
     selmode        string    (default 'all')
 
