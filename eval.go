@@ -692,7 +692,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.scrolloff = n
 	case "selmode":
-		gOpts.selmode = e.val
+		switch e.val {
+		case "all", "dir":
+			gOpts.selmode = e.val
+		default:
+			app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
+			return
+		}
 	case "shell":
 		gOpts.shell = e.val
 	case "shellflag":
