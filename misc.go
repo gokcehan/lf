@@ -311,10 +311,6 @@ func max(a, b int) int {
 	return b
 }
 
-func mod(a, b int) int {
-	return (a%b + b) % b
-}
-
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
