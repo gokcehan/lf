@@ -21,6 +21,10 @@ import (
 type linkState byte
 
 const (
+	previewerMaxLineSize int = 1048576 // 1 MB
+)
+
+const (
 	notLink linkState = iota
 	working
 	broken
@@ -848,6 +852,8 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	}
 
 	buf := bufio.NewScanner(reader)
+	buffer := make([]byte, 0)
+	buf.Buffer(buffer, previewerMaxLineSize)
 
 	var sixelBuffer []string
 	processingSixel := false
