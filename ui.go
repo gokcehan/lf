@@ -815,7 +815,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 	ind := min(dir.ind+1, tot)
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
-	var selection string
+	selection := []string{}
 
 	if len(nav.saves) > 0 {
 		copy := 0
@@ -828,55 +828,58 @@ func (ui *ui) drawStatLine(nav *nav) {
 			}
 		}
 		if copy > 0 {
-			selection += fmt.Sprintf("  \033[33;7m %d \033[0m", copy)
+			selection = append(selection, fmt.Sprintf("\033[33;7m %d \033[0m", copy))
 		}
 		if move > 0 {
-			selection += fmt.Sprintf("  \033[31;7m %d \033[0m", move)
+			selection = append(selection, fmt.Sprintf("\033[31;7m %d \033[0m", move))
 		}
 	}
 
 	currSelections := nav.currSelections()
 	if len(currSelections) > 0 {
-		selection += fmt.Sprintf("  \033[35;7m %d \033[0m", len(currSelections))
+		selection = append(selection, fmt.Sprintf("\033[35;7m %d \033[0m", len(currSelections)))
 	}
 
 	if len(dir.filter) != 0 {
-		selection += "  \033[34;7m F \033[0m"
+		selection = append(selection, "\033[34;7m F \033[0m")
 	}
 
-	var progress string
+	progress := []string{}
 
 	if nav.copyTotal > 0 {
 		percentage := int((100 * float64(nav.copyBytes)) / float64(nav.copyTotal))
-		progress += fmt.Sprintf("  [%d%%]", percentage)
+		progress = append(progress, fmt.Sprintf("[%d%%]", percentage))
 	}
 
 	if nav.moveTotal > 0 {
-		progress += fmt.Sprintf("  [%d/%d]", nav.moveCount, nav.moveTotal)
+		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.moveCount, nav.moveTotal))
 	}
 
 	if nav.deleteTotal > 0 {
-		progress += fmt.Sprintf("  [%d/%d]", nav.deleteCount, nav.deleteTotal)
+		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
 
-	ruler := ""
+	ruler := []string{}
 	for _, s := range gOpts.ruler {
 		switch s {
 		case "df":
-			ruler = fmt.Sprintf("%s%s", ruler, diskFree(dir.path))
+			df := diskFree(dir.path)
+			if df != "" {
+				ruler = append(ruler, df)
+			}
 		case "acc":
-			ruler = fmt.Sprintf("%s%s", ruler, acc)
+			ruler = append(ruler, acc)
 		case "progress":
-			ruler = fmt.Sprintf("%s%s", ruler, progress)
+			ruler = append(ruler, progress...)
 		case "selection":
-			ruler = fmt.Sprintf("%s%s", ruler, selection)
+			ruler = append(ruler, selection...)
 		case "ind":
-			ruler = fmt.Sprintf("%s  %d/%d", ruler, ind, tot)
+			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
 		}
 
 	}
 
-	ui.msgWin.printRight(ui.screen, 0, st, ruler)
+	ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
 }
 
 func (ui *ui) drawBox() {
