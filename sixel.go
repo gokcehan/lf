@@ -83,7 +83,7 @@ func (sxs *sixelScreen) showSixels() {
 var reNumber = regexp.MustCompile(`^[0-9]+`)
 
 func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen *sixelScreen) (lines []string, sixels []sixel) {
-	if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
 		if a := strings.Index(text, gSixelBegin); a >= 0 {
 			if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
 				textbefore := text[:a]
