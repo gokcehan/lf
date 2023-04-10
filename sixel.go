@@ -50,7 +50,7 @@ func (sxs *sixelScreen) filler(path string, l int) (fill string) {
 	}
 
 	fill += strings.Repeat(string(gSixelFiller), l)
-	return
+	return fill
 }
 
 func (sxs *sixelScreen) updateSizes(wc, hc int) {
@@ -81,6 +81,42 @@ func (sxs *sixelScreen) showSixels() {
 }
 
 var reNumber = regexp.MustCompile(`^[0-9]+`)
+
+func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen *sixelScreen) (lines []string, sixels []sixel) {
+	if sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+		if a := strings.Index(text, gSixelBegin); a >= 0 {
+			if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
+				textbefore := text[:a]
+				s := text[a : a+b+len(gSixelTerminate)]
+				textafter := text[a+b+len(gSixelTerminate):]
+				wpx, hpx := sixelDimPx(s)
+
+				if wpx >= 0 || hpx >= 0 {
+					xc := runeSliceWidth([]rune(textbefore)) + 2
+					yc := linenr
+					maxh := (win.h - yc) * sxScreen.fonth
+					s, hpx = trimSixelHeight(s, maxh)
+					wc, hc := sxScreen.pxToCells(wpx, hpx)
+					fill := sxScreen.filler(fpath, wc)
+
+					lines = append(lines, textbefore+fill)
+
+					sixels = append(sixels, sixel{xc, yc, wpx, hpx, s})
+					paddedfill := strings.Repeat(" ", xc-2) + fill
+					for j := 1; j < hc; j++ {
+						lines = append(lines, paddedfill)
+					}
+
+					linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr, fpath, win, sxScreen)
+					lines = append(lines, linesAfter...)
+					sixels = append(sixels, sixelsAfter...)
+					return lines, sixels
+				}
+			}
+		}
+	}
+	return []string{text}, sixels
+}
 
 // needs some testing
 func sixelDimPx(s string) (w int, h int) {
