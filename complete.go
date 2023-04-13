@@ -220,6 +220,9 @@ var (
 		"infotimefmtold",
 		"truncatechar",
 		"truncatepct",
+		"sixel",
+		"nosixel",
+		"sixel!",
 	}
 )
 
