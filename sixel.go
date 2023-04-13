@@ -6,6 +6,8 @@ import (
 	"regexp"
 	"strconv"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 const (
@@ -26,7 +28,6 @@ type sixelScreen struct {
 	wpx, hpx     int
 	fontw, fonth int
 	sx           []sixel
-	lastFile     string
 	altFill      bool
 }
 
@@ -35,19 +36,13 @@ func (sxs *sixelScreen) clear() {
 }
 
 // fillers are used to control when tcell redraws the region where a sixel image is drawn.
-// alternating between bold("ESC [1m") and regular is to clear the image before drawing a new one.
-func (sxs *sixelScreen) filler(path string, l int) (fill string) {
-	if path != sxs.lastFile {
-		sxs.altFill = !sxs.altFill
-		sxs.lastFile = path
-	}
-
+// alternating between bold and regular is to clear the image before drawing a new one.
+func (sxs *sixelScreen) fillerStyle() tcell.Style {
 	if sxs.altFill {
-		fill = "\033[1m"
-		defer func() {
-			fill += "\033[0m"
-		}()
+		return tcell.StyleDefault.Bold(true)
 	}
+	return tcell.StyleDefault
+}
 
 func newSixelScreen(wc, hc int) (sxs sixelScreen) {
 	sxs.updateSizes(wc, hc)
@@ -79,6 +74,8 @@ func (sxs *sixelScreen) showSixels() {
 	}
 	buf.WriteString("\0338")
 	fmt.Print(buf.String())
+	sxs.altFill = !sxs.altFill
+
 }
 
 var reNumber = regexp.MustCompile(`^[0-9]+`)
@@ -97,15 +94,13 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 					yc := linenr
 					maxh := (win.h - yc) * sxScreen.fonth
 					s, hpx = trimSixelHeight(s, maxh)
-					wc, hc := sxScreen.pxToCells(wpx, hpx)
-					fill := sxScreen.filler(fpath, wc)
+					_, hc := sxScreen.pxToCells(wpx, hpx)
 
-					lines = append(lines, textbefore+fill)
+					lines = append(lines, textbefore)
 
 					sixels = append(sixels, sixel{xc, yc, wpx, hpx, s})
-					paddedfill := strings.Repeat(" ", xc-2) + fill
 					for j := 1; j < hc; j++ {
-						lines = append(lines, paddedfill)
+						lines = append(lines, "")
 					}
 
 					linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr, fpath, win, sxScreen)
