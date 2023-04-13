@@ -608,9 +608,8 @@ func newUI(screen tcell.Screen) *ui {
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
+		sxScreen:    newSixelScreen(screen.Size()),
 	}
-
-	ui.sxScreen.updateSizes(screen.Size())
 
 	go ui.pollEvents()
 

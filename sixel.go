@@ -49,8 +49,9 @@ func (sxs *sixelScreen) filler(path string, l int) (fill string) {
 		}()
 	}
 
-	fill += strings.Repeat(string(gSixelFiller), l)
-	return fill
+func newSixelScreen(wc, hc int) (sxs sixelScreen) {
+	sxs.updateSizes(wc, hc)
+	return sxs
 }
 
 func (sxs *sixelScreen) updateSizes(wc, hc int) {
