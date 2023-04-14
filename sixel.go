@@ -83,38 +83,37 @@ func (sxs *sixelScreen) showSixels() {
 var reNumber = regexp.MustCompile(`^[0-9]+`)
 
 func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen *sixelScreen) (lines []string, sixels []sixel) {
-	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
-		if a := strings.Index(text, gSixelBegin); a >= 0 {
-			if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
-				textbefore := text[:a]
-				s := text[a : a+b+len(gSixelTerminate)]
-				textafter := text[a+b+len(gSixelTerminate):]
-				wpx, hpx, err := sixelDimPx(s)
+	if a := strings.Index(text, gSixelBegin); a >= 0 {
+		if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
+			textbefore := text[:a]
+			s := text[a : a+b+len(gSixelTerminate)]
+			textafter := text[a+b+len(gSixelTerminate):]
+			wpx, hpx, err := sixelDimPx(s)
 
-				if err == nil {
-					xc := runeSliceWidth([]rune(textbefore)) + 2
-					yc := linenr
-					maxh := (win.h - yc) * sxScreen.fonth
+			if err == nil {
+				xc := runeSliceWidth([]rune(textbefore)) + 2
+				yc := linenr
+				maxh := (win.h - yc) * sxScreen.fonth
 
-					// any syntax error should already be caught by sixelDimPx
-					s, hpx, _ = trimSixelHeight(s, maxh)
-					_, hc := sxScreen.pxToCells(wpx, hpx)
+				// any syntax error should already be caught by sixelDimPx
+				s, hpx, _ = trimSixelHeight(s, maxh)
+				_, hc := sxScreen.pxToCells(wpx, hpx)
 
-					lines = append(lines, textbefore)
+				lines = append(lines, textbefore)
 
-					sixels = append(sixels, sixel{xc, yc, wpx, hpx, s})
-					for j := 1; j < hc; j++ {
-						lines = append(lines, "")
-					}
-
-					linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr, fpath, win, sxScreen)
-					lines = append(lines, linesAfter...)
-					sixels = append(sixels, sixelsAfter...)
-					return lines, sixels
+				sixels = append(sixels, sixel{xc, yc, wpx, hpx, s})
+				for j := 1; j < hc; j++ {
+					lines = append(lines, "")
 				}
+
+				linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr, fpath, win, sxScreen)
+				lines = append(lines, linesAfter...)
+				sixels = append(sixels, sixelsAfter...)
+				return lines, sixels
 			}
 		}
 	}
+
 	return []string{text}, sixels
 }
 
