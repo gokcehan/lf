@@ -129,6 +129,8 @@ func sixelDimPx(s string) (w int, h int, err error) {
 	// the optional raster attributes may contain the 'reported' image size in pixels
 	// (The actual image can be larger, but is at least this big)
 	// ST is the terminating string "ESC \"
+	//
+	// https://vt100.net/docs/vt3xx-gp/chapter14.html
 	i := strings.Index(s, "q") + 1
 	if i == 0 {
 		// syntax error
@@ -167,20 +169,20 @@ func sixelDimPx(s string) (w int, h int, err error) {
 	}
 
 main_body:
-	var wi int
+	var w_line int
 	for ; i < len(s)-2; i++ {
 		c := s[i]
 		switch {
-		case '?' <= c && c <= '~':
-			wi++
-		case c == '-':
-			w = max(w, wi)
-			wi = 0
+		case '?' <= c && c <= '~': // data char
+			w_line++
+		case c == '-': // next line
+			w = max(w, w_line)
+			w_line = 0
 			h++
-		case c == '$':
-			w = max(w, wi)
-			wi = 0
-		case c == '!':
+		case c == '$': // Graphics Carriage Return: go back to start of same line
+			w = max(w, w_line)
+			w_line = 0
+		case c == '!': // Repeat Introducer
 			m := reNumber.FindString(s[i+1:])
 			if m == "" {
 				// syntax error
@@ -191,12 +193,14 @@ main_body:
 				return 0, 0, errInvalidSixel
 			}
 			n, _ := strconv.Atoi(m)
-			wi += n - 1
+			w_line += n - 1
 		default:
+			// other cases:
+			//   c == '#' (change color)
 		}
 	}
 	if s[len(s)-3] != '-' {
-		w = max(w, wi)
+		w = max(w, w_line)
 		h++ // add newline on last row
 	}
 	return w, h * 6, nil
