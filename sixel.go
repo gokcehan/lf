@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"log"
 	"regexp"
@@ -16,7 +17,8 @@ const (
 )
 
 var (
-	gSixelFiller = '\u2800'
+	errInvalidSixel = errors.New("invalid sixel sequence")
+	gSixelFiller    = '\u2800'
 )
 
 type sixel struct {
@@ -87,13 +89,15 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 				textbefore := text[:a]
 				s := text[a : a+b+len(gSixelTerminate)]
 				textafter := text[a+b+len(gSixelTerminate):]
-				wpx, hpx := sixelDimPx(s)
+				wpx, hpx, err := sixelDimPx(s)
 
-				if wpx >= 0 || hpx >= 0 {
+				if err == nil {
 					xc := runeSliceWidth([]rune(textbefore)) + 2
 					yc := linenr
 					maxh := (win.h - yc) * sxScreen.fonth
-					s, hpx = trimSixelHeight(s, maxh)
+
+					// any syntax error should already be caught by sixelDimPx
+					s, hpx, _ = trimSixelHeight(s, maxh)
 					_, hc := sxScreen.pxToCells(wpx, hpx)
 
 					lines = append(lines, textbefore)
@@ -115,7 +119,7 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 }
 
 // needs some testing
-func sixelDimPx(s string) (w int, h int) {
+func sixelDimPx(s string) (w int, h int, err error) {
 	// TODO maybe take into account pixel aspect ratio
 
 	// General sixel sequence:
@@ -128,7 +132,7 @@ func sixelDimPx(s string) (w int, h int) {
 	i := strings.Index(s, "q") + 1
 	if i == 0 {
 		// syntax error
-		return -1, -1
+		return 0, 0, errInvalidSixel
 	}
 
 	// Start of (optional) Raster Attributes
@@ -159,7 +163,7 @@ func sixelDimPx(s string) (w int, h int) {
 		// TODO
 		// ph and pv are more like suggestions, it's still possible to go over the
 		// reported size, so we might need to parse the entire main body anyway
-		return ph, pv
+		return ph, pv, nil
 	}
 
 main_body:
@@ -180,11 +184,11 @@ main_body:
 			m := reNumber.FindString(s[i+1:])
 			if m == "" {
 				// syntax error
-				return -1, -1
+				return 0, 0, errInvalidSixel
 			}
 			if s[i+1+len(m)] < '?' || s[i+1+len(m)] > '~' {
 				// syntax error
-				return -1, -1
+				return 0, 0, errInvalidSixel
 			}
 			n, _ := strconv.Atoi(m)
 			wi += n - 1
@@ -195,18 +199,18 @@ main_body:
 		w = max(w, wi)
 		h++ // add newline on last row
 	}
-	return w, h * 6
+	return w, h * 6, nil
 }
 
 // maybe merge with sixelDimPx()
-func trimSixelHeight(s string, maxh int) (string, int) {
+func trimSixelHeight(s string, maxh int) (seq string, trimmedHeight int, err error) {
 	var h int
 	maxh = maxh - (maxh % 6)
 
 	i := strings.Index(s, "q") + 1
 	if i == 0 {
 		// syntax error
-		return "", -1
+		return "", -1, errInvalidSixel
 	}
 
 	if s[i] == '"' {
@@ -241,12 +245,12 @@ func trimSixelHeight(s string, maxh int) (string, int) {
 	}
 
 	if i == 0 {
-		return s, 6
+		return s, 6, nil
 	}
 
 	if len(s) > i+3 {
-		return s[:i+1] + "\x1b\\", h
+		return s[:i+1] + "\x1b\\", h, nil
 	}
 
-	return s, h
+	return s, h, nil
 }
