@@ -23,7 +23,7 @@ var (
 
 type sixel struct {
 	x, y, wPx, hPx int
-	str            string
+	data           string
 }
 
 type sixelScreen struct {
@@ -72,7 +72,7 @@ func (sxs *sixelScreen) showSixels() {
 	buf.WriteString("\0337")
 	for _, sixel := range sxs.sx {
 		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
-		buf.WriteString(sixel.str)
+		buf.WriteString(sixel.data)
 	}
 	buf.WriteString("\0338")
 	fmt.Print(buf.String())
@@ -86,22 +86,22 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 	if a := strings.Index(text, gSixelBegin); a >= 0 {
 		if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
 			textbefore := text[:a]
-			s := text[a : a+b+len(gSixelTerminate)]
+			data := text[a : a+b+len(gSixelTerminate)]
 			textafter := text[a+b+len(gSixelTerminate):]
-			wpx, hpx, err := sixelDimPx(s)
+			wpx, hpx, err := sixelDimPx(data)
 
 			if err == nil {
 				xc := runeSliceWidth([]rune(textbefore)) + 2
 				yc := linenr
 				maxh := (win.h - yc) * sxScreen.fonth
 
-				// any syntax error should already be caught by sixelDimPx
-				s, hpx, _ = trimSixelHeight(s, maxh)
+				// any syntax error should already be caught by sixelDimPx, error is safe to discard
+				data, hpx, _ = trimSixelHeight(data, maxh)
 				_, hc := sxScreen.pxToCells(wpx, hpx)
 
 				lines = append(lines, textbefore)
 
-				sixels = append(sixels, sixel{xc, yc, wpx, hpx, s})
+				sixels = append(sixels, sixel{xc, yc, wpx, hpx, data})
 				for j := 1; j < hc; j++ {
 					lines = append(lines, "")
 				}
@@ -118,7 +118,7 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 }
 
 // needs some testing
-func sixelDimPx(s string) (w int, h int, err error) {
+func sixelDimPx(data string) (w int, h int, err error) {
 	// TODO maybe take into account pixel aspect ratio
 
 	// General sixel sequence:
@@ -130,7 +130,7 @@ func sixelDimPx(s string) (w int, h int, err error) {
 	// ST is the terminating string "ESC \"
 	//
 	// https://vt100.net/docs/vt3xx-gp/chapter14.html
-	i := strings.Index(s, "q") + 1
+	i := strings.Index(data, "q") + 1
 	if i == 0 {
 		// syntax error
 		return 0, 0, errInvalidSixel
@@ -140,21 +140,21 @@ func sixelDimPx(s string) (w int, h int, err error) {
 	//    "	Pan	;	Pad;	Ph;	Pv
 	// pixel aspect ratio = Pan/Pad
 	// We are only interested in Ph and Pv (horizontal and vertical size in px)
-	if s[i] == '"' {
+	if data[i] == '"' {
 		i++
-		b := strings.Index(s[i:], ";")
+		b := strings.Index(data[i:], ";")
 		// pan := strconv.Atoi(s[a:b])
 		i += b + 1
-		b = strings.Index(s[i:], ";")
+		b = strings.Index(data[i:], ";")
 		// pad := strconv.Atoi(s[a:b])
 
 		i += b + 1
-		b = strings.Index(s[i:], ";")
-		ph, err1 := strconv.Atoi(s[i : i+b])
+		b = strings.Index(data[i:], ";")
+		ph, err1 := strconv.Atoi(data[i : i+b])
 
 		i += b + 1
-		b = strings.Index(s[i:], "#")
-		pv, err2 := strconv.Atoi(s[i : i+b])
+		b = strings.Index(data[i:], "#")
+		pv, err2 := strconv.Atoi(data[i : i+b])
 		i += b
 
 		if err1 != nil || err2 != nil {
@@ -169,8 +169,8 @@ func sixelDimPx(s string) (w int, h int, err error) {
 
 main_body:
 	var w_line int
-	for ; i < len(s)-2; i++ {
-		c := s[i]
+	for ; i < len(data)-2; i++ {
+		c := data[i]
 		switch {
 		case '?' <= c && c <= '~': // data char
 			w_line++
@@ -182,12 +182,12 @@ main_body:
 			w = max(w, w_line)
 			w_line = 0
 		case c == '!': // Repeat Introducer
-			m := reNumber.FindString(s[i+1:])
+			m := reNumber.FindString(data[i+1:])
 			if m == "" {
 				// syntax error
 				return 0, 0, errInvalidSixel
 			}
-			if s[i+1+len(m)] < '?' || s[i+1+len(m)] > '~' {
+			if data[i+1+len(m)] < '?' || data[i+1+len(m)] > '~' {
 				// syntax error
 				return 0, 0, errInvalidSixel
 			}
@@ -198,7 +198,7 @@ main_body:
 			//   c == '#' (change color)
 		}
 	}
-	if s[len(s)-3] != '-' {
+	if data[len(data)-3] != '-' {
 		w = max(w, w_line)
 		h++ // add newline on last row
 	}
@@ -206,28 +206,28 @@ main_body:
 }
 
 // maybe merge with sixelDimPx()
-func trimSixelHeight(s string, maxh int) (seq string, trimmedHeight int, err error) {
+func trimSixelHeight(data string, maxh int) (res string, trimmedHeight int, err error) {
 	var h int
 	maxh = maxh - (maxh % 6)
 
-	i := strings.Index(s, "q") + 1
+	i := strings.Index(data, "q") + 1
 	if i == 0 {
 		// syntax error
 		return "", -1, errInvalidSixel
 	}
 
-	if s[i] == '"' {
+	if data[i] == '"' {
 		i++
 		for j := 0; j < 3; j++ {
-			b := strings.Index(s[i:], ";")
+			b := strings.Index(data[i:], ";")
 			i += b + 1
 		}
-		b := strings.Index(s[i:], "#")
-		pv, err := strconv.Atoi(s[i : i+b])
+		b := strings.Index(data[i:], "#")
+		pv, err := strconv.Atoi(data[i : i+b])
 
 		if err == nil && pv > maxh {
 			mh := strconv.Itoa(maxh)
-			s = s[:i] + mh + s[i+b:]
+			data = data[:i] + mh + data[i+b:]
 			i += len(mh)
 		} else {
 			i += b
@@ -235,11 +235,11 @@ func trimSixelHeight(s string, maxh int) (seq string, trimmedHeight int, err err
 	}
 
 	for h < maxh {
-		k := strings.IndexRune(s[i+1:], '-')
+		k := strings.IndexRune(data[i+1:], '-')
 		if k == -1 {
-			if s[len(s)-3] != '-' {
+			if data[len(data)-3] != '-' {
 				h += 6
-				i = len(s) - 3
+				i = len(data) - 3
 			}
 			break
 		}
@@ -248,12 +248,12 @@ func trimSixelHeight(s string, maxh int) (seq string, trimmedHeight int, err err
 	}
 
 	if i == 0 {
-		return s, 6, nil
+		return data, 6, nil
 	}
 
-	if len(s) > i+3 {
-		return s[:i+1] + "\x1b\\", h, nil
+	if len(data) > i+3 {
+		return data[:i+1] + "\x1b\\", h, nil
 	}
 
-	return s, h, nil
+	return data, h, nil
 }
