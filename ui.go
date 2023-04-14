@@ -275,7 +275,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		st = win.print(screen, 2, i, st, l)
 	}
 
-	fill := sxs.fillerStyle()
+	fill := sxs.fillerStyle(reg.path)
 	for _, sx := range reg.sixels {
 		wc, hc := sxs.pxToCells(sx.wPx, sx.hPx)
 
@@ -1052,6 +1052,7 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.screen.Show()
 	if ui.menuBuf == nil && ui.cmdPrefix == "" && len(ui.sxScreen.sx) > 0 {
+		ui.sxScreen.lastFile = ui.regPrev.path
 		ui.sxScreen.showSixels()
 	}
 

@@ -31,6 +31,7 @@ type sixelScreen struct {
 	fontw, fonth int
 	sx           []sixel
 	altFill      bool
+	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
 }
 
 func (sxs *sixelScreen) clear() {
@@ -39,7 +40,11 @@ func (sxs *sixelScreen) clear() {
 
 // fillers are used to control when tcell redraws the region where a sixel image is drawn.
 // alternating between bold and regular is to clear the image before drawing a new one.
-func (sxs *sixelScreen) fillerStyle() tcell.Style {
+func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
+	if sxs.lastFile != filePath {
+		sxs.altFill = !sxs.altFill
+	}
+
 	if sxs.altFill {
 		return tcell.StyleDefault.Bold(true)
 	}
@@ -76,8 +81,6 @@ func (sxs *sixelScreen) showSixels() {
 	}
 	buf.WriteString("\0338")
 	fmt.Print(buf.String())
-	sxs.altFill = !sxs.altFill
-
 }
 
 var reNumber = regexp.MustCompile(`^[0-9]+`)
