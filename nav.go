@@ -21,7 +21,7 @@ import (
 type linkState byte
 
 const (
-	gPreviewerMaxLineSize int = 1048576 // 1 MB
+	gPreviewerMaxLineSize int = 2097152 // 2 MB
 )
 
 const (
