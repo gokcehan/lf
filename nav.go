@@ -718,7 +718,6 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			win := ui.wins[len(ui.wins)-1]
 			nav.preview(path, &ui.sxScreen, win)
 			prev = path
 		}
