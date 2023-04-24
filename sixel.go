@@ -109,7 +109,7 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 					lines = append(lines, "")
 				}
 
-				linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr, fpath, win, sxScreen)
+				linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr+len(lines), fpath, win, sxScreen)
 				lines = append(lines, linesAfter...)
 				sixels = append(sixels, sixelsAfter...)
 				return lines, sixels
