@@ -936,7 +936,9 @@ func (ui *ui) draw(nav *nav) {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
-
+	
+        //reload the possibly changed file information before creating the prompt
+	ui.loadFileInfo(nav)
 	ui.drawPromptLine(nav)
 
 	wins := len(ui.wins)
