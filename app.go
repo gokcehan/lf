@@ -565,7 +565,6 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 	if err := app.nav.reload(); err != nil {
 		app.ui.echoerrf("reload: %s", err)
 	}
-	app.ui.loadFile(app, true)
 
 	switch prefix {
 	case "!":
