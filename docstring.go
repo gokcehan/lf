@@ -188,6 +188,7 @@ The following environment variables are exported for shell commands:
     EDITOR
     PAGER
     SHELL
+    lf
     lf_{option}
     lf_user_{option}
     lf_width
