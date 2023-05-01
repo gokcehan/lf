@@ -38,8 +38,6 @@ func (sxs *sixelScreen) clear() {
 	sxs.sx = nil
 }
 
-// fillers are used to control when tcell redraws the region where a sixel image is drawn.
-// alternating between bold and regular is to clear the image before drawing a new one.
 func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
 	if sxs.lastFile != filePath {
 		sxs.altFill = !sxs.altFill
@@ -81,6 +79,24 @@ func (sxs *sixelScreen) showSixels() {
 	}
 	buf.WriteString("\0338")
 	fmt.Print(buf.String())
+}
+
+// fillers are used to control when tcell redraws the region where a sixel image is drawn.
+// alternating between bold and regular is to clear the image before drawing a new one.
+func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
+	fillStyle := sxs.fillerStyle(reg.path)
+	for _, sx := range reg.sixels {
+		wc, hc := sxs.pxToCells(sx.wPx, sx.hPx)
+
+		for y := sx.y; y < sx.y+hc; y++ {
+			win.print(screen, sx.x, y, fillStyle, strings.Repeat(string(gSixelFiller), min(wc, win.w-sx.x+2)))
+		}
+
+		s := sx
+		s.x += win.x
+		s.y += win.y
+		sxs.sx = append(sxs.sx, s)
+	}
 }
 
 var reNumber = regexp.MustCompile(`^[0-9]+`)

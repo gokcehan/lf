@@ -275,19 +275,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		st = win.print(screen, 2, i, st, l)
 	}
 
-	fill := sxs.fillerStyle(reg.path)
-	for _, sx := range reg.sixels {
-		wc, hc := sxs.pxToCells(sx.wPx, sx.hPx)
-
-		for y := sx.y; y < sx.y+hc; y++ {
-			win.print(screen, sx.x, y, fill, strings.Repeat(string(gSixelFiller), min(wc, win.w-sx.x+2)))
-		}
-
-		s := sx
-		s.x += win.x
-		s.y += win.y
-		sxs.sx = append(sxs.sx, s)
-	}
+	sxs.printFiller(win, screen, reg)
 }
 
 var gThisYear = time.Now().Year()
