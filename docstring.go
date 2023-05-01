@@ -982,7 +982,8 @@ List of shell options to pass to the shell executable.
 
     sixel          bool      (default false)
 
-Render sixel images in preview
+Render sixel images in preview. Only available on Unix systems, and requires a
+terminal with sixel support.
 
     smartcase      bool      (default true)
 
