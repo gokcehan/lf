@@ -179,6 +179,9 @@ var (
 		"reverse!",
 		"ruler",
 		"preserve",
+		"sixel",
+		"nosixel",
+		"sixel!",
 		"smartcase",
 		"nosmartcase",
 		"smartcase!",
@@ -220,9 +223,6 @@ var (
 		"infotimefmtold",
 		"truncatechar",
 		"truncatepct",
-		"sixel",
-		"nosixel",
-		"sixel!",
 	}
 )
 
