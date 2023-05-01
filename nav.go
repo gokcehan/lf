@@ -853,7 +853,7 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	buf := bufio.NewScanner(reader)
 	buf.Buffer(make([]byte, 0), gPreviewerMaxLineSize)
 
-	for i := 0; len(reg.lines) < win.h && buf.Scan(); i++ {
+	for len(reg.lines) < win.h && buf.Scan() {
 		text := buf.Text()
 		for _, r := range text {
 			if r == 0 {
