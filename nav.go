@@ -1542,7 +1542,7 @@ func (nav *nav) sel(path string) error {
 
 	base := filepath.Base(path)
 
-	last := nav.dirs[len(nav.dirs)-1]
+	last := nav.currDir()
 
 	if last.loading {
 		last.files = append(last.files, &file{FileInfo: lstat})
