@@ -486,7 +486,9 @@ func (nav *nav) getDirs(wd string) {
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
 		dir := nav.loadDir(curr)
-		dir.sel(base, nav.height)
+		if base != "" {
+			dir.sel(base, nav.height)
+		}
 		dirs = append(dirs, dir)
 	}
 
@@ -1546,7 +1548,12 @@ func (nav *nav) sel(path string) error {
 		last.files = append(last.files, &file{FileInfo: lstat})
 	}
 
-	last.sel(base, nav.height)
+	for i, f := range last.files {
+		if f.Name() == base {
+			nav.move(i)
+			break
+		}
+	}
 
 	return nil
 }
