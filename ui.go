@@ -840,10 +840,6 @@ func (ui *ui) drawStatLine(nav *nav) {
 		selection = append(selection, fmt.Sprintf("\033[35;7m %d \033[0m", len(currSelections)))
 	}
 
-	if len(dir.filter) != 0 {
-		selection = append(selection, "\033[34;7m F \033[0m")
-	}
-
 	progress := []string{}
 
 	if nav.copyTotal > 0 {
@@ -873,6 +869,10 @@ func (ui *ui) drawStatLine(nav *nav) {
 			ruler = append(ruler, progress...)
 		case "selection":
 			ruler = append(ruler, selection...)
+		case "filter":
+			if len(dir.filter) != 0 {
+				ruler = append(ruler, "\033[34;7m F \033[0m")
+			}
 		case "ind":
 			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
 		}
