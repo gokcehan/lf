@@ -1056,6 +1056,29 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 	return b
 }
 
+func listJumps(jumps []string, ind int) *bytes.Buffer {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	maxlength := len(strconv.Itoa(max(ind, len(jumps)-1-ind)))
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "  jump\tpath")
+	for i, path := range jumps {
+		switch {
+		case i < ind:
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
+		case i > ind:
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, path)
+		default:
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, path)
+		}
+	}
+	t.Flush()
+
+	return b
+}
+
 func listMarks(marks map[string]string) *bytes.Buffer {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)

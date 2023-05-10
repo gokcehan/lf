@@ -29,6 +29,7 @@ var (
 		"open",
 		"jump-next",
 		"jump-prev",
+		"jumps",
 		"top",
 		"bottom",
 		"high",
