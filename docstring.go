@@ -644,8 +644,10 @@ List all key mappings in normal mode or command-line editing mode.
 
     jumps
 
-List the contents of the jump list. A '>' is used to mark the current location
-in the jump list.
+List the contents of the jump list. Each location is marked with the count that
+can be used with the 'jump-prev' and 'jump-next' commands (e.g. use '3[' to move
+three spaces backwards in the jump list). A '>' is used to mark the current
+location in the jump list.
 
 # Options
 
