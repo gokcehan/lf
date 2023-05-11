@@ -1064,14 +1064,15 @@ func listJumps(jumps []string, ind int) *bytes.Buffer {
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "  jump\tpath")
-	for i, path := range jumps {
+	// print jumps in order of most recent, Vim uses the opposite order
+	for i := len(jumps) - 1; i >= 0; i-- {
 		switch {
 		case i < ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
 		case i > ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, path)
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
 		default:
-			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, path)
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
 		}
 	}
 	t.Flush()
