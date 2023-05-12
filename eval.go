@@ -1447,7 +1447,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		var moved bool
-		if e.count == 0 {
+		if e.count == 1 {
 			moved = app.nav.top()
 		} else {
 			moved = app.nav.move(e.count - 1)
@@ -1461,7 +1461,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		var moved bool
-		if e.count == 0 {
+		if e.count == 1 {
 			moved = app.nav.bottom()
 		} else {
 			moved = app.nav.move(e.count - 1)
