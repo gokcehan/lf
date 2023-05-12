@@ -228,7 +228,11 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 
-			result = &callExpr{name, args, 1}
+			count := 1
+			if name == "top" || name == "bottom" {
+				count = 0
+			}
+			result = &callExpr{name, args, count}
 		}
 	case tokenColon:
 		s.scan()
