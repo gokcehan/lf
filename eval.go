@@ -2502,20 +2502,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = acc
 		update(app)
 	case "maps":
-		cleanUp := app.runShell(envPager, nil, "$|")
-		io.Copy(app.cmdIn, listBinds(gOpts.keys))
-		app.cmdIn.Close()
-		cleanUp()
+		app.runPagerOnText(listBinds(gOpts.keys))
 	case "cmaps":
-		cleanUp := app.runShell(envPager, nil, "$|")
-		io.Copy(app.cmdIn, listBinds(gOpts.cmdkeys))
-		app.cmdIn.Close()
-		cleanUp()
+		app.runPagerOnText(listBinds(gOpts.cmdkeys))
 	case "jumps":
-		cleanUp := app.runShell(envPager, nil, "$|")
-		io.Copy(app.cmdIn, listJumps(app.nav.jumpList, app.nav.jumpListInd))
-		app.cmdIn.Close()
-		cleanUp()
+		app.runPagerOnText(listJumps(app.nav.jumpList, app.nav.jumpListInd))
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
