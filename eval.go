@@ -1462,6 +1462,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		var moved bool
 		if e.count == 1 {
+			// Different from Vim, which would treat a count of 1 as meaning to
+			// move to the first line (i.e. the top)
 			moved = app.nav.bottom()
 		} else {
 			moved = app.nav.move(e.count - 1)
