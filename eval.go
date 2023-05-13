@@ -490,9 +490,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "df", "acc", "progress", "selection", "ind":
+			case "df", "acc", "progress", "selection", "filter", "ind":
 			default:
-				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', or 'ind' separated with colon")
+				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter' or 'ind' separated with colon")
 				return
 			}
 		}

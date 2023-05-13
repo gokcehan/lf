@@ -152,7 +152,7 @@ The following options can be used to customize the behavior of lf:
 	ratios           []int     (default '1:2:3')
 	relativenumber   bool      (default false)
 	reverse          bool      (default false)
-	ruler            []string  (default 'acc:progress:selection:ind')
+	ruler            []string  (default 'acc:progress:selection:filter:ind')
 	scrolloff        int       (default 0)
 	selmode          string    (default 'all')
 	shell            string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -819,10 +819,16 @@ When 'number' is enabled, current line shows the absolute position, otherwise no
 
 Reverse the direction of sort.
 
-	ruler          []string  (default 'acc:progress:selection:ind')
+	ruler          []string  (default 'acc:progress:selection:filter:ind')
 
 List of information shown in status line ruler.
 Currently supported information types are 'acc', 'progress', 'selection', 'ind' and 'df'.
+`acc` shows the pressed keys (e.g. for bindings with multiple key presses or counts given to bindings).
+`progress` shows the progress of file operations (e.g. copying a large directory).
+`selection` shows the number of files that are selected, or designated for being cut/copied.
+`filter` shows 'F' if a filter is currently being applied.
+`ind` shows the current position of the cursor as well as the number of files in the current directory.
+`df` shows the amount of free disk space remaining.
 
 	selmode        string    (default 'all')
 
