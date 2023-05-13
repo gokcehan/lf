@@ -116,12 +116,12 @@ func fieldToString(field reflect.Value) string {
 }
 
 func exportOpts() {
-	e := reflect.ValueOf(&gOpts).Elem()
+	v := reflect.ValueOf(gOpts)
+	t := v.Type()
 
-	for i := 0; i < e.NumField(); i++ {
-		// Get name and prefix it with lf_
-		name := e.Type().Field(i).Name
-		name = fmt.Sprintf("lf_%s", name)
+	for i := 0; i < v.NumField(); i++ {
+		// Get field name and prefix it with lf_
+		name := "lf_" + t.Field(i).Name
 
 		// Skip maps
 		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" {
@@ -165,9 +165,8 @@ func exportOpts() {
 				os.Setenv(name+"_"+key, value)
 			}
 		} else {
-			field := e.Field(i)
+			field := v.Field(i)
 			value := fieldToString(field)
-
 			os.Setenv(name, value)
 		}
 	}
