@@ -163,10 +163,10 @@ func init() {
 	gOpts.keys["l"] = &callExpr{"open", nil, 1}
 	gOpts.keys["<right>"] = &callExpr{"open", nil, 1}
 	gOpts.keys["q"] = &callExpr{"quit", nil, 1}
-	gOpts.keys["gg"] = &callExpr{"top", nil, 0}
-	gOpts.keys["<home>"] = &callExpr{"top", nil, 0}
-	gOpts.keys["G"] = &callExpr{"bottom", nil, 0}
-	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 0}
+	gOpts.keys["gg"] = &callExpr{"top", nil, 1}
+	gOpts.keys["<home>"] = &callExpr{"top", nil, 1}
+	gOpts.keys["G"] = &callExpr{"bottom", nil, 1}
+	gOpts.keys["<end>"] = &callExpr{"bottom", nil, 1}
 	gOpts.keys["H"] = &callExpr{"high", nil, 1}
 	gOpts.keys["M"] = &callExpr{"middle", nil, 1}
 	gOpts.keys["L"] = &callExpr{"low", nil, 1}
