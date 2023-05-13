@@ -474,6 +474,31 @@ func (app *app) loop() {
 	}
 }
 
+func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
+	app.nav.previewChan <- ""
+	app.nav.dirPreviewChan <- nil
+
+	if err := app.ui.suspend(); err != nil {
+		log.Printf("suspend: %s", err)
+	}
+	defer func() {
+		if err := app.ui.resume(); err != nil {
+			app.quit()
+			os.Exit(3)
+		}
+	}()
+
+	if err := cmd.Run(); err != nil {
+		app.ui.echoerrf("running shell: %s", err)
+	}
+	if pause_after {
+		anyKey()
+	}
+
+	app.ui.loadFile(app, true)
+	app.nav.renew()
+}
+
 // This function is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -496,22 +521,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		app.nav.previewChan <- ""
-		app.nav.dirPreviewChan <- nil
+		app.runCmdSync(cmd, prefix == "!")
+		return
+	}
 
-		if err := app.ui.suspend(); err != nil {
-			log.Printf("suspend: %s", err)
-		}
-		defer func() {
-			if err := app.ui.resume(); err != nil {
-				app.quit()
-				os.Exit(3)
-				return
-			}
-		}()
-		defer app.nav.renew()
-
-		err = cmd.Run()
+	// We are running the command asynchroniously
+	switch prefix {
 	case "%":
 		shellSetPG(cmd)
 		if app.ui.cmdPrefix == ">" {
@@ -536,11 +551,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	if err != nil {
 		app.ui.echoerrf("running shell: %s", err)
-	}
-
-	switch prefix {
-	case "!":
-		anyKey()
 	}
 
 	// Asynchronous shell invocations return immediately without waiting for the
@@ -608,32 +618,14 @@ func (app *app) runPagerOnText(text io.Reader) {
 
 	stdin, err := cmd.StdinPipe()
 	if err != nil {
-		app.ui.echoerrf("writing stdin: %s", err)
+		app.ui.echoerrf("obtaining stdin pipe: %s", err)
 		return
 	}
 
-	app.nav.previewChan <- ""
-	app.nav.dirPreviewChan <- nil
-
-	if err := app.ui.suspend(); err != nil {
-		log.Printf("suspend: %s", err)
-	}
-
-	err = cmd.Start()
-	if err != nil {
-		app.ui.echoerrf("running shell: %s", err)
+	go func() {
+		io.Copy(stdin, text)
 		stdin.Close()
-		return
-	}
-	io.Copy(stdin, text)
-	stdin.Close()
+	}()
 
-	if err := cmd.Wait(); err != nil {
-		log.Printf("running shell: %s", err)
-	}
-	app.nav.renew()
-	if err := app.ui.resume(); err != nil {
-		app.quit()
-		os.Exit(3)
-	}
+	app.runCmdSync(cmd, false)
 }
