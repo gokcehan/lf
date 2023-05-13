@@ -526,9 +526,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	// We are running the command asynchroniously
-	switch prefix {
-	case "%":
-		shellSetPG(cmd)
+	if prefix == "%" {
+		shellSetPG(cmd) // TODO: Delete or document the reason to do this twice for % mode
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
@@ -543,13 +542,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
-		fallthrough
-	case "&":
-		shellSetPG(cmd)
-		err = cmd.Start()
 	}
 
-	if err != nil {
+	shellSetPG(cmd)
+	if err = cmd.Start(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
 
