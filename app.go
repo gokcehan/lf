@@ -527,7 +527,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	// We are running the command asynchroniously
 	if prefix == "%" {
-		shellSetPG(cmd) // TODO: Delete or document the reason to do this twice for % mode
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
