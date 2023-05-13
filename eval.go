@@ -2509,6 +2509,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		io.Copy(app.cmdIn, listBinds(gOpts.cmdkeys))
 		app.cmdIn.Close()
 		cleanUp()
+	case "jumps":
+		cleanUp := app.runShell(envPager, nil, "$|")
+		io.Copy(app.cmdIn, listJumps(app.nav.jumpList, app.nav.jumpListInd))
+		app.cmdIn.Close()
+		cleanUp()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

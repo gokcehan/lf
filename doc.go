@@ -81,6 +81,7 @@ The following commands are provided by lf:
 	tag-toggle               (default 't')
 	maps
 	cmaps
+	jumps
 
 The following command line commands are provided by lf:
 
@@ -612,6 +613,12 @@ Capitalize/uppercase/lowercase the current word and jump to the next word.
 	cmaps
 
 List all key mappings in normal mode or command-line editing mode.
+
+	jumps
+
+List the contents of the jump list, in order of the most recently visited locations.
+Each location is marked with the count that can be used with the `jump-prev` and `jump-next` commands (e.g. use `3[` to move three spaces backwards in the jump list).
+A '>' is used to mark the current location in the jump list.
 
 # Options
 
