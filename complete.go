@@ -334,7 +334,7 @@ func matchFile(s string) (matches []string, longest []rune) {
 		if isRoot(s) || filepath.Base(s) != s {
 			name = filepath.Join(filepath.Dir(unescape(s)), f.Name())
 		}
-		name = escape(name)
+		name = escape(replaceTilde(name))
 
 		item := f.Name()
 		if f.Mode().IsDir() {

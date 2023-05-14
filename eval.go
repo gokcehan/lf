@@ -945,6 +945,11 @@ func doComplete(app *app) (matches []string) {
 
 func menuComplete(app *app, dir int) {
 	if !app.menuCompActive {
+		toks := tokenize(string(app.ui.cmdAccLeft))
+		for i, tok := range toks {
+			toks[i] = replaceTilde(tok)
+		}
+		app.ui.cmdAccLeft = []rune(strings.Join(toks, " "))
 		app.ui.cmdTmp = app.ui.cmdAccLeft
 		app.menuComps = doComplete(app)
 		if len(app.menuComps) > 1 {
