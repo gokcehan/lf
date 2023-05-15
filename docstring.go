@@ -1224,6 +1224,10 @@ the alt key are prefixed with 'a' character:
 
     map <a-a> down
 
+It is possible to combine special keys with modifiers:
+
+    map <a-enter> down
+
 Please note that, some key combinations are not possible due to the way
 terminals work (e.g. control and h combination sends a backspace key instead).
 The easiest way to find the name of a key combination is to press the key while
