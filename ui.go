@@ -1341,6 +1341,15 @@ func readCmdEvent(ev tcell.Event) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
+			if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
+				val = val[:1] + "c-" + val[1:]
+			}
+			if tev.Modifiers() == tcell.ModShift {
+				val = val[:1] + "s-" + val[1:]
+			}
+			if tev.Modifiers() == tcell.ModAlt {
+				val = val[:1] + "a-" + val[1:]
+			}
 			if expr, ok := gOpts.cmdkeys[val]; ok {
 				return expr
 			}
