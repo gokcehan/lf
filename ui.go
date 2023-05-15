@@ -1187,14 +1187,14 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				if tev.Modifiers() == tcell.ModAlt {
 					val = val[:1] + "a-" + val[1:]
 				}
-				if val == "<esc>" && string(ui.keyAcc) != "" {
-					ui.keyAcc = nil
-					ui.keyCount = nil
-					ui.menuBuf = nil
-					return draw
-				}
-				ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 			}
+			if val == "<esc>" && string(ui.keyAcc) != "" {
+				ui.keyAcc = nil
+				ui.keyCount = nil
+				ui.menuBuf = nil
+				return draw
+			}
+			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 		}
 
 		if len(ui.keyAcc) == 0 {
@@ -1355,14 +1355,16 @@ func readCmdEvent(ev tcell.Event) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
-			if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
-				val = val[:1] + "c-" + val[1:]
-			}
-			if tev.Modifiers() == tcell.ModShift {
-				val = val[:1] + "s-" + val[1:]
-			}
-			if tev.Modifiers() == tcell.ModAlt {
-				val = val[:1] + "a-" + val[1:]
+			if len(val) > 0 && val[0] == '<' {
+				if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
+					val = val[:1] + "c-" + val[1:]
+				}
+				if tev.Modifiers() == tcell.ModShift {
+					val = val[:1] + "s-" + val[1:]
+				}
+				if tev.Modifiers() == tcell.ModAlt {
+					val = val[:1] + "a-" + val[1:]
+				}
 			}
 			if expr, ok := gOpts.cmdkeys[val]; ok {
 				return expr
