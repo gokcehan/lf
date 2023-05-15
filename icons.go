@@ -107,6 +107,8 @@ func (im iconMap) get(f *file) string {
 		if val, ok := im[f.Name()+"/"]; ok {
 			return val
 		}
+	} else if val, ok := im[f.Name()]; ok {
+		return val
 	}
 
 	var key string
