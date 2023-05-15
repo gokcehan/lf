@@ -1177,12 +1177,6 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
-			if val == "<esc>" && string(ui.keyAcc) != "" {
-				ui.keyAcc = nil
-				ui.keyCount = nil
-				ui.menuBuf = nil
-				return draw
-			}
 			if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
 				val = val[:1] + "c-" + val[1:]
 			}
@@ -1191,6 +1185,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			}
 			if tev.Modifiers() == tcell.ModAlt {
 				val = val[:1] + "a-" + val[1:]
+			}
+			if val == "<esc>" && string(ui.keyAcc) != "" {
+				ui.keyAcc = nil
+				ui.keyCount = nil
+				ui.menuBuf = nil
+				return draw
 			}
 			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
 		}
