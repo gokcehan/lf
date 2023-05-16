@@ -120,6 +120,7 @@ The following options can be used to customize the behavior of lf:
 
     anchorfind       bool      (default true)
     autoquit         bool      (default false)
+    borderfmt        string    (default "\033[0m")
     cleaner          string    (default '')
     cursoractivefmt  string    (default "\033[7m")
     cursorparentfmt  string    (default "\033[7m")
@@ -663,6 +664,10 @@ beginning of file names, otherwise, it can match at an arbitrary position.
     autoquit       bool      (default false)
 
 Automatically quit server when there are no clients left connected.
+
+    borderfmt      string    (default "\033[0m")
+
+Format string of the box drawing characters enabled by the 'drawbox' option.
 
     cleaner        string    (default '') (not called if empty)
 
