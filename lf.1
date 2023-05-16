@@ -329,10 +329,16 @@ History file should be located at:
 You can configure the default values of following variables to change these locations:
 .PP
 .EX
-    $XDG_CONFIG_HOME  ~/.config
-    $XDG_DATA_HOME    ~/.local/share
-    %ProgramData%     C:\eProgramData
-    %LOCALAPPDATA%    C:\eUsers\e<user>\eAppData\eLocal
+    Unix
+        $XDG_CONFIG_HOME  ~/.config
+        $XDG_DATA_HOME    ~/.local/share
+.EE
+.PP
+.EX
+    Windows
+        %ProgramData%     C:\eProgramData
+        %LOCALAPPDATA%    C:\eUsers\e<user>\eAppData\eLocal
+        %LF_CONFIG_HOME%  If set, use this value instead of %LOCALAPPDATA%
 .EE
 .PP
 A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
