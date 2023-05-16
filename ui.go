@@ -1150,6 +1150,21 @@ func (ui *ui) pollEvent() tcell.Event {
 	}
 }
 
+func addSpecialKeyModifier(val string, mod tcell.ModMask) string {
+	switch {
+	case !strings.HasPrefix(val, "<"):
+		return val
+	case mod == tcell.ModCtrl && !strings.HasPrefix(val, "<c-"):
+		return "<c-" + val[1:]
+	case mod == tcell.ModShift:
+		return "<s-" + val[1:]
+	case mod == tcell.ModAlt:
+		return "<a-" + val[1:]
+	default:
+		return val
+	}
+}
+
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
@@ -1177,17 +1192,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
-			if len(val) > 0 && val[0] == '<' {
-				if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
-					val = val[:1] + "c-" + val[1:]
-				}
-				if tev.Modifiers() == tcell.ModShift {
-					val = val[:1] + "s-" + val[1:]
-				}
-				if tev.Modifiers() == tcell.ModAlt {
-					val = val[:1] + "a-" + val[1:]
-				}
-			}
+			val = addSpecialKeyModifier(val, tev.Modifiers())
 			if val == "<esc>" && string(ui.keyAcc) != "" {
 				ui.keyAcc = nil
 				ui.keyCount = nil
@@ -1355,17 +1360,7 @@ func readCmdEvent(ev tcell.Event) expr {
 			}
 		} else {
 			val := gKeyVal[tev.Key()]
-			if len(val) > 0 && val[0] == '<' {
-				if tev.Modifiers() == tcell.ModCtrl && !strings.HasPrefix(val, "<c-") {
-					val = val[:1] + "c-" + val[1:]
-				}
-				if tev.Modifiers() == tcell.ModShift {
-					val = val[:1] + "s-" + val[1:]
-				}
-				if tev.Modifiers() == tcell.ModAlt {
-					val = val[:1] + "a-" + val[1:]
-				}
-			}
+			val = addSpecialKeyModifier(val, tev.Modifiers())
 			if expr, ok := gOpts.cmdkeys[val]; ok {
 				return expr
 			}
