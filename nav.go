@@ -863,9 +863,11 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 		}
 
 		if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
-			lines, sixels := renderPreviewLine(text, len(reg.lines), path, win, sxScreen)
+			lines, sx := renderPreviewLine(text, len(reg.lines), win, sxScreen)
 			reg.lines = append(reg.lines, lines...)
-			reg.sixels = append(reg.sixels, sixels...)
+			if sx != nil {
+				reg.sixels = append(reg.sixels, *sx)
+			}
 		} else {
 			reg.lines = append(reg.lines, text)
 		}

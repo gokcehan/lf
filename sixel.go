@@ -101,16 +101,14 @@ func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
 
 var reNumber = regexp.MustCompile(`^[0-9]+`)
 
-func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen *sixelScreen) (lines []string, sixels []sixel) {
-	if a := strings.Index(text, gSixelBegin); a >= 0 {
-		if b := strings.Index(text[a:], gSixelTerminate); b >= 0 {
-			textbefore := text[:a]
-			data := text[a : a+b+len(gSixelTerminate)]
-			textafter := text[a+b+len(gSixelTerminate):]
+func renderPreviewLine(text string, linenr int, win *win, sxScreen *sixelScreen) (lines []string, sx *sixel) {
+	if strings.HasPrefix(text, gSixelBegin) {
+		if b := strings.Index(text, gSixelTerminate); b >= 0 {
+			data := text[:b+len(gSixelTerminate)]
 			wpx, hpx, err := sixelDimPx(data)
 
 			if err == nil {
-				xc := runeSliceWidth([]rune(textbefore)) + 2
+				xc := 2
 				yc := linenr
 				maxh := (win.h - yc) * sxScreen.fonth
 
@@ -118,22 +116,16 @@ func renderPreviewLine(text string, linenr int, fpath string, win *win, sxScreen
 				data, hpx, _ = trimSixelHeight(data, maxh)
 				_, hc := sxScreen.pxToCells(wpx, hpx)
 
-				lines = append(lines, textbefore)
-
-				sixels = append(sixels, sixel{xc, yc, wpx, hpx, data})
+				sx = &sixel{xc, yc, wpx, hpx, data}
 				for j := 1; j < hc; j++ {
 					lines = append(lines, "")
 				}
-
-				linesAfter, sixelsAfter := renderPreviewLine(textafter, linenr+len(lines), fpath, win, sxScreen)
-				lines = append(lines, linesAfter...)
-				sixels = append(sixels, sixelsAfter...)
-				return lines, sixels
+				return lines, sx
 			}
 		}
 	}
 
-	return []string{text}, sixels
+	return []string{text}, nil
 }
 
 // needs some testing
