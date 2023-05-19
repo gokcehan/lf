@@ -994,7 +994,7 @@ Reverse the direction of sort.
     ruler          []string  (default 'acc:progress:selection:filter:ind')
 .EE
 .PP
-List of information shown in status line ruler. Currently supported information types are 'acc', 'progress', 'selection', 'ind' and 'df'. `acc` shows the pressed keys (e.g. for bindings with multiple key presses or counts given to bindings). `progress` shows the progress of file operations (e.g. copying a large directory). `selection` shows the number of files that are selected, or designated for being cut/copied. `filter` shows 'F' if a filter is currently being applied. `ind` shows the current position of the cursor as well as the number of files in the current directory. `df` shows the amount of free disk space remaining.
+List of information shown in status line ruler. Currently supported information types are 'acc', 'progress', 'selection', 'filter', 'ind', 'df' and names starting with 'lf_'. `acc` shows the pressed keys (e.g. for bindings with multiple key presses or counts given to bindings). `progress` shows the progress of file operations (e.g. copying a large directory). `selection` shows the number of files that are selected, or designated for being cut/copied. `filter` shows 'F' if a filter is currently being applied. `ind` shows the current position of the cursor as well as the number of files in the current directory. `df` shows the amount of free disk space remaining. Names starting with `lf_` show the value of environment variables exported by lf. This is useful for displaying the current settings (e.g. `lf_selmode` displays the current setting for the `selmode` option).
 .PP
 .EX
     selmode        string    (default 'all')

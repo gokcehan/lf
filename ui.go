@@ -804,6 +804,23 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
+func addStatLineVar(ruler []string, name string) []string {
+	if !strings.HasPrefix(name, "lf_") {
+		return ruler
+	}
+
+	val := os.Getenv(name)
+	if val == "" {
+		return ruler
+	}
+
+	if strings.HasPrefix(name, "lf_user_") {
+		return append(ruler, val)
+	} else {
+		return append(ruler, fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val))
+	}
+}
+
 func (ui *ui) drawStatLine(nav *nav) {
 	st := tcell.StyleDefault
 
@@ -855,6 +872,8 @@ func (ui *ui) drawStatLine(nav *nav) {
 		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
 
+	exportOpts()
+
 	ruler := []string{}
 	for _, s := range gOpts.ruler {
 		switch s {
@@ -875,8 +894,9 @@ func (ui *ui) drawStatLine(nav *nav) {
 			}
 		case "ind":
 			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
+		default:
+			ruler = addStatLineVar(ruler, s)
 		}
-
 	}
 
 	ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
