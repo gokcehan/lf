@@ -1391,18 +1391,18 @@ You can define a an 'open' command (default 'l' and '<right>') to configure file
 This command is only called when the current file is not a directory, otherwise the directory is entered instead.
 You can define it just as you would define any other command:
 
-	cmd open $vi $fx
+	cmd open $vi "$fx"
 
 It is possible to use different command types:
 
-	cmd open &xdg-open $f
+	cmd open &xdg-open "$f"
 
 You may want to use either file extensions or mime types from 'file' command:
 
 	cmd open ${{
-	    case $(file --mime-type -Lb $f) in
-	        text/*) vi $fx;;
-	        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+	    case $(file --mime-type -Lb "$f") in
+	        text/*) vi "$fx";;
+	        *) for f in "$fx"; do xdg-open "$f" > /dev/null 2> /dev/null & done;;
 	    esac
 	}}
 
@@ -1412,9 +1412,9 @@ Regular shell commands (i.e. '$') drop to terminal which results in a flicker fo
 If you want to use asynchronous shell commands (i.e. '&') but also want to use the terminal when necessary (e.g. 'vi' in the above exxample), you can use a remote command:
 
 	cmd open &{{
-	    case $(file --mime-type -Lb $f) in
-	        text/*) lf -remote "send $id \$vi \$fx";;
-	        *) for f in $fx; do xdg-open $f > /dev/null 2> /dev/null & done;;
+	    case $(file --mime-type -Lb "$f") in
+	        text/*) lf -remote "send $id \$vi \"$fx\"";;
+	        *) for f in "$fx"; do xdg-open "$f" > /dev/null 2> /dev/null & done;;
 	    esac
 	}}
 
