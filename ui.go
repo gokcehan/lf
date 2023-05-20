@@ -883,7 +883,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 }
 
 func (ui *ui) drawBox() {
-	st := tcell.StyleDefault
+	st := parseEscapeSequence(gOpts.borderfmt)
 
 	w, h := ui.screen.Size()
 

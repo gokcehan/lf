@@ -81,6 +81,14 @@ func parseStyles() styleMap {
 	return sm
 }
 
+func parseEscapeSequence(s string) tcell.Style {
+	s = strings.TrimPrefix(s, "\033[")
+	if i := strings.IndexByte(s, 'm'); i >= 0 {
+		s = s[:i]
+	}
+	return applyAnsiCodes(s, tcell.StyleDefault)
+}
+
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 

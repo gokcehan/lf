@@ -30,6 +30,7 @@ type sortType struct {
 var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
+	borderfmt        string
 	cursoractivefmt  string
 	cursorparentfmt  string
 	cursorpreviewfmt string
@@ -94,6 +95,7 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
+	gOpts.borderfmt = "\033[0m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"

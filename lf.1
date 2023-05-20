@@ -136,6 +136,7 @@ The following options can be used to customize the behavior of lf:
 .EX
     anchorfind       bool      (default true)
     autoquit         bool      (default false)
+    borderfmt        string    (default "\e033[0m")
     cleaner          string    (default '')
     cursoractivefmt  string    (default "\e033[7m")
     cursorparentfmt  string    (default "\e033[7m")
@@ -775,6 +776,12 @@ When this option is enabled, find command starts matching patterns from the begi
 .EE
 .PP
 Automatically quit server when there are no clients left connected.
+.PP
+.EX
+    borderfmt      string    (default "\e033[0m")
+.EE
+.PP
+Format string of the box drawing characters enabled by the `drawbox` option.
 .PP
 .EX
     cleaner        string    (default '') (not called if empty)

@@ -58,6 +58,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.autoquit = !gOpts.autoquit
+	case "borderfmt":
+		gOpts.borderfmt = e.val
 	case "cleaner":
 		gOpts.cleaner = replaceTilde(e.val)
 	case "cursoractivefmt":

@@ -116,6 +116,7 @@ var (
 		"autoquit",
 		"noautoquit",
 		"autoquit!",
+		"borderfmt",
 		"cursoractivefmt",
 		"cursorparentfmt",
 		"cursorpreviewfmt",
