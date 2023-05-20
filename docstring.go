@@ -1224,10 +1224,16 @@ the alt key are prefixed with 'a' character:
 
     map <a-a> down
 
-Please note that, some key combinations are not possible due to the way
-terminals work (e.g. control and h combination sends a backspace key instead).
-The easiest way to find the name of a key combination is to press the key while
-lf is running and read the name of the key from the unknown mapping error.
+It is possible to combine special keys with modifiers:
+
+    map <a-enter> down
+
+WARNING: Some key combinations will likely be intercepted by your OS,
+window manager, or terminal. Other key combinations cannot be recognized by lf
+due to the way terminals work (e.g. 'Ctrl+h' combination sends a backspace key
+instead). The easiest way to find out the name of a key combination and whether
+it will work on your system is to press the key while lf is running and read the
+name from the "unknown mapping" error.
 
 Mouse buttons are prefixed with 'm' character:
 
