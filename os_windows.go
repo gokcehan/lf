@@ -68,7 +68,10 @@ func init() {
 	// remove domain prefix
 	gUser.Username = strings.Split(gUser.Username, `\`)[1]
 
-	data := os.Getenv("LOCALAPPDATA")
+	data := os.Getenv("LF_CONFIG_HOME")
+	if data == "" {
+		data = os.Getenv("LOCALAPPDATA")
+	}
 
 	gConfigPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
