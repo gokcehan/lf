@@ -34,7 +34,7 @@ func copySize(srcs []string) (int64, error) {
 }
 
 func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
-	var dst_mode os.FileMode = 0600
+	var dst_mode os.FileMode = 0666
 	preserve_timestamps := false
 	for _, s := range gOpts.preserve {
 		switch s {
