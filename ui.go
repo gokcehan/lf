@@ -814,10 +814,11 @@ func addStatLineVar(ruler []string, name string) []string {
 		return ruler
 	}
 
+	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
+
 	if strings.HasPrefix(name, "lf_user_") {
 		return append(ruler, val)
 	} else {
-		val = strings.ReplaceAll(val, "\033", `\033`)
 		return append(ruler, fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val))
 	}
 }
