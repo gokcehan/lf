@@ -175,6 +175,7 @@ var (
 		"noreverse",
 		"reverse!",
 		"ruler",
+		"preserve",
 		"smartcase",
 		"nosmartcase",
 		"smartcase!",

@@ -151,6 +151,7 @@ The following options can be used to customize the behavior of lf:
     number           bool      (default false)
     numberfmt        string    (default "\033[33m")
     period           int       (default 0)
+    preserve         []string  (default "mode")
     preview          bool      (default true)
     previewer        string    (default '')
     promptfmt        string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
@@ -847,6 +848,13 @@ external process changing the displayed directory and you are not doing anything
 in lf. Periodic checks are disabled when the value of this option is set to
 zero.
 
+    preserve       []string  (default 'mode')
+
+List of attributes that are preserved when copying files. Currently supported
+attributes are 'mode' (i.a. access mode) and 'timestamps' (i.e. modification
+time and access time). Note: Preserving other attribute like ownership of
+change/birth timestamp is desireable, but not portably supported in go.
+
     preview        bool      (default true)
 
 Show previews of files and directories at the right most pane. If the file
@@ -1435,16 +1443,17 @@ not be needed for users.
 
 lf uses its own builtin copy and move operations by default. These are
 implemented as asynchronous operations and progress is shown in the bottom
-ruler. These commands do not overwrite existing files or directories with
-the same name. Instead, a suffix that is compatible with '--backup=numbered'
-option in GNU cp is added to the new files or directories. Only file modes are
-preserved and all other attributes are ignored including ownership, timestamps,
-context, and xattr. Special files such as character and block devices, named
-pipes, and sockets are skipped and links are not followed. Moving is performed
-using the rename operation of the underlying OS. For cross-device moving,
-lf falls back to copying and then deletes the original files if there are no
-errors. Operation errors are shown in the message line as well as the log file
-and they do not preemptively finish the corresponding file operation.
+ruler. These commands do not overwrite existing files or directories with the
+same name. Instead, a suffix that is compatible with '--backup=numbered' option
+in GNU cp is added to the new files or directories. Only file modes and (some)
+timestamps can be preserved (see 'preserve' option), all other attributes are
+ignored including ownership, context, and xattr. Special files such as character
+and block devices, named pipes, and sockets are skipped and links are not
+followed. Moving is performed using the rename operation of the underlying OS.
+For cross-device moving, lf falls back to copying and then deletes the original
+files if there are no errors. Operation errors are shown in the message line as
+well as the log file and they do not preemptively finish the corresponding file
+operation.
 
 File operations can be performed on the current selected file or alternatively
 on multiple files by selecting them first. When you 'copy' a file, lf doesn't
