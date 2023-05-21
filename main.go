@@ -115,7 +115,8 @@ func fieldToString(field reflect.Value) string {
 	return value
 }
 
-func exportOpts() {
+func getOptsMap() map[string]string {
+	opts := make(map[string]string)
 	v := reflect.ValueOf(gOpts)
 	t := v.Type()
 
@@ -149,26 +150,26 @@ func exportOpts() {
 				sortby = "ext"
 			}
 
-			os.Setenv("lf_sortby", sortby)
-
-			reverse := strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
-			os.Setenv("lf_reverse", reverse)
-
-			hidden := strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
-			os.Setenv("lf_hidden", hidden)
-
-			dirfirst := strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
-			os.Setenv("lf_dirfirst", dirfirst)
+			opts["lf_sortby"] = sortby
+			opts["lf_reverse"] = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
+			opts["lf_hidden"] = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
+			opts["lf_dirfirst"] = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
 		} else if name == "lf_user" {
 			// set each user option
 			for key, value := range gOpts.user {
-				os.Setenv(name+"_"+key, value)
+				opts[name+"_"+key] = value
 			}
 		} else {
-			field := v.Field(i)
-			value := fieldToString(field)
-			os.Setenv(name, value)
+			opts[name] = fieldToString(v.Field(i))
 		}
+	}
+
+	return opts
+}
+
+func exportOpts() {
+	for key, value := range getOptsMap() {
+		os.Setenv(key, value)
 	}
 }
 

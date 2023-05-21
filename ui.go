@@ -6,7 +6,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -805,62 +804,20 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
-func addStatLineVar(ruler []string, name string) []string {
-	escapeStr := func(s string) string {
-		return strings.ReplaceAll(s, "\033", "\033[7m\\033\033[0m")
-	}
-
-	if !strings.HasPrefix(name, "lf_") {
-		return ruler
-	}
-
-	var val string
-
-	// handle user defined option
-	if strings.HasPrefix(name, "lf_user_") {
-		val = gOpts.user[strings.TrimPrefix(name, "lf_user_")]
-		if val == "" {
-			return ruler
-		}
-		return append(ruler, escapeStr(val))
-	}
-
-	name = strings.TrimPrefix(name, "lf_")
-	// handle builtin option
-	field := reflect.ValueOf(gOpts).FieldByName(name)
-	fieldKind := field.Kind()
-	switch {
-	case name == "sortby":
-		switch gOpts.sortType.method {
-		case naturalSort:
-			val = "natural"
-		case nameSort:
-			val = "name"
-		case sizeSort:
-			val = "size"
-		case timeSort:
-			val = "time"
-		case ctimeSort:
-			val = "ctime"
-		case atimeSort:
-			val = "atime"
-		case extSort:
-			val = "ext"
-		}
-	case name == "reverse":
-		val = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
-	case name == "hidden":
-		val = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
-	case name == "dirfirst":
-		val = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
-	case fieldKind != reflect.Invalid && fieldKind != reflect.Map:
-		val = fieldToString(field)
-	}
-
+func addStatLineOpt(ruler []string, name string, val string) []string {
 	if val == "" {
 		return ruler
 	}
-	return append(ruler, fmt.Sprintf("%s=%s", name, escapeStr(val)))
+
+	// handle escape character so it doesn't mess up the ruler
+	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
+
+	// display name of builtin options for clarity
+	if !strings.HasPrefix(name, "lf_user_") {
+		val = fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val)
+	}
+
+	return append(ruler, val)
 }
 
 func (ui *ui) drawStatLine(nav *nav) {
@@ -914,6 +871,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
 
+	opts := getOptsMap()
 	ruler := []string{}
 	for _, s := range gOpts.ruler {
 		switch s {
@@ -935,7 +893,7 @@ func (ui *ui) drawStatLine(nav *nav) {
 		case "ind":
 			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
 		default:
-			ruler = addStatLineVar(ruler, s)
+			ruler = addStatLineOpt(ruler, s, opts[s])
 		}
 	}
 
