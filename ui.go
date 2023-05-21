@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strconv"
 	"strings"
@@ -805,22 +806,61 @@ func (ui *ui) drawPromptLine(nav *nav) {
 }
 
 func addStatLineVar(ruler []string, name string) []string {
+	escapeStr := func(s string) string {
+		return strings.ReplaceAll(s, "\033", "\033[7m\\033\033[0m")
+	}
+
 	if !strings.HasPrefix(name, "lf_") {
 		return ruler
 	}
 
-	val := os.Getenv(name)
+	var val string
+
+	// handle user defined option
+	if strings.HasPrefix(name, "lf_user_") {
+		val = gOpts.user[strings.TrimPrefix(name, "lf_user_")]
+		if val == "" {
+			return ruler
+		}
+		return append(ruler, escapeStr(val))
+	}
+
+	name = strings.TrimPrefix(name, "lf_")
+	// handle builtin option
+	field := reflect.ValueOf(gOpts).FieldByName(name)
+	fieldKind := field.Kind()
+	switch {
+	case name == "sortby":
+		switch gOpts.sortType.method {
+		case naturalSort:
+			val = "natural"
+		case nameSort:
+			val = "name"
+		case sizeSort:
+			val = "size"
+		case timeSort:
+			val = "time"
+		case ctimeSort:
+			val = "ctime"
+		case atimeSort:
+			val = "atime"
+		case extSort:
+			val = "ext"
+		}
+	case name == "reverse":
+		val = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
+	case name == "hidden":
+		val = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
+	case name == "dirfirst":
+		val = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
+	case fieldKind != reflect.Invalid && fieldKind != reflect.Map:
+		val = fieldToString(field)
+	}
+
 	if val == "" {
 		return ruler
 	}
-
-	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
-
-	if strings.HasPrefix(name, "lf_user_") {
-		return append(ruler, val)
-	} else {
-		return append(ruler, fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val))
-	}
+	return append(ruler, fmt.Sprintf("%s=%s", name, escapeStr(val)))
 }
 
 func (ui *ui) drawStatLine(nav *nav) {
@@ -873,8 +913,6 @@ func (ui *ui) drawStatLine(nav *nav) {
 	if nav.deleteTotal > 0 {
 		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
-
-	exportOpts()
 
 	ruler := []string{}
 	for _, s := range gOpts.ruler {
