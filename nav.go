@@ -344,8 +344,27 @@ func (dir *dir) sel(name string, height int) {
 		}
 	}
 
-	edge := min(min(height/2, gOpts.scrolloff), len(dir.files)-dir.ind-1)
-	dir.pos = min(dir.ind, height-edge-1)
+	dir.boundPos(height)
+}
+
+func (dir *dir) boundPos(height int) {
+	if len(dir.files) <= height {
+		dir.pos = dir.ind
+		return
+	}
+
+	edge := min(height/2, gOpts.scrolloff)
+	dir.pos = max(dir.pos, edge)
+
+	// use a smaller value for half when the height is even and scrolloff is
+	// maxed in order to stay at the same row while scrolling up and down
+	if height%2 == 0 {
+		edge = min(height/2-1, gOpts.scrolloff)
+	}
+	dir.pos = min(dir.pos, height-1-edge)
+
+	dir.pos = min(dir.pos, dir.ind)
+	dir.pos = max(dir.pos, height-(len(dir.files)-dir.ind))
 }
 
 type nav struct {
@@ -904,8 +923,7 @@ func (nav *nav) up(dist int) bool {
 	dir.ind = max(0, dir.ind)
 
 	dir.pos -= dist
-	edge := min(min(nav.height/2, gOpts.scrolloff), dir.ind)
-	dir.pos = max(dir.pos, edge)
+	dir.boundPos(nav.height)
 
 	return old != dir.ind
 }
@@ -928,16 +946,7 @@ func (nav *nav) down(dist int) bool {
 	dir.ind = min(maxind, dir.ind)
 
 	dir.pos += dist
-	// use a smaller value for half when the height is even and scrolloff is
-	// maxed in order to stay at the same row while scrolling up and down
-	half := nav.height / 2
-	if nav.height%2 == 0 {
-		half--
-	}
-	edge := min(min(half, gOpts.scrolloff), maxind-dir.ind)
-
-	dir.pos = min(dir.pos, nav.height-edge-1)
-	dir.pos = min(dir.pos, maxind)
+	dir.boundPos(nav.height)
 
 	return old != dir.ind
 }

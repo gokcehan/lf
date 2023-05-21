@@ -396,6 +396,7 @@ func (app *app) loop() {
 				prev, ok := app.nav.dirCache[d.path]
 				if ok {
 					d.ind = prev.ind
+					d.pos = prev.pos
 					d.sel(prev.name(), app.nav.height)
 				}
 
