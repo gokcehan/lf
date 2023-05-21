@@ -2,10 +2,10 @@ package main
 
 import (
 	"fmt"
+	"github.com/djherbis/times"
 	"io"
 	"os"
 	"path/filepath"
-	"github.com/djherbis/times"
 )
 
 func copySize(srcs []string) (int64, error) {
@@ -84,8 +84,8 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 
 	if preserve_timestamps {
 		ts := times.Get(info)
-		mtime := info.ModTime();
-		atime := ts.AccessTime();
+		mtime := info.ModTime()
+		atime := ts.AccessTime()
 		if err := os.Chtimes(dst, atime, mtime); err != nil {
 			os.Remove(dst)
 			return err

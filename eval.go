@@ -505,7 +505,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		toks := strings.Split(e.val, ":")
-		for _,s := range toks {
+		for _, s := range toks {
 			switch s {
 			case "mode", "timestamps":
 			default:
