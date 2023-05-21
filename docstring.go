@@ -896,7 +896,9 @@ position of the cursor as well as the number of files in the current directory.
 'df' shows the amount of free disk space remaining. Names starting with 'lf_'
 show the value of environment variables exported by lf. This is useful for
 displaying the current settings (e.g. 'lf_selmode' displays the current setting
-for the 'selmode' option).
+for the 'selmode' option). User defined options starting with 'lf_user_' are
+also supported, so it is possible to display information set from external
+sources.
 
     selmode        string    (default 'all')
 
