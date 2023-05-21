@@ -474,9 +474,30 @@ func (app *app) loop() {
 	}
 }
 
-type cleanFunc func()
+func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
+	app.nav.previewChan <- ""
+	app.nav.dirPreviewChan <- nil
 
-var noopCleanFunc = func() {}
+	if err := app.ui.suspend(); err != nil {
+		log.Printf("suspend: %s", err)
+	}
+	defer func() {
+		if err := app.ui.resume(); err != nil {
+			app.quit()
+			os.Exit(3)
+		}
+	}()
+
+	if err := cmd.Run(); err != nil {
+		app.ui.echoerrf("running shell: %s", err)
+	}
+	if pause_after {
+		anyKey()
+	}
+
+	app.ui.loadFile(app, true)
+	app.nav.renew()
+}
 
 // This function is used to run a shell command. Modes are as follows:
 //
@@ -485,8 +506,7 @@ var noopCleanFunc = func() {}
 //	%       No    No     Yes    Yes     Yes     Statline for input/output
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
-//	$|      No    No     Pipe   Yes     Yes     Pause, Pipe execute, return cleanup to resume
-func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
+func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
@@ -496,49 +516,19 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 	var out io.Reader
 	var err error
 	switch prefix {
-	case "$|":
-		var stdin io.WriteCloser
-		stdin, err = cmd.StdinPipe()
-		if err != nil {
-			log.Printf("writing stdin: %s", err)
-		}
-		app.cmdIn = stdin
-		cmd.Stdout = os.Stdout
-		cmd.Stderr = os.Stderr
-
-		app.nav.previewChan <- ""
-		app.nav.dirPreviewChan <- nil
-
-		if err := app.ui.suspend(); err != nil {
-			log.Printf("suspend: %s", err)
-		}
-
-		err = cmd.Start()
 	case "$", "!":
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
-		app.nav.previewChan <- ""
-		app.nav.dirPreviewChan <- nil
+		app.runCmdSync(cmd, prefix == "!")
+		return
+	}
 
-		if err := app.ui.suspend(); err != nil {
-			log.Printf("suspend: %s", err)
-		}
-		defer func() {
-			if err := app.ui.resume(); err != nil {
-				app.quit()
-				os.Exit(3)
-				return
-			}
-		}()
-		defer app.nav.renew()
-
-		err = cmd.Run()
-	case "%":
-		shellSetPG(cmd)
+	// We are running the command asynchroniously
+	if prefix == "%" {
 		if app.ui.cmdPrefix == ">" {
-			return noopCleanFunc
+			return
 		}
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
@@ -551,19 +541,11 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
-		fallthrough
-	case "&":
-		shellSetPG(cmd)
-		err = cmd.Start()
 	}
 
-	if err != nil {
+	shellSetPG(cmd)
+	if err = cmd.Start(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
-	}
-
-	switch prefix {
-	case "!":
-		anyKey()
 	}
 
 	// Asynchronous shell invocations return immediately without waiting for the
@@ -615,17 +597,30 @@ func (app *app) runShell(s string, args []string, prefix string) cleanFunc {
 				log.Printf("running shell: %s", err)
 			}
 		}()
-	case "$|":
-		return func() {
-			if err := cmd.Wait(); err != nil {
-				log.Printf("running shell: %s", err)
-			}
-			app.nav.renew()
-			if err := app.ui.resume(); err != nil {
-				app.quit()
-				os.Exit(3)
-			}
-		}
 	}
-	return noopCleanFunc
+
+}
+
+func (app *app) runPagerOnText(text io.Reader) {
+	app.nav.exportFiles()
+	app.ui.exportSizes()
+	exportOpts()
+
+	cmd := shellCommand(envPager, nil)
+
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		app.ui.echoerrf("obtaining stdin pipe: %s", err)
+		return
+	}
+
+	go func() {
+		io.Copy(stdin, text)
+		stdin.Close()
+	}()
+
+	app.runCmdSync(cmd, false)
 }
