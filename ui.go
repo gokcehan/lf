@@ -804,11 +804,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
-func addStatLineOpt(ruler []string, name string, val string) []string {
-	if val == "" {
-		return ruler
-	}
-
+func formatRulerOpt(name string, val string) string {
 	// handle escape character so it doesn't mess up the ruler
 	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
 
@@ -817,7 +813,7 @@ func addStatLineOpt(ruler []string, name string, val string) []string {
 		val = fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val)
 	}
 
-	return append(ruler, val)
+	return val
 }
 
 func (ui *ui) drawStatLine(nav *nav) {
@@ -893,7 +889,9 @@ func (ui *ui) drawStatLine(nav *nav) {
 		case "ind":
 			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
 		default:
-			ruler = addStatLineOpt(ruler, s, opts[s])
+			if val, ok := opts[s]; ok {
+				ruler = append(ruler, formatRulerOpt(s, val))
+			}
 		}
 	}
 
