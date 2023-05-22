@@ -192,32 +192,60 @@ func (dir *dir) sort() {
 
 	dir.files = dir.allFiles
 
+	// reverse order cannot be applied after stable sorting, otherwise the order
+	// of equivalent elements will be reversed
+	reverse := dir.sortType.option&reverseSort != 0
+
 	switch dir.sortType.method {
 	case naturalSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return naturalLess(s1, s2)
+			if !reverse {
+				return naturalLess(s1, s2)
+			} else {
+				return naturalLess(s2, s1)
+			}
 		})
 	case nameSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return s1 < s2
+			if !reverse {
+				return s1 < s2
+			} else {
+				return s2 < s1
+			}
 		})
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+			if !reverse {
+				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+			} else {
+				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
+			}
 		})
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+			if !reverse {
+				return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+			} else {
+				return dir.files[j].ModTime().Before(dir.files[i].ModTime())
+			}
 		})
 	case atimeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+			if !reverse {
+				return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+			} else {
+				return dir.files[j].accessTime.Before(dir.files[i].accessTime)
+			}
 		})
 	case ctimeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+			if !reverse {
+				return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+			} else {
+				return dir.files[j].changeTime.Before(dir.files[i].changeTime)
+			}
 		})
 	case extSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
@@ -236,14 +264,12 @@ func (dir *dir) sort() {
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
-			return ext1 < ext2 || ext1 == ext2 && name1 < name2
+			if !reverse {
+				return ext1 < ext2 || ext1 == ext2 && name1 < name2
+			} else {
+				return ext2 < ext1 || ext2 == ext1 && name2 < name1
+			}
 		})
-	}
-
-	if dir.sortType.option&reverseSort != 0 {
-		for i, j := 0, len(dir.files)-1; i < j; i, j = i+1, j-1 {
-			dir.files[i], dir.files[j] = dir.files[j], dir.files[i]
-		}
 	}
 
 	if dir.sortType.option&dirfirstSort != 0 {
