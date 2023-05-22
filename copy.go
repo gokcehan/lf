@@ -2,10 +2,11 @@ package main
 
 import (
 	"fmt"
-	"github.com/djherbis/times"
 	"io"
 	"os"
 	"path/filepath"
+
+	"github.com/djherbis/times"
 )
 
 func copySize(srcs []string) (int64, error) {

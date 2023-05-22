@@ -15,7 +15,7 @@ import (
 	"strings"
 	"time"
 
-	times "github.com/djherbis/times"
+	"github.com/djherbis/times"
 )
 
 type linkState byte
