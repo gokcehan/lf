@@ -493,7 +493,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			case "df", "acc", "progress", "selection", "filter", "ind":
 			default:
 				if !strings.HasPrefix(s, "lf_") {
-					app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or start with 'lf_' separated with colon")
+					app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or 'lf_<option_name>' separated with colon")
 					return
 				}
 			}
