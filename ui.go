@@ -500,8 +500,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		s = append(s, ' ')
 		win.print(screen, lnwidth+1, i, st, string(s))
 
-		tag, ok := context.tags[path]
-		if ok {
+		if tag, ok := context.tags[path]; ok {
 			if i == dir.pos {
 				win.print(screen, lnwidth+1, i, st, tag)
 			} else {
