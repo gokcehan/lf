@@ -664,9 +664,6 @@ The default is to make the active cursor and the parent directory cursor inverte
 
 Some other possibilities to consider for the preview or parent cursors: an empty string for no cursor, "\033[7;2m" for dimmed inverted text (visibility varies by terminal), "\033[7;90m" for inverted text with grey (aka "brightblack") background.
 
-If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
-For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
-
 	dircache       bool      (default true)
 
 Cache directory contents.
@@ -900,9 +897,6 @@ Number of space characters to show for horizontal tabulation (U+0009) character.
 	tagfmt         string    (default "\033[31m")
 
 Format string of the tags.
-
-If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
-For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
 
 	tempmarks      string    (default '')
 

@@ -426,7 +426,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
+			win.print(screen, 0, i, parseEscapeSequence(gOpts.numberfmt), ln)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
@@ -486,29 +486,26 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
-		ce := ""
 		if i == dir.pos {
 			switch dirStyle.role {
 			case Active:
-				ce = gOpts.cursoractivefmt
+				st = parseApplyEscapeSequence(gOpts.cursoractivefmt, st)
 			case Parent:
-				ce = gOpts.cursorparentfmt
+				st = parseApplyEscapeSequence(gOpts.cursorparentfmt, st)
 			case Preview:
-				ce = gOpts.cursorpreviewfmt
+				st = parseApplyEscapeSequence(gOpts.cursorpreviewfmt, st)
 			}
 		}
-		cursorescapefmt := optionToFmtstr(ce)
 
 		s = append(s, ' ')
-		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
-		win.print(screen, lnwidth+1, i, st, styledFilename)
+		win.print(screen, lnwidth+1, i, st, string(s))
 
 		tag, ok := context.tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
+				win.print(screen, lnwidth+1, i, st, tag)
 			} else {
-				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
+				win.print(screen, lnwidth+1, i, parseEscapeSequence(gOpts.tagfmt), tag)
 			}
 		}
 	}

@@ -808,8 +808,6 @@ The default is to make the active cursor and the parent directory cursor inverte
 .PP
 Some other possibilities to consider for the preview or parent cursors: an empty string for no cursor, "\e033[7;2m" for dimmed inverted text (visibility varies by terminal), "\e033[7;90m" for inverted text with grey (aka "brightblack") background.
 .PP
-If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence. For example, "\e033[4m%s\e033[0m" has the same effect as "\e033[4m".
-.PP
 .EX
     dircache       bool      (default true)
 .EE
@@ -1075,8 +1073,6 @@ Number of space characters to show for horizontal tabulation (U+0009) character.
 .EE
 .PP
 Format string of the tags.
-.PP
-If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence. For example, "\e033[4m%s\e033[0m" has the same effect as "\e033[4m".
 .PP
 .EX
     tempmarks      string    (default '')
