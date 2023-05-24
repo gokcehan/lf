@@ -494,8 +494,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			switch s {
 			case "df", "acc", "progress", "selection", "filter", "ind":
 			default:
-				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter' or 'ind' separated with colon")
-				return
+				if !strings.HasPrefix(s, "lf_") {
+					app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or 'lf_<option_name>' separated with colon")
+					return
+				}
 			}
 		}
 		gOpts.ruler = toks
