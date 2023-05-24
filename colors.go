@@ -86,6 +86,10 @@ func parseEscapeSequence(s string) tcell.Style {
 }
 
 func parseApplyEscapeSequence(s string, st tcell.Style) tcell.Style {
+	if s == "" {
+		return st
+	}
+
 	s = strings.TrimPrefix(s, "\033[")
 	if i := strings.IndexByte(s, 'm'); i >= 0 {
 		s = s[:i]
