@@ -1036,7 +1036,7 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listBinds(binds map[string]expr) *bytes.Buffer {
+func listExprMap(binds map[string]expr, title string) *bytes.Buffer {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1047,13 +1047,21 @@ func listBinds(binds map[string]expr) *bytes.Buffer {
 	sort.Strings(keys)
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintln(t, "keys\tcommand")
+	fmt.Fprintf(t, "%s\tcommand\n", title)
 	for _, k := range keys {
 		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
 	}
 	t.Flush()
 
 	return b
+}
+
+func listBinds(binds map[string]expr) *bytes.Buffer {
+	return listExprMap(binds, "keys")
+}
+
+func listCmds() *bytes.Buffer {
+	return listExprMap(gOpts.cmds, "name")
 }
 
 func listJumps(jumps []string, ind int) *bytes.Buffer {

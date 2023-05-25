@@ -84,6 +84,7 @@ The following commands are provided by lf:
     tag-toggle               (default 't')
     maps
     cmaps
+    cmds
     jumps
 
 The following command line commands are provided by lf:
@@ -647,6 +648,10 @@ Capitalize/uppercase/lowercase the current word and jump to the next word.
     cmaps
 
 List all key mappings in normal mode or command-line editing mode.
+
+    cmds
+
+List all custom commands defined using the 'cmd' command
 
     jumps
 
