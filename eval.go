@@ -2347,9 +2347,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
-			case ">", "rename: ":
+			case ">", "rename: ", "filter: ":
 				// Don't mess with programs waiting for input.
-				// Exiting on backspace is also inconvenient for renames since the text field starts out nonempty.
+				// Exiting on backspace is also inconvenient for 'rename' and 'filter',
+				// since the text field can start out nonempty.
 			default:
 				normal(app)
 			}
