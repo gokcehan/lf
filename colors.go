@@ -82,10 +82,10 @@ func parseStyles() styleMap {
 }
 
 func parseEscapeSequence(s string) tcell.Style {
-	return parseApplyEscapeSequence(s, tcell.StyleDefault)
+	return applyParsedEscapeSequence(s, tcell.StyleDefault)
 }
 
-func parseApplyEscapeSequence(s string, st tcell.Style) tcell.Style {
+func applyParsedEscapeSequence(s string, st tcell.Style) tcell.Style {
 	if s == "" {
 		return st
 	}

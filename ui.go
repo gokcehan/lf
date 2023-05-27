@@ -489,11 +489,11 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		if i == dir.pos {
 			switch dirStyle.role {
 			case Active:
-				st = parseApplyEscapeSequence(gOpts.cursoractivefmt, st)
+				st = applyParsedEscapeSequence(gOpts.cursoractivefmt, st)
 			case Parent:
-				st = parseApplyEscapeSequence(gOpts.cursorparentfmt, st)
+				st = applyParsedEscapeSequence(gOpts.cursorparentfmt, st)
 			case Preview:
-				st = parseApplyEscapeSequence(gOpts.cursorpreviewfmt, st)
+				st = applyParsedEscapeSequence(gOpts.cursorpreviewfmt, st)
 			}
 		}
 
