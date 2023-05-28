@@ -69,7 +69,7 @@ func TestRuneSliceWidthRange(t *testing.T) {
 
 	for _, test := range tests {
 		if got := runeSliceWidthRange(test.rs, test.beg, test.end); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.rs, got)
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
 		}
 	}
 }
