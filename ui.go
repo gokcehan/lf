@@ -467,16 +467,14 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		}
 
 		filename := []rune(f.Name())
-		filenameWidth := runeSliceWidth(filename)
-		if filenameWidth > maxFilenameWidth {
-			s = append(s, runeSliceWidthRange(filename, 0, maxFilenameWidth-1)...)
-			s = append(s, []rune(gOpts.truncatechar)...)
-		} else {
-			s = append(s, filename...)
-			for i := filenameWidth; i < maxFilenameWidth; i++ {
-				s = append(s, ' ')
-			}
+		if runeSliceWidth(filename) > maxFilenameWidth {
+			filename = runeSliceWidthRange(filename, 0, maxFilenameWidth-1)
+			filename = append(filename, []rune(gOpts.truncatechar)...)
 		}
+		for i := runeSliceWidth(filename); i < maxFilenameWidth; i++ {
+			filename = append(filename, ' ')
+		}
+		s = append(s, filename...)
 
 		if showInfo {
 			s = append(s, []rune(info)...)
