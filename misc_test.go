@@ -55,6 +55,7 @@ func TestRuneSliceWidthRange(t *testing.T) {
 		end int
 		exp []rune
 	}{
+		{[]rune{}, 0, 0, []rune{}},
 		{[]rune{'a', 'b', 'c', 'd'}, 1, 3, []rune{'b', 'c'}},
 		{[]rune{'a', 'ı', 'b', 'ş'}, 1, 3, []rune{'ı', 'b'}},
 		{[]rune{'世', '界', '世', '界'}, 2, 6, []rune{'界', '世'}},
