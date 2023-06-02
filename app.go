@@ -602,26 +602,16 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 }
 
-func (app *app) runPagerOnText(text io.Reader) {
+func (app *app) runPager(stdin io.Reader) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
 
 	cmd := shellCommand(envPager, nil)
 
+	cmd.Stdin = stdin
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
-
-	stdin, err := cmd.StdinPipe()
-	if err != nil {
-		app.ui.echoerrf("obtaining stdin pipe: %s", err)
-		return
-	}
-
-	go func() {
-		io.Copy(stdin, text)
-		stdin.Close()
-	}()
 
 	app.runCmdSync(cmd, false)
 }
