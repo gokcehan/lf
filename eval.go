@@ -2526,11 +2526,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = acc
 		update(app)
 	case "maps":
-		app.runPager(listBinds(gOpts.keys))
+		app.runPagerOn(listBinds(gOpts.keys))
 	case "cmaps":
-		app.runPager(listBinds(gOpts.cmdkeys))
+		app.runPagerOn(listBinds(gOpts.cmdkeys))
 	case "jumps":
-		app.runPager(listJumps(app.nav.jumpList, app.nav.jumpListInd))
+		app.runPagerOn(listJumps(app.nav.jumpList, app.nav.jumpListInd))
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

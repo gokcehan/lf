@@ -602,7 +602,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 }
 
-func (app *app) runPager(stdin io.Reader) {
+func (app *app) runPagerOn(stdin io.Reader) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
