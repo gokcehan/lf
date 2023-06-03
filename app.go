@@ -526,7 +526,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		return
 	}
 
-	// We are running the command asynchroniously
+	// We are running the command asynchronously
 	if prefix == "%" {
 		if app.ui.cmdPrefix == ">" {
 			return
@@ -548,12 +548,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	if err = cmd.Start(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
-
-	// Asynchronous shell invocations return immediately without waiting for the
-	// command to finish, so there is no point refreshing the preview if nothing
-	// has changed yet.
-	volatile := prefix != "&"
-	app.ui.loadFile(app, volatile)
 
 	switch prefix {
 	case "%":
