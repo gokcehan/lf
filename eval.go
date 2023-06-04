@@ -2244,64 +2244,60 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "rename: ":
 			app.ui.cmdPrefix = ""
-			if curr, err := app.nav.currFile(); err != nil {
+
+			curr, err := app.nav.currFile()
+			if err != nil {
 				app.ui.echoerrf("rename: %s", err)
-			} else {
-				wd, err := os.Getwd()
-				if err != nil {
-					log.Printf("getting current directory: %s", err)
-					return
-				}
-
-				oldPath := filepath.Join(wd, curr.Name())
-
-				newPath := filepath.Clean(replaceTilde(s))
-				if !filepath.IsAbs(newPath) {
-					newPath = filepath.Join(wd, newPath)
-				}
-
-				if oldPath == newPath {
-					return
-				}
-
-				app.nav.renameOldPath = oldPath
-				app.nav.renameNewPath = newPath
-
-				newDir := filepath.Dir(newPath)
-				if _, err := os.Stat(newDir); os.IsNotExist(err) {
-					app.ui.cmdPrefix = "create '" + newDir + "' ? [y/N] "
-					return
-				}
-
-				oldStat, err := os.Lstat(oldPath)
-				if err != nil {
-					app.ui.echoerrf("rename: %s", err)
-					return
-				}
-
-				if newStat, err := os.Lstat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
-					app.ui.cmdPrefix = "replace '" + newPath + "' ? [y/N] "
-					return
-				}
-
-				if err := app.nav.rename(); err != nil {
-					app.ui.echoerrf("rename: %s", err)
-					return
-				}
-
-				if gSingleMode {
-					app.nav.renew()
-					app.ui.loadFile(app, true)
-				} else {
-					if err := remote("send load"); err != nil {
-						app.ui.echoerrf("rename: %s", err)
-						return
-					}
-				}
-
-				app.ui.loadFile(app, true)
-				app.ui.loadFileInfo(app.nav)
+				return
 			}
+			wd, err := os.Getwd()
+			if err != nil {
+				log.Printf("getting current directory: %s", err)
+				return
+			}
+
+			oldPath := filepath.Join(wd, curr.Name())
+			newPath := filepath.Clean(replaceTilde(s))
+			if !filepath.IsAbs(newPath) {
+				newPath = filepath.Join(wd, newPath)
+			}
+			if oldPath == newPath {
+				return
+			}
+			app.nav.renameOldPath = oldPath
+			app.nav.renameNewPath = newPath
+
+			newDir := filepath.Dir(newPath)
+			if _, err := os.Stat(newDir); os.IsNotExist(err) {
+				app.ui.cmdPrefix = "create '" + newDir + "' ? [y/N] "
+				return
+			}
+
+			oldStat, err := os.Lstat(oldPath)
+			if err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+			if newStat, err := os.Lstat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
+				app.ui.cmdPrefix = "replace '" + newPath + "' ? [y/N] "
+				return
+			}
+
+			if err := app.nav.rename(); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
+			}
+
+			if gSingleMode {
+				app.nav.renew()
+			} else {
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("rename: %s", err)
+					return
+				}
+			}
+			app.ui.loadFile(app, true)
+			app.ui.loadFileInfo(app.nav)
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
