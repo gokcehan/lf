@@ -1614,6 +1614,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 		app.nav.sort()
 		app.ui.sort()
+	case "clearmaps":
+		// leave `:` and cmaps bound so the user can still exit using `:quit`
+		gOpts.keys = make(map[string]expr)
+		gOpts.keys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {
 			return

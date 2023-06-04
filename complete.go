@@ -42,6 +42,7 @@ var (
 		"glob-select",
 		"glob-unselect",
 		"calcdirsize",
+		"clearmaps",
 		"copy",
 		"cut",
 		"paste",
