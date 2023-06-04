@@ -41,6 +41,7 @@ The following commands are provided by lf:
 	glob-select
 	glob-unselect
 	calcdirsize
+	clearmaps
 	copy                     (default 'y')
 	cut                      (default 'd')
 	paste                    (default 'p')
@@ -381,6 +382,12 @@ Select/unselect files that match the given glob.
 Calculate the total size for each of the selected directories.
 Option 'info' should include 'size' and option 'dircounts' should be disabled to show this size.
 If the total size of a directory is not calculated, it will be shown as '-'.
+
+	clearmaps
+
+Remove all keybindings associated with the `map` command.
+This command can be used in the config file to remove the default keybindings.
+For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
 	copy                     (default 'y')
 
