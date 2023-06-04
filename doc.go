@@ -209,11 +209,13 @@ The following special shell commands are used to customize the behavior of lf wh
 
 The following commands/keybindings are provided by default:
 
-	Unix                     Windows
-	cmd open &$OPENER "$f"   cmd open &%OPENER% %f%
-	map e $$EDITOR "$f"      map e $%EDITOR% %f%
-	map i $$PAGER "$f"       map i !%PAGER% %f%
-	map w $$SHELL            map w $%SHELL%
+	Unix                          Windows
+	cmd open &$OPENER "$f"        cmd open &%OPENER% %f%
+	map e $$EDITOR "$f"           map e $%EDITOR% %f%
+	map i $$PAGER "$f"            map i !%PAGER% %f%
+	map w $$SHELL                 map w $%SHELL%
+	cmd doc $$lf -doc | $PAGER    cmd doc !%lf% -doc | %PAGER%
+	map <f-1> doc                 map <f-1> doc
 
 The following additional keybindings are provided by default:
 
