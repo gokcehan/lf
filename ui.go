@@ -441,8 +441,16 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			}
 		}
 
+		// make space for select marker, and leave another space at the end
+		maxWidth := win.w - lnwidth - 2
+		// make extra space to separate windows if drawbox is not enabled
+		if !gOpts.drawbox {
+			maxWidth -= 1
+		}
+
 		var s []rune
 
+		// leave space for displaying the tag
 		s = append(s, ' ')
 
 		if gOpts.icons {
@@ -450,40 +458,26 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 			s = append(s, ' ')
 		}
 
-		for _, r := range f.Name() {
-			s = append(s, r)
-		}
-
-		w := runeSliceWidth(s)
-
-		// make space for select marker, and leave another space at the end
-		maxlength := win.w - lnwidth - 2
-		// make extra space to separate windows if drawbox is not enabled
-		if !gOpts.drawbox {
-			maxlength -= 1
-		}
-
-		if w > maxlength {
-			s = runeSliceWidthRange(s, 0, maxlength-1)
-			s = append(s, []rune(gOpts.truncatechar)...)
-		} else {
-			for i := 0; i < maxlength-w; i++ {
-				s = append(s, ' ')
-			}
-		}
+		maxFilenameWidth := maxWidth - runeSliceWidth(s)
 
 		info := fileInfo(f, dir)
+		showInfo := len(info) > 0 && 2*len(info) < maxWidth
+		if showInfo {
+			maxFilenameWidth -= len(info)
+		}
 
-		if len(info) > 0 && 2*len(info) < maxlength {
-			if w+len(info) > maxlength {
-				s = runeSliceWidthRange(s, 0, maxlength-len(info)-1)
-				s = append(s, []rune(gOpts.truncatechar)...)
-			} else {
-				s = runeSliceWidthRange(s, 0, maxlength-len(info))
-			}
-			for _, r := range info {
-				s = append(s, r)
-			}
+		filename := []rune(f.Name())
+		if runeSliceWidth(filename) > maxFilenameWidth {
+			filename = runeSliceWidthRange(filename, 0, maxFilenameWidth-1)
+			filename = append(filename, []rune(gOpts.truncatechar)...)
+		}
+		for i := runeSliceWidth(filename); i < maxFilenameWidth; i++ {
+			filename = append(filename, ' ')
+		}
+		s = append(s, filename...)
+
+		if showInfo {
+			s = append(s, []rune(info)...)
 		}
 
 		ce := ""
