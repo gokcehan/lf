@@ -2525,11 +2525,11 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "cmds":
 		app.runPagerOnText(listCmds())
 	case "maps":
-		app.runPagerOnText(listBinds(gOpts.keys))
+		app.runPagerOn(listBinds(gOpts.keys))
 	case "cmaps":
-		app.runPagerOnText(listBinds(gOpts.cmdkeys))
+		app.runPagerOn(listBinds(gOpts.cmdkeys))
 	case "jumps":
-		app.runPagerOnText(listJumps(app.nav.jumpList, app.nav.jumpListInd))
+		app.runPagerOn(listJumps(app.nav.jumpList, app.nav.jumpListInd))
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
