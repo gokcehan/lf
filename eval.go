@@ -2525,6 +2525,8 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		app.ui.cmdAccLeft = acc
 		update(app)
+	case "cmds":
+		app.runPagerOnText(listCmds())
 	case "maps":
 		app.runPagerOnText(listBinds(gOpts.keys))
 	case "cmaps":

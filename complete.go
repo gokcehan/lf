@@ -16,6 +16,7 @@ var (
 		"cmap",
 		"cmaps",
 		"cmd",
+		"cmds",
 		"quit",
 		"up",
 		"half-up",
