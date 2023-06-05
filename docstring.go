@@ -134,6 +134,7 @@ The following options can be used to customize the behavior of lf:
     dirpreviews      bool      (default false)
     drawbox          bool      (default false)
     errorfmt         string    (default "\033[7;31;47m")
+    fileinfofmt      string    (default "\033[36m%p\033[0m %c %u %g %s %t %L")
     filesep          string    (default "\n")
     findlen          int       (default 1)
     globsearch       bool      (default false)
@@ -758,6 +759,15 @@ Format string of error messages shown in the bottom message line.
 If the format string contains the characters '%s', it is interpreted as a format
 string for 'fmt.Sprintf'. Such a string should end with the terminal reset
 sequence. For example, "\033[4m%s\033[0m" has the same effect as "\033[4m".
+
+    fileinfofmt    string    (default "\033[36m%p\033[0m %c %u %g %s %t %L")
+
+Format string of the file info shown in the bottom left corner. '%p' is
+replaced with the file permissions. '%c' is replaced with the link count.
+'%u' is replaced with the user. '%g' is replaced with the group. '%s' is
+replaced with the file size. '%t' is replaced with the last modified time.
+'%l' is replaced with the link target if it exists, otherwise a blank string.
+'%L' is the same as '%l' but with an arrow '-> ' prepended.
 
     filesep        string    (default "\n")
 

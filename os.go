@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -190,7 +191,7 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 func userName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {
-			return fmt.Sprintf("%v ", u.Username)
+			return u.Username
 		}
 	}
 	return ""
@@ -199,7 +200,7 @@ func userName(f os.FileInfo) string {
 func groupName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if g, err := user.LookupGroupId(fmt.Sprint(stat.Gid)); err == nil {
-			return fmt.Sprintf("%v ", g.Name)
+			return g.Name
 		}
 	}
 	return ""
@@ -207,7 +208,7 @@ func groupName(f os.FileInfo) string {
 
 func linkCount(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		return fmt.Sprintf("%v ", stat.Nlink)
+		return strconv.FormatUint(stat.Nlink, 10)
 	}
 	return ""
 }

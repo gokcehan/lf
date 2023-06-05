@@ -196,6 +196,7 @@ var (
 		"scrolloff",
 		"tabstop",
 		"errorfmt",
+		"fileinfofmt",
 		"filesep",
 		"hiddenfiles",
 		"history",

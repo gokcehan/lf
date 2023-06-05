@@ -722,19 +722,21 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	var linkTarget string
+	linkTargetArrow := ""
 	if curr.linkTarget != "" {
-		linkTarget = " -> " + curr.linkTarget
+		linkTargetArrow = "-> " + curr.linkTarget
 	}
 
-	ui.echof("%v %v%v%v%4s %v%s",
-		curr.Mode(),
-		linkCount(curr), // optional
-		userName(curr),  // optional
-		groupName(curr), // optional
-		humanize(curr.Size()),
-		curr.ModTime().Format(gOpts.timefmt),
-		linkTarget)
+	fileInfo := gOpts.fileinfofmt
+	fileInfo = strings.Replace(fileInfo, "%p", curr.Mode().String(), -1)
+	fileInfo = strings.Replace(fileInfo, "%c", linkCount(curr), -1)
+	fileInfo = strings.Replace(fileInfo, "%u", userName(curr), -1)
+	fileInfo = strings.Replace(fileInfo, "%g", groupName(curr), -1)
+	fileInfo = strings.Replace(fileInfo, "%s", humanize(curr.Size()), -1)
+	fileInfo = strings.Replace(fileInfo, "%t", curr.ModTime().Format(gOpts.timefmt), -1)
+	fileInfo = strings.Replace(fileInfo, "%l", curr.linkTarget, -1)
+	fileInfo = strings.Replace(fileInfo, "%L", linkTargetArrow, -1)
+	ui.echo(fileInfo)
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {

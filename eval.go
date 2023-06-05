@@ -232,6 +232,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 	case "errorfmt":
 		gOpts.errorfmt = e.val
+	case "fileinfofmt":
+		gOpts.fileinfofmt = e.val
 	case "filesep":
 		gOpts.filesep = e.val
 	case "findlen":
