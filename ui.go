@@ -648,10 +648,6 @@ func (ui *ui) echo(msg string) {
 	ui.msg = msg
 }
 
-func (ui *ui) echof(format string, a ...interface{}) {
-	ui.echo(fmt.Sprintf(format, a...))
-}
-
 func (ui *ui) echomsg(msg string) {
 	ui.msg = msg
 	log.Print(msg)
