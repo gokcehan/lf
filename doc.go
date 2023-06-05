@@ -728,6 +728,7 @@ Format string of the file info shown in the bottom left corner.
 `%t` is replaced with the last modified time.
 `%l` is replaced with the link target if it exists, otherwise a blank string.
 `%L` is the same as `%l` but with an arrow `-> ` prepended.
+On Windows, the link count, user and group fields are not supported and will be replaced with a blank string if specified. The default for Windows is "\033[36m%p\033[0m %s %t %L".
 
 	filesep        string    (default "\n")
 

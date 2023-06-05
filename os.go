@@ -165,6 +165,8 @@ func setDefaults() {
 
 	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
+
+	gOpts.fileinfofmt = "\033[36m%p\033[0m %c %u %g %s %t %L"
 }
 
 func setUserUmask() {

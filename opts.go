@@ -121,7 +121,6 @@ func init() {
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.errorfmt = "\033[7;31;47m"
-	gOpts.fileinfofmt = "\033[36m%p\033[0m %c %u %g %s %t %L"
 	gOpts.filesep = "\n"
 	gOpts.ifs = ""
 	gOpts.previewer = ""
