@@ -875,7 +875,9 @@ If the format string contains the characters `%s`, it is interpreted as a format
     fileinfofmt    string    (default "\e033[36m%p\e033[0m %c %u %g %s %t %L")
 .EE
 .PP
-Format string of the file info shown in the bottom left corner. `%p` is replaced with the file permissions. `%c` is replaced with the link count. `%u` is replaced with the user. `%g` is replaced with the group. `%s` is replaced with the file size. `%t` is replaced with the last modified time. `%l` is replaced with the link target if it exists, otherwise a blank string. `%L` is the same as `%l` but with an arrow `-> ` prepended. On Windows, the link count, user and group fields are not supported and will be replaced with a blank string if specified. The default for Windows is "\e033[36m%p\e033[0m %s %t %L".
+Format string of the file info shown in the bottom left corner. `%p` is replaced with the file permissions. `%c` is replaced with the link count. `%u` is replaced with the user. `%g` is replaced with the group. `%s` is replaced with the file size. `%t` is replaced with the last modified time. `%l` is replaced with the link target if it exists, otherwise a blank string. `%L` is the same as `%l` but with an arrow `-> ` prepended.
+.PP
+On Windows, the link count, user and group fields are not supported and will be replaced with a blank string if specified. The default for Windows is "\e033[36m%p\e033[0m %s %t %L".
 .PP
 .EX
     filesep        string    (default "\en")
