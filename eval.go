@@ -1742,6 +1742,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.height = app.ui.wins[0].h
 			app.nav.regCache = make(map[string]*reg)
 		}
+		for _, dir := range app.nav.dirs {
+			dir.boundPos(app.nav.height)
+		}
 		app.ui.loadFile(app, true)
 	case "load":
 		if !app.nav.init {
