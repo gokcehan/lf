@@ -1171,15 +1171,6 @@ func insert(app *app, arg string) {
 				return
 			}
 			app.nav.unselect()
-			if gSingleMode {
-				app.nav.renew()
-				app.ui.loadFile(app, true)
-			} else {
-				if err := remote("send load"); err != nil {
-					app.ui.echoerrf("delete: %s", err)
-					return
-				}
-			}
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
