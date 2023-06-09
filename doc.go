@@ -166,6 +166,7 @@ The following options can be used to customize the behavior of lf:
 	smartcase        bool      (default true)
 	smartdia         bool      (default false)
 	sortby           string    (default 'natural')
+	statfmt          string    (default "\033[36m%p\033[0m %c %u %g %s %t %L")
 	tabstop          int       (default 8)
 	tagfmt           string    (default "\033[31m")
 	tempmarks        string    (default '')
@@ -908,6 +909,12 @@ This option has no effect when 'ignoredia' is disabled.
 
 Sort type for directories.
 Currently supported sort types are 'natural', 'name', 'size', 'time', 'ctime', 'atime', and 'ext'.
+
+	statfmt    string    (default "\033[36m%p\033[0m %c %u %g %s %t %L")
+
+Format string of the file info shown in the bottom left corner.
+Special expansions are provided, '%p' as the file permissions, '%c' as the link count, '%u' as the user, '%g' as the group, '%s' as the file size, '%t' as the last modified time, and '%l' as the link target if it exists (otherwise a blank string). '%L' is the same as '%l' but with an arrow '-> ' prepended.
+On Windows, the link count, user and group fields are not supported and will be replaced with a blank string if specified. The default for Windows is "\033[36m%p\033[0m %s %t %L".
 
 	tabstop        int       (default 8)
 

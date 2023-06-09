@@ -211,6 +211,7 @@ var (
 		"shellflag",
 		"shellopts",
 		"sortby",
+		"statfmt",
 		"timefmt",
 		"tempmarks",
 		"tagfmt",

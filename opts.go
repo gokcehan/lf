@@ -67,6 +67,7 @@ var gOpts struct {
 	selmode          string
 	shell            string
 	shellflag        string
+	statfmt          string
 	timefmt          string
 	infotimefmtnew   string
 	infotimefmtold   string

@@ -801,6 +801,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
+	case "statfmt":
+		gOpts.statfmt = e.val
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {

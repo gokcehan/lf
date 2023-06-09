@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -164,6 +165,8 @@ func setDefaults() {
 
 	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
+
+	gOpts.statfmt = "\033[36m%p\033[0m %c %u %g %s %t %L"
 }
 
 func setUserUmask() {
@@ -190,7 +193,7 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 func userName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if u, err := user.LookupId(fmt.Sprint(stat.Uid)); err == nil {
-			return fmt.Sprintf("%v ", u.Username)
+			return u.Username
 		}
 	}
 	return ""
@@ -199,7 +202,7 @@ func userName(f os.FileInfo) string {
 func groupName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
 		if g, err := user.LookupGroupId(fmt.Sprint(stat.Gid)); err == nil {
-			return fmt.Sprintf("%v ", g.Name)
+			return g.Name
 		}
 	}
 	return ""
@@ -207,7 +210,7 @@ func groupName(f os.FileInfo) string {
 
 func linkCount(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		return fmt.Sprintf("%v ", stat.Nlink)
+		return strconv.FormatUint(stat.Nlink, 10)
 	}
 	return ""
 }
