@@ -723,7 +723,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		linkTargetArrow = "-> " + curr.linkTarget
 	}
 
-	fileInfo := gOpts.fileinfofmt
+	fileInfo := gOpts.statfmt
 	fileInfo = strings.Replace(fileInfo, "%p", curr.Mode().String(), -1)
 	fileInfo = strings.Replace(fileInfo, "%c", linkCount(curr), -1)
 	fileInfo = strings.Replace(fileInfo, "%u", userName(curr), -1)

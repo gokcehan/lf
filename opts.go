@@ -59,7 +59,6 @@ var gOpts struct {
 	scrolloff        int
 	tabstop          int
 	errorfmt         string
-	fileinfofmt      string
 	filesep          string
 	ifs              string
 	previewer        string
@@ -68,6 +67,7 @@ var gOpts struct {
 	selmode          string
 	shell            string
 	shellflag        string
+	statfmt          string
 	timefmt          string
 	infotimefmtnew   string
 	infotimefmtold   string

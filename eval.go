@@ -232,8 +232,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 	case "errorfmt":
 		gOpts.errorfmt = e.val
-	case "fileinfofmt":
-		gOpts.fileinfofmt = e.val
 	case "filesep":
 		gOpts.filesep = e.val
 	case "findlen":
@@ -803,6 +801,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
+	case "statfmt":
+		gOpts.statfmt = e.val
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
