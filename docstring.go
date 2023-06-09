@@ -977,21 +977,14 @@ Sort type for directories. Currently supported sort types are 'natural', 'name',
 
     statfmt    string    (default "\033[36m%p\033[0m %c %u %g %s %t %L")
 
-Format string of the file info shown in the bottom left corner. The following
-substitutions are performed:
-
-    '%p' is replaced with the file permissions.
-    '%c' is replaced with the link count.
-    '%u' is replaced with the user.
-    '%g' is replaced with the group.
-    '%s' is replaced with the file size.
-    '%t' is replaced with the last modified time.
-    '%l' is replaced with the link target if it exists, otherwise a blank string.
-    '%L' is the same as '%l' but with an arrow '-> ' prepended.
-
-On Windows, the link count, user and group fields are not supported and will
-be replaced with a blank string if specified. The default for Windows is
-"\033[36m%p\033[0m %s %t %L".
+Format string of the file info shown in the bottom left corner. Special
+expansions are provided, '%p' as the file permissions, '%c' as the link count,
+'%u' as the user, '%g' as the group, '%s' as the file size, '%t' as the last
+modified time, and '%l' as the link target if it exists (otherwise a blank
+string). '%L' is the same as '%l' but with an arrow '-> ' prepended. On Windows,
+the link count, user and group fields are not supported and will be replaced
+with a blank string if specified. The default for Windows is "\033[36m%p\033[0m
+%s %t %L".
 
     tabstop        int       (default 8)
 
