@@ -17,6 +17,7 @@ var (
 		"cmaps",
 		"cmd",
 		"cmds",
+		"pipe",
 		"quit",
 		"up",
 		"half-up",
@@ -219,6 +220,13 @@ var (
 		"infotimefmtold",
 		"truncatechar",
 	}
+
+	gPipeWords = []string{
+		"cmaps",
+		"cmds",
+		"jumps",
+		"maps",
+	}
 )
 
 func matchLongest(s1, s2 []rune) []rune {
@@ -400,6 +408,9 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		case "map", "cmap", "cmd":
 			longestAcc = acc
+		case "pipe":
+			matches, longest = matchWord(f[1], gPipeWords)
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		default:
 			matches, longest = matchFile(f[len(f)-1])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
