@@ -215,13 +215,17 @@ when defined:
 
 The following commands/keybindings are provided by default:
 
-    Unix                          Windows
-    cmd open &$OPENER "$f"        cmd open &%OPENER% %f%
-    map e $$EDITOR "$f"           map e $%EDITOR% %f%
-    map i $$PAGER "$f"            map i !%PAGER% %f%
-    map w $$SHELL                 map w $%SHELL%
-    cmd doc $$lf -doc | $PAGER    cmd doc !%lf% -doc | %PAGER%
-    map <f-1> doc                 map <f-1> doc
+    Unix                            Windows
+    cmd open &$OPENER "$f"          cmd open &%OPENER% %f%
+    map e $$EDITOR "$f"             map e $%EDITOR% %f%
+    map i $$PAGER "$f"              map i !%PAGER% %f%
+    map w $$SHELL                   map w $%SHELL%
+    cmd doc $$lf -doc | $PAGER      cmd doc !%lf% -doc | %PAGER%
+    map <f-1> doc                   map <f-1> doc
+    cmd maps pipe maps $$PAGER      cmd maps pipe maps !%PAGER%
+    cmd cmaps pipe cmaps $$PAGER    cmd cmaps pipe cmaps !%PAGER%
+    cmd cmds pipe cmds $$PAGER      cmd cmds pipe cmds !%PAGER%
+    cmd jumps pipe jumps $$PAGER    cmd jumps pipe jumps !%PAGER%
 
 The following additional keybindings are provided by default:
 
@@ -1172,7 +1176,7 @@ Characters from '#' to newline are comments and ignored:
 
     # comments start with '#'
 
-There are four special commands ('set', 'map', 'cmap', and 'cmd') for
+There are five special commands ('set', 'map', 'cmap', 'cmd', 'pipe') for
 configuration.
 
 Command 'set' is used to set an option which can be boolean, integer, or string:
@@ -1229,6 +1233,28 @@ prefix.
     map st :{{
         set sortby time
         set info time
+    }}
+
+Command 'pipe' is used to pipe data into external shell commands:
+
+    pipe maps $less
+
+The following types of data are supported:
+
+    maps   list of mappings created by the 'map' command
+    cmaps  list of mappings created by the 'cmap' command
+    cmds   list of commands created by the 'cmd' command
+    jumps  contents of the jump list, indicating which locations have been visited
+
+This is useful for inspecting the internal state of lf, and scripting actions
+based on their contents. For example, the jump list can be used to select a
+directory to change to:
+
+    map f pipe jumps ${{
+        dir=$(awk -F'\t' 'NR > 1 { print $NF }' | sort -u | fzf)
+        if [ -d "$dir" ]; then
+            lf -remote "send $id cd \"$dir\""
+        fi
     }}
 
 # Key Mappings
