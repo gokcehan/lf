@@ -1022,8 +1022,7 @@ partitioned in two pieces. truncatepct defines a fraction (in percent between
 the filename. The second piece will show the end of the filename and will use
 the rest of the available space. Both pieces are separated by the truncation
 character (truncatechar). A value of 100 will only show the beginning of the
-filename (as before), while a value of 0 will only show the end of the filename,
-e.g.:
+filename, while a value of 0 will only show the end of the filename, e.g.:
 
   - 'set truncatepct 100' -> "very-long-filename-tr~" (default, as before)
 
@@ -1031,10 +1030,7 @@ e.g.:
 
   - 'set truncatepct 0' -> "~ng-filename-truncated"
 
-The default of 100 means no change in behaviour to before the introduction of
-the truncatepct option.
-
-    waitmsg        string    (default 'Press any key to continue')
+    waitmsg string (default 'Press any key to continue')
 
 String shown after commands of shell-wait type.
 

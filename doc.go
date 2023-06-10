@@ -950,7 +950,7 @@ between 0 and 100) for the size of the first piece, which will show the
 beginning of the filename. The second piece will show the end of the filename
 and will use the rest of the available space. Both pieces are separated by the
 truncation character (truncatechar).
-A value of 100 will only show the beginning of the filename (as before),
+A value of 100 will only show the beginning of the filename,
 while a value of 0 will only show the end of the filename, e.g.:
 
   - `set truncatepct 100` -> "very-long-filename-tr~" (default, as before)
@@ -958,9 +958,6 @@ while a value of 0 will only show the end of the filename, e.g.:
   - `set truncatepct 50`  -> "very-long-f~-truncated"
 
   - `set truncatepct 0`   -> "~ng-filename-truncated"
-
-The default of 100 means no change in behaviour to before the introduction of
-the truncatepct option.
 
 	waitmsg        string    (default 'Press any key to continue')
 
