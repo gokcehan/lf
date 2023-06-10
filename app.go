@@ -507,7 +507,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 //	%       No    No     Yes    Yes     Yes     Statline for input/output
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
-func (app *app) runShell(s string, args []string, prefix string) {
+func (app *app) runShell(s string, args []string, prefix string, stdin io.Reader) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
@@ -518,7 +518,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	var err error
 	switch prefix {
 	case "$", "!":
-		cmd.Stdin = os.Stdin
+		if stdin != nil {
+			cmd.Stdin = stdin
+		} else {
+			cmd.Stdin = os.Stdin
+		}
+
 		cmd.Stdout = os.Stdout
 		cmd.Stderr = os.Stderr
 
@@ -527,21 +532,31 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	// We are running the command asynchronously
-	if prefix == "%" {
+	switch prefix {
+	case "%":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
-		stdin, err := cmd.StdinPipe()
-		if err != nil {
-			log.Printf("writing stdin: %s", err)
+
+		if stdin != nil {
+			cmd.Stdin = stdin
+		} else {
+			app.cmdIn, err = cmd.StdinPipe()
+			if err != nil {
+				log.Printf("writing stdin: %s", err)
+			}
 		}
-		app.cmdIn = stdin
+
 		stdout, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Printf("reading stdout: %s", err)
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
+	case "&":
+		if stdin != nil {
+			cmd.Stdin = stdin
+		}
 	}
 
 	shellSetPG(cmd)

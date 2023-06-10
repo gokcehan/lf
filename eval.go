@@ -2168,11 +2168,11 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("shell: %s", s)
 			app.ui.cmdPrefix = ""
 			app.cmdHistory = append(app.cmdHistory, cmdItem{"$", s})
-			app.runShell(s, nil, "$")
+			app.runShell(s, nil, "$", nil)
 		case "%":
 			log.Printf("shell-pipe: %s", s)
 			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
-			app.runShell(s, nil, "%")
+			app.runShell(s, nil, "%", nil)
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
@@ -2180,12 +2180,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("shell-wait: %s", s)
 			app.ui.cmdPrefix = ""
 			app.cmdHistory = append(app.cmdHistory, cmdItem{"!", s})
-			app.runShell(s, nil, "!")
+			app.runShell(s, nil, "!", nil)
 		case "&":
 			log.Printf("shell-async: %s", s)
 			app.ui.cmdPrefix = ""
 			app.cmdHistory = append(app.cmdHistory, cmdItem{"&", s})
-			app.runShell(s, nil, "&")
+			app.runShell(s, nil, "&", nil)
 		case "/":
 			dir := app.nav.currDir()
 			old := dir.ind
@@ -2544,23 +2544,35 @@ func (e *execExpr) eval(app *app, args []string) {
 	switch e.prefix {
 	case "$":
 		log.Printf("shell: %s -- %s", e, args)
-		app.runShell(e.value, args, e.prefix)
+		app.runShell(e.value, args, e.prefix, nil)
 	case "%":
 		log.Printf("shell-pipe: %s -- %s", e, args)
-		app.runShell(e.value, args, e.prefix)
+		app.runShell(e.value, args, e.prefix, nil)
 	case "!":
 		log.Printf("shell-wait: %s -- %s", e, args)
-		app.runShell(e.value, args, e.prefix)
+		app.runShell(e.value, args, e.prefix, nil)
 	case "&":
 		log.Printf("shell-async: %s -- %s", e, args)
-		app.runShell(e.value, args, e.prefix)
+		app.runShell(e.value, args, e.prefix, nil)
 	default:
 		log.Printf("evaluating unknown execution prefix: %q", e.prefix)
 	}
 }
 
 func (e *pipeExpr) eval(app *app, args []string) {
-	log.Printf("pipe expr: %v", e)
+	var stdin io.Reader
+	switch e.data {
+	case "maps":
+		stdin = listBinds(gOpts.keys)
+	case "cmaps":
+		stdin = listBinds(gOpts.cmdkeys)
+	case "cmds":
+		stdin = listCmds()
+	case "jumps":
+		stdin = listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	}
+
+	app.runShell(e.exec.value, args, e.exec.prefix, stdin)
 }
 
 func (e *listExpr) eval(app *app, args []string) {
