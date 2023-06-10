@@ -318,6 +318,18 @@ var gEvalTests = []struct {
 	},
 
 	{
+		"pipe maps $$PAGER",
+		[]string{"pipe", "maps", "$", "$PAGER", "\n"},
+		[]expr{&pipeExpr{"maps", &execExpr{"$", "$PAGER"}}},
+	},
+
+	{
+		"map <a-m> pipe maps $$PAGER",
+		[]string{"map", "<a-m>", "pipe", "maps", "$", "$PAGER", "\n"},
+		[]expr{&mapExpr{"<a-m>", &pipeExpr{"maps", &execExpr{"$", "$PAGER"}}}},
+	},
+
+	{
 		`cmd gohome :{{
 			cd ~
 			set hidden
@@ -395,6 +407,36 @@ var gEvalTests = []struct {
 			tar -czvf $1.tar.gz $1
 			rm -rf $1
 		`}}},
+	},
+
+	{
+		`pipe maps ${{
+			clear
+			$PAGER
+		}}`,
+		[]string{"pipe", "maps", "$", "{{", `
+			clear
+			$PAGER
+		`, "}}", "\n"},
+		[]expr{&pipeExpr{"maps", &execExpr{"$", `
+			clear
+			$PAGER
+		`}}},
+	},
+
+	{
+		`map <a-m> pipe maps ${{
+			clear
+			$PAGER
+		}}`,
+		[]string{"map", "<a-m>", "pipe", "maps", "$", "{{", `
+			clear
+			$PAGER
+		`, "}}", "\n"},
+		[]expr{&mapExpr{"<a-m>", &pipeExpr{"maps", &execExpr{"$", `
+			clear
+			$PAGER
+		`}}}},
 	},
 }
 

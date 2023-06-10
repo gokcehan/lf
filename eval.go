@@ -2559,6 +2559,10 @@ func (e *execExpr) eval(app *app, args []string) {
 	}
 }
 
+func (e *pipeExpr) eval(app *app, args []string) {
+	log.Printf("pipe expr: %v", e)
+}
+
 func (e *listExpr) eval(app *app, args []string) {
 	for i := 0; i < e.count; i++ {
 		for _, expr := range e.exprs {

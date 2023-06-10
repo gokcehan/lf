@@ -112,6 +112,15 @@ func (e *execExpr) String() string {
 	return buf.String()
 }
 
+type pipeExpr struct {
+	data string
+	exec *execExpr
+}
+
+func (e *pipeExpr) String() string {
+	return fmt.Sprintf("%s | %s", e.data, e.exec.String())
+}
+
 type listExpr struct {
 	exprs []expr
 	count int
@@ -218,6 +227,19 @@ func (p *parser) parseExpr() expr {
 			}
 
 			result = &cmdExpr{name, expr}
+		case "pipe":
+			s.scan()
+			data := s.tok
+
+			s.scan()
+			expr := p.parseExpr()
+
+			switch exec := expr.(type) {
+			case *execExpr:
+				result = &pipeExpr{data, exec}
+			default:
+				p.err = fmt.Errorf("expected shell command: %v", expr)
+			}
 		default:
 			name := s.tok
 
