@@ -53,12 +53,12 @@ func runeSliceWidthRange(rs []rune, beg, end int) []rune {
 	return rs[b:]
 }
 
-// Returns the last runes of `rs` that take up at most `max_width` space.
-func runeSliceWidthLastRange(rs []rune, max_width int) []rune {
+// Returns the last runes of `rs` that take up at most `maxWidth` space.
+func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 	lastWidth := 0
 	for i := len(rs) - 1; i >= 0; i-- {
 		w := runewidth.RuneWidth(rs[i])
-		if lastWidth+w > max_width {
+		if lastWidth+w > maxWidth {
 			return rs[i+1:]
 		}
 		lastWidth += w
