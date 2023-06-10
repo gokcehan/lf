@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -209,7 +210,7 @@ func groupName(f os.FileInfo) string {
 
 func linkCount(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		return fmt.Sprint(stat.Nlink)
+		return strconv.FormatUint(stat.Nlink, 10)
 	}
 	return ""
 }
