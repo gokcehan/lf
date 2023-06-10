@@ -838,7 +838,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		if n < 0 || n > 100 {
-			app.ui.echoerr("truncatepct: must be between 0 and 100 (both inclusive)")
+			app.ui.echoerrf("truncatepct: must be between 0 and 100 (both inclusive), got %d", n)
 			return
 		}
 		gOpts.truncatepct = n
