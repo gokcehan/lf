@@ -469,10 +469,10 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		filename := []rune(f.Name())
 		if runeSliceWidth(filename) > maxFilenameWidth {
 			truncatePos := (maxFilenameWidth - 1) * gOpts.truncatepct / 100
-			var lastPart []rune = runeSliceWidthLastRange(filename, maxFilenameWidth-truncatePos-1)
+			lastPart := runeSliceWidthLastRange(filename, maxFilenameWidth-truncatePos-1)
 			filename = runeSliceWidthRange(filename, 0, truncatePos)
 			filename = append(filename, []rune(gOpts.truncatechar)...)
-			filename = append(filename, []rune(lastPart)...)
+			filename = append(filename, lastPart...)
 		}
 		for i := runeSliceWidth(filename); i < maxFilenameWidth; i++ {
 			filename = append(filename, ' ')
