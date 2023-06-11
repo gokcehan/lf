@@ -19,69 +19,72 @@ mkdir dist || exit 5
 ERRORS=
 
 build() {
-    echo "=== Building for GOOS=$1 and GOARCH=$2."
     # https://golang.org/doc/install/source#environment
+    echo "=== Building for GOOS=$1 and GOARCH=$2."
     CGO_ENABLED=0 GOOS="$1" GOARCH="$2" go build -o dist/ \
         -ldflags="-s -w -X main.gVersion=$version"
     if test "$?" != "0"; then
         ERRORS=1
     else
-        case "$3" in
-        *.tar.gz)
-            (
-                cd dist
-                tar czf "$3" "$4" --remove-files
-            ) || exit 5
-            ;;
-        *.zip)
-            (
-                cd dist
-                zip "$3" "$4" --move
-            ) || exit 5
-            ;;
-        esac
-        echo "dist/$3 successfully created."
+        package "$1" "$2" || exit 5
     fi
 }
 
-build android arm64 lf-android-arm64.tar.gz lf
-build darwin amd64 lf-darwin-amd64.tar.gz lf
-build dragonfly amd64 lf-dragonfly-amd64.tar.gz lf
-build freebsd 386 lf-freebsd-386.tar.gz lf
-build freebsd amd64 lf-freebsd-amd64.tar.gz lf
-build freebsd arm lf-freebsd-arm.tar.gz lf
-build illumos amd64 lf-illumos-amd64.tar.gz lf
-build linux 386 lf-linux-386.tar.gz lf
-build linux amd64 lf-linux-amd64.tar.gz lf
-build linux arm lf-linux-arm.tar.gz lf
-build linux arm64 lf-linux-arm64.tar.gz lf
-build linux ppc64 lf-linux-ppc64.tar.gz lf
-build linux ppc64le lf-linux-ppc64le.tar.gz lf
-build linux mips lf-linux-mips.tar.gz lf
-build linux mipsle lf-linux-mipsle.tar.gz lf
-build linux mips64 lf-linux-mips64.tar.gz lf
-build linux mips64le lf-linux-mips64le.tar.gz lf
-build linux s390x lf-linux-s390x.tar.gz lf
-build netbsd 386 lf-netbsd-386.tar.gz lf
-build netbsd amd64 lf-netbsd-amd64.tar.gz lf
-build netbsd arm lf-netbsd-arm.tar.gz lf
-build openbsd 386 lf-openbsd-386.tar.gz lf
-build openbsd amd64 lf-openbsd-amd64.tar.gz lf
-build openbsd arm lf-openbsd-arm.tar.gz lf
-build openbsd arm64 lf-openbsd-arm64.tar.gz lf
-build solaris amd64 lf-solaris-amd64.tar.gz lf
-build windows 386 lf-windows-386.zip lf.exe
-build windows amd64 lf-windows-amd64.zip lf.exe
+package() (
+    cd dist || return 1 
+    # Since the function is surrounded by (), the cd only affects a subshell
+    OUTFILE=
+    case "$1" in
+    windows)
+        OUTFILE="lf-$1-$2.zip"
+        zip "$OUTFILE" lf.exe --move || return 1
+        ;;
+    *)
+        OUTFILE="lf-$1-$2.tar.gz"
+        tar czf "$OUTFILE" lf --remove-files || return 1
+        ;;
+    esac
+    echo "dist/$OUTFILE successfully created."
+)
+
+build android arm64
+build darwin amd64
+build dragonfly amd64
+build freebsd 386
+build freebsd amd64
+build freebsd arm
+build illumos amd64
+build linux 386
+build linux amd64
+build linux arm
+build linux arm64
+build linux ppc64
+build linux ppc64le
+build linux mips
+build linux mipsle
+build linux mips64
+build linux mips64le
+build linux s390x
+build netbsd 386
+build netbsd amd64
+build netbsd arm
+build openbsd 386
+build openbsd amd64
+build openbsd arm
+build openbsd arm64
+build solaris amd64
+build windows 386
+build windows amd64
 # Unsupported
-# build aix ppc64 lf-aix-ppc64.tar.gz lf
-# build android 386 lf-android-386.tar.gz lf
-# build android amd64 lf-android-amd64.tar.gz lf
-# build android arm lf-android-arm.tar.gz lf
-# build darwin arm64 lf-darwin-arm64.tar.gz lf
-# build js wasm lf-js-wasm.tar.gz lf
-# build plan9 386 lf-plan9-386.tar.gz lf
-# build plan9 amd64 lf-plan9-amd64.tar.gz lf
-# build plan9 arm lf-plan9-arm.tar.gz lf
+# build aix ppc64
+# build android 386
+# build android amd64
+# build android arm
+# build darwin arm64
+# build js wasm
+# build plan9 386
+# build plan9 amd64
+# build plan9 arm
 
 if test -n "$ERRORS"; then
     printf "\ngen/xbuild.sh: some targets failed to compile.\n"
