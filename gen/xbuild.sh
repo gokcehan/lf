@@ -49,6 +49,7 @@ package() (
 
 build android arm64
 build darwin amd64
+build darwin arm64
 build dragonfly amd64
 build freebsd 386
 build freebsd amd64
@@ -80,7 +81,6 @@ build windows amd64
 # build android 386
 # build android amd64
 # build android arm
-# build darwin arm64
 # build js wasm
 # build plan9 386
 # build plan9 amd64
