@@ -1126,19 +1126,11 @@ Truncate character shown at the end when the file name does not fit to the pane.
 .PP
 When a filename is too long to be shown completely, the available space is partitioned in two pieces. truncatepct defines a fraction (in percent between 0 and 100) for the size of the first piece, which will show the beginning of the filename. The second piece will show the end of the filename and will use the rest of the available space. Both pieces are separated by the truncation character (truncatechar). A value of 100 will only show the beginning of the filename, while a value of 0 will only show the end of the filename, e.g.:
 .PP
-.EX
-  - `set truncatepct 100` -> "very-long-filename-tr~" (default)
-.EE
+- `set truncatepct 100` -> "very-long-filename-tr~" (default)
 .PP
-.EX
-  - `set truncatepct 50` -> "very-long-f~-truncated"
-.EE
+- `set truncatepct 50` -> "very-long-f~-truncated"
 .PP
-.EX
-  - `set truncatepct 0` -> "~ng-filename-truncated"
-.EE
-.PP
-.
+- `set truncatepct 0` -> "~ng-filename-truncated"
 .PP
 .EX
     waitmsg        string    (default 'Press any key to continue')
