@@ -1,6 +1,5 @@
 import os
 import hashlib
-import sys
 
 
 def calculate_sha256(file_path):
@@ -29,5 +28,4 @@ def display_directory_tree(path, indent=0):
 
 
 if __name__ == "__main__":
-    print(sys.argv[1])
-    display_directory_tree(sys.argv[1])
+    display_directory_tree(os.getcwd())
