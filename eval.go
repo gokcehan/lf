@@ -2562,6 +2562,9 @@ func (e *pipeExpr) eval(app *app, args []string) {
 		stdin = listCmds()
 	case "jumps":
 		stdin = listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	default:
+		app.ui.echoerr("pipe: data should be 'maps', 'cmaps', 'cmds' or 'jumps'")
+		return
 	}
 
 	app.runShell(e.exec.value, args, e.exec.prefix, stdin)
