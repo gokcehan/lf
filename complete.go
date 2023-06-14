@@ -282,7 +282,6 @@ func matchExec(s string) (matches []string, longest []rune) {
 				continue
 			}
 
-			log.Print(finfo.Name())
 			words = append(words, finfo.Name())
 		}
 	}
