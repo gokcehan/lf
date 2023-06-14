@@ -8,6 +8,7 @@ package main
 //          | CmdExpr
 //          | CallExpr
 //          | ExecExpr
+//          | PipeExpr
 //          | ListExpr
 //
 // SetExpr  = 'set' <opt> <val> ';'
@@ -24,6 +25,8 @@ package main
 //          | Prefix '{{' <value> '}}' ';'
 //
 // Prefix   = '$' | '%' | '!' | '&'
+//
+// PipeExpr = 'pipe' <data> ExecExpr
 //
 // ListExpr = ':'      Expr ListRest      '\n'
 //          | ':' '{{' Expr ListRest '}}' ';'
