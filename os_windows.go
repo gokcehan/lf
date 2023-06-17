@@ -101,11 +101,16 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
-	args = append([]string{gOpts.shellflag, s}, args...)
+	var builder strings.Builder
+	builder.WriteString(s)
+	for _, arg := range args {
+		fmt.Fprintf(&builder, ` "%s"`, arg)
+	}
+	cmdline := fmt.Sprintf(`%s %s "%s"`, gOpts.shellopts, gOpts.shellflag, builder.String())
 
-	args = append(gOpts.shellopts, args...)
-
-	return exec.Command(gOpts.shell, args...)
+	cmd := exec.Command(gOpts.shell)
+	cmd.SysProcAttr = &windows.SysProcAttr{CmdLine: cmdline}
+	return cmd
 }
 
 func shellSetPG(cmd *exec.Cmd) {
