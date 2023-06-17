@@ -1612,9 +1612,6 @@ This is useful for scripting actions based on the internal state of lf. For exam
             # remove the header line and print the last field
             awk -F'\et' 'NR > 1 { print $NF }'
         }
-.EE
-.PP
-.EX
         dir=$(lf -remote "query $id jumps" | extract_dirs | sort -u | fzf)
         if [ -d "$dir" ]; then
             lf -remote "send $id cd \e"$dir\e""

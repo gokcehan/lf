@@ -1481,7 +1481,6 @@ For example, the jump list can be used to select a directory to change to:
             # remove the header line and print the last field
             awk -F'\t' 'NR > 1 { print $NF }'
         }
-
         dir=$(lf -remote "query $id jumps" | extract_dirs | sort -u | fzf)
         if [ -d "$dir" ]; then
             lf -remote "send $id cd \"$dir\""
