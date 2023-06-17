@@ -603,17 +603,3 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 }
-
-func (app *app) runPagerOn(stdin io.Reader) {
-	app.nav.exportFiles()
-	app.ui.exportSizes()
-	exportOpts()
-
-	cmd := shellCommand(envPager, nil)
-
-	cmd.Stdin = stdin
-	cmd.Stdout = os.Stdout
-	cmd.Stderr = os.Stderr
-
-	app.runCmdSync(cmd, false)
-}
