@@ -1461,9 +1461,36 @@ respect to the terminal width as follows:
         fi
     }}
 
-Besides 'send' command, there is a 'quit' command to quit the server when there
-are no connected clients left, and a 'quit!' command to force quit the server by
-closing client connections first:
+In addition, the 'query' command can be used to obtain information about a
+specific lf instance by providing its id.
+
+    lf -remote 'query 1234 maps' | less
+
+The following types of data are supported:
+
+    maps   list of mappings created by the 'map' command
+    cmaps  list of mappings created by the 'cmap' command
+    cmds   list of commands created by the 'cmd' command
+    jumps  contents of the jump list, indicating which locations have been visited
+
+This is useful for scripting actions based on the internal state of lf.
+For example, the jump list can be used to select a directory to change to:
+
+    map f ${{
+        extract_dirs() {
+            # remove the header line and print the last field
+            awk -F'\t' 'NR > 1 { print $NF }'
+        }
+
+        dir=$(lf -remote "query $id jumps" | extract_dirs | sort -u | fzf)
+        if [ -d "$dir" ]; then
+            lf -remote "send $id cd \"$dir\""
+        fi
+    }}
+
+There is also a 'quit' command to quit the server when there are no connected
+clients left, and a 'quit!' command to force quit the server by closing client
+connections first:
 
     lf -remote 'quit'
     lf -remote 'quit!'
