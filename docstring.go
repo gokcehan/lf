@@ -1464,7 +1464,7 @@ respect to the terminal width as follows:
 In addition, the 'query' command can be used to obtain information about a
 specific lf instance by providing its id.
 
-    lf -remote 'query 1234 maps' | less
+    lf -remote "query $id maps" | less
 
 The following types of data are supported:
 

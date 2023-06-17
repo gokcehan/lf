@@ -1592,7 +1592,7 @@ Since lf does not have control flow syntax, remote commands are used for such ne
 In addition, the 'query' command can be used to obtain information about a specific lf instance by providing its id.
 .PP
 .EX
-    lf -remote 'query 1234 maps' | less
+    lf -remote "query $id maps" | less
 .EE
 .PP
 The following types of data are supported:
