@@ -121,3 +121,18 @@ func remote(cmd string) error {
 
 	return nil
 }
+
+func store(key string, reader io.Reader) {
+	c, err := net.Dial(gSocketProt, gSocketPath)
+	if err != nil {
+		log.Printf("dialing to send server: %s", err)
+		return
+	}
+
+	fmt.Fprintf(c, "store %d %s\n", gClientID, key)
+	io.Copy(c, reader)
+	c.Close()
+
+	// wait for response from server, if any
+	io.ReadAll(c)
+}

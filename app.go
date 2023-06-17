@@ -475,6 +475,13 @@ func (app *app) loop() {
 	}
 }
 
+func (app *app) exportData() {
+	store("maps", listBinds(gOpts.keys))
+	store("cmaps", listBinds(gOpts.cmdkeys))
+	store("cmds", listCmds())
+	store("jumps", listJumps(app.nav.jumpList, app.nav.jumpListInd))
+}
+
 func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	app.nav.previewChan <- ""
 	app.nav.dirPreviewChan <- nil
@@ -511,6 +518,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
+	app.exportData()
 
 	cmd := shellCommand(s, args)
 

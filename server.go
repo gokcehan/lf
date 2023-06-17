@@ -3,14 +3,17 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"os"
 	"strconv"
+	"strings"
 )
 
 var (
 	gConnList = make(map[int]net.Conn)
+	gConnData = make(map[int]map[string]string)
 	gQuitChan = make(chan struct{}, 1)
 	gListener net.Listener
 )
@@ -96,6 +99,7 @@ Loop:
 					echoerr(c, "listen: drop: client id should be a number")
 				} else {
 					delete(gConnList, id)
+					delete(gConnData, id)
 				}
 			} else {
 				echoerr(c, "listen: drop: requires a client id")
@@ -116,6 +120,36 @@ Loop:
 					}
 				}
 			}
+		case "store":
+			idStr, key := splitWord(rest)
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				echoerr(c, "listen: store: client id should be a number")
+				break
+			}
+			data, ok := gConnData[id]
+			if !ok {
+				data = make(map[string]string)
+				gConnData[id] = data
+			}
+			var builder strings.Builder
+			for s.Scan() {
+				fmt.Fprintln(&builder, s.Text())
+			}
+			data[key] = builder.String()
+		case "query":
+			idStr, key := splitWord(rest)
+			id, err := strconv.Atoi(idStr)
+			if err != nil {
+				echoerr(c, "listen: query: client id should be a number")
+				break
+			}
+			data, ok := gConnData[id]
+			if !ok {
+				echoerr(c, "listen: query: client id does not exist")
+				break
+			}
+			io.WriteString(c, data[key])
 		case "quit":
 			if len(gConnList) == 0 {
 				gQuitChan <- struct{}{}
