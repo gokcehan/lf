@@ -195,3 +195,7 @@ func exportFiles(f string, fs []string, pwd string) {
 		os.Setenv("fx", envFiles)
 	}
 }
+
+func quoteString(s string) string {
+	return fmt.Sprintf(`"%s"`, s)
+}
