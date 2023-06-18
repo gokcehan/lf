@@ -130,6 +130,11 @@ func setDefaults() {
 	gOpts.cmds["doc"] = &execExpr{"!", "%lf% -doc | %PAGER%"}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 
+	for _, key := range []string{"maps", "cmaps", "cmds", "jumps"} {
+		cmd := fmt.Sprintf(`lf -remote "query %%id%% %s" | %%PAGER%%`, key)
+		gOpts.cmds[key] = &execExpr{"!", cmd}
+	}
+
 	gOpts.statfmt = "\033[36m%p\033[0m %s %t %L"
 }
 
