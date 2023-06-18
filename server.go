@@ -87,6 +87,7 @@ Loop:
 					echoerr(c, "listen: conn: client id should be a number")
 				} else {
 					gConnList[id] = c
+					gConnData[id] = make(map[string]string)
 				}
 			} else {
 				echoerr(c, "listen: conn: requires a client id")
@@ -129,8 +130,8 @@ Loop:
 			}
 			data, ok := gConnData[id]
 			if !ok {
-				data = make(map[string]string)
-				gConnData[id] = data
+				echoerr(c, "listen: store: client id does not exist")
+				break
 			}
 			var builder strings.Builder
 			for s.Scan() {
