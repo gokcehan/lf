@@ -1392,6 +1392,8 @@ For example, the jump list can be used to select a directory to change to:
 	    fi
 	}}
 
+The information is set using the `store` command, although this is not needed for users.
+
 There is also a 'quit' command to quit the server when there are no connected clients left, and a 'quit!' command to force quit the server by closing client connections first:
 
 	lf -remote 'quit'
