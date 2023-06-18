@@ -106,7 +106,8 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	for _, arg := range args {
 		fmt.Fprintf(&builder, ` "%s"`, arg)
 	}
-	cmdline := fmt.Sprintf(`%s %s %s "%s"`, gOpts.shell, gOpts.shellopts, gOpts.shellflag, builder.String())
+	shellOpts := strings.Join(gOpts.shellopts, " ")
+	cmdline := fmt.Sprintf(`%s %s %s "%s"`, gOpts.shell, shellOpts, gOpts.shellflag, builder.String())
 
 	cmd := exec.Command(gOpts.shell)
 	cmd.SysProcAttr = &windows.SysProcAttr{CmdLine: cmdline}
