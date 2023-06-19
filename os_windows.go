@@ -101,17 +101,24 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
-	var builder strings.Builder
-	builder.WriteString(s)
-	for _, arg := range args {
-		fmt.Fprintf(&builder, ` "%s"`, arg)
-	}
-	shellOpts := strings.Join(gOpts.shellopts, " ")
-	cmdline := fmt.Sprintf(`%s %s %s "%s"`, gOpts.shell, shellOpts, gOpts.shellflag, builder.String())
+	// Windows CMD requires special handling to deal with quoted arguments
+	if gOpts.shell == "cmd" {
+		var builder strings.Builder
+		builder.WriteString(s)
+		for _, arg := range args {
+			fmt.Fprintf(&builder, ` "%s"`, arg)
+		}
+		shellOpts := strings.Join(gOpts.shellopts, " ")
+		cmdline := fmt.Sprintf(`%s %s %s "%s"`, gOpts.shell, shellOpts, gOpts.shellflag, builder.String())
 
-	cmd := exec.Command(gOpts.shell)
-	cmd.SysProcAttr = &windows.SysProcAttr{CmdLine: cmdline}
-	return cmd
+		cmd := exec.Command(gOpts.shell)
+		cmd.SysProcAttr = &windows.SysProcAttr{CmdLine: cmdline}
+		return cmd
+	}
+
+	args = append([]string{gOpts.shellflag, s}, args...)
+	args = append(gOpts.shellopts, args...)
+	return exec.Command(gOpts.shell, args...)
 }
 
 func shellSetPG(cmd *exec.Cmd) {
