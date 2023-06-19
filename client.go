@@ -133,6 +133,6 @@ func store(key string, reader io.Reader) {
 	io.Copy(c, reader)
 	c.Close()
 
-	// wait for response from server, if any
+	// wait for server to finish storing data and send response, if any
 	io.ReadAll(c)
 }
