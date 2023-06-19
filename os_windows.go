@@ -102,7 +102,7 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 
 func shellCommand(s string, args []string) *exec.Cmd {
 	// Windows CMD requires special handling to deal with quoted arguments
-	if gOpts.shell == "cmd" {
+	if strings.ToLower(gOpts.shell) == "cmd" {
 		var builder strings.Builder
 		builder.WriteString(s)
 		for _, arg := range args {
