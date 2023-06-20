@@ -475,11 +475,21 @@ func (app *app) loop() {
 	}
 }
 
-func (app *app) exportData() {
-	store("maps", listBinds(gOpts.keys))
-	store("cmaps", listBinds(gOpts.cmdkeys))
-	store("cmds", listCmds())
-	store("jumps", listJumps(app.nav.jumpList, app.nav.jumpListInd))
+func (app *app) exportData() error {
+	if err := store("maps", listBinds(gOpts.keys)); err != nil {
+		return err
+	}
+	if err := store("cmaps", listBinds(gOpts.cmdkeys)); err != nil {
+		return err
+	}
+	if err := store("cmds", listCmds()); err != nil {
+		return err
+	}
+	if err := store("jumps", listJumps(app.nav.jumpList, app.nav.jumpListInd)); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
@@ -520,7 +530,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	exportOpts()
 
 	if !gSingleMode {
-		app.exportData()
+		if err := app.exportData(); err != nil {
+			app.ui.echoerrf("exporting data: %s", err)
+			return
+		}
 	}
 
 	cmd := shellCommand(s, args)
