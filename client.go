@@ -128,10 +128,21 @@ func store(key string, reader io.Reader) {
 		log.Printf("dialing to send server: %s", err)
 		return
 	}
+	defer c.Close()
 
 	fmt.Fprintf(c, "store %d %s\n", gClientID, key)
 	io.Copy(c, reader)
-	c.Close()
+
+	// XXX: Standard net.Conn interface does not include a CloseWrite method
+	// but net.UnixConn and net.TCPConn implement it so the following should be
+	// safe as long as we do not use other types of connections. We need
+	// CloseWrite to notify the server that this is not a persistent connection
+	// and it should be closed after the response.
+	if v, ok := c.(interface {
+		CloseWrite() error
+	}); ok {
+		v.CloseWrite()
+	}
 
 	// wait for server to finish storing data and send response, if any
 	io.ReadAll(c)
