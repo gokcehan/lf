@@ -518,7 +518,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	exportOpts()
-	app.exportData()
+
+	if !gSingleMode {
+		app.exportData()
+	}
 
 	cmd := shellCommand(s, args)
 
