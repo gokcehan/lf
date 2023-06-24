@@ -140,6 +140,7 @@ var (
 		"drawbox",
 		"nodrawbox",
 		"drawbox!",
+		"dupfilefmt",
 		"globsearch",
 		"noglobsearch",
 		"globsearch!",
