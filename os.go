@@ -218,6 +218,10 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }
 
+func errPermissionDenied(err error) bool {
+	return err.(*os.LinkError).Err.(unix.Errno) == unix.EPERM
+}
+
 func exportFiles(f string, fs []string, pwd string) {
 	envFile := f
 	envFiles := strings.Join(fs, gOpts.filesep)

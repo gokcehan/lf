@@ -1351,7 +1351,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 		}
 
 		if err := os.Rename(src, dst); err != nil {
-			if errCrossDevice(err) {
+			if errCrossDevice(err) || errPermissionDenied(err) {
 				total, err := copySize([]string{src})
 				if err != nil {
 					echo.args[0] = err.Error()

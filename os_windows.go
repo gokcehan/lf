@@ -168,6 +168,10 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(windows.Errno) == 17
 }
 
+func errPermissionDenied(err error) bool {
+	return false
+}
+
 func exportFiles(f string, fs []string, pwd string) {
 	envFile := fmt.Sprintf(`"%s"`, f)
 
