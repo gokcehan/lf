@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -850,8 +851,34 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 		reader = f
 	}
 
+	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+		prefix := make([]byte, 2)
+		_, err := reader.Read(prefix)
+
+		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
+			buf := bufio.NewScanner(reader)
+			buf.Buffer(make([]byte, 0), gPreviewerMaxLineSize)
+			if buf.Scan() {
+				lines, sx := renderPreviewLine(gSixelBegin+buf.Text(), 1, win, sxScreen)
+				reg.lines = append(reg.lines, lines...)
+				if sx != nil {
+					reg.sixels = append(reg.sixels, *sx)
+				} else {
+					reg.lines = append(reg.lines, buf.Text())
+				}
+			}
+
+			if buf.Err() != nil { // TODO: defer error checking if it's needed
+				log.Printf("loading file: %s", buf.Err())
+			}
+			return
+		}
+
+		// restore original file content
+		reader = io.MultiReader(bytes.NewReader(prefix), reader)
+	}
+
 	buf := bufio.NewScanner(reader)
-	buf.Buffer(make([]byte, 0), gPreviewerMaxLineSize)
 
 	for len(reg.lines) < win.h && buf.Scan() {
 		text := buf.Text()
@@ -862,15 +889,7 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 			}
 		}
 
-		if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
-			lines, sx := renderPreviewLine(text, len(reg.lines), win, sxScreen)
-			reg.lines = append(reg.lines, lines...)
-			if sx != nil {
-				reg.sixels = append(reg.sixels, *sx)
-			}
-		} else {
-			reg.lines = append(reg.lines, text)
-		}
+		reg.lines = append(reg.lines, text)
 	}
 
 	if buf.Err() != nil {
