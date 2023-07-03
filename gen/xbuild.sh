@@ -8,51 +8,85 @@
 # compressed in an archive form (`.zip` for windows and `.tar.gz` for the rest)
 # within a folder named `dist`.
 
-set -o verbose
+[ -z "$version" ] && version=$(git describe --tags)
 
-[ -z $version ] && version=$(git describe --tags)
+test -d dist && {
+    echo "gen/xbuild.sh: WARNING: removing preexisting subdir 'dist'"
+    rm -r dist || exit 5
+}
+mkdir dist || exit 5
 
-mkdir -p dist
+ERRORS=
 
-# https://golang.org/doc/install/source#environment
+build() {
+    # https://golang.org/doc/install/source#environment
+    echo "=== Building for GOOS=$1 and GOARCH=$2."
+    CGO_ENABLED=0 GOOS="$1" GOARCH="$2" go build -o dist/ \
+        -ldflags="-s -w -X main.gVersion=$version"
+    if test "$?" != "0"; then
+        ERRORS=1
+    else
+        package "$1" "$2" || exit 5
+    fi
+}
 
-CGO_ENABLED=0 GOOS=android   GOARCH=arm64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-android-arm64.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=darwin    GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-darwin-amd64.tar.gz    lf --remove-files
-CGO_ENABLED=0 GOOS=dragonfly GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-dragonfly-amd64.tar.gz lf --remove-files
-CGO_ENABLED=0 GOOS=freebsd   GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-freebsd-386.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=freebsd   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-freebsd-amd64.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=freebsd   GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-freebsd-arm.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=illumos   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-illumos-amd64.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-386.tar.gz       lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-amd64.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-arm.tar.gz       lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=arm64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-arm64.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=ppc64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-ppc64.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=ppc64le  go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-ppc64le.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=mips     go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-mips.tar.gz      lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=mipsle   go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-mipsle.tar.gz    lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=mips64   go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-mips64.tar.gz    lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=mips64le go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-mips64le.tar.gz  lf --remove-files
-CGO_ENABLED=0 GOOS=linux     GOARCH=s390x    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-linux-s390x.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=netbsd    GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-netbsd-386.tar.gz      lf --remove-files
-CGO_ENABLED=0 GOOS=netbsd    GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-netbsd-amd64.tar.gz    lf --remove-files
-CGO_ENABLED=0 GOOS=netbsd    GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-netbsd-arm.tar.gz      lf --remove-files
-CGO_ENABLED=0 GOOS=openbsd   GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-openbsd-386.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=openbsd   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-openbsd-amd64.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=openbsd   GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-openbsd-arm.tar.gz     lf --remove-files
-CGO_ENABLED=0 GOOS=openbsd   GOARCH=arm64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-openbsd-arm64.tar.gz   lf --remove-files
-CGO_ENABLED=0 GOOS=solaris   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-solaris-amd64.tar.gz   lf --remove-files
+package() (
+    cd dist || return 1 
+    # Since the function is surrounded by (), the cd only affects a subshell
+    OUTFILE=
+    case "$1" in
+    windows)
+        OUTFILE="lf-$1-$2.zip"
+        zip "$OUTFILE" lf.exe --move || return 1
+        ;;
+    *)
+        OUTFILE="lf-$1-$2.tar.gz"
+        tar czf "$OUTFILE" lf --remove-files || return 1
+        ;;
+    esac
+    echo "dist/$OUTFILE successfully created."
+)
 
-CGO_ENABLED=0 GOOS=windows   GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && zip dist/lf-windows-386.zip            lf.exe --move
-CGO_ENABLED=0 GOOS=windows   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && zip dist/lf-windows-amd64.zip          lf.exe --move
+build android arm64
+build darwin amd64
+build darwin arm64
+build dragonfly amd64
+build freebsd 386
+build freebsd amd64
+build freebsd arm
+build illumos amd64
+build linux 386
+build linux amd64
+build linux arm
+build linux arm64
+build linux ppc64
+build linux ppc64le
+build linux mips
+build linux mipsle
+build linux mips64
+build linux mips64le
+build linux s390x
+build netbsd 386
+build netbsd amd64
+build netbsd arm
+build openbsd 386
+build openbsd amd64
+build openbsd arm
+build openbsd arm64
+build solaris amd64
+build windows 386
+build windows amd64
+# Unsupported
+# build aix ppc64
+# build android 386
+# build android amd64
+# build android arm
+# build js wasm
+# build plan9 386
+# build plan9 amd64
+# build plan9 arm
 
-# not supported
-# CGO_ENABLED=0 GOOS=aix       GOARCH=ppc64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-aix-ppc64.tar.gz       lf --remove-files
-# CGO_ENABLED=0 GOOS=android   GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-android-386.tar.gz     lf --remove-files
-# CGO_ENABLED=0 GOOS=android   GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-android-amd64.tar.gz   lf --remove-files
-# CGO_ENABLED=0 GOOS=android   GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-android-arm.tar.gz     lf --remove-files
-# CGO_ENABLED=0 GOOS=darwin    GOARCH=arm64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-darwin-arm64.tar.gz    lf --remove-files
-# CGO_ENABLED=0 GOOS=js        GOARCH=wasm     go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-js-wasm.tar.gz         lf --remove-files
-# CGO_ENABLED=0 GOOS=plan9     GOARCH=386      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-plan9-386.tar.gz       lf --remove-files
-# CGO_ENABLED=0 GOOS=plan9     GOARCH=amd64    go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-plan9-amd64.tar.gz     lf --remove-files
-# CGO_ENABLED=0 GOOS=plan9     GOARCH=arm      go build -ldflags="-s -w -X main.gVersion=$version" && tar czf dist/lf-plan9-arm.tar.gz       lf --remove-files
+if test -n "$ERRORS"; then
+    printf "\ngen/xbuild.sh: some targets failed to compile.\n"
+    exit 1
+fi
