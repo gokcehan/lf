@@ -84,7 +84,10 @@ func init() {
 	}
 	gUser = u
 
-	config := os.Getenv("XDG_CONFIG_HOME")
+	config := os.Getenv("LF_CONFIG_HOME")
+	if config == "" {
+		config = os.Getenv("XDG_CONFIG_HOME")
+	}
 	if config == "" {
 		config = filepath.Join(gUser.HomeDir, ".config")
 	}
@@ -104,7 +107,10 @@ func init() {
 		filepath.Join(config, "lf", "icons"),
 	}
 
-	data := os.Getenv("XDG_DATA_HOME")
+	data := os.Getenv("LF_DATA_HOME")
+	if data == "" {
+		data = os.Getenv("XDG_DATA_HOME")
+	}
 	if data == "" {
 		data = filepath.Join(gUser.HomeDir, ".local", "share")
 	}

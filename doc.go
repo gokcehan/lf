@@ -288,16 +288,24 @@ History file should be located at:
 	Unix     ~/.local/share/lf/history
 	Windows  C:\Users\<user>\AppData\Local\lf\history
 
-You can configure the default values of following variables to change these locations:
+You can configure these locations with the following variables given with their order of precedences and their default values:
 
 	Unix
-	    $XDG_CONFIG_HOME  ~/.config
-	    $XDG_DATA_HOME    ~/.local/share
+	    $LF_CONFIG_HOME
+	    $XDG_CONFIG_HOME
+	    ~/.config
+
+	    $LF_DATA_HOME
+	    $XDG_DATA_HOME
+	    ~/.local/share
 
 	Windows
-	    %ProgramData%     C:\ProgramData
-	    %LOCALAPPDATA%    C:\Users\<user>\AppData\Local
-	    %LF_CONFIG_HOME%  If set, use this value instead of %LOCALAPPDATA%
+	    %ProgramData%
+	    C:\ProgramData
+
+	    %LF_CONFIG_HOME%
+	    %LOCALAPPDATA%
+	    C:\Users\<user>\AppData\Local
 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example

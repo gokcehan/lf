@@ -334,19 +334,31 @@ History file should be located at:
     Windows  C:\eUsers\e<user>\eAppData\eLocal\elf\ehistory
 .EE
 .PP
-You can configure the default values of following variables to change these locations:
+You can configure these locations with the following variables given with their order of precedences and their default values:
 .PP
 .EX
     Unix
-        $XDG_CONFIG_HOME  ~/.config
-        $XDG_DATA_HOME    ~/.local/share
+        $LF_CONFIG_HOME
+        $XDG_CONFIG_HOME
+        ~/.config
+.EE
+.PP
+.EX
+        $LF_DATA_HOME
+        $XDG_DATA_HOME
+        ~/.local/share
 .EE
 .PP
 .EX
     Windows
-        %ProgramData%     C:\eProgramData
-        %LOCALAPPDATA%    C:\eUsers\e<user>\eAppData\eLocal
-        %LF_CONFIG_HOME%  If set, use this value instead of %LOCALAPPDATA%
+        %ProgramData%
+        C:\eProgramData
+.EE
+.PP
+.EX
+        %LF_CONFIG_HOME%
+        %LOCALAPPDATA%
+        C:\eUsers\e<user>\eAppData\eLocal
 .EE
 .PP
 A sample configuration file can be found at https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
