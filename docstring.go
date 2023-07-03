@@ -133,7 +133,7 @@ The following options can be used to customize the behavior of lf:
     dironly          bool      (default false)
     dirpreviews      bool      (default false)
     drawbox          bool      (default false)
-    dupfilefmt       string    (default '%f%e.~%n~')
+    dupfilefmt       string    (default '%f.~%n~')
     errorfmt         string    (default "\033[7;31;47m")
     filesep          string    (default "\n")
     findlen          int       (default 1)
@@ -762,13 +762,13 @@ custom previews for directories.
 
 Draw boxes around panes with box drawing characters.
 
-    dupfilefmt        string      (default '%f%e.~%n~')
+    dupfilefmt        string      (default '%f.~%n~')
 
 Format string of file name when creating duplicate files. With the default
 format, copying a file 'abc.txt' to the same directory will result in a
 duplicate file called 'abc.txt.~1~'. Special expansions are provided, '%f' as
-the file name, '%e' as the extension (including the dot) and '%n' as the number
-of duplicates.
+the file name, '%b' for basename (file name without extension), '%e' as the
+extension (including the dot) and '%n' as the number of duplicates.
 
     errorfmt       string    (default "\033[7;31;47m")
 

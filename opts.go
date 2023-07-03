@@ -99,7 +99,7 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
-	gOpts.dupfilefmt = "%f%e.~%n~"
+	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"
