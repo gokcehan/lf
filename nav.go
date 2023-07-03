@@ -655,12 +655,24 @@ func (nav *nav) exportFiles() {
 
 	var currFile string
 	if curr, err := nav.currFile(); err == nil {
-		currFile = curr.path
+		currFile = quoteString(curr.path)
 	}
 
-	currSelections := nav.currSelections()
+	var selections []string
+	for _, selection := range nav.currSelections() {
+		selections = append(selections, quoteString(selection))
+	}
+	currSelections := strings.Join(selections, gOpts.filesep)
 
-	exportFiles(currFile, currSelections, nav.currDir().path)
+	os.Setenv("f", currFile)
+	os.Setenv("fs", currSelections)
+	os.Setenv("PWD", quoteString(nav.currDir().path))
+
+	if len(selections) == 0 {
+		os.Setenv("fx", currFile)
+	} else {
+		os.Setenv("fx", currSelections)
+	}
 }
 
 func (nav *nav) dirPreviewLoop(ui *ui) {
