@@ -72,6 +72,7 @@ var gOpts struct {
 	infotimefmtnew   string
 	infotimefmtold   string
 	truncatechar     string
+	truncatepct      int
 	ratios           []int
 	hiddenfiles      []string
 	history          bool
@@ -133,6 +134,7 @@ func init() {
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
 	gOpts.truncatechar = "~"
+	gOpts.truncatepct = 100
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = []string{".*"}
 	gOpts.history = true

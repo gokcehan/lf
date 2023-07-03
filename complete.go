@@ -218,6 +218,7 @@ var (
 		"infotimefmtnew",
 		"infotimefmtold",
 		"truncatechar",
+		"truncatepct",
 	}
 )
 
