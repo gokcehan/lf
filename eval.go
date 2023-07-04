@@ -230,6 +230,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.nav.regCache = make(map[string]*reg)
 		}
 		app.ui.loadFile(app, true)
+	case "dupfilefmt":
+		gOpts.dupfilefmt = e.val
 	case "errorfmt":
 		gOpts.errorfmt = e.val
 	case "filesep":
@@ -831,6 +833,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 
 		gOpts.truncatechar = e.val
+	case "truncatepct":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("truncatepct: %s", err)
+			return
+		}
+		if n < 0 || n > 100 {
+			app.ui.echoerrf("truncatepct: must be between 0 and 100 (both inclusive), got %d", n)
+			return
+		}
+		gOpts.truncatepct = n
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	case "wrapscan":
@@ -2142,7 +2155,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.menuCompActive = false
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
-		if len(s) == 0 && app.ui.cmdPrefix != "filter: " {
+		if len(s) == 0 && app.ui.cmdPrefix != "filter: " && app.ui.cmdPrefix != ">" {
 			return
 		}
 

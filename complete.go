@@ -140,6 +140,7 @@ var (
 		"drawbox",
 		"nodrawbox",
 		"drawbox!",
+		"dupfilefmt",
 		"globsearch",
 		"noglobsearch",
 		"globsearch!",
@@ -218,6 +219,7 @@ var (
 		"infotimefmtnew",
 		"infotimefmtold",
 		"truncatechar",
+		"truncatepct",
 	}
 )
 
@@ -282,7 +284,6 @@ func matchExec(s string) (matches []string, longest []rune) {
 				continue
 			}
 
-			log.Print(finfo.Name())
 			words = append(words, finfo.Name())
 		}
 	}

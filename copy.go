@@ -5,6 +5,8 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/djherbis/times"
 )
@@ -102,13 +104,20 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 
 	go func() {
 		for _, src := range srcs {
-			dst := filepath.Join(dstDir, filepath.Base(src))
+			file := filepath.Base(src)
+			dst := filepath.Join(dstDir, file)
 
 			_, err := os.Lstat(dst)
 			if !os.IsNotExist(err) {
+				ext := filepath.Ext(file)
+				basename := filepath.Base(file[:len(file)-len(ext)])
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {
-					newPath = fmt.Sprintf("%s.~%d~", dst, i)
+					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
+					file = strings.ReplaceAll(file, "%b", basename)
+					file = strings.ReplaceAll(file, "%e", ext)
+					file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+					newPath = filepath.Join(dstDir, file)
 					_, err = os.Lstat(newPath)
 				}
 				dst = newPath

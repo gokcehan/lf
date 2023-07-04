@@ -133,6 +133,7 @@ The following options can be used to customize the behavior of lf:
     dironly          bool      (default false)
     dirpreviews      bool      (default false)
     drawbox          bool      (default false)
+    dupfilefmt       string    (default '%f.~%n~')
     errorfmt         string    (default "\033[7;31;47m")
     filesep          string    (default "\n")
     findlen          int       (default 1)
@@ -175,6 +176,7 @@ The following options can be used to customize the behavior of lf:
     tempmarks        string    (default '')
     timefmt          string    (default 'Mon Jan _2 15:04:05 2006')
     truncatechar     string    (default '~')
+    truncatepct      int       (default 100)
     waitmsg          string    (default 'Press any key to continue')
     wrapscan         bool      (default true)
     wrapscroll       bool      (default false)
@@ -292,17 +294,25 @@ History file should be located at:
     Unix     ~/.local/share/lf/history
     Windows  C:\Users\<user>\AppData\Local\lf\history
 
-You can configure the default values of following variables to change these
-locations:
+You can configure these locations with the following variables given with their
+order of precedences and their default values:
 
     Unix
-        $XDG_CONFIG_HOME  ~/.config
-        $XDG_DATA_HOME    ~/.local/share
+        $LF_CONFIG_HOME
+        $XDG_CONFIG_HOME
+        ~/.config
+
+        $LF_DATA_HOME
+        $XDG_DATA_HOME
+        ~/.local/share
 
     Windows
-        %ProgramData%     C:\ProgramData
-        %LOCALAPPDATA%    C:\Users\<user>\AppData\Local
-        %LF_CONFIG_HOME%  If set, use this value instead of %LOCALAPPDATA%
+        %ProgramData%
+        C:\ProgramData
+
+        %LF_CONFIG_HOME%
+        %LOCALAPPDATA%
+        C:\Users\<user>\AppData\Local
 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
@@ -752,6 +762,14 @@ custom previews for directories.
 
 Draw boxes around panes with box drawing characters.
 
+    dupfilefmt        string      (default '%f.~%n~')
+
+Format string of file name when creating duplicate files. With the default
+format, copying a file 'abc.txt' to the same directory will result in a
+duplicate file called 'abc.txt.~1~'. Special expansions are provided, '%f' as
+the file name, '%b' for basename (file name without extension), '%e' as the
+extension (including the dot) and '%n' as the number of duplicates.
+
     errorfmt       string    (default "\033[7;31;47m")
 
 Format string of error messages shown in the bottom message line.
@@ -1012,6 +1030,22 @@ Format string of the file modification time shown in the bottom line.
     truncatechar   string    (default '~')
 
 Truncate character shown at the end when the file name does not fit to the pane.
+
+    truncatepct  int       (default 100)
+
+When a filename is too long to be shown completely, the available space is
+partitioned in two pieces. truncatepct defines a fraction (in percent between
+0 and 100) for the size of the first piece, which will show the beginning of
+the filename. The second piece will show the end of the filename and will use
+the rest of the available space. Both pieces are separated by the truncation
+character (truncatechar). A value of 100 will only show the beginning of the
+filename, while a value of 0 will only show the end of the filename, e.g.:
+
+- 'set truncatepct 100' -> "very-long-filename-tr~" (default)
+
+- 'set truncatepct 50' -> "very-long-f~-truncated"
+
+- 'set truncatepct 0' -> "~ng-filename-truncated"
 
     waitmsg        string    (default 'Press any key to continue')
 

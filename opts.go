@@ -39,6 +39,7 @@ var gOpts struct {
 	dironly          bool
 	dirpreviews      bool
 	drawbox          bool
+	dupfilefmt       string
 	globsearch       bool
 	icons            bool
 	ignorecase       bool
@@ -72,6 +73,7 @@ var gOpts struct {
 	infotimefmtnew   string
 	infotimefmtold   string
 	truncatechar     string
+	truncatepct      int
 	ratios           []int
 	hiddenfiles      []string
 	history          bool
@@ -97,6 +99,7 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
+	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"
@@ -133,6 +136,7 @@ func init() {
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
 	gOpts.truncatechar = "~"
+	gOpts.truncatepct = 100
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = []string{".*"}
 	gOpts.history = true

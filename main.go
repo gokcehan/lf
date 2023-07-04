@@ -85,7 +85,7 @@ func exportEnvVars() {
 		log.Printf("getting path to lf binary: %s", err)
 		lfPath = "lf"
 	}
-	os.Setenv("lf", lfPath)
+	os.Setenv("lf", quoteString(lfPath))
 }
 
 // used by exportOpts below
