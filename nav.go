@@ -621,13 +621,8 @@ func (nav *nav) reload() error {
 	nav.dirCache = make(map[string]*dir)
 	nav.regCache = make(map[string]*reg)
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("getting current directory: %s", err)
-	}
-
 	curr, err := nav.currFile()
-	nav.getDirs(wd)
+	nav.getDirs(nav.currDir().path)
 	if err == nil {
 		last := nav.dirs[len(nav.dirs)-1]
 		last.files = append(last.files, curr)
