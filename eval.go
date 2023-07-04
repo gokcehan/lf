@@ -230,6 +230,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.nav.regCache = make(map[string]*reg)
 		}
 		app.ui.loadFile(app, true)
+	case "dupfilefmt":
+		gOpts.dupfilefmt = e.val
 	case "errorfmt":
 		gOpts.errorfmt = e.val
 	case "filesep":

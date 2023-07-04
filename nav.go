@@ -1340,7 +1340,8 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			continue
 		}
 
-		dst := filepath.Join(dstDir, filepath.Base(src))
+		file := filepath.Base(src)
+		dst := filepath.Join(dstDir, file)
 
 		dstStat, err := os.Stat(dst)
 		if os.SameFile(srcStat, dstStat) {
@@ -1349,9 +1350,15 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			app.ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
+			ext := filepath.Ext(file)
+			basename := filepath.Base(file[:len(file)-len(ext)])
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
-				newPath = fmt.Sprintf("%s.~%d~", dst, i)
+				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
+				file = strings.ReplaceAll(file, "%b", basename)
+				file = strings.ReplaceAll(file, "%e", ext)
+				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+				newPath = filepath.Join(dstDir, file)
 				_, err = os.Lstat(newPath)
 			}
 			dst = newPath
