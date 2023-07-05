@@ -84,7 +84,10 @@ func init() {
 	}
 	gUser = u
 
-	config := os.Getenv("XDG_CONFIG_HOME")
+	config := os.Getenv("LF_CONFIG_HOME")
+	if config == "" {
+		config = os.Getenv("XDG_CONFIG_HOME")
+	}
 	if config == "" {
 		config = filepath.Join(gUser.HomeDir, ".config")
 	}
@@ -104,7 +107,10 @@ func init() {
 		filepath.Join(config, "lf", "icons"),
 	}
 
-	data := os.Getenv("XDG_DATA_HOME")
+	data := os.Getenv("LF_DATA_HOME")
+	if data == "" {
+		data = os.Getenv("XDG_DATA_HOME")
+	}
 	if data == "" {
 		data = filepath.Join(gUser.HomeDir, ".local", "share")
 	}
@@ -223,17 +229,6 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }
 
-func exportFiles(f string, fs []string, pwd string) {
-	envFile := f
-	envFiles := strings.Join(fs, gOpts.filesep)
-
-	os.Setenv("f", envFile)
-	os.Setenv("fs", envFiles)
-	os.Setenv("PWD", pwd)
-
-	if len(fs) == 0 {
-		os.Setenv("fx", envFile)
-	} else {
-		os.Setenv("fx", envFiles)
-	}
+func quoteString(s string) string {
+	return s
 }

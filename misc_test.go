@@ -83,6 +83,47 @@ func TestRuneSliceWidthRange(t *testing.T) {
 	}
 }
 
+func TestRuneSliceWidthLastRange(t *testing.T) {
+	tests := []struct {
+		rs       []rune
+		maxWidth int
+		exp      []rune
+	}{
+		{[]rune{}, 0, []rune{}},
+		{[]rune{}, 1, []rune{}},
+		{[]rune{'a', 'ı', 'b', ' '}, 0, []rune{}},
+		{[]rune{'a', 'ı', 'b', ' '}, 1, []rune{' '}},
+		{[]rune{'a', 'ı', 'b', ' '}, 2, []rune{'b', ' '}},
+		{[]rune{'a', 'ı', 'b', ' '}, 3, []rune{'ı', 'b', ' '}},
+		{[]rune{'a', 'ı', 'b', ' '}, 4, []rune{'a', 'ı', 'b', ' '}},
+		{[]rune{'a', 'ı', 'b', ' '}, 5, []rune{'a', 'ı', 'b', ' '}},
+		{[]rune{'世', '界', '世', '界'}, 0, []rune{}},
+		{[]rune{'世', '界', '世', '界'}, 1, []rune{}},
+		{[]rune{'世', '界', '世', '界'}, 2, []rune{'界'}},
+		{[]rune{'世', '界', '世', '界'}, 3, []rune{'界'}},
+		{[]rune{'世', '界', '世', '界'}, 4, []rune{'世', '界'}},
+		{[]rune{'世', '界', '世', '界'}, 5, []rune{'世', '界'}},
+		{[]rune{'世', '界', '世', '界'}, 6, []rune{'界', '世', '界'}},
+		{[]rune{'世', '界', '世', '界'}, 7, []rune{'界', '世', '界'}},
+		{[]rune{'世', '界', '世', '界'}, 8, []rune{'世', '界', '世', '界'}},
+		{[]rune{'世', '界', '世', '界'}, 9, []rune{'世', '界', '世', '界'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 0, []rune{}},
+		{[]rune{'世', 'a', '界', 'ı'}, 1, []rune{'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 2, []rune{'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 3, []rune{'界', 'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 4, []rune{'a', '界', 'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 5, []rune{'a', '界', 'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 6, []rune{'世', 'a', '界', 'ı'}},
+		{[]rune{'世', 'a', '界', 'ı'}, 7, []rune{'世', 'a', '界', 'ı'}},
+	}
+
+	for _, test := range tests {
+		if got := runeSliceWidthLastRange(test.rs, test.maxWidth); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		}
+	}
+}
+
 func TestEscape(t *testing.T) {
 	tests := []struct {
 		s   string

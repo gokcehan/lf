@@ -101,10 +101,23 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
+	// Windows CMD requires special handling to deal with quoted arguments
+	if strings.ToLower(gOpts.shell) == "cmd" {
+		var builder strings.Builder
+		builder.WriteString(s)
+		for _, arg := range args {
+			fmt.Fprintf(&builder, ` "%s"`, arg)
+		}
+		shellOpts := strings.Join(gOpts.shellopts, " ")
+		cmdline := fmt.Sprintf(`%s %s %s "%s"`, gOpts.shell, shellOpts, gOpts.shellflag, builder.String())
+
+		cmd := exec.Command(gOpts.shell)
+		cmd.SysProcAttr = &windows.SysProcAttr{CmdLine: cmdline}
+		return cmd
+	}
+
 	args = append([]string{gOpts.shellflag, s}, args...)
-
 	args = append(gOpts.shellopts, args...)
-
 	return exec.Command(gOpts.shell, args...)
 }
 
@@ -173,24 +186,6 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(windows.Errno) == 17
 }
 
-func exportFiles(f string, fs []string, pwd string) {
-	envFile := fmt.Sprintf(`"%s"`, f)
-
-	var quotedFiles []string
-	for _, f := range fs {
-		quotedFiles = append(quotedFiles, fmt.Sprintf(`"%s"`, f))
-	}
-	envFiles := strings.Join(quotedFiles, gOpts.filesep)
-
-	envPWD := fmt.Sprintf(`"%s"`, pwd)
-
-	os.Setenv("f", envFile)
-	os.Setenv("fs", envFiles)
-	os.Setenv("PWD", envPWD)
-
-	if len(fs) == 0 {
-		os.Setenv("fx", envFile)
-	} else {
-		os.Setenv("fx", envFiles)
-	}
+func quoteString(s string) string {
+	return fmt.Sprintf(`"%s"`, s)
 }

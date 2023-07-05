@@ -621,13 +621,8 @@ func (nav *nav) reload() error {
 	nav.dirCache = make(map[string]*dir)
 	nav.regCache = make(map[string]*reg)
 
-	wd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("getting current directory: %s", err)
-	}
-
 	curr, err := nav.currFile()
-	nav.getDirs(wd)
+	nav.getDirs(nav.currDir().path)
 	if err == nil {
 		last := nav.dirs[len(nav.dirs)-1]
 		last.files = append(last.files, curr)
@@ -655,12 +650,24 @@ func (nav *nav) exportFiles() {
 
 	var currFile string
 	if curr, err := nav.currFile(); err == nil {
-		currFile = curr.path
+		currFile = quoteString(curr.path)
 	}
 
-	currSelections := nav.currSelections()
+	var selections []string
+	for _, selection := range nav.currSelections() {
+		selections = append(selections, quoteString(selection))
+	}
+	currSelections := strings.Join(selections, gOpts.filesep)
 
-	exportFiles(currFile, currSelections, nav.currDir().path)
+	os.Setenv("f", currFile)
+	os.Setenv("fs", currSelections)
+	os.Setenv("PWD", quoteString(nav.currDir().path))
+
+	if len(selections) == 0 {
+		os.Setenv("fx", currFile)
+	} else {
+		os.Setenv("fx", currSelections)
+	}
 }
 
 func (nav *nav) dirPreviewLoop(ui *ui) {
@@ -1333,7 +1340,8 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			continue
 		}
 
-		dst := filepath.Join(dstDir, filepath.Base(src))
+		file := filepath.Base(src)
+		dst := filepath.Join(dstDir, file)
 
 		dstStat, err := os.Stat(dst)
 		if os.SameFile(srcStat, dstStat) {
@@ -1342,9 +1350,15 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			app.ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
+			ext := filepath.Ext(file)
+			basename := filepath.Base(file[:len(file)-len(ext)])
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
-				newPath = fmt.Sprintf("%s.~%d~", dst, i)
+				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
+				file = strings.ReplaceAll(file, "%b", basename)
+				file = strings.ReplaceAll(file, "%e", ext)
+				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+				newPath = filepath.Join(dstDir, file)
 				_, err = os.Lstat(newPath)
 			}
 			dst = newPath
