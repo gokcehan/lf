@@ -721,20 +721,28 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	linkTargetArrow := ""
-	if curr.linkTarget != "" {
-		linkTargetArrow = "-> " + curr.linkTarget
+	statfmt := gOpts.statfmt
+	replace := func(s string, val string) {
+		if val == "" {
+			val = "<empty>"
+		}
+		statfmt = strings.ReplaceAll(statfmt, s, val)
+	}
+	replace("%p", curr.Mode().String())
+	replace("%c", linkCount(curr))
+	replace("%u", userName(curr))
+	replace("%g", groupName(curr))
+	replace("%s", humanize(curr.Size()))
+	replace("%t", curr.ModTime().Format(gOpts.timefmt))
+	replace("%l", curr.linkTarget)
+
+	fileInfo := ""
+	for _, section := range strings.Split(statfmt, "|") {
+		if !strings.Contains(section, "<empty>") {
+			fileInfo += section
+		}
 	}
 
-	fileInfo := gOpts.statfmt
-	fileInfo = strings.Replace(fileInfo, "%p", curr.Mode().String(), -1)
-	fileInfo = strings.Replace(fileInfo, "%c", linkCount(curr), -1)
-	fileInfo = strings.Replace(fileInfo, "%u", userName(curr), -1)
-	fileInfo = strings.Replace(fileInfo, "%g", groupName(curr), -1)
-	fileInfo = strings.Replace(fileInfo, "%s", humanize(curr.Size()), -1)
-	fileInfo = strings.Replace(fileInfo, "%t", curr.ModTime().Format(gOpts.timefmt), -1)
-	fileInfo = strings.Replace(fileInfo, "%l", curr.linkTarget, -1)
-	fileInfo = strings.Replace(fileInfo, "%L", linkTargetArrow, -1)
 	ui.echo(fileInfo)
 }
 
