@@ -721,10 +721,10 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
-	statfmt := gOpts.statfmt
+	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
 	replace := func(s string, val string) {
 		if val == "" {
-			val = "<empty>"
+			val = "\x00"
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
@@ -737,8 +737,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	replace("%l", curr.linkTarget)
 
 	fileInfo := ""
-	for _, section := range strings.Split(statfmt, "|") {
-		if !strings.Contains(section, "<empty>") {
+	for _, section := range strings.Split(statfmt, "\x1f") {
+		if !strings.Contains(section, "\x00") {
 			fileInfo += section
 		}
 	}
