@@ -1757,7 +1757,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.renew()
-		app.ui.loadFile(app, true)
+		app.ui.loadFile(app, false)
 	case "reload":
 		if !app.nav.init {
 			return
