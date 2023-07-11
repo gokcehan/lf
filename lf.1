@@ -1760,15 +1760,17 @@ There is a special command 'on-cd' that runs a shell command when it is defined 
 .PP
 .EX
     cmd on-cd &{{
+        bash -c '
         # display git repository status in your prompt
         source /usr/share/git/completion/git-prompt.sh
         GIT_PS1_SHOWDIRTYSTATE=auto
         GIT_PS1_SHOWSTASHSTATE=auto
         GIT_PS1_SHOWUNTRACKEDFILES=auto
         GIT_PS1_SHOWUPSTREAM=auto
-        git=$(__git_ps1 " (%s)") || true
+        git=$(__git_ps1 " (%s)")
         fmt="\e033[32;1m%u@%h\e033[0m:\e033[34;1m%d\e033[0m\e033[1m%f$git\e033[0m"
         lf -remote "send $id set promptfmt \e"$fmt\e""
+        '
     }}
 .EE
 .PP

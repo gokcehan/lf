@@ -1717,15 +1717,17 @@ and the directory is changed. You can define it just as you would define any
 other command:
 
     cmd on-cd &{{
+        bash -c '
         # display git repository status in your prompt
         source /usr/share/git/completion/git-prompt.sh
         GIT_PS1_SHOWDIRTYSTATE=auto
         GIT_PS1_SHOWSTASHSTATE=auto
         GIT_PS1_SHOWUNTRACKEDFILES=auto
         GIT_PS1_SHOWUPSTREAM=auto
-        git=$(__git_ps1 " (%s)") || true
+        git=$(__git_ps1 " (%s)")
         fmt="\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f$git\033[0m"
         lf -remote "send $id set promptfmt \"$fmt\""
+        '
     }}
 
 If you want to print escape sequences, you may redirect 'printf' output to
