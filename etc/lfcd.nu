@@ -27,8 +27,8 @@ def-env lfcd [] {
     rm -f $tmp
     try {
         if ($target_dir != $env.PWD) { cd $target_dir }
-    } catch { |e| print $'lfcd: Can not change to ($target_dir): ($e | get debug)' }
+    } catch { |e| print -e $'lfcd: Can not change to ($target_dir): ($e | get debug)' }
   } catch {
-    |e| print $'lfcd: Reading ($tmp) returned an error: ($e | get debug)'
+    |e| print -e $'lfcd: Reading ($tmp) returned an error: ($e | get debug)'
   }
 }
