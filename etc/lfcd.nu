@@ -7,30 +7,28 @@
 # See the documentation: https://www.nushell.sh/book/line_editor.html#keybindings
 #
 # keybindings: [
-#    {
-#      name: lfcd
-#      modifier: control
-#      keycode: char_o
-#      mode: [emacs , vi_normal, vi_insert]
-#      event: {
-#        send: executehostcommand
-#        cmd: "lfcd"
-#      }
-#    }
-#  ]
-
+#   {
+#     name: lfcd
+#     modifier: control
+#     keycode: char_o
+#     mode: [emacs, vi_normal, vi_insert]
+#     event: {
+#       send: executehostcommand
+#       cmd: "lfcd"
+#     }
+#   }
+# ]
 
 def-env lfcd [] {
-  let tmp = $"(mktemp)";
-  let cmd = $'-last-dir-path=($tmp)';
-  run-external 'lf' $cmd;
-  if ($tmp | path exists) {
-    let dir = $"(cat $tmp)";
-    rm -f $"$tmp";
-    if ($dir | path exists) {
-      if ( $dir != $"pwd" ) {
-        cd $dir;
-      }
-    }
+  let tmp = (mktemp)
+  lf -last-dir-path $tmp
+  try {
+    let target_dir = (open --raw $tmp)
+    rm -f $tmp
+    try {
+        if ($target_dir != $env.PWD) { cd $target_dir }
+    } catch { |e| print $'lfcd: Can not change to ($target_dir): ($e | get debug)' }
+  } catch {
+    |e| print $'lfcd: Reading ($tmp) returned an error: ($e | get debug)'
   }
 }
