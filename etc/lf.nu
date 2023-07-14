@@ -2,12 +2,13 @@
 # 
 # Documentation: https://www.nushell.sh/book/externs.html
 
-# You may put this file into the :
+# To enable autocompletion you may put this file into a directory:
 #
 #     mkdir -p ~/.config/nushell/completions
 #     ln -s "/path/to/lf.nu" ~/.config/nushell/completions
 #
-# Then you need to source this file in your config by adding:
+# Then you need to source this file in your nu config (Open the config with the
+# command 'config nu' inside the nushell) by adding:
 #
 #     source ~/.config/nushell/completions/lf.nu
 
