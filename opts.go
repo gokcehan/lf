@@ -70,6 +70,7 @@ var gOpts struct {
 	shellflag        string
 	statfmt          string
 	timefmt          string
+	statcmd          string
 	infotimefmtnew   string
 	infotimefmtold   string
 	truncatechar     string
@@ -136,6 +137,7 @@ func init() {
 	gOpts.timefmt = time.ANSIC
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
+	gOpts.statcmd = ""
 	gOpts.truncatechar = "~"
 	gOpts.truncatepct = 100
 	gOpts.ratios = []int{1, 2, 3}

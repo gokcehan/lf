@@ -735,6 +735,22 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	replace("%s", humanize(curr.Size()))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
+	if strings.Contains(statfmt, "%C") {
+		if gOpts.statcmd == "" {
+			ui.echoerrf("statcmd is empty")
+			return
+		}
+		nav.exportFiles()
+		ui.exportSizes()
+		exportOpts()
+		cmd := shellCommand(gOpts.statcmd, nil)
+		out, err := cmd.Output()
+		if err != nil {
+			ui.echoerrf("statcmd: %s", err)
+			return
+		}
+		replace("%C", string(out))
+	}
 
 	fileInfo := ""
 	for _, section := range strings.Split(statfmt, "\x1f") {

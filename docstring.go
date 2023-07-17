@@ -170,6 +170,7 @@ The following options can be used to customize the behavior of lf:
     smartcase        bool      (default true)
     smartdia         bool      (default false)
     sortby           string    (default 'natural')
+    statcmd          string    (default "")
     statfmt          string    (default "\033[36m%p\033[0m| %c| %u| %g| %s| %t| -> %l")
     tabstop          int       (default 8)
     tagfmt           string    (default "\033[31m")
@@ -993,14 +994,26 @@ diacritic. This option has no effect when 'ignoredia' is disabled.
 Sort type for directories. Currently supported sort types are 'natural', 'name',
 'size', 'time', 'ctime', 'atime', and 'ext'.
 
+    statcmd    string    (default "")
+
+Command to be run when using the '%C' expansion in statfmt. The '%C' is replaced
+with the output of the specified command. lf always waits for the command to
+finish, before continuing. It is the users responsibility to ensure the command
+finishes quickly, so that lf does not hang. The command is run in mostly the
+same way, as any other shell command, with respect to the shell, shellflag and
+shellopts options. That also means you can use environment variables, like in
+any other shell command; most notably "$f" to access the currently selected
+file.
+
     statfmt    string        (default "\033[36m%p\033[0m| %c| %u| %g| %s| %t| -> %l")
 
 Format string of the file info shown in the bottom left corner. Special
 expansions are provided, '%p' as the file permissions, '%c' as the link count,
 '%u' as the user, '%g' as the group, '%s' as the file size, '%t' as the last
-modified time, and '%l' as the link target. The '|' character splits the format
-string into sections. Any section containing a failed expansion (result is a
-blank string) is discarded and not shown.
+modified time, '%l' as the link target, and '%C' as the output of the statcmd
+(see above). The '|' character splits the format string into sections. Any
+section containing a failed expansion (result is a blank string) is discarded
+and not shown.
 
     tabstop        int       (default 8)
 

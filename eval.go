@@ -803,6 +803,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
+	case "statcmd":
+		gOpts.statcmd = e.val
 	case "statfmt":
 		gOpts.statfmt = e.val
 	case "tabstop":

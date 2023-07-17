@@ -214,6 +214,7 @@ var (
 		"sortby",
 		"statfmt",
 		"timefmt",
+		"statcmd",
 		"tempmarks",
 		"tagfmt",
 		"infotimefmtnew",
