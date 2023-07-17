@@ -591,6 +591,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
+			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
 
