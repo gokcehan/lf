@@ -132,6 +132,7 @@ func init() {
 	gOpts.selmode = "all"
 	gOpts.shell = gDefaultShell
 	gOpts.shellflag = gDefaultShellFlag
+	gOpts.statfmt = "\033[36m%p\033[0m| %c| %u| %g| %s| %t| -> %l"
 	gOpts.timefmt = time.ANSIC
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
