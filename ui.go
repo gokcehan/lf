@@ -979,24 +979,19 @@ func (ui *ui) draw(nav *nav) {
 		ui.drawStatLine(nav)
 		ui.screen.HideCursor()
 	case ">":
-		prefix := ui.cmdPrefix[:min(ui.msgWin.w-1, len(ui.cmdPrefix))]
-		pos := min(runeSliceWidth(ui.cmdAccLeft), ui.msgWin.w-len(prefix)-1)
-		left := ui.cmdAccLeft[runeSliceWidth(ui.cmdAccLeft)-pos:]
-		right := ui.cmdAccRight
-		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix)
-		ui.msgWin.print(ui.screen, len(prefix), 0, st, ui.msg)
-		ui.msgWin.print(ui.screen, len(prefix)+printLength(ui.msg), 0, st, string(left))
-		ui.msgWin.print(ui.screen, len(prefix)+printLength(ui.msg)+runeSliceWidth(left), 0, st, string(right))
-		ui.screen.ShowCursor(ui.msgWin.x+len(prefix)+printLength(ui.msg)+runeSliceWidth(left), ui.msgWin.y)
+		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
+		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
+		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix)-printLength(ui.msg))
+		statLine := string(prefix) + ui.msg + string(left) + string(ui.cmdAccRight)
+		ui.msgWin.printLine(ui.screen, 0, 0, st, statLine)
+		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+printLength(ui.msg)+runeSliceWidth(left), ui.msgWin.y)
 	default:
-		prefix := ui.cmdPrefix[:min(ui.msgWin.w-1, len(ui.cmdPrefix))]
-		pos := min(runeSliceWidth(ui.cmdAccLeft), ui.msgWin.w-len(prefix)-1)
-		left := ui.cmdAccLeft[runeSliceWidth(ui.cmdAccLeft)-pos:]
-		right := ui.cmdAccRight
-		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix)
-		ui.msgWin.print(ui.screen, len(prefix), 0, st, string(left))
-		ui.msgWin.print(ui.screen, len(prefix)+runeSliceWidth(left), 0, st, string(right))
-		ui.screen.ShowCursor(ui.msgWin.x+len(prefix)+runeSliceWidth(left), ui.msgWin.y)
+		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
+		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
+		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix))
+		statLine := string(prefix) + string(left) + string(ui.cmdAccRight)
+		ui.msgWin.printLine(ui.screen, 0, 0, st, statLine)
+		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
 	if gOpts.preview {
