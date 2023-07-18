@@ -854,28 +854,17 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
 		prefix := make([]byte, 2)
 		_, err := reader.Read(prefix)
+		// FIXME: get rid of io.MultiReader
+		reader := io.MultiReader(bytes.NewReader(prefix), reader)
 
 		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
-			buf := bufio.NewScanner(reader)
-			buf.Buffer(make([]byte, 0), gPreviewerMaxLineSize)
-			if buf.Scan() {
-				lines, sx := renderPreviewLine(gSixelBegin+buf.Text(), 1, win, sxScreen)
-				reg.lines = append(reg.lines, lines...)
-				if sx != nil {
-					reg.sixels = append(reg.sixels, *sx)
-				} else {
-					reg.lines = append(reg.lines, buf.Text())
-				}
-			}
-
-			if buf.Err() != nil { // TODO: defer error checking if it's needed
-				log.Printf("loading file: %s", buf.Err())
+			lines, sx := renderSixel(reader, win, sxScreen)
+			reg.lines = lines
+			if sx != nil {
+				reg.sixels = append(reg.sixels, *sx)
 			}
 			return
 		}
-
-		// restore original file content
-		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 	}
 
 	buf := bufio.NewScanner(reader)

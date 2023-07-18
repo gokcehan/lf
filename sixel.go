@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bufio"
 	"errors"
 	"fmt"
+	"io"
 	"log"
-	"regexp"
 	"strconv"
 	"strings"
+	"unicode"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -17,8 +19,9 @@ const (
 )
 
 var (
-	errInvalidSixel = errors.New("invalid sixel sequence")
-	gSixelFiller    = '\u2800'
+	errInvalidSixel  = errors.New("invalid sixel sequence")
+	errSixelTooLarge = errors.New("sixel too large")
+	gSixelFiller     = '\u2800'
 )
 
 type sixel struct {
@@ -70,11 +73,22 @@ func (sxs *sixelScreen) pxToCells(x, y int) (int, int) {
 	return x/sxs.fontw + 1, y/sxs.fonth + 1
 }
 
+type CountingReader struct {
+	counter int
+	reader  io.Reader
+}
+
+func (r *CountingReader) Read(p []byte) (n int, err error) {
+	r.counter += 1
+	return r.reader.Read(p)
+}
+
 func (sxs *sixelScreen) showSixels() {
 	var buf strings.Builder
 	buf.WriteString("\0337")
 	for _, sixel := range sxs.sx {
 		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sixel.y+1, sixel.x+1))
+		log.Println(sixel.data)
 		buf.WriteString(sixel.data)
 	}
 	buf.WriteString("\0338")
@@ -99,172 +113,270 @@ func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
 	}
 }
 
-var reNumber = regexp.MustCompile(`^[0-9]+`)
+func renderSixel(data io.Reader, win *win, sxScreen *sixelScreen) (lines []string, sx *sixel) {
+	maxh := (win.h) * sxScreen.fonth
 
-func renderPreviewLine(text string, linenr int, win *win, sxScreen *sixelScreen) (lines []string, sx *sixel) {
-	if strings.HasPrefix(text, gSixelBegin) {
-		if b := strings.Index(text, gSixelTerminate); b >= 0 {
-			data := text[:b+len(gSixelTerminate)]
-			wpx, hpx, err := sixelDimPx(data)
-
-			if err == nil {
-				xc := 2
-				yc := linenr
-				maxh := (win.h - yc) * sxScreen.fonth
-
-				// any syntax error should already be caught by sixelDimPx, error is safe to discard
-				data, hpx, _ = trimSixelHeight(data, maxh)
-				_, hc := sxScreen.pxToCells(wpx, hpx)
-
-				sx = &sixel{xc, yc, wpx, hpx, data}
-				for j := 1; j < hc; j++ {
-					lines = append(lines, "")
-				}
-				return lines, sx
-			}
-		}
+	sixelBuilder := strings.Builder{}
+	data = io.TeeReader(data, &sixelBuilder)
+	wpx, hpx, err := sixelSize(data, maxh)
+	if err == errSixelTooLarge {
+		return []string{"\033[7msixel image too large\033[0m"}, nil
 	}
+	if err != nil {
+		log.Printf("measuring sixel size: %s", err)
+		return []string{"\033[7merror parsing sixel\033[0m"}, nil
+	}
+	_, hc := sxScreen.pxToCells(wpx, hpx)
 
-	return []string{text}, nil
+	sx = &sixel{2, 0, wpx, hpx, sixelBuilder.String()}
+	for j := 1; j < hc; j++ {
+		lines = append(lines, "")
+	}
+	return lines, sx
 }
 
-// needs some testing
-func sixelDimPx(data string) (w int, h int, err error) {
-	// TODO maybe take into account pixel aspect ratio
+func sixelSize(data io.Reader, maxh int) (width int, height int, err error) {
+	var w, h int
+	counter := &CountingReader{reader: data}
+	reader := bufio.NewReader(counter)
+	maxh = maxh - (maxh % 6)
+	defer func() {
+		if errors.Is(err, errInvalidSixel) {
+			err = fmt.Errorf("At position %d: %w", counter.counter, err)
+		}
+	}()
 
 	// General sixel sequence:
-	//    DCS <P1>;<P2>;<P3>;	q  [" <raster_attributes>]   <main_body> ST
-	// DCS is "ESC P"
-	// We are not interested in P1~P3
-	// the optional raster attributes may contain the 'reported' image size in pixels
-	// (The actual image can be larger, but is at least this big)
-	// ST is the terminating string "ESC \"
+	//    DCS <P1>;<P2>;<P3>   q   [" <raster_attributes>]   <main_body> ST
+	// - DCS is "ESC P"
+	// - We are not interested in P1~P3
+	// - the optional raster attributes may contain the 'reported' image size in pixels
+	//   (The actual image can be larger, but is at least this big)
+	// - ST is the terminating string "ESC \"
 	//
 	// https://vt100.net/docs/vt3xx-gp/chapter14.html
-	i := strings.Index(data, "q") + 1
-	if i == 0 {
-		// syntax error
+
+	// read DCS (ESC P)
+	dcs := make([]byte, 2)
+	reader.Read(dcs)
+	if string(dcs) != gSixelBegin {
 		return 0, 0, errInvalidSixel
 	}
 
-	// Start of (optional) Raster Attributes
-	//    "	Pan	;	Pad;	Ph;	Pv
-	// pixel aspect ratio = Pan/Pad
-	// We are only interested in Ph and Pv (horizontal and vertical size in px)
-	if data[i] == '"' {
-		i++
-		b := strings.Index(data[i:], ";")
-		// pan := strconv.Atoi(s[a:b])
-		i += b + 1
-		b = strings.Index(data[i:], ";")
-		// pad := strconv.Atoi(s[a:b])
-
-		i += b + 1
-		b = strings.Index(data[i:], ";")
-		ph, err1 := strconv.Atoi(data[i : i+b])
-
-		i += b + 1
-		b = strings.Index(data[i:], "#")
-		pv, err2 := strconv.Atoi(data[i : i+b])
-		i += b
-
-		if err1 != nil || err2 != nil {
-			goto main_body // keep trying
+	// read <P1>;<P2>;<P3>
+	for i := 0; i < 2; i++ {
+		s, err := reader.ReadString(';')
+		if err != nil {
+			return 0, 0, errInvalidSixel
 		}
-
-		// TODO
-		// ph and pv are more like suggestions, it's still possible to go over the
-		// reported size, so we might need to parse the entire main body anyway
-		return ph, pv, nil
+		if !isNumber(s[:len(s)-1]) {
+			return 0, 0, errInvalidSixel
+		}
+	}
+	_, err = readNumber(reader)
+	if err != nil {
+		return 0, 0, errInvalidSixel
 	}
 
-main_body:
+	// skip "q"
+	if c, _, err := reader.ReadRune(); err != nil || c != 'q' {
+		return 0, 0, errInvalidSixel
+	}
+
+	peek, err := reader.Peek(1)
+	if err != nil {
+		return 0, 0, errInvalidSixel
+	}
+
+	// optional raster attributes
+	if rune(peek[0]) == '"' {
+		width, height, err = parseRasterAttributes(reader)
+		if err != nil {
+			return 0, 0, errInvalidSixel
+		}
+		if height > maxh {
+			return 0, 0, errSixelTooLarge
+		}
+	}
+
+	// main body
 	var w_line int
-	for ; i < len(data)-2; i++ {
-		c := data[i]
+	newline := false
+loop:
+	for true {
+		newline_last := newline
+		newline = false
+		c, _, err := reader.ReadRune()
+		if err != nil {
+			return 0, 0, err
+		}
+
 		switch {
 		case '?' <= c && c <= '~': // data char
 			w_line++
 		case c == '-': // next line
 			w = max(w, w_line)
 			w_line = 0
+			newline = true
 			h++
+			if h*6 > maxh {
+				return w, h, errSixelTooLarge
+			}
 		case c == '$': // Graphics Carriage Return: go back to start of same line
 			w = max(w, w_line)
 			w_line = 0
 		case c == '!': // Repeat Introducer
-			m := reNumber.FindString(data[i+1:])
-			if m == "" {
-				// syntax error
+			// parse "!<number><code>"
+			rep, err := readNumber(reader)
+			if err != nil {
+				return 0, 0, err
+			}
+
+			// the number must be followed by a data char (anything between '?' and '~')
+			if next, _, err := reader.ReadRune(); err != nil {
+				return 0, 0, err
+			} else if next < '?' || next > '~' {
 				return 0, 0, errInvalidSixel
 			}
-			if data[i+1+len(m)] < '?' || data[i+1+len(m)] > '~' {
-				// syntax error
+
+			w_line += rep
+		case c == '#': // Color Controller
+			err := readColorController(reader)
+			if err != nil {
+				return 0, 0, err
+			}
+
+		case c == gEscapeCode: // string terminator, "ESC \"
+			next, _, err := reader.ReadRune()
+			if err != nil {
+				return 0, 0, err
+			}
+			if next != '\\' {
 				return 0, 0, errInvalidSixel
 			}
-			n, _ := strconv.Atoi(m)
-			w_line += n - 1
+			if !newline_last {
+				w = max(w, w_line)
+				w_line = 0
+				h++
+			}
+			break loop
+
 		default:
-			// other cases:
-			//   c == '#' (change color)
+			return 0, 0, errInvalidSixel
 		}
 	}
-	if data[len(data)-3] != '-' {
-		w = max(w, w_line)
-		h++ // add newline on last row
-	}
-	return w, h * 6, nil
+
+	return max(w, width), max(h*6, height), nil
 }
 
-// maybe merge with sixelDimPx()
-func trimSixelHeight(data string, maxh int) (res string, trimmedHeight int, err error) {
-	var h int
-	maxh = maxh - (maxh % 6)
-
-	i := strings.Index(data, "q") + 1
-	if i == 0 {
-		// syntax error
-		return "", -1, errInvalidSixel
+// Start of (optional) Raster Attributes
+//
+//	"	Pan	;	Pad;	Ph;	Pv
+//
+// pixel aspect ratio = Pan/Pad
+// We are only interested in Ph and Pv (horizontal and vertical size in px)
+func parseRasterAttributes(reader *bufio.Reader) (height, width int, err error) {
+	// skip '"'
+	_, _, err = reader.ReadRune()
+	if err != nil {
+		return 0, 0, err
 	}
 
-	if data[i] == '"' {
-		i++
-		for j := 0; j < 3; j++ {
-			b := strings.Index(data[i:], ";")
-			i += b + 1
+	// reads and discards Pan;Pad;
+	for i := 0; i < 2; i++ {
+		s, err := reader.ReadString(';')
+		if err != nil {
+			return 0, 0, errInvalidSixel
 		}
-		b := strings.Index(data[i:], "#")
-		pv, err := strconv.Atoi(data[i : i+b])
-
-		if err == nil && pv > maxh {
-			mh := strconv.Itoa(maxh)
-			data = data[:i] + mh + data[i+b:]
-			i += len(mh)
-		} else {
-			i += b
+		if !isNumber(s[:len(s)-1]) {
+			return 0, 0, errInvalidSixel
 		}
 	}
 
-	for h < maxh {
-		k := strings.IndexRune(data[i+1:], '-')
-		if k == -1 {
-			if data[len(data)-3] != '-' {
-				h += 6
-				i = len(data) - 3
+	s, err := reader.ReadString(';')
+	if err != nil {
+		return 0, 0, errInvalidSixel
+	}
+	height, err = strconv.Atoi(s[:len(s)-1])
+	if err != nil {
+		return 0, 0, errInvalidSixel
+	}
+
+	width, err = readNumber(reader)
+	if err != nil {
+		return 0, 0, errInvalidSixel
+	}
+
+	return height, width, nil
+}
+
+// parses either:
+//  1. Color Picker:
+//     # id
+//  2. Color Introducer:
+//     # id; colorSystem; x; y; z
+func readColorController(reader *bufio.Reader) error {
+	_, err := readNumber(reader)
+	if err != nil {
+		return err
+	}
+
+	if peek, err := reader.Peek(1); err != nil {
+		return err
+	} else if rune(peek[0]) == ';' {
+		for i := 0; i < 4; i++ {
+			r, _, err := reader.ReadRune()
+			if err != nil {
+				return err
 			}
+			if r != ';' {
+				return errInvalidSixel
+			}
+			_, err = readNumber(reader)
+			if err != nil {
+				return err
+			}
+		}
+	}
+
+	return nil
+}
+
+func isNumber(s string) bool {
+	if len(s) == 0 {
+		return false
+	}
+	for _, c := range s {
+		if !unicode.IsNumber(c) {
+			return false
+		}
+	}
+	return true
+}
+
+func readNumber(data *bufio.Reader) (int, error) {
+	builder := strings.Builder{}
+
+	peek, err := data.Peek(1)
+	for ; true; peek, err = data.Peek(1) {
+		if err != nil {
+			return 0, err
+		}
+		if !unicode.IsNumber(rune(peek[0])) {
 			break
 		}
-		i += k + 1
-		h += 6
+		r, _, _ := data.ReadRune()
+		builder.WriteRune(r)
 	}
 
-	if i == 0 {
-		return data, 6, nil
+	if builder.Len() == 0 {
+		return 0, err
 	}
 
-	if len(data) > i+3 {
-		return data[:i+1] + "\x1b\\", h, nil
+	n, err := strconv.Atoi(builder.String())
+	if err != nil {
+		return 0, err
 	}
 
-	return data, h, nil
+	return n, nil
 }
