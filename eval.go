@@ -611,12 +611,14 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerr("preview: value should be empty, 'true', or 'false'")
 			return
 		}
+		app.ui.loadFile(app, true)
 	case "nopreview":
 		if e.val != "" {
 			app.ui.echoerrf("nopreview: unexpected value: %s", e.val)
 			return
 		}
 		gOpts.preview = false
+		app.ui.loadFile(app, true)
 	case "preview!":
 		if e.val != "" {
 			app.ui.echoerrf("preview!: unexpected value: %s", e.val)
@@ -627,6 +629,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.preview = !gOpts.preview
+		app.ui.loadFile(app, true)
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
 	case "promptfmt":

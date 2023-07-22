@@ -674,7 +674,7 @@ Set the path of a cleaner file.
 The file should be executable.
 This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled.
 Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
-Preview clearing is disabled when the value of this option is left empty.
+Preview cleaning is disabled when the value of this option is left empty.
 
 	cursoractivefmt   string    (default "\033[7m")
 	cursorparentfmt   string    (default "\033[7m")
