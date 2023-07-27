@@ -702,13 +702,12 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		win := ui.wins[len(ui.wins)-1]
 		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			nav.exportFiles()
-			exportOpts()
 			cmd := exec.Command(gOpts.cleaner, prev,
 				strconv.Itoa(win.w),
 				strconv.Itoa(win.h),
 				strconv.Itoa(win.x),
-				strconv.Itoa(win.y))
+				strconv.Itoa(win.y),
+				path)
 			if err := cmd.Run(); err != nil {
 				log.Printf("cleaning preview: %s", err)
 			}
@@ -747,8 +746,6 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
-		nav.exportFiles()
-		exportOpts()
 		cmd := exec.Command(gOpts.previewer, dir.path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
@@ -807,8 +804,6 @@ func (nav *nav) preview(path string, win *win) {
 	var reader io.Reader
 
 	if len(gOpts.previewer) != 0 {
-		nav.exportFiles()
-		exportOpts()
 		cmd := exec.Command(gOpts.previewer, path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
