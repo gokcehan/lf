@@ -180,5 +180,9 @@ func errCrossDevice(err error) bool {
 }
 
 func quoteString(s string) string {
-	return fmt.Sprintf(`"%s"`, s)
+	// Windows CMD requires special handling to deal with quoted arguments
+	if strings.ToLower(gOpts.shell) == "cmd" {
+		return fmt.Sprintf(`"%s"`, s)
+	}
+	return s
 }
