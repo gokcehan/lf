@@ -989,8 +989,7 @@ func (ui *ui) draw(nav *nav) {
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
 		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
 		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix))
-		statLine := string(prefix) + string(left) + string(ui.cmdAccRight)
-		ui.msgWin.printLine(ui.screen, 0, 0, st, statLine)
+		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+string(left)+string(ui.cmdAccRight))
 		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
