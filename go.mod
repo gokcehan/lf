@@ -5,7 +5,7 @@ go 1.18
 require (
 	github.com/djherbis/times v1.5.0
 	github.com/gdamore/tcell/v2 v2.6.0
-	github.com/mattn/go-runewidth v0.0.14
+	github.com/mattn/go-runewidth v0.0.15
 	golang.org/x/sys v0.10.0
 	golang.org/x/term v0.10.0
 )

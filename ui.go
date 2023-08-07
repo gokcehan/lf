@@ -696,12 +696,12 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		onSelect(app)
 	}
 
-	if !gOpts.preview {
-		return
-	}
-
 	if volatile {
 		app.nav.previewChan <- ""
+	}
+
+	if !gOpts.preview {
+		return
 	}
 
 	if curr.IsDir() {
