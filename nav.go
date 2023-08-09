@@ -848,16 +848,15 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 		reader = f
 	}
 
+	prefix := make([]byte, 2)
 	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
-		prefix := make([]byte, 2)
 		_, err := reader.Read(prefix)
-		// FIXME: get rid of io.MultiReader
 		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 
 		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
 			str, err := io.ReadAll(reader)
 			if err != nil {
-				reg.lines = []string{"\033[7merror reading sixel\033[0m"}
+				log.Printf("loading sixel: %s", err)
 			}
 			reg.sixel = &sixel{string(str)}
 			return
