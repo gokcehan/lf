@@ -683,7 +683,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
-	sixels   []sixel // TODO use singular sixel
+	sixel    *sixel
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
@@ -1039,7 +1039,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && ui.cmdPrefix == "" && len(ui.sxScreen.sx) > 0 {
+	if ui.menuBuf == nil && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
 		ui.sxScreen.lastFile = ui.regPrev.path
 		ui.sxScreen.showSixels()
 	}

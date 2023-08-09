@@ -859,7 +859,7 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 			if err != nil {
 				reg.lines = []string{"\033[7merror reading sixel\033[0m"}
 			}
-			reg.sixels = append(sxScreen.sx, sixel{string(str)})
+			reg.sixel = &sixel{string(str)}
 			return
 		}
 	}

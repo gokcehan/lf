@@ -23,13 +23,13 @@ type sixel struct {
 type sixelScreen struct {
 	wpx, hpx     int
 	xprev, yprev int
-	sx           []sixel
+	sixel        *sixel
 	altFill      bool
 	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
 }
 
 func (sxs *sixelScreen) clear() {
-	sxs.sx = nil
+	sxs.sixel = nil
 }
 
 func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
@@ -60,9 +60,9 @@ func (sxs *sixelScreen) updateSizes(wc, hc int) {
 func (sxs *sixelScreen) showSixels() {
 	var buf strings.Builder
 	buf.WriteString("\0337")
-	for _, sixel := range sxs.sx {
+	if sxs.sixel != nil {
 		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sxs.yprev, sxs.xprev))
-		buf.WriteString(sixel.data)
+		buf.WriteString(sxs.sixel.data)
 	}
 	buf.WriteString("\0338")
 	fmt.Print(buf.String())
@@ -71,16 +71,18 @@ func (sxs *sixelScreen) showSixels() {
 // fillers are used to control when tcell redraws the region where a sixel image is drawn.
 // alternating between bold and regular is to clear the image before drawing a new one.
 func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
-	fillStyle := sxs.fillerStyle(reg.path)
-	for _, sx := range reg.sixels {
-		hc := win.h
-
-		for y := win.y; y < win.y+hc; y++ {
-			win.print(screen, 0, y, fillStyle, strings.Repeat(string(gSixelFiller), win.w))
-		}
-
-		// TODO: move logic into showSixel
-		sxs.xprev, sxs.yprev = win.x, win.y
-		sxs.sx = append(sxs.sx, sx)
+	if reg.sixel == nil {
+		return
 	}
+	fillStyle := sxs.fillerStyle(reg.path)
+
+	hc := win.h
+
+	for y := win.y; y < win.y+hc; y++ {
+		win.print(screen, 0, y, fillStyle, strings.Repeat(string(gSixelFiller), win.w))
+	}
+
+	// TODO: move logic into showSixel
+	sxs.xprev, sxs.yprev = win.x+1, win.y+1
+	sxs.sixel = reg.sixel
 }
