@@ -852,14 +852,14 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 		prefix := make([]byte, 2)
 		_, err := reader.Read(prefix)
 		// FIXME: get rid of io.MultiReader
-		reader := io.MultiReader(bytes.NewReader(prefix), reader)
+		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 
 		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
-			lines, sx := renderSixel(reader, win, sxScreen)
-			reg.lines = lines
-			if sx != nil {
-				reg.sixels = append(reg.sixels, *sx)
+			str, err := io.ReadAll(reader)
+			if err != nil {
+				reg.lines = []string{"\033[7merror reading sixel\033[0m"}
 			}
+			reg.sixels = append(sxScreen.sx, sixel{string(str)})
 			return
 		}
 	}
