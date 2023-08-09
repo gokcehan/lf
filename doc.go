@@ -164,7 +164,7 @@ The following options can be used to customize the behavior of lf:
 	shell            string    (default 'sh' for Unix and 'cmd' for Windows)
 	shellflag        string    (default '-c' for Unix and '/c' for Windows)
 	shellopts        []string  (default '')
-	sixel            []string  (default false)
+	sixel            bool      (default false)
 	smartcase        bool      (default true)
 	smartdia         bool      (default false)
 	sortby           string    (default 'natural')
