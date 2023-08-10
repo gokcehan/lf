@@ -52,7 +52,7 @@ func (sxs *sixelScreen) updateSizes(wc, hc int) {
 	var err error
 	sxs.wpx, sxs.hpx, err = getTermPixels()
 	if err != nil {
-		sxs.wpx, sxs.hpx = -1, -1
+		sxs.wpx, sxs.hpx = 0, 0
 		log.Printf("getting terminal pixel size: %s", err)
 	}
 }
