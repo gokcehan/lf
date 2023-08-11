@@ -849,7 +849,7 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 	}
 
 	prefix := make([]byte, 2)
-	if gOpts.sixel && sxScreen.wpx > 0 && sxScreen.hpx > 0 {
+	if gOpts.sixel {
 		_, err := reader.Read(prefix)
 		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 

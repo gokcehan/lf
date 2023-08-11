@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -21,7 +20,6 @@ type sixel struct {
 }
 
 type sixelScreen struct {
-	wpx, hpx     int
 	xprev, yprev int
 	sixel        *sixel
 	altFill      bool
@@ -43,18 +41,8 @@ func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
 	return tcell.StyleDefault
 }
 
-func newSixelScreen(wc, hc int) (sxs sixelScreen) {
-	sxs.updateSizes(wc, hc)
+func newSixelScreen() (sxs sixelScreen) {
 	return sxs
-}
-
-func (sxs *sixelScreen) updateSizes(wc, hc int) {
-	var err error
-	sxs.wpx, sxs.hpx, err = getTermPixels()
-	if err != nil {
-		sxs.wpx, sxs.hpx = 0, 0
-		log.Printf("getting terminal pixel size: %s", err)
-	}
 }
 
 func (sxs *sixelScreen) showSixels() {
@@ -76,9 +64,7 @@ func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
 	}
 	fillStyle := sxs.fillerStyle(reg.path)
 
-	hc := win.h
-
-	for y := win.y; y < win.y+hc; y++ {
+	for y := 0; y < win.h; y++ {
 		win.print(screen, 0, y, fillStyle, strings.Repeat(string(gSixelFiller), win.w))
 	}
 

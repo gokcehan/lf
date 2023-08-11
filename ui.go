@@ -603,7 +603,7 @@ func newUI(screen tcell.Screen) *ui {
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
-		sxScreen:    newSixelScreen(screen.Size()),
+		sxScreen:    newSixelScreen(),
 	}
 
 	go ui.pollEvents()

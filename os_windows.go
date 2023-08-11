@@ -186,7 +186,3 @@ func quoteString(s string) string {
 	}
 	return s
 }
-
-func getTermPixels() (w, h int, err error) {
-	return -1, -1, nil
-}
