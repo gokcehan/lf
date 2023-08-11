@@ -46,29 +46,31 @@ func newSixelScreen() (sxs sixelScreen) {
 }
 
 func (sxs *sixelScreen) showSixels() {
-	var buf strings.Builder
-	buf.WriteString("\0337")
-	if sxs.sixel != nil {
-		buf.WriteString(fmt.Sprintf("\033[%d;%dH", sxs.yprev, sxs.xprev))
-		buf.WriteString(sxs.sixel.data)
+	if sxs.sixel == nil {
+		return
 	}
-	buf.WriteString("\0338")
-	fmt.Print(buf.String())
+
+	// XXX: workaround for bug where quitting lf might leave the terminal in bold
+	fmt.Print("\033[0m")
+
+	fmt.Print("\0337")                              // Save cursor position
+	fmt.Printf("\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
+	fmt.Print(sxs.sixel.data)                       //
+	fmt.Print("\0338")                              // Restore cursor position
 }
 
-// fillers are used to control when tcell redraws the region where a sixel image is drawn.
-// alternating between bold and regular is to clear the image before drawing a new one.
-func (sxs *sixelScreen) printFiller(win *win, screen tcell.Screen, reg *reg) {
+func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, st tcell.Style, reg *reg) {
 	if reg.sixel == nil {
 		return
 	}
-	fillStyle := sxs.fillerStyle(reg.path)
 
+	// HACK: fillers are used to control when tcell redraws the region where a sixel image is drawn.
+	// alternating between bold and regular is to clear the image before drawing a new one.
+	st = sxs.fillerStyle(reg.path)
 	for y := 0; y < win.h; y++ {
-		win.print(screen, 0, y, fillStyle, strings.Repeat(string(gSixelFiller), win.w))
+		st = win.print(screen, 0, y, st, strings.Repeat(string(gSixelFiller), win.w))
 	}
 
-	// TODO: move logic into showSixel
 	sxs.xprev, sxs.yprev = win.x+1, win.y+1
 	sxs.sixel = reg.sixel
 }
