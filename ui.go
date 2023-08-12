@@ -683,7 +683,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
-	sixel    *sixel
+	sixel    *string
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {

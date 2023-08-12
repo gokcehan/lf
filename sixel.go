@@ -15,13 +15,9 @@ var (
 	gSixelFiller = '\u2800'
 )
 
-type sixel struct {
-	data string
-}
-
 type sixelScreen struct {
 	xprev, yprev int
-	sixel        *sixel
+	sixel        *string
 	altFill      bool
 	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
 }
@@ -55,7 +51,7 @@ func (sxs *sixelScreen) showSixels() {
 
 	fmt.Print("\0337")                              // Save cursor position
 	fmt.Printf("\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
-	fmt.Print(sxs.sixel.data)                       //
+	fmt.Print(*sxs.sixel)                           //
 	fmt.Print("\0338")                              // Restore cursor position
 }
 

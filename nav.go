@@ -854,11 +854,12 @@ func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
 		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 
 		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
-			str, err := io.ReadAll(reader)
+			b, err := io.ReadAll(reader)
 			if err != nil {
 				log.Printf("loading sixel: %s", err)
 			}
-			reg.sixel = &sixel{string(str)}
+			str := string(b)
+			reg.sixel = &str
 			return
 		}
 	}
