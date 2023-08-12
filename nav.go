@@ -715,7 +715,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.preview(path, &ui.sxScreen, win)
+			nav.preview(path, win)
 			prev = path
 		}
 	}
@@ -797,7 +797,7 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 
 }
 
-func (nav *nav) preview(path string, sxScreen *sixelScreen, win *win) {
+func (nav *nav) preview(path string, win *win) {
 
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
