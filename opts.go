@@ -91,6 +91,19 @@ var gOpts struct {
 	tagfmt           string
 }
 
+type localOpts struct {
+	sortType sortType
+}
+
+var gLocalOpts map[string]localOpts = make(map[string]localOpts)
+
+func getSortType(path string) sortType {
+	if val, ok := gLocalOpts[path]; ok {
+		return val.sortType
+	}
+	return gOpts.sortType
+}
+
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false

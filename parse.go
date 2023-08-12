@@ -2,34 +2,37 @@ package main
 
 // Grammar of the language used in the evaluator
 //
-// Expr     = SetExpr
-//          | MapExpr
-//          | CMapExpr
-//          | CmdExpr
-//          | CallExpr
-//          | ExecExpr
-//          | ListExpr
+// Expr         = SetExpr
+//              | SetLocalExpr
+//              | MapExpr
+//              | CMapExpr
+//              | CmdExpr
+//              | CallExpr
+//              | ExecExpr
+//              | ListExpr
 //
-// SetExpr  = 'set' <opt> <val> ';'
+// SetExpr      = 'set' <opt> <val> ';'
 //
-// MapExpr  = 'map' <keys> Expr
+// SetLocalExpr = 'setlocal' <dir> <opt> <val> ';'
 //
-// CMapExpr = 'cmap' <key> Expr
+// MapExpr      = 'map' <keys> Expr
 //
-// CmdExpr  = 'cmd' <name> Expr
+// CMapExpr     = 'cmap' <key> Expr
 //
-// CallExpr = <name> <args> ';'
+// CmdExpr      = 'cmd' <name> Expr
 //
-// ExecExpr = Prefix      <value>      '\n'
-//          | Prefix '{{' <value> '}}' ';'
+// CallExpr     = <name> <args> ';'
 //
-// Prefix   = '$' | '%' | '!' | '&'
+// ExecExpr     = Prefix      <value>      '\n'
+//              | Prefix '{{' <value> '}}' ';'
 //
-// ListExpr = ':'      Expr ListRest      '\n'
-//          | ':' '{{' Expr ListRest '}}' ';'
+// Prefix       = '$' | '%' | '!' | '&'
 //
-// ListRest = Nil
-//          | Expr ListExpr
+// ListExpr     = ':'      Expr ListRest      '\n'
+//              | ':' '{{' Expr ListRest '}}' ';'
+//
+// ListRest     = Nil
+//              | Expr ListExpr
 
 import (
 	"bytes"
@@ -49,6 +52,14 @@ type setExpr struct {
 }
 
 func (e *setExpr) String() string { return fmt.Sprintf("set %s %s", e.opt, e.val) }
+
+type setLocalExpr struct {
+	dir string
+	opt string
+	val string
+}
+
+func (e *setLocalExpr) String() string { return fmt.Sprintf("setlocal %s %s %s", e.dir, e.opt, e.val) }
 
 type mapExpr struct {
 	keys string
@@ -176,6 +187,30 @@ func (p *parser) parseExpr() expr {
 			s.scan()
 
 			result = &setExpr{opt, val}
+		case "setlocal":
+			var val string
+
+			s.scan()
+			if s.typ != tokenIdent {
+				p.err = fmt.Errorf("expected directory: %s", s.tok)
+			}
+			dir := s.tok
+
+			s.scan()
+			if s.typ != tokenIdent {
+				p.err = fmt.Errorf("expected identifier: %s", s.tok)
+			}
+			opt := s.tok
+
+			s.scan()
+			if s.typ != tokenSemicolon {
+				val = s.tok
+				s.scan()
+			}
+
+			s.scan()
+
+			result = &setLocalExpr{dir, opt, val}
 		case "map":
 			var expr expr
 

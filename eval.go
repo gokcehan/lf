@@ -903,6 +903,50 @@ func (e *setExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func (e *setLocalExpr) eval(app *app, args []string) {
+	switch e.opt {
+	case "sortby":
+		var method sortMethod
+		switch e.val {
+		case "natural":
+			method = naturalSort
+		case "name":
+			method = nameSort
+		case "size":
+			method = sizeSort
+		case "time":
+			method = timeSort
+		case "ctime":
+			method = ctimeSort
+		case "atime":
+			method = atimeSort
+		case "ext":
+			method = extSort
+		default:
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+			return
+		}
+
+		dir := replaceTilde(e.dir)
+		if val, ok := gLocalOpts[dir]; ok {
+			val.sortType.method = naturalSort
+		} else {
+			val := localOpts{
+				sortType: gOpts.sortType,
+			}
+			val.sortType.method = method
+			gLocalOpts[dir] = val
+		}
+
+		app.nav.sort()
+		app.ui.sort()
+	default:
+		app.ui.echoerrf("unknown option: %s", e.opt)
+		return
+	}
+	app.ui.loadFileInfo(app.nav)
+}
+
 func (e *mapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.keys, e.keys)
