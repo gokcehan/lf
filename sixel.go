@@ -22,10 +22,6 @@ type sixelScreen struct {
 	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
 }
 
-func (sxs *sixelScreen) clear() {
-	sxs.sixel = nil
-}
-
 func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
 	if sxs.lastFile != filePath {
 		sxs.altFill = !sxs.altFill
