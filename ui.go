@@ -275,7 +275,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		st = win.print(screen, 2, i, st, l)
 	}
 
-	sxs.printSixel(win, screen, st, reg)
+	sxs.printSixel(win, screen, reg)
 }
 
 var gThisYear = time.Now().Year()

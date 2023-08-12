@@ -44,14 +44,14 @@ func (sxs *sixelScreen) showSixels() {
 	fmt.Print("\0338")                              // Restore cursor position
 }
 
-func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, st tcell.Style, reg *reg) {
+func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	if reg.sixel == nil {
 		return
 	}
 
 	// HACK: fillers are used to control when tcell redraws the region where a sixel image is drawn.
 	// alternating between bold and regular is to clear the image before drawing a new one.
-	st = sxs.fillerStyle(reg.path)
+	st := sxs.fillerStyle(reg.path)
 	for y := 0; y < win.h; y++ {
 		st = win.print(screen, 0, y, st, strings.Repeat(string(gSixelFiller), win.w))
 	}
