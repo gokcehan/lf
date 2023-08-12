@@ -37,6 +37,7 @@ type file struct {
 	accessTime time.Time
 	changeTime time.Time
 	ext        string
+	err        error
 }
 
 func (file *file) TotalSize() int64 {
@@ -48,6 +49,17 @@ func (file *file) TotalSize() int64 {
 	}
 	return file.Size()
 }
+
+type fakeStat struct {
+	name string
+}
+
+func (fs *fakeStat) Name() string       { return fs.name }
+func (fs *fakeStat) Size() int64        { return 0 }
+func (fs *fakeStat) Mode() os.FileMode  { return os.FileMode(0000) }
+func (fs *fakeStat) ModTime() time.Time { return time.Unix(0, 0) }
+func (fs *fakeStat) IsDir() bool        { return false }
+func (fs *fakeStat) Sys() any           { return nil }
 
 func readdir(path string) ([]*file, error) {
 	f, err := os.Open(path)
@@ -68,6 +80,18 @@ func readdir(path string) ([]*file, error) {
 		}
 		if err != nil {
 			log.Printf("getting file information: %s", err)
+			files = append(files, &file{
+				FileInfo:   &fakeStat{name: fname},
+				linkState:  notLink,
+				linkTarget: "",
+				path:       fpath,
+				dirCount:   -1,
+				dirSize:    -1,
+				accessTime: time.Unix(0, 0),
+				changeTime: time.Unix(0, 0),
+				ext:        filepath.Ext(fpath),
+				err:        err,
+			})
 			continue
 		}
 
@@ -130,6 +154,7 @@ func readdir(path string) ([]*file, error) {
 			accessTime: at,
 			changeTime: ct,
 			ext:        ext,
+			err:        nil,
 		})
 	}
 
