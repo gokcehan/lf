@@ -8,10 +8,7 @@ import (
 )
 
 const (
-	gSixelBegin = "\033P"
-)
-
-var (
+	gSixelBegin  = "\033P"
 	gSixelFiller = '\u2800'
 )
 
