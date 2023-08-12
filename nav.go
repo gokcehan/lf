@@ -853,7 +853,7 @@ func (nav *nav) preview(path string, win *win) {
 		_, err := reader.Read(prefix)
 		reader = io.MultiReader(bytes.NewReader(prefix), reader)
 
-		if err == nil && prefix[0] == gEscapeCode && prefix[1] == gSixelBegin[1] {
+		if err == nil && string(prefix) == gSixelBegin {
 			b, err := io.ReadAll(reader)
 			if err != nil {
 				log.Printf("loading sixel: %s", err)
