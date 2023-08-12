@@ -30,10 +30,6 @@ func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
 	return tcell.StyleDefault
 }
 
-func newSixelScreen() (sxs sixelScreen) {
-	return sxs
-}
-
 func (sxs *sixelScreen) showSixels() {
 	if sxs.sixel == nil {
 		return
