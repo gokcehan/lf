@@ -891,6 +891,27 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.wrapscroll = !gOpts.wrapscroll
+	case "sixel":
+		if e.val == "" || e.val == "true" {
+			gOpts.sixel = true
+		} else if e.val == "false" {
+			gOpts.sixel = false
+		} else {
+			app.ui.echoerr("sixel: value should be empty, 'true', or 'false'")
+			return
+		}
+	case "nosixel":
+		if e.val != "" {
+			app.ui.echoerrf("nosixel: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.sixel = false
+	case "sixel!":
+		if e.val != "" {
+			app.ui.echoerrf("sixel!: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.sixel = !gOpts.sixel
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {

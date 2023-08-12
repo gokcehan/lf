@@ -49,6 +49,7 @@ var gOpts struct {
 	mouse            bool
 	number           bool
 	preview          bool
+	sixel            bool
 	relativenumber   bool
 	smartcase        bool
 	smartdia         bool
@@ -113,6 +114,7 @@ func init() {
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
+	gOpts.sixel = false
 	gOpts.relativenumber = false
 	gOpts.smartcase = true
 	gOpts.smartdia = false

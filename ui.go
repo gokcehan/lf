@@ -252,7 +252,7 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
 	if reg == nil {
 		return
 	}
@@ -274,6 +274,8 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool) {
 
 		st = win.print(screen, 2, i, st, l)
 	}
+
+	sxs.printSixel(win, screen, reg)
 }
 
 var gThisYear = time.Now().Year()
@@ -558,6 +560,7 @@ func getWins(screen tcell.Screen) []*win {
 
 type ui struct {
 	screen      tcell.Screen
+	sxScreen    sixelScreen
 	polling     bool
 	wins        []*win
 	promptWin   *win
@@ -600,6 +603,7 @@ func newUI(screen tcell.Screen) *ui {
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
+		sxScreen:    sixelScreen{},
 	}
 
 	go ui.pollEvents()
@@ -679,6 +683,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
+	sixel    *string
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
@@ -955,6 +960,7 @@ func (ui *ui) draw(nav *nav) {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
+	ui.sxScreen.sixel = nil
 
 	ui.drawPromptLine(nav)
 
@@ -1003,7 +1009,7 @@ func (ui *ui) draw(nav *nav) {
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
 					nav.previewLoading)
 			} else if curr.Mode().IsRegular() {
-				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading)
+				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			}
 		}
 	}
@@ -1033,6 +1039,11 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
+	if ui.menuBuf == nil && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
+		ui.sxScreen.lastFile = ui.regPrev.path
+		ui.sxScreen.showSixels()
+	}
+
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {

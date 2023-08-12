@@ -167,6 +167,7 @@ The following options can be used to customize the behavior of lf:
     shell            string    (default 'sh' for Unix and 'cmd' for Windows)
     shellflag        string    (default '-c' for Unix and '/c' for Windows)
     shellopts        []string  (default '')
+    sixel            bool      (default false)
     smartcase        bool      (default true)
     smartdia         bool      (default false)
     sortby           string    (default 'natural')
@@ -978,6 +979,10 @@ Command line flag used to pass shell commands.
     shellopts      []string  (default '')
 
 List of shell options to pass to the shell executable.
+
+    sixel          bool      (default false)
+
+Render sixel images in preview.
 
     smartcase      bool      (default true)
 

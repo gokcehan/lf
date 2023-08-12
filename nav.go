@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -845,6 +846,22 @@ func (nav *nav) preview(path string, win *win) {
 
 		defer f.Close()
 		reader = f
+	}
+
+	prefix := make([]byte, 2)
+	if gOpts.sixel {
+		_, err := reader.Read(prefix)
+		reader = io.MultiReader(bytes.NewReader(prefix), reader)
+
+		if err == nil && string(prefix) == gSixelBegin {
+			b, err := io.ReadAll(reader)
+			if err != nil {
+				log.Printf("loading sixel: %s", err)
+			}
+			str := string(b)
+			reg.sixel = &str
+			return
+		}
 	}
 
 	buf := bufio.NewScanner(reader)
