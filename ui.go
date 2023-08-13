@@ -935,6 +935,11 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = fmt.Sprint(hid)
 		case "%d":
 			result = diskFree(dir.path)
+		default:
+			s = strings.TrimSuffix(strings.TrimPrefix(s, "%{"), "}")
+			if val, ok := opts[s]; ok {
+				result = formatRulerOpt(s, val)
+			}
 		}
 		if result == "" {
 			return "\x00"
