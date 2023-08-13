@@ -512,6 +512,11 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.ui.exportSizes()
 	exportOpts()
 
+	gState["maps"] = listBinds(gOpts.keys)
+	gState["cmaps"] = listBinds(gOpts.cmdkeys)
+	gState["cmds"] = listCmds()
+	gState["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
+
 	cmd := shellCommand(s, args)
 
 	var out io.Reader

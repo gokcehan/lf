@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -12,6 +13,12 @@ import (
 
 	"github.com/gdamore/tcell/v2"
 )
+
+var gState map[string]*bytes.Buffer
+
+func init() {
+	gState = make(map[string]*bytes.Buffer)
+}
 
 func run() {
 	var screen tcell.Screen
@@ -85,7 +92,9 @@ func readExpr() <-chan expr {
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
 			if word, rest := splitWord(s.Text()); word == "recv" {
-				fmt.Fprintln(c, "hello "+rest)
+				if state, ok := gState[rest]; ok {
+					io.Copy(c, state)
+				}
 				fmt.Fprintln(c, "")
 			} else {
 				p := newParser(strings.NewReader(s.Text()))
