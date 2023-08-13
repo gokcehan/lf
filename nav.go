@@ -850,8 +850,8 @@ func (nav *nav) preview(path string, win *win) {
 
 	prefix := make([]byte, 2)
 	if gOpts.sixel {
-		_, err := reader.Read(prefix)
-		reader = io.MultiReader(bytes.NewReader(prefix), reader)
+		n, err := reader.Read(prefix)
+		reader = io.MultiReader(bytes.NewReader(prefix[:n]), reader)
 
 		if err == nil && string(prefix) == gSixelBegin {
 			b, err := io.ReadAll(reader)
