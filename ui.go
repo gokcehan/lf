@@ -824,7 +824,7 @@ func formatRulerOpt(name string, val string) string {
 	return val
 }
 
-func (ui *ui) drawStatLine(nav *nav) {
+func (ui *ui) drawRuler(nav *nav) {
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
@@ -876,34 +876,41 @@ func (ui *ui) drawStatLine(nav *nav) {
 	}
 
 	opts := getOptsMap()
-	ruler := []string{}
-	for _, s := range gOpts.ruler {
-		switch s {
-		case "df":
-			df := diskFree(dir.path)
-			if df != "" {
-				ruler = append(ruler, df)
-			}
-		case "acc":
-			ruler = append(ruler, acc)
-		case "progress":
-			ruler = append(ruler, progress...)
-		case "selection":
-			ruler = append(ruler, selection...)
-		case "filter":
-			if len(dir.filter) != 0 {
-				ruler = append(ruler, "\033[34;7m F \033[0m")
-			}
-		case "ind":
-			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
-		default:
-			if val, ok := opts[s]; ok {
-				ruler = append(ruler, formatRulerOpt(s, val))
+
+	// 'ruler' option is deprecated and can be removed in future
+	if len(gOpts.ruler) > 0 {
+		ruler := []string{}
+		for _, s := range gOpts.ruler {
+			switch s {
+			case "df":
+				df := diskFree(dir.path)
+				if df != "" {
+					ruler = append(ruler, df)
+				}
+			case "acc":
+				ruler = append(ruler, acc)
+			case "progress":
+				ruler = append(ruler, progress...)
+			case "selection":
+				ruler = append(ruler, selection...)
+			case "filter":
+				if len(dir.filter) != 0 {
+					ruler = append(ruler, "\033[34;7m F \033[0m")
+				}
+			case "ind":
+				ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
+			default:
+				if val, ok := opts[s]; ok {
+					ruler = append(ruler, formatRulerOpt(s, val))
+				}
 			}
 		}
+
+		ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
+		return
 	}
 
-	ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
+	ui.msgWin.printRight(ui.screen, 0, st, gOpts.rulerfmt)
 }
 
 func (ui *ui) drawBox() {
@@ -982,7 +989,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		ui.drawStatLine(nav)
+		ui.drawRuler(nav)
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
