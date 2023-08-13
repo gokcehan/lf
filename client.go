@@ -84,9 +84,14 @@ func readExpr() <-chan expr {
 		s := bufio.NewScanner(c)
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
-			p := newParser(strings.NewReader(s.Text()))
-			if p.parse() {
-				ch <- p.expr
+			if word, rest := splitWord(s.Text()); word == "recv" {
+				fmt.Fprintln(c, "hello "+rest)
+				fmt.Fprintln(c, "")
+			} else {
+				p := newParser(strings.NewReader(s.Text()))
+				if p.parse() {
+					ch <- p.expr
+				}
 			}
 		}
 
