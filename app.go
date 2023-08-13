@@ -513,10 +513,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	exportOpts()
 
 	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(gOpts.keys)
-	gState.data["cmaps"] = listBinds(gOpts.cmdkeys)
-	gState.data["cmds"] = listCmds()
-	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	gState.data["maps"] = listBinds(gOpts.keys).String()
+	gState.data["cmaps"] = listBinds(gOpts.cmdkeys).String()
+	gState.data["cmds"] = listCmds().String()
+	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd).String()
 	gState.mutex.Unlock()
 
 	cmd := shellCommand(s, args)

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"fmt"
 	"io"
 	"log"
@@ -17,13 +16,13 @@ import (
 
 type State struct {
 	mutex sync.Mutex
-	data  map[string]*bytes.Buffer
+	data  map[string]string
 }
 
 var gState State
 
 func init() {
-	gState.data = make(map[string]*bytes.Buffer)
+	gState.data = make(map[string]string)
 }
 
 func run() {
@@ -100,7 +99,7 @@ func readExpr() <-chan expr {
 			if word, rest := splitWord(s.Text()); word == "recv" {
 				gState.mutex.Lock()
 				if state, ok := gState.data[rest]; ok {
-					io.Copy(c, state)
+					fmt.Fprint(c, state)
 				}
 				gState.mutex.Unlock()
 				fmt.Fprintln(c, "")
