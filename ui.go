@@ -837,9 +837,9 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	selection := []string{}
 
+	copy := 0
+	move := 0
 	if len(nav.saves) > 0 {
-		copy := 0
-		move := 0
 		for _, cp := range nav.saves {
 			if cp {
 				copy++
@@ -910,7 +910,41 @@ func (ui *ui) drawRuler(nav *nav) {
 		return
 	}
 
-	ui.msgWin.printRight(ui.screen, 0, st, gOpts.rulerfmt)
+	rulerfmt := strings.ReplaceAll(gOpts.rulerfmt, "|", "\x1f")
+	rulerfmt = reRulerSub.ReplaceAllStringFunc(rulerfmt, func(s string) string {
+		var result string
+		switch s {
+		case "%a":
+			result = acc
+		case "%p":
+			result = strings.Join(progress, " ")
+		case "%m":
+			result = fmt.Sprintf("%.d", move)
+		case "%c":
+			result = fmt.Sprintf("%.d", copy)
+		case "%s":
+			result = fmt.Sprintf("%.d", len(currSelections))
+		case "%f":
+			result = strings.Join(dir.filter, " ")
+		case "%i":
+			result = fmt.Sprint(ind)
+		case "%t":
+			result = fmt.Sprint(tot)
+		case "%d":
+			result = diskFree(dir.path)
+		}
+		if result == "" {
+			return "\x00"
+		}
+		return result
+	})
+	ruler := ""
+	for _, section := range strings.Split(rulerfmt, "\x1f") {
+		if !strings.Contains(section, "\x00") {
+			ruler += section
+		}
+	}
+	ui.msgWin.printRight(ui.screen, 0, st, ruler)
 }
 
 func (ui *ui) drawBox() {
