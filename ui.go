@@ -833,6 +833,7 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
+	hid := len(dir.allFiles) - tot
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
 	selection := []string{}
@@ -930,6 +931,8 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = fmt.Sprint(ind)
 		case "%t":
 			result = fmt.Sprint(tot)
+		case "%h":
+			result = fmt.Sprint(hid)
 		case "%d":
 			result = diskFree(dir.path)
 		}
