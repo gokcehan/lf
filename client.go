@@ -9,15 +9,21 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
 
-var gState map[string]*bytes.Buffer
+type State struct {
+	mutex sync.Mutex
+	data  map[string]*bytes.Buffer
+}
+
+var gState State
 
 func init() {
-	gState = make(map[string]*bytes.Buffer)
+	gState.data = make(map[string]*bytes.Buffer)
 }
 
 func run() {
@@ -92,9 +98,11 @@ func readExpr() <-chan expr {
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
 			if word, rest := splitWord(s.Text()); word == "recv" {
-				if state, ok := gState[rest]; ok {
+				gState.mutex.Lock()
+				if state, ok := gState.data[rest]; ok {
 					io.Copy(c, state)
 				}
+				gState.mutex.Unlock()
 				fmt.Fprintln(c, "")
 			} else {
 				p := newParser(strings.NewReader(s.Text()))
