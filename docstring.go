@@ -162,6 +162,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber   bool      (default false)
     reverse          bool      (default false)
     ruler            []string  (default 'acc:progress:selection:filter:ind')
+    rulerfmt         string    (default "%a  |%p  |\033[7;31m %m \033[0m  |\033[7;33m %c \033[0m  |\033[7;35m %s \033[0m  |\033[7;34m %f \033[0m  |%i/%t")
     scrolloff        int       (default 0)
     selmode          string    (default 'all')
     shell            string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -938,6 +939,7 @@ Reverse the direction of sort.
 
     ruler          []string  (default 'acc:progress:selection:filter:ind')
 
+This option is deprecated in favor of using the 'rulerfmt' option (see below).
 List of information shown in status line ruler. Currently supported information
 types are 'acc', 'progress', 'selection', 'filter', 'ind', 'df' and names
 starting with 'lf_'. 'acc' shows the pressed keys (e.g. for bindings with
@@ -952,6 +954,22 @@ displaying the current settings (e.g. 'lf_selmode' displays the current setting
 for the 'selmode' option). User defined options starting with 'lf_user_' are
 also supported, so it is possible to display information set from external
 sources.
+
+    rulerfmt       string    (default "%a  |%p  |\033[7;31m %m \033[0m  |\033[7;33m %c \033[0m  |\033[7;35m %s \033[0m  |\033[7;34m %f \033[0m  |%i/%t")
+
+Format string of the ruler shown in the bottom right corner. Special expansions
+are provided, '%a' as the pressed keys, '%p' as the progress of file operations,
+'%m' as the number of files to be cut (moved), '%c' as the number of files to
+be copied, '%s' as the number of selected files, '%f' as the filter, '%i' as
+the position of the cursor, '%t' as the number of files shown in the current
+directory, '%h' as the number of files hidden in the current directory, and '%d'
+as the amount of free disk space remaining. Additional expansions are provided
+for environment variables exported by lf, in the form '%{lf_<name>}' (e.g.
+'%{lf_selmode}'). This is useful for displaying the current settings. Expansions
+are also provided for user defined options, in the form '%{lf_user_<name>}'
+(e.g. '%{lf_user_foo}'). The '|' character splits the format string into
+sections. Any section containing a failed expansion (result is a blank string)
+is discarded and not shown.
 
     selmode        string    (default 'all')
 
