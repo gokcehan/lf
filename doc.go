@@ -218,6 +218,7 @@ The following commands/keybindings are provided by default:
 	cmd doc $$lf -doc | $PAGER
 	map <f-1> doc
 	cmd maps $lf -remote "recv $id maps" | $PAGER
+	cmd cmds $lf -remote "recv $id cmds" | $PAGER
 
 	Windows
 	cmd open &%OPENER% %f%
@@ -227,6 +228,7 @@ The following commands/keybindings are provided by default:
 	cmd doc !%lf% -doc | %PAGER%
 	map <f-1> doc
 	cmd maps !%lf% -remote "recv %id% maps" | %PAGER%
+	cmd cmds !%lf% -remote "recv %id% cmds" | %PAGER%
 
 The following additional keybindings are provided by default:
 
