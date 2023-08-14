@@ -98,10 +98,11 @@ func readExpr() <-chan expr {
 			log.Printf("recv: %s", s.Text())
 			if word, rest := splitWord(s.Text()); word == "recv" {
 				gState.mutex.Lock()
-				if state, ok := gState.data[rest]; ok {
+				state, ok := gState.data[rest]
+				gState.mutex.Unlock()
+				if ok {
 					fmt.Fprint(c, state)
 				}
-				gState.mutex.Unlock()
 				fmt.Fprintln(c, "")
 			} else {
 				p := newParser(strings.NewReader(s.Text()))
