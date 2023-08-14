@@ -170,6 +170,8 @@ func setDefaults() {
 
 	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
+
+	gOpts.cmds["maps"] = &execExpr{"$", `"$lf" -remote "recv $id maps" | $PAGER`}
 }
 
 func setUserUmask() {
