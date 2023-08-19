@@ -904,40 +904,28 @@ func (e *setExpr) eval(app *app, args []string) {
 }
 
 func (e *setLocalExpr) eval(app *app, args []string) {
+	dir := replaceTilde(e.dir)
 	switch e.opt {
 	case "sortby":
-		var method sortMethod
 		switch e.val {
 		case "natural":
-			method = naturalSort
+			gLocalOpts.sortMethods[dir] = naturalSort
 		case "name":
-			method = nameSort
+			gLocalOpts.sortMethods[dir] = nameSort
 		case "size":
-			method = sizeSort
+			gLocalOpts.sortMethods[dir] = sizeSort
 		case "time":
-			method = timeSort
+			gLocalOpts.sortMethods[dir] = timeSort
 		case "ctime":
-			method = ctimeSort
+			gLocalOpts.sortMethods[dir] = ctimeSort
 		case "atime":
-			method = atimeSort
+			gLocalOpts.sortMethods[dir] = atimeSort
 		case "ext":
-			method = extSort
+			gLocalOpts.sortMethods[dir] = extSort
 		default:
 			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
 			return
 		}
-
-		dir := replaceTilde(e.dir)
-		if val, ok := gLocalOpts[dir]; ok {
-			val.sortType.method = naturalSort
-		} else {
-			val := localOpts{
-				sortType: gOpts.sortType,
-			}
-			val.sortType.method = method
-			gLocalOpts[dir] = val
-		}
-
 		app.nav.sort()
 		app.ui.sort()
 	default:

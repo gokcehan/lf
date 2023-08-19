@@ -91,17 +91,25 @@ var gOpts struct {
 	tagfmt           string
 }
 
-type localOpts struct {
-	sortType sortType
+var gLocalOpts struct {
+	sortMethods map[string]sortMethod
 }
 
-var gLocalOpts map[string]localOpts = make(map[string]localOpts)
+func getSortMethod(path string) sortMethod {
+	if val, ok := gLocalOpts.sortMethods[path]; ok {
+		return val
+	}
+	return gOpts.sortType.method
+}
 
 func getSortType(path string) sortType {
-	if val, ok := gLocalOpts[path]; ok {
-		return val.sortType
+	method := getSortMethod(path)
+	option := gOpts.sortType.option
+	val := sortType{
+		method: method,
+		option: option,
 	}
-	return gOpts.sortType
+	return val
 }
 
 func init() {
@@ -278,6 +286,8 @@ func init() {
 
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
+
+	gLocalOpts.sortMethods = make(map[string]sortMethod)
 
 	setDefaults()
 }
