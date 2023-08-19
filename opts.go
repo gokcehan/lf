@@ -94,6 +94,7 @@ var gOpts struct {
 var gLocalOpts struct {
 	sortMethods map[string]sortMethod
 	dirfirsts   map[string]bool
+	hiddens     map[string]bool
 	reverses    map[string]bool
 }
 
@@ -112,6 +113,13 @@ func getSortType(path string) sortType {
 			option |= dirfirstSort
 		} else {
 			option &= ^dirfirstSort
+		}
+	}
+	if val, ok := gLocalOpts.hiddens[path]; ok {
+		if val {
+			option |= hiddenSort
+		} else {
+			option &= ^hiddenSort
 		}
 	}
 	if val, ok := gLocalOpts.reverses[path]; ok {
@@ -305,6 +313,7 @@ func init() {
 
 	gLocalOpts.sortMethods = make(map[string]sortMethod)
 	gLocalOpts.dirfirsts = make(map[string]bool)
+	gLocalOpts.hiddens = make(map[string]bool)
 	gLocalOpts.reverses = make(map[string]bool)
 
 	setDefaults()

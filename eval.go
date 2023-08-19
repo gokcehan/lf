@@ -925,6 +925,25 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		gLocalOpts.dirfirsts[dir] = false
 		app.nav.sort()
 		app.ui.sort()
+	case "hidden":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.hiddens[dir] = true
+		} else if e.val == "false" {
+			gLocalOpts.hiddens[dir] = false
+		} else {
+			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "nohidden":
+		if e.val != "" {
+			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.hiddens[dir] = false
+		app.nav.sort()
+		app.ui.sort()
 	case "reverse":
 		if e.val == "" || e.val == "true" {
 			gLocalOpts.reverses[dir] = true
