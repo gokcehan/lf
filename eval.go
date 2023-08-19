@@ -906,6 +906,25 @@ func (e *setExpr) eval(app *app, args []string) {
 func (e *setLocalExpr) eval(app *app, args []string) {
 	dir := replaceTilde(e.dir)
 	switch e.opt {
+	case "reverse":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.reverses[dir] = true
+		} else if e.val == "false" {
+			gLocalOpts.reverses[dir] = false
+		} else {
+			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "noreverse":
+		if e.val != "" {
+			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.reverses[dir] = false
+		app.nav.sort()
+		app.ui.sort()
 	case "sortby":
 		switch e.val {
 		case "natural":
