@@ -288,7 +288,7 @@ func infotimefmt(t time.Time) string {
 func fileInfo(f *file, d *dir) string {
 	var info string
 
-	for _, s := range gOpts.info {
+	for _, s := range getInfo(d.path) {
 		switch s {
 		case "size":
 			if !(f.IsDir() && gOpts.dircounts) {

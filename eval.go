@@ -963,6 +963,21 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		gLocalOpts.hiddens[dir] = false
 		app.nav.sort()
 		app.ui.sort()
+	case "info":
+		if e.val == "" {
+			gLocalOpts.infos[dir] = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "size", "time", "atime", "ctime":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
+				return
+			}
+		}
+		gLocalOpts.infos[dir] = toks
 	case "reverse":
 		if e.val == "" || e.val == "true" {
 			gLocalOpts.reverses[dir] = true

@@ -97,6 +97,7 @@ var gLocalOpts struct {
 	dironlys    map[string]bool
 	hiddens     map[string]bool
 	reverses    map[string]bool
+	infos       map[string][]string
 }
 
 func getSortMethod(path string) sortMethod {
@@ -142,6 +143,13 @@ func getDirOnly(path string) bool {
 		return val
 	}
 	return gOpts.dironly
+}
+
+func getInfo(path string) []string {
+	if val, ok := gLocalOpts.infos[path]; ok {
+		return val
+	}
+	return gOpts.info
 }
 
 func init() {
@@ -324,6 +332,7 @@ func init() {
 	gLocalOpts.dironlys = make(map[string]bool)
 	gLocalOpts.hiddens = make(map[string]bool)
 	gLocalOpts.reverses = make(map[string]bool)
+	gLocalOpts.infos = make(map[string][]string)
 
 	setDefaults()
 }
