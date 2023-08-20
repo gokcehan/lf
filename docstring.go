@@ -1205,8 +1205,8 @@ Characters from '#' to newline are comments and ignored:
 
     # comments start with '#'
 
-There are four special commands ('set', 'map', 'cmap', and 'cmd') for
-configuration.
+There are five special commands ('set', 'setlocal', 'map', 'cmap', and 'cmd')
+for configuration.
 
 Command 'set' is used to set an option which can be boolean, integer, or string:
 
@@ -1219,6 +1219,19 @@ Command 'set' is used to set an option which can be boolean, integer, or string:
     set sortby time    # string value w/o quotes
     set sortby 'time'  # string value with single quotes (whitespaces)
     set sortby "time"  # string value with double quotes (backslash escapes)
+
+Command 'setlocal' is used to set a local option for a directory which can
+be boolean or string (Supported options are 'dirfirst', 'dironly', 'hidden',
+'info', 'reverse', and 'sortby'):
+
+    setlocal /foo/bar hidden         # boolean enable
+    setlocal /foo/bar hidden true    # boolean enable
+    setlocal /foo/bar nohidden       # boolean disable
+    setlocal /foo/bar hidden false   # boolean disable
+    setlocal /foo/bar hidden!        # boolean toggle
+    setlocal /foo/bar sortby time    # string value w/o quotes
+    setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespaces)
+    setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
 
 Command 'map' is used to bind a key to a command which can be builtin command,
 custom command, or shell command:
