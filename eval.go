@@ -925,6 +925,19 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		gLocalOpts.dirfirsts[dir] = false
 		app.nav.sort()
 		app.ui.sort()
+	case "dirfirst!":
+		if e.val != "" {
+			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.dirfirsts[dir]; ok {
+			gLocalOpts.dirfirsts[dir] = !val
+		} else {
+			val = gOpts.sortType.option&dirfirstSort != 0
+			gLocalOpts.dirfirsts[dir] = !val
+		}
+		app.nav.sort()
+		app.ui.sort()
 	case "dironly":
 		if e.val == "" || e.val == "true" {
 			gLocalOpts.dironlys[dir] = true
@@ -944,6 +957,18 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		gLocalOpts.dironlys[dir] = false
 		app.nav.sort()
 		app.ui.sort()
+	case "dironly!":
+		if e.val != "" {
+			app.ui.echoerrf("dironly!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.dironlys[dir]; ok {
+			gLocalOpts.dironlys[dir] = !val
+		} else {
+			gLocalOpts.dironlys[dir] = !gOpts.dironly
+		}
+		app.nav.sort()
+		app.ui.sort()
 	case "hidden":
 		if e.val == "" || e.val == "true" {
 			gLocalOpts.hiddens[dir] = true
@@ -961,6 +986,19 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			return
 		}
 		gLocalOpts.hiddens[dir] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "hidden!":
+		if e.val != "" {
+			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.hiddens[dir]; ok {
+			gLocalOpts.hiddens[dir] = !val
+		} else {
+			val = gOpts.sortType.option&hiddenSort != 0
+			gLocalOpts.hiddens[dir] = !val
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "info":
@@ -995,6 +1033,19 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			return
 		}
 		gLocalOpts.reverses[dir] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "reverse!":
+		if e.val != "" {
+			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.reverses[dir]; ok {
+			gLocalOpts.reverses[dir] = !val
+		} else {
+			val = gOpts.sortType.option&reverseSort != 0
+			gLocalOpts.reverses[dir] = !val
+		}
 		app.nav.sort()
 		app.ui.sort()
 	case "sortby":
