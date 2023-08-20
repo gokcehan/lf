@@ -192,6 +192,84 @@ var gEvalTests = []struct {
 	},
 
 	{
+		"setlocal /foo/bar hidden # trailing comments are allowed",
+		[]string{"setlocal", "/foo/bar", "hidden", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "hidden", ""}},
+	},
+
+	{
+		"setlocal /foo/bar hidden; setlocal /foo/bar reverse",
+		[]string{"setlocal", "/foo/bar", "hidden", ";", "setlocal", "/foo/bar", "reverse", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "hidden", ""}, &setLocalExpr{"/foo/bar", "reverse", ""}},
+	},
+
+	{
+		"setlocal /foo/bar hidden\nsetlocal /foo/bar reverse",
+		[]string{"setlocal", "/foo/bar", "hidden", "\n", "setlocal", "/foo/bar", "reverse", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "hidden", ""}, &setLocalExpr{"/foo/bar", "reverse", ""}},
+	},
+
+	{
+		`setlocal /foo/bar info ""`,
+		[]string{"setlocal", "/foo/bar", "info", "", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", ""}},
+	},
+
+	{
+		`setlocal /foo/bar info "size"`,
+		[]string{"setlocal", "/foo/bar", "info", "size", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", "size"}},
+	},
+
+	{
+		"setlocal /foo/bar info size:time",
+		[]string{"setlocal", "/foo/bar", "info", "size:time", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}},
+	},
+
+	{
+		"setlocal /foo/bar info size:time;",
+		[]string{"setlocal", "/foo/bar", "info", "size:time", ";"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}},
+	},
+
+	{
+		":setlocal /foo/bar info size:time",
+		[]string{":", "setlocal", "/foo/bar", "info", "size:time", "\n", "\n"},
+		[]expr{&listExpr{[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}}, 1}},
+	},
+
+	{
+		":setlocal /foo/bar info size:time\nsetlocal /foo/bar hidden",
+		[]string{":", "setlocal", "/foo/bar", "info", "size:time", "\n", "\n", "setlocal", "/foo/bar", "hidden", "\n"},
+		[]expr{&listExpr{[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}}, 1}, &setLocalExpr{"/foo/bar", "hidden", ""}},
+	},
+
+	{
+		":setlocal /foo/bar info size:time;",
+		[]string{":", "setlocal", "/foo/bar", "info", "size:time", ";", "\n"},
+		[]expr{&listExpr{[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}}, 1}},
+	},
+
+	{
+		":setlocal /foo/bar info size:time;\nsetlocal /foo/bar hidden",
+		[]string{":", "setlocal", "/foo/bar", "info", "size:time", ";", "\n", "setlocal", "/foo/bar", "hidden", "\n"},
+		[]expr{&listExpr{[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}}, 1}, &setLocalExpr{"/foo/bar", "hidden", ""}},
+	},
+
+	{
+		"setlocal /foo/bar info size:time\n setlocal /foo/bar hidden",
+		[]string{"setlocal", "/foo/bar", "info", "size:time", "\n", "setlocal", "/foo/bar", "hidden", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}, &setLocalExpr{"/foo/bar", "hidden", ""}},
+	},
+
+	{
+		"setlocal /foo/bar info size:time \nsetlocal /foo/bar hidden",
+		[]string{"setlocal", "/foo/bar", "info", "size:time", "\n", "setlocal", "/foo/bar", "hidden", "\n"},
+		[]expr{&setLocalExpr{"/foo/bar", "info", "size:time"}, &setLocalExpr{"/foo/bar", "hidden", ""}},
+	},
+
+	{
 		"map gh cd ~",
 		[]string{"map", "gh", "cd", "~", "\n"},
 		[]expr{&mapExpr{"gh", &callExpr{"cd", []string{"~"}, 1}}},
