@@ -54,12 +54,12 @@ type setExpr struct {
 func (e *setExpr) String() string { return fmt.Sprintf("set %s %s", e.opt, e.val) }
 
 type setLocalExpr struct {
-	dir string
-	opt string
-	val string
+	path string
+	opt  string
+	val  string
 }
 
-func (e *setLocalExpr) String() string { return fmt.Sprintf("setlocal %s %s %s", e.dir, e.opt, e.val) }
+func (e *setLocalExpr) String() string { return fmt.Sprintf("setlocal %s %s %s", e.path, e.opt, e.val) }
 
 type mapExpr struct {
 	keys string
