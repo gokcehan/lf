@@ -185,7 +185,7 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 
 func (dir *dir) sort() {
 	dir.sortType = getSortType(dir.path)
-	dir.dironly = gOpts.dironly
+	dir.dironly = getDirOnly(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -510,7 +510,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nav.dirChan <- nd
 		}()
 	case dir.sortType != getSortType(dir.path) ||
-		dir.dironly != gOpts.dironly ||
+		dir.dironly != getDirOnly(dir.path) ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:

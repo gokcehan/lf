@@ -925,6 +925,25 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		gLocalOpts.dirfirsts[dir] = false
 		app.nav.sort()
 		app.ui.sort()
+	case "dironly":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.dironlys[dir] = true
+		} else if e.val == "false" {
+			gLocalOpts.dironlys[dir] = false
+		} else {
+			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "nodironly":
+		if e.val != "" {
+			app.ui.echoerrf("nodironly: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.dironlys[dir] = false
+		app.nav.sort()
+		app.ui.sort()
 	case "hidden":
 		if e.val == "" || e.val == "true" {
 			gLocalOpts.hiddens[dir] = true
