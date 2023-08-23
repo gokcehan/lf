@@ -22,18 +22,18 @@ var (
 type arrayFlag []string
 
 var (
-	gSingleMode    bool
-	gClientID      int
-	gHostname      string
-	gLastDirPath   string
-	gSelectionPath string
-	gSocketProt    string
-	gSocketPath    string
-	gLogPath       string
-	gSelect        string
-	gConfigPath    string
-	gCommands      arrayFlag
-	gVersion       string
+	gSingleMode bool
+	gLastDir    bool
+	gSelection  bool
+	gClientID   int
+	gHostname   string
+	gSocketProt string
+	gSocketPath string
+	gLogPath    string
+	gSelect     string
+	gConfigPath string
+	gCommands   arrayFlag
+	gVersion    string
 )
 
 func (a *arrayFlag) Set(v string) error {
@@ -228,6 +228,16 @@ func main() {
 		false,
 		"start a client without server")
 
+	lastDir := flag.Bool(
+		"last-dir",
+		false,
+		"print the last dir to stdout on exit (to use for cd)")
+
+	selection := flag.Bool(
+		"selection",
+		false,
+		"print the selected files to stdout on open (to use as open file dialog)")
+
 	remoteCmd := flag.String(
 		"remote",
 		"",
@@ -242,16 +252,6 @@ func main() {
 		"memprofile",
 		"",
 		"path to the file to write the memory profile")
-
-	flag.StringVar(&gLastDirPath,
-		"last-dir-path",
-		"",
-		"path to the file to write the last dir on exit (to use for cd)")
-
-	flag.StringVar(&gSelectionPath,
-		"selection-path",
-		"",
-		"path to the file to write selected files on open (to use as open file dialog)")
 
 	flag.StringVar(&gConfigPath,
 		"config",
@@ -305,6 +305,8 @@ func main() {
 		serve()
 	default:
 		gSingleMode = *singleMode
+		gLastDir = *lastDir
+		gSelection = *selection
 
 		if !gSingleMode {
 			checkServer()

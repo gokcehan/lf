@@ -61,6 +61,16 @@ func run() {
 	app.loop()
 
 	app.ui.screen.Fini()
+
+	if gLastDir {
+		fmt.Println(app.nav.currDir().path)
+	}
+
+	if gSelection {
+		for _, file := range app.selectionOut {
+			fmt.Println(file)
+		}
+	}
 }
 
 func readExpr() <-chan expr {

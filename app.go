@@ -33,6 +33,7 @@ type app struct {
 	menuCompActive bool
 	menuComps      []string
 	menuCompInd    int
+	selectionOut   []string
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -327,20 +328,6 @@ func (app *app) loop() {
 			app.nav.dirPreviewChan <- nil
 
 			log.Print("bye!")
-
-			if gLastDirPath != "" {
-				f, err := os.Create(gLastDirPath)
-				if err != nil {
-					log.Printf("opening last dir file: %s", err)
-				}
-				defer f.Close()
-
-				_, err = f.WriteString(app.nav.currDir().path)
-				if err != nil {
-					log.Printf("writing last dir file: %s", err)
-				}
-			}
-
 			return
 		case n := <-app.nav.copyBytesChan:
 			app.nav.copyBytes += n
