@@ -107,7 +107,7 @@ func localOptPaths(path string) []string {
 	var list []string
 	list = append(list, path)
 	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
-		list = append(list, curr + string(filepath.Separator))
+		list = append(list, curr+string(filepath.Separator))
 	}
 	return list
 }
