@@ -904,7 +904,7 @@ func (e *setExpr) eval(app *app, args []string) {
 }
 
 func (e *setLocalExpr) eval(app *app, args []string) {
-	path := filepath.Clean(replaceTilde(e.path))
+	path := replaceTilde(e.path)
 	if !filepath.IsAbs(path) {
 		app.ui.echoerr("setlocal: path should be absolute")
 		return

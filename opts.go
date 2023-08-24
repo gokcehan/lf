@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"path/filepath"
+	"time"
+)
 
 type sortMethod byte
 
@@ -100,9 +103,20 @@ var gLocalOpts struct {
 	infos       map[string][]string
 }
 
+func localOptPaths(path string) []string {
+	var list []string
+	list = append(list, path)
+	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
+		list = append(list, curr + string(filepath.Separator))
+	}
+	return list
+}
+
 func getSortMethod(path string) sortMethod {
-	if val, ok := gLocalOpts.sortMethods[path]; ok {
-		return val
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.sortMethods[key]; ok {
+			return val
+		}
 	}
 	return gOpts.sortType.method
 }
@@ -110,25 +124,34 @@ func getSortMethod(path string) sortMethod {
 func getSortType(path string) sortType {
 	method := getSortMethod(path)
 	option := gOpts.sortType.option
-	if val, ok := gLocalOpts.dirfirsts[path]; ok {
-		if val {
-			option |= dirfirstSort
-		} else {
-			option &= ^dirfirstSort
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.dirfirsts[key]; ok {
+			if val {
+				option |= dirfirstSort
+			} else {
+				option &= ^dirfirstSort
+			}
+			break
 		}
 	}
-	if val, ok := gLocalOpts.hiddens[path]; ok {
-		if val {
-			option |= hiddenSort
-		} else {
-			option &= ^hiddenSort
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.hiddens[key]; ok {
+			if val {
+				option |= hiddenSort
+			} else {
+				option &= ^hiddenSort
+			}
+			break
 		}
 	}
-	if val, ok := gLocalOpts.reverses[path]; ok {
-		if val {
-			option |= reverseSort
-		} else {
-			option &= ^reverseSort
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.reverses[key]; ok {
+			if val {
+				option |= reverseSort
+			} else {
+				option &= ^reverseSort
+			}
+			break
 		}
 	}
 	val := sortType{
@@ -139,15 +162,19 @@ func getSortType(path string) sortType {
 }
 
 func getDirOnly(path string) bool {
-	if val, ok := gLocalOpts.dironlys[path]; ok {
-		return val
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.dironlys[key]; ok {
+			return val
+		}
 	}
 	return gOpts.dironly
 }
 
 func getInfo(path string) []string {
-	if val, ok := gLocalOpts.infos[path]; ok {
-		return val
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.infos[key]; ok {
+			return val
+		}
 	}
 	return gOpts.info
 }
