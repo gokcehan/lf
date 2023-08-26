@@ -1441,8 +1441,16 @@ func (ui *ui) exportSizes() {
 }
 
 func anyKey() {
-	fmt.Print(gOpts.waitmsg)
-	defer fmt.Print("\n")
+	var out *os.File
+	if gLastDir || gSelection {
+		// write waitmsg to stderr to avoid conflict with lf output
+		out = os.Stderr
+	} else {
+		out = os.Stdout
+	}
+
+	out.WriteString(gOpts.waitmsg)
+	defer out.WriteString("\n")
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)

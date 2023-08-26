@@ -506,7 +506,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	switch prefix {
 	case "$", "!":
 		cmd.Stdin = os.Stdin
-		cmd.Stdout = os.Stdout
+		if gLastDir || gSelection {
+			// connect shell output to stderr to avoid conflict with lf output
+			cmd.Stdout = os.Stderr
+		} else {
+			cmd.Stdout = os.Stdout
+		}
 		cmd.Stderr = os.Stderr
 
 		app.runCmdSync(cmd, prefix == "!")
