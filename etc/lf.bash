@@ -12,11 +12,11 @@ _lf () {
         -config
         -cpuprofile
         -doc
-        -last-dir-path
+        -last-dir
         -log
         -memprofile
         -remote
-        -selection-path
+        -selection
         -server
         -single
         -version
