@@ -726,6 +726,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
+	if curr.err != nil {
+		ui.echoerrf("stat: %s", curr.err)
+		return
+	}
+
 	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
 	replace := func(s string, val string) {
 		if val == "" {
