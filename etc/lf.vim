@@ -14,13 +14,7 @@
 "
 
 function! LF()
-    let temp = tempname()
-    exec 'silent !lf -selection-path=' . shellescape(temp)
-    if !filereadable(temp)
-        redraw!
-        return
-    endif
-    let names = readfile(temp)
+    let names = systemlist('lf -selection')
     if empty(names)
         redraw!
         return
