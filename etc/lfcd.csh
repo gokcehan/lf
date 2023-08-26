@@ -11,4 +11,4 @@
 #     bindkey -c "^O" lfcd
 #
 
-alias lfcd 'set _=`mktemp` && lf -last-dir-path=$_ "\!*" && set _=`cat $_ && rm -f $_` && [ -d "$_" ] && cd "$_"'
+alias lfcd 'cd `lf -last-dir "\!*"`'
