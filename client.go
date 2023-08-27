@@ -61,6 +61,42 @@ func run() {
 	app.loop()
 
 	app.ui.screen.Fini()
+
+	if gLastDirPath != "" {
+		writeLastDir(gLastDirPath, app.nav.currDir().path)
+	}
+
+	if gSelectionPath != "" && len(app.selectionOut) > 0 {
+		writeSelection(gSelectionPath, app.selectionOut)
+	}
+}
+
+func writeLastDir(filename string, lastDir string) {
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Printf("opening last dir file: %s", err)
+		return
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(lastDir)
+	if err != nil {
+		log.Printf("writing last dir file: %s", err)
+	}
+}
+
+func writeSelection(filename string, selection []string) {
+	f, err := os.Create(filename)
+	if err != nil {
+		log.Printf("opening selection file: %s", err)
+		return
+	}
+	defer f.Close()
+
+	_, err = f.WriteString(strings.Join(selection, "\n"))
+	if err != nil {
+		log.Printf("writing selection file: %s", err)
+	}
 }
 
 func readExpr() <-chan expr {
