@@ -1447,27 +1447,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if gSelectionPath != "" {
-			out, err := os.Create(gSelectionPath)
-			if err != nil {
-				log.Printf("opening selection file: %s", err)
-				return
-			}
-			defer out.Close()
-
-			var path string
-			if list, err := app.nav.currFileOrSelections(); err == nil {
-				path = strings.Join(list, "\n")
-			} else {
-				return
-			}
-
-			_, err = out.WriteString(path)
-			if err != nil {
-				log.Printf("writing selection file: %s", err)
-			}
-
+			app.selectionOut, _ = app.nav.currFileOrSelections()
 			app.quitChan <- struct{}{}
-
 			return
 		}
 
