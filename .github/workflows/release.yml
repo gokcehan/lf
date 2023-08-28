@@ -28,7 +28,7 @@ jobs:
         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   winget:
-    runs-on: windows-latest # Action can only run on Windows
+    runs-on: ubuntu-latest
     needs: build
     steps:
       - uses: vedantmgoyal2009/winget-releaser@v2
