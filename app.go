@@ -593,7 +593,7 @@ func (app *app) runPagerOn(stdin io.Reader) {
 	cmd := shellCommand(envPager, nil)
 
 	cmd.Stdin = stdin
-	cmd.Stdout = os.Stdout
+	cmd.Stdout = os.Stderr
 	cmd.Stderr = os.Stderr
 
 	app.runCmdSync(cmd, false)
