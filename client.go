@@ -132,6 +132,9 @@ func readExpr() <-chan expr {
 		s := bufio.NewScanner(c)
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
+
+			// recv has to be handled outside of the main thread, which is
+			// blocked when running a synchronous shell command ("$" or "!")
 			if word, rest := splitWord(s.Text()); word == "recv" {
 				gState.mutex.Lock()
 				state, ok := gState.data[rest]
