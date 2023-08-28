@@ -1128,7 +1128,6 @@ func listHistory(history []cmdItem) *bytes.Buffer {
 	for i, cmd := range history {
 		fmt.Fprintf(t, "%*d\t%s%s\n", maxlength, i+1, cmd.prefix, cmd.value)
 	}
-
 	t.Flush()
 
 	return b
