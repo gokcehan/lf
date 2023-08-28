@@ -1383,7 +1383,7 @@ For example, you can configure the number of columns in the ui with respect to t
 
 In addition, the 'recv' command can be used to obtain information about a specific lf instance by providing its id:
 
-	lf -remote "recv $id maps" | less
+	lf -remote "recv $id maps"
 
 The following types of information are supported:
 

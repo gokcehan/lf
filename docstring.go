@@ -1493,7 +1493,7 @@ respect to the terminal width as follows:
 In addition, the 'recv' command can be used to obtain information about a
 specific lf instance by providing its id:
 
-    lf -remote "recv $id maps" | less
+    lf -remote "recv $id maps"
 
 The following types of information are supported:
 
