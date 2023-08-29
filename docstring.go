@@ -221,8 +221,8 @@ The following commands/keybindings are provided by default:
     map w $$SHELL
     cmd doc $$lf -doc | $PAGER
     map <f-1> doc
-    cmd maps $lf -remote "recv $id maps" | $PAGER
-    cmd cmds $lf -remote "recv $id cmds" | $PAGER
+    cmd maps $lf -remote "query $id maps" | $PAGER
+    cmd cmds $lf -remote "query $id cmds" | $PAGER
 
     Windows
     cmd open &%OPENER% %f%
@@ -231,8 +231,8 @@ The following commands/keybindings are provided by default:
     map w $%SHELL%
     cmd doc !%lf% -doc | %PAGER%
     map <f-1> doc
-    cmd maps !%lf% -remote "recv %id% maps" | %PAGER%
-    cmd cmds !%lf% -remote "recv %id% cmds" | %PAGER%
+    cmd maps !%lf% -remote "query %id% maps" | %PAGER%
+    cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
 
 The following additional keybindings are provided by default:
 
@@ -1490,10 +1490,10 @@ respect to the terminal width as follows:
         fi
     }}
 
-In addition, the 'recv' command can be used to obtain information about a
+In addition, the 'query' command can be used to obtain information about a
 specific lf instance by providing its id:
 
-    lf -remote "recv $id maps"
+    lf -remote "query $id maps"
 
 The following types of information are supported:
 
@@ -1509,7 +1509,7 @@ For example, to select a previous command using fzf and execute it:
     map <a-h> ${{
     	clear
     	cmd=$(
-    		lf -remote "recv $id history" |
+    		lf -remote "query $id history" |
     		awk -F'\t' 'NR > 1 { print $NF}' |
     		sort -u |
     		fzf --reverse --prompt='Execute command: '

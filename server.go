@@ -120,23 +120,23 @@ Loop:
 					}
 				}
 			}
-		case "recv":
+		case "query":
 			if rest == "" {
-				echoerr(c, "listen: recv: requires a client id")
+				echoerr(c, "listen: query: requires a client id")
 				break
 			}
 			word2, rest2 := splitWord(rest)
 			id, err := strconv.Atoi(word2)
 			if err != nil {
-				echoerr(c, "listen: recv: client id should be a number")
+				echoerr(c, "listen: query: client id should be a number")
 				break
 			}
 			c2, ok := gConnList[id]
 			if !ok {
-				echoerr(c, "listen: recv: no such client id is connected")
+				echoerr(c, "listen: query: no such client id is connected")
 				break
 			}
-			fmt.Fprintln(c2, "recv "+rest2)
+			fmt.Fprintln(c2, "query "+rest2)
 			s2 := bufio.NewScanner(c2)
 			for s2.Scan() && s2.Text() != "" {
 				fmt.Fprintln(c, s2.Text())
