@@ -133,8 +133,10 @@ func readExpr() <-chan expr {
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
 
-			// query has to be handled outside of the main thread, which is
-			// blocked when running a synchronous shell command ("$" or "!")
+			// `query` has to be handled outside of the main thread, which is
+			// blocked when running a synchronous shell command ("$" or "!").
+			// This is important since `query` is often the result of the user
+			// running `$lf -remote "query $id <something>"`.
 			if word, rest := splitWord(s.Text()); word == "query" {
 				gState.mutex.Lock()
 				state, ok := gState.data[rest]
