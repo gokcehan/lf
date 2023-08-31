@@ -15,6 +15,8 @@ _lf () {
         -last-dir-path
         -log
         -memprofile
+        -print-last-dir
+        -print-selection
         -remote
         -selection-path
         -server

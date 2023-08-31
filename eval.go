@@ -1446,7 +1446,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if gSelectionPath != "" {
+		if gSelectionPath != "" || gPrintSelection {
 			app.selectionOut, _ = app.nav.currFileOrSelections()
 			app.quitChan <- struct{}{}
 			return

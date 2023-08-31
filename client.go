@@ -69,6 +69,16 @@ func run() {
 	if gSelectionPath != "" && len(app.selectionOut) > 0 {
 		writeSelection(gSelectionPath, app.selectionOut)
 	}
+
+	if gPrintLastDir {
+		fmt.Println(app.nav.currDir().path)
+	}
+
+	if gPrintSelection && len(app.selectionOut) > 0 {
+		for _, file := range app.selectionOut {
+			fmt.Println(file)
+		}
+	}
 }
 
 func writeLastDir(filename string, lastDir string) {
