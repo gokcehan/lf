@@ -83,6 +83,8 @@ Loop:
 				if err != nil {
 					echoerr(c, "listen: conn: client id should be a number")
 				} else {
+					// lifetime of the connection is managed by the server and
+					// will be cleaned up via the `drop` command
 					gConnList[id] = c
 					return
 				}
