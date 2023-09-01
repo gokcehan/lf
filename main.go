@@ -22,18 +22,20 @@ var (
 type arrayFlag []string
 
 var (
-	gSingleMode    bool
-	gClientID      int
-	gHostname      string
-	gLastDirPath   string
-	gSelectionPath string
-	gSocketProt    string
-	gSocketPath    string
-	gLogPath       string
-	gSelect        string
-	gConfigPath    string
-	gCommands      arrayFlag
-	gVersion       string
+	gSingleMode     bool
+	gPrintLastDir   bool
+	gPrintSelection bool
+	gClientID       int
+	gHostname       string
+	gLastDirPath    string
+	gSelectionPath  string
+	gSocketProt     string
+	gSocketPath     string
+	gLogPath        string
+	gSelect         string
+	gConfigPath     string
+	gCommands       arrayFlag
+	gVersion        string
 )
 
 func (a *arrayFlag) Set(v string) error {
@@ -228,6 +230,16 @@ func main() {
 		false,
 		"start a client without server")
 
+	printLastDir := flag.Bool(
+		"print-last-dir",
+		false,
+		"print the last dir to stdout on exit (to use for cd)")
+
+	printSelection := flag.Bool(
+		"print-selection",
+		false,
+		"print the selected files to stdout on open (to use as open file dialog)")
+
 	remoteCmd := flag.String(
 		"remote",
 		"",
@@ -305,6 +317,8 @@ func main() {
 		serve()
 	default:
 		gSingleMode = *singleMode
+		gPrintLastDir = *printLastDir
+		gPrintSelection = *printSelection
 
 		if !gSingleMode {
 			checkServer()

@@ -172,7 +172,7 @@ The following options can be used to customize the behavior of lf:
     smartcase        bool      (default true)
     smartdia         bool      (default false)
     sortby           string    (default 'natural')
-    statfmt          string    (default "\033[36m%p\033[0m| %c| %u| %g| %s| %t| -> %l")
+    statfmt          string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
     tabstop          int       (default 8)
     tagfmt           string    (default "\033[31m")
     tempmarks        string    (default '')
@@ -1017,14 +1017,15 @@ diacritic. This option has no effect when 'ignoredia' is disabled.
 Sort type for directories. Currently supported sort types are 'natural', 'name',
 'size', 'time', 'ctime', 'atime', and 'ext'.
 
-    statfmt    string        (default "\033[36m%p\033[0m| %c| %u| %g| %s| %t| -> %l")
+    statfmt    string        (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
 
 Format string of the file info shown in the bottom left corner. Special
 expansions are provided, '%p' as the file permissions, '%c' as the link count,
-'%u' as the user, '%g' as the group, '%s' as the file size, '%t' as the last
-modified time, and '%l' as the link target. The '|' character splits the format
-string into sections. Any section containing a failed expansion (result is a
-blank string) is discarded and not shown.
+'%u' as the user, '%g' as the group, '%s' as the file size, '%S' as the file
+size but with a fixed width of four characters (left-padded with spaces), '%t'
+as the last modified time, and '%l' as the link target. The '|' character splits
+the format string into sections. Any section containing a failed expansion
+(result is a blank string) is discarded and not shown.
 
     tabstop        int       (default 8)
 

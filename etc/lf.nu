@@ -1,5 +1,5 @@
 # Autocompletion for nushell.
-# 
+#
 # Documentation: https://www.nushell.sh/book/externs.html
 
 # To enable autocompletion you may put this file into a directory:
@@ -20,6 +20,8 @@ export extern "lf" [
   --last-dir-path: string     # path to the file to write the last dir on exit (to use for cd)
   --log: string               # path to the log file to write messages
   --memprofile: string        # path to the file to write the memory profile
+  --print-last-dir            # print the last dir to stdout on exit (to use for cd)
+  --print-selection           # print the selected files to stdout on open (to use as open file dialog)
   --remote: string            # send remote command to server
   --selection-path: string    # path to the file to write selected files on open (to use as open file dialog)
   --server                    # start server (automatic)

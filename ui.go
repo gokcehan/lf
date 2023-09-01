@@ -743,6 +743,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
 	replace("%s", humanize(curr.Size()))
+	replace("%S", fmt.Sprintf("%4s", humanize(curr.Size())))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
 
