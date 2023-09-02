@@ -41,6 +41,7 @@ var gOpts struct {
 	drawbox          bool
 	dupfilefmt       string
 	globsearch       bool
+	unixwords        bool
 	icons            bool
 	ignorecase       bool
 	ignoredia        bool
@@ -106,6 +107,7 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.globsearch = false
+	gOpts.unixwords = true
 	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
@@ -253,8 +255,7 @@ func init() {
 	gOpts.cmdkeys["<c-e>"] = &callExpr{"cmd-end", nil, 1}
 	gOpts.cmdkeys["<c-u>"] = &callExpr{"cmd-delete-home", nil, 1}
 	gOpts.cmdkeys["<c-k>"] = &callExpr{"cmd-delete-end", nil, 1}
-	gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-word-back", nil, 1}
-	// gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-unix-word", nil, 1}
+	gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-unix-word", nil, 1}
 	gOpts.cmdkeys["<c-y>"] = &callExpr{"cmd-yank", nil, 1}
 	gOpts.cmdkeys["<c-t>"] = &callExpr{"cmd-transpose", nil, 1}
 	gOpts.cmdkeys["<c-c>"] = &callExpr{"cmd-interrupt", nil, 1}
