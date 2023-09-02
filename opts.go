@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"path/filepath"
+	"time"
+)
 
 type sortMethod byte
 
@@ -90,6 +93,91 @@ var gOpts struct {
 	tempmarks        string
 	numberfmt        string
 	tagfmt           string
+}
+
+var gLocalOpts struct {
+	sortMethods map[string]sortMethod
+	dirfirsts   map[string]bool
+	dironlys    map[string]bool
+	hiddens     map[string]bool
+	reverses    map[string]bool
+	infos       map[string][]string
+}
+
+func localOptPaths(path string) []string {
+	var list []string
+	list = append(list, path)
+	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
+		list = append(list, curr+string(filepath.Separator))
+	}
+	return list
+}
+
+func getSortMethod(path string) sortMethod {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.sortMethods[key]; ok {
+			return val
+		}
+	}
+	return gOpts.sortType.method
+}
+
+func getSortType(path string) sortType {
+	method := getSortMethod(path)
+	option := gOpts.sortType.option
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.dirfirsts[key]; ok {
+			if val {
+				option |= dirfirstSort
+			} else {
+				option &= ^dirfirstSort
+			}
+			break
+		}
+	}
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.hiddens[key]; ok {
+			if val {
+				option |= hiddenSort
+			} else {
+				option &= ^hiddenSort
+			}
+			break
+		}
+	}
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.reverses[key]; ok {
+			if val {
+				option |= reverseSort
+			} else {
+				option &= ^reverseSort
+			}
+			break
+		}
+	}
+	val := sortType{
+		method: method,
+		option: option,
+	}
+	return val
+}
+
+func getDirOnly(path string) bool {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.dironlys[key]; ok {
+			return val
+		}
+	}
+	return gOpts.dironly
+}
+
+func getInfo(path string) []string {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.infos[key]; ok {
+			return val
+		}
+	}
+	return gOpts.info
 }
 
 func init() {
@@ -267,6 +355,13 @@ func init() {
 
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
+
+	gLocalOpts.sortMethods = make(map[string]sortMethod)
+	gLocalOpts.dirfirsts = make(map[string]bool)
+	gLocalOpts.dironlys = make(map[string]bool)
+	gLocalOpts.hiddens = make(map[string]bool)
+	gLocalOpts.reverses = make(map[string]bool)
+	gLocalOpts.infos = make(map[string][]string)
 
 	setDefaults()
 }

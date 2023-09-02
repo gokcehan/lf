@@ -11,6 +11,7 @@ import (
 var (
 	gCmdWords = []string{
 		"set",
+		"setlocal",
 		"map",
 		"maps",
 		"cmap",
@@ -224,6 +225,23 @@ var (
 		"truncatechar",
 		"truncatepct",
 	}
+
+	gLocalOptWords = []string{
+		"dirfirst",
+		"nodirfirst",
+		"dirfirst!",
+		"dironly",
+		"nodironly",
+		"dironly!",
+		"hidden",
+		"nohidden",
+		"hidden!",
+		"info",
+		"reverse",
+		"noreverse",
+		"reverse!",
+		"sortby",
+	}
 )
 
 func matchLongest(s1, s2 []rune) []rune {
@@ -410,6 +428,9 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		}
 	case 3:
 		switch f[0] {
+		case "setlocal":
+			matches, longest = matchWord(f[2], gLocalOptWords)
+			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		case "map", "cmap":
 			matches, longest = matchCmd(f[2])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
@@ -419,7 +440,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		}
 	default:
 		switch f[0] {
-		case "set", "map", "cmap", "cmd":
+		case "set", "setlocal", "map", "cmap", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])

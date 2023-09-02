@@ -924,6 +924,185 @@ func (e *setExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func (e *setLocalExpr) eval(app *app, args []string) {
+	path := replaceTilde(e.path)
+	if !filepath.IsAbs(path) {
+		app.ui.echoerr("setlocal: path should be absolute")
+		return
+	}
+
+	switch e.opt {
+	case "dirfirst":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.dirfirsts[path] = true
+		} else if e.val == "false" {
+			gLocalOpts.dirfirsts[path] = false
+		} else {
+			app.ui.echoerr("dirfirst: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "nodirfirst":
+		if e.val != "" {
+			app.ui.echoerrf("nodirfirst: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.dirfirsts[path] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "dirfirst!":
+		if e.val != "" {
+			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.dirfirsts[path]; ok {
+			gLocalOpts.dirfirsts[path] = !val
+		} else {
+			val = gOpts.sortType.option&dirfirstSort != 0
+			gLocalOpts.dirfirsts[path] = !val
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "dironly":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.dironlys[path] = true
+		} else if e.val == "false" {
+			gLocalOpts.dironlys[path] = false
+		} else {
+			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "nodironly":
+		if e.val != "" {
+			app.ui.echoerrf("nodironly: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.dironlys[path] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "dironly!":
+		if e.val != "" {
+			app.ui.echoerrf("dironly!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.dironlys[path]; ok {
+			gLocalOpts.dironlys[path] = !val
+		} else {
+			gLocalOpts.dironlys[path] = !gOpts.dironly
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "hidden":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.hiddens[path] = true
+		} else if e.val == "false" {
+			gLocalOpts.hiddens[path] = false
+		} else {
+			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "nohidden":
+		if e.val != "" {
+			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.hiddens[path] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "hidden!":
+		if e.val != "" {
+			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.hiddens[path]; ok {
+			gLocalOpts.hiddens[path] = !val
+		} else {
+			val = gOpts.sortType.option&hiddenSort != 0
+			gLocalOpts.hiddens[path] = !val
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "info":
+		if e.val == "" {
+			gLocalOpts.infos[path] = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "size", "time", "atime", "ctime":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
+				return
+			}
+		}
+		gLocalOpts.infos[path] = toks
+	case "reverse":
+		if e.val == "" || e.val == "true" {
+			gLocalOpts.reverses[path] = true
+		} else if e.val == "false" {
+			gLocalOpts.reverses[path] = false
+		} else {
+			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "noreverse":
+		if e.val != "" {
+			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
+			return
+		}
+		gLocalOpts.reverses[path] = false
+		app.nav.sort()
+		app.ui.sort()
+	case "reverse!":
+		if e.val != "" {
+			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
+			return
+		}
+		if val, ok := gLocalOpts.reverses[path]; ok {
+			gLocalOpts.reverses[path] = !val
+		} else {
+			val = gOpts.sortType.option&reverseSort != 0
+			gLocalOpts.reverses[path] = !val
+		}
+		app.nav.sort()
+		app.ui.sort()
+	case "sortby":
+		switch e.val {
+		case "natural":
+			gLocalOpts.sortMethods[path] = naturalSort
+		case "name":
+			gLocalOpts.sortMethods[path] = nameSort
+		case "size":
+			gLocalOpts.sortMethods[path] = sizeSort
+		case "time":
+			gLocalOpts.sortMethods[path] = timeSort
+		case "ctime":
+			gLocalOpts.sortMethods[path] = ctimeSort
+		case "atime":
+			gLocalOpts.sortMethods[path] = atimeSort
+		case "ext":
+			gLocalOpts.sortMethods[path] = extSort
+		default:
+			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+			return
+		}
+		app.nav.sort()
+		app.ui.sort()
+	default:
+		app.ui.echoerrf("unknown option: %s", e.opt)
+		return
+	}
+	app.ui.loadFileInfo(app.nav)
+}
+
 func (e *mapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.keys, e.keys)
