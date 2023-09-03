@@ -2663,6 +2663,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := loc[3]
+		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccRight)[:ind])
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-delete-word-back":
@@ -2674,6 +2675,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		ind := locs[len(locs)-1][3]
+		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 		update(app)
 	case "cmd-uppercase-word":
