@@ -219,6 +219,7 @@ The following commands/keybindings are provided by default:
 	cmd doc $$lf -doc | $PAGER
 	map <f-1> doc
 	cmd maps $lf -remote "query $id maps" | $PAGER
+	cmd cmaps $lf -remote "query $id cmaps" | $PAGER
 	cmd cmds $lf -remote "query $id cmds" | $PAGER
 
 	Windows
@@ -229,6 +230,7 @@ The following commands/keybindings are provided by default:
 	cmd doc !%lf% -doc | %PAGER%
 	map <f-1> doc
 	cmd maps !%lf% -remote "query %id% maps" | %PAGER%
+	cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
 	cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
 
 The following additional keybindings are provided by default:

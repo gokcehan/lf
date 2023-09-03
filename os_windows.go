@@ -138,6 +138,7 @@ func setDefaults() {
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
 
 	gOpts.cmds["maps"] = &execExpr{"!", `%lf% -remote "query %id% maps" | %PAGER%`}
+	gOpts.cmds["cmaps"] = &execExpr{"!", `%lf% -remote "query %id% cmaps" | %PAGER%`}
 	gOpts.cmds["cmds"] = &execExpr{"!", `%lf% -remote "query %id% cmds" | %PAGER%`}
 }
 
