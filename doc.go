@@ -105,7 +105,7 @@ The following command line commands are provided by lf:
 	cmd-delete-home          (default '<c-u>')
 	cmd-delete-end           (default '<c-k>')
 	cmd-delete-unix-word     (default '<c-w>')
-	cmd-delete-word-back     
+	cmd-delete-word-back     (default '<a-backspace> and <a-backspace2>')
 	cmd-yank                 (default '<c-y>')
 	cmd-transpose            (default '<c-t>')
 	cmd-transpose-word       (default '<a-t>')

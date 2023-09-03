@@ -352,6 +352,8 @@ func init() {
 	gOpts.cmdkeys["<a-u>"] = &callExpr{"cmd-uppercase-word", nil, 1}
 	gOpts.cmdkeys["<a-l>"] = &callExpr{"cmd-lowercase-word", nil, 1}
 	gOpts.cmdkeys["<a-t>"] = &callExpr{"cmd-transpose-word", nil, 1}
+	gOpts.cmdkeys["<a-backspace>"] = &callExpr{"cmd-delete-word-back", nil, 1}
+	gOpts.cmdkeys["<a-backspace2>"] = &callExpr{"cmd-delete-word-back", nil, 1}
 
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)

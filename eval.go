@@ -2583,18 +2583,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdYankBuf = app.ui.cmdAccRight
 		app.ui.cmdAccRight = nil
 		update(app)
-	case "cmd-delete-word-back":
-		if len(app.ui.cmdAccLeft) == 0 {
-			return
-		}
-		locs := reWordBeg.FindAllStringSubmatchIndex(string(app.ui.cmdAccLeft), -1)
-		if locs == nil {
-			return
-		}
-		ind := locs[len(locs)-1][3]
-		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:]) // Store the word after the cursor
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind] // Remove the word before the cursor
-		update(app)
 	case "cmd-delete-unix-word":
 		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
 		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
@@ -2672,6 +2660,17 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		ind := loc[3]
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		update(app)
+	case "cmd-delete-word-back":
+		if len(app.ui.cmdAccLeft) == 0 {
+			return
+		}
+		locs := reWordBeg.FindAllStringSubmatchIndex(string(app.ui.cmdAccLeft), -1)
+		if locs == nil {
+			return
+		}
+		ind := locs[len(locs)-1][3]
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
