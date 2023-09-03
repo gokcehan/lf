@@ -180,6 +180,7 @@ var (
 		"noreverse",
 		"reverse!",
 		"ruler",
+		"rulerfmt",
 		"preserve",
 		"sixel",
 		"nosixel",

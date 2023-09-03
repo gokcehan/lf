@@ -503,6 +503,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.ruler = toks
+		app.ui.echoerr("option 'ruler' is deprecated, use 'rulerfmt' instead")
+		return
+	case "rulerfmt":
+		gOpts.rulerfmt = e.val
 	case "preserve":
 		if e.val == "" {
 			gOpts.preserve = nil
