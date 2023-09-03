@@ -839,7 +839,7 @@ Periodic checks are disabled when the value of this option is set to zero.
 
 List of attributes that are preserved when copying files.
 Currently supported attributes are 'mode' (i.a. access mode) and 'timestamps' (i.e. modification time and access time).
-Note: Preserving other attribute like ownership of change/birth timestamp is desireable, but not portably supported in go.
+Note, preserving other attribute like ownership of change/birth timestamp is desirable, but not portably supported in Go.
 
 	preview        bool      (default true)
 

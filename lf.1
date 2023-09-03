@@ -1018,7 +1018,7 @@ Set the interval in seconds for periodic checks of directory updates. This works
     preserve       []string  (default 'mode')
 .EE
 .PP
-List of attributes that are preserved when copying files. Currently supported attributes are 'mode' (i.a. access mode) and 'timestamps' (i.e. modification time and access time). Note: Preserving other attribute like ownership of change/birth timestamp is desireable, but not portably supported in go.
+List of attributes that are preserved when copying files. Currently supported attributes are 'mode' (i.a. access mode) and 'timestamps' (i.e. modification time and access time). Note, preserving other attribute like ownership of change/birth timestamp is desirable, but not portably supported in Go.
 .PP
 .EX
     preview        bool      (default true)
