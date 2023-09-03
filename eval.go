@@ -247,27 +247,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "unixwords":
-		if e.val == "" || e.val == "true" {
-			gOpts.unixwords = true
-			// TODO: Move line to somewhere else
-			gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-unix-word", nil, 1}
-		} else if e.val == "false" {
-			gOpts.unixwords = false
-			// TODO: Move line to somewhere else
-			gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-word-back", nil, 1}
-		} else {
-			app.ui.echoerr("unixwords: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nounixwords":
-		if e.val != "" {
-			app.ui.echoerrf("nounixwords: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.unixwords = false
-		// TODO: Move line to somewhere else
-		gOpts.cmdkeys["<c-w>"] = &callExpr{"cmd-delete-word-back", nil, 1}
 	case "globsearch":
 		if e.val == "" || e.val == "true" {
 			gOpts.globsearch = true

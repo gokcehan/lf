@@ -44,7 +44,6 @@ var gOpts struct {
 	drawbox          bool
 	dupfilefmt       string
 	globsearch       bool
-	unixwords        bool
 	icons            bool
 	ignorecase       bool
 	ignoredia        bool
@@ -195,7 +194,6 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.globsearch = false
-	gOpts.unixwords = true
 	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
