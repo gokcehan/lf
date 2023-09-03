@@ -114,7 +114,7 @@ The following command line commands are provided by lf:
     cmd-word                 (default '<a-f>')
     cmd-word-back            (default '<a-b>')
     cmd-delete-word          (default '<a-d>')
-    cmd-delete-word-back     (default '<a-backspace> and <a-backspace2>')
+    cmd-delete-word-back     (default '<a-backspace>' and '<a-backspace2>')
     cmd-capitalize-word      (default '<a-c>')
     cmd-uppercase-word       (default '<a-u>')
     cmd-lowercase-word       (default '<a-l>')
