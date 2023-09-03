@@ -101,6 +101,7 @@ var (
 		"cmd-delete-home",
 		"cmd-delete-end",
 		"cmd-delete-unix-word",
+		"cmd-delete-word-back",
 		"cmd-yank",
 		"cmd-transpose",
 		"cmd-transpose-word",
