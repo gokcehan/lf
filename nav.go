@@ -210,8 +210,8 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 }
 
 func (dir *dir) sort() {
-	dir.sortType = gOpts.sortType
-	dir.dironly = gOpts.dironly
+	dir.sortType = getSortType(dir.path)
+	dir.dironly = getDirOnly(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -472,7 +472,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		loading:     true,
 		loadTime:    time.Now(),
 		path:        path,
-		sortType:    gOpts.sortType,
+		sortType:    getSortType(path),
 		hiddenfiles: gOpts.hiddenfiles,
 		ignorecase:  gOpts.ignorecase,
 		ignoredia:   gOpts.ignoredia,
@@ -535,8 +535,8 @@ func (nav *nav) checkDir(dir *dir) {
 			}
 			nav.dirChan <- nd
 		}()
-	case dir.sortType != gOpts.sortType ||
-		dir.dironly != gOpts.dironly ||
+	case dir.sortType != getSortType(dir.path) ||
+		dir.dironly != getDirOnly(dir.path) ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:

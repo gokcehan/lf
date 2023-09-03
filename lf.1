@@ -174,6 +174,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber   bool      (default false)
     reverse          bool      (default false)
     ruler            []string  (default 'acc:progress:selection:filter:ind')
+    rulerfmt         string    (default "%a  |%p  |\e033[7;31m %m \e033[0m  |\e033[7;33m %c \e033[0m  |\e033[7;35m %s \e033[0m  |\e033[7;34m %f \e033[0m  |%i/%t")
     scrolloff        int       (default 0)
     selmode          string    (default 'all')
     shell            string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -1043,7 +1044,13 @@ Reverse the direction of sort.
     ruler          []string  (default 'acc:progress:selection:filter:ind')
 .EE
 .PP
-List of information shown in status line ruler. Currently supported information types are 'acc', 'progress', 'selection', 'filter', 'ind', 'df' and names starting with 'lf_'. `acc` shows the pressed keys (e.g. for bindings with multiple key presses or counts given to bindings). `progress` shows the progress of file operations (e.g. copying a large directory). `selection` shows the number of files that are selected, or designated for being cut/copied. `filter` shows 'F' if a filter is currently being applied. `ind` shows the current position of the cursor as well as the number of files in the current directory. `df` shows the amount of free disk space remaining. Names starting with `lf_` show the value of environment variables exported by lf. This is useful for displaying the current settings (e.g. `lf_selmode` displays the current setting for the `selmode` option). User defined options starting with `lf_user_` are also supported, so it is possible to display information set from external sources.
+This option is deprecated in favor of using the `rulerfmt` option (see below). List of information shown in status line ruler. Currently supported information types are 'acc', 'progress', 'selection', 'filter', 'ind', 'df' and names starting with 'lf_'. `acc` shows the pressed keys (e.g. for bindings with multiple key presses or counts given to bindings). `progress` shows the progress of file operations (e.g. copying a large directory). `selection` shows the number of files that are selected, or designated for being cut/copied. `filter` shows 'F' if a filter is currently being applied. `ind` shows the current position of the cursor as well as the number of files in the current directory. `df` shows the amount of free disk space remaining. Names starting with `lf_` show the value of environment variables exported by lf. This is useful for displaying the current settings (e.g. `lf_selmode` displays the current setting for the `selmode` option). User defined options starting with `lf_user_` are also supported, so it is possible to display information set from external sources.
+.PP
+.EX
+    rulerfmt       string    (default "%a  |%p  |\e033[7;31m %m \e033[0m  |\e033[7;33m %c \e033[0m  |\e033[7;35m %s \e033[0m  |\e033[7;34m %f \e033[0m  |%i/%t")
+.EE
+.PP
+Format string of the ruler shown in the bottom right corner. Special expansions are provided, '%a' as the pressed keys, '%p' as the progress of file operations, '%m' as the number of files to be cut (moved), '%c' as the number of files to be copied, '%s' as the number of selected files, '%f' as the filter, '%i' as the position of the cursor, '%t' as the number of files shown in the current directory, '%h' as the number of files hidden in the current directory, and '%d' as the amount of free disk space remaining. Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings. Expansions are also provided for user defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`). The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 .PP
 .EX
     selmode        string    (default 'all')
@@ -1340,7 +1347,7 @@ Characters from '#' to newline are comments and ignored:
     # comments start with '#'
 .EE
 .PP
-There are four special commands ('set', 'map', 'cmap', and 'cmd') for configuration.
+There are five special commands ('set', 'setlocal', 'map', 'cmap', and 'cmd') for configuration.
 .PP
 Command 'set' is used to set an option which can be boolean, integer, or string:
 .PP
@@ -1354,6 +1361,21 @@ Command 'set' is used to set an option which can be boolean, integer, or string:
     set sortby time    # string value w/o quotes
     set sortby 'time'  # string value with single quotes (whitespaces)
     set sortby "time"  # string value with double quotes (backslash escapes)
+.EE
+.PP
+Command 'setlocal' is used to set a local option for a directory which can be boolean or string. Currently supported local options are 'dirfirst', 'dironly', 'hidden', 'info', 'reverse', and 'sortby'. Adding a trailing path separator (i.e. '/' for Unix and '\e' for Windows) sets the option for the given directory along with its subdirectories:
+.PP
+.EX
+    setlocal /foo/bar hidden         # boolean enable
+    setlocal /foo/bar hidden true    # boolean enable
+    setlocal /foo/bar nohidden       # boolean disable
+    setlocal /foo/bar hidden false   # boolean disable
+    setlocal /foo/bar hidden!        # boolean toggle
+    setlocal /foo/bar sortby time    # string value w/o quotes
+    setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespaces)
+    setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
+    setlocal /foo/bar  hidden        # for only '/foo/bar' directory
+    setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 .EE
 .PP
 Command 'map' is used to bind a key to a command which can be builtin command, custom command, or shell command:
