@@ -830,7 +830,7 @@ func formatRulerOpt(name string, val string) string {
 	return val
 }
 
-func (ui *ui) drawStatLine(nav *nav) {
+func (ui *ui) drawRuler(nav *nav) {
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
@@ -839,13 +839,14 @@ func (ui *ui) drawStatLine(nav *nav) {
 
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
+	hid := len(dir.allFiles) - tot
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
 	selection := []string{}
 
+	copy := 0
+	move := 0
 	if len(nav.saves) > 0 {
-		copy := 0
-		move := 0
 		for _, cp := range nav.saves {
 			if cp {
 				copy++
@@ -882,34 +883,82 @@ func (ui *ui) drawStatLine(nav *nav) {
 	}
 
 	opts := getOptsMap()
-	ruler := []string{}
-	for _, s := range gOpts.ruler {
-		switch s {
-		case "df":
-			df := diskFree(dir.path)
-			if df != "" {
-				ruler = append(ruler, df)
-			}
-		case "acc":
-			ruler = append(ruler, acc)
-		case "progress":
-			ruler = append(ruler, progress...)
-		case "selection":
-			ruler = append(ruler, selection...)
-		case "filter":
-			if len(dir.filter) != 0 {
-				ruler = append(ruler, "\033[34;7m F \033[0m")
-			}
-		case "ind":
-			ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
-		default:
-			if val, ok := opts[s]; ok {
-				ruler = append(ruler, formatRulerOpt(s, val))
+
+	// 'ruler' option is deprecated and can be removed in future
+	if len(gOpts.ruler) > 0 {
+		ruler := []string{}
+		for _, s := range gOpts.ruler {
+			switch s {
+			case "df":
+				df := diskFree(dir.path)
+				if df != "" {
+					ruler = append(ruler, df)
+				}
+			case "acc":
+				ruler = append(ruler, acc)
+			case "progress":
+				ruler = append(ruler, progress...)
+			case "selection":
+				ruler = append(ruler, selection...)
+			case "filter":
+				if len(dir.filter) != 0 {
+					ruler = append(ruler, "\033[34;7m F \033[0m")
+				}
+			case "ind":
+				ruler = append(ruler, fmt.Sprintf("%d/%d", ind, tot))
+			default:
+				if val, ok := opts[s]; ok {
+					ruler = append(ruler, formatRulerOpt(s, val))
+				}
 			}
 		}
+
+		ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
+		return
 	}
 
-	ui.msgWin.printRight(ui.screen, 0, st, strings.Join(ruler, "  "))
+	rulerfmt := strings.ReplaceAll(gOpts.rulerfmt, "|", "\x1f")
+	rulerfmt = reRulerSub.ReplaceAllStringFunc(rulerfmt, func(s string) string {
+		var result string
+		switch s {
+		case "%a":
+			result = acc
+		case "%p":
+			result = strings.Join(progress, " ")
+		case "%m":
+			result = fmt.Sprintf("%.d", move)
+		case "%c":
+			result = fmt.Sprintf("%.d", copy)
+		case "%s":
+			result = fmt.Sprintf("%.d", len(currSelections))
+		case "%f":
+			result = strings.Join(dir.filter, " ")
+		case "%i":
+			result = fmt.Sprint(ind)
+		case "%t":
+			result = fmt.Sprint(tot)
+		case "%h":
+			result = fmt.Sprint(hid)
+		case "%d":
+			result = diskFree(dir.path)
+		default:
+			s = strings.TrimSuffix(strings.TrimPrefix(s, "%{"), "}")
+			if val, ok := opts[s]; ok {
+				result = formatRulerOpt(s, val)
+			}
+		}
+		if result == "" {
+			return "\x00"
+		}
+		return result
+	})
+	ruler := ""
+	for _, section := range strings.Split(rulerfmt, "\x1f") {
+		if !strings.Contains(section, "\x00") {
+			ruler += section
+		}
+	}
+	ui.msgWin.printRight(ui.screen, 0, st, ruler)
 }
 
 func (ui *ui) drawBox() {
@@ -988,7 +1037,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		ui.drawStatLine(nav)
+		ui.drawRuler(nav)
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end

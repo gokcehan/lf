@@ -83,6 +83,7 @@ var gOpts struct {
 	history          bool
 	info             []string
 	ruler            []string
+	rulerfmt         string
 	preserve         []string
 	shellopts        []string
 	keys             map[string]expr
@@ -232,7 +233,8 @@ func init() {
 	gOpts.hiddenfiles = []string{".*"}
 	gOpts.history = true
 	gOpts.info = nil
-	gOpts.ruler = []string{"acc", "progress", "selection", "filter", "ind"}
+	gOpts.ruler = nil
+	gOpts.rulerfmt = "%a  |%p  |\033[7;31m %m \033[0m  |\033[7;33m %c \033[0m  |\033[7;35m %s \033[0m  |\033[7;34m %f \033[0m  |%i/%t"
 	gOpts.preserve = []string{"mode"}
 	gOpts.shellopts = nil
 	gOpts.sortType = sortType{naturalSort, dirfirstSort}
