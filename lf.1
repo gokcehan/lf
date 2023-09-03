@@ -122,13 +122,13 @@ The following command line commands are provided by lf:
     cmd-delete-home          (default '<c-u>')
     cmd-delete-end           (default '<c-k>')
     cmd-delete-unix-word     (default '<c-w>')
-    cmd-delete-word-back     (default '<a-backspace> and <a-backspace2>')
     cmd-yank                 (default '<c-y>')
     cmd-transpose            (default '<c-t>')
     cmd-transpose-word       (default '<a-t>')
     cmd-word                 (default '<a-f>')
     cmd-word-back            (default '<a-b>')
     cmd-delete-word          (default '<a-d>')
+    cmd-delete-word-back     (default '<a-backspace> and <a-backspace2>')
     cmd-capitalize-word      (default '<a-c>')
     cmd-uppercase-word       (default '<a-u>')
     cmd-lowercase-word       (default '<a-l>')
@@ -778,7 +778,7 @@ Move the cursor by one word in forward/backward direction.
 Delete the next word in forward direction.
 .PP
 .EX
-    cmd-delete-word-back
+    cmd-delete-word-back     (default '<a-backspace>' and '<a-backspace2>')
 .EE
 .PP
 Delete the previous word in backward direction.
