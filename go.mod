@@ -7,7 +7,7 @@ require (
 	github.com/gdamore/tcell/v2 v2.6.0
 	github.com/mattn/go-runewidth v0.0.15
 	golang.org/x/sys v0.12.0
-	golang.org/x/term v0.11.0
+	golang.org/x/term v0.12.0
 )
 
 require (
