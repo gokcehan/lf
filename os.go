@@ -21,6 +21,7 @@ var (
 	envEditor = os.Getenv("VISUAL")
 	envPager  = os.Getenv("PAGER")
 	envShell  = os.Getenv("SHELL")
+  envGlow   = os.Getenv("GLOW")
 )
 
 var (
@@ -53,7 +54,7 @@ func init() {
 	if envEditor == "" {
 		envEditor = os.Getenv("EDITOR")
 		if envEditor == "" {
-			envEditor = "vi"
+			envEditor = "nvim"
 		}
 	}
 
@@ -64,6 +65,13 @@ func init() {
 	if envShell == "" {
 		envShell = "sh"
 	}
+  
+  if envGlow == "" {
+    envGlow = os.Getenv("GLOW")
+    if envGlow == "" {
+      envGlow = "glow"
+    }
+  }
 
 	u, err := user.Current()
 	if err != nil {
@@ -167,6 +175,7 @@ func setDefaults() {
 	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}
 	gOpts.keys["i"] = &execExpr{"$", `$PAGER "$f"`}
 	gOpts.keys["w"] = &execExpr{"$", "$SHELL"}
+  gOpts.keys["o"] = &execExpr{"$", "glow"}
 
 	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
 	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
