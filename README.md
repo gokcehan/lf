@@ -17,7 +17,7 @@ In order for this to work you need to install `glow`
 ```bash
 brew install glow
 ```
-
+![lf](https://github.com/Habib0x0/lf-fork/assets/24976957/b7d6f39f-684f-42ff-814b-5177854362a4)
 ![Glow](https://github.com/Habib0x0/lf-fork/assets/24976957/cc9272f1-a9b4-4486-a7aa-d9ad02464576)
 ![Glow-Read-Md Files](https://github.com/Habib0x0/lf-fork/assets/24976957/ee99ce93-696c-4c86-993a-428e222f0308)
 
