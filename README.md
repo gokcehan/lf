@@ -12,6 +12,12 @@
 `lf` (as in "list files") is a terminal file manager written in Go with a heavy inspiration from ranger file manager.
 See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
 
+In order for this to work you need to install `glow` 
+
+```bash
+brew install glow
+```
+
 ![Glow](https://github.com/Habib0x0/lf-fork/assets/24976957/cc9272f1-a9b4-4486-a7aa-d9ad02464576)
 ![Glow-Read-Md Files](https://github.com/Habib0x0/lf-fork/assets/24976957/ee99ce93-696c-4c86-993a-428e222f0308)
 
