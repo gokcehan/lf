@@ -8,10 +8,22 @@ import (
 	"net"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
+
+type State struct {
+	mutex sync.Mutex
+	data  map[string]string
+}
+
+var gState State
+
+func init() {
+	gState.data = make(map[string]string)
+}
 
 func run() {
 	var screen tcell.Screen
@@ -130,9 +142,24 @@ func readExpr() <-chan expr {
 		s := bufio.NewScanner(c)
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
-			p := newParser(strings.NewReader(s.Text()))
-			if p.parse() {
-				ch <- p.expr
+
+			// `query` has to be handled outside of the main thread, which is
+			// blocked when running a synchronous shell command ("$" or "!").
+			// This is important since `query` is often the result of the user
+			// running `$lf -remote "query $id <something>"`.
+			if word, rest := splitWord(s.Text()); word == "query" {
+				gState.mutex.Lock()
+				state, ok := gState.data[rest]
+				gState.mutex.Unlock()
+				if ok {
+					fmt.Fprint(c, state)
+				}
+				fmt.Fprintln(c, "")
+			} else {
+				p := newParser(strings.NewReader(s.Text()))
+				if p.parse() {
+					ch <- p.expr
+				}
 			}
 		}
 

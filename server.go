@@ -83,7 +83,10 @@ Loop:
 				if err != nil {
 					echoerr(c, "listen: conn: client id should be a number")
 				} else {
+					// lifetime of the connection is managed by the server and
+					// will be cleaned up via the `drop` command
 					gConnList[id] = c
+					return
 				}
 			} else {
 				echoerr(c, "listen: conn: requires a client id")
@@ -95,6 +98,9 @@ Loop:
 				if err != nil {
 					echoerr(c, "listen: drop: client id should be a number")
 				} else {
+					if c2, ok := gConnList[id]; ok {
+						c2.Close()
+					}
 					delete(gConnList, id)
 				}
 			} else {
@@ -115,6 +121,27 @@ Loop:
 						echoerr(c, "listen: send: no such client id is connected")
 					}
 				}
+			}
+		case "query":
+			if rest == "" {
+				echoerr(c, "listen: query: requires a client id")
+				break
+			}
+			word2, rest2 := splitWord(rest)
+			id, err := strconv.Atoi(word2)
+			if err != nil {
+				echoerr(c, "listen: query: client id should be a number")
+				break
+			}
+			c2, ok := gConnList[id]
+			if !ok {
+				echoerr(c, "listen: query: no such client id is connected")
+				break
+			}
+			fmt.Fprintln(c2, "query "+rest2)
+			s2 := bufio.NewScanner(c2)
+			for s2.Scan() && s2.Text() != "" {
+				fmt.Fprintln(c, s2.Text())
 			}
 		case "quit":
 			if len(gConnList) == 0 {

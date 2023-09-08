@@ -83,10 +83,6 @@ The following commands are provided by lf:
     mark-remove    (modal)   (default '"')
     tag
     tag-toggle               (default 't')
-    maps
-    cmaps
-    cmds
-    jumps
 
 The following command line commands are provided by lf:
 
@@ -220,13 +216,27 @@ when defined:
 
 The following commands/keybindings are provided by default:
 
-    Unix                          Windows
-    cmd open &$OPENER "$f"        cmd open &%OPENER% %f%
-    map e $$EDITOR "$f"           map e $%EDITOR% %f%
-    map i $$PAGER "$f"            map i !%PAGER% %f%
-    map w $$SHELL                 map w $%SHELL%
-    cmd doc $$lf -doc | $PAGER    cmd doc !%lf% -doc | %PAGER%
-    map <f-1> doc                 map <f-1> doc
+    Unix
+    cmd open &$OPENER "$f"
+    map e $$EDITOR "$f"
+    map i $$PAGER "$f"
+    map w $$SHELL
+    cmd doc $$lf -doc | $PAGER
+    map <f-1> doc
+    cmd maps $lf -remote "query $id maps" | $PAGER
+    cmd cmaps $lf -remote "query $id cmaps" | $PAGER
+    cmd cmds $lf -remote "query $id cmds" | $PAGER
+
+    Windows
+    cmd open &%OPENER% %f%
+    map e $%EDITOR% %f%
+    map i !%PAGER% %f%
+    map w $%SHELL%
+    cmd doc !%lf% -doc | %PAGER%
+    map <f-1> doc
+    cmd maps !%lf% -remote "query %id% maps" | %PAGER%
+    cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
+    cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
 
 The following additional keybindings are provided by default:
 
@@ -671,23 +681,6 @@ Delete the previous word in backward direction.
     cmd-lowercase-word       (default '<a-l>')
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
-
-    maps
-    cmaps
-
-List all key mappings in normal mode or command-line editing mode.
-
-    cmds
-
-List all custom commands defined using the 'cmd' command
-
-    jumps
-
-List the contents of the jump list, in order of the most recently visited
-locations. Each location is marked with the count that can be used with the
-'jump-prev' and 'jump-next' commands (e.g. use '3[' to move three spaces
-backwards in the jump list). A '>' is used to mark the current location in the
-jump list.
 
 # Options
 
@@ -1540,9 +1533,36 @@ respect to the terminal width as follows:
         fi
     }}
 
-Besides 'send' command, there is a 'quit' command to quit the server when there
-are no connected clients left, and a 'quit!' command to force quit the server by
-closing client connections first:
+In addition, the 'query' command can be used to obtain information about a
+specific lf instance by providing its id:
+
+    lf -remote "query $id maps"
+
+The following types of information are supported:
+
+    maps     list of mappings created by the 'map' command
+    cmaps    list of mappings created by the 'cmap' command
+    cmds     list of commands created by the 'cmd' command
+    jumps    contents of the jump list, showing previously visited locations
+    history  list of previously executed commands on the command line
+
+This is useful for scripting actions based on the internal state of lf.
+For example, to select a previous command using fzf and execute it:
+
+    map <a-h> ${{
+    	clear
+    	cmd=$(
+    		lf -remote "query $id history" |
+    		awk -F'\t' 'NR > 1 { print $NF}' |
+    		sort -u |
+    		fzf --reverse --prompt='Execute command: '
+    	)
+    	lf -remote "send $id $cmd"
+    }}
+
+There is also a 'quit' command to quit the server when there are no connected
+clients left, and a 'quit!' command to force quit the server by closing client
+connections first:
 
     lf -remote 'quit'
     lf -remote 'quit!'

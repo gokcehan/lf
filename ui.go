@@ -1167,6 +1167,22 @@ func listJumps(jumps []string, ind int) *bytes.Buffer {
 	return b
 }
 
+func listHistory(history []cmdItem) *bytes.Buffer {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	maxlength := len(strconv.Itoa(len(history)))
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "number\tcommand")
+	for i, cmd := range history {
+		fmt.Fprintf(t, "%*d\t%s%s\n", maxlength, i+1, cmd.prefix, cmd.value)
+	}
+	t.Flush()
+
+	return b
+}
+
 func listMarks(marks map[string]string) *bytes.Buffer {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)

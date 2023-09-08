@@ -500,6 +500,14 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.ui.exportSizes()
 	exportOpts()
 
+	gState.mutex.Lock()
+	gState.data["maps"] = listBinds(gOpts.keys).String()
+	gState.data["cmaps"] = listBinds(gOpts.cmdkeys).String()
+	gState.data["cmds"] = listCmds().String()
+	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd).String()
+	gState.data["history"] = listHistory(app.cmdHistory).String()
+	gState.mutex.Unlock()
+
 	cmd := shellCommand(s, args)
 
 	var out io.Reader
@@ -583,18 +591,4 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}()
 	}
 
-}
-
-func (app *app) runPagerOn(stdin io.Reader) {
-	app.nav.exportFiles()
-	app.ui.exportSizes()
-	exportOpts()
-
-	cmd := shellCommand(envPager, nil)
-
-	cmd.Stdin = stdin
-	cmd.Stdout = os.Stderr
-	cmd.Stderr = os.Stderr
-
-	app.runCmdSync(cmd, false)
 }
