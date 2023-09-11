@@ -920,6 +920,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
 			gOpts.user[e.opt[5:]] = e.val
+			// Export user defined options immediately, so that the current values
+			// are available for some external previewer, which is started in a
+			// different thread and thus cannot export (as `setenv` is not thread-safe).
 			os.Setenv("lf_"+e.opt, e.val)
 		} else {
 			app.ui.echoerrf("unknown option: %s", e.opt)
