@@ -9,7 +9,7 @@ import (
 
 const (
 	gSixelBegin  = "\033P"
-	gSixelFiller = '\u2800'
+	gSixelFiller = '\u2000'
 )
 
 type sixelScreen struct {
