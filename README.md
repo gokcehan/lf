@@ -77,4 +77,4 @@ See [tips](https://github.com/gokcehan/lf/wiki/Tips) for more examples.
 
 ## Contributing
 
-See [contributing](https://github.com/gokcehan/lf/wiki/Contributing) for guidelines.
+See [contributing](CONTRIBUTING.md) for guidelines.
