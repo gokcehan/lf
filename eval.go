@@ -1157,6 +1157,22 @@ func onSelect(app *app) {
 	}
 }
 
+func onUiEnter(app *app) {
+	if cmd, ok := gOpts.cmds["on-ui-enter"]; ok {
+		ecmd := cmd.(*execExpr)
+		ecmd.prefix = "^"
+		ecmd.eval(app, nil)
+	}
+}
+
+func onUiExit(app *app) {
+	if cmd, ok := gOpts.cmds["on-ui-exit"]; ok {
+		ecmd := cmd.(*execExpr)
+		ecmd.prefix = "^"
+		ecmd.eval(app, nil)
+	}
+}
+
 func splitKeys(s string) (keys []string) {
 	for i := 0; i < len(s); {
 		r, w := utf8.DecodeRuneInString(s[i:])
@@ -2763,6 +2779,9 @@ func (e *execExpr) eval(app *app, args []string) {
 		app.runShell(e.value, args, e.prefix)
 	case "&":
 		log.Printf("shell-async: %s -- %s", e, args)
+		app.runShell(e.value, args, e.prefix)
+	case "^":
+		log.Printf("shell-sync-evt: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	default:
 		log.Printf("evaluating unknown execution prefix: %q", e.prefix)

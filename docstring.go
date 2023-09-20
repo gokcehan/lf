@@ -212,6 +212,8 @@ when defined:
     pre-cd
     on-cd
     on-select
+    on-ui-enter
+    on-ui-exit
     on-quit
 
 The following commands/keybindings are provided by default:
@@ -1201,6 +1203,18 @@ This shell command can be defined to be executed after changing a directory.
     on-select
 
 This shell command can be defined to be executed after the selection changes.
+
+    on-ui-enter
+
+This shell command can be defined to be executed when the UI of lf becomes
+active. This will be triggered after lf starts and when foreground shell
+commands finish.
+
+    on-ui-exit
+
+This shell command can be defined to be executed when the UI of lf becomes
+inactive. This will be triggered before lf exits and before starting foreground
+shell commands.
 
     on-quit
 
