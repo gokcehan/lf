@@ -445,8 +445,8 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
-		// make extra space to separate windows if drawbox is not enabled
-		if !gOpts.drawbox {
+		// make extra space to separate windows if drawbox separators are not enabled
+		if gOpts.drawbox == "none" || gOpts.drawbox == "outline" {
 			maxWidth -= 1
 		}
 
@@ -522,7 +522,7 @@ func getWidths(wtot int) []int {
 	wlen := len(gOpts.ratios)
 	widths := make([]int, wlen)
 
-	if gOpts.drawbox {
+	if gOpts.drawbox == "both" || gOpts.drawbox == "separators" {
 		wtot -= (wlen + 1)
 	}
 
@@ -546,8 +546,13 @@ func getWins(screen tcell.Screen) []*win {
 	wacc := 0
 	wlen := len(widths)
 	for i := 0; i < wlen; i++ {
-		if gOpts.drawbox {
+		if gOpts.drawbox == "both" {
 			wacc++
+			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
+		} else if gOpts.drawbox == "separators" {
+			wacc++
+			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
+		} else if gOpts.drawbox == "outline" {
 			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
 		} else {
 			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
@@ -966,29 +971,39 @@ func (ui *ui) drawBox() {
 
 	w, h := ui.screen.Size()
 
-	for i := 1; i < w-1; i++ {
-		ui.screen.SetContent(i, 1, tcell.RuneHLine, nil, st)
-		ui.screen.SetContent(i, h-2, tcell.RuneHLine, nil, st)
-	}
+	if gOpts.drawbox == "both" || gOpts.drawbox == "outline" {
+		for i := 1; i < w-1; i++ {
+			ui.screen.SetContent(i, 1, tcell.RuneHLine, nil, st)
+			ui.screen.SetContent(i, h-2, tcell.RuneHLine, nil, st)
+		}
 
-	for i := 2; i < h-2; i++ {
-		ui.screen.SetContent(0, i, tcell.RuneVLine, nil, st)
-		ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
-	}
+		for i := 2; i < h-2; i++ {
+			ui.screen.SetContent(0, i, tcell.RuneVLine, nil, st)
+			ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
+		}
 
-	ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
-	ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
-	ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
-	ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
+		ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
+		ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
+		ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
+		ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
+	}
 
 	wacc := 0
-	for wind := 0; wind < len(ui.wins)-1; wind++ {
-		wacc += ui.wins[wind].w + 1
-		ui.screen.SetContent(wacc, 1, tcell.RuneTTee, nil, st)
-		for i := 2; i < h-2; i++ {
-			ui.screen.SetContent(wacc, i, tcell.RuneVLine, nil, st)
+	top := tcell.RuneTTee
+	bottom := tcell.RuneBTee
+	if gOpts.drawbox == "separators" {
+		top = tcell.RuneVLine
+		bottom = tcell.RuneVLine
+	}
+	if gOpts.drawbox == "both" || gOpts.drawbox == "separators" {
+		for wind := 0; wind < len(ui.wins)-1; wind++ {
+			wacc += ui.wins[wind].w + 1
+			ui.screen.SetContent(wacc, 1, top, nil, st)
+			for i := 2; i < h-2; i++ {
+				ui.screen.SetContent(wacc, i, tcell.RuneVLine, nil, st)
+			}
+			ui.screen.SetContent(wacc, h-2, bottom, nil, st)
 		}
-		ui.screen.SetContent(wacc, h-2, tcell.RuneBTee, nil, st)
 	}
 }
 
@@ -1069,7 +1084,7 @@ func (ui *ui) draw(nav *nav) {
 		}
 	}
 
-	if gOpts.drawbox {
+	if gOpts.drawbox != "none" {
 		ui.drawBox()
 	}
 
@@ -1081,7 +1096,7 @@ func (ui *ui) draw(nav *nav) {
 		ui.menuWin.h = len(lines) - 1
 		ui.menuWin.y = ui.wins[0].h - ui.menuWin.h
 
-		if gOpts.drawbox {
+		if gOpts.drawbox == "outline" || gOpts.drawbox == "both" {
 			ui.menuWin.y += 2
 		}
 

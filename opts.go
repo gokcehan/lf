@@ -41,7 +41,7 @@ var gOpts struct {
 	dircounts        bool
 	dironly          bool
 	dirpreviews      bool
-	drawbox          bool
+	drawbox          string
 	dupfilefmt       string
 	globsearch       bool
 	icons            bool
@@ -188,7 +188,7 @@ func init() {
 	gOpts.dircounts = false
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
-	gOpts.drawbox = false
+	gOpts.drawbox = "false"
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
 	gOpts.cursoractivefmt = "\033[7m"
