@@ -159,7 +159,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber   bool      (default false)
     reverse          bool      (default false)
     ruler            []string  (default 'acc:progress:selection:filter:ind')
-    rulerfmt         string    (default "%a  |%p  |\033[7;31m %m \033[0m  |\033[7;33m %c \033[0m  |\033[7;35m %s \033[0m  |\033[7;34m %f \033[0m  |%i/%t")
+    rulerfmt         string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
     scrolloff        int       (default 0)
     selmode          string    (default 'all')
     shell            string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -953,7 +953,7 @@ for the 'selmode' option). User defined options starting with 'lf_user_' are
 also supported, so it is possible to display information set from external
 sources.
 
-    rulerfmt       string    (default "%a  |%p  |\033[7;31m %m \033[0m  |\033[7;33m %c \033[0m  |\033[7;35m %s \033[0m  |\033[7;34m %f \033[0m  |%i/%t")
+    rulerfmt       string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
 
 Format string of the ruler shown in the bottom right corner. Special expansions
 are provided, '%a' as the pressed keys, '%p' as the progress of file operations,
