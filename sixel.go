@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
@@ -36,12 +37,12 @@ func (sxs *sixelScreen) showSixels() {
 	}
 
 	// XXX: workaround for bug where quitting lf might leave the terminal in bold
-	fmt.Print("\033[0m")
+	fmt.Fprint(os.Stderr, "\033[0m")
 
-	fmt.Print("\0337")                              // Save cursor position
-	fmt.Printf("\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
-	fmt.Print(*sxs.sixel)                           //
-	fmt.Print("\0338")                              // Restore cursor position
+	fmt.Fprint(os.Stderr, "\0337")                              // Save cursor position
+	fmt.Fprintf(os.Stderr, "\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
+	fmt.Fprint(os.Stderr, *sxs.sixel)                           //
+	fmt.Fprint(os.Stderr, "\0338")                              // Restore cursor position
 }
 
 func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
