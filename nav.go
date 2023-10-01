@@ -908,6 +908,9 @@ func (nav *nav) preview(path string, win *win) {
 
 		if addLine {
 			reg.lines = append(reg.lines, string(line))
+			if len(reg.lines) == win.h {
+				break
+			}
 		}
 
 		addLine = !isPrefix
