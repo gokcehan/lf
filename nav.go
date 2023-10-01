@@ -889,7 +889,8 @@ func (nav *nav) preview(path string, win *win) {
 		}
 	}
 
-	// bufio.Scanner can't handle files containing very long lines
+	// bufio.Scanner can't handle files containing long lines if they exceed the
+	// size of its internal buffer
 	bufReader := bufio.NewReader(reader)
 
 	addLine := true
