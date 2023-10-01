@@ -893,7 +893,7 @@ func (nav *nav) preview(path string, win *win) {
 	bufReader := bufio.NewReader(reader)
 
 	addLine := true
-	for {
+	for len(reg.lines) < win.h {
 		line, isPrefix, err := bufReader.ReadLine()
 		if err != nil {
 			break
@@ -908,9 +908,6 @@ func (nav *nav) preview(path string, win *win) {
 
 		if addLine {
 			reg.lines = append(reg.lines, string(line))
-			if len(reg.lines) == win.h {
-				break
-			}
 		}
 
 		addLine = !isPrefix
