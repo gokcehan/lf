@@ -128,10 +128,10 @@ func (im iconMap) get(f *file) string {
 		key = "pi"
 	case f.Mode()&os.ModeSocket != 0:
 		key = "so"
-	case f.Mode()&os.ModeDevice != 0:
-		key = "bd"
 	case f.Mode()&os.ModeCharDevice != 0:
 		key = "cd"
+	case f.Mode()&os.ModeDevice != 0:
+		key = "bd"
 	case f.Mode()&os.ModeSetuid != 0:
 		key = "su"
 	case f.Mode()&os.ModeSetgid != 0:
