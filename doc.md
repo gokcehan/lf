@@ -331,14 +331,7 @@ Modal commands do not take any arguments, but instead change the operation mode 
 
 Quit lf and return to the shell.
 
-### up                       (default `k` and `<up>`)
-### half-up                  (default `<c-u>`)
-### page-up                  (default `<c-b>` and `<pgup>`)
-### scroll-up                (default `<c-y>`)
-### down                     (default `j` and `<down>`)
-### half-down                (default `<c-d>`)
-### page-down                (default `<c-f>` and `<pgdn>`)
-### scroll-down              (default `<c-e>`)
+### up                       (default `k` and `<up>`), half-up                  (default `<c-u>`), page-up                  (default `<c-b>` and `<pgup>`), scroll-up                (default `<c-y>`), down                     (default `j` and `<down>`), half-down                (default `<c-d>`), page-down                (default `<c-f>` and `<pgdn>`), scroll-down              (default `<c-e>`)
 
 Move/scroll the current file selection upwards/downwards by one/half a page/full page.
 
@@ -352,20 +345,16 @@ If the current file is a directory, then change the current directory to it, oth
 A default `open` command is provided to call the default system opener asynchronously with the current file as the argument.
 A custom `open` command can be defined to override this default.
 
-### jump-next                (default `]`)
-### jump-prev                (default `[`)
+### jump-next                (default `]`), jump-prev                (default `[`)
 
 Change the current working directory to the next/previous jumplist item.
 
-### top                      (default `gg` and `<home>`)
-### bottom                   (default `G` and `<end>`)
+### top                      (default `gg` and `<home>`), bottom                   (default `G` and `<end>`)
 
 Move the current file selection to the top/bottom of the directory.
 A count can be specified to move to a specific line, for example use `3G` to move to the third line.
 
-### high                     (default `H`)
-### middle                   (default `M`)
-### low                      (default `L`)
+### high                     (default `H`), middle                   (default `M`), low                      (default `L`)
 
 Move the current file selection to the high/middle/low of the screen.
 
@@ -394,8 +383,7 @@ If you'd like to experiment with using this command, you should bind it to a key
 
 Remove the selection of all files in all directories.
 
-### glob-select
-### glob-unselect
+### glob-select, glob-unselect
 
 Select/unselect files that match the given glob.
 
@@ -509,22 +497,15 @@ Read a shell command to execute and wait for a key press in the end.
 
 Read a shell command to execute asynchronously without standard I/O.
 
-### find           (modal)   (default `f`)
-### find-back      (modal)   (default `F`)
-### find-next                (default `;`)
-### find-prev                (default `,`)
+### find           (modal)   (default `f`), find-back      (modal)   (default `F`), find-next                (default `;`), find-prev                (default `,`)
 
 Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
 
-### search                   (default `/`)
-### search-back              (default `?`)
-### search-next              (default `n`)
-### search-prev              (default `N`)
+### search                   (default `/`), search-back              (default `?`), search-next              (default `n`), search-prev              (default `N`)
 
 Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
 
-### filter         (modal)
-### setfilter
+### filter         (modal), setfilter
 
 Command `filter` reads a pattern to filter out and only view files matching the pattern.
 Command `setfilter` does the same but uses an argument to set the filter immediately.
@@ -571,8 +552,7 @@ Quit command line mode and return to normal mode.
 
 Autocomplete the current word.
 
-### cmd-menu-complete
-### cmd-menu-complete-back
+### cmd-menu-complete, cmd-menu-complete-back
 
 Autocomplete the current word with menu selection.
 You need to assign keys to these commands (e.g. `cmap <tab> cmd-menu-complete; cmap <backtab> cmd-menu-complete-back`).
@@ -590,18 +570,15 @@ Execute the current line.
 
 Interrupt the current shell-pipe command and return to the normal mode.
 
-### cmd-history-next         (default `<c-n>` and `<down>`)
-### cmd-history-prev         (default `<c-p>` and `<up>`)
+### cmd-history-next         (default `<c-n>` and `<down>`), cmd-history-prev         (default `<c-p>` and `<up>`)
 
 Go to next/previous item in the history.
 
-### cmd-left                 (default `<c-b>` and `<left>`)
-### cmd-right                (default `<c-f>` and `<right>`)
+### cmd-left                 (default `<c-b>` and `<left>`), cmd-right                (default `<c-f>` and `<right>`)
 
 Move the cursor to the left/right.
 
-### cmd-home                 (default `<c-a>` and `<home>`)
-### cmd-end                  (default `<c-e>` and `<end>`)
+### cmd-home                 (default `<c-a>` and `<home>`), cmd-end                  (default `<c-e>` and `<end>`)
 
 Move the cursor to the beginning/end of line.
 
@@ -614,8 +591,7 @@ Delete the next character.
 Delete the previous character.
 When at the beginning of a prompt, returns either to normal mode or to `:` mode.
 
-### cmd-delete-home          (default `<c-u>`)
-### cmd-delete-end           (default `<c-k>`)
+### cmd-delete-home          (default `<c-u>`), cmd-delete-end           (default `<c-k>`)
 
 Delete everything up to the beginning/end of line.
 
@@ -627,13 +603,11 @@ Delete the previous unix word.
 
 Paste the buffer content containing the last deleted item.
 
-### cmd-transpose            (default `<c-t>`)
-### cmd-transpose-word       (default `<a-t>`)
+### cmd-transpose            (default `<c-t>`), cmd-transpose-word       (default `<a-t>`)
 
 Transpose the positions of last two characters/words.
 
-### cmd-word                 (default `<a-f>`)
-### cmd-word-back            (default `<a-b>`)
+### cmd-word                 (default `<a-f>`), cmd-word-back            (default `<a-b>`)
 
 Move the cursor by one word in forward/backward direction.
 
@@ -645,9 +619,7 @@ Delete the next word in forward direction.
 
 Delete the previous word in backward direction.
 
-### cmd-capitalize-word      (default `<a-c>`)
-### cmd-uppercase-word       (default `<a-u>`)
-### cmd-lowercase-word       (default `<a-l>`)
+### cmd-capitalize-word      (default `<a-c>`), cmd-uppercase-word       (default `<a-u>`), cmd-lowercase-word       (default `<a-l>`)
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
@@ -676,9 +648,7 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
-### cursoractivefmt   string    (default `\033[7m`)
-### cursorparentfmt   string    (default `\033[7m`)
-### cursorpreviewfmt  string    (default `\033[4m`)
+### cursoractivefmt   string    (default `\033[7m`), cursorparentfmt   string    (default `\033[7m`), cursorpreviewfmt  string    (default `\033[4m`)
 
 Format strings for highlighting the cursor.
 `cursoractivefmt` applies in the current directory pane,
@@ -1067,8 +1037,7 @@ Value of the {option}.
 
 Value of the user_{option}.
 
-### lf_width
-### lf_height
+### lf_width, lf_height
 
 Width/Height of the terminal.
 
