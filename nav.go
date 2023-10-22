@@ -889,20 +889,29 @@ func (nav *nav) preview(path string, win *win) {
 		}
 	}
 
-	buf := bufio.NewScanner(reader)
+	// bufio.Scanner can't handle files containing long lines if they exceed the
+	// size of its internal buffer
+	bufReader := bufio.NewReader(reader)
 
-	for i := 0; i < win.h && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
+	addLine := true
+	for len(reg.lines) < win.h {
+		line, isPrefix, err := bufReader.ReadLine()
+		if err != nil {
+			break
+		}
+
+		for _, r := range line {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
 				return
 			}
 		}
-		reg.lines = append(reg.lines, buf.Text())
-	}
 
-	if buf.Err() != nil {
-		log.Printf("loading file: %s", buf.Err())
+		if addLine {
+			reg.lines = append(reg.lines, string(line))
+		}
+
+		addLine = !isPrefix
 	}
 }
 
