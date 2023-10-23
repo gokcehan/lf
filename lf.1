@@ -231,6 +231,7 @@ The following special shell commands are used to customize the behavior of lf wh
     pre-cd
     on-cd
     on-select
+    on-redraw
     on-quit
 .EE
 .PP
@@ -1331,6 +1332,12 @@ This shell command can be defined to be executed after changing a directory.
 .EE
 .PP
 This shell command can be defined to be executed after the selection changes.
+.PP
+.EX
+    on-redraw
+.EE
+.PP
+This shell command can be defined to be executed after the screen is redrawn or if the terminal is resized.
 .PP
 .EX
     on-quit
