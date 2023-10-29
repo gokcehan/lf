@@ -164,6 +164,7 @@ func saveFiles(list []string, cp bool) error {
 		fmt.Fprintln(files, f)
 	}
 
+	files.Sync()
 	return nil
 }
 
