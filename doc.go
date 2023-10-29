@@ -208,6 +208,7 @@ The following special shell commands are used to customize the behavior of lf wh
 	pre-cd
 	on-cd
 	on-select
+	on-redraw
 	on-quit
 
 The following commands/keybindings are provided by default:
@@ -1109,6 +1110,10 @@ This shell command can be defined to be executed after changing a directory.
 	on-select
 
 This shell command can be defined to be executed after the selection changes.
+
+	on-redraw
+
+This shell command can be defined to be executed after the screen is redrawn or if the terminal is resized.
 
 	on-quit
 
