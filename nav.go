@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -827,7 +826,7 @@ func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
-	var reader io.Reader
+	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(gOpts.previewer, path,
@@ -861,7 +860,7 @@ func (nav *nav) preview(path string, win *win) {
 			}
 		}()
 		defer out.Close()
-		reader = out
+		reader = bufio.NewReader(out)
 	} else {
 		f, err := os.Open(path)
 		if err != nil {
@@ -870,14 +869,11 @@ func (nav *nav) preview(path string, win *win) {
 		}
 
 		defer f.Close()
-		reader = f
+		reader = bufio.NewReader(f)
 	}
 
-	prefix := make([]byte, 2)
 	if gOpts.sixel {
-		n, err := reader.Read(prefix)
-		reader = io.MultiReader(bytes.NewReader(prefix[:n]), reader)
-
+		prefix, err := reader.Peek(2)
 		if err == nil && string(prefix) == gSixelBegin {
 			b, err := io.ReadAll(reader)
 			if err != nil {
@@ -891,11 +887,9 @@ func (nav *nav) preview(path string, win *win) {
 
 	// bufio.Scanner can't handle files containing long lines if they exceed the
 	// size of its internal buffer
-	bufReader := bufio.NewReader(reader)
-
 	addLine := true
 	for len(reg.lines) < win.h {
-		line, isPrefix, err := bufReader.ReadLine()
+		line, isPrefix, err := reader.ReadLine()
 		if err != nil {
 			break
 		}
