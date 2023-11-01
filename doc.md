@@ -10,7 +10,7 @@ A man page with the same content is also available in the repository at https://
 
 You can run `lf -help` to see descriptions of command line options.
 
-## Quick Reference
+# Quick Reference
 
 The following commands are provided by lf:
 
@@ -260,7 +260,7 @@ If the `mouse` option is enabled, mouse buttons have the following default effec
 	Scroll wheel
 	    Move up or down. If Ctrl is pressed, scroll up or down.
 
-## Configuration
+# Configuration
 
 Configuration files should be located at:
 
@@ -322,53 +322,53 @@ You can configure these locations with the following variables given with their 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
 
-## Commands
+# Commands
 
 This section shows information about builtin commands.
 Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
 
-### quit                     (default `q`)
+## quit                     (default `q`)
 
 Quit lf and return to the shell.
 
-### up                       (default `k` and `<up>`), half-up                  (default `<c-u>`), page-up                  (default `<c-b>` and `<pgup>`), scroll-up                (default `<c-y>`), down                     (default `j` and `<down>`), half-down                (default `<c-d>`), page-down                (default `<c-f>` and `<pgdn>`), scroll-down              (default `<c-e>`)
+## up                       (default `k` and `<up>`), half-up                  (default `<c-u>`), page-up                  (default `<c-b>` and `<pgup>`), scroll-up                (default `<c-y>`), down                     (default `j` and `<down>`), half-down                (default `<c-d>`), page-down                (default `<c-f>` and `<pgdn>`), scroll-down              (default `<c-e>`)
 
 Move/scroll the current file selection upwards/downwards by one/half a page/full page.
 
-### updir                    (default `h` and `<left>`)
+## updir                    (default `h` and `<left>`)
 
 Change the current working directory to the parent directory.
 
-### open                     (default `l` and `<right>`)
+## open                     (default `l` and `<right>`)
 
 If the current file is a directory, then change the current directory to it, otherwise, execute the `open` command.
 A default `open` command is provided to call the default system opener asynchronously with the current file as the argument.
 A custom `open` command can be defined to override this default.
 
-### jump-next                (default `]`), jump-prev                (default `[`)
+## jump-next                (default `]`), jump-prev                (default `[`)
 
 Change the current working directory to the next/previous jumplist item.
 
-### top                      (default `gg` and `<home>`), bottom                   (default `G` and `<end>`)
+## top                      (default `gg` and `<home>`), bottom                   (default `G` and `<end>`)
 
 Move the current file selection to the top/bottom of the directory.
 A count can be specified to move to a specific line, for example use `3G` to move to the third line.
 
-### high                     (default `H`), middle                   (default `M`), low                      (default `L`)
+## high                     (default `H`), middle                   (default `M`), low                      (default `L`)
 
 Move the current file selection to the high/middle/low of the screen.
 
-### toggle
+## toggle
 
 Toggle the selection of the current file or files given as arguments.
 
-### invert                   (default `v`)
+## invert                   (default `v`)
 
 Reverse the selection of all files in the current directory (i.e. `toggle` all files).
 Selections in other directories are not effected by this command.
 You can define a new command to select all files in the directory by combining `invert` with `unselect` (i.e. `cmd select-all :unselect; invert`), though this will also remove selections in other directories.
 
-### invert-below
+## invert-below
 
 Reverse the selection (i.e. `toggle`) of all files at or after the current file in the current directory.
 
@@ -379,161 +379,161 @@ This achieves an effect similar to the visual mode in vim.
 This command is experimental and may be removed once a better replacement for the visual mode is implemented in `lf`.
 If you'd like to experiment with using this command, you should bind it to a key (e.g. `V`) for a better experience.
 
-### unselect                 (default `u`)
+## unselect                 (default `u`)
 
 Remove the selection of all files in all directories.
 
-### glob-select, glob-unselect
+## glob-select, glob-unselect
 
 Select/unselect files that match the given glob.
 
-### calcdirsize
+## calcdirsize
 
 Calculate the total size for each of the selected directories.
 Option `info` should include `size` and option `dircounts` should be disabled to show this size.
 If the total size of a directory is not calculated, it will be shown as `-`.
 
-### clearmaps
+## clearmaps
 
 Remove all keybindings associated with the `map` command.
 This command can be used in the config file to remove the default keybindings.
 For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
-### copy                     (default `y`)
+## copy                     (default `y`)
 
 If there are no selections, save the path of the current file to the copy buffer, otherwise, copy the paths of selected files.
 
-### cut                      (default `d`)
+## cut                      (default `d`)
 
 If there are no selections, save the path of the current file to the cut buffer, otherwise, copy the paths of selected files.
 
-### paste                    (default `p`)
+## paste                    (default `p`)
 
 Copy/Move files in copy/cut buffer to the current working directory.
 A custom `paste` command can be defined to override this default.
 
-### clear                    (default `c`)
+## clear                    (default `c`)
 
 Clear file paths in copy/cut buffer.
 
-### sync
+## sync
 
 Synchronize copied/cut files with server.
 This command is automatically called when required.
 
-### draw
+## draw
 
 Draw the screen.
 This command is automatically called when required.
 
-### redraw                   (default `<c-l>`)
+## redraw                   (default `<c-l>`)
 
 Synchronize the terminal and redraw the screen.
 
-### load
+## load
 
 Load modified files and directories.
 This command is automatically called when required.
 
-### reload                   (default `<c-r>`)
+## reload                   (default `<c-r>`)
 
 Flush the cache and reload all files and directories.
 
-### echo
+## echo
 
 Print given arguments to the message line at the bottom.
 
-### echomsg
+## echomsg
 
 Print given arguments to the message line at the bottom and also to the log file.
 
-### echoerr
+## echoerr
 
 Print given arguments to the message line at the bottom as `errorfmt` and also to the log file.
 
-### cd
+## cd
 
 Change the working directory to the given argument.
 
-### select
+## select
 
 Change the current file selection to the given argument.
 
-### delete         (modal)
+## delete         (modal)
 
 Remove the current file or selected file(s).
 A custom `delete` command can be defined to override this default.
 
-### rename         (modal)   (default `r`)
+## rename         (modal)   (default `r`)
 
 Rename the current file using the builtin method.
 A custom `rename` command can be defined to override this default.
 
-### source
+## source
 
 Read the configuration file given in the argument.
 
-### push
+## push
 
 Simulate key pushes given in the argument.
 
-### read           (modal)   (default `:`)
+## read           (modal)   (default `:`)
 
 Read a command to evaluate.
 
-### shell          (modal)   (default `$`)
+## shell          (modal)   (default `$`)
 
 Read a shell command to execute.
 
-### shell-pipe     (modal)   (default `%`)
+## shell-pipe     (modal)   (default `%`)
 
 Read a shell command to execute piping its standard I/O to the bottom statline.
 
-### shell-wait     (modal)   (default `!`)
+## shell-wait     (modal)   (default `!`)
 
 Read a shell command to execute and wait for a key press in the end.
 
-### shell-async    (modal)   (default `&`)
+## shell-async    (modal)   (default `&`)
 
 Read a shell command to execute asynchronously without standard I/O.
 
-### find           (modal)   (default `f`), find-back      (modal)   (default `F`), find-next                (default `;`), find-prev                (default `,`)
+## find           (modal)   (default `f`), find-back      (modal)   (default `F`), find-next                (default `;`), find-prev                (default `,`)
 
 Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
 
-### search                   (default `/`), search-back              (default `?`), search-next              (default `n`), search-prev              (default `N`)
+## search                   (default `/`), search-back              (default `?`), search-next              (default `n`), search-prev              (default `N`)
 
 Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
 
-### filter         (modal), setfilter
+## filter         (modal), setfilter
 
 Command `filter` reads a pattern to filter out and only view files matching the pattern.
 Command `setfilter` does the same but uses an argument to set the filter immediately.
 You can supply an argument to `filter`, in order to use that as the starting prompt.
 
-### mark-save      (modal)   (default `m`)
+## mark-save      (modal)   (default `m`)
 
 Save the current directory as a bookmark assigned to the given key.
 
-### mark-load      (modal)   (default `'`)
+## mark-load      (modal)   (default `'`)
 
 Change the current directory to the bookmark assigned to the given key.
 A special bookmark `'` holds the previous directory after a `mark-load`, `cd`, or `select` command.
 
-### mark-remove    (modal)   (default `"`)
+## mark-remove    (modal)   (default `"`)
 
 Remove a bookmark assigned to the given key.
 
-### tag
+## tag
 
 Tag a file with `*` or a single width character given in the argument.
 You can define a new tag clearing command by combining `tag` with `tag-toggle` (i.e. `cmd tag-clear :tag; tag-toggle`).
 
-### tag-toggle               (default `t`)
+## tag-toggle               (default `t`)
 
 Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
-## Command Line Commands
+# Command Line Commands
 
 The prompt character specifies which of the several command-line modes you are in.
 For example, the `read` command takes you to the `:` mode.
@@ -544,103 +544,103 @@ You can go back with `cmd-delete-back` (`<backspace>` by default).
 The command line commands should be mostly compatible with readline keybindings.
 A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 
-### cmd-escape               (default `<esc>`)
+## cmd-escape               (default `<esc>`)
 
 Quit command line mode and return to normal mode.
 
-### cmd-complete             (default `<tab>`)
+## cmd-complete             (default `<tab>`)
 
 Autocomplete the current word.
 
-### cmd-menu-complete, cmd-menu-complete-back
+## cmd-menu-complete, cmd-menu-complete-back
 
 Autocomplete the current word with menu selection.
 You need to assign keys to these commands (e.g. `cmap <tab> cmd-menu-complete; cmap <backtab> cmd-menu-complete-back`).
 You can use the assigned keys assigned to display the menu and then cycle through completion options.
 
-### cmd-menu-accept
+## cmd-menu-accept
 
 Accept the currently selected match in menu completion and close the menu.
 
-### cmd-enter                (default `<c-j>` and `<enter>`)
+## cmd-enter                (default `<c-j>` and `<enter>`)
 
 Execute the current line.
 
-### cmd-interrupt            (default `<c-c>`)
+## cmd-interrupt            (default `<c-c>`)
 
 Interrupt the current shell-pipe command and return to the normal mode.
 
-### cmd-history-next         (default `<c-n>` and `<down>`), cmd-history-prev         (default `<c-p>` and `<up>`)
+## cmd-history-next         (default `<c-n>` and `<down>`), cmd-history-prev         (default `<c-p>` and `<up>`)
 
 Go to next/previous item in the history.
 
-### cmd-left                 (default `<c-b>` and `<left>`), cmd-right                (default `<c-f>` and `<right>`)
+## cmd-left                 (default `<c-b>` and `<left>`), cmd-right                (default `<c-f>` and `<right>`)
 
 Move the cursor to the left/right.
 
-### cmd-home                 (default `<c-a>` and `<home>`), cmd-end                  (default `<c-e>` and `<end>`)
+## cmd-home                 (default `<c-a>` and `<home>`), cmd-end                  (default `<c-e>` and `<end>`)
 
 Move the cursor to the beginning/end of line.
 
-### cmd-delete               (default `<c-d>` and `<delete>`)
+## cmd-delete               (default `<c-d>` and `<delete>`)
 
 Delete the next character.
 
-### cmd-delete-back          (default `<backspace>` and `<backspace2>`)
+## cmd-delete-back          (default `<backspace>` and `<backspace2>`)
 
 Delete the previous character.
 When at the beginning of a prompt, returns either to normal mode or to `:` mode.
 
-### cmd-delete-home          (default `<c-u>`), cmd-delete-end           (default `<c-k>`)
+## cmd-delete-home          (default `<c-u>`), cmd-delete-end           (default `<c-k>`)
 
 Delete everything up to the beginning/end of line.
 
-### cmd-delete-unix-word     (default `<c-w>`)
+## cmd-delete-unix-word     (default `<c-w>`)
 
 Delete the previous unix word.
 
-### cmd-yank                 (default `<c-y>`)
+## cmd-yank                 (default `<c-y>`)
 
 Paste the buffer content containing the last deleted item.
 
-### cmd-transpose            (default `<c-t>`), cmd-transpose-word       (default `<a-t>`)
+## cmd-transpose            (default `<c-t>`), cmd-transpose-word       (default `<a-t>`)
 
 Transpose the positions of last two characters/words.
 
-### cmd-word                 (default `<a-f>`), cmd-word-back            (default `<a-b>`)
+## cmd-word                 (default `<a-f>`), cmd-word-back            (default `<a-b>`)
 
 Move the cursor by one word in forward/backward direction.
 
-### cmd-delete-word          (default `<a-d>`)
+## cmd-delete-word          (default `<a-d>`)
 
 Delete the next word in forward direction.
 
-### cmd-delete-word-back     (default `<a-backspace>` and `<a-backspace2>`)
+## cmd-delete-word-back     (default `<a-backspace>` and `<a-backspace2>`)
 
 Delete the previous word in backward direction.
 
-### cmd-capitalize-word      (default `<a-c>`), cmd-uppercase-word       (default `<a-u>`), cmd-lowercase-word       (default `<a-l>`)
+## cmd-capitalize-word      (default `<a-c>`), cmd-uppercase-word       (default `<a-u>`), cmd-lowercase-word       (default `<a-l>`)
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
-## Options
+# Options
 
 This section shows information about options to customize the behavior.
 Character `:` is used as the separator for list options `[]int` and `[]string`.
 
-### anchorfind     bool      (default true)
+## anchorfind     bool      (default true)
 
 When this option is enabled, find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
 
-### autoquit       bool      (default false)
+## autoquit       bool      (default false)
 
 Automatically quit server when there are no clients left connected.
 
-### borderfmt      string    (default `\033[0m`)
+## borderfmt      string    (default `\033[0m`)
 
 Format string of the box drawing characters enabled by the `drawbox` option.
 
-### cleaner        string    (default ``) (not called if empty)
+## cleaner        string    (default ``) (not called if empty)
 
 Set the path of a cleaner file.
 The file should be executable.
@@ -648,7 +648,7 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
-### cursoractivefmt   string    (default `\033[7m`), cursorparentfmt   string    (default `\033[7m`), cursorpreviewfmt  string    (default `\033[4m`)
+## cursoractivefmt   string    (default `\033[7m`), cursorparentfmt   string    (default `\033[7m`), cursorpreviewfmt  string    (default `\033[4m`)
 
 Format strings for highlighting the cursor.
 `cursoractivefmt` applies in the current directory pane,
@@ -662,11 +662,11 @@ Some other possibilities to consider for the preview or parent cursors: an empty
 If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
 For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
-### dircache       bool      (default true)
+## dircache       bool      (default true)
 
 Cache directory contents.
 
-### dircounts      bool      (default false)
+## dircounts      bool      (default false)
 
 When this option is enabled, directory sizes show the number of items inside instead of the total size of the directory, which needs to be calculated for each directory using `calcdirsize`.
 This information needs to be calculated by reading the directory and counting the items inside.
@@ -674,71 +674,71 @@ Therefore, this option is disabled by default for performance reasons.
 This option only has an effect when `info` has a `size` field and the pane is wide enough to show the information.
 999 items are counted per directory at most, and bigger directories are shown as `999+`.
 
-### dirfirst       bool      (default true)
+## dirfirst       bool      (default true)
 
 Show directories first above regular files.
 
-### dironly        bool      (default false)
+## dironly        bool      (default false)
 
 Show only directories.
 
-### dirpreviews    bool      (default false)
+## dirpreviews    bool      (default false)
 
 If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
 
-### drawbox        bool      (default false)
+## drawbox        bool      (default false)
 
 Draw boxes around panes with box drawing characters.
 
-### dupfilefmt        string      (default `%f.~%n~`)
+## dupfilefmt        string      (default `%f.~%n~`)
 
 Format string of file name when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
 Special expansions are provided, `%f` as the file name, `%b` for basename (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
 
-### errorfmt       string    (default `\033[7;31;47m`)
+## errorfmt       string    (default `\033[7;31;47m`)
 
 Format string of error messages shown in the bottom message line.
 
 If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
 For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
-### filesep        string    (default `\n`)
+## filesep        string    (default `\n`)
 
 File separator used in environment variables `fs` and `fx`.
 
-### findlen        int       (default 1)
+## findlen        int       (default 1)
 
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
-### globsearch     bool      (default false)
+## globsearch     bool      (default false)
 
 When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
 With globbing, `*` matches any sequence, `?` matches any character, and `[...]` or `[^...]` matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
 
-### hidden         bool      (default false)
+## hidden         bool      (default false)
 
 Show hidden files.
 On Unix systems, hidden files are determined by the value of `hiddenfiles`.
 On Windows, only files with hidden attributes are considered hidden files.
 
-### hiddenfiles    []string  (default `.*`)
+## hiddenfiles    []string  (default `.*`)
 
 List of hidden file glob patterns.
 Patterns can be given as relative or absolute paths.
 Globbing supports the usual special characters, `*` to match any sequence, `?` to match any character, and `[...]` or `[^...]` to match character sets or ranges.
 In addition, if a pattern starts with `!`, then its matches are excluded from hidden files. To add multiple patterns, use `:` as a separator. Example: `.*:lost+found:*.bak`
 
-### history        bool      (default true)
+## history        bool      (default true)
 
 Save command history.
 
-### icons          bool      (default false)
+## icons          bool      (default false)
 
 Show icons before each item in the list.
 
-### ifs            string    (default ``)
+## ifs            string    (default ``)
 
 Sets `IFS` variable in shell commands.
 It works by adding the assignment to the beginning of the command string as `IFS=...; ...`.
@@ -747,50 +747,50 @@ This method assumes a POSIX shell syntax and so it can fail for non-POSIX shells
 This option has no effect when the value is left empty.
 This option does not have any effect on Windows.
 
-### ignorecase     bool      (default true)
+## ignorecase     bool      (default true)
 
 Ignore case in sorting and search patterns.
 
-### ignoredia      bool      (default true)
+## ignoredia      bool      (default true)
 
 Ignore diacritics in sorting and search patterns.
 
-### incsearch      bool      (default false)
+## incsearch      bool      (default false)
 
 Jump to the first match after each keystroke during searching.
 
-### incfilter      bool      (default false)
+## incfilter      bool      (default false)
 
 Apply filter pattern after each keystroke during filtering.
 
-### info           []string  (default ``)
+## info           []string  (default ``)
 
 List of information shown for directory items at the right side of pane.
 Currently supported information types are `size`, `time`, `atime`, and `ctime`.
 Information is only shown when the pane width is more than twice the width of information.
 
-### infotimefmtnew string    (default `Jan _2 15:04`)
+## infotimefmtnew string    (default `Jan _2 15:04`)
 
 Format string of the file time shown in the info column when it matches this year.
 
-### infotimefmtold string    (default `Jan _2  2006`)
+## infotimefmtold string    (default `Jan _2  2006`)
 
 Format string of the file time shown in the info column when it doesn't match this year.
 
-### mouse          bool      (default false)
+## mouse          bool      (default false)
 
 Send mouse events as input.
 
-### number         bool      (default false)
+## number         bool      (default false)
 
 Show the position number for directory items at the left side of pane.
 When `relativenumber` option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
 
-### numberfmt      string    (default `\033[33m`)
+## numberfmt      string    (default `\033[33m`)
 
 Format string of the position number for each line.
 
-### period         int       (default 0)
+## period         int       (default 0)
 
 Set the interval in seconds for periodic checks of directory updates.
 This works by periodically calling the `load` command.
@@ -798,19 +798,19 @@ Note that directories are already updated automatically in many cases.
 This option can be useful when there is an external process changing the displayed directory and you are not doing anything in lf.
 Periodic checks are disabled when the value of this option is set to zero.
 
-### preserve       []string  (default `mode`)
+## preserve       []string  (default `mode`)
 
 List of attributes that are preserved when copying files.
 Currently supported attributes are `mode` (i.a. access mode) and `timestamps` (i.e. modification time and access time).
 Note, preserving other attribute like ownership of change/birth timestamp is desirable, but not portably supported in Go.
 
-### preview        bool      (default true)
+## preview        bool      (default true)
 
 Show previews of files and directories at the right most pane.
 If the file has more lines than the preview pane, rest of the lines are not read.
 Files containing the null character (U+0000) in the read portion are considered binary files and displayed as `binary`.
 
-### previewer      string    (default ``) (not filtered if empty)
+## previewer      string    (default ``) (not filtered if empty)
 
 Set the path of a previewer file to filter the content of regular files for previewing.
 The file should be executable.
@@ -820,29 +820,29 @@ If the previewer returns a non-zero exit code, then the preview cache for the gi
 This means that if the file is selected in the future, the previewer is called once again.
 Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
 
-### promptfmt      string    (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
+## promptfmt      string    (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
 Format string of the prompt shown in the top line.
 Special expansions are provided, `%u` as the user name, `%h` as the host name, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right aligned on the screen.
 Home folder is shown as `~` in the working directory expansion.
 Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
 
-### ratios         []int     (default `1:2:3`)
+## ratios         []int     (default `1:2:3`)
 
 List of ratios of pane widths.
 Number of items in the list determines the number of panes in the ui.
 When `preview` option is enabled, the right most number is used for the width of preview pane.
 
-### relativenumber bool      (default false)
+## relativenumber bool      (default false)
 
 Show the position number relative to the current line.
 When `number` is enabled, current line shows the absolute position, otherwise nothing is shown.
 
-### reverse        bool      (default false)
+## reverse        bool      (default false)
 
 Reverse the direction of sort.
 
-### ruler          []string  (default `acc:progress:selection:filter:ind`)
+## ruler          []string  (default `acc:progress:selection:filter:ind`)
 
 This option is deprecated in favor of using the `rulerfmt` option (see below).
 List of information shown in status line ruler.
@@ -856,7 +856,7 @@ Currently supported information types are `acc`, `progress`, `selection`, `filte
 Names starting with `lf_` show the value of environment variables exported by lf. This is useful for displaying the current settings (e.g. `lf_selmode` displays the current setting for the `selmode` option).
 User defined options starting with `lf_user_` are also supported, so it is possible to display information set from external sources.
 
-### rulerfmt       string    (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
+## rulerfmt       string    (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
 Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, and `%d` as the amount of free disk space remaining.
@@ -864,82 +864,82 @@ Additional expansions are provided for environment variables exported by lf, in 
 Expansions are also provided for user defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
-### selmode        string    (default `all`)
+## selmode        string    (default `all`)
 
 Selection mode for commands.
 When set to `all` it will use the selected files from all directories.
 When set to `dir` it will only use the selected files in the current directory.
 
-### scrolloff      int       (default 0)
+## scrolloff      int       (default 0)
 
 Minimum number of offset lines shown at all times in the top and the bottom of the screen when scrolling.
 The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines.
 A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
 
-### shell          string    (default `sh` for Unix and `cmd` for Windows)
+## shell          string    (default `sh` for Unix and `cmd` for Windows)
 
 Shell executable to use for shell commands.
 Shell commands are executed as `shell shellopts shellflag command -- arguments`.
 
-### shellflag      string    (default `-c` for Unix and `/c` for Windows)
+## shellflag      string    (default `-c` for Unix and `/c` for Windows)
 
 Command line flag used to pass shell commands.
 
-### shellopts      []string  (default ``)
+## shellopts      []string  (default ``)
 
 List of shell options to pass to the shell executable.
 
-### sixel          bool      (default false)
+## sixel          bool      (default false)
 
 Render sixel images in preview.
 
-### smartcase      bool      (default true)
+## smartcase      bool      (default true)
 
 Override `ignorecase` option when the pattern contains an uppercase character.
 This option has no effect when `ignorecase` is disabled.
 
-### smartdia       bool      (default false)
+## smartdia       bool      (default false)
 
 Override `ignoredia` option when the pattern contains a character with diacritic.
 This option has no effect when `ignoredia` is disabled.
 
-### sortby         string    (default `natural`)
+## sortby         string    (default `natural`)
 
 Sort type for directories.
 Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `atime`, and `ext`.
 
-### statfmt    string        (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
+## statfmt    string        (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
 Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, and `%l` as the link target.
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
-### tabstop        int       (default 8)
+## tabstop        int       (default 8)
 
 Number of space characters to show for horizontal tabulation (U+0009) character.
 
-### tagfmt         string    (default `\033[31m`)
+## tagfmt         string    (default `\033[31m`)
 
 Format string of the tags.
 
 If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
 For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
-### tempmarks      string    (default ``)
+## tempmarks      string    (default ``)
 
 Marks to be considered temporary (e.g. `abc` refers to marks `a`, `b`, and `c`).
 These marks are not synced to other clients and they are not saved in the bookmarks file.
 Note that the special bookmark `` ` `` is always treated as temporary and it does not need to be specified.
 
-### timefmt        string    (default `Mon Jan _2 15:04:05 2006`)
+## timefmt        string    (default `Mon Jan _2 15:04:05 2006`)
 
 Format string of the file modification time shown in the bottom line.
 
-### truncatechar   string    (default `~`)
+## truncatechar   string    (default `~`)
 
 Truncate character shown at the end when the file name does not fit to the pane.
 
-### truncatepct  int       (default 100)
+## truncatepct  int       (default 100)
 
 When a filename is too long to be shown completely, the available space is
 partitioned in two pieces. truncatepct defines a fraction (in percent
@@ -956,132 +956,132 @@ while a value of 0 will only show the end of the filename, e.g.:
 
 - `set truncatepct 0`   -> `~ng-filename-truncated`
 
-### waitmsg        string    (default `Press any key to continue`)
+## waitmsg        string    (default `Press any key to continue`)
 
 String shown after commands of shell-wait type.
 
-### wrapscan       bool      (default true)
+## wrapscan       bool      (default true)
 
 Searching can wrap around the file list.
 
-### wrapscroll     bool      (default false)
+## wrapscroll     bool      (default false)
 
 Scrolling can wrap around the file list.
 
-### user_{option}  string    (default none)
+## user_{option}  string    (default none)
 
 Any option that is prefixed with `user_` is a user defined option and can be set to any string.
 Inside a user defined command the value will be provided in the `lf_user_{option}` environment variable.
 These options are not used by lf and are not persisted.
 
-## Environment Variables
+# Environment Variables
 
 The following variables are exported for shell commands:
 These are referred with a `$` prefix on POSIX shells (e.g. `$f`), between `%` characters on Windows cmd (e.g. `%f%`), and with a `$env:` prefix on Windows powershell (e.g. `$env:f`).
 
-### f
+## f
 
 Current file selection as a full path.
 
-### fs
+## fs
 
 Selected file(s) separated with the value of `filesep` option as full path(s).
 
-### fx
+## fx
 
 Selected file(s) (i.e. `fs`) if there are any selected files, otherwise current file selection (i.e. `f`).
 
-### id
+## id
 
 Id of the running client.
 
-### PWD
+## PWD
 
 Present working directory.
 
-### OLDPWD
+## OLDPWD
 
 Initial working directory.
 
-### LF_LEVEL
+## LF_LEVEL
 
 The value of this variable is set to the current nesting level when you run lf from a shell spawned inside lf.
 You can add the value of this variable to your shell prompt to make it clear that your shell runs inside lf.
 For example, with POSIX shells, you can use `[ -n "$LF_LEVEL" ] && PS1="$PS1""(lf level: $LF_LEVEL) "` in your shell configuration file (e.g. `~/.bashrc`).
 
-### OPENER
+## OPENER
 
 If this variable is set in the environment, use the same value. Otherwise, this is set to `start` in Windows, `open` in MacOS, `xdg-open` in others.
 
-### EDITOR
+## EDITOR
 
 If VISUAL is set in the environment, use its value. Otherwise, use the value of the environment variable EDITOR. If neither variable is set, this is set to `vi` on Unix, `notepad` in Windows.
 
-### PAGER
+## PAGER
 
 If this variable is set in the environment, use the same value. Otherwise, this is set to `less` on Unix, `more` in Windows.
 
-### SHELL
+## SHELL
 
 If this variable is set in the environment, use the same value. Otherwise, this is set to `sh` on Unix, `cmd` in Windows.
 
-### lf
+## lf
 
 Absolute path to the currently running lf binary, if it can be found. Otherwise, this is set to the string `lf`.
 
-### lf_{option}
+## lf_{option}
 
 Value of the {option}.
 
-### lf_user_{option}
+## lf_user_{option}
 
 Value of the user_{option}.
 
-### lf_width, lf_height
+## lf_width, lf_height
 
 Width/Height of the terminal.
 
-### lf_count
+## lf_count
 
 Value of the count associated with the current command.
 
-## Special Commands
+# Special Commands
 
 This section shows information about special shell commands.
 
-### open
+## open
 
 This shell command can be defined to override the default `open` command when the current file is not a directory.
 
-### paste
+## paste
 
 This shell command can be defined to override the default `paste` command.
 
-### rename
+## rename
 
 This shell command can be defined to override the default `rename` command.
 
-### delete
+## delete
 
 This shell command can be defined to override the default `delete` command.
 
-### pre-cd
+## pre-cd
 
 This shell command can be defined to be executed before changing a directory.
 
-### on-cd
+## on-cd
 
 This shell command can be defined to be executed after changing a directory.
 
-### on-select
+## on-select
 
 This shell command can be defined to be executed after the selection changes.
 
-### on-quit
+## on-quit
 
 This shell command can be defined to be executed before quit.
 
-## Prefixes
+# Prefixes
 
 The following command prefixes are used by lf:
 
@@ -1096,7 +1096,7 @@ The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
 
-## Syntax
+# Syntax
 
 Characters from `#` to newline are comments and ignored:
 
@@ -1171,7 +1171,7 @@ If you need multiline you can wrap statements in `{{` and `}}` after the proper 
 	    set info time
 	}}
 
-## Key Mappings
+# Key Mappings
 
 Regular keys are assigned to a command with the usual syntax:
 
@@ -1236,7 +1236,7 @@ Mouse wheel events are also prefixed with `m` character:
 	map <m-left>  down
 	map <m-right> down
 
-## Push Mappings
+# Push Mappings
 
 The usual way to map a key sequence is to assign it to a named or unnamed command.
 While this provides a clean way to remap builtin keys as well as other commands, it can be limiting at times.
@@ -1259,7 +1259,7 @@ One thing to be careful is that since `push` command works with keys instead of 
 
 These types of bindings create a deadlock when executed.
 
-## Shell Commands
+# Shell Commands
 
 Regular shell commands are the most basic command type that is useful for many purposes.
 For example, we can write a shell command to move selected file(s) to trash.
@@ -1303,7 +1303,7 @@ This can be especially useful for interactive use (e.g. `$rm $f` or `$rm $fs` wo
 This option is not set by default as it can behave unexpectedly for new users.
 However, use of this option is highly recommended and it is assumed in the rest of the documentation.
 
-## Piping Shell Commands
+# Piping Shell Commands
 
 Regular shell commands have some limitations in some cases.
 When an output or error message is given and the command exits afterwards, the ui is immediately resumed and there is no way to see the message without dropping to shell again.
@@ -1324,18 +1324,18 @@ For example, an alternative rename command may look like this:
 
 Note that input is line buffered and output and error are byte buffered.
 
-## Waiting Shell Commands
+# Waiting Shell Commands
 
 Waiting shell commands are similar to regular shell commands except that they wait for a key press when the command is finished.
 These can be useful to see the output of a program before the ui is resumed.
 Waiting shell commands are more appropriate than piping shell commands when the command is verbose and the output is best displayed as multiline.
 
-## Asynchronous Shell Commands
+# Asynchronous Shell Commands
 
 Asynchronous shell commands are used to start a command in the background and then resume operation without waiting for the command to finish.
 Stdin, stdout, and stderr of the command is neither connected to the terminal nor to the ui.
 
-## Remote Commands
+# Remote Commands
 
 One of the more advanced features in lf is remote commands.
 All clients connect to a server on startup.
@@ -1414,7 +1414,7 @@ There is also a `quit` command to quit the server when there are no connected cl
 Lastly, there is a `conn` command to connect the server as a client.
 This should not be needed for users.
 
-## File Operations
+# File Operations
 
 lf uses its own builtin copy and move operations by default.
 These are implemented as asynchronous operations and progress is shown in the bottom ruler.
@@ -1455,7 +1455,7 @@ You can customize file deletion by defining a `delete` command.
 You can also assign a key to this command if you like.
 An example command to move selected files to a trash folder and remove files completely after a prompt are provided in the example configuration file.
 
-## Searching Files
+# Searching Files
 
 There are two mechanisms implemented in lf to search a file in the current directory.
 Searching is the traditional method to move the selection to a file matching a given pattern.
@@ -1484,7 +1484,7 @@ This option is already automatically overridden if the pattern contains upper ca
 You can disable `smartcase` option to disable this behavior.
 Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in latin letters.
 
-## Opening Files
+# Opening Files
 
 You can define a an `open` command (default `l` and `<right>`) to configure file opening.
 This command is only called when the current file is not a directory, otherwise the directory is entered instead.
@@ -1526,7 +1526,7 @@ Following command is provided by default:
 You may also use any other existing file openers as you like.
 Possible options are `libfile-mimeinfo-perl` (executable name is `mimeopen`), `rifle` (ranger's default file opener), or `mimeo` to name a few.
 
-## Previewing Files
+# Previewing Files
 
 lf previews files on the preview pane by printing the file until the end or the preview pane is filled.
 This output can be enhanced by providing a custom preview script for filtering.
@@ -1577,7 +1577,7 @@ Your system may already come with a preview filter named `lesspipe`.
 These filters may have a mechanism to add user customizations as well.
 See the related documentations for more information.
 
-## Changing Directory
+# Changing Directory
 
 lf changes the working directory of the process to the current directory so that shell commands always work in the displayed directory.
 After quitting, it returns to the original directory where it is first launched like all shell programs.
@@ -1618,7 +1618,7 @@ Note that all shell commands are possible but `%` and `&` are usually more appro
 
 There is also a `pre-cd` command, that works like `on-cd`, but is run before the directory is actually changed.
 
-## Colors
+# Colors
 
 lf tries to automatically adapt its colors to the environment.
 It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values.
@@ -1741,7 +1741,7 @@ https://github.com/gokcehan/lf/blob/master/etc/colors.example
 You may also see the wiki page for ansi escape codes
 https://en.wikipedia.org/wiki/ANSI_escape_code
 
-## Icons
+# Icons
 
 Icons are configured using `LF_ICONS` environment variable or an icons file.
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
