@@ -1,4 +1,26 @@
-# LF Documentation
+# NAME
+
+lf - terminal file manager
+
+# SYNOPSIS
+
+**lf**
+[**-command** *command*]
+[**-config** *path*]
+[**-cpuprofile** *path*]
+[**-doc**]
+[**-last-dir-path** *path*]
+[**-log path**]
+[**-memprofile** *path*]
+[**-remote** *command*]
+[**-selection-path** *path*]
+[**-server**]
+[**-single**]
+[**-version**]
+[**-help**]
+[*cd-or-select-path*]
+
+# DESCRIPTION
 
 lf is a terminal file manager.
 
@@ -10,7 +32,7 @@ A man page with the same content is also available in the repository at https://
 
 You can run `lf -help` to see descriptions of command line options.
 
-# Quick Reference
+# QUICK REFERENCE
 
 The following commands are provided by lf:
 
@@ -260,7 +282,7 @@ If the `mouse` option is enabled, mouse buttons have the following default effec
 	Scroll wheel
 	    Move up or down. If Ctrl is pressed, scroll up or down.
 
-# Configuration
+# CONFIGURATION
 
 Configuration files should be located at:
 
@@ -322,7 +344,7 @@ You can configure these locations with the following variables given with their 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
 
-# Commands
+# COMMANDS
 
 This section shows information about builtin commands.
 Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
@@ -533,7 +555,7 @@ You can define a new tag clearing command by combining `tag` with `tag-toggle` (
 
 Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
-# Command Line Commands
+# COMMAND LINE COMMANDS
 
 The prompt character specifies which of the several command-line modes you are in.
 For example, the `read` command takes you to the `:` mode.
@@ -623,7 +645,7 @@ Delete the previous word in backward direction.
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
-# Options
+# OPTIONS
 
 This section shows information about options to customize the behavior.
 Character `:` is used as the separator for list options `[]int` and `[]string`.
@@ -974,7 +996,7 @@ Any option that is prefixed with `user_` is a user defined option and can be set
 Inside a user defined command the value will be provided in the `lf_user_{option}` environment variable.
 These options are not used by lf and are not persisted.
 
-# Environment Variables
+# ENVIRONMENT VARIABLES
 
 The following variables are exported for shell commands:
 These are referred with a `$` prefix on POSIX shells (e.g. `$f`), between `%` characters on Windows cmd (e.g. `%f%`), and with a `$env:` prefix on Windows powershell (e.g. `$env:f`).
@@ -1045,7 +1067,7 @@ Width/Height of the terminal.
 
 Value of the count associated with the current command.
 
-# Special Commands
+# SPECIAL COMMANDS
 
 This section shows information about special shell commands.
 
@@ -1081,7 +1103,7 @@ This shell command can be defined to be executed after the selection changes.
 
 This shell command can be defined to be executed before quit.
 
-# Prefixes
+# PREFIXES
 
 The following command prefixes are used by lf:
 
@@ -1096,7 +1118,7 @@ The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
 
-# Syntax
+# SYNTAX
 
 Characters from `#` to newline are comments and ignored:
 
@@ -1171,7 +1193,7 @@ If you need multiline you can wrap statements in `{{` and `}}` after the proper 
 	    set info time
 	}}
 
-# Key Mappings
+# KEY MAPPINGS
 
 Regular keys are assigned to a command with the usual syntax:
 
@@ -1236,7 +1258,7 @@ Mouse wheel events are also prefixed with `m` character:
 	map <m-left>  down
 	map <m-right> down
 
-# Push Mappings
+# PUSH MAPPINGS
 
 The usual way to map a key sequence is to assign it to a named or unnamed command.
 While this provides a clean way to remap builtin keys as well as other commands, it can be limiting at times.
@@ -1259,7 +1281,7 @@ One thing to be careful is that since `push` command works with keys instead of 
 
 These types of bindings create a deadlock when executed.
 
-# Shell Commands
+# SHELL COMMANDS
 
 Regular shell commands are the most basic command type that is useful for many purposes.
 For example, we can write a shell command to move selected file(s) to trash.
@@ -1303,7 +1325,7 @@ This can be especially useful for interactive use (e.g. `$rm $f` or `$rm $fs` wo
 This option is not set by default as it can behave unexpectedly for new users.
 However, use of this option is highly recommended and it is assumed in the rest of the documentation.
 
-# Piping Shell Commands
+# PIPING SHELL COMMANDS
 
 Regular shell commands have some limitations in some cases.
 When an output or error message is given and the command exits afterwards, the ui is immediately resumed and there is no way to see the message without dropping to shell again.
@@ -1324,18 +1346,18 @@ For example, an alternative rename command may look like this:
 
 Note that input is line buffered and output and error are byte buffered.
 
-# Waiting Shell Commands
+# WAITING SHELL COMMANDS
 
 Waiting shell commands are similar to regular shell commands except that they wait for a key press when the command is finished.
 These can be useful to see the output of a program before the ui is resumed.
 Waiting shell commands are more appropriate than piping shell commands when the command is verbose and the output is best displayed as multiline.
 
-# Asynchronous Shell Commands
+# ASYNCHRONOUS SHELL COMMANDS
 
 Asynchronous shell commands are used to start a command in the background and then resume operation without waiting for the command to finish.
 Stdin, stdout, and stderr of the command is neither connected to the terminal nor to the ui.
 
-# Remote Commands
+# REMOTE COMMANDS
 
 One of the more advanced features in lf is remote commands.
 All clients connect to a server on startup.
@@ -1414,7 +1436,7 @@ There is also a `quit` command to quit the server when there are no connected cl
 Lastly, there is a `conn` command to connect the server as a client.
 This should not be needed for users.
 
-# File Operations
+# FILE OPERATIONS
 
 lf uses its own builtin copy and move operations by default.
 These are implemented as asynchronous operations and progress is shown in the bottom ruler.
@@ -1455,7 +1477,7 @@ You can customize file deletion by defining a `delete` command.
 You can also assign a key to this command if you like.
 An example command to move selected files to a trash folder and remove files completely after a prompt are provided in the example configuration file.
 
-# Searching Files
+# SEARCHING FILES
 
 There are two mechanisms implemented in lf to search a file in the current directory.
 Searching is the traditional method to move the selection to a file matching a given pattern.
@@ -1484,7 +1506,7 @@ This option is already automatically overridden if the pattern contains upper ca
 You can disable `smartcase` option to disable this behavior.
 Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in latin letters.
 
-# Opening Files
+# OPENING FILES
 
 You can define a an `open` command (default `l` and `<right>`) to configure file opening.
 This command is only called when the current file is not a directory, otherwise the directory is entered instead.
@@ -1526,7 +1548,7 @@ Following command is provided by default:
 You may also use any other existing file openers as you like.
 Possible options are `libfile-mimeinfo-perl` (executable name is `mimeopen`), `rifle` (ranger's default file opener), or `mimeo` to name a few.
 
-# Previewing Files
+# PREVIEWING FILES
 
 lf previews files on the preview pane by printing the file until the end or the preview pane is filled.
 This output can be enhanced by providing a custom preview script for filtering.
@@ -1577,7 +1599,7 @@ Your system may already come with a preview filter named `lesspipe`.
 These filters may have a mechanism to add user customizations as well.
 See the related documentations for more information.
 
-# Changing Directory
+# CHANGING DIRECTORY
 
 lf changes the working directory of the process to the current directory so that shell commands always work in the displayed directory.
 After quitting, it returns to the original directory where it is first launched like all shell programs.
@@ -1618,7 +1640,7 @@ Note that all shell commands are possible but `%` and `&` are usually more appro
 
 There is also a `pre-cd` command, that works like `on-cd`, but is run before the directory is actually changed.
 
-# Colors
+# COLORS
 
 lf tries to automatically adapt its colors to the environment.
 It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values.
@@ -1741,7 +1763,7 @@ https://github.com/gokcehan/lf/blob/master/etc/colors.example
 You may also see the wiki page for ansi escape codes
 https://en.wikipedia.org/wiki/ANSI_escape_code
 
-# Icons
+# ICONS
 
 Icons are configured using `LF_ICONS` environment variable or an icons file.
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
