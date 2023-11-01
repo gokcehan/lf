@@ -1320,7 +1320,7 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nav.copyTotalChan <- total
 
-	nums, errs := copyAll(srcs, dstDir)
+	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
 	errCount := 0
 loop:
@@ -1415,7 +1415,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 				nav.copyTotalChan <- total
 
-				nums, errs := copyAll([]string{src}, dstDir)
+				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"})
 
 				oldCount := errCount
 			loop:
