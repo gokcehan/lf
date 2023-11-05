@@ -12,6 +12,8 @@ lf - terminal file manager
 [**-last-dir-path** *path*]
 [**-log path**]
 [**-memprofile** *path*]
+[**-print-last-dir**]
+[**-print-selection**]
 [**-remote** *command*]
 [**-selection-path** *path*]
 [**-server**]

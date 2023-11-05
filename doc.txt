@@ -11,9 +11,10 @@ SYNOPSIS
 
 
 LF [-COMMAND _command_] [-CONFIG _path_] [-CPUPROFILE _path_] [-DOC]
-[-LAST-DIR-PATH _path_] [-LOG PATH] [-MEMPROFILE _path_] [-REMOTE
-_command_] [-SELECTION-PATH _path_] [-SERVER] [-SINGLE] [-VERSION]
-[-HELP] [_cd-or-select-path_]
+[-LAST-DIR-PATH _path_] [-LOG PATH] [-MEMPROFILE _path_]
+[-PRINT-LAST-DIR] [-PRINT-SELECTION] [-REMOTE _command_]
+[-SELECTION-PATH _path_] [-SERVER] [-SINGLE] [-VERSION] [-HELP]
+[_cd-or-select-path_]
 
 
 
