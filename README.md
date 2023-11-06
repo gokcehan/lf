@@ -1,7 +1,7 @@
 # LF
 
 [Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
-| [Doc](https://github.com/gokcehan/lf/blob/master/doc.md)
+| [Doc](doc.md)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
 | [#lf](https://web.libera.chat/#lf) (on Libera.Chat)
 | [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
@@ -24,7 +24,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 - Server/client architecture and remote commands to manage multiple instances
 - Extendable and configurable with shell commands
 - Customizable keybindings (vi and readline defaults)
-- A reasonable set of other features (see the [documentation](https://github.com/gokcehan/lf/blob/master/doc.md))
+- A reasonable set of other features (see the [documentation](doc.md))
 
 ## Non-Features
 
@@ -66,7 +66,7 @@ After the installation `lf` command should start the application in the current 
 
 Run `lf -help` to see command line options.
 
-Run `lf -doc` to see the [documentation](https://github.com/gokcehan/lf/blob/master/doc.md).
+Run `lf -doc` to see the [documentation](doc.md).
 
 See [etc](etc) directory to integrate `lf` to your shell and/or editor.
 Example configuration files along with example colors and icons files can also be found in this directory.
