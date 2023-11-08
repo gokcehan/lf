@@ -129,7 +129,7 @@ The following options can be used to customize the behavior of lf:
     dirfirst         bool      (default true)
     dironly          bool      (default false)
     dirpreviews      bool      (default false)
-    drawbox          bool      (default false)
+    drawbox          string    (default "none")
     dupfilefmt       string    (default '%f.~%n~')
     errorfmt         string    (default "\033[7;31;47m")
     filesep          string    (default "\n")
@@ -760,9 +760,12 @@ Show only directories.
 If enabled, directories will also be passed to the previewer script. This allows
 custom previews for directories.
 
-    drawbox        bool      (default false)
+    drawbox        string    (default "none")
 
-Draw boxes around panes with box drawing characters.
+Draw boxes around panes with box drawing characters. "outline" draws a box
+around all panes. "separators" draws vertical lines between all panes. "both"
+or "true" draws both outline and separators. "none" or "false" draws neither
+outline nor separators.
 
     dupfilefmt        string      (default '%f.~%n~')
 

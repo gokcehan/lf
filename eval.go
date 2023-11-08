@@ -192,12 +192,16 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.dirpreviews = !gOpts.dirpreviews
 	case "drawbox":
-		if e.val == "" || e.val == "true" {
-			gOpts.drawbox = true
-		} else if e.val == "false" {
-			gOpts.drawbox = false
+		if e.val == "" || e.val == "true" || e.val == "both" {
+			gOpts.drawbox = "both"
+		} else if e.val == "false" || e.val == "none" {
+			gOpts.drawbox = "none"
+		} else if e.val == "outline" {
+			gOpts.drawbox = "outline"
+		} else if e.val == "separators" {
+			gOpts.drawbox = "separators"
 		} else {
-			app.ui.echoerr("drawbox: value should be empty, 'true', or 'false'")
+			app.ui.echoerr("drawbox: value should be empty, 'true', 'false', 'both', 'none', 'outline', or 'separators'")
 			return
 		}
 		app.ui.renew()
@@ -211,7 +215,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("nodrawbox: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.drawbox = false
+		gOpts.drawbox = "none"
 		app.ui.renew()
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
@@ -223,7 +227,11 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("drawbox!: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.drawbox = !gOpts.drawbox
+		if gOpts.drawbox == "none" {
+			gOpts.drawbox = "both"
+		} else {
+			gOpts.drawbox = "none"
+		}
 		app.ui.renew()
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
