@@ -13,4 +13,4 @@
 # You may put this in one of the profiles found in $PROFILE.
 #
 
-lf -print-last-dir $args | cd
+lf -print-last-dir $args | Set-Location
