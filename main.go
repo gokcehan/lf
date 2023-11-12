@@ -14,6 +14,11 @@ import (
 	"strings"
 )
 
+import _ "embed"
+
+//go:embed doc.txt
+var genDocString string
+
 var (
 	envPath  = os.Getenv("PATH")
 	envLevel = os.Getenv("LF_LEVEL")
