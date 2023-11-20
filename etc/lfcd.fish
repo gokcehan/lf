@@ -13,5 +13,6 @@
 
 function lfcd --wraps="lf" --description="lf - Terminal file manager (changing directory on exit)"
     # `command` is needed in case `lfcd` is aliased to `lf`
-    cd (command lf -print-last-dir $argv)
+    set -l outdir (command lf -print-last-dir $argv)
+    and cd "$outdir"
 end
