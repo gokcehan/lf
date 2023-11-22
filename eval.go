@@ -2750,7 +2750,13 @@ func (e *callExpr) eval(app *app, args []string) {
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
-			app.ui.echoerrf("command not found: %s", e.name)
+			completions, _ := completeCmd([]rune(e.name))
+			if len(completions) == 0 {
+				app.ui.echoerrf("command not found: %s", e.name)
+			} else {
+				e.name = completions[0]
+				e.eval(app, args)
+			}
 			return
 		}
 		cmd.eval(app, e.args)
