@@ -1764,7 +1764,7 @@ You may instead divide it to multiple lines in between double quotes by escaping
 	"
 
 Having such a long variable definition in a shell configuration file might be undesirable.
-You may instead use the colors file for configuration.
+You may instead use the colors file (~/.config/lf/colors) for configuration.
 A sample colors file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/colors.example
 You may also see the wiki page for ansi escape codes
@@ -1772,7 +1772,7 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 
 # ICONS
 
-Icons are configured using `LF_ICONS` environment variable or an icons file.
+Icons are configured using `LF_ICONS` environment variable or an icons file (~/.config/lf/icons).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
 Icons file should consist of whitespace separated pairs with `#` character to start comments until the end of line.
