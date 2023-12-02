@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"runtime/pprof"
 	"strconv"
 	"strings"
@@ -202,6 +203,37 @@ func checkServer() {
 	}
 }
 
+func printVersion() {
+	if gVersion != "" {
+		fmt.Println(gVersion)
+		return
+	}
+
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+
+	var vcsRevision, vcsTime, vcsModified string
+	for _, setting := range buildInfo.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			vcsRevision = setting.Value
+		case "vcs.time":
+			vcsTime = setting.Value
+		case "vcs.modified":
+			if setting.Value == "true" {
+				vcsModified = "modified"
+			}
+		}
+	}
+
+	fmt.Printf("Go version: %s\n", buildInfo.GoVersion)
+	if vcsRevision != "" {
+		fmt.Printf("Commit: %s %s %s\n", vcsRevision, vcsTime, vcsModified)
+	}
+}
+
 func main() {
 	flag.Usage = func() {
 		f := flag.CommandLine.Output()
@@ -304,7 +336,7 @@ func main() {
 	case *showDoc:
 		fmt.Print(genDocString)
 	case *showVersion:
-		fmt.Println(gVersion)
+		printVersion()
 	case *remoteCmd != "":
 		if err := remote(*remoteCmd); err != nil {
 			log.Fatalf("remote command: %s", err)
