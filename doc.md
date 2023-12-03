@@ -26,10 +26,10 @@ lf - terminal file manager
 
 lf is a terminal file manager.
 
-Source code can be found in the repository at https://github.com/gokcehan/lf
+The source code can be found in the repository at https://github.com/gokcehan/lf
 
-This documentation can either be read from terminal using `lf -doc` or online at https://github.com/gokcehan/lf/blob/master/doc.md
-You can also use `doc` command (default `<f-1>`) inside lf to view the documentation in a pager.
+This documentation can either be read from the terminal using `lf -doc` or online at https://github.com/gokcehan/lf/blob/master/doc.md
+You can also use the `doc` command (default `<f-1>`) inside lf to view the documentation in a pager.
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
 You can run `lf -help` to see descriptions of command line options.
@@ -293,34 +293,34 @@ Configuration files should be located at:
 	Unix     /etc/lf/lfrc              ~/.config/lf/lfrc
 	Windows  C:\ProgramData\lf\lfrc    C:\Users\<user>\AppData\Local\lf\lfrc
 
-Colors file should be located at:
+The colors file should be located at:
 
 	OS       system-wide               user-specific
 	Unix     /etc/lf/colors            ~/.config/lf/colors
 	Windows  C:\ProgramData\lf\colors  C:\Users\<user>\AppData\Local\lf\colors
 
-Icons file should be located at:
+The icons file should be located at:
 
 	OS       system-wide               user-specific
 	Unix     /etc/lf/icons             ~/.config/lf/icons
 	Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Local\lf\icons
 
-Selection file should be located at:
+The selection file should be located at:
 
 	Unix     ~/.local/share/lf/files
 	Windows  C:\Users\<user>\AppData\Local\lf\files
 
-Marks file should be located at:
+The marks file should be located at:
 
 	Unix     ~/.local/share/lf/marks
 	Windows  C:\Users\<user>\AppData\Local\lf\marks
 
-Tags file should be located at:
+The tags file should be located at:
 
 	Unix     ~/.local/share/lf/tags
 	Windows  C:\Users\<user>\AppData\Local\lf\tags
 
-History file should be located at:
+The history file should be located at:
 
 	Unix     ~/.local/share/lf/history
 	Windows  C:\Users\<user>\AppData\Local\lf\history
@@ -349,7 +349,7 @@ https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
 
 # COMMANDS
 
-This section shows information about builtin commands.
+This section shows information about built-in commands.
 Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
 
 ## quit (default `q`)
@@ -377,7 +377,7 @@ Change the current working directory to the next/previous jumplist item.
 ## top (default `gg` and `<home>`), bottom (default `G` and `<end>`)
 
 Move the current file selection to the top/bottom of the directory.
-A count can be specified to move to a specific line, for example use `3G` to move to the third line.
+A count can be specified to move to a specific line, for example, use `3G` to move to the third line.
 
 ## high (default `H`), middle (default `M`), low (default `L`)
 
@@ -390,7 +390,7 @@ Toggle the selection of the current file or files given as arguments.
 ## invert (default `v`)
 
 Reverse the selection of all files in the current directory (i.e. `toggle` all files).
-Selections in other directories are not effected by this command.
+Selections in other directories are not affected by this command.
 You can define a new command to select all files in the directory by combining `invert` with `unselect` (i.e. `cmd select-all :unselect; invert`), though this will also remove selections in other directories.
 
 ## invert-below
@@ -399,7 +399,7 @@ Reverse the selection (i.e. `toggle`) of all files at or after the current file 
 
 To select a contiguous block of files, use this command on the first file you want to select.
 Then, move down to the first file you do *not* want to select (the one after the end of the desired selection) and use this command again.
-This achieves an effect similar to the visual mode in vim.
+This achieves an effect similar to the visual mode in Vim.
 
 This command is experimental and may be removed once a better replacement for the visual mode is implemented in `lf`.
 If you'd like to experiment with using this command, you should bind it to a key (e.g. `V`) for a better experience.
@@ -434,7 +434,7 @@ If there are no selections, save the path of the current file to the cut buffer,
 
 ## paste (default `p`)
 
-Copy/Move files in copy/cut buffer to the current working directory.
+Copy/Move files in the copy/cut buffer to the current working directory.
 A custom `paste` command can be defined to override this default.
 
 ## clear (default `c`)
@@ -443,7 +443,7 @@ Clear file paths in copy/cut buffer.
 
 ## sync
 
-Synchronize copied/cut files with server.
+Synchronize copied/cut files with the server.
 This command is automatically called when required.
 
 ## draw
@@ -466,11 +466,11 @@ Flush the cache and reload all files and directories.
 
 ## echo
 
-Print given arguments to the message line at the bottom.
+Print the given arguments to the message line at the bottom.
 
 ## echomsg
 
-Print given arguments to the message line at the bottom and also to the log file.
+Print the given arguments to the message line at the bottom and also to the log file.
 
 ## echoerr
 
@@ -491,7 +491,7 @@ A custom `delete` command can be defined to override this default.
 
 ## rename (modal) (default `r`)
 
-Rename the current file using the builtin method.
+Rename the current file using the built-in method.
 A custom `rename` command can be defined to override this default.
 
 ## source
@@ -534,7 +534,7 @@ Read a pattern to search for a file name match in the forward/backward direction
 
 Command `filter` reads a pattern to filter out and only view files matching the pattern.
 Command `setfilter` does the same but uses an argument to set the filter immediately.
-You can supply an argument to `filter`, in order to use that as the starting prompt.
+You can supply an argument to `filter` to use as the starting prompt.
 
 ## mark-save (modal) (default `m`)
 
@@ -551,8 +551,8 @@ Remove a bookmark assigned to the given key.
 
 ## tag
 
-Tag a file with `*` or a single width character given in the argument.
-You can define a new tag clearing command by combining `tag` with `tag-toggle` (i.e. `cmd tag-clear :tag; tag-toggle`).
+Tag a file with `*` or a single-width character given in the argument.
+You can define a new tag-clearing command by combining `tag` with `tag-toggle` (i.e. `cmd tag-clear :tag; tag-toggle`).
 
 ## tag-toggle (default `t`)
 
@@ -567,7 +567,7 @@ When the cursor is at the first character in `:` mode, pressing one of the keys 
 You can go back with `cmd-delete-back` (`<backspace>` by default).
 
 The command line commands should be mostly compatible with readline keybindings.
-A character refers to a unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+A character refers to a Unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
 
 ## cmd-escape (default `<esc>`)
 
@@ -579,9 +579,9 @@ Autocomplete the current word.
 
 ## cmd-menu-complete, cmd-menu-complete-back
 
-Autocomplete the current word with menu selection.
+Autocomplete the current word with the menu selection.
 You need to assign keys to these commands (e.g. `cmap <tab> cmd-menu-complete; cmap <backtab> cmd-menu-complete-back`).
-You can use the assigned keys assigned to display the menu and then cycle through completion options.
+You can use the assigned keys to display the menu and then cycle through completion options.
 
 ## cmd-menu-accept
 
@@ -597,7 +597,7 @@ Interrupt the current shell-pipe command and return to the normal mode.
 
 ## cmd-history-next (default `<c-n>` and `<down>`), cmd-history-prev (default `<c-p>` and `<up>`)
 
-Go to next/previous item in the history.
+Go to the next/previous item in the history.
 
 ## cmd-left (default `<c-b>` and `<left>`), cmd-right (default `<c-f>` and `<right>`)
 
@@ -605,7 +605,7 @@ Move the cursor to the left/right.
 
 ## cmd-home (default `<c-a>` and `<home>`), cmd-end (default `<c-e>` and `<end>`)
 
-Move the cursor to the beginning/end of line.
+Move the cursor to the beginning/end of the line.
 
 ## cmd-delete (default `<c-d>` and `<delete>`)
 
@@ -618,7 +618,7 @@ When at the beginning of a prompt, returns either to normal mode or to `:` mode.
 
 ## cmd-delete-home (default `<c-u>`), cmd-delete-end (default `<c-k>`)
 
-Delete everything up to the beginning/end of line.
+Delete everything up to the beginning/end of the line.
 
 ## cmd-delete-unix-word (default `<c-w>`)
 
@@ -630,19 +630,19 @@ Paste the buffer content containing the last deleted item.
 
 ## cmd-transpose (default `<c-t>`), cmd-transpose-word (default `<a-t>`)
 
-Transpose the positions of last two characters/words.
+Transpose the positions of the last two characters/words.
 
 ## cmd-word (default `<a-f>`), cmd-word-back (default `<a-b>`)
 
-Move the cursor by one word in forward/backward direction.
+Move the cursor by one word in the forward/backward direction.
 
 ## cmd-delete-word (default `<a-d>`)
 
-Delete the next word in forward direction.
+Delete the next word in the forward direction.
 
 ## cmd-delete-word-back (default `<a-backspace>` and `<a-backspace2>`)
 
-Delete the previous word in backward direction.
+Delete the previous word in the backward direction.
 
 ## cmd-capitalize-word (default `<a-c>`), cmd-uppercase-word (default `<a-u>`), cmd-lowercase-word (default `<a-l>`)
 
@@ -655,11 +655,11 @@ Character `:` is used as the separator for list options `[]int` and `[]string`.
 
 ## anchorfind (bool) (default true)
 
-When this option is enabled, find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
+When this option is enabled, the find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
 
 ## autoquit (bool) (default false)
 
-Automatically quit server when there are no clients left connected.
+Automatically quit the server when there are no clients left connected.
 
 ## borderfmt (string) (default `\033[0m`)
 
@@ -669,7 +669,7 @@ Format string of the box drawing characters enabled by the `drawbox` option.
 
 Set the path of a cleaner file.
 The file should be executable.
-This file is called if previewing is enabled, the previewer is set, and the previously selected file had its preview cache disabled.
+This file is called if previewing is enabled, the previewer is set, and the previously selected file has its preview cache disabled.
 The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
@@ -718,7 +718,7 @@ Draw boxes around panes with box drawing characters.
 ## dupfilefmt (string) (default `%f.~%n~`)
 
 Format string of file name when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
-Special expansions are provided, `%f` as the file name, `%b` for basename (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
+Special expansions are provided, `%f` as the file name, `%b` for the basename (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
 
 ## errorfmt (string) (default `\033[7;31;47m`)
 
@@ -738,7 +738,7 @@ When this value is set to 0, find command prompts until there is only a single m
 
 ## globsearch (bool) (default false)
 
-When this option is enabled, search command patterns are considered as globs, otherwise they are literals.
+When this option is enabled, search command patterns are considered as globs, otherwise, they are literals.
 With globbing, `*` matches any sequence, `?` matches any character, and `[...]` or `[^...]` matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
 
@@ -768,7 +768,7 @@ Show icons before each item in the list.
 Sets `IFS` variable in shell commands.
 It works by adding the assignment to the beginning of the command string as `IFS=...; ...`.
 The reason is that `IFS` variable is not inherited by the shell for security reasons.
-This method assumes a POSIX shell syntax and so it can fail for non-POSIX shells.
+This method assumes a POSIX shell syntax so it can fail for non-POSIX shells.
 This option has no effect when the value is left empty.
 This option does not have any effect on Windows.
 
@@ -790,7 +790,7 @@ Apply filter pattern after each keystroke during filtering.
 
 ## info ([]string)  (default ``)
 
-List of information shown for directory items at the right side of pane.
+A list of information that is shown for directory items at the right side of the pane.
 Currently supported information types are `size`, `time`, `atime`, and `ctime`.
 Information is only shown when the pane width is more than twice the width of information.
 
@@ -808,8 +808,8 @@ Send mouse events as input.
 
 ## number (bool) (default false)
 
-Show the position number for directory items at the left side of pane.
-When `relativenumber` option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
+Show the position number for directory items on the left side of the pane.
+When the `relativenumber` option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
 
 ## numberfmt (string) (default `\033[33m`)
 
@@ -827,12 +827,12 @@ Periodic checks are disabled when the value of this option is set to zero.
 
 List of attributes that are preserved when copying files.
 Currently supported attributes are `mode` (i.a. access mode) and `timestamps` (i.e. modification time and access time).
-Note, preserving other attribute like ownership of change/birth timestamp is desirable, but not portably supported in Go.
+Note that preserving other attributes like ownership of change/birth timestamp is desirable, but not portably supported in Go.
 
 ## preview (bool) (default true)
 
-Show previews of files and directories at the right most pane.
-If the file has more lines than the preview pane, rest of the lines are not read.
+Show previews of files and directories at the rightmost pane.
+If the file has more lines than the preview pane, the rest of the lines are not read.
 Files containing the null character (U+0000) in the read portion are considered binary files and displayed as `binary`.
 
 ## previewer (string) (default ``) (not filtered if empty)
@@ -848,20 +848,20 @@ Preview filtering is disabled and files are displayed as they are when the value
 ## promptfmt (string) (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
 Format string of the prompt shown in the top line.
-Special expansions are provided, `%u` as the user name, `%h` as the host name, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right aligned on the screen.
-Home folder is shown as `~` in the working directory expansion.
-Directory names are automatically shortened to a single character starting from the left most parent when the prompt does not fit to the screen.
+Special expansions are provided, `%u` as the user name, `%h` as the hostname, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right aligned on the screen.
+The home folder is shown as `~` in the working directory expansion.
+Directory names are automatically shortened to a single character starting from the leftmost parent when the prompt does not fit the screen.
 
 ## ratios ([]int) (default `1:2:3`)
 
 List of ratios of pane widths.
-Number of items in the list determines the number of panes in the ui.
-When `preview` option is enabled, the right most number is used for the width of preview pane.
+Number of items in the list determines the number of panes in the UI.
+When the `preview` option is enabled, the rightmost number is used for the width of the preview pane.
 
 ## relativenumber (bool) (default false)
 
 Show the position number relative to the current line.
-When `number` is enabled, current line shows the absolute position, otherwise nothing is shown.
+When `number` is enabled, the current line shows the absolute position, otherwise nothing is shown.
 
 ## reverse (bool) (default false)
 
@@ -879,14 +879,14 @@ Currently supported information types are `acc`, `progress`, `selection`, `filte
 `ind` shows the current position of the cursor as well as the number of files in the current directory.
 `df` shows the amount of free disk space remaining.
 Names starting with `lf_` show the value of environment variables exported by lf. This is useful for displaying the current settings (e.g. `lf_selmode` displays the current setting for the `selmode` option).
-User defined options starting with `lf_user_` are also supported, so it is possible to display information set from external sources.
+User-defined options starting with `lf_user_` are also supported, so it is possible to display information set from external sources.
 
 ## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
 Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, and `%d` as the amount of free disk space remaining.
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
-Expansions are also provided for user defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
+Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
 ## selmode (string) (default `all`)
@@ -897,7 +897,7 @@ When set to `dir` it will only use the selected files in the current directory.
 
 ## scrolloff (int) (default 0)
 
-Minimum number of offset lines shown at all times in the top and the bottom of the screen when scrolling.
+Minimum number of offset lines shown at all times at the top and bottom of the screen when scrolling.
 The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines.
 A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
 
@@ -962,12 +962,12 @@ Format string of the file modification time shown in the bottom line.
 
 ## truncatechar (string) (default `~`)
 
-Truncate character shown at the end when the file name does not fit to the pane.
+The truncate character that is shown at the end when the file name does not fit into the pane.
 
 ## truncatepct (int) (default 100)
 
 When a filename is too long to be shown completely, the available space is
-partitioned in two pieces. truncatepct defines a fraction (in percent
+partitioned into two pieces. truncatepct defines a fraction (in percent
 between 0 and 100) for the size of the first piece, which will show the
 beginning of the filename. The second piece will show the end of the filename
 and will use the rest of the available space. Both pieces are separated by the
@@ -995,14 +995,14 @@ Scrolling can wrap around the file list.
 
 ## user_{option} (string) (default none)
 
-Any option that is prefixed with `user_` is a user defined option and can be set to any string.
-Inside a user defined command the value will be provided in the `lf_user_{option}` environment variable.
+Any option that is prefixed with `user_` is a user-defined option and can be set to any string.
+Inside a user-defined command, the value will be provided in the `lf_user_{option}` environment variable.
 These options are not used by lf and are not persisted.
 
 # ENVIRONMENT VARIABLES
 
 The following variables are exported for shell commands:
-These are referred with a `$` prefix on POSIX shells (e.g. `$f`), between `%` characters on Windows cmd (e.g. `%f%`), and with a `$env:` prefix on Windows powershell (e.g. `$env:f`).
+These are referred to with a `$` prefix on POSIX shells (e.g. `$f`), between `%` characters on Windows cmd (e.g. `%f%`), and with a `$env:` prefix on Windows PowerShell (e.g. `$env:f`).
 
 ## f
 
@@ -1108,7 +1108,7 @@ This shell command can be defined to be executed after the screen is redrawn or 
 
 ## on-quit
 
-This shell command can be defined to be executed before quit.
+This shell command can be defined to be executed before quitting.
 
 # PREFIXES
 
@@ -1116,11 +1116,11 @@ The following command prefixes are used by lf:
 
 	:  read (default)  builtin/custom command
 	$  shell           shell command
-	%  shell-pipe      shell command running with the ui
-	!  shell-wait      shell command waiting for key press
+	%  shell-pipe      shell command running with the UI
+	!  shell-wait      shell command waiting for a key press
 	&  shell-async     shell command running asynchronously
 
-The same evaluator is used for the command line and the configuration file for read and shell commands.
+The same evaluator is used for the command line and the configuration file for reading shell commands.
 The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
@@ -1133,7 +1133,7 @@ Characters from `#` to newline are comments and ignored:
 
 There are five special commands (`set`, `setlocal`, `map`, `cmap`, and `cmd`) for configuration.
 
-Command `set` is used to set an option which can be boolean, integer, or string:
+Command `set` is used to set an option which can be a boolean, integer, or string:
 
 	set hidden         # boolean enable
 	set hidden true    # boolean enable
@@ -1145,7 +1145,7 @@ Command `set` is used to set an option which can be boolean, integer, or string:
 	set sortby 'time'  # string value with single quotes (whitespaces)
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
-Command `setlocal` is used to set a local option for a directory which can be boolean or string.
+Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
 Currently supported local options are `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, and `sortby`.
 Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets the option for the given directory along with its subdirectories:
 
@@ -1160,7 +1160,7 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command 'map' is used to bind a key to a command which can be builtin command, custom command, or shell command:
+Command 'map' is used to bind a key to a command which can be a builtin command, custom command, or shell command:
 
 	map gh cd ~        # builtin command
 	map D trash        # custom command
@@ -1223,7 +1223,7 @@ Function keys are prefixed with `f` character:
 
 	map <f-1> down
 
-Keys combined with the control key are prefixed with `c` character:
+Keys combined with the control key are prefixed with a `c` character:
 
 	map <c-a> down
 
@@ -1235,7 +1235,7 @@ On these terminals, you can use the corresponding byte for the mapping:
 
 Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key when the alt key is pressed.
 lf uses the escape delaying mechanism to recognize alt keys in these terminals (delay is 100ms).
-On these terminals, keys combined with the alt key are prefixed with `a` character:
+On these terminals, keys combined with the alt key are prefixed with an `a` character:
 
 	map <a-a> down
 
@@ -1247,7 +1247,7 @@ WARNING: Some key combinations will likely be intercepted by your OS, window man
 Other key combinations cannot be recognized by lf due to the way terminals work (e.g. `Ctrl+h` combination sends a backspace key instead).
 The easiest way to find out the name of a key combination and whether it will work on your system is to press the key while lf is running and read the name from the `unknown mapping` error.
 
-Mouse buttons are prefixed with `m` character:
+Mouse buttons are prefixed with an `m` character:
 
 	map <m-1> down  # primary
 	map <m-2> down  # secondary
@@ -1258,7 +1258,7 @@ Mouse buttons are prefixed with `m` character:
 	map <m-7> down
 	map <m-8> down
 
-Mouse wheel events are also prefixed with `m` character:
+Mouse wheel events are also prefixed with an `m` character:
 
 	map <m-up>    down
 	map <m-down>  down
@@ -1268,8 +1268,8 @@ Mouse wheel events are also prefixed with `m` character:
 # PUSH MAPPINGS
 
 The usual way to map a key sequence is to assign it to a named or unnamed command.
-While this provides a clean way to remap builtin keys as well as other commands, it can be limiting at times.
-For this reason `push` command is provided by lf.
+While this provides a clean way to remap built-in keys as well as other commands, it can be limiting at times.
+For this reason, the `push` command is provided by lf.
 This command is used to simulate key pushes given as its arguments.
 You can `map` a key to a `push` command with an argument to create various keybindings.
 
@@ -1282,7 +1282,7 @@ Second, it can be used to avoid typing the name when a command takes arguments:
 
 	map r push :rename<space>
 
-One thing to be careful is that since `push` command works with keys instead of commands it is possible to accidentally create recursive bindings:
+One thing to be careful of is that since the `push` command works with keys instead of commands it is possible to accidentally create recursive bindings:
 
 	map j push 2j
 
@@ -1291,7 +1291,7 @@ These types of bindings create a deadlock when executed.
 # SHELL COMMANDS
 
 Regular shell commands are the most basic command type that is useful for many purposes.
-For example, we can write a shell command to move selected file(s) to trash.
+For example, we can write a shell command to move the selected file(s) to trash.
 A first attempt to write such a command may look like this:
 
 	cmd trash ${{
@@ -1304,7 +1304,7 @@ A first attempt to write such a command may look like this:
 	}}
 
 We check `$fs` to see if there are any selected files.
-Otherwise we just delete the current file.
+Otherwise, we just delete the current file.
 Since this is such a common pattern, a separate `$fx` variable is provided.
 We can use this variable to get rid of the conditional:
 
@@ -1320,14 +1320,14 @@ We can move it outside of the command so it would only run once at startup:
 
 	cmd trash ${{ IFS="$(printf '\n\t')"; mv $fx ~/.trash }}
 
-Since these are one liners, we can drop `{{` and `}}`:
+Since these are one-liners, we can drop `{{` and `}}`:
 
 	$mkdir -p ~/.trash
 
 	cmd trash $IFS="$(printf '\n\t')"; mv $fx ~/.trash
 
-Finally note that we set `IFS` variable manually in these commands.
-Instead we could use the `ifs` option to set it for all shell commands (i.e. `set ifs "\n"`).
+Finally, note that we set the `IFS` variable manually in these commands.
+Instead, we could use the `ifs` option to set it for all shell commands (i.e. `set ifs "\n"`).
 This can be especially useful for interactive use (e.g. `$rm $f` or `$rm $fs` would simply work).
 This option is not set by default as it can behave unexpectedly for new users.
 However, use of this option is highly recommended and it is assumed in the rest of the documentation.
@@ -1336,10 +1336,10 @@ However, use of this option is highly recommended and it is assumed in the rest 
 
 Regular shell commands have some limitations in some cases.
 When an output or error message is given and the command exits afterwards, the ui is immediately resumed and there is no way to see the message without dropping to shell again.
-Also, even when there is no output or error, the ui still needs to be paused while the command is running.
+Also, even when there is no output or error, the UI still needs to be paused while the command is running.
 This can cause flickering on the screen for short commands and similar distractions for longer commands.
 
-Instead of pausing the ui, piping shell commands connects stdin, stdout, and stderr of the command to the statline in the bottom of the ui.
+Instead of pausing the UI, piping shell commands connect stdin, stdout, and stderr of the command to the statline at the bottom of the UI.
 This can be useful for programs following the Unix philosophy to give no output in the success case, and brief error messages or prompts in other cases.
 
 For example, following rename command prompts for overwrite in the statline if there is an existing file with the given name:
@@ -1356,13 +1356,13 @@ Note that input is line buffered and output and error are byte buffered.
 # WAITING SHELL COMMANDS
 
 Waiting shell commands are similar to regular shell commands except that they wait for a key press when the command is finished.
-These can be useful to see the output of a program before the ui is resumed.
+These can be useful to see the output of a program before the UI is resumed.
 Waiting shell commands are more appropriate than piping shell commands when the command is verbose and the output is best displayed as multiline.
 
 # ASYNCHRONOUS SHELL COMMANDS
 
 Asynchronous shell commands are used to start a command in the background and then resume operation without waiting for the command to finish.
-Stdin, stdout, and stderr of the command is neither connected to the terminal nor to the ui.
+Stdin, stdout, and stderr of the command are neither connected to the terminal nor the UI.
 
 # REMOTE COMMANDS
 
@@ -1384,20 +1384,20 @@ This is the recommended way of using remote commands since it is shorter and imm
 	lf -remote 'send echo hello world'
 
 In this command `send` is used to send the rest of the string as a command to all connected clients.
-You can optionally give it an id number to send a command to a single client:
+You can optionally give it an ID number to send a command to a single client:
 
 	lf -remote 'send 1234 echo hello world'
 
 All clients have a unique id number but you may not be aware of the id number when you are writing a command.
 For this purpose, an `$id` variable is exported to the environment for shell commands.
-The value of this variable is set to the process id of the client.
+The value of this variable is set to the process ID of the client.
 You can use it to send a remote command from a client to the server which in return sends a command back to itself.
 So now you can display a message in the current client by calling the following in a shell command:
 
 	lf -remote "send $id echo hello world"
 
 Since lf does not have control flow syntax, remote commands are used for such needs.
-For example, you can configure the number of columns in the ui with respect to the terminal width as follows:
+For example, you can configure the number of columns in the UI with respect to the terminal width as follows:
 
 	cmd recol %{{
 	    if [ $lf_width -le 80 ]; then
@@ -1440,28 +1440,28 @@ There is also a `quit` command to quit the server when there are no connected cl
 	lf -remote 'quit'
 	lf -remote 'quit!'
 
-Lastly, there is a `conn` command to connect the server as a client.
+Lastly, there is a `conn` command to connect the server to a client.
 This should not be needed for users.
 
 # FILE OPERATIONS
 
-lf uses its own builtin copy and move operations by default.
+lf uses its own built-in copy and move operations by default.
 These are implemented as asynchronous operations and progress is shown in the bottom ruler.
 These commands do not overwrite existing files or directories with the same name.
-Instead, a suffix that is compatible with `--backup=numbered` option in GNU cp is added to the new files or directories.
+Instead, a suffix that is compatible with the `--backup=numbered` option in GNU cp is added to the new files or directories.
 Only file modes and (some) timestamps can be preserved (see `preserve` option), all other attributes are ignored including ownership, context, and xattr.
 Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed.
 Moving is performed using the rename operation of the underlying OS.
 For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors.
 Operation errors are shown in the message line as well as the log file and they do not preemptively finish the corresponding file operation.
 
-File operations can be performed on the current selected file or alternatively on multiple files by selecting them first.
+File operations can be performed on the currently selected file or on multiple files by selecting them first.
 When you `copy` a file, lf doesn't actually copy the file on the disk, but only records its name to a file.
 The actual file copying takes place when you `paste`.
 Similarly `paste` after a `cut` operation moves the file.
 
 You can customize copy and move operations by defining a `paste` command.
-This is a special command that is called when it is defined instead of the builtin implementation.
+This is a special command that is called when it is defined instead of the built-in implementation.
 You can use the following example as a starting point:
 
 	cmd paste %{{
@@ -1482,7 +1482,7 @@ Some useful things to be considered are to use the backup (`--backup`) and/or pr
 By default, lf does not assign `delete` command to a key to protect new users.
 You can customize file deletion by defining a `delete` command.
 You can also assign a key to this command if you like.
-An example command to move selected files to a trash folder and remove files completely after a prompt are provided in the example configuration file.
+An example command to move selected files to a trash folder and remove files completely after a prompt is provided in the example configuration file.
 
 # SEARCHING FILES
 
@@ -1490,7 +1490,7 @@ There are two mechanisms implemented in lf to search a file in the current direc
 Searching is the traditional method to move the selection to a file matching a given pattern.
 Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 
-Searching mechanism is implemented with commands `search` (default `/`), `search-back` (default `?`), `search-next` (default `n`), and `search-prev` (default `N`).
+The searching mechanism is implemented with commands `search` (default `/`), `search-back` (default `?`), `search-next` (default `n`), and `search-prev` (default `N`).
 You can enable `globsearch` option to match with a glob pattern.
 Globbing supports `*` to match any sequence, `?` to match any character, and `[...]` or `[^...]` to match character sets or ranges.
 You can enable `incsearch` option to jump to the current match at each keystroke while typing.
@@ -1500,23 +1500,23 @@ For example, you can use the right arrow key to finish the search and open the s
 
 	cmap <right> :cmd-enter; open
 
-Finding mechanism is implemented with commands `find` (default `f`), `find-back` (default `F`), `find-next` (default `;`), `find-prev` (default `,`).
+The finding mechanism is implemented with commands `find` (default `f`), `find-back` (default `F`), `find-next` (default `;`), `find-prev` (default `,`).
 You can disable `anchorfind` option to match a pattern at an arbitrary position in the filename instead of the beginning.
 You can set the number of keys to match using `findlen` option.
-If you set this value to zero, then the the keys are read until there is only a single match.
-Default values of these two options are set to jump to the first file with the given initial.
+If you set this value to zero, then the keys are read until there is only a single match.
+The default values of these two options are set to jump to the first file with the given initial.
 
 Some options effect both searching and finding.
-You can disable `wrapscan` option to prevent searches to wrap around at the end of the file list.
+You can disable `wrapscan` option to prevent searches from being wrapped around at the end of the file list.
 You can disable `ignorecase` option to match cases in the pattern and the filename.
-This option is already automatically overridden if the pattern contains upper case characters.
+This option is already automatically overridden if the pattern contains upper-case characters.
 You can disable `smartcase` option to disable this behavior.
-Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in latin letters.
+Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in Latin letters.
 
 # OPENING FILES
 
-You can define a an `open` command (default `l` and `<right>`) to configure file opening.
-This command is only called when the current file is not a directory, otherwise the directory is entered instead.
+You can define an `open` command (default `l` and `<right>`) to configure file opening.
+This command is only called when the current file is not a directory, otherwise, the directory is entered instead.
 You can define it just as you would define any other command:
 
 	cmd open $vi $fx
@@ -1536,8 +1536,8 @@ You may want to use either file extensions or mime types from `file` command:
 
 You may want to use `setsid` before your opener command to have persistent processes that continue to run after lf quits.
 
-Regular shell commands (i.e. `$`) drop to terminal which results in a flicker for commands that finishes immediately (e.g. `xdg-open` in the above example).
-If you want to use asynchronous shell commands (i.e. `&`) but also want to use the terminal when necessary (e.g. `vi` in the above exxample), you can use a remote command:
+Regular shell commands (i.e. `$`) drop to the terminal which results in a flicker for commands that finish immediately (e.g. `xdg-open` in the above example).
+If you want to use asynchronous shell commands (i.e. `&`) but also want to use the terminal when necessary (e.g. `vi` in the above example), you can use a remote command:
 
 	cmd open &{{
 	    case $(file --mime-type -Lb $f) in
@@ -1546,9 +1546,9 @@ If you want to use asynchronous shell commands (i.e. `&`) but also want to use t
 	    esac
 	}}
 
-Note, asynchronous shell commands run in their own process group by default so they do not require the manual use of `setsid`.
+Note that asynchronous shell commands run in their own process group by default so they do not require the manual use of `setsid`.
 
-Following command is provided by default:
+The following command is provided by default:
 
 	cmd open &$OPENER $f
 
@@ -1557,14 +1557,14 @@ Possible options are `libfile-mimeinfo-perl` (executable name is `mimeopen`), `r
 
 # PREVIEWING FILES
 
-lf previews files on the preview pane by printing the file until the end or the preview pane is filled.
+lf previews files on the preview pane by printing the file until the end or until the preview pane is filled.
 This output can be enhanced by providing a custom preview script for filtering.
-This can be used to highlight source codes, list contents of archive files or view pdf or image files to name a few.
-For coloring lf recognizes ansi escape codes.
+This can be used to highlight source codes, list contents of archive files or view PDF or image files to name a few.
+For coloring lf recognizes ANSI escape codes.
 
-In order to use this feature you need to set the value of `previewer` option to the path of an executable file.
+To use this feature, you need to set the value of `previewer` option to the path of an executable file.
 Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
-Output of the execution is printed in the preview pane.
+The output of the execution is printed in the preview pane.
 You may also want to use the same script in your pager mapping as well:
 
 	set previewer ~/.config/lf/pv.sh
@@ -1592,7 +1592,7 @@ Extensions can then be used to match cleanly within a conditional:
 
 Another important consideration for efficiency is the use of programs with short startup times for preview.
 For this reason, `highlight` is recommended over `pygmentize` for syntax highlighting.
-Besides, it is also important that the application is processing the file on the fly rather than first reading it to the memory and then do the processing afterwards.
+Besides, it is also important that the application processes the file on the fly rather than first reading it to the memory and then doing the processing afterwards.
 This is especially relevant for big files.
 lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read.
 When everything else fails, you can make use of the height argument to only feed the first portion of the file to a program for preview.
@@ -1604,7 +1604,7 @@ You may add a trailing `|| true` command to avoid such errors:
 You may also use an existing preview filter as you like.
 Your system may already come with a preview filter named `lesspipe`.
 These filters may have a mechanism to add user customizations as well.
-See the related documentations for more information.
+See the related documentation for more information.
 
 # CHANGING DIRECTORY
 
@@ -1631,13 +1631,13 @@ You can define it just as you would define any other command:
 	}}
 
 If you want to print escape sequences, you may redirect `printf` output to `/dev/tty`.
-The following xterm specific escape sequence sets the terminal title to the working directory:
+The following xterm-specific escape sequence sets the terminal title to the working directory:
 
 	cmd on-cd &{{
 	    printf "\033]0; $PWD\007" > /dev/tty
 	}}
 
-This command runs whenever you change directory but not on startup.
+This command runs whenever you change the directory but not on startup.
 You can add an extra call to make it run on startup as well:
 
 	cmd on-cd &{{ ... }}
@@ -1650,7 +1650,7 @@ There is also a `pre-cd` command, that works like `on-cd`, but is run before the
 # COLORS
 
 lf tries to automatically adapt its colors to the environment.
-It starts with a default colorscheme and updates colors using values of existing environment variables possibly by overwriting its previous values.
+It starts with a default color scheme and updates colors using values of existing environment variables possibly by overwriting its previous values.
 Colors are set in the following order:
 
  1. default
@@ -1662,20 +1662,20 @@ Colors are set in the following order:
 Please refer to the corresponding man pages for more information about `LSCOLORS` and `LS_COLORS`.
 `LF_COLORS` is provided with the same syntax as `LS_COLORS` in case you want to configure colors only for lf but not ls.
 This can be useful since there are some differences between ls and lf, though one should expect the same behavior for common cases.
-Colors file is provided for easier configuration without environment variables.
-This file should consist of whitespace separated pairs with `#` character to start comments until the end of line.
+The colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) is provided for easier configuration without environment variables.
+This file should consist of whitespace-separated pairs with a `#` character to start comments until the end of the line.
 
 You can configure lf colors in two different ways.
 First, you can only configure 8 basic colors used by your terminal and lf should pick up those colors automatically.
 Depending on your terminal, you should be able to select your colors from a 24-bit palette.
 This is the recommended approach as colors used by other programs will also match each other.
 
-Second, you can set the values of environment variables or colors file mentioned above for fine grained customization.
+Second, you can set the values of environment variables or colors file mentioned above for fine-grained customization.
 Note that `LS_COLORS/LF_COLORS` are more powerful than `LSCOLORS` and they can be used even when GNU programs are not installed on the system.
-You can combine this second method with the first method for best results.
+You can combine this second method with the first method for the best results.
 
 Lastly, you may also want to configure the colors of the prompt line to match the rest of the colors.
-Colors of the prompt line can be configured using the `promptfmt` option which can include hardcoded colors as ansi escapes.
+Colors of the prompt line can be configured using the `promptfmt` option which can include hardcoded colors as ANSI escapes.
 See the default value of this option to have an idea about how to color this line.
 
 It is worth noting that lf uses as many colors advertised by your terminal's entry in terminfo or infocmp databases on your system.
@@ -1737,14 +1737,14 @@ Given a regular directory `/path/to/example.d`, the following entries are checke
  7. `*.d`
  8. `fi`
 
-Note that glob-like patterns do not actually perform glob matching due to performance reasons.
+Note that glob-like patterns do not perform glob matching for performance reasons.
 
 For example, you can set a variable as follows:
 
 	export LF_COLORS="~/Documents=01;31:~/Downloads=01;31:~/.local/share=01;31:~/.config/lf/lfrc=31:.git/=01;32:.git*=32:*.gitignore=32:*Makefile=32:README.*=33:*.txt=34:*.md=34:ln=01;36:di=01;34:ex=01;32:"
 
 Having all entries on a single line can make it hard to read.
-You may instead divide it to multiple lines in between double quotes by escaping newlines with backslashes as follows:
+You may instead divide it into multiple lines in between double quotes by escaping newlines with backslashes as follows:
 
 	export LF_COLORS="\
 	~/Documents=01;31:\
@@ -1764,19 +1764,19 @@ You may instead divide it to multiple lines in between double quotes by escaping
 	"
 
 Having such a long variable definition in a shell configuration file might be undesirable.
-You may instead use the colors file (~/.config/lf/colors) for configuration.
+You may instead use the colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) for configuration.
 A sample colors file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/colors.example
-You may also see the wiki page for ansi escape codes
+You may also see the wiki page for ANSI escape codes
 https://en.wikipedia.org/wiki/ANSI_escape_code
 
 # ICONS
 
-Icons are configured using `LF_ICONS` environment variable or an icons file (~/.config/lf/icons).
+Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
-Icons file should consist of whitespace separated pairs with `#` character to start comments until the end of line.
-Do not forget to enable `icons` option to see the icons.
+The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated pairs with a `#` character to start comments until the end of the line.
+Do not forget to add `set icons true` to your `lfrc` to see the icons.
 Default values are as follows given with their matching order in lf:
 
 	ln  l
