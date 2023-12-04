@@ -12,7 +12,7 @@
 # You may put this in a function called fish_user_key_bindings.
 
 function lfcd --wraps="lf" --description="lf - Terminal file manager (changing directory on exit)"
-    # `command` is needed in case `lfcd` is aliased to `lf`
-    set -l outdir (command lf -print-last-dir $argv)
-    and cd "$outdir"
+    # `command` is needed in case `lfcd` is aliased to `lf`,
+    # and quotes will cause `cd` to fail if `lf` prints nothing to stdout due to an error
+    cd "$(command lf -print-last-dir $argv)"
 end
