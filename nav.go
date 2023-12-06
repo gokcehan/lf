@@ -1391,7 +1391,10 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			continue
 		} else if !os.IsNotExist(err) {
 			ext := filepath.Ext(file)
-			basename := filepath.Base(file[:len(file)-len(ext)])
+			basename := ""
+			if len(file) > len(ext) {
+				basename = filepath.Base(file[:len(file)-len(ext)])
+			}
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
 				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
