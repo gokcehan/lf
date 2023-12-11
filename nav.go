@@ -197,11 +197,11 @@ func newDir(path string) *dir {
 }
 
 func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
-	if gOpts.ignorecase {
+	if ignorecase {
 		s1 = strings.ToLower(s1)
 		s2 = strings.ToLower(s2)
 	}
-	if gOpts.ignoredia {
+	if ignoredia {
 		s1 = removeDiacritics(s1)
 		s2 = removeDiacritics(s2)
 	}
