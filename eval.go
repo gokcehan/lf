@@ -5,6 +5,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -789,25 +790,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
-		switch e.val {
-		case "natural":
-			gOpts.sortType.method = naturalSort
-		case "name":
-			gOpts.sortType.method = nameSort
-		case "size":
-			gOpts.sortType.method = sizeSort
-		case "time":
-			gOpts.sortType.method = timeSort
-		case "ctime":
-			gOpts.sortType.method = ctimeSort
-		case "atime":
-			gOpts.sortType.method = atimeSort
-		case "ext":
-			gOpts.sortType.method = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+		method := sortMethod(e.val)
+		if !slices.Contains(validSortMethods, method) {
+			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
+		gOpts.sortType.method = method
 		app.nav.sort()
 		app.ui.sort()
 	case "statfmt":
@@ -1083,25 +1071,12 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "sortby":
-		switch e.val {
-		case "natural":
-			gLocalOpts.sortMethods[path] = naturalSort
-		case "name":
-			gLocalOpts.sortMethods[path] = nameSort
-		case "size":
-			gLocalOpts.sortMethods[path] = sizeSort
-		case "time":
-			gLocalOpts.sortMethods[path] = timeSort
-		case "ctime":
-			gLocalOpts.sortMethods[path] = ctimeSort
-		case "atime":
-			gLocalOpts.sortMethods[path] = atimeSort
-		case "ext":
-			gLocalOpts.sortMethods[path] = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+		method := sortMethod(e.val)
+		if !slices.Contains(validSortMethods, method) {
+			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
+		gLocalOpts.sortMethods[path] = method
 		app.nav.sort()
 		app.ui.sort()
 	default:
