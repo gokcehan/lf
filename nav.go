@@ -1144,7 +1144,7 @@ func (nav *nav) high() bool {
 
 	old := dir.ind
 	beg := max(dir.ind-dir.pos, 0)
-	offs := gOpts.scrolloff
+	offs := min(nav.height/2, gOpts.scrolloff)
 	if beg == 0 {
 		offs = 0
 	}
@@ -1175,7 +1175,14 @@ func (nav *nav) low() bool {
 	old := dir.ind
 	beg := max(dir.ind-dir.pos, 0)
 	end := min(beg+nav.height, len(dir.files))
-	offs := gOpts.scrolloff
+
+	offs := min(nav.height/2, gOpts.scrolloff)
+	// use a smaller value for half when the height is even and scrolloff is
+	// maxed in order to stay at the same row when using both high and low
+	if nav.height%2 == 0 {
+		offs = min(nav.height/2-1, gOpts.scrolloff)
+	}
+
 	if end == len(dir.files) {
 		offs = 0
 	}
