@@ -223,15 +223,15 @@ func printVersion() {
 			vcsTime = setting.Value
 		case "vcs.modified":
 			if setting.Value == "true" {
-				vcsModified = "modified"
+				vcsModified = " (dirty)"
 			}
 		}
 	}
 
-	fmt.Printf("Go version: %s\n", buildInfo.GoVersion)
 	if vcsRevision != "" {
-		fmt.Printf("Commit: %s %s %s\n", vcsRevision, vcsTime, vcsModified)
+		fmt.Printf("Built at commit: %s%s %s\n", vcsRevision, vcsModified, vcsTime)
 	}
+	fmt.Printf("Go version: %s\n", buildInfo.GoVersion)
 }
 
 func main() {
