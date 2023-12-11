@@ -5,7 +5,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -791,7 +790,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
 		method := sortMethod(e.val)
-		if !slices.Contains(validSortMethods, method) {
+		if !isValidSortMethod(method) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
@@ -1072,7 +1071,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "sortby":
 		method := sortMethod(e.val)
-		if !slices.Contains(validSortMethods, method) {
+		if !isValidSortMethod(method) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}

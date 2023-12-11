@@ -18,7 +18,14 @@ const (
 	extSort     sortMethod = "ext"
 )
 
-var validSortMethods = []sortMethod{naturalSort, nameSort, sizeSort, atimeSort, ctimeSort, extSort}
+func isValidSortMethod(method sortMethod) bool {
+	for _, validMethod := range []sortMethod{naturalSort, nameSort, sizeSort, atimeSort, ctimeSort, extSort} {
+		if method == validMethod {
+			return true
+		}
+	}
+	return false
+}
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'`
 
