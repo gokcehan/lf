@@ -110,7 +110,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			_, err := os.Lstat(dst)
 			if !os.IsNotExist(err) {
 				ext := filepath.Ext(file)
-				basename := filepath.Base(file[:len(file)-len(ext)])
+				basename := file[:len(file)-len(ext)]
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {
 					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
