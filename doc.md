@@ -140,9 +140,11 @@ The following options can be used to customize the behavior of lf:
 	autoquit         bool      (default false)
 	borderfmt        string    (default "\033[0m")
 	cleaner          string    (default '')
+	copyfmt          string    (default "\033[7;33m")
 	cursoractivefmt  string    (default "\033[7m")
 	cursorparentfmt  string    (default "\033[7m")
 	cursorpreviewfmt string    (default "\033[4m")
+	cutfmt           string    (default "\033[7;31m")
 	dircache         bool      (default true)
 	dircounts        bool      (default false)
 	dirfirst         bool      (default true)
@@ -180,6 +182,7 @@ The following options can be used to customize the behavior of lf:
 	ruler            []string  (default 'acc:progress:selection:filter:ind')
 	rulerfmt         string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
 	scrolloff        int       (default 0)
+	selectfmt        string    (default "\033[7;35m")
 	selmode          string    (default 'all')
 	shell            string    (default 'sh' for Unix and 'cmd' for Windows)
 	shellflag        string    (default '-c' for Unix and '/c' for Windows)
@@ -673,6 +676,10 @@ This file is called if previewing is enabled, the previewer is set, and the prev
 The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
+## copyfmt (string) (default `\033[7;33m`)
+
+Format string of the indicator for files to be copied.
+
 ## cursoractivefmt (string) (default `\033[7m`), cursorparentfmt string (default `\033[7m`), cursorpreviewfmt string (default `\033[4m`)
 
 Format strings for highlighting the cursor.
@@ -686,6 +693,10 @@ Some other possibilities to consider for the preview or parent cursors: an empty
 
 If the format string contains the characters `%s`, it is interpreted as a format string for `fmt.Sprintf`. Such a string should end with the terminal reset sequence.
 For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
+
+## cutfmt (string) (default `\033[7;31m`)
+
+Format string of the indicator for files to be cut.
 
 ## dircache (bool) (default true)
 
@@ -888,6 +899,10 @@ Special expansions are provided, `%a` as the pressed keys, `%p` as the progress 
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
+
+## selectfmt (string) (default `\033[7;35m`)
+
+Format string of the indicator for files that are selected.
 
 ## selmode (string) (default `all`)
 
