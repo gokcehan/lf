@@ -34,9 +34,11 @@ var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
 	borderfmt        string
+	copyfmt          string
 	cursoractivefmt  string
 	cursorparentfmt  string
 	cursorpreviewfmt string
+	cutfmt           string
 	dircache         bool
 	dircounts        bool
 	dironly          bool
@@ -52,6 +54,7 @@ var gOpts struct {
 	mouse            bool
 	number           bool
 	preview          bool
+	selectfmt        string
 	sixel            bool
 	relativenumber   bool
 	smartcase        bool
@@ -191,9 +194,11 @@ func init() {
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
+	gOpts.copyfmt = "\033[7;33m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
+	gOpts.cutfmt = "\033[7;31m"
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
@@ -203,6 +208,7 @@ func init() {
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
+	gOpts.selectfmt = "\033[7;35m"
 	gOpts.sixel = false
 	gOpts.relativenumber = false
 	gOpts.smartcase = true

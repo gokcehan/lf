@@ -348,11 +348,6 @@ type dirStyle struct {
 	role   dirRole
 }
 
-// These colors are not currently customizeable
-const SelectionColor = tcell.ColorPurple
-const YankColor = tcell.ColorOlive
-const CutColor = tcell.ColorMaroon
-
 func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
 	if win.w < 5 || dir == nil {
 		return
@@ -434,12 +429,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		path := filepath.Join(dir.path, f.Name())
 
 		if _, ok := context.selections[path]; ok {
-			win.print(screen, lnwidth, i, st.Background(SelectionColor), " ")
+			win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
 		} else if cp, ok := context.saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, st.Background(YankColor), " ")
+				win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.copyfmt), " ")
 			} else {
-				win.print(screen, lnwidth, i, st.Background(CutColor), " ")
+				win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.cutfmt), " ")
 			}
 		}
 
@@ -855,16 +850,19 @@ func (ui *ui) drawRuler(nav *nav) {
 			}
 		}
 		if copy > 0 {
-			selection = append(selection, fmt.Sprintf("\033[33;7m %d \033[0m", copy))
+			copyStr := fmt.Sprintf(optionToFmtstr(gOpts.copyfmt), fmt.Sprintf(" %d ", copy))
+			selection = append(selection, copyStr)
 		}
 		if move > 0 {
-			selection = append(selection, fmt.Sprintf("\033[31;7m %d \033[0m", move))
+			moveStr := fmt.Sprintf(optionToFmtstr(gOpts.cutfmt), fmt.Sprintf(" %d ", move))
+			selection = append(selection, moveStr)
 		}
 	}
 
 	currSelections := nav.currSelections()
 	if len(currSelections) > 0 {
-		selection = append(selection, fmt.Sprintf("\033[35;7m %d \033[0m", len(currSelections)))
+		selectStr := fmt.Sprintf(optionToFmtstr(gOpts.selectfmt), fmt.Sprintf(" %d ", len(currSelections)))
+		selection = append(selection, selectStr)
 	}
 
 	progress := []string{}
