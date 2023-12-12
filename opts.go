@@ -19,7 +19,7 @@ const (
 )
 
 func isValidSortMethod(method sortMethod) bool {
-	for _, validMethod := range []sortMethod{naturalSort, nameSort, sizeSort, atimeSort, ctimeSort, extSort} {
+	for _, validMethod := range []sortMethod{naturalSort, nameSort, sizeSort, timeSort, atimeSort, ctimeSort, extSort} {
 		if method == validMethod {
 			return true
 		}
