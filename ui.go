@@ -567,6 +567,7 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
+	msgIsStat   bool
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
@@ -596,6 +597,7 @@ func newUI(screen tcell.Screen) *ui {
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
 		menuWin:     newWin(wtot, 1, 0, htot-2),
+		msgIsStat:   true,
 		exprChan:    make(chan expr, 1000),
 		keyChan:     make(chan string, 1000),
 		tevChan:     make(chan tcell.Event, 1000),
@@ -653,10 +655,11 @@ func (ui *ui) sort() {
 
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
+	ui.msgIsStat = false
 }
 
 func (ui *ui) echomsg(msg string) {
-	ui.msg = msg
+	ui.echo(msg)
 	log.Print(msg)
 }
 
@@ -669,7 +672,7 @@ func optionToFmtstr(optstr string) string {
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.msg = fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg)
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
 	log.Printf("error: %s", msg)
 }
 
@@ -754,7 +757,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 	}
 
-	ui.echo(fileInfo)
+	ui.msg = fileInfo
+	ui.msgIsStat = true
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {

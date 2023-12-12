@@ -404,7 +404,7 @@ func (app *app) loop() {
 			if err == nil {
 				if d.path == app.nav.currDir().path {
 					app.ui.loadFile(app, true)
-					if app.ui.msg == "" {
+					if app.ui.msgIsStat {
 						app.ui.loadFileInfo(app.nav)
 					}
 				}
