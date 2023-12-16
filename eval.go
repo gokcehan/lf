@@ -629,12 +629,14 @@ func (e *setExpr) eval(app *app, args []string) {
 				return
 			}
 		}
-		curr, err := app.nav.currFile()
-		if err == nil {
-			if curr.IsDir() {
-				if err := watcher.Add(curr.path); err != nil {
-					app.ui.echoerrf("watch: watcher add: %s", err)
-					return
+		if len(app.nav.dirs) > 0 {
+			curr, err := app.nav.currFile()
+			if err == nil {
+				if curr.IsDir() {
+					if err := watcher.Add(curr.path); err != nil {
+						app.ui.echoerrf("watch: watcher add: %s", err)
+						return
+					}
 				}
 			}
 		}
@@ -1214,10 +1216,12 @@ func onSelect(app *app) {
 		for _, d := range app.nav.dirs {
 			dirsSet[d.path] = struct{}{}
 		}
-		curr, err := app.nav.currFile()
-		if err == nil {
-			if curr.IsDir() {
-				dirsSet[curr.path] = struct{}{}
+		if len(app.nav.dirs) > 0 {
+			curr, err := app.nav.currFile()
+			if err == nil {
+				if curr.IsDir() {
+					dirsSet[curr.path] = struct{}{}
+				}
 			}
 		}
 
