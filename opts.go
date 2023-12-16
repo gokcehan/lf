@@ -61,6 +61,7 @@ var gOpts struct {
 	wrapscroll       bool
 	findlen          int
 	period           int
+	watch            bool
 	scrolloff        int
 	tabstop          int
 	errorfmt         string
@@ -212,6 +213,7 @@ func init() {
 	gOpts.wrapscroll = false
 	gOpts.findlen = 1
 	gOpts.period = 0
+	gOpts.watch = false
 	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.errorfmt = "\033[7;31;47m"

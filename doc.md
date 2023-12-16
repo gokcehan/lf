@@ -823,6 +823,10 @@ Note that directories are already updated automatically in many cases.
 This option can be useful when there is an external process changing the displayed directory and you are not doing anything in lf.
 Periodic checks are disabled when the value of this option is set to zero.
 
+## watch (bool) (default false)
+
+If enabled, watch visible directories for changes.
+
 ## preserve ([]string) (default `mode`)
 
 List of attributes that are preserved when copying files.

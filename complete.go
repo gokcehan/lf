@@ -196,6 +196,8 @@ var (
 		"wrapscroll!",
 		"findlen",
 		"period",
+		"watch",
+		"nowatch",
 		"scrolloff",
 		"tabstop",
 		"errorfmt",

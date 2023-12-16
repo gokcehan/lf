@@ -12,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type cmdItem struct {
@@ -23,6 +25,9 @@ type app struct {
 	ui             *ui
 	nav            *nav
 	ticker         *time.Ticker
+	watcher        *fsnotify.Watcher
+	watcherEvents  <-chan fsnotify.Event
+	watcherErrors  <-chan error
 	quitChan       chan struct{}
 	cmd            *exec.Cmd
 	cmdIn          io.WriteCloser
@@ -456,6 +461,18 @@ func (app *app) loop() {
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
+			app.ui.draw(app.nav)
+		case ev := <-app.watcherEvents:
+			switch ev.Op {
+			case fsnotify.Chmod, fsnotify.Write:
+
+			default:
+				app.nav.renew()
+				app.ui.loadFile(app, false)
+				app.ui.draw(app.nav)
+			}
+		case err := <-app.watcherErrors:
+			app.ui.echoerrf("watcher: %s", err)
 			app.ui.draw(app.nav)
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true

@@ -4,6 +4,7 @@ go 1.18
 
 require (
 	github.com/djherbis/times v1.6.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gdamore/tcell/v2 v2.7.0
 	github.com/mattn/go-runewidth v0.0.15
 	golang.org/x/sys v0.15.0

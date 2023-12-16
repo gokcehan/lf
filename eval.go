@@ -11,6 +11,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/fsnotify/fsnotify"
 	"github.com/gdamore/tcell/v2"
 )
 
@@ -602,6 +603,53 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
 		}
+	case "watch":
+		if e.val != "" {
+			app.ui.echoerrf("watch: unexpected value: %s", e.val)
+			return
+		}
+
+		if app.watcher != nil {
+			break
+		}
+
+		watcher, err := fsnotify.NewWatcher()
+		if err != nil {
+			app.ui.echoerrf("watch: new watcher: %s", err)
+			return
+		}
+		app.watcher = watcher
+		app.watcherEvents = watcher.Events
+		app.watcherErrors = watcher.Errors
+		gOpts.watch = true
+
+		for _, d := range app.nav.dirs {
+			if err := watcher.Add(d.path); err != nil {
+				app.ui.echoerrf("watch: watcher add: %s", err)
+				return
+			}
+		}
+		curr, err := app.nav.currFile()
+		if err == nil {
+			if curr.IsDir() {
+				if err := watcher.Add(curr.path); err != nil {
+					app.ui.echoerrf("watch: watcher add: %s", err)
+					return
+				}
+			}
+		}
+	case "nowatch":
+		if e.val != "" {
+			app.ui.echoerrf("nowatch: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.watch = false
+		if app.watcher != nil {
+			app.watcher.Close()
+			app.watcher = nil
+			app.watcherEvents = nil
+			app.watcherErrors = nil
+		}
 	case "preview":
 		if e.val == "" || e.val == "true" {
 			if len(gOpts.ratios) < 2 {
@@ -1160,6 +1208,39 @@ func onRedraw(app *app) {
 func onSelect(app *app) {
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
+	}
+	if watcher := app.watcher; watcher != nil {
+		dirsSet := map[string]struct{}{}
+		for _, d := range app.nav.dirs {
+			dirsSet[d.path] = struct{}{}
+		}
+		curr, err := app.nav.currFile()
+		if err == nil {
+			if curr.IsDir() {
+				dirsSet[curr.path] = struct{}{}
+			}
+		}
+
+		for _, dPath := range watcher.WatchList() {
+			if _, ok := dirsSet[dPath]; ok {
+				delete(dirsSet, dPath)
+				continue
+			}
+
+			if err := watcher.Remove(dPath); err != nil {
+				app.ui.echoerrf("watcher remove: %s", err)
+				app.ui.draw(app.nav)
+				return
+			}
+		}
+
+		for d := range dirsSet {
+			if err := watcher.Add(d); err != nil {
+				app.ui.echoerrf("watcher add: %s", err)
+				app.ui.draw(app.nav)
+				return
+			}
+		}
 	}
 }
 
