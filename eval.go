@@ -14,17 +14,51 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-func (e *setExpr) eval(app *app, args []string) {
-	switch e.opt {
-	case "anchorfind":
-		if e.val == "" || e.val == "true" {
-			gOpts.anchorfind = true
-		} else if e.val == "false" {
-			gOpts.anchorfind = false
-		} else {
-			app.ui.echoerr("anchorfind: value should be empty, 'true', or 'false'")
+var evalOptToFuncMap map[string]func(e *setExpr, ui *ui) bool = map[string]func(e *setExpr, ui *ui) bool{
+	"anchorfind":     useOption(&gOpts.anchorfind, trueFalseVerifyExpr),
+	"autoquit":       useOption(&gOpts.autoquit, trueFalseVerifyExpr),
+	"history":        useOption(&gOpts.history, trueFalseVerifyExpr),
+	"icons":          useOption(&gOpts.icons, trueFalseVerifyExpr),
+	"relativenumber": useOption(&gOpts.relativenumber, trueFalseVerifyExpr),
+	"smartdia":       useOption(&gOpts.smartdia, trueFalseVerifyExpr),
+	"wrapscan":       useOption(&gOpts.wrapscan, trueFalseVerifyExpr),
+	"wrapscroll":     useOption(&gOpts.wrapscroll, trueFalseVerifyExpr),
+	"sixel":          useOption(&gOpts.wrapscroll, trueFalseVerifyExpr),
+	"dircache":       useOption(&gOpts.dircache, trueFalseVerifyExpr),
+	"dircounts":      useOption(&gOpts.dircounts, trueFalseVerifyExpr),
+	"dirpreviews":    useOption(&gOpts.dirpreviews, trueFalseVerifyExpr),
+}
+
+func useOption[T any](option *T, optionFunc func(e *setExpr, ui *ui, optionParam *T) bool) func(e *setExpr, ui *ui) bool {
+	return func(e *setExpr, ui *ui) bool {
+		return optionFunc(e, ui, option)
+	}
+}
+
+func trueFalseVerifyExpr(e *setExpr, ui *ui, option *bool) (successful bool) {
+	if e.val == "" || e.val == "true" {
+		*option = true
+		return true
+	}
+	if e.val == "false" {
+		*option = false
+		return true
+	}
+
+	ui.echoerrf("%s: value should be empty, 'true', or 'false", e.opt)
+	return false
+}
+
+func (e *setExpr) eval(app *app, _ []string) {
+	optionFunc, optionFuncFound := evalOptToFuncMap[e.opt]
+	if optionFuncFound {
+		if !optionFunc(e, app.ui) {
 			return
 		}
+		app.ui.loadFileInfo(app.nav)
+		return
+	}
+	switch e.opt {
 	case "noanchorfind":
 		if e.val != "" {
 			app.ui.echoerrf("noanchorfind: unexpected value: %s", e.val)
@@ -37,15 +71,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.anchorfind = !gOpts.anchorfind
-	case "autoquit":
-		if e.val == "" || e.val == "true" {
-			gOpts.autoquit = true
-		} else if e.val == "false" {
-			gOpts.autoquit = false
-		} else {
-			app.ui.echoerr("autoquit: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "noautoquit":
 		if e.val != "" {
 			app.ui.echoerrf("noautoquit: unexpected value: %s", e.val)
@@ -68,15 +93,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
-	case "dircache":
-		if e.val == "" || e.val == "true" {
-			gOpts.dircache = true
-		} else if e.val == "false" {
-			gOpts.dircache = false
-		} else {
-			app.ui.echoerr("dircache: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nodircache":
 		if e.val != "" {
 			app.ui.echoerrf("nodircache: unexpected value: %s", e.val)
@@ -89,15 +105,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.dircache = !gOpts.dircache
-	case "dircounts":
-		if e.val == "" || e.val == "true" {
-			gOpts.dircounts = true
-		} else if e.val == "false" {
-			gOpts.dircounts = false
-		} else {
-			app.ui.echoerr("dircounts: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nodircounts":
 		if e.val != "" {
 			app.ui.echoerrf("nodircounts: unexpected value: %s", e.val)
@@ -170,15 +177,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
-	case "dirpreviews":
-		if e.val == "" || e.val == "true" {
-			gOpts.dirpreviews = true
-		} else if e.val == "false" {
-			gOpts.dirpreviews = false
-		} else {
-			app.ui.echoerr("dirpreviews: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nodirpreviews":
 		if e.val != "" {
 			app.ui.echoerrf("nodirpreviews: unexpected value: %s", e.val)
@@ -328,15 +326,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
-	case "history":
-		if e.val == "" || e.val == "true" {
-			gOpts.history = true
-		} else if e.val == "false" {
-			gOpts.history = false
-		} else {
-			app.ui.echoerr("history: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nohistory":
 		if e.val != "" {
 			app.ui.echoerrf("nohistory: unexpected value: %s", e.val)
@@ -349,15 +338,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.history = !gOpts.history
-	case "icons":
-		if e.val == "" || e.val == "true" {
-			gOpts.icons = true
-		} else if e.val == "false" {
-			gOpts.icons = false
-		} else {
-			app.ui.echoerr("icons: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "noicons":
 		if e.val != "" {
 			app.ui.echoerrf("noicons: unexpected value: %s", e.val)
@@ -660,15 +640,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
 		app.ui.loadFile(app, true)
-	case "relativenumber":
-		if e.val == "" || e.val == "true" {
-			gOpts.relativenumber = true
-		} else if e.val == "false" {
-			gOpts.relativenumber = false
-		} else {
-			app.ui.echoerr("relativenumber: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "norelativenumber":
 		if e.val != "" {
 			app.ui.echoerrf("norelativenumber: unexpected value: %s", e.val)
@@ -767,15 +738,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
-	case "smartdia":
-		if e.val == "" || e.val == "true" {
-			gOpts.smartdia = true
-		} else if e.val == "false" {
-			gOpts.smartdia = false
-		} else {
-			app.ui.echoerr("smartdia: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nosmartdia":
 		if e.val != "" {
 			app.ui.echoerrf("nosmartdia: unexpected value: %s", e.val)
@@ -853,15 +815,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.truncatepct = n
 	case "waitmsg":
 		gOpts.waitmsg = e.val
-	case "wrapscan":
-		if e.val == "" || e.val == "true" {
-			gOpts.wrapscan = true
-		} else if e.val == "false" {
-			gOpts.wrapscan = false
-		} else {
-			app.ui.echoerr("wrapscan: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nowrapscan":
 		if e.val != "" {
 			app.ui.echoerrf("nowrapscan: unexpected value: %s", e.val)
@@ -874,15 +827,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.wrapscan = !gOpts.wrapscan
-	case "wrapscroll":
-		if e.val == "" || e.val == "true" {
-			gOpts.wrapscroll = true
-		} else if e.val == "false" {
-			gOpts.wrapscroll = false
-		} else {
-			app.ui.echoerr("wrapscroll: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nowrapscroll":
 		if e.val != "" {
 			app.ui.echoerrf("nowrapscroll: unexpected value: %s", e.val)
@@ -895,15 +839,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.wrapscroll = !gOpts.wrapscroll
-	case "sixel":
-		if e.val == "" || e.val == "true" {
-			gOpts.sixel = true
-		} else if e.val == "false" {
-			gOpts.sixel = false
-		} else {
-			app.ui.echoerr("sixel: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "nosixel":
 		if e.val != "" {
 			app.ui.echoerrf("nosixel: unexpected value: %s", e.val)

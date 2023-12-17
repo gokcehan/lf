@@ -537,3 +537,84 @@ func TestSplitKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestBoolGopts(t *testing.T) {
+	testCases := []struct {
+		expectedgOptsVal bool
+		gOpt             *bool
+		e                *setExpr
+		name             string
+	}{
+		{
+			name:             "set anchorfind to false",
+			expectedgOptsVal: false,
+			gOpt:             &gOpts.anchorfind,
+			e: &setExpr{
+				opt: "anchorfind",
+				val: "false",
+			},
+		},
+		{
+			name:             "set anchorfind to true with true val",
+			expectedgOptsVal: true,
+			gOpt:             &gOpts.anchorfind,
+			e: &setExpr{
+				opt: "anchorfind",
+				val: "true",
+			},
+		},
+		{
+			name:             "set anchorfind to true with empty val",
+			expectedgOptsVal: true,
+			gOpt:             &gOpts.anchorfind,
+			e: &setExpr{
+				opt: "anchorfind",
+				val: "",
+			},
+		},
+		{
+			name:             "set autoquit to false",
+			expectedgOptsVal: false,
+			gOpt:             &gOpts.autoquit,
+			e: &setExpr{
+				opt: "autoquit",
+				val: "false",
+			},
+		},
+		{
+			name:             "set autoquit to true with true val",
+			expectedgOptsVal: true,
+			gOpt:             &gOpts.autoquit,
+			e: &setExpr{
+				opt: "autoquit",
+				val: "true",
+			},
+		},
+		{
+			name:             "set autoquit to true with empty val",
+			expectedgOptsVal: true,
+			gOpt:             &gOpts.autoquit,
+			e: &setExpr{
+				opt: "autoquit",
+				val: "",
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		testFunc := func(t *testing.T) {
+
+			app := newApp(&ui{}, &nav{})
+			*tc.gOpt = !tc.expectedgOptsVal
+
+			tc.e.eval(app, nil)
+
+			if *tc.gOpt != tc.expectedgOptsVal {
+				t.Errorf("at input %s expected %v but got %v, gOpts.anchorFind is %v", tc.e.opt, tc.expectedgOptsVal, *tc.gOpt, gOpts.anchorfind)
+			}
+		}
+
+		t.Run(tc.name, testFunc)
+
+	}
+}
