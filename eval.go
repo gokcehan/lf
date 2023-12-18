@@ -78,6 +78,7 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"nonumber":         useOption(&gOpts.number, setFalseBooleanOption),
 	"nonumberfmt":      useOption(&gOpts.numberfmt, setStringOption),
 	"nopreview":        useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
+	"ruler":            useOption(&gOpts.ruler, evalRulerOption),
 }
 
 // cleanup used by the drawbox family of options
@@ -177,7 +178,6 @@ func setStringOptionReplaceTilde(expression *setExpr, _ *app, option *string) bo
 // Flips a boolean's option
 // If the passed in expression's val is not empty, returns false and passed in ui prints an error
 func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
-
 	if expression.val != "" {
 		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
 		return false
@@ -185,6 +185,31 @@ func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
 
 	*option = !*option
 	return true
+}
+
+// One off functions
+
+// ruler is a deprecated option with unique logic and always signals an early return
+func evalRulerOption(expression *setExpr, app *app, option *[]string) (alwaysReturnsFalse bool) {
+	if expression.val == "" {
+		*option = nil
+		return
+	}
+	toks := strings.Split(expression.val, ":")
+	for _, s := range toks {
+		switch s {
+		case "df", "acc", "progress", "selection", "filter", "ind":
+		default:
+			if !strings.HasPrefix(s, "lf_") {
+				app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or 'lf_<option_name>' separated with colon")
+				return
+			}
+		}
+	}
+	*option = toks
+	app.ui.echoerr("option 'ruler' is deprecated, use 'rulerfmt' instead")
+	return
+
 }
 
 func (e *setExpr) eval(app *app, _ []string) {
@@ -313,25 +338,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			}
 		}
 		gOpts.info = toks
-	case "ruler":
-		if e.val == "" {
-			gOpts.ruler = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "df", "acc", "progress", "selection", "filter", "ind":
-			default:
-				if !strings.HasPrefix(s, "lf_") {
-					app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or 'lf_<option_name>' separated with colon")
-					return
-				}
-			}
-		}
-		gOpts.ruler = toks
-		app.ui.echoerr("option 'ruler' is deprecated, use 'rulerfmt' instead")
-		return
 	case "preserve":
 		if e.val == "" {
 			gOpts.preserve = nil
