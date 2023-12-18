@@ -14,109 +14,139 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-var evalOptToFuncMap map[string]func(e *setExpr, ui *ui) bool = map[string]func(e *setExpr, ui *ui) bool{
-	"anchorfind":     useOption(&gOpts.anchorfind, trueFalseVerifyExpr),
-	"autoquit":       useOption(&gOpts.autoquit, trueFalseVerifyExpr),
-	"history":        useOption(&gOpts.history, trueFalseVerifyExpr),
-	"icons":          useOption(&gOpts.icons, trueFalseVerifyExpr),
-	"relativenumber": useOption(&gOpts.relativenumber, trueFalseVerifyExpr),
-	"smartdia":       useOption(&gOpts.smartdia, trueFalseVerifyExpr),
-	"wrapscan":       useOption(&gOpts.wrapscan, trueFalseVerifyExpr),
-	"wrapscroll":     useOption(&gOpts.wrapscroll, trueFalseVerifyExpr),
-	"sixel":          useOption(&gOpts.wrapscroll, trueFalseVerifyExpr),
-	"dircache":       useOption(&gOpts.dircache, trueFalseVerifyExpr),
-	"dircounts":      useOption(&gOpts.dircounts, trueFalseVerifyExpr),
-	"dirpreviews":    useOption(&gOpts.dirpreviews, trueFalseVerifyExpr),
+var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]func(e *setExpr, app *app) bool{
+	"anchorfind":       useOption(&gOpts.anchorfind, setTrueOrFalseBooleanOption),
+	"autoquit":         useOption(&gOpts.autoquit, setTrueOrFalseBooleanOption),
+	"history":          useOption(&gOpts.history, setTrueOrFalseBooleanOption),
+	"icons":            useOption(&gOpts.icons, setTrueOrFalseBooleanOption),
+	"relativenumber":   useOption(&gOpts.relativenumber, setTrueOrFalseBooleanOption),
+	"smartdia":         useOption(&gOpts.smartdia, setTrueOrFalseBooleanOption),
+	"wrapscan":         useOption(&gOpts.wrapscan, setTrueOrFalseBooleanOption),
+	"wrapscroll":       useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
+	"sixel":            useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
+	"dircache":         useOption(&gOpts.dircache, setTrueOrFalseBooleanOption),
+	"dircounts":        useOption(&gOpts.dircounts, setTrueOrFalseBooleanOption),
+	"dirpreviews":      useOption(&gOpts.dirpreviews, setTrueOrFalseBooleanOption),
+	"noanchorfind":     useOption(&gOpts.anchorfind, setFalseBooleanOption),
+	"anchorfind!":      useOption(&gOpts.anchorfind, flipBooleanOption),
+	"noautoquit":       useOption(&gOpts.autoquit, setFalseBooleanOption),
+	"autoquit!":        useOption(&gOpts.autoquit, flipBooleanOption),
+	"borderfmt":        useOption(&gOpts.borderfmt, setStringOption),
+	"cursoractivefmt":  useOption(&gOpts.cursoractivefmt, setStringOption),
+	"cursorparentfmt":  useOption(&gOpts.cursorparentfmt, setStringOption),
+	"cursorpreviewfmt": useOption(&gOpts.cursorpreviewfmt, setStringOption),
+	"nodircache":       useOption(&gOpts.dircache, setFalseBooleanOption),
+	"dircache!":        useOption(&gOpts.dircache, flipBooleanOption),
+	"nodircounts":      useOption(&gOpts.dircounts, setFalseBooleanOption),
+	"dircounts!":       useOption(&gOpts.dircounts, flipBooleanOption),
+	"dironly":          useOptionWithCleanup(&gOpts.dironly, setTrueOrFalseBooleanOption, sortAndPositionApp),
+	"promptfmt":        useOption(&gOpts.promptfmt, setStringOption),
+	"cleaner":          useOption(&gOpts.promptfmt, setStringOptionReplaceTilde),
+	"nodironly":        useOptionWithCleanup(&gOpts.dironly, setFalseBooleanOption, sortAndPositionApp),
+	"dironly!":         useOptionWithCleanup(&gOpts.dironly, flipBooleanOption, sortAndPositionApp),
+	"dirpreviews!":     useOption(&gOpts.dirpreviews, flipBooleanOption),
+	"nodirpreviews":    useOption(&gOpts.dirpreviews, setFalseBooleanOption),
+	"dupfilefmt":       useOption(&gOpts.dupfilefmt, setStringOption),
+	"errorfmt":         useOption(&gOpts.errorfmt, setStringOption),
+	"filesep":          useOption(&gOpts.filesep, setStringOption),
 }
 
-func useOption[T any](option *T, optionFunc func(e *setExpr, ui *ui, optionParam *T) bool) func(e *setExpr, ui *ui) bool {
-	return func(e *setExpr, ui *ui) bool {
-		return optionFunc(e, ui, option)
+// Used as a cleanup function in evalOptToFuncMap
+func sortAndPositionApp(app *app) {
+	app.nav.sort()
+	app.nav.position()
+	app.ui.sort()
+	app.ui.loadFile(app, true)
+}
+
+// Takes a pointer to an option and returns a function that sets that option.
+// Used so that option setting functions for different types can be keys in a shared map
+func useOption[optionType any](option *optionType, setOptionFunc func(e *setExpr, app *app, optionParam *optionType) bool) func(e *setExpr, app *app) bool {
+	return func(e *setExpr, app *app) bool {
+		return setOptionFunc(e, app, option)
 	}
 }
 
-func trueFalseVerifyExpr(e *setExpr, ui *ui, option *bool) (successful bool) {
-	if e.val == "" || e.val == "true" {
+// Takes a pointer to an option and returns a function that sets that option.
+// Accepts any number of cleanup functions that are ran if setOptionFunc is successful
+// Used so that option setting functions for different types can be keys in a shared map
+func useOptionWithCleanup[optionType any](option *optionType, setOptionFunc func(e *setExpr, app *app, optionParam *optionType) bool, cleanupFuncs ...func(app *app)) func(e *setExpr, app *app) bool {
+	return func(e *setExpr, app *app) bool {
+		successStatus := setOptionFunc(e, app, option)
+		if successStatus {
+			for _, cleanupFunc := range cleanupFuncs {
+				cleanupFunc(app)
+			}
+		}
+		return successStatus
+	}
+
+}
+
+// Sets a boolean option to true if the passed in expression's value is empty or "true", false if it is set to "false"
+// If expression.val is not empty, true, or false, the passed in ui will echo an error and the function will return false.
+// For any valid expression, the function will return true.
+func setTrueOrFalseBooleanOption(expression *setExpr, app *app, option *bool) bool {
+	if expression.val == "" || expression.val == "true" {
 		*option = true
 		return true
 	}
-	if e.val == "false" {
+	if expression.val == "false" {
 		*option = false
 		return true
 	}
 
-	ui.echoerrf("%s: value should be empty, 'true', or 'false", e.opt)
+	app.ui.echoerrf("%s: value should be empty, 'true', or 'false", expression.opt)
 	return false
+}
+
+// Sets a boolean option to false
+// If the passed in expression's val is not empty, returns false and passed in ui prints an error
+func setFalseBooleanOption(expression *setExpr, app *app, option *bool) bool {
+	if expression.val != "" {
+		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
+		return false
+	}
+
+	*option = false
+	return true
+
+}
+
+func setStringOption(expression *setExpr, _ *app, option *string) bool {
+	*option = expression.val
+	return true
+}
+
+func setStringOptionReplaceTilde(expression *setExpr, _ *app, option *string) bool {
+	*option = replaceTilde(expression.val)
+	return true
+
+}
+
+// Flips a boolean's option
+// If the passed in expression's val is not empty, returns false and passed in ui prints an error
+func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
+
+	if expression.val != "" {
+		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
+		return false
+	}
+
+	*option = !*option
+	return true
 }
 
 func (e *setExpr) eval(app *app, _ []string) {
 	optionFunc, optionFuncFound := evalOptToFuncMap[e.opt]
 	if optionFuncFound {
-		if !optionFunc(e, app.ui) {
+		if !optionFunc(e, app) {
 			return
 		}
 		app.ui.loadFileInfo(app.nav)
 		return
 	}
 	switch e.opt {
-	case "noanchorfind":
-		if e.val != "" {
-			app.ui.echoerrf("noanchorfind: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.anchorfind = false
-	case "anchorfind!":
-		if e.val != "" {
-			app.ui.echoerrf("anchorfind!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.anchorfind = !gOpts.anchorfind
-	case "noautoquit":
-		if e.val != "" {
-			app.ui.echoerrf("noautoquit: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.autoquit = false
-	case "autoquit!":
-		if e.val != "" {
-			app.ui.echoerrf("autoquit!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.autoquit = !gOpts.autoquit
-	case "borderfmt":
-		gOpts.borderfmt = e.val
-	case "cleaner":
-		gOpts.cleaner = replaceTilde(e.val)
-	case "cursoractivefmt":
-		gOpts.cursoractivefmt = e.val
-	case "cursorparentfmt":
-		gOpts.cursorparentfmt = e.val
-	case "cursorpreviewfmt":
-		gOpts.cursorpreviewfmt = e.val
-	case "nodircache":
-		if e.val != "" {
-			app.ui.echoerrf("nodircache: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircache = false
-	case "dircache!":
-		if e.val != "" {
-			app.ui.echoerrf("dircache!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircache = !gOpts.dircache
-	case "nodircounts":
-		if e.val != "" {
-			app.ui.echoerrf("nodircounts: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircounts = false
-	case "dircounts!":
-		if e.val != "" {
-			app.ui.echoerrf("dircounts!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
 		if e.val == "" || e.val == "true" {
 			gOpts.sortType.option |= dirfirstSort
@@ -144,51 +174,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
-	case "dironly":
-		if e.val == "" || e.val == "true" {
-			gOpts.dironly = true
-		} else if e.val == "false" {
-			gOpts.dironly = false
-		} else {
-			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nodironly":
-		if e.val != "" {
-			app.ui.echoerrf("nodironly: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dironly = false
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "dironly!":
-		if e.val != "" {
-			app.ui.echoerrf("dironly!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dironly = !gOpts.dironly
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nodirpreviews":
-		if e.val != "" {
-			app.ui.echoerrf("nodirpreviews: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirpreviews = false
-	case "dirpreviews!":
-		if e.val != "" {
-			app.ui.echoerrf("dirpreviews!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirpreviews = !gOpts.dirpreviews
 	case "drawbox":
 		if e.val == "" || e.val == "true" {
 			gOpts.drawbox = true
@@ -228,12 +213,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.regCache = make(map[string]*reg)
 		}
 		app.ui.loadFile(app, true)
-	case "dupfilefmt":
-		gOpts.dupfilefmt = e.val
-	case "errorfmt":
-		gOpts.errorfmt = e.val
-	case "filesep":
-		gOpts.filesep = e.val
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -616,8 +595,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		app.ui.loadFile(app, true)
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
-	case "promptfmt":
-		gOpts.promptfmt = e.val
 	case "ratios":
 		toks := strings.Split(e.val, ":")
 		var rats []int
