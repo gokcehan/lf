@@ -49,6 +49,46 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"dupfilefmt":       useOption(&gOpts.dupfilefmt, setStringOption),
 	"errorfmt":         useOption(&gOpts.errorfmt, setStringOption),
 	"filesep":          useOption(&gOpts.filesep, setStringOption),
+	"globsearch!":      useOptionWithCleanup(&gOpts.globsearch, flipBooleanOption, sortApp, loadFileCleanup),
+	"noincsearch":      useOption(&gOpts.incsearch, setFalseBooleanOption),
+	"incsearch!":       useOption(&gOpts.incsearch, flipBooleanOption),
+	"incsearch":        useOption(&gOpts.incsearch, setTrueOrFalseBooleanOption),
+	"ignoredia":        useOptionWithCleanup(&gOpts.ignoredia, setTrueOrFalseBooleanOption, sortApp),
+	"ignoredia!":       useOptionWithCleanup(&gOpts.ignoredia, flipBooleanOption, sortApp),
+	"noignoredia":      useOptionWithCleanup(&gOpts.ignoredia, setFalseBooleanOption, sortApp),
+	"ifs":              useOption(&gOpts.ifs, setStringOption),
+	"ignorecase":       useOptionWithCleanup(&gOpts.ignorecase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"noignorecase":     useOptionWithCleanup(&gOpts.ignorecase, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"ignorecase!":      useOptionWithCleanup(&gOpts.ignorecase, flipBooleanOption, sortApp, loadFileCleanup),
+	"incfilter":        useOption(&gOpts.incfilter, setTrueOrFalseBooleanOption),
+	"nodrawbox":        useOptionWithCleanup(&gOpts.drawbox, setFalseBooleanOption, drawBoxCleanup),
+	"drawbox!":         useOptionWithCleanup(&gOpts.drawbox, flipBooleanOption, drawBoxCleanup),
+	"drawbox":          useOptionWithCleanup(&gOpts.drawbox, setTrueOrFalseBooleanOption, drawBoxCleanup),
+	"globsearch":       useOptionWithCleanup(&gOpts.globsearch, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"noglobsearch":     useOptionWithCleanup(&gOpts.globsearch, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"nohistory":        useOption(&gOpts.history, setFalseBooleanOption),
+	"history!":         useOption(&gOpts.history, flipBooleanOption),
+	"noicons":          useOption(&gOpts.icons, setFalseBooleanOption),
+	"icons!":           useOption(&gOpts.icons, flipBooleanOption),
+	"rulerfmt":         useOption(&gOpts.rulerfmt, setStringOption),
+	"infotimefmtnew":   useOption(&gOpts.infotimefmtnew, setStringOption),
+	"infotimefmtold":   useOption(&gOpts.infotimefmtold, setStringOption),
+	"number":           useOption(&gOpts.number, setTrueOrFalseBooleanOption),
+	"number!":          useOption(&gOpts.number, flipBooleanOption),
+	"nonumber":         useOption(&gOpts.number, setFalseBooleanOption),
+	"nonumberfmt":      useOption(&gOpts.numberfmt, setStringOption),
+	"nopreview":        useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
+}
+
+// cleanup used by the drawbox family of options
+func drawBoxCleanup(app *app) {
+	app.ui.renew()
+	if app.nav.height != app.ui.wins[0].h {
+		app.nav.height = app.ui.wins[0].h
+		app.nav.regCache = make(map[string]*reg)
+	}
+	app.ui.loadFile(app, true)
+
 }
 
 // Used as a cleanup function in evalOptToFuncMap
@@ -56,6 +96,16 @@ func sortAndPositionApp(app *app) {
 	app.nav.sort()
 	app.nav.position()
 	app.ui.sort()
+	app.ui.loadFile(app, true)
+}
+
+// shortcut for app.nav.sort and app.ui.sort
+func sortApp(app *app) {
+	app.nav.sort()
+	app.ui.sort()
+}
+
+func loadFileCleanup(app *app) {
 	app.ui.loadFile(app, true)
 }
 
@@ -174,45 +224,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.sortType.option ^= dirfirstSort
 		app.nav.sort()
 		app.ui.sort()
-	case "drawbox":
-		if e.val == "" || e.val == "true" {
-			gOpts.drawbox = true
-		} else if e.val == "false" {
-			gOpts.drawbox = false
-		} else {
-			app.ui.echoerr("drawbox: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
-	case "nodrawbox":
-		if e.val != "" {
-			app.ui.echoerrf("nodrawbox: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.drawbox = false
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
-	case "drawbox!":
-		if e.val != "" {
-			app.ui.echoerrf("drawbox!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.drawbox = !gOpts.drawbox
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -224,36 +235,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "globsearch":
-		if e.val == "" || e.val == "true" {
-			gOpts.globsearch = true
-		} else if e.val == "false" {
-			gOpts.globsearch = false
-		} else {
-			app.ui.echoerr("globsearch: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "noglobsearch":
-		if e.val != "" {
-			app.ui.echoerrf("noglobsearch: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.globsearch = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "globsearch!":
-		if e.val != "" {
-			app.ui.echoerrf("globsearch!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.globsearch = !gOpts.globsearch
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
 	case "hidden":
 		if e.val == "" || e.val == "true" {
 			gOpts.sortType.option |= hiddenSort
@@ -305,98 +286,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
-	case "nohistory":
-		if e.val != "" {
-			app.ui.echoerrf("nohistory: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.history = false
-	case "history!":
-		if e.val != "" {
-			app.ui.echoerrf("history!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.history = !gOpts.history
-	case "noicons":
-		if e.val != "" {
-			app.ui.echoerrf("noicons: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.icons = false
-	case "icons!":
-		if e.val != "" {
-			app.ui.echoerrf("icons!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.icons = !gOpts.icons
-	case "ifs":
-		gOpts.ifs = e.val
-	case "ignorecase":
-		if e.val == "" || e.val == "true" {
-			gOpts.ignorecase = true
-		} else if e.val == "false" {
-			gOpts.ignorecase = false
-		} else {
-			app.ui.echoerr("ignorecase: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "noignorecase":
-		if e.val != "" {
-			app.ui.echoerrf("noignorecase: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignorecase = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ignorecase!":
-		if e.val != "" {
-			app.ui.echoerrf("ignorecase!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignorecase = !gOpts.ignorecase
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ignoredia":
-		if e.val == "" || e.val == "true" {
-			gOpts.ignoredia = true
-		} else if e.val == "false" {
-			gOpts.ignoredia = false
-		} else {
-			app.ui.echoerr("ignoredia: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "noignoredia":
-		if e.val != "" {
-			app.ui.echoerrf("noignoredia: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignoredia = false
-		app.nav.sort()
-		app.ui.sort()
-	case "ignoredia!":
-		if e.val != "" {
-			app.ui.echoerrf("ignoredia!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignoredia = !gOpts.ignoredia
-		app.nav.sort()
-		app.ui.sort()
-	case "incfilter":
-		if e.val == "" || e.val == "true" {
-			gOpts.incfilter = true
-		} else if e.val == "false" {
-			gOpts.incfilter = false
-		} else {
-			app.ui.echoerr("incfilter: value should be empty, 'true', or 'false'")
-			return
-		}
 	case "noincfilter":
 		if e.val != "" {
 			app.ui.echoerrf("noincfilter: unexpected value: %s", e.val)
@@ -409,27 +298,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.incfilter = !gOpts.incfilter
-	case "incsearch":
-		if e.val == "" || e.val == "true" {
-			gOpts.incsearch = true
-		} else if e.val == "false" {
-			gOpts.incsearch = false
-		} else {
-			app.ui.echoerr("incsearch: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "noincsearch":
-		if e.val != "" {
-			app.ui.echoerrf("noincsearch: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incsearch = false
-	case "incsearch!":
-		if e.val != "" {
-			app.ui.echoerrf("incsearch!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incsearch = !gOpts.incsearch
 	case "info":
 		if e.val == "" {
 			gOpts.info = nil
@@ -464,8 +332,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.ruler = toks
 		app.ui.echoerr("option 'ruler' is deprecated, use 'rulerfmt' instead")
 		return
-	case "rulerfmt":
-		gOpts.rulerfmt = e.val
 	case "preserve":
 		if e.val == "" {
 			gOpts.preserve = nil
@@ -481,10 +347,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			}
 		}
 		gOpts.preserve = toks
-	case "infotimefmtnew":
-		gOpts.infotimefmtnew = e.val
-	case "infotimefmtold":
-		gOpts.infotimefmtold = e.val
 	case "mouse":
 		if e.val == "" || e.val == "true" {
 			if !gOpts.mouse {
@@ -521,29 +383,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			gOpts.mouse = true
 			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
 		}
-	case "number":
-		if e.val == "" || e.val == "true" {
-			gOpts.number = true
-		} else if e.val == "false" {
-			gOpts.number = false
-		} else {
-			app.ui.echoerr("number: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nonumber":
-		if e.val != "" {
-			app.ui.echoerrf("nonumber: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.number = false
-	case "number!":
-		if e.val != "" {
-			app.ui.echoerrf("number!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.number = !gOpts.number
-	case "numberfmt":
-		gOpts.numberfmt = e.val
 	case "period":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -574,13 +413,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("preview: value should be empty, 'true', or 'false'")
 			return
 		}
-		app.ui.loadFile(app, true)
-	case "nopreview":
-		if e.val != "" {
-			app.ui.echoerrf("nopreview: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.preview = false
 		app.ui.loadFile(app, true)
 	case "preview!":
 		if e.val != "" {
