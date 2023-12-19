@@ -36,10 +36,10 @@ func copySize(srcs []string) (int64, error) {
 	return total, nil
 }
 
-func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
+func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan int64) error {
 	var dst_mode os.FileMode = 0666
 	preserve_timestamps := false
-	for _, s := range gOpts.preserve {
+	for _, s := range preserve {
 		switch s {
 		case "timestamps":
 			preserve_timestamps = true
@@ -98,7 +98,7 @@ func copyFile(src, dst string, info os.FileInfo, nums chan int64) error {
 	return nil
 }
 
-func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
+func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
 	nums = make(chan int64, 1024)
 	errs = make(chan error, 1024)
 
@@ -110,7 +110,7 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 			_, err := os.Lstat(dst)
 			if !os.IsNotExist(err) {
 				ext := filepath.Ext(file)
-				basename := filepath.Base(file[:len(file)-len(ext)])
+				basename := file[:len(file)-len(ext)]
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {
 					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
@@ -149,7 +149,7 @@ func copyAll(srcs []string, dstDir string) (nums chan int64, errs chan error) {
 					}
 					nums <- info.Size()
 				} else {
-					if err := copyFile(path, newPath, info, nums); err != nil {
+					if err := copyFile(path, newPath, preserve, info, nums); err != nil {
 						errs <- fmt.Errorf("copy: %s", err)
 					}
 				}

@@ -2,7 +2,6 @@ package main
 
 import (
 	"bufio"
-	"bytes"
 	"errors"
 	"fmt"
 	"io"
@@ -198,11 +197,11 @@ func newDir(path string) *dir {
 }
 
 func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
-	if gOpts.ignorecase {
+	if ignorecase {
 		s1 = strings.ToLower(s1)
 		s2 = strings.ToLower(s2)
 	}
-	if gOpts.ignoredia {
+	if ignoredia {
 		s1 = removeDiacritics(s1)
 		s2 = removeDiacritics(s2)
 	}
@@ -827,7 +826,7 @@ func (nav *nav) preview(path string, win *win) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
-	var reader io.Reader
+	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(gOpts.previewer, path,
@@ -861,7 +860,7 @@ func (nav *nav) preview(path string, win *win) {
 			}
 		}()
 		defer out.Close()
-		reader = out
+		reader = bufio.NewReader(out)
 	} else {
 		f, err := os.Open(path)
 		if err != nil {
@@ -870,14 +869,11 @@ func (nav *nav) preview(path string, win *win) {
 		}
 
 		defer f.Close()
-		reader = f
+		reader = bufio.NewReader(f)
 	}
 
-	prefix := make([]byte, 2)
 	if gOpts.sixel {
-		n, err := reader.Read(prefix)
-		reader = io.MultiReader(bytes.NewReader(prefix[:n]), reader)
-
+		prefix, err := reader.Peek(2)
 		if err == nil && string(prefix) == gSixelBegin {
 			b, err := io.ReadAll(reader)
 			if err != nil {
@@ -889,20 +885,27 @@ func (nav *nav) preview(path string, win *win) {
 		}
 	}
 
-	buf := bufio.NewScanner(reader)
+	// bufio.Scanner can't handle files containing long lines if they exceed the
+	// size of its internal buffer
+	addLine := true
+	for len(reg.lines) < win.h {
+		line, isPrefix, err := reader.ReadLine()
+		if err != nil {
+			break
+		}
 
-	for i := 0; i < win.h && buf.Scan(); i++ {
-		for _, r := range buf.Text() {
+		for _, r := range line {
 			if r == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
 				return
 			}
 		}
-		reg.lines = append(reg.lines, buf.Text())
-	}
 
-	if buf.Err() != nil {
-		log.Printf("loading file: %s", buf.Err())
+		if addLine {
+			reg.lines = append(reg.lines, string(line))
+		}
+
+		addLine = !isPrefix
 	}
 }
 
@@ -1141,7 +1144,7 @@ func (nav *nav) high() bool {
 
 	old := dir.ind
 	beg := max(dir.ind-dir.pos, 0)
-	offs := gOpts.scrolloff
+	offs := min(nav.height/2, gOpts.scrolloff)
 	if beg == 0 {
 		offs = 0
 	}
@@ -1172,7 +1175,14 @@ func (nav *nav) low() bool {
 	old := dir.ind
 	beg := max(dir.ind-dir.pos, 0)
 	end := min(beg+nav.height, len(dir.files))
-	offs := gOpts.scrolloff
+
+	offs := min(nav.height/2, gOpts.scrolloff)
+	// use a smaller value for half when the height is even and scrolloff is
+	// maxed in order to stay at the same row when using both high and low
+	if nav.height%2 == 0 {
+		offs = min(nav.height/2-1, gOpts.scrolloff)
+	}
+
 	if end == len(dir.files) {
 		offs = 0
 	}
@@ -1317,7 +1327,7 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nav.copyTotalChan <- total
 
-	nums, errs := copyAll(srcs, dstDir)
+	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
 	errCount := 0
 loop:
@@ -1388,7 +1398,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			continue
 		} else if !os.IsNotExist(err) {
 			ext := filepath.Ext(file)
-			basename := filepath.Base(file[:len(file)-len(ext)])
+			basename := file[:len(file)-len(ext)]
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
 				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
@@ -1412,7 +1422,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 				nav.copyTotalChan <- total
 
-				nums, errs := copyAll([]string{src}, dstDir)
+				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"})
 
 				oldCount := errCount
 			loop:

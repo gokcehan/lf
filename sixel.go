@@ -2,13 +2,21 @@ package main
 
 import (
 	"fmt"
+	"os"
 	"strings"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 const (
-	gSixelBegin  = "\033P"
+	gSixelBegin = "\033P"
+
+	// The filler character should be:
+	// - rarely used: the filler is used to trick tcell into redrawing, if the
+	//   filler character appears in the user's preview, that cell might not
+	//   be cleaned up properly
+	// - ideally renders as empty space: the filler alternates between bold
+	//   and regular, using a non-space would look weird to the user.
 	gSixelFiller = '\u2000'
 )
 
@@ -36,12 +44,12 @@ func (sxs *sixelScreen) showSixels() {
 	}
 
 	// XXX: workaround for bug where quitting lf might leave the terminal in bold
-	fmt.Print("\033[0m")
+	fmt.Fprint(os.Stderr, "\033[0m")
 
-	fmt.Print("\0337")                              // Save cursor position
-	fmt.Printf("\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
-	fmt.Print(*sxs.sixel)                           //
-	fmt.Print("\0338")                              // Restore cursor position
+	fmt.Fprint(os.Stderr, "\0337")                              // Save cursor position
+	fmt.Fprintf(os.Stderr, "\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
+	fmt.Fprint(os.Stderr, *sxs.sixel)                           //
+	fmt.Fprint(os.Stderr, "\0338")                              // Restore cursor position
 }
 
 func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {

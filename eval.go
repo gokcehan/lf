@@ -1151,6 +1151,12 @@ func onChdir(app *app) {
 	}
 }
 
+func onRedraw(app *app) {
+	if cmd, ok := gOpts.cmds["on-redraw"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func onSelect(app *app) {
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
@@ -1960,6 +1966,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			dir.boundPos(app.nav.height)
 		}
 		app.ui.loadFile(app, true)
+		onRedraw(app)
 	case "load":
 		if !app.nav.init {
 			return
