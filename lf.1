@@ -231,8 +231,6 @@ The following special shell commands are used to customize the behavior of lf wh
     pre-cd
     on-cd
     on-select
-    on-ui-enter
-    on-ui-exit
     on-quit
 .EE
 .PP
@@ -1333,18 +1331,6 @@ This shell command can be defined to be executed after changing a directory.
 .EE
 .PP
 This shell command can be defined to be executed after the selection changes.
-.PP
-.EX
-    on-ui-enter
-.EE
-.PP
-This shell command can be defined to be executed when the UI of lf becomes active. This will be triggered after lf starts and when foreground shell commands finish.
-.PP
-.EX
-    on-ui-exit
-.EE
-.PP
-This shell command can be defined to be executed when the UI of lf becomes inactive. This will be triggered before lf exits and before starting foreground shell commands.
 .PP
 .EX
     on-quit
