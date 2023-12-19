@@ -68,6 +68,15 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
+	case "hidecursorinactive":
+		if e.val == "" || e.val == "true" {
+			gOpts.hidecursorinactive = true
+		} else if e.val == "false" {
+			gOpts.hidecursorinactive = false
+		} else {
+			app.ui.echoerr("hidecursorinactive: value should be empty, 'true', or 'false'")
+			return
+		}
 	case "dircache":
 		if e.val == "" || e.val == "true" {
 			gOpts.dircache = true
@@ -1160,22 +1169,6 @@ func onRedraw(app *app) {
 func onSelect(app *app) {
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
-	}
-}
-
-func onUiEnter(app *app) {
-	if cmd, ok := gOpts.cmds["on-ui-enter"]; ok {
-		ecmd := cmd.(*execExpr)
-		ecmd.prefix = "^"
-		ecmd.eval(app, nil)
-	}
-}
-
-func onUiExit(app *app) {
-	if cmd, ok := gOpts.cmds["on-ui-exit"]; ok {
-		ecmd := cmd.(*execExpr)
-		ecmd.prefix = "^"
-		ecmd.eval(app, nil)
 	}
 }
 
@@ -2786,9 +2779,6 @@ func (e *execExpr) eval(app *app, args []string) {
 		app.runShell(e.value, args, e.prefix)
 	case "&":
 		log.Printf("shell-async: %s -- %s", e, args)
-		app.runShell(e.value, args, e.prefix)
-	case "^":
-		log.Printf("shell-sync-evt: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	default:
 		log.Printf("evaluating unknown execution prefix: %q", e.prefix)

@@ -301,8 +301,7 @@ func (app *app) loop() {
 			}
 		}()
 	}
-
-	onUiEnter(app)
+	app.ui.screen.EnableFocus()
 
 	for {
 		select {
@@ -326,7 +325,7 @@ func (app *app) loop() {
 				cmd.eval(app, nil)
 			}
 
-			onUiExit(app)
+			app.ui.screen.DisableFocus()
 			app.quit()
 
 			app.nav.previewChan <- ""
@@ -473,7 +472,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	app.nav.previewChan <- ""
 	app.nav.dirPreviewChan <- nil
 
-	onUiExit(app)
+	app.ui.screen.DisableFocus()
 	if err := app.ui.suspend(); err != nil {
 		log.Printf("suspend: %s", err)
 	}
@@ -482,7 +481,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 			app.quit()
 			os.Exit(3)
 		}
-		onUiEnter(app)
+		app.ui.screen.EnableFocus()
 	}()
 
 	if err := cmd.Run(); err != nil {
@@ -503,7 +502,6 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 //	%       No    No     Yes    Yes     Yes     Statline for input/output
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
-//	^       No    No     Yes    Yes     Yes     (internal for events)
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
@@ -522,17 +520,11 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	var out io.Reader
 	var err error
 	switch prefix {
-	case "$", "!", "^":
+	case "$", "!":
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
-		if prefix != "^" {
-			app.runCmdSync(cmd, prefix == "!")
-		} else {
-			if err := cmd.Run(); err != nil {
-				app.ui.echoerrf("running ^shell: %s", err)
-			}
-		}
+		app.runCmdSync(cmd, prefix == "!")
 		return
 	}
 
