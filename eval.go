@@ -15,6 +15,7 @@ import (
 )
 
 var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]func(e *setExpr, app *app) bool{
+	// Boolean options
 	"anchorfind":       useOption(&gOpts.anchorfind, setTrueOrFalseBooleanOption),
 	"autoquit":         useOption(&gOpts.autoquit, setTrueOrFalseBooleanOption),
 	"history":          useOption(&gOpts.history, setTrueOrFalseBooleanOption),
@@ -31,19 +32,15 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"anchorfind!":      useOption(&gOpts.anchorfind, flipBooleanOption),
 	"noautoquit":       useOption(&gOpts.autoquit, setFalseBooleanOption),
 	"autoquit!":        useOption(&gOpts.autoquit, flipBooleanOption),
-	"borderfmt":        useOption(&gOpts.borderfmt, setStringOption),
-	"cursoractivefmt":  useOption(&gOpts.cursoractivefmt, setStringOption),
-	"cursorparentfmt":  useOption(&gOpts.cursorparentfmt, setStringOption),
-	"cursorpreviewfmt": useOption(&gOpts.cursorpreviewfmt, setStringOption),
 	"nodircache":       useOption(&gOpts.dircache, setFalseBooleanOption),
 	"dircache!":        useOption(&gOpts.dircache, flipBooleanOption),
 	"nodircounts":      useOption(&gOpts.dircounts, setFalseBooleanOption),
 	"dircounts!":       useOption(&gOpts.dircounts, flipBooleanOption),
-	"dironly":          useOptionWithCleanup(&gOpts.dironly, setTrueOrFalseBooleanOption, sortAndPositionApp),
+	"dironly":          useOptionWithCleanup(&gOpts.dironly, setTrueOrFalseBooleanOption, sortAndPositionAppCleanup),
 	"promptfmt":        useOption(&gOpts.promptfmt, setStringOption),
 	"cleaner":          useOption(&gOpts.promptfmt, setStringOptionReplaceTilde),
-	"nodironly":        useOptionWithCleanup(&gOpts.dironly, setFalseBooleanOption, sortAndPositionApp),
-	"dironly!":         useOptionWithCleanup(&gOpts.dironly, flipBooleanOption, sortAndPositionApp),
+	"nodironly":        useOptionWithCleanup(&gOpts.dironly, setFalseBooleanOption, sortAndPositionAppCleanup),
+	"dironly!":         useOptionWithCleanup(&gOpts.dironly, flipBooleanOption, sortAndPositionAppCleanup),
 	"dirpreviews!":     useOption(&gOpts.dirpreviews, flipBooleanOption),
 	"nodirpreviews":    useOption(&gOpts.dirpreviews, setFalseBooleanOption),
 	"dupfilefmt":       useOption(&gOpts.dupfilefmt, setStringOption),
@@ -56,7 +53,6 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"ignoredia":        useOptionWithCleanup(&gOpts.ignoredia, setTrueOrFalseBooleanOption, sortApp),
 	"ignoredia!":       useOptionWithCleanup(&gOpts.ignoredia, flipBooleanOption, sortApp),
 	"noignoredia":      useOptionWithCleanup(&gOpts.ignoredia, setFalseBooleanOption, sortApp),
-	"ifs":              useOption(&gOpts.ifs, setStringOption),
 	"ignorecase":       useOptionWithCleanup(&gOpts.ignorecase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
 	"noignorecase":     useOptionWithCleanup(&gOpts.ignorecase, setFalseBooleanOption, sortApp, loadFileCleanup),
 	"ignorecase!":      useOptionWithCleanup(&gOpts.ignorecase, flipBooleanOption, sortApp, loadFileCleanup),
@@ -70,15 +66,77 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"history!":         useOption(&gOpts.history, flipBooleanOption),
 	"noicons":          useOption(&gOpts.icons, setFalseBooleanOption),
 	"icons!":           useOption(&gOpts.icons, flipBooleanOption),
-	"rulerfmt":         useOption(&gOpts.rulerfmt, setStringOption),
-	"infotimefmtnew":   useOption(&gOpts.infotimefmtnew, setStringOption),
-	"infotimefmtold":   useOption(&gOpts.infotimefmtold, setStringOption),
 	"number":           useOption(&gOpts.number, setTrueOrFalseBooleanOption),
 	"number!":          useOption(&gOpts.number, flipBooleanOption),
 	"nonumber":         useOption(&gOpts.number, setFalseBooleanOption),
-	"nonumberfmt":      useOption(&gOpts.numberfmt, setStringOption),
 	"nopreview":        useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
 	"ruler":            useOption(&gOpts.ruler, evalRulerOption),
+	"noincfilter":      useOption(&gOpts.incfilter, setFalseBooleanOption),
+	"incfilter!":       useOption(&gOpts.incfilter, flipBooleanOption),
+	"norelativenumber": useOption(&gOpts.relativenumber, setFalseBooleanOption),
+	"relativenumber!":  useOption(&gOpts.relativenumber, flipBooleanOption),
+	"smartcase":        useOptionWithCleanup(&gOpts.smartcase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"nosmartcase":      useOptionWithCleanup(&gOpts.smartcase, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"smartcase!":       useOptionWithCleanup(&gOpts.smartcase, flipBooleanOption, sortApp, loadFileCleanup),
+	"sixel!":           useOption(&gOpts.sixel, flipBooleanOption),
+	"nosixel":          useOption(&gOpts.sixel, setFalseBooleanOption),
+	"wrapscroll!":      useOption(&gOpts.wrapscroll, flipBooleanOption),
+	"nowrapscroll":     useOption(&gOpts.wrapscroll, setFalseBooleanOption),
+	"wrapscan!":        useOption(&gOpts.wrapscan, flipBooleanOption),
+	"nowrapscan":       useOption(&gOpts.wrapscan, setFalseBooleanOption),
+	"nosmartdia":       useOption(&gOpts.smartcase, setFalseBooleanOption),
+	"smartdia!":        useOption(&gOpts.smartcase, flipBooleanOption),
+
+	// String Options
+	"borderfmt":        useOption(&gOpts.borderfmt, setStringOption),
+	"cursoractivefmt":  useOption(&gOpts.cursoractivefmt, setStringOption),
+	"cursorparentfmt":  useOption(&gOpts.cursorparentfmt, setStringOption),
+	"cursorpreviewfmt": useOption(&gOpts.cursorpreviewfmt, setStringOption),
+	"ifs":              useOption(&gOpts.ifs, setStringOption),
+	"infotimefmtnew":   useOption(&gOpts.infotimefmtnew, setStringOption),
+	"infotimefmtold":   useOption(&gOpts.infotimefmtold, setStringOption),
+	"nonumberfmt":      useOption(&gOpts.numberfmt, setStringOption),
+	"rulerfmt":         useOption(&gOpts.rulerfmt, setStringOption),
+	"shell":            useOption(&gOpts.shell, setStringOption),
+	"shellflag":        useOption(&gOpts.shellflag, setStringOption),
+	"statfmt":          useOption(&gOpts.statfmt, setStringOption),
+	"tagfmt":           useOption(&gOpts.tagfmt, setStringOption),
+	"timefmt":          useOption(&gOpts.timefmt, setStringOption),
+	"waitmsg":          useOption(&gOpts.waitmsg, setStringOption),
+	"previewer":        useOption(&gOpts.previewer, setStringOptionReplaceTilde),
+
+	// Sort Options
+	"hidden":     useSortOptionWithCleanup(hiddenSort, setTrueOrFalseSortOption, sortAndPositionAppCleanup),
+	"nohidden":   useSortOptionWithCleanup(hiddenSort, setFalseSortOption, sortAndPositionAppCleanup),
+	"hidden!":    useSortOptionWithCleanup(hiddenSort, flipSortOption, sortAndPositionAppCleanup),
+	"dirfirst":   useSortOptionWithCleanup(dirfirstSort, setTrueOrFalseSortOption, sortApp),
+	"dirfirst!":  useSortOptionWithCleanup(dirfirstSort, flipSortOption, sortApp),
+	"nodirfirst": useSortOptionWithCleanup(dirfirstSort, setFalseSortOption, sortApp),
+	"reverse":    useSortOptionWithCleanup(reverseSort, setTrueOrFalseSortOption, sortApp),
+	"reverse!":   useSortOptionWithCleanup(reverseSort, setFalseSortOption, sortApp),
+	"noreverse":  useSortOptionWithCleanup(reverseSort, setFalseSortOption, sortApp),
+
+	// []String options
+	"hiddenfiles": setHiddenFiles,
+}
+
+func setHiddenFiles(expression *setExpr, app *app) bool {
+
+	toks := strings.Split(expression.val, ":")
+	for _, s := range toks {
+		if s == "" {
+			app.ui.echoerr("hiddenfiles: glob should be non-empty")
+			return false
+		}
+		_, err := filepath.Match(s, "a")
+		if err != nil {
+			app.ui.echoerrf("hiddenfiles: %s", err)
+			return false
+		}
+	}
+	gOpts.hiddenfiles = toks
+	sortAndPositionAppCleanup(app)
+	return true
 }
 
 // cleanup used by the drawbox family of options
@@ -93,7 +151,7 @@ func drawBoxCleanup(app *app) {
 }
 
 // Used as a cleanup function in evalOptToFuncMap
-func sortAndPositionApp(app *app) {
+func sortAndPositionAppCleanup(app *app) {
 	app.nav.sort()
 	app.nav.position()
 	app.ui.sort()
@@ -134,6 +192,22 @@ func useOptionWithCleanup[optionType any](option *optionType, setOptionFunc func
 
 }
 
+// Nearly identical to useOptionWithCleanup, because all sortOptions are constants (and can not be indirected)
+// and all sort options modify the same global variable ( gOpts.sortType.option), this version does not expect
+// optionTypes to be pointers
+func useSortOptionWithCleanup[optionType any](option optionType, setOptionFunc func(e *setExpr, app *app, optionParam optionType) bool, cleanupFuncs ...func(app *app)) func(e *setExpr, app *app) bool {
+	return func(e *setExpr, app *app) bool {
+		successStatus := setOptionFunc(e, app, option)
+		if successStatus {
+			for _, cleanupFunc := range cleanupFuncs {
+				cleanupFunc(app)
+			}
+		}
+		return successStatus
+	}
+
+}
+
 // Sets a boolean option to true if the passed in expression's value is empty or "true", false if it is set to "false"
 // If expression.val is not empty, true, or false, the passed in ui will echo an error and the function will return false.
 // For any valid expression, the function will return true.
@@ -141,14 +215,45 @@ func setTrueOrFalseBooleanOption(expression *setExpr, app *app, option *bool) bo
 	if expression.val == "" || expression.val == "true" {
 		*option = true
 		return true
-	}
-	if expression.val == "false" {
+	} else if expression.val == "false" {
 		*option = false
-		return true
+	} else {
+		app.ui.echoerrf("%s: value should be empty, 'true', or 'false", expression.opt)
+		return false
 	}
+	return true
+}
 
-	app.ui.echoerrf("%s: value should be empty, 'true', or 'false", expression.opt)
-	return false
+// The various sort options use bitwise assignments, all of them set gOpts.SortType.opion so sortOption
+// represents the value it is being set to
+func setTrueOrFalseSortOption(expression *setExpr, app *app, sortOption sortOption) bool {
+	if expression.val == "" || expression.val == "true" {
+		gOpts.sortType.option |= sortOption
+	} else if expression.val == "false" {
+		gOpts.sortType.option &= sortOption
+	} else {
+		app.ui.echoerrf("%s: value should be empty, 'true', or 'false", expression.opt)
+		return false
+	}
+	return true
+
+}
+
+func setFalseSortOption(expression *setExpr, app *app, sortOption sortOption) bool {
+	if expression.val != "" {
+		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
+		return false
+	}
+	gOpts.sortType.option &= ^sortOption
+	return true
+}
+func flipSortOption(expression *setExpr, app *app, sortOption sortOption) bool {
+	if expression.val != "" {
+		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
+		return false
+	}
+	gOpts.sortType.option ^= sortOption
+	return true
 }
 
 // Sets a boolean option to false
@@ -222,33 +327,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		return
 	}
 	switch e.opt {
-	case "dirfirst":
-		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= dirfirstSort
-		} else if e.val == "false" {
-			gOpts.sortType.option &= ^dirfirstSort
-		} else {
-			app.ui.echoerr("dirfirst: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "nodirfirst":
-		if e.val != "" {
-			app.ui.echoerrf("nodirfirst: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option &= ^dirfirstSort
-		app.nav.sort()
-		app.ui.sort()
-	case "dirfirst!":
-		if e.val != "" {
-			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option ^= dirfirstSort
-		app.nav.sort()
-		app.ui.sort()
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -260,69 +338,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "hidden":
-		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= hiddenSort
-		} else if e.val == "false" {
-			gOpts.sortType.option &= ^hiddenSort
-		} else {
-			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nohidden":
-		if e.val != "" {
-			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option &= ^hiddenSort
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "hidden!":
-		if e.val != "" {
-			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option ^= hiddenSort
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "hiddenfiles":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			if s == "" {
-				app.ui.echoerr("hiddenfiles: glob should be non-empty")
-				return
-			}
-			_, err := filepath.Match(s, "a")
-			if err != nil {
-				app.ui.echoerrf("hiddenfiles: %s", err)
-				return
-			}
-		}
-		gOpts.hiddenfiles = toks
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "noincfilter":
-		if e.val != "" {
-			app.ui.echoerrf("noincfilter: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incfilter = false
-	case "incfilter!":
-		if e.val != "" {
-			app.ui.echoerrf("incfilter!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incfilter = !gOpts.incfilter
 	case "info":
 		if e.val == "" {
 			gOpts.info = nil
@@ -431,8 +446,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 		gOpts.preview = !gOpts.preview
 		app.ui.loadFile(app, true)
-	case "previewer":
-		gOpts.previewer = replaceTilde(e.val)
 	case "ratios":
 		toks := strings.Split(e.val, ":")
 		var rats []int
@@ -455,45 +468,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
 		app.ui.loadFile(app, true)
-	case "norelativenumber":
-		if e.val != "" {
-			app.ui.echoerrf("norelativenumber: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.relativenumber = false
-	case "relativenumber!":
-		if e.val != "" {
-			app.ui.echoerrf("relativenumber!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.relativenumber = !gOpts.relativenumber
-	case "reverse":
-		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= reverseSort
-		} else if e.val == "false" {
-			gOpts.sortType.option &= ^reverseSort
-		} else {
-			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "noreverse":
-		if e.val != "" {
-			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option &= ^reverseSort
-		app.nav.sort()
-		app.ui.sort()
-	case "reverse!":
-		if e.val != "" {
-			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sortType.option ^= reverseSort
-		app.nav.sort()
-		app.ui.sort()
+
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -513,58 +488,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
 			return
 		}
-	case "shell":
-		gOpts.shell = e.val
-	case "shellflag":
-		gOpts.shellflag = e.val
 	case "shellopts":
 		if e.val == "" {
 			gOpts.shellopts = nil
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
-	case "smartcase":
-		if e.val == "" || e.val == "true" {
-			gOpts.smartcase = true
-		} else if e.val == "false" {
-			gOpts.smartcase = false
-		} else {
-			app.ui.echoerr("smartcase: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nosmartcase":
-		if e.val != "" {
-			app.ui.echoerrf("nosmartcase: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartcase = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "smartcase!":
-		if e.val != "" {
-			app.ui.echoerrf("smartcase!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartcase = !gOpts.smartcase
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nosmartdia":
-		if e.val != "" {
-			app.ui.echoerrf("nosmartdia: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartdia = false
-	case "smartdia!":
-		if e.val != "" {
-			app.ui.echoerrf("smartdia!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
 		switch e.val {
 		case "natural":
@@ -587,8 +516,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 		app.nav.sort()
 		app.ui.sort()
-	case "statfmt":
-		gOpts.statfmt = e.val
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -600,16 +527,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.tabstop = n
-	case "tagfmt":
-		gOpts.tagfmt = e.val
 	case "tempmarks":
 		if e.val != "" {
 			gOpts.tempmarks = "'" + e.val
 		} else {
 			gOpts.tempmarks = "'"
 		}
-	case "timefmt":
-		gOpts.timefmt = e.val
 	case "truncatechar":
 		if runeSliceWidth([]rune(e.val)) != 1 {
 			app.ui.echoerr("truncatechar: value should be a single character")
@@ -628,44 +551,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.truncatepct = n
-	case "waitmsg":
-		gOpts.waitmsg = e.val
-	case "nowrapscan":
-		if e.val != "" {
-			app.ui.echoerrf("nowrapscan: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscan = false
-	case "wrapscan!":
-		if e.val != "" {
-			app.ui.echoerrf("wrapscan!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscan = !gOpts.wrapscan
-	case "nowrapscroll":
-		if e.val != "" {
-			app.ui.echoerrf("nowrapscroll: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscroll = false
-	case "wrapscroll!":
-		if e.val != "" {
-			app.ui.echoerrf("wrapscroll!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscroll = !gOpts.wrapscroll
-	case "nosixel":
-		if e.val != "" {
-			app.ui.echoerrf("nosixel: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sixel = false
-	case "sixel!":
-		if e.val != "" {
-			app.ui.echoerrf("sixel!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sixel = !gOpts.sixel
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
