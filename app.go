@@ -301,7 +301,6 @@ func (app *app) loop() {
 			}
 		}()
 	}
-	app.ui.screen.EnableFocus()
 
 	for {
 		select {
@@ -325,7 +324,6 @@ func (app *app) loop() {
 				cmd.eval(app, nil)
 			}
 
-			app.ui.screen.DisableFocus()
 			app.quit()
 
 			app.nav.previewChan <- ""
@@ -465,14 +463,12 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		}
 	}
-
 }
 
 func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	app.nav.previewChan <- ""
 	app.nav.dirPreviewChan <- nil
 
-	app.ui.screen.DisableFocus()
 	if err := app.ui.suspend(); err != nil {
 		log.Printf("suspend: %s", err)
 	}
@@ -481,7 +477,6 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 			app.quit()
 			os.Exit(3)
 		}
-		app.ui.screen.EnableFocus()
 	}()
 
 	if err := cmd.Run(); err != nil {
@@ -524,6 +519,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
+
 		app.runCmdSync(cmd, prefix == "!")
 		return
 	}

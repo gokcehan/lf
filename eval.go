@@ -77,6 +77,18 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerr("hidecursorinactive: value should be empty, 'true', or 'false'")
 			return
 		}
+	case "nohidecursorinactive":
+		if e.val != "" {
+			app.ui.echoerrf("nohidecursorinactive: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = false
+	case "hidecursorinactive!":
+		if e.val != "" {
+			app.ui.echoerrf("hidecursorinactive!: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = !gOpts.hidecursorinactive
 	case "dircache":
 		if e.val == "" || e.val == "true" {
 			gOpts.dircache = true
