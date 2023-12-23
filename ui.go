@@ -1449,7 +1449,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		log.Printf("Got EventInterrupt: at %s", tev.When())
 	case *tcell.EventFocus:
 		ui.focused = tev.Focused
-		return &callExpr{"redraw", nil, 1}
+		return draw
 	}
 	return nil
 }
