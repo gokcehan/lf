@@ -5,17 +5,29 @@ import (
 	"time"
 )
 
-type sortMethod byte
+// String values match the sortby string sent by the user at startup
+type sortMethod string
 
 const (
-	naturalSort sortMethod = iota
-	nameSort
-	sizeSort
-	timeSort
-	atimeSort
-	ctimeSort
-	extSort
+	naturalSort sortMethod = "natural"
+	nameSort    sortMethod = "name"
+	sizeSort    sortMethod = "size"
+	timeSort    sortMethod = "time"
+	atimeSort   sortMethod = "atime"
+	ctimeSort   sortMethod = "ctime"
+	extSort     sortMethod = "ext"
 )
+
+func isValidSortMethod(method sortMethod) bool {
+	for _, validMethod := range []sortMethod{naturalSort, nameSort, sizeSort, timeSort, atimeSort, ctimeSort, extSort} {
+		if method == validMethod {
+			return true
+		}
+	}
+	return false
+}
+
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'`
 
 type sortOption byte
 

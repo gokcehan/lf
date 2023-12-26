@@ -13,9 +13,9 @@ import (
 	"runtime/pprof"
 	"strconv"
 	"strings"
-)
 
-import _ "embed"
+	_ "embed"
+)
 
 //go:embed doc.txt
 var genDocString string
@@ -137,28 +137,8 @@ func getOptsMap() map[string]string {
 			continue
 		}
 
-		// Get string representation of the value
 		if name == "lf_sortType" {
-			var sortby string
-
-			switch gOpts.sortType.method {
-			case naturalSort:
-				sortby = "natural"
-			case nameSort:
-				sortby = "name"
-			case sizeSort:
-				sortby = "size"
-			case timeSort:
-				sortby = "time"
-			case ctimeSort:
-				sortby = "ctime"
-			case atimeSort:
-				sortby = "atime"
-			case extSort:
-				sortby = "ext"
-			}
-
-			opts["lf_sortby"] = sortby
+			opts["lf_sortby"] = string(gOpts.sortType.method)
 			opts["lf_reverse"] = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
 			opts["lf_hidden"] = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
 			opts["lf_dirfirst"] = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
