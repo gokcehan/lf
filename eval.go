@@ -1451,16 +1451,20 @@ func insert(app *app, arg string) {
 		app.nav.marks[arg] = app.nav.currDir().path
 		if err := app.nav.writeMarks(); err != nil {
 			app.ui.echoerrf("mark-save: %s", err)
+			return
 		}
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
 				app.ui.echoerrf("mark-save: %s", err)
+				return
 			}
 		} else {
 			if err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-save: %s", err)
+				return
 			}
 		}
+		app.ui.loadFileInfo(app.nav)
 	case app.ui.cmdPrefix == "mark-load: ":
 		normal(app)
 
@@ -1505,12 +1509,15 @@ func insert(app *app, arg string) {
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
 				app.ui.echoerrf("mark-remove: %s", err)
+				return
 			}
 		} else {
 			if err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-remove: %s", err)
+				return
 			}
 		}
+		app.ui.loadFileInfo(app.nav)
 	case app.ui.cmdPrefix == ":" && len(app.ui.cmdAccLeft) == 0:
 		switch arg {
 		case "!", "$", "%", "&":
