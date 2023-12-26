@@ -69,7 +69,6 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"number":           useOption(&gOpts.number, setTrueOrFalseBooleanOption),
 	"number!":          useOption(&gOpts.number, flipBooleanOption),
 	"nonumber":         useOption(&gOpts.number, setFalseBooleanOption),
-	"nopreview":        useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
 	"ruler":            useOption(&gOpts.ruler, evalRulerOption),
 	"noincfilter":      useOption(&gOpts.incfilter, setFalseBooleanOption),
 	"incfilter!":       useOption(&gOpts.incfilter, flipBooleanOption),
@@ -86,6 +85,17 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"nowrapscan":       useOption(&gOpts.wrapscan, setFalseBooleanOption),
 	"nosmartdia":       useOption(&gOpts.smartcase, setFalseBooleanOption),
 	"smartdia!":        useOption(&gOpts.smartcase, flipBooleanOption),
+
+	// Preview boolean options have their own logic to ensure ratios is set
+	// this doesn't apply to nopreview as the logic is only needed when the option is set to true
+	"preview":   UsePreviewBoolOption(setTrueOrFalseBooleanOption),
+	"preview!":  UsePreviewBoolOption(flipBooleanOption),
+	"nopreview": useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
+
+	// Mouse options are booleans but have special logic to enable/disable mouse after changes
+	"mouse":   useMouseOption(setTrueOrFalseBooleanOption),
+	"nomouse": useMouseOption(setFalseBooleanOption),
+	"mouse!":  useMouseOption(flipBooleanOption),
 
 	// String Options
 	"borderfmt":        useOption(&gOpts.borderfmt, setStringOption),
@@ -104,6 +114,9 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"timefmt":          useOption(&gOpts.timefmt, setStringOption),
 	"waitmsg":          useOption(&gOpts.waitmsg, setStringOption),
 	"previewer":        useOption(&gOpts.previewer, setStringOptionReplaceTilde),
+	"tempmarks":        tempMarksOptionFunc,
+	"truncatechar":     setTruncateCharGlobalOption,
+	"selmode":          setSelmodeGlobalOption,
 
 	// Sort Options
 	"hidden":     useSortOptionWithCleanup(hiddenSort, setTrueOrFalseSortOption, sortAndPositionAppCleanup),
@@ -118,8 +131,24 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 
 	// []String options
 	"hiddenfiles": setHiddenFiles,
+	"shellopts":   setShellOpts,
+	"info":        setInfoGlobalOption,
+	"preserve":    setPreserveGlobalOpt,
+
+	// int options
+	"findlen":     setFindLenGlobalOpt,
+	"truncatepct": setTruncatepctGlobalOption,
+	"tablstop":    setTabStopGlobalOption,
+	"period":      setPeriodGlobalOption,
+	"scrolloff":   setScrollOffGlobalOption,
+	// []int options
+	"ratios": setRatiosGlobalOpt,
+
+	// SortMethod option
+	"sortby": setSortByGlobalOption,
 }
 
+// sets gOpts.hiddenfiles
 func setHiddenFiles(expression *setExpr, app *app) bool {
 
 	toks := strings.Split(expression.val, ":")
@@ -136,6 +165,30 @@ func setHiddenFiles(expression *setExpr, app *app) bool {
 	}
 	gOpts.hiddenfiles = toks
 	sortAndPositionAppCleanup(app)
+	return true
+}
+
+func setShellOpts(expression *setExpr, app *app) bool {
+	if expression.val == "" {
+		gOpts.shellopts = nil
+		return false
+	}
+	gOpts.shellopts = strings.Split(expression.val, ":")
+	return true
+}
+
+func setFindLenGlobalOpt(expression *setExpr, app *app) bool {
+
+	n, err := strconv.Atoi(expression.val)
+	if err != nil {
+		app.ui.echoerrf("findlen: %s", err)
+		return false
+	}
+	if n < 0 {
+		app.ui.echoerr("findlen: value should be a non-negative number")
+		return false
+	}
+	gOpts.findlen = n
 	return true
 }
 
@@ -188,6 +241,46 @@ func useOptionWithCleanup[optionType any](option *optionType, setOptionFunc func
 			}
 		}
 		return successStatus
+	}
+
+}
+
+// The preview option should never be set to true while ratios has less than two values
+// This wraps a bool setting option func and verifies, if it set gOpts.preview to true
+// that ratios has the correct number of values
+func UsePreviewBoolOption(setPreviewOptionFunc func(e *setExpr, app *app, optionParam *bool) bool) func(e *setExpr, app *app) bool {
+	return func(e *setExpr, app *app) bool {
+		optionFuncStatus := setPreviewOptionFunc(e, app, &gOpts.preview)
+
+		if gOpts.preview && len(gOpts.ratios) < 2 {
+			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+			gOpts.preview = false
+			return false
+		}
+
+		app.ui.loadFile(app, true)
+		return optionFuncStatus
+	}
+}
+
+// Functions that set mouse options need to call app.ui.screen.EnableMouse/DisableMouse when and only when the option is actually changed
+// This function wraps the passed in setMouseOptionFunction, records the current
+func useMouseOption(setMouseOptionFunc func(expression *setExpr, app *app, option *bool) bool) func(e *setExpr, app *app) bool {
+	originalMouseStatus := gOpts.mouse
+	return func(expression *setExpr, app *app) (status bool) {
+		status = setMouseOptionFunc(expression, app, &gOpts.mouse)
+		// unchanged mouse status
+		if gOpts.mouse == originalMouseStatus {
+			return
+		}
+		// DisableMouse when it's been set to false
+		if !gOpts.mouse {
+			app.ui.screen.DisableMouse()
+			return
+		}
+		app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
+		return
+
 	}
 
 }
@@ -280,6 +373,66 @@ func setStringOptionReplaceTilde(expression *setExpr, _ *app, option *string) bo
 
 }
 
+func setSelmodeGlobalOption(expression *setExpr, app *app) bool {
+	switch expression.val {
+	case "all", "dir":
+		gOpts.selmode = expression.val
+		return true
+	default:
+		app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
+		return false
+	}
+}
+
+func tempMarksOptionFunc(expression *setExpr, app *app) bool {
+	if expression.val != "" {
+		gOpts.tempmarks = "'" + expression.val
+	} else {
+		gOpts.tempmarks = "'"
+	}
+	return true
+}
+
+func setTruncateCharGlobalOption(expression *setExpr, app *app) bool {
+	if runeSliceWidth([]rune(expression.val)) != 1 {
+		app.ui.echoerr("truncatechar: value should be a single character")
+		return false
+	}
+	gOpts.truncatechar = expression.val
+	return true
+
+}
+
+func setTruncatepctGlobalOption(expression *setExpr, app *app) bool {
+
+	n, err := strconv.Atoi(expression.val)
+	if err != nil {
+		app.ui.echoerrf("truncatepct: %s", err)
+		return false
+	}
+	if n < 0 || n > 100 {
+		app.ui.echoerrf("truncatepct: must be between 0 and 100 (both inclusive), got %d", n)
+		return false
+	}
+	gOpts.truncatepct = n
+	return true
+}
+
+func setScrollOffGlobalOption(expression *setExpr, app *app) bool {
+	n, err := strconv.Atoi(expression.val)
+	if err != nil {
+		app.ui.echoerrf("scrolloff: %s", err)
+		return false
+	}
+	if n < 0 {
+		app.ui.echoerr("scrolloff: value should be a non-negative number")
+		return false
+	}
+	gOpts.scrolloff = n
+	return true
+
+}
+
 // Flips a boolean's option
 // If the passed in expression's val is not empty, returns false and passed in ui prints an error
 func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
@@ -292,7 +445,100 @@ func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
 	return true
 }
 
-// One off functions
+func setRatiosGlobalOpt(expression *setExpr, app *app) bool {
+
+	toks := strings.Split(expression.val, ":")
+	var rats []int
+	for _, s := range toks {
+		n, err := strconv.Atoi(s)
+		if err != nil {
+			app.ui.echoerrf("ratios: %s", err)
+			return false
+		}
+		if n <= 0 {
+			app.ui.echoerr("ratios: value should be a positive number")
+			return false
+		}
+		rats = append(rats, n)
+	}
+	if gOpts.preview && len(rats) < 2 {
+		app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
+		return false
+	}
+	gOpts.ratios = rats
+	app.ui.wins = getWins(app.ui.screen)
+	return true
+}
+
+func setTabStopGlobalOption(expression *setExpr, app *app) bool {
+
+	n, err := strconv.Atoi(expression.val)
+	if err != nil {
+		app.ui.echoerrf("tabstop: %s", err)
+		return false
+	}
+	if n <= 0 {
+		app.ui.echoerr("tabstop: value should be a positive number")
+		return false
+	}
+	gOpts.tabstop = n
+	return true
+}
+
+func setPeriodGlobalOption(expression *setExpr, app *app) bool {
+	n, err := strconv.Atoi(expression.val)
+	if err != nil {
+		app.ui.echoerrf("period: %s", err)
+		return false
+	}
+	if n < 0 {
+		app.ui.echoerr("period: value should be a non-negative number")
+		return false
+	}
+	gOpts.period = n
+	app.ticker.Stop()
+	if n != 0 {
+		app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
+	}
+	return true
+}
+
+func setInfoGlobalOption(expression *setExpr, app *app) bool {
+	if expression.val == "" {
+		gOpts.info = nil
+		return false
+	}
+	toks := strings.Split(expression.val, ":")
+	for _, s := range toks {
+		switch s {
+		case "size", "time", "atime", "ctime":
+		default:
+			app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
+			return false
+		}
+	}
+	gOpts.info = toks
+	return true
+}
+
+func setPreserveGlobalOpt(expression *setExpr, app *app) bool {
+
+	if expression.val == "" {
+		gOpts.preserve = nil
+		return false
+	}
+	toks := strings.Split(expression.val, ":")
+	for _, tok := range toks {
+		switch tok {
+		case "mode", "timestamps":
+		default:
+			app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
+			return false
+		}
+	}
+	gOpts.preserve = toks
+	return true
+}
 
 // ruler is a deprecated option with unique logic and always signals an early return
 func evalRulerOption(expression *setExpr, app *app, option *[]string) (alwaysReturnsFalse bool) {
@@ -317,6 +563,30 @@ func evalRulerOption(expression *setExpr, app *app, option *[]string) (alwaysRet
 
 }
 
+func setSortByGlobalOption(expression *setExpr, app *app) bool {
+	switch expression.val {
+	case "natural":
+		gOpts.sortType.method = naturalSort
+	case "name":
+		gOpts.sortType.method = nameSort
+	case "size":
+		gOpts.sortType.method = sizeSort
+	case "time":
+		gOpts.sortType.method = timeSort
+	case "ctime":
+		gOpts.sortType.method = ctimeSort
+	case "atime":
+		gOpts.sortType.method = atimeSort
+	case "ext":
+		gOpts.sortType.method = extSort
+	default:
+		app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+		return false
+	}
+	sortApp(app)
+	return true
+}
+
 func (e *setExpr) eval(app *app, _ []string) {
 	optionFunc, optionFuncFound := evalOptToFuncMap[e.opt]
 	if optionFuncFound {
@@ -326,244 +596,17 @@ func (e *setExpr) eval(app *app, _ []string) {
 		app.ui.loadFileInfo(app.nav)
 		return
 	}
-	switch e.opt {
-	case "findlen":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("findlen: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("findlen: value should be a non-negative number")
-			return
-		}
-		gOpts.findlen = n
-	case "info":
-		if e.val == "" {
-			gOpts.info = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "size", "time", "atime", "ctime":
-			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime' or 'ctime' separated with colon")
-				return
-			}
-		}
-		gOpts.info = toks
-	case "preserve":
-		if e.val == "" {
-			gOpts.preserve = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "mode", "timestamps":
-			default:
-				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
-				return
-			}
-		}
-		gOpts.preserve = toks
-	case "mouse":
-		if e.val == "" || e.val == "true" {
-			if !gOpts.mouse {
-				gOpts.mouse = true
-				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
-			}
-		} else if e.val == "false" {
-			if gOpts.mouse {
-				gOpts.mouse = false
-				app.ui.screen.DisableMouse()
-			}
-		} else {
-			app.ui.echoerr("mouse: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nomouse":
-		if e.val != "" {
-			app.ui.echoerrf("nomouse: unexpected value: %s", e.val)
-			return
-		}
-		if gOpts.mouse {
-			gOpts.mouse = false
-			app.ui.screen.DisableMouse()
-		}
-	case "mouse!":
-		if e.val != "" {
-			app.ui.echoerrf("mouse!: unexpected value: %s", e.val)
-			return
-		}
-		if gOpts.mouse {
-			gOpts.mouse = false
-			app.ui.screen.DisableMouse()
-		} else {
-			gOpts.mouse = true
-			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
-		}
-	case "period":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("period: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("period: value should be a non-negative number")
-			return
-		}
-		gOpts.period = n
-		if n == 0 {
-			app.ticker.Stop()
-		} else {
-			app.ticker.Stop()
-			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
-		}
-	case "preview":
-		if e.val == "" || e.val == "true" {
-			if len(gOpts.ratios) < 2 {
-				app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
-				return
-			}
-			gOpts.preview = true
-		} else if e.val == "false" {
-			gOpts.preview = false
-		} else {
-			app.ui.echoerr("preview: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.ui.loadFile(app, true)
-	case "preview!":
-		if e.val != "" {
-			app.ui.echoerrf("preview!: unexpected value: %s", e.val)
-			return
-		}
-		if len(gOpts.ratios) < 2 {
-			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
-			return
-		}
-		gOpts.preview = !gOpts.preview
-		app.ui.loadFile(app, true)
-	case "ratios":
-		toks := strings.Split(e.val, ":")
-		var rats []int
-		for _, s := range toks {
-			n, err := strconv.Atoi(s)
-			if err != nil {
-				app.ui.echoerrf("ratios: %s", err)
-				return
-			}
-			if n <= 0 {
-				app.ui.echoerr("ratios: value should be a positive number")
-				return
-			}
-			rats = append(rats, n)
-		}
-		if gOpts.preview && len(rats) < 2 {
-			app.ui.echoerr("ratios: should consist of at least two numbers when 'preview' is enabled")
-			return
-		}
-		gOpts.ratios = rats
-		app.ui.wins = getWins(app.ui.screen)
-		app.ui.loadFile(app, true)
-
-	case "scrolloff":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("scrolloff: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("scrolloff: value should be a non-negative number")
-			return
-		}
-		gOpts.scrolloff = n
-	case "selmode":
-		switch e.val {
-		case "all", "dir":
-			gOpts.selmode = e.val
-		default:
-			app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
-			return
-		}
-	case "shellopts":
-		if e.val == "" {
-			gOpts.shellopts = nil
-			return
-		}
-		gOpts.shellopts = strings.Split(e.val, ":")
-	case "sortby":
-		switch e.val {
-		case "natural":
-			gOpts.sortType.method = naturalSort
-		case "name":
-			gOpts.sortType.method = nameSort
-		case "size":
-			gOpts.sortType.method = sizeSort
-		case "time":
-			gOpts.sortType.method = timeSort
-		case "ctime":
-			gOpts.sortType.method = ctimeSort
-		case "atime":
-			gOpts.sortType.method = atimeSort
-		case "ext":
-			gOpts.sortType.method = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "tabstop":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("tabstop: %s", err)
-			return
-		}
-		if n <= 0 {
-			app.ui.echoerr("tabstop: value should be a positive number")
-			return
-		}
-		gOpts.tabstop = n
-	case "tempmarks":
-		if e.val != "" {
-			gOpts.tempmarks = "'" + e.val
-		} else {
-			gOpts.tempmarks = "'"
-		}
-	case "truncatechar":
-		if runeSliceWidth([]rune(e.val)) != 1 {
-			app.ui.echoerr("truncatechar: value should be a single character")
-			return
-		}
-
-		gOpts.truncatechar = e.val
-	case "truncatepct":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("truncatepct: %s", err)
-			return
-		}
-		if n < 0 || n > 100 {
-			app.ui.echoerrf("truncatepct: must be between 0 and 100 (both inclusive), got %d", n)
-			return
-		}
-		gOpts.truncatepct = n
-	default:
-		// any key with the prefix user_ is accepted as a user defined option
-		if strings.HasPrefix(e.opt, "user_") {
-			gOpts.user[e.opt[5:]] = e.val
-			// Export user defined options immediately, so that the current values
-			// are available for some external previewer, which is started in a
-			// different thread and thus cannot export (as `setenv` is not thread-safe).
-			os.Setenv("lf_"+e.opt, e.val)
-		} else {
-			app.ui.echoerrf("unknown option: %s", e.opt)
-		}
+	// any key with the prefix user_ is accepted as a user defined option
+	if !strings.HasPrefix(e.opt, "user_") {
+		app.ui.echoerrf("unknown option: %s", e.opt)
 		return
 	}
+
+	gOpts.user[e.opt[5:]] = e.val
+	// Export user defined options immediately, so that the current values
+	// are available for some external previewer, which is started in a
+	// different thread and thus cannot export (as `setenv` is not thread-safe).
+	os.Setenv("lf_"+e.opt, e.val)
 	app.ui.loadFileInfo(app.nav)
 }
 
