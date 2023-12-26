@@ -68,6 +68,27 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
+	case "hidecursorinactive":
+		if e.val == "" || e.val == "true" {
+			gOpts.hidecursorinactive = true
+		} else if e.val == "false" {
+			gOpts.hidecursorinactive = false
+		} else {
+			app.ui.echoerr("hidecursorinactive: value should be empty, 'true', or 'false'")
+			return
+		}
+	case "nohidecursorinactive":
+		if e.val != "" {
+			app.ui.echoerrf("nohidecursorinactive: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = false
+	case "hidecursorinactive!":
+		if e.val != "" {
+			app.ui.echoerrf("hidecursorinactive!: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = !gOpts.hidecursorinactive
 	case "dircache":
 		if e.val == "" || e.val == "true" {
 			gOpts.dircache = true
