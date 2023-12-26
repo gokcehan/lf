@@ -1960,8 +1960,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reload: %s", err)
 		}
 		app.ui.loadFile(app, true)
-		// clear file information, will be loaded asynchronously
-		app.ui.msg = ""
+		app.ui.loadFileInfo(app.nav)
 	case "read":
 		if app.ui.cmdPrefix == ">" {
 			return
