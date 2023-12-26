@@ -15,7 +15,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.18
+        go-version: "1.18"
 
     - name: Build
       run: gen/xbuild.sh
