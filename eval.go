@@ -72,6 +72,27 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cursorpreviewfmt = e.val
 	case "cutfmt":
 		gOpts.cutfmt = e.val
+	case "hidecursorinactive":
+		if e.val == "" || e.val == "true" {
+			gOpts.hidecursorinactive = true
+		} else if e.val == "false" {
+			gOpts.hidecursorinactive = false
+		} else {
+			app.ui.echoerr("hidecursorinactive: value should be empty, 'true', or 'false'")
+			return
+		}
+	case "nohidecursorinactive":
+		if e.val != "" {
+			app.ui.echoerrf("nohidecursorinactive: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = false
+	case "hidecursorinactive!":
+		if e.val != "" {
+			app.ui.echoerrf("hidecursorinactive!: unexpected value: %s", e.val)
+			return
+		}
+		gOpts.hidecursorinactive = !gOpts.hidecursorinactive
 	case "dircache":
 		if e.val == "" || e.val == "true" {
 			gOpts.dircache = true
@@ -795,25 +816,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
-		switch e.val {
-		case "natural":
-			gOpts.sortType.method = naturalSort
-		case "name":
-			gOpts.sortType.method = nameSort
-		case "size":
-			gOpts.sortType.method = sizeSort
-		case "time":
-			gOpts.sortType.method = timeSort
-		case "ctime":
-			gOpts.sortType.method = ctimeSort
-		case "atime":
-			gOpts.sortType.method = atimeSort
-		case "ext":
-			gOpts.sortType.method = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+		method := sortMethod(e.val)
+		if !isValidSortMethod(method) {
+			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
+		gOpts.sortType.method = method
 		app.nav.sort()
 		app.ui.sort()
 	case "statfmt":
@@ -1089,25 +1097,12 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		app.nav.sort()
 		app.ui.sort()
 	case "sortby":
-		switch e.val {
-		case "natural":
-			gLocalOpts.sortMethods[path] = naturalSort
-		case "name":
-			gLocalOpts.sortMethods[path] = nameSort
-		case "size":
-			gLocalOpts.sortMethods[path] = sizeSort
-		case "time":
-			gLocalOpts.sortMethods[path] = timeSort
-		case "ctime":
-			gLocalOpts.sortMethods[path] = ctimeSort
-		case "atime":
-			gLocalOpts.sortMethods[path] = atimeSort
-		case "ext":
-			gLocalOpts.sortMethods[path] = extSort
-		default:
-			app.ui.echoerr("sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'")
+		method := sortMethod(e.val)
+		if !isValidSortMethod(method) {
+			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
+		gLocalOpts.sortMethods[path] = method
 		app.nav.sort()
 		app.ui.sort()
 	default:
@@ -1462,16 +1457,20 @@ func insert(app *app, arg string) {
 		app.nav.marks[arg] = app.nav.currDir().path
 		if err := app.nav.writeMarks(); err != nil {
 			app.ui.echoerrf("mark-save: %s", err)
+			return
 		}
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
 				app.ui.echoerrf("mark-save: %s", err)
+				return
 			}
 		} else {
 			if err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-save: %s", err)
+				return
 			}
 		}
+		app.ui.loadFileInfo(app.nav)
 	case app.ui.cmdPrefix == "mark-load: ":
 		normal(app)
 
@@ -1516,12 +1515,15 @@ func insert(app *app, arg string) {
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
 				app.ui.echoerrf("mark-remove: %s", err)
+				return
 			}
 		} else {
 			if err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-remove: %s", err)
+				return
 			}
 		}
+		app.ui.loadFileInfo(app.nav)
 	case app.ui.cmdPrefix == ":" && len(app.ui.cmdAccLeft) == 0:
 		switch arg {
 		case "!", "$", "%", "&":
@@ -1971,8 +1973,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reload: %s", err)
 		}
 		app.ui.loadFile(app, true)
-		// clear file information, will be loaded asynchronously
-		app.ui.msg = ""
+		app.ui.loadFileInfo(app.nav)
 	case "read":
 		if app.ui.cmdPrefix == ">" {
 			return

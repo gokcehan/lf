@@ -348,7 +348,7 @@ type dirStyle struct {
 	role   dirRole
 }
 
-func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
+func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -356,12 +356,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 	messageStyle := tcell.StyleDefault.Reverse(true)
 
 	if dir.noPerm {
-		win.print(screen, 2, 0, messageStyle, "permission denied")
+		win.print(ui.screen, 2, 0, messageStyle, "permission denied")
 		return
 	}
 	if (dir.loading && len(dir.files) == 0) || (dirStyle.role == Preview && dir.loading && gOpts.dirpreviews) {
 		if dirStyle.role != Preview || previewLoading {
-			win.print(screen, 2, 0, messageStyle, "loading...")
+			win.print(ui.screen, 2, 0, messageStyle, "loading...")
 		}
 		return
 	}
@@ -374,12 +374,12 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 				break
 			}
 
-			st = win.print(screen, 2, i, st, l)
+			st = win.print(ui.screen, 2, i, st, l)
 		}
 		return
 	}
 	if len(dir.files) == 0 {
-		win.print(screen, 2, 0, messageStyle, "empty")
+		win.print(ui.screen, 2, 0, messageStyle, "empty")
 		return
 	}
 
@@ -423,18 +423,18 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 				}
 			}
 
-			win.print(screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
+			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
 		}
 
 		path := filepath.Join(dir.path, f.Name())
 
 		if _, ok := context.selections[path]; ok {
-			win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
 		} else if cp, ok := context.saves[path]; ok {
 			if cp {
-				win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.copyfmt), " ")
+				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.copyfmt), " ")
 			} else {
-				win.print(screen, lnwidth, i, parseEscapeSequence(gOpts.cutfmt), " ")
+				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.cutfmt), " ")
 			}
 		}
 
@@ -481,7 +481,7 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 		}
 
 		ce := ""
-		if i == dir.pos {
+		if i == dir.pos && (ui.focused || !gOpts.hidecursorinactive) {
 			switch dirStyle.role {
 			case Active:
 				ce = gOpts.cursoractivefmt
@@ -495,14 +495,14 @@ func (win *win) printDir(screen tcell.Screen, dir *dir, context *dirContext, dir
 
 		s = append(s, ' ')
 		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
-		win.print(screen, lnwidth+1, i, st, styledFilename)
+		win.print(ui.screen, lnwidth+1, i, st, styledFilename)
 
 		tag, ok := context.tags[path]
 		if ok {
 			if i == dir.pos {
-				win.print(screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
+				win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
 			} else {
-				win.print(screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
+				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
 			}
 		}
 	}
@@ -557,11 +557,13 @@ type ui struct {
 	screen      tcell.Screen
 	sxScreen    sixelScreen
 	polling     bool
+	focused     bool
 	wins        []*win
 	promptWin   *win
 	msgWin      *win
 	menuWin     *win
 	msg         string
+	msgIsStat   bool
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
@@ -587,10 +589,12 @@ func newUI(screen tcell.Screen) *ui {
 	ui := &ui{
 		screen:      screen,
 		polling:     true,
+		focused:     true,
 		wins:        getWins(screen),
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
 		menuWin:     newWin(wtot, 1, 0, htot-2),
+		msgIsStat:   true,
 		exprChan:    make(chan expr, 1000),
 		keyChan:     make(chan string, 1000),
 		tevChan:     make(chan tcell.Event, 1000),
@@ -648,10 +652,11 @@ func (ui *ui) sort() {
 
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
+	ui.msgIsStat = false
 }
 
 func (ui *ui) echomsg(msg string) {
-	ui.msg = msg
+	ui.echo(msg)
 	log.Print(msg)
 }
 
@@ -664,7 +669,7 @@ func optionToFmtstr(optstr string) string {
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.msg = fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg)
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
 	log.Printf("error: %s", msg)
 }
 
@@ -749,7 +754,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 	}
 
-	ui.echo(fileInfo)
+	ui.msg = fileInfo
+	ui.msgIsStat = true
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
@@ -1027,7 +1033,7 @@ func (ui *ui) draw(nav *nav) {
 			role = Active
 		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
-			ui.wins[i].printDir(ui.screen, dir, &context,
+			ui.wins[i].printDir(ui, dir, &context,
 				&dirStyle{colors: ui.styles, icons: ui.icons, role: role},
 				nav.previewLoading)
 		}
@@ -1058,7 +1064,7 @@ func (ui *ui) draw(nav *nav) {
 			preview := ui.wins[len(ui.wins)-1]
 
 			if curr.IsDir() {
-				preview.printDir(ui.screen, ui.dirPrev, &context,
+				preview.printDir(ui, ui.dirPrev, &context,
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
 					nav.previewLoading)
 			} else if curr.Mode().IsRegular() {
@@ -1443,6 +1449,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
 	case *tcell.EventInterrupt:
 		log.Printf("Got EventInterrupt: at %s", tev.When())
+	case *tcell.EventFocus:
+		ui.focused = tev.Focused
+		return draw
 	}
 	return nil
 }

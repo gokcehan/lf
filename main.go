@@ -9,12 +9,13 @@ import (
 	"path/filepath"
 	"reflect"
 	"runtime"
+	"runtime/debug"
 	"runtime/pprof"
 	"strconv"
 	"strings"
-)
 
-import _ "embed"
+	_ "embed"
+)
 
 //go:embed doc.txt
 var genDocString string
@@ -136,28 +137,8 @@ func getOptsMap() map[string]string {
 			continue
 		}
 
-		// Get string representation of the value
 		if name == "lf_sortType" {
-			var sortby string
-
-			switch gOpts.sortType.method {
-			case naturalSort:
-				sortby = "natural"
-			case nameSort:
-				sortby = "name"
-			case sizeSort:
-				sortby = "size"
-			case timeSort:
-				sortby = "time"
-			case ctimeSort:
-				sortby = "ctime"
-			case atimeSort:
-				sortby = "atime"
-			case extSort:
-				sortby = "ext"
-			}
-
-			opts["lf_sortby"] = sortby
+			opts["lf_sortby"] = string(gOpts.sortType.method)
 			opts["lf_reverse"] = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
 			opts["lf_hidden"] = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
 			opts["lf_dirfirst"] = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
@@ -200,6 +181,37 @@ func checkServer() {
 			startServer()
 		}
 	}
+}
+
+func printVersion() {
+	if gVersion != "" {
+		fmt.Println(gVersion)
+		return
+	}
+
+	buildInfo, ok := debug.ReadBuildInfo()
+	if !ok {
+		return
+	}
+
+	var vcsRevision, vcsTime, vcsModified string
+	for _, setting := range buildInfo.Settings {
+		switch setting.Key {
+		case "vcs.revision":
+			vcsRevision = setting.Value
+		case "vcs.time":
+			vcsTime = setting.Value
+		case "vcs.modified":
+			if setting.Value == "true" {
+				vcsModified = " (dirty)"
+			}
+		}
+	}
+
+	if vcsRevision != "" {
+		fmt.Printf("Built at commit: %s%s %s\n", vcsRevision, vcsModified, vcsTime)
+	}
+	fmt.Printf("Go version: %s\n", buildInfo.GoVersion)
 }
 
 func main() {
@@ -304,7 +316,7 @@ func main() {
 	case *showDoc:
 		fmt.Print(genDocString)
 	case *showVersion:
-		fmt.Println(gVersion)
+		printVersion()
 	case *remoteCmd != "":
 		if err := remote(*remoteCmd); err != nil {
 			log.Fatalf("remote command: %s", err)

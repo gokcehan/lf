@@ -49,13 +49,14 @@ func newApp(ui *ui, nav *nav) *app {
 	sigChan := make(chan os.Signal, 1)
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	go func() {
-		switch <-sigChan {
-		case os.Interrupt:
-			return
-		case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM:
-			app.quit()
-			os.Exit(3)
-			return
+		for {
+			switch <-sigChan {
+			case os.Interrupt:
+			case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM:
+				app.quit()
+				os.Exit(3)
+				return
+			}
 		}
 	}()
 
@@ -404,7 +405,7 @@ func (app *app) loop() {
 			if err == nil {
 				if d.path == app.nav.currDir().path {
 					app.ui.loadFile(app, true)
-					if app.ui.msg == "" {
+					if app.ui.msgIsStat {
 						app.ui.loadFileInfo(app.nav)
 					}
 				}
