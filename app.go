@@ -16,7 +16,7 @@ import (
 
 type cmdItem struct {
 	prefix string
-	value string
+	value  string
 }
 
 type app struct {
