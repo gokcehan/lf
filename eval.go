@@ -62,12 +62,16 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.borderfmt = e.val
 	case "cleaner":
 		gOpts.cleaner = replaceTilde(e.val)
+	case "copyfmt":
+		gOpts.copyfmt = e.val
 	case "cursoractivefmt":
 		gOpts.cursoractivefmt = e.val
 	case "cursorparentfmt":
 		gOpts.cursorparentfmt = e.val
 	case "cursorpreviewfmt":
 		gOpts.cursorpreviewfmt = e.val
+	case "cutfmt":
+		gOpts.cutfmt = e.val
 	case "hidecursorinactive":
 		if e.val == "" || e.val == "true" {
 			gOpts.hidecursorinactive = true
@@ -740,6 +744,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.scrolloff = n
+	case "selectfmt":
+		gOpts.selectfmt = e.val
 	case "selmode":
 		switch e.val {
 		case "all", "dir":
