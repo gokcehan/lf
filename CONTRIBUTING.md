@@ -15,7 +15,7 @@ Global variable names are prefixed with `g` as in `gFooBar`.
 Exceptions are variables holding values of environmental variables which are prefixed with `env` as in `envFooBar` and regular expressions which are prefixed with `re` as in `reFooBar` when they are global.
 - Type and function names are small case as in `fooBar` since we don't use exporting.
 - For file name variables, `name`, `fname`, or `filename` should refer to the base name of the file as in `baz.txt`, and `path`, `fpath`, or `filepath` should refer to the full path of the file as in `/foo/bar/baz.txt`.
-- Run `go fmt && go generate` using Go 1.19+. On earlier versions of Go, `go generate` creates needless whitespace differences.
+- Run `go fmt` to ensure that files are formatted correctly.
 
 Use the surrounding code as reference when in doubt as usual.
 
@@ -28,8 +28,8 @@ Adding a new option usually requires the following steps:
 - Add option evaluation logic to `setExpr.eval` in `eval.go`
 - Implement the option somewhere in the code
 - Add option name to `gOptWords` in `complete.go` for tab completion
-- Add option name and its default value to `Quick Reference` and `Options` sections in `doc.go`
-- Run `go generate` to update the documentation
+- Add option name and its default value to `Quick Reference` and `Options` sections in `doc.md`
+- Run `gen/doc-with-docker.sh` to update the documentation
 - Commit your changes and send a pull request
 
 ## Adding a new builtin command
@@ -40,8 +40,8 @@ Adding a new command usually requires the following steps:
 - Add command evaluation logic to `callExpr.eval` in `eval.go`
 - Implement the command somewhere in the code
 - Add command name to `gCmdWords` in `complete.go` for tab completion
-- Add command name to `Quick Reference` and `Commands` sections in `doc.go`
-- Run `go generate` to update the documentation
+- Add command name to `Quick Reference` and `Commands` sections in `doc.md`
+- Run `gen/doc-with-docker.sh` to update the documentation
 - Commit your changes and send a pull request
 
 ## Platform specific code
