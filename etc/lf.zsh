@@ -1,4 +1,4 @@
-#compdef lf
+#compdef lf lfcd
 
 # Autocompletion for zsh shell.
 #
