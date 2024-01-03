@@ -13,12 +13,6 @@
 #     bind '"\C-o":"lfcd\C-m"'  # bash
 #     bindkey -s '^o' 'lfcd\n'  # zsh
 #
-# If you are a ZSH user, and have installed ZSH completions for LF,
-# you may also like to enable them for `lfcd` as well.
-# To do so, after sourcing/defining `lfcd` function, put the following line:
-#
-#   compdef _lf lfcd
-#
 
 lfcd () {
     # `command` is needed in case `lfcd` is aliased to `lf`
