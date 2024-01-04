@@ -528,7 +528,7 @@ func (nav *nav) checkDir(dir *dir) {
 
 		// Cryfs filesystems always show as having 0 blocks and are always considered to be modified at current time
 		blockSize, err := getBlockSize(s)
-		if err != nil && *blockSize == 0 {
+		if err == nil && *blockSize == 0 {
 			return
 		}
 
