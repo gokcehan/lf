@@ -222,6 +222,16 @@ func linkCount(f os.FileInfo) string {
 	return ""
 }
 
+func getBlockSize(f os.FileInfo) (*int64, error) {
+	sysCallStat, isSysCall := f.Sys().(*syscall.Stat_t)
+	if !isSysCall {
+		return nil, fmt.Errorf("can not convert fileinfo to syscall stat")
+	}
+
+	return &sysCallStat.Blocks, nil
+
+}
+
 func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }

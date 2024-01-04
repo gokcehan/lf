@@ -13,7 +13,6 @@ import (
 	"sort"
 	"strconv"
 	"strings"
-	"syscall"
 	"time"
 
 	"github.com/djherbis/times"
@@ -528,8 +527,8 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.loadTime = now
 
 		// Cryfs filesystems always show as having 0 blocks and are always considered to be modified at current time
-		sysCallStat, isSyscall := s.Sys().(*syscall.Stat_t)
-		if isSyscall && sysCallStat.Blocks == 0 {
+		blockSize, err := getBlockSize(s)
+		if err != nil && *blockSize == 0 {
 			return
 		}
 
