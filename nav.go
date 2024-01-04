@@ -13,6 +13,7 @@ import (
 	"sort"
 	"strconv"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/djherbis/times"
@@ -525,6 +526,13 @@ func (nav *nav) checkDir(dir *dir) {
 		nav.startPreview()
 		dir.loading = true
 		dir.loadTime = now
+
+		// Cryfs filesystems always show as having 0 blocks and are always considered to be modified at current time
+		sysCallStat, isSyscall := s.Sys().(*syscall.Stat_t)
+		if isSyscall && sysCallStat.Blocks == 0 {
+			return
+		}
+
 		go func() {
 			nd := newDir(dir.path)
 			nd.filter = dir.filter
