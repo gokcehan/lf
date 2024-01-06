@@ -522,15 +522,15 @@ func (nav *nav) checkDir(dir *dir) {
 			return
 		}
 
+		// Cryfs filesystems always show as having 0 blocks and are always considered to be modified at current time
+		// See cryfs issue: https://github.com/cryfs/cryfs/issues/327
+		if getBlockCount(s) == 0 {
+			return
+		}
+
 		nav.startPreview()
 		dir.loading = true
 		dir.loadTime = now
-
-		// Cryfs filesystems always show as having 0 blocks and are always considered to be modified at current time
-		blockSize, err := getBlockSize(s)
-		if err == nil && *blockSize == 0 {
-			return
-		}
 
 		go func() {
 			nd := newDir(dir.path)

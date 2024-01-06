@@ -179,8 +179,8 @@ func linkCount(f os.FileInfo) string {
 	return ""
 }
 
-func getBlockSize(_ os.FileInfo) (*int64, error) {
-	return nil, fmt.Errorf("not a valid windows syscall")
+func getBlockCount(os.FileInfo) int64 {
+	return -1
 }
 
 func errCrossDevice(err error) bool {
