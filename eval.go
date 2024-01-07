@@ -14,88 +14,88 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]func(e *setExpr, app *app) bool{
+var setExprOptionToFunctionMap map[string]func(e *setExpr, app *app) bool = map[string]func(e *setExpr, app *app) bool{
 	// Boolean options
 	"anchorfind":       useOption(&gOpts.anchorfind, setTrueOrFalseBooleanOption),
-	"autoquit":         useOption(&gOpts.autoquit, setTrueOrFalseBooleanOption),
-	"history":          useOption(&gOpts.history, setTrueOrFalseBooleanOption),
-	"icons":            useOption(&gOpts.icons, setTrueOrFalseBooleanOption),
-	"relativenumber":   useOption(&gOpts.relativenumber, setTrueOrFalseBooleanOption),
-	"smartdia":         useOption(&gOpts.smartdia, setTrueOrFalseBooleanOption),
-	"wrapscan":         useOption(&gOpts.wrapscan, setTrueOrFalseBooleanOption),
-	"wrapscroll":       useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
-	"sixel":            useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
-	"dircache":         useOption(&gOpts.dircache, setTrueOrFalseBooleanOption),
-	"dircounts":        useOption(&gOpts.dircounts, setTrueOrFalseBooleanOption),
-	"dirpreviews":      useOption(&gOpts.dirpreviews, setTrueOrFalseBooleanOption),
-	"noanchorfind":     useOption(&gOpts.anchorfind, setFalseBooleanOption),
 	"anchorfind!":      useOption(&gOpts.anchorfind, flipBooleanOption),
-	"noautoquit":       useOption(&gOpts.autoquit, setFalseBooleanOption),
+	"noanchorfind":     useOption(&gOpts.anchorfind, setFalseBooleanOption),
+	"autoquit":         useOption(&gOpts.autoquit, setTrueOrFalseBooleanOption),
 	"autoquit!":        useOption(&gOpts.autoquit, flipBooleanOption),
-	"nodircache":       useOption(&gOpts.dircache, setFalseBooleanOption),
-	"dircache!":        useOption(&gOpts.dircache, flipBooleanOption),
-	"nodircounts":      useOption(&gOpts.dircounts, setFalseBooleanOption),
-	"dircounts!":       useOption(&gOpts.dircounts, flipBooleanOption),
-	"dironly":          useOptionWithCleanup(&gOpts.dironly, setTrueOrFalseBooleanOption, sortAndPositionAppCleanup),
-	"promptfmt":        useOption(&gOpts.promptfmt, setStringOption),
+	"noautoquit":       useOption(&gOpts.autoquit, setFalseBooleanOption),
 	"cleaner":          useOption(&gOpts.promptfmt, setStringOptionReplaceTilde),
-	"nodironly":        useOptionWithCleanup(&gOpts.dironly, setFalseBooleanOption, sortAndPositionAppCleanup),
-	"dironly!":         useOptionWithCleanup(&gOpts.dironly, flipBooleanOption, sortAndPositionAppCleanup),
+	"dircache":         useOption(&gOpts.dircache, setTrueOrFalseBooleanOption),
+	"dircache!":        useOption(&gOpts.dircache, flipBooleanOption),
+	"nodircache":       useOption(&gOpts.dircache, setFalseBooleanOption),
+	"dircounts":        useOption(&gOpts.dircounts, setTrueOrFalseBooleanOption),
+	"dircounts!":       useOption(&gOpts.dircounts, flipBooleanOption),
+	"nodircounts":      useOption(&gOpts.dircounts, setFalseBooleanOption),
+	"dironly":          useOption(&gOpts.dironly, setTrueOrFalseBooleanOption, sortAndPositionAppCleanup),
+	"dironly!":         useOption(&gOpts.dironly, flipBooleanOption, sortAndPositionAppCleanup),
+	"nodironly":        useOption(&gOpts.dironly, setFalseBooleanOption, sortAndPositionAppCleanup),
+	"dirpreviews":      useOption(&gOpts.dirpreviews, setTrueOrFalseBooleanOption),
 	"dirpreviews!":     useOption(&gOpts.dirpreviews, flipBooleanOption),
 	"nodirpreviews":    useOption(&gOpts.dirpreviews, setFalseBooleanOption),
+	"drawbox":          useOption(&gOpts.drawbox, setTrueOrFalseBooleanOption, drawBoxCleanup),
+	"drawbox!":         useOption(&gOpts.drawbox, flipBooleanOption, drawBoxCleanup),
+	"nodrawbox":        useOption(&gOpts.drawbox, setFalseBooleanOption, drawBoxCleanup),
 	"dupfilefmt":       useOption(&gOpts.dupfilefmt, setStringOption),
 	"errorfmt":         useOption(&gOpts.errorfmt, setStringOption),
 	"filesep":          useOption(&gOpts.filesep, setStringOption),
-	"globsearch!":      useOptionWithCleanup(&gOpts.globsearch, flipBooleanOption, sortApp, loadFileCleanup),
-	"noincsearch":      useOption(&gOpts.incsearch, setFalseBooleanOption),
-	"incsearch!":       useOption(&gOpts.incsearch, flipBooleanOption),
-	"incsearch":        useOption(&gOpts.incsearch, setTrueOrFalseBooleanOption),
-	"ignoredia":        useOptionWithCleanup(&gOpts.ignoredia, setTrueOrFalseBooleanOption, sortApp),
-	"ignoredia!":       useOptionWithCleanup(&gOpts.ignoredia, flipBooleanOption, sortApp),
-	"noignoredia":      useOptionWithCleanup(&gOpts.ignoredia, setFalseBooleanOption, sortApp),
-	"ignorecase":       useOptionWithCleanup(&gOpts.ignorecase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
-	"noignorecase":     useOptionWithCleanup(&gOpts.ignorecase, setFalseBooleanOption, sortApp, loadFileCleanup),
-	"ignorecase!":      useOptionWithCleanup(&gOpts.ignorecase, flipBooleanOption, sortApp, loadFileCleanup),
-	"incfilter":        useOption(&gOpts.incfilter, setTrueOrFalseBooleanOption),
-	"nodrawbox":        useOptionWithCleanup(&gOpts.drawbox, setFalseBooleanOption, drawBoxCleanup),
-	"drawbox!":         useOptionWithCleanup(&gOpts.drawbox, flipBooleanOption, drawBoxCleanup),
-	"drawbox":          useOptionWithCleanup(&gOpts.drawbox, setTrueOrFalseBooleanOption, drawBoxCleanup),
-	"globsearch":       useOptionWithCleanup(&gOpts.globsearch, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
-	"noglobsearch":     useOptionWithCleanup(&gOpts.globsearch, setFalseBooleanOption, sortApp, loadFileCleanup),
-	"nohistory":        useOption(&gOpts.history, setFalseBooleanOption),
+	"globsearch":       useOption(&gOpts.globsearch, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"globsearch!":      useOption(&gOpts.globsearch, flipBooleanOption, sortApp, loadFileCleanup),
+	"noglobsearch":     useOption(&gOpts.globsearch, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"history":          useOption(&gOpts.history, setTrueOrFalseBooleanOption),
 	"history!":         useOption(&gOpts.history, flipBooleanOption),
-	"noicons":          useOption(&gOpts.icons, setFalseBooleanOption),
+	"nohistory":        useOption(&gOpts.history, setFalseBooleanOption),
+	"icons":            useOption(&gOpts.icons, setTrueOrFalseBooleanOption),
 	"icons!":           useOption(&gOpts.icons, flipBooleanOption),
+	"noicons":          useOption(&gOpts.icons, setFalseBooleanOption),
+	"ignorecase":       useOption(&gOpts.ignorecase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"ignorecase!":      useOption(&gOpts.ignorecase, flipBooleanOption, sortApp, loadFileCleanup),
+	"noignorecase":     useOption(&gOpts.ignorecase, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"ignoredia":        useOption(&gOpts.ignoredia, setTrueOrFalseBooleanOption, sortApp),
+	"ignoredia!":       useOption(&gOpts.ignoredia, flipBooleanOption, sortApp),
+	"noignoredia":      useOption(&gOpts.ignoredia, setFalseBooleanOption, sortApp),
+	"incfilter":        useOption(&gOpts.incfilter, setTrueOrFalseBooleanOption),
+	"incfilter!":       useOption(&gOpts.incfilter, flipBooleanOption),
+	"noincfilter":      useOption(&gOpts.incfilter, setFalseBooleanOption),
+	"incsearch":        useOption(&gOpts.incsearch, setTrueOrFalseBooleanOption),
+	"incsearch!":       useOption(&gOpts.incsearch, flipBooleanOption),
+	"noincsearch":      useOption(&gOpts.incsearch, setFalseBooleanOption),
 	"number":           useOption(&gOpts.number, setTrueOrFalseBooleanOption),
 	"number!":          useOption(&gOpts.number, flipBooleanOption),
 	"nonumber":         useOption(&gOpts.number, setFalseBooleanOption),
-	"ruler":            useOption(&gOpts.ruler, evalRulerOption),
-	"noincfilter":      useOption(&gOpts.incfilter, setFalseBooleanOption),
-	"incfilter!":       useOption(&gOpts.incfilter, flipBooleanOption),
-	"norelativenumber": useOption(&gOpts.relativenumber, setFalseBooleanOption),
+	"promptfmt":        useOption(&gOpts.promptfmt, setStringOption),
 	"relativenumber!":  useOption(&gOpts.relativenumber, flipBooleanOption),
-	"smartcase":        useOptionWithCleanup(&gOpts.smartcase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
-	"nosmartcase":      useOptionWithCleanup(&gOpts.smartcase, setFalseBooleanOption, sortApp, loadFileCleanup),
-	"smartcase!":       useOptionWithCleanup(&gOpts.smartcase, flipBooleanOption, sortApp, loadFileCleanup),
+	"relativenumber":   useOption(&gOpts.relativenumber, setTrueOrFalseBooleanOption),
+	"norelativenumber": useOption(&gOpts.relativenumber, setFalseBooleanOption),
+	"ruler":            useOption(&gOpts.ruler, evalRulerOption),
+	"sixel":            useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
 	"sixel!":           useOption(&gOpts.sixel, flipBooleanOption),
 	"nosixel":          useOption(&gOpts.sixel, setFalseBooleanOption),
-	"wrapscroll!":      useOption(&gOpts.wrapscroll, flipBooleanOption),
-	"nowrapscroll":     useOption(&gOpts.wrapscroll, setFalseBooleanOption),
+	"smartcase":        useOption(&gOpts.smartcase, setTrueOrFalseBooleanOption, sortApp, loadFileCleanup),
+	"smartcase!":       useOption(&gOpts.smartcase, flipBooleanOption, sortApp, loadFileCleanup),
+	"nosmartcase":      useOption(&gOpts.smartcase, setFalseBooleanOption, sortApp, loadFileCleanup),
+	"smartdia":         useOption(&gOpts.smartdia, setTrueOrFalseBooleanOption),
+	"smartdia!":        useOption(&gOpts.smartcase, flipBooleanOption),
+	"nosmartdia":       useOption(&gOpts.smartdia, setFalseBooleanOption),
+	"wrapscan":         useOption(&gOpts.wrapscan, setTrueOrFalseBooleanOption),
 	"wrapscan!":        useOption(&gOpts.wrapscan, flipBooleanOption),
 	"nowrapscan":       useOption(&gOpts.wrapscan, setFalseBooleanOption),
-	"nosmartdia":       useOption(&gOpts.smartcase, setFalseBooleanOption),
-	"smartdia!":        useOption(&gOpts.smartcase, flipBooleanOption),
+	"wrapscroll":       useOption(&gOpts.wrapscroll, setTrueOrFalseBooleanOption),
+	"wrapscroll!":      useOption(&gOpts.wrapscroll, flipBooleanOption),
+	"nowrapscroll":     useOption(&gOpts.wrapscroll, setFalseBooleanOption),
 
 	// Preview boolean options have their own logic to ensure ratios is set
 	// this doesn't apply to nopreview as the logic is only needed when the option is set to true
 	"preview":   UsePreviewBoolOption(setTrueOrFalseBooleanOption),
 	"preview!":  UsePreviewBoolOption(flipBooleanOption),
-	"nopreview": useOptionWithCleanup(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
+	"nopreview": useOption(&gOpts.preview, setFalseBooleanOption, loadFileCleanup),
 
 	// Mouse options are booleans but have special logic to enable/disable mouse after changes
 	"mouse":   useMouseOption(setTrueOrFalseBooleanOption),
-	"nomouse": useMouseOption(setFalseBooleanOption),
 	"mouse!":  useMouseOption(flipBooleanOption),
+	"nomouse": useMouseOption(setFalseBooleanOption),
 
 	// String Options
 	"borderfmt":        useOption(&gOpts.borderfmt, setStringOption),
@@ -106,22 +106,22 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"infotimefmtnew":   useOption(&gOpts.infotimefmtnew, setStringOption),
 	"infotimefmtold":   useOption(&gOpts.infotimefmtold, setStringOption),
 	"nonumberfmt":      useOption(&gOpts.numberfmt, setStringOption),
+	"previewer":        useOption(&gOpts.previewer, setStringOptionReplaceTilde),
 	"rulerfmt":         useOption(&gOpts.rulerfmt, setStringOption),
+	"selmode":          setSelmodeGlobalOption,
 	"shell":            useOption(&gOpts.shell, setStringOption),
 	"shellflag":        useOption(&gOpts.shellflag, setStringOption),
 	"statfmt":          useOption(&gOpts.statfmt, setStringOption),
 	"tagfmt":           useOption(&gOpts.tagfmt, setStringOption),
+	"tempmarks":        setTempMarksGlobalOption,
 	"timefmt":          useOption(&gOpts.timefmt, setStringOption),
-	"waitmsg":          useOption(&gOpts.waitmsg, setStringOption),
-	"previewer":        useOption(&gOpts.previewer, setStringOptionReplaceTilde),
-	"tempmarks":        tempMarksOptionFunc,
 	"truncatechar":     setTruncateCharGlobalOption,
-	"selmode":          setSelmodeGlobalOption,
+	"waitmsg":          useOption(&gOpts.waitmsg, setStringOption),
 
 	// Sort Options
 	"hidden":     useSortOptionWithCleanup(hiddenSort, setTrueOrFalseSortOption, sortAndPositionAppCleanup),
-	"nohidden":   useSortOptionWithCleanup(hiddenSort, setFalseSortOption, sortAndPositionAppCleanup),
 	"hidden!":    useSortOptionWithCleanup(hiddenSort, flipSortOption, sortAndPositionAppCleanup),
+	"nohidden":   useSortOptionWithCleanup(hiddenSort, setFalseSortOption, sortAndPositionAppCleanup),
 	"dirfirst":   useSortOptionWithCleanup(dirfirstSort, setTrueOrFalseSortOption, sortApp),
 	"dirfirst!":  useSortOptionWithCleanup(dirfirstSort, flipSortOption, sortApp),
 	"nodirfirst": useSortOptionWithCleanup(dirfirstSort, setFalseSortOption, sortApp),
@@ -130,27 +130,26 @@ var evalOptToFuncMap map[string]func(e *setExpr, app *app) bool = map[string]fun
 	"noreverse":  useSortOptionWithCleanup(reverseSort, setFalseSortOption, sortApp),
 
 	// []String options
-	"hiddenfiles": setHiddenFiles,
-	"shellopts":   setShellOpts,
+	"hiddenfiles": setHiddenFilesGlobalOption,
 	"info":        setInfoGlobalOption,
-	"preserve":    setPreserveGlobalOpt,
+	"preserve":    setPreserveGlobalOption,
+	"shellopts":   setShellOptsGlobalOption,
 
 	// int options
-	"findlen":     setFindLenGlobalOpt,
-	"truncatepct": setTruncatepctGlobalOption,
-	"tablstop":    setTabStopGlobalOption,
+	"findlen":     setFindLenGlobalOption,
 	"period":      setPeriodGlobalOption,
 	"scrolloff":   setScrollOffGlobalOption,
+	"tablstop":    setTabStopGlobalOption,
+	"truncatepct": setTruncatepctGlobalOption,
 	// []int options
-	"ratios": setRatiosGlobalOpt,
+	"ratios": setRatiosGlobalOption,
 
 	// SortMethod option
 	"sortby": setSortByGlobalOption,
 }
 
-// sets gOpts.hiddenfiles
-func setHiddenFiles(expression *setExpr, app *app) bool {
-
+// sets gOpts.hiddenfiles for setExpr
+func setHiddenFilesGlobalOption(expression *setExpr, app *app) bool {
 	toks := strings.Split(expression.val, ":")
 	for _, s := range toks {
 		if s == "" {
@@ -168,7 +167,7 @@ func setHiddenFiles(expression *setExpr, app *app) bool {
 	return true
 }
 
-func setShellOpts(expression *setExpr, app *app) bool {
+func setShellOptsGlobalOption(expression *setExpr, app *app) bool {
 	if expression.val == "" {
 		gOpts.shellopts = nil
 		return false
@@ -177,7 +176,7 @@ func setShellOpts(expression *setExpr, app *app) bool {
 	return true
 }
 
-func setFindLenGlobalOpt(expression *setExpr, app *app) bool {
+func setFindLenGlobalOption(expression *setExpr, app *app) bool {
 
 	n, err := strconv.Atoi(expression.val)
 	if err != nil {
@@ -222,17 +221,9 @@ func loadFileCleanup(app *app) {
 }
 
 // Takes a pointer to an option and returns a function that sets that option.
-// Used so that option setting functions for different types can be keys in a shared map
-func useOption[optionType any](option *optionType, setOptionFunc func(e *setExpr, app *app, optionParam *optionType) bool) func(e *setExpr, app *app) bool {
-	return func(e *setExpr, app *app) bool {
-		return setOptionFunc(e, app, option)
-	}
-}
-
-// Takes a pointer to an option and returns a function that sets that option.
 // Accepts any number of cleanup functions that are ran if setOptionFunc is successful
 // Used so that option setting functions for different types can be keys in a shared map
-func useOptionWithCleanup[optionType any](option *optionType, setOptionFunc func(e *setExpr, app *app, optionParam *optionType) bool, cleanupFuncs ...func(app *app)) func(e *setExpr, app *app) bool {
+func useOption[optionType any](option *optionType, setOptionFunc func(e *setExpr, app *app, optionParam *optionType) bool, cleanupFuncs ...func(app *app)) func(e *setExpr, app *app) bool {
 	return func(e *setExpr, app *app) bool {
 		successStatus := setOptionFunc(e, app, option)
 		if successStatus {
@@ -340,6 +331,7 @@ func setFalseSortOption(expression *setExpr, app *app, sortOption sortOption) bo
 	gOpts.sortType.option &= ^sortOption
 	return true
 }
+
 func flipSortOption(expression *setExpr, app *app, sortOption sortOption) bool {
 	if expression.val != "" {
 		app.ui.echoerrf("%s: unexpected value: %s", expression.opt, expression.val)
@@ -384,7 +376,7 @@ func setSelmodeGlobalOption(expression *setExpr, app *app) bool {
 	}
 }
 
-func tempMarksOptionFunc(expression *setExpr, app *app) bool {
+func setTempMarksGlobalOption(expression *setExpr, app *app) bool {
 	if expression.val != "" {
 		gOpts.tempmarks = "'" + expression.val
 	} else {
@@ -445,7 +437,7 @@ func flipBooleanOption(expression *setExpr, app *app, option *bool) bool {
 	return true
 }
 
-func setRatiosGlobalOpt(expression *setExpr, app *app) bool {
+func setRatiosGlobalOption(expression *setExpr, app *app) bool {
 
 	toks := strings.Split(expression.val, ":")
 	var rats []int
@@ -521,7 +513,7 @@ func setInfoGlobalOption(expression *setExpr, app *app) bool {
 	return true
 }
 
-func setPreserveGlobalOpt(expression *setExpr, app *app) bool {
+func setPreserveGlobalOption(expression *setExpr, app *app) bool {
 
 	if expression.val == "" {
 		gOpts.preserve = nil
@@ -588,7 +580,7 @@ func setSortByGlobalOption(expression *setExpr, app *app) bool {
 }
 
 func (e *setExpr) eval(app *app, _ []string) {
-	optionFunc, optionFuncFound := evalOptToFuncMap[e.opt]
+	optionFunc, optionFuncFound := setExprOptionToFunctionMap[e.opt]
 	if optionFuncFound {
 		if !optionFunc(e, app) {
 			return
