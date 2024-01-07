@@ -21,7 +21,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.18
+        go-version: "1.18"
 
     - name: Build
       run: go build -v ./...
@@ -44,12 +44,12 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.18
+        go-version: "1.18"
 
     - name: Cross-compile on all supported platforms
       run: gen/xbuild.sh
 
-  generate:
+  formatting:
     runs-on: ubuntu-latest
     steps:
     - uses: actions/checkout@v4
@@ -59,8 +59,8 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: 1.19
+        go-version: "1.18"
 
-    - name: Test `go fmt && go generate` on Go 1.19 creates no diffs
-      run: go fmt && go generate && git diff --exit-code
+    - name: Test `go fmt` creates no diffs
+      run: go fmt && git diff --exit-code
 

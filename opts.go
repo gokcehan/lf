@@ -5,17 +5,29 @@ import (
 	"time"
 )
 
-type sortMethod byte
+// String values match the sortby string sent by the user at startup
+type sortMethod string
 
 const (
-	naturalSort sortMethod = iota
-	nameSort
-	sizeSort
-	timeSort
-	atimeSort
-	ctimeSort
-	extSort
+	naturalSort sortMethod = "natural"
+	nameSort    sortMethod = "name"
+	sizeSort    sortMethod = "size"
+	timeSort    sortMethod = "time"
+	atimeSort   sortMethod = "atime"
+	ctimeSort   sortMethod = "ctime"
+	extSort     sortMethod = "ext"
 )
+
+func isValidSortMethod(method sortMethod) bool {
+	for _, validMethod := range []sortMethod{naturalSort, nameSort, sizeSort, timeSort, atimeSort, ctimeSort, extSort} {
+		if method == validMethod {
+			return true
+		}
+	}
+	return false
+}
+
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'`
 
 type sortOption byte
 
@@ -31,69 +43,73 @@ type sortType struct {
 }
 
 var gOpts struct {
-	anchorfind       bool
-	autoquit         bool
-	borderfmt        string
-	cursoractivefmt  string
-	cursorparentfmt  string
-	cursorpreviewfmt string
-	dircache         bool
-	dircounts        bool
-	dironly          bool
-	dirpreviews      bool
-	drawbox          bool
-	dupfilefmt       string
-	globsearch       bool
-	icons            bool
-	ignorecase       bool
-	ignoredia        bool
-	incfilter        bool
-	incsearch        bool
-	mouse            bool
-	number           bool
-	preview          bool
-	sixel            bool
-	relativenumber   bool
-	smartcase        bool
-	smartdia         bool
-	waitmsg          string
-	wrapscan         bool
-	wrapscroll       bool
-	findlen          int
-	period           int
-	scrolloff        int
-	tabstop          int
-	errorfmt         string
-	filesep          string
-	ifs              string
-	previewer        string
-	cleaner          string
-	promptfmt        string
-	selmode          string
-	shell            string
-	shellflag        string
-	statfmt          string
-	timefmt          string
-	infotimefmtnew   string
-	infotimefmtold   string
-	truncatechar     string
-	truncatepct      int
-	ratios           []int
-	hiddenfiles      []string
-	history          bool
-	info             []string
-	ruler            []string
-	rulerfmt         string
-	preserve         []string
-	shellopts        []string
-	keys             map[string]expr
-	cmdkeys          map[string]expr
-	cmds             map[string]expr
-	user             map[string]string
-	sortType         sortType
-	tempmarks        string
-	numberfmt        string
-	tagfmt           string
+	anchorfind         bool
+	autoquit           bool
+	borderfmt          string
+	copyfmt            string
+	cursoractivefmt    string
+	cursorparentfmt    string
+	cursorpreviewfmt   string
+	cutfmt             string
+	hidecursorinactive bool
+	dircache           bool
+	dircounts          bool
+	dironly            bool
+	dirpreviews        bool
+	drawbox            bool
+	dupfilefmt         string
+	globsearch         bool
+	icons              bool
+	ignorecase         bool
+	ignoredia          bool
+	incfilter          bool
+	incsearch          bool
+	mouse              bool
+	number             bool
+	preview            bool
+	selectfmt          string
+	sixel              bool
+	relativenumber     bool
+	smartcase          bool
+	smartdia           bool
+	waitmsg            string
+	wrapscan           bool
+	wrapscroll         bool
+	findlen            int
+	period             int
+	scrolloff          int
+	tabstop            int
+	errorfmt           string
+	filesep            string
+	ifs                string
+	previewer          string
+	cleaner            string
+	promptfmt          string
+	selmode            string
+	shell              string
+	shellflag          string
+	statfmt            string
+	timefmt            string
+	infotimefmtnew     string
+	infotimefmtold     string
+	truncatechar       string
+	truncatepct        int
+	ratios             []int
+	hiddenfiles        []string
+	history            bool
+	info               []string
+	ruler              []string
+	rulerfmt           string
+	preserve           []string
+	shellopts          []string
+	keys               map[string]expr
+	cmdkeys            map[string]expr
+	cmds               map[string]expr
+	user               map[string]string
+	sortType           sortType
+	tempmarks          string
+	numberfmt          string
+	tagfmt             string
 }
 
 var gLocalOpts struct {
@@ -191,9 +207,12 @@ func init() {
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
+	gOpts.copyfmt = "\033[7;33m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
+	gOpts.cutfmt = "\033[7;31m"
+	gOpts.hidecursorinactive = false
 	gOpts.globsearch = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
@@ -203,6 +222,7 @@ func init() {
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
+	gOpts.selectfmt = "\033[7;35m"
 	gOpts.sixel = false
 	gOpts.relativenumber = false
 	gOpts.smartcase = true
