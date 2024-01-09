@@ -840,11 +840,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	case "tagfmt":
 		gOpts.tagfmt = e.val
 	case "tempmarks":
-		if e.val != "" {
-			gOpts.tempmarks = "'" + e.val
-		} else {
-			gOpts.tempmarks = "'"
-		}
+		gOpts.tempmarks = "'" + e.val
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
