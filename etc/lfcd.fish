@@ -15,4 +15,5 @@ function lfcd --wraps="lf" --description="lf - Terminal file manager (changing d
     # `command` is needed in case `lfcd` is aliased to `lf`.
     # Quotes will cause `cd` to not change directory if `lf` prints nothing to stdout due to an error.
     cd "$(command lf -print-last-dir $argv)"
+    commandline --function repaint
 end
