@@ -19,7 +19,8 @@
 #   }
 # ]
 
-def-env lfcd [] {
+# def-env lfcd [] {    # for nushell verison <  0.87.0 
+def --env lfcd [] {    # For nushell version >= 0.87.0
   let tmp = (mktemp)
   lf -last-dir-path $tmp
   try {
