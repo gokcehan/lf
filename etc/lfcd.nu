@@ -19,17 +19,7 @@
 #   }
 # ]
 
-# def-env lfcd [] {    # for nushell verison <  0.87.0 
-def --env lfcd [] {    # For nushell version >= 0.87.0
-  let tmp = (mktemp)
-  lf -last-dir-path $tmp
-  try {
-    let target_dir = (open --raw $tmp)
-    rm -f $tmp
-    try {
-        if ($target_dir != $env.PWD) { cd $target_dir }
-    } catch { |e| print -e $'lfcd: Can not change to ($target_dir): ($e | get debug)' }
-  } catch {
-    |e| print -e $'lfcd: Reading ($tmp) returned an error: ($e | get debug)'
-  }
+# For nushell version >= 0.87.0
+def --env --wrapped lfcd [...args: string] { 
+  cd (lf -print-last-dir $args)
 }
