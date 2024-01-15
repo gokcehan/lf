@@ -29,19 +29,6 @@ func isValidSortMethod(method sortMethod) bool {
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'`
 
-type sortOption byte
-
-const (
-	dirfirstSort sortOption = 1 << iota
-	hiddenSort
-	reverseSort
-)
-
-type sortType struct {
-	method sortMethod
-	option sortOption
-}
-
 var gOpts struct {
 	anchorfind         bool
 	autoquit           bool
@@ -54,11 +41,13 @@ var gOpts struct {
 	hidecursorinactive bool
 	dircache           bool
 	dircounts          bool
+	dirfirst           bool
 	dironly            bool
 	dirpreviews        bool
 	drawbox            bool
 	dupfilefmt         string
 	globsearch         bool
+	hidden             bool
 	icons              bool
 	ignorecase         bool
 	ignoredia          bool
@@ -67,9 +56,11 @@ var gOpts struct {
 	mouse              bool
 	number             bool
 	preview            bool
+	relativenumber     bool
+	reverse            bool
 	selectfmt          string
 	sixel              bool
-	relativenumber     bool
+	sortby             sortMethod
 	smartcase          bool
 	smartdia           bool
 	waitmsg            string
@@ -106,19 +97,18 @@ var gOpts struct {
 	cmdkeys            map[string]expr
 	cmds               map[string]expr
 	user               map[string]string
-	sortType           sortType
 	tempmarks          string
 	numberfmt          string
 	tagfmt             string
 }
 
 var gLocalOpts struct {
-	sortMethods map[string]sortMethod
-	dirfirsts   map[string]bool
-	dironlys    map[string]bool
-	hiddens     map[string]bool
-	reverses    map[string]bool
-	infos       map[string][]string
+	sortbys   map[string]sortMethod
+	dirfirsts map[string]bool
+	dironlys  map[string]bool
+	hiddens   map[string]bool
+	reverses  map[string]bool
+	infos     map[string][]string
 }
 
 func localOptPaths(path string) []string {
@@ -130,53 +120,13 @@ func localOptPaths(path string) []string {
 	return list
 }
 
-func getSortMethod(path string) sortMethod {
+func getDirFirst(path string) bool {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.sortMethods[key]; ok {
+		if val, ok := gLocalOpts.dirfirsts[key]; ok {
 			return val
 		}
 	}
-	return gOpts.sortType.method
-}
-
-func getSortType(path string) sortType {
-	method := getSortMethod(path)
-	option := gOpts.sortType.option
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dirfirsts[key]; ok {
-			if val {
-				option |= dirfirstSort
-			} else {
-				option &= ^dirfirstSort
-			}
-			break
-		}
-	}
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.hiddens[key]; ok {
-			if val {
-				option |= hiddenSort
-			} else {
-				option &= ^hiddenSort
-			}
-			break
-		}
-	}
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.reverses[key]; ok {
-			if val {
-				option |= reverseSort
-			} else {
-				option &= ^reverseSort
-			}
-			break
-		}
-	}
-	val := sortType{
-		method: method,
-		option: option,
-	}
-	return val
+	return gOpts.dirfirst
 }
 
 func getDirOnly(path string) bool {
@@ -188,6 +138,15 @@ func getDirOnly(path string) bool {
 	return gOpts.dironly
 }
 
+func getHidden(path string) bool {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.hiddens[key]; ok {
+			return val
+		}
+	}
+	return gOpts.hidden
+}
+
 func getInfo(path string) []string {
 	for _, key := range localOptPaths(path) {
 		if val, ok := gLocalOpts.infos[key]; ok {
@@ -197,11 +156,30 @@ func getInfo(path string) []string {
 	return gOpts.info
 }
 
+func getReverse(path string) bool {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.reverses[key]; ok {
+			return val
+		}
+	}
+	return gOpts.reverse
+}
+
+func getSortBy(path string) sortMethod {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.sortbys[key]; ok {
+			return val
+		}
+	}
+	return gOpts.sortby
+}
+
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
 	gOpts.dircache = true
 	gOpts.dircounts = false
+	gOpts.dirfirst = true
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawbox = false
@@ -214,6 +192,7 @@ func init() {
 	gOpts.cutfmt = "\033[7;31m"
 	gOpts.hidecursorinactive = false
 	gOpts.globsearch = false
+	gOpts.hidden = false
 	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
@@ -222,9 +201,11 @@ func init() {
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
+	gOpts.relativenumber = false
+	gOpts.reverse = false
 	gOpts.selectfmt = "\033[7;35m"
 	gOpts.sixel = false
-	gOpts.relativenumber = false
+	gOpts.sortby = naturalSort
 	gOpts.smartcase = true
 	gOpts.smartdia = false
 	gOpts.waitmsg = "Press any key to continue"
@@ -257,7 +238,6 @@ func init() {
 	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
 	gOpts.preserve = []string{"mode"}
 	gOpts.shellopts = nil
-	gOpts.sortType = sortType{naturalSort, dirfirstSort}
 	gOpts.tempmarks = "'"
 	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
@@ -380,7 +360,7 @@ func init() {
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
 
-	gLocalOpts.sortMethods = make(map[string]sortMethod)
+	gLocalOpts.sortbys = make(map[string]sortMethod)
 	gLocalOpts.dirfirsts = make(map[string]bool)
 	gLocalOpts.dironlys = make(map[string]bool)
 	gLocalOpts.hiddens = make(map[string]bool)
