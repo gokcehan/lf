@@ -137,9 +137,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.dircounts = !gOpts.dircounts
 	case "dirfirst":
 		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= dirfirstSort
+			gOpts.dirfirst = true
 		} else if e.val == "false" {
-			gOpts.sortType.option &= ^dirfirstSort
+			gOpts.dirfirst = false
 		} else {
 			app.ui.echoerr("dirfirst: value should be empty, 'true', or 'false'")
 			return
@@ -151,7 +151,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("nodirfirst: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option &= ^dirfirstSort
+		gOpts.dirfirst = false
 		app.nav.sort()
 		app.ui.sort()
 	case "dirfirst!":
@@ -159,7 +159,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option ^= dirfirstSort
+		gOpts.dirfirst = !gOpts.dirfirst
 		app.nav.sort()
 		app.ui.sort()
 	case "dironly":
@@ -304,9 +304,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 	case "hidden":
 		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= hiddenSort
+			gOpts.hidden = true
 		} else if e.val == "false" {
-			gOpts.sortType.option &= ^hiddenSort
+			gOpts.hidden = false
 		} else {
 			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
 			return
@@ -320,7 +320,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option &= ^hiddenSort
+		gOpts.hidden = false
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
@@ -330,7 +330,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option ^= hiddenSort
+		gOpts.hidden = !gOpts.hidden
 		app.nav.sort()
 		app.nav.position()
 		app.ui.sort()
@@ -708,9 +708,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.relativenumber = !gOpts.relativenumber
 	case "reverse":
 		if e.val == "" || e.val == "true" {
-			gOpts.sortType.option |= reverseSort
+			gOpts.reverse = true
 		} else if e.val == "false" {
-			gOpts.sortType.option &= ^reverseSort
+			gOpts.reverse = false
 		} else {
 			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
 			return
@@ -722,7 +722,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option &= ^reverseSort
+		gOpts.reverse = false
 		app.nav.sort()
 		app.ui.sort()
 	case "reverse!":
@@ -730,7 +730,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
 			return
 		}
-		gOpts.sortType.option ^= reverseSort
+		gOpts.reverse = !gOpts.reverse
 		app.nav.sort()
 		app.ui.sort()
 	case "scrolloff":
@@ -821,7 +821,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
-		gOpts.sortType.method = method
+		gOpts.sortby = method
 		app.nav.sort()
 		app.ui.sort()
 	case "statfmt":
@@ -977,8 +977,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		if val, ok := gLocalOpts.dirfirsts[path]; ok {
 			gLocalOpts.dirfirsts[path] = !val
 		} else {
-			val = gOpts.sortType.option&dirfirstSort != 0
-			gLocalOpts.dirfirsts[path] = !val
+			gLocalOpts.dirfirsts[path] = !gOpts.dirfirst
 		}
 		app.nav.sort()
 		app.ui.sort()
@@ -1040,8 +1039,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		if val, ok := gLocalOpts.hiddens[path]; ok {
 			gLocalOpts.hiddens[path] = !val
 		} else {
-			val = gOpts.sortType.option&hiddenSort != 0
-			gLocalOpts.hiddens[path] = !val
+			gLocalOpts.hiddens[path] = !gOpts.hidden
 		}
 		app.nav.sort()
 		app.ui.sort()
@@ -1087,8 +1085,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		if val, ok := gLocalOpts.reverses[path]; ok {
 			gLocalOpts.reverses[path] = !val
 		} else {
-			val = gOpts.sortType.option&reverseSort != 0
-			gLocalOpts.reverses[path] = !val
+			gLocalOpts.reverses[path] = !gOpts.reverse
 		}
 		app.nav.sort()
 		app.ui.sort()
@@ -1098,7 +1095,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
-		gLocalOpts.sortMethods[path] = method
+		gLocalOpts.sortbys[path] = method
 		app.nav.sort()
 		app.ui.sort()
 	default:

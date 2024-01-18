@@ -137,12 +137,7 @@ func getOptsMap() map[string]string {
 			continue
 		}
 
-		if name == "lf_sortType" {
-			opts["lf_sortby"] = string(gOpts.sortType.method)
-			opts["lf_reverse"] = strconv.FormatBool(gOpts.sortType.option&reverseSort != 0)
-			opts["lf_hidden"] = strconv.FormatBool(gOpts.sortType.option&hiddenSort != 0)
-			opts["lf_dirfirst"] = strconv.FormatBool(gOpts.sortType.option&dirfirstSort != 0)
-		} else if name == "lf_user" {
+		if name == "lf_user" {
 			// set each user option
 			for key, value := range gOpts.user {
 				opts[name+"_"+key] = value

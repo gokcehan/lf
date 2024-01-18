@@ -161,21 +161,24 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading     bool      // directory is loading from disk
-	loadTime    time.Time // current loading or last load time
-	ind         int       // index of current entry in files
-	pos         int       // position of current entry in ui
-	path        string    // full path of directory
-	files       []*file   // displayed files in directory including or excluding hidden ones
-	allFiles    []*file   // all files in directory including hidden ones (same array as files)
-	sortType    sortType  // sort method and options from last sort
-	dironly     bool      // dironly value from last sort
-	hiddenfiles []string  // hiddenfiles value from last sort
-	filter      []string  // last filter for this directory
-	ignorecase  bool      // ignorecase value from last sort
-	ignoredia   bool      // ignoredia value from last sort
-	noPerm      bool      // whether lf has no permission to open the directory
-	lines       []string  // lines of text to display if directory previews are enabled
+	loading     bool       // directory is loading from disk
+	loadTime    time.Time  // current loading or last load time
+	ind         int        // index of current entry in files
+	pos         int        // position of current entry in ui
+	path        string     // full path of directory
+	files       []*file    // displayed files in directory including or excluding hidden ones
+	allFiles    []*file    // all files in directory including hidden ones (same array as files)
+	sortby      sortMethod // sortby value from last sort
+	dirfirst    bool       // dirfirst value from last sort
+	dironly     bool       // dironly value from last sort
+	hidden      bool       // hidden value from last sort
+	reverse     bool       // reverse value from last sort
+	hiddenfiles []string   // hiddenfiles value from last sort
+	filter      []string   // last filter for this directory
+	ignorecase  bool       // ignorecase value from last sort
+	ignoredia   bool       // ignoredia value from last sort
+	noPerm      bool       // whether lf has no permission to open the directory
+	lines       []string   // lines of text to display if directory previews are enabled
 }
 
 func newDir(path string) *dir {
@@ -209,8 +212,11 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 }
 
 func (dir *dir) sort() {
-	dir.sortType = getSortType(dir.path)
+	dir.sortby = getSortBy(dir.path)
+	dir.dirfirst = getDirFirst(dir.path)
 	dir.dironly = getDirOnly(dir.path)
+	dir.hidden = getHidden(dir.path)
+	dir.reverse = getReverse(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -219,13 +225,11 @@ func (dir *dir) sort() {
 
 	// reverse order cannot be applied after stable sorting, otherwise the order
 	// of equivalent elements will be reversed
-	reverse := dir.sortType.option&reverseSort != 0
-
-	switch dir.sortType.method {
+	switch dir.sortby {
 	case naturalSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !reverse {
+			if !dir.reverse {
 				return naturalLess(s1, s2)
 			} else {
 				return naturalLess(s2, s1)
@@ -234,7 +238,7 @@ func (dir *dir) sort() {
 	case nameSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !reverse {
+			if !dir.reverse {
 				return s1 < s2
 			} else {
 				return s2 < s1
@@ -242,7 +246,7 @@ func (dir *dir) sort() {
 		})
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !reverse {
+			if !dir.reverse {
 				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
 			} else {
 				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
@@ -250,7 +254,7 @@ func (dir *dir) sort() {
 		})
 	case timeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !reverse {
+			if !dir.reverse {
 				return dir.files[i].ModTime().Before(dir.files[j].ModTime())
 			} else {
 				return dir.files[j].ModTime().Before(dir.files[i].ModTime())
@@ -258,7 +262,7 @@ func (dir *dir) sort() {
 		})
 	case atimeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !reverse {
+			if !dir.reverse {
 				return dir.files[i].accessTime.Before(dir.files[j].accessTime)
 			} else {
 				return dir.files[j].accessTime.Before(dir.files[i].accessTime)
@@ -266,7 +270,7 @@ func (dir *dir) sort() {
 		})
 	case ctimeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !reverse {
+			if !dir.reverse {
 				return dir.files[i].changeTime.Before(dir.files[j].changeTime)
 			} else {
 				return dir.files[j].changeTime.Before(dir.files[i].changeTime)
@@ -289,7 +293,7 @@ func (dir *dir) sort() {
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
-			if !reverse {
+			if !dir.reverse {
 				return ext1 < ext2 || ext1 == ext2 && name1 < name2
 			} else {
 				return ext2 < ext1 || ext2 == ext1 && name2 < name1
@@ -297,7 +301,7 @@ func (dir *dir) sort() {
 		})
 	}
 
-	if dir.sortType.option&dirfirstSort != 0 {
+	if dir.dirfirst {
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			if dir.files[i].IsDir() == dir.files[j].IsDir() {
 				return i < j
@@ -329,7 +333,7 @@ func (dir *dir) sort() {
 	// when hidden option is disabled, we move hidden files to the
 	// beginning of our file list and then set the beginning of displayed
 	// files to the first non-hidden file in the list
-	if dir.sortType.option&hiddenSort == 0 {
+	if !dir.hidden {
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			if isHidden(dir.files[i], dir.path, dir.hiddenfiles) && isHidden(dir.files[j], dir.path, dir.hiddenfiles) {
 				return i < j
@@ -471,7 +475,11 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		loading:     true,
 		loadTime:    time.Now(),
 		path:        path,
-		sortType:    getSortType(path),
+		sortby:      getSortBy(path),
+		dirfirst:    getDirFirst(path),
+		dironly:     getDirOnly(path),
+		hidden:      getHidden(path),
+		reverse:     getReverse(path),
 		hiddenfiles: gOpts.hiddenfiles,
 		ignorecase:  gOpts.ignorecase,
 		ignoredia:   gOpts.ignoredia,
@@ -534,8 +542,11 @@ func (nav *nav) checkDir(dir *dir) {
 			}
 			nav.dirChan <- nd
 		}()
-	case dir.sortType != getSortType(dir.path) ||
+	case dir.sortby != getSortBy(dir.path) ||
+		dir.dirfirst != getDirFirst(dir.path) ||
 		dir.dironly != getDirOnly(dir.path) ||
+		dir.hidden != getHidden(dir.path) ||
+		dir.reverse != getReverse(dir.path) ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:
