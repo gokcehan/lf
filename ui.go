@@ -1518,6 +1518,10 @@ func (ui *ui) exportSizes() {
 	os.Setenv("lf_height", strconv.Itoa(h))
 }
 
+func (ui *ui) exportCmdPrefix() {
+	os.Setenv("lf_cmdprefix", ui.cmdPrefix)
+}
+
 func anyKey() {
 	fmt.Fprint(os.Stderr, gOpts.waitmsg)
 	defer fmt.Fprint(os.Stderr, "\n")

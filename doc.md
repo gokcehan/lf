@@ -224,6 +224,7 @@ The following environment variables are exported for shell commands:
 	lf_width
 	lf_height
 	lf_count
+	lf_cmdprefix
 
 The following special shell commands are used to customize the behavior of lf when defined:
 
@@ -1089,6 +1090,12 @@ Width/Height of the terminal.
 ## lf_count
 
 Value of the count associated with the current command.
+
+## lf_cmdprefix
+
+Value of the prefix on the command line.
+This can be used to determine whether `lf` is in a particular mode.
+For example the value will be set to `filter: ` if `lf` is currently in `filter` mode.
 
 # SPECIAL COMMANDS
 

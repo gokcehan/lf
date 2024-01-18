@@ -500,6 +500,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
+	app.ui.exportCmdPrefix()
 	exportOpts()
 
 	gState.mutex.Lock()
