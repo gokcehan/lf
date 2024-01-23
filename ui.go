@@ -1512,6 +1512,41 @@ func (ui *ui) resume() error {
 	return err
 }
 
+func (ui *ui) exportMode() {
+	getMode := func() string {
+		if strings.HasPrefix(ui.cmdPrefix, "delete") {
+			return "delete"
+		}
+
+		if strings.HasPrefix(ui.cmdPrefix, "replace") || strings.HasPrefix(ui.cmdPrefix, "create") {
+			return "rename"
+		}
+
+		switch ui.cmdPrefix {
+		case "filter: ":
+			return "filter"
+		case "find: ", "find-back: ":
+			return "find"
+		case "mark-save: ", "mark-load: ", "mark-remove: ":
+			return "mark"
+		case "rename: ":
+			return "rename"
+		case "/", "?":
+			return "search"
+		case ":":
+			return "command"
+		case "$", "%", "!", "&":
+			return "shell"
+		case "":
+			return "normal"
+		default:
+			return "unknown"
+		}
+	}
+
+	os.Setenv("lf_mode", getMode())
+}
+
 func (ui *ui) exportSizes() {
 	w, h := ui.screen.Size()
 	os.Setenv("lf_width", strconv.Itoa(w))
