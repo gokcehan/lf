@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"io"
 	"log"
 	"os"
@@ -14,50 +15,69 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+func applyBoolOpt(opt *bool, e *setExpr) error {
+	switch {
+	case strings.HasPrefix(e.opt, "no"):
+		if e.val != "" {
+			return fmt.Errorf("%s: unexpected value: %s", e.opt, e.val)
+		}
+		*opt = false
+	case strings.HasSuffix(e.opt, "!"):
+		if e.val != "" {
+			return fmt.Errorf("%s: unexpected value: %s", e.opt, e.val)
+		}
+		*opt = !*opt
+	default:
+		switch e.val {
+		case "", "true":
+			*opt = true
+		case "false":
+			*opt = false
+		default:
+			return fmt.Errorf("%s: value should be empty, 'true', or 'false'", e.opt)
+		}
+	}
+
+	return nil
+}
+
 func (e *setExpr) eval(app *app, args []string) {
+	var err error
 	switch e.opt {
-	case "anchorfind":
-		if e.val == "" || e.val == "true" {
-			gOpts.anchorfind = true
-		} else if e.val == "false" {
-			gOpts.anchorfind = false
-		} else {
-			app.ui.echoerr("anchorfind: value should be empty, 'true', or 'false'")
-			return
+	case "anchorfind", "noanchorfind", "anchorfind!":
+		err = applyBoolOpt(&gOpts.anchorfind, e)
+	case "autoquit", "noautoquit", "autoquit!":
+		err = applyBoolOpt(&gOpts.autoquit, e)
+	case "dircache", "nodircache", "dircache!":
+		err = applyBoolOpt(&gOpts.dircache, e)
+	case "dircounts", "nodircounts", "dircounts!":
+		err = applyBoolOpt(&gOpts.dircounts, e)
+	case "dirfirst", "nodirfirst", "dirfirst!":
+		err = applyBoolOpt(&gOpts.dirfirst, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
 		}
-	case "noanchorfind":
-		if e.val != "" {
-			app.ui.echoerrf("noanchorfind: unexpected value: %s", e.val)
-			return
+	case "dironly", "nodironly", "dironly!":
+		err = applyBoolOpt(&gOpts.dironly, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
 		}
-		gOpts.anchorfind = false
-	case "anchorfind!":
-		if e.val != "" {
-			app.ui.echoerrf("anchorfind!: unexpected value: %s", e.val)
-			return
+	case "dirpreviews", "nodirpreviews", "dirpreviews!":
+		err = applyBoolOpt(&gOpts.dirpreviews, e)
+	case "drawbox", "nodrawbox", "drawbox!":
+		err = applyBoolOpt(&gOpts.drawbox, e)
+		if err == nil {
+			app.ui.renew()
+			if app.nav.height != app.ui.wins[0].h {
+				app.nav.height = app.ui.wins[0].h
+				app.nav.regCache = make(map[string]*reg)
+			}
+			app.ui.loadFile(app, true)
 		}
-		gOpts.anchorfind = !gOpts.anchorfind
-	case "autoquit":
-		if e.val == "" || e.val == "true" {
-			gOpts.autoquit = true
-		} else if e.val == "false" {
-			gOpts.autoquit = false
-		} else {
-			app.ui.echoerr("autoquit: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "noautoquit":
-		if e.val != "" {
-			app.ui.echoerrf("noautoquit: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.autoquit = false
-	case "autoquit!":
-		if e.val != "" {
-			app.ui.echoerrf("autoquit!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.autoquit = !gOpts.autoquit
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -93,168 +113,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.hidecursorinactive = !gOpts.hidecursorinactive
-	case "dircache":
-		if e.val == "" || e.val == "true" {
-			gOpts.dircache = true
-		} else if e.val == "false" {
-			gOpts.dircache = false
-		} else {
-			app.ui.echoerr("dircache: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nodircache":
-		if e.val != "" {
-			app.ui.echoerrf("nodircache: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircache = false
-	case "dircache!":
-		if e.val != "" {
-			app.ui.echoerrf("dircache!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircache = !gOpts.dircache
-	case "dircounts":
-		if e.val == "" || e.val == "true" {
-			gOpts.dircounts = true
-		} else if e.val == "false" {
-			gOpts.dircounts = false
-		} else {
-			app.ui.echoerr("dircounts: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nodircounts":
-		if e.val != "" {
-			app.ui.echoerrf("nodircounts: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircounts = false
-	case "dircounts!":
-		if e.val != "" {
-			app.ui.echoerrf("dircounts!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dircounts = !gOpts.dircounts
-	case "dirfirst":
-		if e.val == "" || e.val == "true" {
-			gOpts.dirfirst = true
-		} else if e.val == "false" {
-			gOpts.dirfirst = false
-		} else {
-			app.ui.echoerr("dirfirst: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "nodirfirst":
-		if e.val != "" {
-			app.ui.echoerrf("nodirfirst: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirfirst = false
-		app.nav.sort()
-		app.ui.sort()
-	case "dirfirst!":
-		if e.val != "" {
-			app.ui.echoerrf("dirfirst!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirfirst = !gOpts.dirfirst
-		app.nav.sort()
-		app.ui.sort()
-	case "dironly":
-		if e.val == "" || e.val == "true" {
-			gOpts.dironly = true
-		} else if e.val == "false" {
-			gOpts.dironly = false
-		} else {
-			app.ui.echoerr("dironly: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nodironly":
-		if e.val != "" {
-			app.ui.echoerrf("nodironly: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dironly = false
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "dironly!":
-		if e.val != "" {
-			app.ui.echoerrf("dironly!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dironly = !gOpts.dironly
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "dirpreviews":
-		if e.val == "" || e.val == "true" {
-			gOpts.dirpreviews = true
-		} else if e.val == "false" {
-			gOpts.dirpreviews = false
-		} else {
-			app.ui.echoerr("dirpreviews: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nodirpreviews":
-		if e.val != "" {
-			app.ui.echoerrf("nodirpreviews: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirpreviews = false
-	case "dirpreviews!":
-		if e.val != "" {
-			app.ui.echoerrf("dirpreviews!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.dirpreviews = !gOpts.dirpreviews
-	case "drawbox":
-		if e.val == "" || e.val == "true" {
-			gOpts.drawbox = true
-		} else if e.val == "false" {
-			gOpts.drawbox = false
-		} else {
-			app.ui.echoerr("drawbox: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
-	case "nodrawbox":
-		if e.val != "" {
-			app.ui.echoerrf("nodrawbox: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.drawbox = false
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
-	case "drawbox!":
-		if e.val != "" {
-			app.ui.echoerrf("drawbox!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.drawbox = !gOpts.drawbox
-		app.ui.renew()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
-		}
-		app.ui.loadFile(app, true)
 	case "dupfilefmt":
 		gOpts.dupfilefmt = e.val
 	case "errorfmt":
@@ -935,10 +793,15 @@ func (e *setExpr) eval(app *app, args []string) {
 			// different thread and thus cannot export (as `setenv` is not thread-safe).
 			os.Setenv("lf_"+e.opt, e.val)
 		} else {
-			app.ui.echoerrf("unknown option: %s", e.opt)
+			err = fmt.Errorf("unknown option: %s", e.opt)
 		}
+	}
+
+	if err != nil {
+		app.ui.echoerr(err.Error())
 		return
 	}
+
 	app.ui.loadFileInfo(app.nav)
 }
 

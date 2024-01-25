@@ -537,3 +537,32 @@ func TestSplitKeys(t *testing.T) {
 		}
 	}
 }
+
+func TestApplyBoolOpt(t *testing.T) {
+	tests := []struct {
+		opt bool
+		e   setExpr
+		exp bool
+	}{
+		{true, setExpr{"feature", ""}, true},
+		{true, setExpr{"feature", "true"}, true},
+		{true, setExpr{"feature", "false"}, false},
+		{false, setExpr{"feature", ""}, true},
+		{false, setExpr{"feature", "true"}, true},
+		{false, setExpr{"feature", "false"}, false},
+		{true, setExpr{"nofeature", ""}, false},
+		{false, setExpr{"nofeature", ""}, false},
+		{true, setExpr{"feature!", ""}, false},
+		{false, setExpr{"feature!", ""}, true},
+	}
+
+	for _, test := range tests {
+		if err := applyBoolOpt(&test.opt, &test.e); err != nil {
+			t.Errorf("at input '%#v' expected '%t' but got an error '%s'", test.e, test.exp, err)
+			continue
+		}
+		if test.opt != test.exp {
+			t.Errorf("at input '%#v' expected '%t' but got '%t'", test.e, test.exp, test.opt)
+		}
+	}
+}
