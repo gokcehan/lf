@@ -456,13 +456,17 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		err = applyLocalBoolOpt(gLocalOpts.dironlys, gOpts.dironly, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
+			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyLocalBoolOpt(gLocalOpts.hiddens, gOpts.hidden, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
+			app.ui.loadFile(app, true)
 		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverses, gOpts.reverse, e)
