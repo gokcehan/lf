@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -130,6 +131,16 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "number", "nonumber", "number!":
 		err = applyBoolOpt(&gOpts.number, e)
+	case "preview", "nopreview", "preview!":
+		preview := gOpts.preview
+		err = applyBoolOpt(&preview, e)
+		if preview && len(gOpts.ratios) < 2 {
+			err = errors.New("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+		}
+		if err == nil {
+			gOpts.preview = preview
+			app.ui.loadFile(app, true)
+		}
 	case "relativenumber", "norelativenumber", "relativenumber!":
 		err = applyBoolOpt(&gOpts.relativenumber, e)
 	case "reverse", "noreverse", "reverse!":
@@ -265,38 +276,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
 		}
-	case "preview":
-		if e.val == "" || e.val == "true" {
-			if len(gOpts.ratios) < 2 {
-				app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
-				return
-			}
-			gOpts.preview = true
-		} else if e.val == "false" {
-			gOpts.preview = false
-		} else {
-			app.ui.echoerr("preview: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.ui.loadFile(app, true)
-	case "nopreview":
-		if e.val != "" {
-			app.ui.echoerrf("nopreview: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.preview = false
-		app.ui.loadFile(app, true)
-	case "preview!":
-		if e.val != "" {
-			app.ui.echoerrf("preview!: unexpected value: %s", e.val)
-			return
-		}
-		if len(gOpts.ratios) < 2 {
-			app.ui.echoerr("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
-			return
-		}
-		gOpts.preview = !gOpts.preview
-		app.ui.loadFile(app, true)
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
 	case "promptfmt":
