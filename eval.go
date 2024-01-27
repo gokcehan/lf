@@ -85,6 +85,14 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "hidden", "nohidden", "hidden!":
+		err = applyBoolOpt(&gOpts.hidden, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -137,39 +145,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "hidden":
-		if e.val == "" || e.val == "true" {
-			gOpts.hidden = true
-		} else if e.val == "false" {
-			gOpts.hidden = false
-		} else {
-			app.ui.echoerr("hidden: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nohidden":
-		if e.val != "" {
-			app.ui.echoerrf("nohidden: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.hidden = false
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "hidden!":
-		if e.val != "" {
-			app.ui.echoerrf("hidden!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.hidden = !gOpts.hidden
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
 	case "hiddenfiles":
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
