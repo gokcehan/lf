@@ -93,6 +93,12 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
+		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
+	case "history", "nohistory", "history!":
+		err = applyBoolOpt(&gOpts.history, e)
+	case "icons", "noicons", "icons!":
+		err = applyBoolOpt(&gOpts.icons, e)
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -107,27 +113,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.cursorpreviewfmt = e.val
 	case "cutfmt":
 		gOpts.cutfmt = e.val
-	case "hidecursorinactive":
-		if e.val == "" || e.val == "true" {
-			gOpts.hidecursorinactive = true
-		} else if e.val == "false" {
-			gOpts.hidecursorinactive = false
-		} else {
-			app.ui.echoerr("hidecursorinactive: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nohidecursorinactive":
-		if e.val != "" {
-			app.ui.echoerrf("nohidecursorinactive: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.hidecursorinactive = false
-	case "hidecursorinactive!":
-		if e.val != "" {
-			app.ui.echoerrf("hidecursorinactive!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.hidecursorinactive = !gOpts.hidecursorinactive
 	case "dupfilefmt":
 		gOpts.dupfilefmt = e.val
 	case "errorfmt":
@@ -163,48 +148,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.nav.position()
 		app.ui.sort()
 		app.ui.loadFile(app, true)
-	case "history":
-		if e.val == "" || e.val == "true" {
-			gOpts.history = true
-		} else if e.val == "false" {
-			gOpts.history = false
-		} else {
-			app.ui.echoerr("history: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nohistory":
-		if e.val != "" {
-			app.ui.echoerrf("nohistory: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.history = false
-	case "history!":
-		if e.val != "" {
-			app.ui.echoerrf("history!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.history = !gOpts.history
-	case "icons":
-		if e.val == "" || e.val == "true" {
-			gOpts.icons = true
-		} else if e.val == "false" {
-			gOpts.icons = false
-		} else {
-			app.ui.echoerr("icons: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "noicons":
-		if e.val != "" {
-			app.ui.echoerrf("noicons: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.icons = false
-	case "icons!":
-		if e.val != "" {
-			app.ui.echoerrf("icons!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.icons = !gOpts.icons
 	case "ifs":
 		gOpts.ifs = e.val
 	case "ignorecase":
