@@ -115,6 +115,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "incfilter", "noincfilter", "incfilter!":
+		err = applyBoolOpt(&gOpts.incfilter, e)
+	case "incsearch", "noincsearch", "incsearch!":
+		err = applyBoolOpt(&gOpts.incsearch, e)
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -166,48 +170,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 	case "ifs":
 		gOpts.ifs = e.val
-	case "incfilter":
-		if e.val == "" || e.val == "true" {
-			gOpts.incfilter = true
-		} else if e.val == "false" {
-			gOpts.incfilter = false
-		} else {
-			app.ui.echoerr("incfilter: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "noincfilter":
-		if e.val != "" {
-			app.ui.echoerrf("noincfilter: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incfilter = false
-	case "incfilter!":
-		if e.val != "" {
-			app.ui.echoerrf("incfilter!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incfilter = !gOpts.incfilter
-	case "incsearch":
-		if e.val == "" || e.val == "true" {
-			gOpts.incsearch = true
-		} else if e.val == "false" {
-			gOpts.incsearch = false
-		} else {
-			app.ui.echoerr("incsearch: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "noincsearch":
-		if e.val != "" {
-			app.ui.echoerrf("noincsearch: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incsearch = false
-	case "incsearch!":
-		if e.val != "" {
-			app.ui.echoerrf("incsearch!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.incsearch = !gOpts.incsearch
 	case "info":
 		if e.val == "" {
 			gOpts.info = nil
