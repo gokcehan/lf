@@ -128,6 +128,18 @@ func (e *setExpr) eval(app *app, args []string) {
 				app.ui.screen.DisableMouse()
 			}
 		}
+	case "number", "nonumber", "number!":
+		err = applyBoolOpt(&gOpts.number, e)
+	case "relativenumber", "norelativenumber", "relativenumber!":
+		err = applyBoolOpt(&gOpts.relativenumber, e)
+	case "reverse", "noreverse", "reverse!":
+		err = applyBoolOpt(&gOpts.reverse, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+		}
+	case "sixel", "nosixel", "sixel!":
+		err = applyBoolOpt(&gOpts.sixel, e)
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -234,27 +246,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
 		gOpts.infotimefmtold = e.val
-	case "number":
-		if e.val == "" || e.val == "true" {
-			gOpts.number = true
-		} else if e.val == "false" {
-			gOpts.number = false
-		} else {
-			app.ui.echoerr("number: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nonumber":
-		if e.val != "" {
-			app.ui.echoerrf("nonumber: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.number = false
-	case "number!":
-		if e.val != "" {
-			app.ui.echoerrf("number!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.number = !gOpts.number
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
@@ -332,54 +323,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
 		app.ui.loadFile(app, true)
-	case "relativenumber":
-		if e.val == "" || e.val == "true" {
-			gOpts.relativenumber = true
-		} else if e.val == "false" {
-			gOpts.relativenumber = false
-		} else {
-			app.ui.echoerr("relativenumber: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "norelativenumber":
-		if e.val != "" {
-			app.ui.echoerrf("norelativenumber: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.relativenumber = false
-	case "relativenumber!":
-		if e.val != "" {
-			app.ui.echoerrf("relativenumber!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.relativenumber = !gOpts.relativenumber
-	case "reverse":
-		if e.val == "" || e.val == "true" {
-			gOpts.reverse = true
-		} else if e.val == "false" {
-			gOpts.reverse = false
-		} else {
-			app.ui.echoerr("reverse: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "noreverse":
-		if e.val != "" {
-			app.ui.echoerrf("noreverse: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.reverse = false
-		app.nav.sort()
-		app.ui.sort()
-	case "reverse!":
-		if e.val != "" {
-			app.ui.echoerrf("reverse!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.reverse = !gOpts.reverse
-		app.nav.sort()
-		app.ui.sort()
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -552,27 +495,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.wrapscroll = !gOpts.wrapscroll
-	case "sixel":
-		if e.val == "" || e.val == "true" {
-			gOpts.sixel = true
-		} else if e.val == "false" {
-			gOpts.sixel = false
-		} else {
-			app.ui.echoerr("sixel: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nosixel":
-		if e.val != "" {
-			app.ui.echoerrf("nosixel: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sixel = false
-	case "sixel!":
-		if e.val != "" {
-			app.ui.echoerrf("sixel!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.sixel = !gOpts.sixel
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
