@@ -83,6 +83,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.globsearch, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
@@ -155,11 +156,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.smartcase, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "smartdia", "nosmartdia", "smartdia!":
 		err = applyBoolOpt(&gOpts.smartdia, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
 	case "wrapscan", "nowrapscan", "wrapscan!":
 		err = applyBoolOpt(&gOpts.wrapscan, e)
 	case "wrapscroll", "nowrapscroll", "wrapscroll!":
