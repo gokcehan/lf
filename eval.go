@@ -119,6 +119,15 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
+	case "mouse", "nomouse", "mouse!":
+		err = applyBoolOpt(&gOpts.mouse, e)
+		if err == nil {
+			if gOpts.mouse {
+				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
+			} else {
+				app.ui.screen.DisableMouse()
+			}
+		}
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -225,42 +234,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
 		gOpts.infotimefmtold = e.val
-	case "mouse":
-		if e.val == "" || e.val == "true" {
-			if !gOpts.mouse {
-				gOpts.mouse = true
-				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
-			}
-		} else if e.val == "false" {
-			if gOpts.mouse {
-				gOpts.mouse = false
-				app.ui.screen.DisableMouse()
-			}
-		} else {
-			app.ui.echoerr("mouse: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nomouse":
-		if e.val != "" {
-			app.ui.echoerrf("nomouse: unexpected value: %s", e.val)
-			return
-		}
-		if gOpts.mouse {
-			gOpts.mouse = false
-			app.ui.screen.DisableMouse()
-		}
-	case "mouse!":
-		if e.val != "" {
-			app.ui.echoerrf("mouse!: unexpected value: %s", e.val)
-			return
-		}
-		if gOpts.mouse {
-			gOpts.mouse = false
-			app.ui.screen.DisableMouse()
-		} else {
-			gOpts.mouse = true
-			app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
-		}
 	case "number":
 		if e.val == "" || e.val == "true" {
 			gOpts.number = true
