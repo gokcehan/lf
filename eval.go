@@ -42,6 +42,20 @@ func applyBoolOpt(opt *bool, e *setExpr) error {
 	return nil
 }
 
+func applyLocalBoolOpt(localOpt map[string]bool, globalOpt bool, e *setLocalExpr) error {
+	opt, ok := localOpt[e.path]
+	if !ok {
+		opt = globalOpt
+	}
+
+	if err := applyBoolOpt(&opt, &setExpr{e.opt, e.val}); err != nil {
+		return err
+	}
+
+	localOpt[e.path] = opt
+	return nil
+}
+
 func (e *setExpr) eval(app *app, args []string) {
 	var err error
 	switch e.opt {
