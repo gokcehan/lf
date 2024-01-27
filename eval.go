@@ -151,6 +151,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "sixel", "nosixel", "sixel!":
 		err = applyBoolOpt(&gOpts.sixel, e)
+	case "smartcase", "nosmartcase", "smartcase!":
+		err = applyBoolOpt(&gOpts.smartcase, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
+	case "smartdia", "nosmartdia", "smartdia!":
+		err = applyBoolOpt(&gOpts.smartdia, e)
+	case "wrapscan", "nowrapscan", "wrapscan!":
+		err = applyBoolOpt(&gOpts.wrapscan, e)
+	case "wrapscroll", "nowrapscroll", "wrapscroll!":
+		err = applyBoolOpt(&gOpts.wrapscroll, e)
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -333,57 +346,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
-	case "smartcase":
-		if e.val == "" || e.val == "true" {
-			gOpts.smartcase = true
-		} else if e.val == "false" {
-			gOpts.smartcase = false
-		} else {
-			app.ui.echoerr("smartcase: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "nosmartcase":
-		if e.val != "" {
-			app.ui.echoerrf("nosmartcase: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartcase = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "smartcase!":
-		if e.val != "" {
-			app.ui.echoerrf("smartcase!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartcase = !gOpts.smartcase
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "smartdia":
-		if e.val == "" || e.val == "true" {
-			gOpts.smartdia = true
-		} else if e.val == "false" {
-			gOpts.smartdia = false
-		} else {
-			app.ui.echoerr("smartdia: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nosmartdia":
-		if e.val != "" {
-			app.ui.echoerrf("nosmartdia: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartdia = false
-	case "smartdia!":
-		if e.val != "" {
-			app.ui.echoerrf("smartdia!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.smartdia = !gOpts.smartdia
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
@@ -432,48 +394,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.truncatepct = n
 	case "waitmsg":
 		gOpts.waitmsg = e.val
-	case "wrapscan":
-		if e.val == "" || e.val == "true" {
-			gOpts.wrapscan = true
-		} else if e.val == "false" {
-			gOpts.wrapscan = false
-		} else {
-			app.ui.echoerr("wrapscan: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nowrapscan":
-		if e.val != "" {
-			app.ui.echoerrf("nowrapscan: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscan = false
-	case "wrapscan!":
-		if e.val != "" {
-			app.ui.echoerrf("wrapscan!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscan = !gOpts.wrapscan
-	case "wrapscroll":
-		if e.val == "" || e.val == "true" {
-			gOpts.wrapscroll = true
-		} else if e.val == "false" {
-			gOpts.wrapscroll = false
-		} else {
-			app.ui.echoerr("wrapscroll: value should be empty, 'true', or 'false'")
-			return
-		}
-	case "nowrapscroll":
-		if e.val != "" {
-			app.ui.echoerrf("nowrapscroll: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscroll = false
-	case "wrapscroll!":
-		if e.val != "" {
-			app.ui.echoerrf("wrapscroll!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.wrapscroll = !gOpts.wrapscroll
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
