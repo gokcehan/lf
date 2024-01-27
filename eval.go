@@ -103,6 +103,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.ignorecase, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
@@ -110,7 +111,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.ignoredia, e)
 		if err == nil {
 			app.nav.sort()
+			app.nav.position()
 			app.ui.sort()
+			app.ui.loadFile(app, true)
 		}
 	case "borderfmt":
 		gOpts.borderfmt = e.val
