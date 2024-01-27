@@ -78,6 +78,13 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
+	case "globsearch", "noglobsearch", "globsearch!":
+		err = applyBoolOpt(&gOpts.globsearch, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -130,36 +137,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "globsearch":
-		if e.val == "" || e.val == "true" {
-			gOpts.globsearch = true
-		} else if e.val == "false" {
-			gOpts.globsearch = false
-		} else {
-			app.ui.echoerr("globsearch: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "noglobsearch":
-		if e.val != "" {
-			app.ui.echoerrf("noglobsearch: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.globsearch = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "globsearch!":
-		if e.val != "" {
-			app.ui.echoerrf("globsearch!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.globsearch = !gOpts.globsearch
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
 	case "hidden":
 		if e.val == "" || e.val == "true" {
 			gOpts.hidden = true
