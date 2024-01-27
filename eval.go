@@ -99,6 +99,19 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
 		err = applyBoolOpt(&gOpts.icons, e)
+	case "ignorecase", "noignorecase", "ignorecase!":
+		err = applyBoolOpt(&gOpts.ignorecase, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
+	case "ignoredia", "noignoredia", "ignoredia!":
+		err = applyBoolOpt(&gOpts.ignoredia, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+		}
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
@@ -150,63 +163,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 	case "ifs":
 		gOpts.ifs = e.val
-	case "ignorecase":
-		if e.val == "" || e.val == "true" {
-			gOpts.ignorecase = true
-		} else if e.val == "false" {
-			gOpts.ignorecase = false
-		} else {
-			app.ui.echoerr("ignorecase: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "noignorecase":
-		if e.val != "" {
-			app.ui.echoerrf("noignorecase: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignorecase = false
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ignorecase!":
-		if e.val != "" {
-			app.ui.echoerrf("ignorecase!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignorecase = !gOpts.ignorecase
-		app.nav.sort()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ignoredia":
-		if e.val == "" || e.val == "true" {
-			gOpts.ignoredia = true
-		} else if e.val == "false" {
-			gOpts.ignoredia = false
-		} else {
-			app.ui.echoerr("ignoredia: value should be empty, 'true', or 'false'")
-			return
-		}
-		app.nav.sort()
-		app.ui.sort()
-	case "noignoredia":
-		if e.val != "" {
-			app.ui.echoerrf("noignoredia: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignoredia = false
-		app.nav.sort()
-		app.ui.sort()
-	case "ignoredia!":
-		if e.val != "" {
-			app.ui.echoerrf("ignoredia!: unexpected value: %s", e.val)
-			return
-		}
-		gOpts.ignoredia = !gOpts.ignoredia
-		app.nav.sort()
-		app.ui.sort()
 	case "incfilter":
 		if e.val == "" || e.val == "true" {
 			gOpts.incfilter = true
