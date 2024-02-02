@@ -1537,6 +1537,8 @@ func (ui *ui) exportMode() {
 			return "command"
 		case "$", "%", "!", "&":
 			return "shell"
+		case ">":
+			return "pipe"
 		case "":
 			return "normal"
 		default:
