@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 	"testing"
@@ -534,6 +535,76 @@ func TestSplitKeys(t *testing.T) {
 	for _, inp := range inps {
 		if keys := splitKeys(inp.s); !reflect.DeepEqual(keys, inp.keys) {
 			t.Errorf("at input '%s' expected '%v' but got '%v'", inp.s, inp.keys, keys)
+		}
+	}
+}
+
+func TestApplyBoolOpt(t *testing.T) {
+	tests := []struct {
+		opt bool
+		e   setExpr
+		exp bool
+	}{
+		{true, setExpr{"feature", ""}, true},
+		{true, setExpr{"feature", "true"}, true},
+		{true, setExpr{"feature", "false"}, false},
+		{false, setExpr{"feature", ""}, true},
+		{false, setExpr{"feature", "true"}, true},
+		{false, setExpr{"feature", "false"}, false},
+		{true, setExpr{"nofeature", ""}, false},
+		{false, setExpr{"nofeature", ""}, false},
+		{true, setExpr{"feature!", ""}, false},
+		{false, setExpr{"feature!", ""}, true},
+	}
+
+	for _, test := range tests {
+		testStr := fmt.Sprintf("%v", test)
+		if err := applyBoolOpt(&test.opt, &test.e); err != nil {
+			t.Errorf("at test '%s' expected '%t' but got an error '%s'", testStr, test.exp, err)
+			continue
+		}
+		if test.opt != test.exp {
+			t.Errorf("at test '%s' expected '%t' but got '%t'", testStr, test.exp, test.opt)
+		}
+	}
+}
+
+func TestApplyLocalBoolOpt(t *testing.T) {
+	tests := []struct {
+		localOpt  map[string]bool
+		globalOpt bool
+		e         setLocalExpr
+		exp       bool
+	}{
+		{map[string]bool{}, false, setLocalExpr{"/", "feature", ""}, true},
+		{map[string]bool{}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{map[string]bool{}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{map[string]bool{}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{map[string]bool{}, true, setLocalExpr{"/", "feature!", ""}, false},
+		{map[string]bool{}, false, setLocalExpr{"/", "feature!", ""}, true},
+		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", ""}, true},
+		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{map[string]bool{"/": true}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{map[string]bool{"/": true}, true, setLocalExpr{"/", "feature!", ""}, false},
+		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature!", ""}, false},
+		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", ""}, true},
+		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{map[string]bool{"/": false}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{map[string]bool{"/": false}, true, setLocalExpr{"/", "feature!", ""}, true},
+		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature!", ""}, true},
+	}
+
+	for _, test := range tests {
+		testStr := fmt.Sprintf("%v", test)
+		if err := applyLocalBoolOpt(test.localOpt, test.globalOpt, &test.e); err != nil {
+			t.Errorf("at test '%s' expected '%t' but got an error '%s'", testStr, test.exp, err)
+			continue
+		}
+		result := test.localOpt[test.e.path]
+		if result != test.exp {
+			t.Errorf("at test '%s' expected '%t' but got '%t'", testStr, test.exp, result)
 		}
 	}
 }
