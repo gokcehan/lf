@@ -27,7 +27,6 @@ Adding a new option usually requires the following steps:
 - Add default option value to `init` function in `opts.go`
 - Add option evaluation logic to `setExpr.eval` in `eval.go`
 - Implement the option somewhere in the code
-- Add option name to `gOptWords` in `complete.go` for tab completion
 - Add option name and its default value to `Quick Reference` and `Options` sections in `doc.md`
 - Run `gen/doc-with-docker.sh` to update the documentation
 - Commit your changes and send a pull request
