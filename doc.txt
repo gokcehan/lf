@@ -214,6 +214,7 @@ The following environment variables are exported for shell commands:
     lf_width
     lf_height
     lf_count
+    lf_mode
 
 The following special shell commands are used to customize the behavior
 of lf when defined:
@@ -1200,6 +1201,13 @@ Width/Height of the terminal.
 lf_count
 
 Value of the count associated with the current command.
+
+lf_mode
+
+Current mode that lf is operating in. This is useful for customizing
+keybindings depending on what the current mode is. Possible values are
+delete, rename, filter, find, mark, search, command, shell, pipe (when
+running a shell-pipe command), normal, and unknown.
 
 SPECIAL COMMANDS
 
