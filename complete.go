@@ -110,12 +110,12 @@ var (
 		"cmd-lowercase-word",
 	}
 
-	gOptWords      = getOptWords()
-	gLocalOptWords = getLocalOptWords()
+	gOptWords      = getOptWords(gOpts)
+	gLocalOptWords = getLocalOptWords(gLocalOpts)
 )
 
-func getOptWords() (optWords []string) {
-	t := reflect.TypeOf(gOpts)
+func getOptWords(opts any) (optWords []string) {
+	t := reflect.TypeOf(opts)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		switch field.Type.Kind() {
@@ -132,8 +132,8 @@ func getOptWords() (optWords []string) {
 	return
 }
 
-func getLocalOptWords() (localOptWords []string) {
-	t := reflect.TypeOf(gLocalOpts)
+func getLocalOptWords(localOpts any) (localOptWords []string) {
+	t := reflect.TypeOf(localOpts)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
 		name := strings.TrimSuffix(field.Name, "s")

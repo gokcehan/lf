@@ -54,3 +54,41 @@ func TestMatchWord(t *testing.T) {
 		}
 	}
 }
+
+func TestGetOptWords(t *testing.T) {
+	tests := []struct {
+		opts any
+		exp  []string
+	}{
+		{struct{ feature bool }{}, []string{"feature", "feature!", "nofeature"}},
+		{struct{ feature int }{}, []string{"feature"}},
+		{struct{ feature string }{}, []string{"feature"}},
+		{struct{ feature []string }{}, []string{"feature"}},
+	}
+
+	for _, test := range tests {
+		result := getOptWords(test.opts)
+		if !reflect.DeepEqual(result, test.exp) {
+			t.Errorf("at input '%#v' expected '%s' but got '%s'", test.opts, test.exp, result)
+		}
+	}
+}
+
+func TestGetLocalOptWords(t *testing.T) {
+	tests := []struct {
+		localOpts any
+		exp       []string
+	}{
+		{struct{ features map[string]bool }{}, []string{"feature", "feature!", "nofeature"}},
+		{struct{ features map[string]int }{}, []string{"feature"}},
+		{struct{ features map[string]string }{}, []string{"feature"}},
+		{struct{ features map[string][]string }{}, []string{"feature"}},
+	}
+
+	for _, test := range tests {
+		result := getLocalOptWords(test.localOpts)
+		if !reflect.DeepEqual(result, test.exp) {
+			t.Errorf("at input '%#v' expected '%s' but got '%s'", test.localOpts, test.exp, result)
+		}
+	}
+}
