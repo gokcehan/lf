@@ -438,8 +438,8 @@ func (e *setExpr) eval(app *app, args []string) {
 }
 
 func (e *setLocalExpr) eval(app *app, args []string) {
-	path := replaceTilde(e.path)
-	if !filepath.IsAbs(path) {
+	e.path = replaceTilde(e.path)
+	if !filepath.IsAbs(e.path) {
 		app.ui.echoerr("setlocal: path should be absolute")
 		return
 	}
@@ -476,7 +476,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		}
 	case "info":
 		if e.val == "" {
-			gLocalOpts.infos[path] = nil
+			gLocalOpts.infos[e.path] = nil
 			return
 		}
 		toks := strings.Split(e.val, ":")
@@ -488,14 +488,14 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 				return
 			}
 		}
-		gLocalOpts.infos[path] = toks
+		gLocalOpts.infos[e.path] = toks
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
-		gLocalOpts.sortbys[path] = method
+		gLocalOpts.sortbys[e.path] = method
 		app.nav.sort()
 		app.ui.sort()
 	default:
