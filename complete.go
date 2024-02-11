@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"sort"
 	"strings"
 )
@@ -109,146 +110,45 @@ var (
 		"cmd-lowercase-word",
 	}
 
-	gOptWords = []string{
-		"anchorfind",
-		"noanchorfind",
-		"anchorfind!",
-		"autoquit",
-		"noautoquit",
-		"autoquit!",
-		"borderfmt",
-		"copyfmt",
-		"cursoractivefmt",
-		"cursorparentfmt",
-		"cursorpreviewfmt",
-		"cutfmt",
-		"hidecursorinactive",
-		"nohidecursorinactive",
-		"hidecursorinactive!",
-		"dircache",
-		"nodircache",
-		"dircache!",
-		"dircounts",
-		"nodircounts",
-		"dircounts!",
-		"dirfirst",
-		"nodirfirst",
-		"dirfirst!",
-		"dironly",
-		"nodironly",
-		"dironly!",
-		"dirpreviews",
-		"nodirpreviews",
-		"dirpreviews!",
-		"drawbox",
-		"nodrawbox",
-		"drawbox!",
-		"dupfilefmt",
-		"globsearch",
-		"noglobsearch",
-		"globsearch!",
-		"hidden",
-		"nohidden",
-		"hidden!",
-		"history",
-		"nohistory",
-		"history!",
-		"icons",
-		"noicons",
-		"icons!",
-		"ignorecase",
-		"noignorecase",
-		"ignorecase!",
-		"ignoredia",
-		"noignoredia",
-		"ignoredia!",
-		"incsearch",
-		"noincsearch",
-		"incsearch!",
-		"incfilter",
-		"noincfilter",
-		"incfilter!",
-		"mouse",
-		"nomouse",
-		"mouse!",
-		"number",
-		"nonumber",
-		"number!",
-		"preview",
-		"nopreview",
-		"preview!",
-		"relativenumber",
-		"norelativenumber",
-		"relativenumber!",
-		"reverse",
-		"noreverse",
-		"reverse!",
-		"ruler",
-		"rulerfmt",
-		"preserve",
-		"selectfmt",
-		"sixel",
-		"nosixel",
-		"sixel!",
-		"smartcase",
-		"nosmartcase",
-		"smartcase!",
-		"smartdia",
-		"nosmartdia",
-		"smartdia!",
-		"waitmsg",
-		"wrapscan",
-		"nowrapscan",
-		"wrapscan!",
-		"wrapscroll",
-		"nowrapscroll",
-		"wrapscroll!",
-		"findlen",
-		"period",
-		"scrolloff",
-		"tabstop",
-		"errorfmt",
-		"filesep",
-		"hiddenfiles",
-		"ifs",
-		"info",
-		"numberfmt",
-		"previewer",
-		"cleaner",
-		"promptfmt",
-		"ratios",
-		"selmode",
-		"shell",
-		"shellflag",
-		"shellopts",
-		"sortby",
-		"statfmt",
-		"timefmt",
-		"tempmarks",
-		"tagfmt",
-		"infotimefmtnew",
-		"infotimefmtold",
-		"truncatechar",
-		"truncatepct",
-	}
-
-	gLocalOptWords = []string{
-		"dirfirst",
-		"nodirfirst",
-		"dirfirst!",
-		"dironly",
-		"nodironly",
-		"dironly!",
-		"hidden",
-		"nohidden",
-		"hidden!",
-		"info",
-		"reverse",
-		"noreverse",
-		"reverse!",
-		"sortby",
-	}
+	gOptWords      = getOptWords(gOpts)
+	gLocalOptWords = getLocalOptWords(gLocalOpts)
 )
+
+func getOptWords(opts any) (optWords []string) {
+	t := reflect.TypeOf(opts)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		switch field.Type.Kind() {
+		case reflect.Map:
+			continue
+		case reflect.Bool:
+			name := field.Name
+			optWords = append(optWords, name, "no"+name, name+"!")
+		default:
+			optWords = append(optWords, field.Name)
+		}
+	}
+	sort.Strings(optWords)
+	return
+}
+
+func getLocalOptWords(localOpts any) (localOptWords []string) {
+	t := reflect.TypeOf(localOpts)
+	for i := 0; i < t.NumField(); i++ {
+		field := t.Field(i)
+		name := strings.TrimSuffix(field.Name, "s")
+		if field.Type.Kind() != reflect.Map {
+			continue
+		}
+		if field.Type.Elem().Kind() == reflect.Bool {
+			localOptWords = append(localOptWords, name, "no"+name, name+"!")
+		} else {
+			localOptWords = append(localOptWords, name)
+		}
+	}
+	sort.Strings(localOptWords)
+	return
+}
 
 func matchLongest(s1, s2 []rune) []rune {
 	i := 0
