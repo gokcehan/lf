@@ -379,9 +379,6 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
-
-			app.nav.checkDir(d)
-
 			if gOpts.dircache {
 				prev, ok := app.nav.dirCache[d.path]
 				if ok {
