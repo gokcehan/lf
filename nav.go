@@ -1868,9 +1868,12 @@ func (nav *nav) readMarks() error {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		toks := strings.SplitN(scanner.Text(), ":", 2)
-		if _, ok := nav.marks[toks[0]]; !ok {
-			nav.marks[toks[0]] = toks[1]
+		mark, path, found := strings.Cut(scanner.Text(), ":")
+		if !found {
+			return fmt.Errorf("invalid marks file entry: %s", scanner.Text())
+		}
+		if _, ok := nav.marks[mark]; !ok {
+			nav.marks[mark] = path
 		}
 	}
 
