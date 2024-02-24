@@ -1923,12 +1923,12 @@ func (nav *nav) readTags() error {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		text := scanner.Text()
-		ind := strings.LastIndex(text, ":")
-		path := text[0:ind]
-		mark := text[ind+1:]
+		path, tag, found := strings.Cut(scanner.Text(), ":")
+		if !found {
+			return fmt.Errorf("invalid tags file entry: %s", scanner.Text())
+		}
 		if _, ok := nav.tags[path]; !ok {
-			nav.tags[path] = mark
+			nav.tags[path] = tag
 		}
 	}
 
