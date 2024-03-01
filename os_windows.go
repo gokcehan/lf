@@ -70,7 +70,7 @@ func init() {
 	}
 
 	gUser = &user.User{
-		HomeDir: homeDir,
+		HomeDir:  homeDir,
 		Username: username,
 	}
 
