@@ -59,14 +59,20 @@ func init() {
 		envShell = "cmd"
 	}
 
-	u, err := user.Current()
+	homeDir, err := os.UserHomeDir()
 	if err != nil {
-		log.Printf("user: %s", err)
+		panic(err)
 	}
-	gUser = u
 
-	// remove domain prefix
-	gUser.Username = strings.Split(gUser.Username, `\`)[1]
+	username := os.Getenv("USERNAME")
+	if username == "" {
+		panic("$USERNAME variable is empty or not set")
+	}
+
+	gUser = &user.User{
+		HomeDir:  homeDir,
+		Username: username,
+	}
 
 	data := os.Getenv("LF_CONFIG_HOME")
 	if data == "" {
