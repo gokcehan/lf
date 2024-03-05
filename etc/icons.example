@@ -188,6 +188,9 @@ fi             # FILE
 *procfile               
 *dockerfile             
 *docker-compose.yml     
+*docker-compose.yaml    
+*compose.yml            
+*compose.yaml           
 *rakefile               
 *config.ru              
 *gemfile                
@@ -209,6 +212,7 @@ fi             # FILE
 *Procfile               
 *Dockerfile             
 *Docker-compose.yml     
+*Docker-compose.yaml    
 *Rakefile               
 *Gemfile                
 *Makefile               
