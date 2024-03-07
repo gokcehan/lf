@@ -90,6 +90,9 @@ func (e *setExpr) eval(app *app, args []string) {
 			if app.nav.height != app.ui.wins[0].h {
 				app.nav.height = app.ui.wins[0].h
 				app.nav.regCache = make(map[string]*reg)
+				if gOpts.sixel {
+					app.ui.sxScreen.lastFile = ""
+				}
 			}
 			app.ui.loadFile(app, true)
 		}
@@ -336,6 +339,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
+		if gOpts.sixel {
+			app.nav.regCache = make(map[string]*reg)
+			app.ui.sxScreen.lastFile = ""
+		}
 		app.ui.loadFile(app, true)
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
@@ -1351,6 +1358,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
 			app.nav.regCache = make(map[string]*reg)
+		}
+		if gOpts.sixel {
+			app.nav.regCache = make(map[string]*reg)
+			app.ui.sxScreen.lastFile = ""
 		}
 		for _, dir := range app.nav.dirs {
 			dir.boundPos(app.nav.height)
