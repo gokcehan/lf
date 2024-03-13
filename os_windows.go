@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"golang.org/x/sys/windows"
 )
@@ -24,8 +25,8 @@ var envPathExt = os.Getenv("PATHEXT")
 var (
 	gDefaultShell      = "cmd"
 	gDefaultShellFlag  = "/c"
-	gDefaultSocketProt = "tcp"
-	gDefaultSocketPath = "127.0.0.1:12345"
+	gDefaultSocketProt = "unix"
+	gDefaultSocketPath string
 )
 
 var (
@@ -92,6 +93,15 @@ func init() {
 	gIconsPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "icons"),
 		filepath.Join(data, "lf", "icons"),
+	}
+
+	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
+	if err != nil {
+		gDefaultSocketProt = "tcp"
+		gDefaultSocketPath = "127.0.0.1:1234"
+	} else {
+		gDefaultSocketPath = filepath.Join(data, "lf", fmt.Sprintf("lf.%s.sock", gUser.Username))
+		syscall.Close(socket)
 	}
 
 	gFilesPath = filepath.Join(data, "lf", "files")
