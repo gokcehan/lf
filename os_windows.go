@@ -98,7 +98,7 @@ func init() {
 	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
 	if err != nil {
 		gDefaultSocketProt = "tcp"
-		gDefaultSocketPath = "127.0.0.1:1234"
+		gDefaultSocketPath = "127.0.0.1:12345"
 	} else {
 		gDefaultSocketPath = filepath.Join(data, "lf", fmt.Sprintf("lf.%s.sock", gUser.Username))
 		syscall.Close(socket)
