@@ -95,6 +95,11 @@ func init() {
 		filepath.Join(data, "lf", "icons"),
 	}
 
+	gFilesPath = filepath.Join(data, "lf", "files")
+	gMarksPath = filepath.Join(data, "lf", "marks")
+	gTagsPath = filepath.Join(data, "lf", "tags")
+	gHistoryPath = filepath.Join(data, "lf", "history")
+
 	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
 	if err != nil {
 		gDefaultSocketProt = "tcp"
@@ -103,11 +108,6 @@ func init() {
 		gDefaultSocketPath = filepath.Join(data, "lf", fmt.Sprintf("lf.%s.sock", gUser.Username))
 		syscall.Close(socket)
 	}
-
-	gFilesPath = filepath.Join(data, "lf", "files")
-	gMarksPath = filepath.Join(data, "lf", "marks")
-	gTagsPath = filepath.Join(data, "lf", "tags")
-	gHistoryPath = filepath.Join(data, "lf", "history")
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
