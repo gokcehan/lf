@@ -105,7 +105,8 @@ func init() {
 		gDefaultSocketProt = "tcp"
 		gDefaultSocketPath = "127.0.0.1:12345"
 	} else {
-		gDefaultSocketPath = filepath.Join(data, "lf", fmt.Sprintf("lf.%s.sock", gUser.Username))
+		runtime := os.TempDir()
+		gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
 		syscall.Close(socket)
 	}
 }
