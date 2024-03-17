@@ -1930,7 +1930,7 @@ func (nav *nav) readTags() error {
 
 		ind := strings.LastIndex(text, ":")
 		if ind == -1 {
-			return fmt.Errorf("invalid tags file entry: %s", scanner.Text())
+			return fmt.Errorf("invalid tags file entry: %s", text)
 		}
 
 		path := text[0:ind]
