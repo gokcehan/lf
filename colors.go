@@ -10,10 +10,16 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-type styleMap map[string]tcell.Style
+type styleMap struct {
+	styles        map[string]tcell.Style
+	useLinkTarget bool
+}
 
 func parseStyles() styleMap {
-	sm := make(styleMap)
+	sm := styleMap{
+		styles:        make(map[string]tcell.Style),
+		useLinkTarget: false,
+	}
 
 	// Default values from dircolors
 	//
@@ -199,12 +205,12 @@ func (sm styleMap) parseFile(path string) {
 			key = filepath.Clean(key)
 		}
 
-		sm[key] = applyAnsiCodes(val, tcell.StyleDefault)
+		sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
 	}
 }
 
 // This function parses $LS_COLORS environment variable.
-func (sm styleMap) parseGNU(env string) {
+func (sm *styleMap) parseGNU(env string) {
 	for _, entry := range strings.Split(env, ":") {
 		if entry == "" {
 			continue
@@ -225,7 +231,13 @@ func (sm styleMap) parseGNU(env string) {
 			key = filepath.Clean(key)
 		}
 
-		sm[key] = applyAnsiCodes(val, tcell.StyleDefault)
+		if key == "ln" && val == "target" {
+			sm.useLinkTarget = true
+			log.Printf("using link target for styles")
+			continue
+		}
+
+		sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
 	}
 }
 
@@ -267,17 +279,17 @@ func (sm styleMap) parseBSD(env string) {
 	}
 
 	for i, key := range colorNames {
-		sm[key] = getStyle(env[i*2], env[i*2+1])
+		sm.styles[key] = getStyle(env[i*2], env[i*2+1])
 	}
 }
 
 func (sm styleMap) get(f *file) tcell.Style {
-	if val, ok := sm[f.path]; ok {
+	if val, ok := sm.styles[f.path]; ok {
 		return val
 	}
 
 	if f.IsDir() {
-		if val, ok := sm[f.Name()+"/"]; ok {
+		if val, ok := sm.styles[f.Name()+"/"]; ok {
 			return val
 		}
 	}
@@ -285,8 +297,6 @@ func (sm styleMap) get(f *file) tcell.Style {
 	var key string
 
 	switch {
-	case f.linkState == working:
-		key = "ln"
 	case f.linkState == broken:
 		key = "or"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
@@ -313,27 +323,31 @@ func (sm styleMap) get(f *file) tcell.Style {
 		key = "ex"
 	}
 
-	if val, ok := sm[key]; ok {
+	if f.linkState == working && !sm.useLinkTarget {
+		key = "ln"
+	}
+
+	if val, ok := sm.styles[key]; ok {
 		return val
 	}
 
-	if val, ok := sm[f.Name()+"*"]; ok {
+	if val, ok := sm.styles[f.Name()+"*"]; ok {
 		return val
 	}
 
-	if val, ok := sm["*"+f.Name()]; ok {
+	if val, ok := sm.styles["*"+f.Name()]; ok {
 		return val
 	}
 
-	if val, ok := sm[filepath.Base(f.Name())+".*"]; ok {
+	if val, ok := sm.styles[filepath.Base(f.Name())+".*"]; ok {
 		return val
 	}
 
-	if val, ok := sm["*"+strings.ToLower(f.ext)]; ok {
+	if val, ok := sm.styles["*"+strings.ToLower(f.ext)]; ok {
 		return val
 	}
 
-	if val, ok := sm["fi"]; ok {
+	if val, ok := sm.styles["fi"]; ok {
 		return val
 	}
 

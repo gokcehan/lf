@@ -7,10 +7,16 @@ import (
 	"strings"
 )
 
-type iconMap map[string]string
+type iconMap struct {
+	icons         map[string]string
+	useLinkTarget bool
+}
 
 func parseIcons() iconMap {
-	im := make(iconMap)
+	im := iconMap{
+		icons:         make(map[string]string),
+		useLinkTarget: false,
+	}
 
 	defaultIcons := []string{
 		"ln=l",
@@ -44,7 +50,7 @@ func parseIcons() iconMap {
 	return im
 }
 
-func (im iconMap) parseFile(path string) {
+func (im *iconMap) parseFile(path string) {
 	log.Printf("reading file: %s", path)
 
 	f, err := os.Open(path)
@@ -61,19 +67,11 @@ func (im iconMap) parseFile(path string) {
 	}
 
 	for _, pair := range pairs {
-		key, val := pair[0], pair[1]
-
-		key = replaceTilde(key)
-
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
-		}
-
-		im[key] = val
+		im.parsePair(pair)
 	}
 }
 
-func (im iconMap) parseEnv(env string) {
+func (im *iconMap) parseEnv(env string) {
 	for _, entry := range strings.Split(env, ":") {
 		if entry == "" {
 			continue
@@ -86,25 +84,34 @@ func (im iconMap) parseEnv(env string) {
 			return
 		}
 
-		key, val := pair[0], pair[1]
-
-		key = replaceTilde(key)
-
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
-		}
-
-		im[key] = val
+		im.parsePair(pair)
 	}
 }
 
+func (im *iconMap) parsePair(pair []string) {
+	key, val := pair[0], pair[1]
+
+	key = replaceTilde(key)
+
+	if filepath.IsAbs(key) {
+		key = filepath.Clean(key)
+	}
+
+	if key == "ln" && val == "target" {
+		im.useLinkTarget = true
+		log.Printf("using link target for icons")
+	}
+
+	im.icons[key] = val
+}
+
 func (im iconMap) get(f *file) string {
-	if val, ok := im[f.path]; ok {
+	if val, ok := im.icons[f.path]; ok {
 		return val
 	}
 
 	if f.IsDir() {
-		if val, ok := im[f.Name()+"/"]; ok {
+		if val, ok := im.icons[f.Name()+"/"]; ok {
 			return val
 		}
 	}
@@ -112,8 +119,6 @@ func (im iconMap) get(f *file) string {
 	var key string
 
 	switch {
-	case f.linkState == working:
-		key = "ln"
 	case f.linkState == broken:
 		key = "or"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
@@ -140,27 +145,31 @@ func (im iconMap) get(f *file) string {
 		key = "ex"
 	}
 
-	if val, ok := im[key]; ok {
+	if f.linkState == working && !im.useLinkTarget {
+		key = "ln"
+	}
+
+	if val, ok := im.icons[key]; ok {
 		return val
 	}
 
-	if val, ok := im[f.Name()+"*"]; ok {
+	if val, ok := im.icons[f.Name()+"*"]; ok {
 		return val
 	}
 
-	if val, ok := im["*"+f.Name()]; ok {
+	if val, ok := im.icons["*"+f.Name()]; ok {
 		return val
 	}
 
-	if val, ok := im[filepath.Base(f.Name())+".*"]; ok {
+	if val, ok := im.icons[filepath.Base(f.Name())+".*"]; ok {
 		return val
 	}
 
-	if val, ok := im["*"+strings.ToLower(f.ext)]; ok {
+	if val, ok := im.icons["*"+strings.ToLower(f.ext)]; ok {
 		return val
 	}
 
-	if val, ok := im["fi"]; ok {
+	if val, ok := im.icons["fi"]; ok {
 		return val
 	}
 

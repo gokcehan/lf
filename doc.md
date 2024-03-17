@@ -1790,6 +1790,7 @@ You may instead divide it into multiple lines in between double quotes by escapi
 	ex=01;32:\
 	"
 
+The `ln` entry supports the special value `target`, which will use the link target to select a style. (this mirrors GNU's ls and dircolors behavior)
 Having such a long variable definition in a shell configuration file might be undesirable.
 You may instead use the colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) for configuration.
 A sample colors file can be found at
@@ -1803,6 +1804,7 @@ Icons are configured using `LF_ICONS` environment variable or an icons file (ref
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated pairs with a `#` character to start comments until the end of the line.
+The `ln` entry supports the special value `target`, which will use the link target to select an icon. (this mirrors GNU's ls and dircolors behavior)
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
 Default values are as follows given with their matching order in lf:
 
