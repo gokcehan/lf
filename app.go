@@ -525,6 +525,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		//mark the current directory as updated for refresh
 		app.nav.currDir().updated = true
+		
+		//trigger update after returning from shell
+		app.nav.renew()
 
 		return
 	}
