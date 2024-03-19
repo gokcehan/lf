@@ -291,6 +291,8 @@ func (sm styleMap) get(f *file) tcell.Style {
 	var key string
 
 	switch {
+	case f.linkState == working && !sm.useLinkTarget:
+		key = "ln"
 	case f.linkState == broken:
 		key = "or"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
@@ -315,10 +317,6 @@ func (sm styleMap) get(f *file) tcell.Style {
 		key = "sg"
 	case f.Mode()&0111 != 0:
 		key = "ex"
-	}
-
-	if f.linkState == working && !sm.useLinkTarget {
-		key = "ln"
 	}
 
 	if val, ok := sm.styles[key]; ok {
