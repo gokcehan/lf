@@ -47,6 +47,7 @@ var gOpts struct {
 	drawbox            bool
 	dupfilefmt         string
 	globsearch         bool
+	globfilter         bool
 	hidden             bool
 	icons              bool
 	ignorecase         bool
@@ -192,6 +193,7 @@ func init() {
 	gOpts.cutfmt = "\033[7;31m"
 	gOpts.hidecursorinactive = false
 	gOpts.globsearch = false
+	gOpts.globfilter = false
 	gOpts.hidden = false
 	gOpts.icons = false
 	gOpts.ignorecase = true

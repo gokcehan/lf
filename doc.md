@@ -156,6 +156,7 @@ The following options can be used to customize the behavior of lf:
 	filesep             string    (default "\n")
 	findlen             int       (default 1)
 	globsearch          bool      (default false)
+	globfilter          bool      (default false)
 	hidden              bool      (default false)
 	hiddenfiles         []string  (default '.*')
 	hidecursorinactive  bool      (default false)
@@ -754,6 +755,10 @@ When this value is set to 0, find command prompts until there is only a single m
 When this option is enabled, search command patterns are considered as globs, otherwise, they are literals.
 With globbing, `*` matches any sequence, `?` matches any character, and `[...]` or `[^...]` matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
+
+## globfilter (bool) (default false)
+
+Same as `globsearch` but for the `filter` command.
 
 ## hidden (bool) (default false)
 
