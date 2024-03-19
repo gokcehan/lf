@@ -99,7 +99,6 @@ func (im *iconMap) parsePair(pair []string) {
 
 	if key == "ln" && val == "target" {
 		im.useLinkTarget = true
-		log.Printf("using link target for icons")
 	}
 
 	im.icons[key] = val

@@ -197,15 +197,7 @@ func (sm styleMap) parseFile(path string) {
 	}
 
 	for _, pair := range pairs {
-		key, val := pair[0], pair[1]
-
-		key = replaceTilde(key)
-
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
-		}
-
-		sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
+		sm.parsePair(pair)
 	}
 }
 
@@ -223,22 +215,24 @@ func (sm *styleMap) parseGNU(env string) {
 			return
 		}
 
-		key, val := pair[0], pair[1]
-
-		key = replaceTilde(key)
-
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
-		}
-
-		if key == "ln" && val == "target" {
-			sm.useLinkTarget = true
-			log.Printf("using link target for styles")
-			continue
-		}
-
-		sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
+		sm.parsePair(pair)
 	}
+}
+
+func (sm *styleMap) parsePair(pair []string) {
+	key, val := pair[0], pair[1]
+
+	key = replaceTilde(key)
+
+	if filepath.IsAbs(key) {
+		key = filepath.Clean(key)
+	}
+
+	if key == "ln" && val == "target" {
+		sm.useLinkTarget = true
+	}
+
+	sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
 }
 
 // This function parses $LSCOLORS environment variable.
