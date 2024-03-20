@@ -46,8 +46,8 @@ var gOpts struct {
 	dirpreviews        bool
 	drawbox            bool
 	dupfilefmt         string
-	globsearch         bool
 	globfilter         bool
+	globsearch         bool
 	hidden             bool
 	icons              bool
 	ignorecase         bool
@@ -192,8 +192,8 @@ func init() {
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
 	gOpts.hidecursorinactive = false
-	gOpts.globsearch = false
 	gOpts.globfilter = false
+	gOpts.globsearch = false
 	gOpts.hidden = false
 	gOpts.icons = false
 	gOpts.ignorecase = true

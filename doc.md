@@ -155,8 +155,8 @@ The following options can be used to customize the behavior of lf:
 	errorfmt            string    (default "\033[7;31;47m")
 	filesep             string    (default "\n")
 	findlen             int       (default 1)
-	globsearch          bool      (default false)
 	globfilter          bool      (default false)
+	globsearch          bool      (default false)
 	hidden              bool      (default false)
 	hiddenfiles         []string  (default '.*')
 	hidecursorinactive  bool      (default false)
@@ -750,15 +750,15 @@ File separator used in environment variables `fs` and `fx`.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
+## globfilter (bool) (default false)
+
+Patterns are treated as globs for the filter command, see `globsearch` for more details.
+
 ## globsearch (bool) (default false)
 
 When this option is enabled, search command patterns are considered as globs, otherwise, they are literals.
 With globbing, `*` matches any sequence, `?` matches any character, and `[...]` or `[^...]` matches character sets or ranges.
 Otherwise, these characters are interpreted as they are.
-
-## globfilter (bool) (default false)
-
-Same as `globsearch` but for the `filter` command.
 
 ## hidden (bool) (default false)
 

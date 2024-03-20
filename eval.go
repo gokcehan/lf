@@ -96,14 +96,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
-	case "globsearch", "noglobsearch", "globsearch!":
-		err = applyBoolOpt(&gOpts.globsearch, e)
-		if err == nil {
-			app.nav.sort()
-			app.nav.position()
-			app.ui.sort()
-			app.ui.loadFile(app, true)
-		}
 	case "globfilter", "noglobfilter", "globfilter!":
 		err = applyBoolOpt(&gOpts.globfilter, e)
 		if err == nil {
@@ -112,6 +104,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "globsearch", "noglobsearch", "globsearch!":
+		err = applyBoolOpt(&gOpts.globsearch, e)
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
