@@ -199,7 +199,7 @@ func init() {
 	gOpts.ignoredia = true
 	gOpts.incfilter = false
 	gOpts.incsearch = false
-	gOpts.maxwidth = 0;
+	gOpts.maxwidth = 0
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
