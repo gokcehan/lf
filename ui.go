@@ -981,7 +981,7 @@ func (ui *ui) drawBox() {
 	}
 
 	if gOpts.roundbox {
-		ui.screen.SetContent(0, 1, '╭' , nil, st)
+		ui.screen.SetContent(0, 1, '╭', nil, st)
 		ui.screen.SetContent(w-1, 1, '╮', nil, st)
 		ui.screen.SetContent(0, h-2, '╰', nil, st)
 		ui.screen.SetContent(w-1, h-2, '╯', nil, st)
