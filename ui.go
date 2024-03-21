@@ -521,9 +521,13 @@ func getWidths(wtot int) []int {
 		wtot -= (wlen + 1)
 	}
 
+	maxwidth := gOpts.maxwidth
+	if maxwidth < 1 {
+		maxwidth = wtot
+	}
 	wsum := 0
 	for i := 0; i < wlen-1; i++ {
-		widths[i] = gOpts.ratios[i] * wtot / rsum
+		widths[i] = min(gOpts.ratios[i] * wtot / rsum, maxwidth)
 		wsum += widths[i]
 	}
 	widths[wlen-1] = wtot - wsum

@@ -138,6 +138,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
+	case "maxwidth":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("maxwidth: %s", err)
+			return
+		}
+		gOpts.maxwidth = n
 	case "mouse", "nomouse", "mouse!":
 		err = applyBoolOpt(&gOpts.mouse, e)
 		if err == nil {

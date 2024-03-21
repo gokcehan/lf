@@ -169,6 +169,7 @@ The following options can be used to customize the behavior of lf:
 	info                []string  (default '')
 	infotimefmtnew      string    (default 'Jan _2 15:04')
 	infotimefmtold      string    (default 'Jan _2  2006')
+	maxwidth            int       (default 0)
 	mouse               bool      (default false)
 	number              bool      (default false)
 	numberfmt           string    (default "\033[33m")
@@ -818,6 +819,10 @@ Format string of the file time shown in the info column when it matches this yea
 ## infotimefmtold (string) (default `Jan _2  2006`)
 
 Format string of the file time shown in the info column when it doesn't match this year.
+
+## maxwidth (int) (default 0)
+
+Set the maximum width of panes excluding the rightmost one. This only applies if the value of `maxwidth` is strictly positive.
 
 ## mouse (bool) (default false)
 
