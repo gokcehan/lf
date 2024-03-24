@@ -1485,6 +1485,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 	}
 
 	if errCount == 0 {
+		app.ui.exprChan <- &callExpr{"clear", nil, 1}
 		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mMoved successfully\033[0m"}, 1}
 	}
 	//mark the current directory as updated for refresh
@@ -1507,19 +1508,6 @@ func (nav *nav) paste(app *app) error {
 		go nav.copyAsync(app, srcs, dstDir)
 	} else {
 		go nav.moveAsync(app, srcs, dstDir)
-		if err := saveFiles(nil, false); err != nil {
-			return fmt.Errorf("clearing copy/cut buffer: %s", err)
-		}
-
-		if gSingleMode {
-			if err := nav.sync(); err != nil {
-				return fmt.Errorf("paste: %s", err)
-			}
-		} else {
-			if err := remote("send sync"); err != nil {
-				return fmt.Errorf("paste: %s", err)
-			}
-		}
 	}
 
 	return nil
