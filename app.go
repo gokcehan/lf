@@ -482,10 +482,6 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	}
 
 	app.ui.loadFile(app, true)
-
-	//mark the current directory as updated for refresh
-	app.nav.currDir().updated = true
-
 	app.nav.renew()
 }
 
@@ -521,7 +517,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.runCmdSync(cmd, prefix == "!")
-
 		return
 	}
 
