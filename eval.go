@@ -167,6 +167,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.nav.sort()
 			app.ui.sort()
 		}
+	case "roundbox", "noroundbox", "roundbox!":
+		err = applyBoolOpt(&gOpts.roundbox, e)
 	case "sixel", "nosixel", "sixel!":
 		err = applyBoolOpt(&gOpts.sixel, e)
 	case "smartcase", "nosmartcase", "smartcase!":
