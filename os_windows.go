@@ -189,6 +189,10 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(windows.Errno) == 17
 }
 
+func errPermissionDenied(err error) bool {
+	return false
+}
+
 func quoteString(s string) string {
 	// Windows CMD requires special handling to deal with quoted arguments
 	if strings.ToLower(gOpts.shell) == "cmd" {

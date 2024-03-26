@@ -232,6 +232,10 @@ func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }
 
+func errPermissionDenied(err error) bool {
+	return err.(*os.LinkError).Err.(unix.Errno) == unix.EPERM
+}
+
 func quoteString(s string) string {
 	return s
 }
