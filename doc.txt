@@ -145,6 +145,7 @@ The following options can be used to customize the behavior of lf:
     errorfmt            string    (default "\033[7;31;47m")
     filesep             string    (default "\n")
     findlen             int       (default 1)
+    globfilter          bool      (default false)
     globsearch          bool      (default false)
     hidden              bool      (default false)
     hiddenfiles         []string  (default '.*')
@@ -796,6 +797,11 @@ findlen (int) (default 1)
 
 Number of characters prompted for the find command. When this value is
 set to 0, find command prompts until there is only a single match left.
+
+globfilter (bool) (default false)
+
+Patterns are treated as globs for the filter command, see globsearch for
+more details.
 
 globsearch (bool) (default false)
 
