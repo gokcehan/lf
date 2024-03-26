@@ -179,7 +179,6 @@ type dir struct {
 	ignoredia   bool       // ignoredia value from last sort
 	noPerm      bool       // whether lf has no permission to open the directory
 	lines       []string   // lines of text to display if directory previews are enabled
-	updated     bool       // directory has been updated after last dirCheck
 }
 
 func newDir(path string) *dir {
@@ -522,7 +521,7 @@ func (nav *nav) checkDir(dir *dir) {
 	}
 
 	switch {
-	case s.ModTime().After(dir.loadTime) || dir.updated:
+	case s.ModTime().After(dir.loadTime):
 		now := time.Now()
 
 		// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
@@ -1373,8 +1372,6 @@ loop:
 	if errCount == 0 {
 		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mCopied successfully\033[0m"}, 1}
 	}
-	//mark the current directory as updated for refresh
-	nav.currDir().updated = true
 }
 
 func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
@@ -1488,8 +1485,6 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 		app.ui.exprChan <- &callExpr{"clear", nil, 1}
 		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mMoved successfully\033[0m"}, 1}
 	}
-	//mark the current directory as updated for refresh
-	nav.currDir().updated = true
 }
 
 func (nav *nav) paste(app *app) error {
