@@ -425,6 +425,29 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
+		case f := <-app.nav.fileChan:
+			dirs := app.nav.dirs
+			if app.ui.dirPrev != nil {
+				dirs = append(dirs, app.ui.dirPrev)
+			}
+			for _, dir := range dirs {
+				if dir.path != filepath.Dir(f.path) {
+					continue
+				}
+
+				for i := range dir.allFiles {
+					if dir.allFiles[i].path == f.path {
+						dir.allFiles[i] = f
+						break
+					}
+				}
+
+				name := dir.name()
+				dir.sort()
+				dir.sel(name, app.nav.height)
+			}
+			app.ui.loadFile(app, false)
+			app.ui.draw(app.nav)
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
@@ -462,6 +485,18 @@ func (app *app) loop() {
 			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
 				app.nav.renew()
 				app.ui.loadFile(app, false)
+				app.ui.draw(app.nav)
+			}
+
+			if ev.Has(fsnotify.Write) {
+				go func() {
+					app.nav.fileChan <- newFile(ev.Name)
+				}()
+				currFile, err := app.nav.currFile()
+				if err == nil && currFile.path == ev.Name {
+					app.nav.startPreview()
+					app.nav.previewChan <- ev.Name
+				}
 				app.ui.draw(app.nav)
 			}
 		}
