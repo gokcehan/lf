@@ -483,6 +483,9 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		case ev := <-app.nav.watcherEvents:
 			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				go func() {
+					app.nav.fileChan <- newFile(filepath.Dir(ev.Name))
+				}()
 				app.nav.renew()
 				app.ui.loadFile(app, false)
 				app.ui.draw(app.nav)
