@@ -12,6 +12,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	"github.com/fsnotify/fsnotify"
 )
 
 type cmdItem struct {
@@ -456,6 +458,12 @@ func (app *app) loop() {
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
+		case ev := <-app.nav.watcherEvents:
+			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				app.nav.renew()
+				app.ui.loadFile(app, false)
+				app.ui.draw(app.nav)
+			}
 		}
 	}
 }

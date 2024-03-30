@@ -2096,3 +2096,29 @@ func (nav *nav) stopWatcher() {
 	nav.watcher = nil
 	nav.watcherEvents = nil
 }
+
+func (nav *nav) setWatches() {
+	if nav.watcher == nil || len(nav.dirs) == 0 {
+		return
+	}
+
+	watches := make(map[string]bool)
+	for _, dir := range nav.dirs {
+		watches[dir.path] = true
+	}
+
+	currFile, err := nav.currFile()
+	if err == nil && currFile.IsDir() {
+		watches[currFile.path] = true
+	}
+
+	for _, watch := range nav.watcher.WatchList() {
+		if !watches[watch] {
+			nav.watcher.Remove(watch)
+		}
+	}
+
+	for watch := range watches {
+		nav.watcher.Add(watch)
+	}
+}

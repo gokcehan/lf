@@ -190,6 +190,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		if err == nil {
 			if gOpts.watch {
 				app.nav.startWatcher()
+				app.nav.setWatches()
 			} else {
 				app.nav.stopWatcher()
 			}
@@ -573,6 +574,7 @@ func onRedraw(app *app) {
 }
 
 func onSelect(app *app) {
+	app.nav.setWatches()
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
 	}
