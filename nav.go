@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
+	"github.com/fsnotify/fsnotify"
 )
 
 type linkState byte
@@ -466,6 +467,8 @@ type nav struct {
 	previewLoading  bool
 	jumpList        []string
 	jumpListInd     int
+	watcher         *fsnotify.Watcher
+	watcherEvents   <-chan fsnotify.Event
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
@@ -2064,4 +2067,32 @@ func (nav *nav) calcDirSize() error {
 	}
 
 	return nil
+}
+
+func (nav *nav) startWatcher() {
+	if nav.watcher != nil {
+		return
+	}
+	log.Printf("start watch")
+
+	watcher, err := fsnotify.NewWatcher()
+	if err != nil {
+		log.Printf("start watcher: %s", err)
+		return
+	}
+
+	nav.watcher = watcher
+	nav.watcherEvents = watcher.Events
+}
+
+func (nav *nav) stopWatcher() {
+	if nav.watcher == nil {
+		return
+	}
+	log.Printf("stop watch")
+
+	nav.watcher.Close()
+
+	nav.watcher = nil
+	nav.watcherEvents = nil
 }

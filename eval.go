@@ -185,6 +185,15 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "watch", "nowatch", "watch!":
+		err = applyBoolOpt(&gOpts.watch, e)
+		if err == nil {
+			if gOpts.watch {
+				app.nav.startWatcher()
+			} else {
+				app.nav.stopWatcher()
+			}
+		}
 	case "wrapscan", "nowrapscan", "wrapscan!":
 		err = applyBoolOpt(&gOpts.wrapscan, e)
 	case "wrapscroll", "nowrapscroll", "wrapscroll!":
