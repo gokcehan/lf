@@ -414,6 +414,8 @@ func (app *app) loop() {
 				}
 			}
 
+			app.nav.setWatches()
+
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
