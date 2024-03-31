@@ -2073,7 +2073,6 @@ func (nav *nav) startWatcher() {
 	if nav.watcher != nil {
 		return
 	}
-	log.Printf("start watch")
 
 	watcher, err := fsnotify.NewWatcher()
 	if err != nil {
@@ -2089,7 +2088,6 @@ func (nav *nav) stopWatcher() {
 	if nav.watcher == nil {
 		return
 	}
-	log.Printf("stop watch")
 
 	nav.watcher.Close()
 
