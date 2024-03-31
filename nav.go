@@ -2105,9 +2105,10 @@ func (nav *nav) setWatches() {
 		watches[dir.path] = true
 	}
 
-	currFile, err := nav.currFile()
-	if err == nil && currFile.IsDir() {
-		watches[currFile.path] = true
+	for _, file := range nav.currDir().allFiles {
+		if file.IsDir() {
+			watches[file.path] = true
+		}
 	}
 
 	for _, watch := range nav.watcher.WatchList() {
