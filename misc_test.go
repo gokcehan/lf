@@ -293,3 +293,48 @@ func TestNaturalLess(t *testing.T) {
 		}
 	}
 }
+
+func TestGetFileExtension(t *testing.T) {
+	dir := t.TempDir()
+	tests := []struct {
+		name              string
+		fileName          string
+		expectedExtension string
+	}{
+		{"normal file", "file.txt", ".txt"},
+		{"file without extension", "file", ""},
+		{"hidden file", ".gitignore", ""},
+		{"hidden file with extension", ".file.txt", ".txt"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			file, err := os.Create(dir + "/" + test.fileName)
+			if err != nil {
+				t.Fatalf("failed to create file: %v", err)
+			}
+			defer file.Close()
+
+			fileInfo, err := file.Stat()
+			if err != nil {
+				t.Fatalf("failed to get file info: %v", err)
+			}
+
+			if got := getFileExtension(fileInfo); got != test.expectedExtension {
+				t.Errorf("at input %q expected %q but got %q", test.fileName, test.expectedExtension, got)
+			}
+		})
+	}
+
+	t.Run("directory", func(t *testing.T) {
+		fileInfo, err := os.Stat(dir)
+		if err != nil {
+			t.Fatalf("failed to get file info: %v", err)
+		}
+
+		expectedExtension := ""
+		if got := getFileExtension(fileInfo); got != expectedExtension {
+			t.Errorf("at input %q expected %q but got %q", dir, expectedExtension, got)
+		}
+	})
+}
