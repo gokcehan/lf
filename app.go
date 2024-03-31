@@ -289,6 +289,7 @@ func (app *app) loop() {
 
 	app.nav.getDirs(wd)
 	app.nav.addJumpList()
+	app.nav.setWatches()
 	app.nav.init = true
 
 	if gSelect != "" {
