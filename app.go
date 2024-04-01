@@ -514,6 +514,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
+		
+		//mark the current directory as updated for refresh
+		app.nav.currDir().updated = true
 
 		app.runCmdSync(cmd, prefix == "!")
 		return
