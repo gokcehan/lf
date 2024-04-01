@@ -494,7 +494,7 @@ func (app *app) loop() {
 				app.ui.draw(app.nav)
 			}
 
-			if ev.Has(fsnotify.Write) {
+			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
 				go func() {
 					app.nav.fileChan <- newFile(ev.Name)
 				}()
