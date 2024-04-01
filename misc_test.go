@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestIsRoot(t *testing.T) {
@@ -294,47 +295,37 @@ func TestNaturalLess(t *testing.T) {
 	}
 }
 
+type fakeFileInfo struct {
+	name  string
+	isDir bool
+}
+
+func (fileinfo fakeFileInfo) Name() string       { return fileinfo.name }
+func (fileinfo fakeFileInfo) Size() int64        { return 0 }
+func (fileinfo fakeFileInfo) Mode() os.FileMode  { return os.FileMode(0o000) }
+func (fileinfo fakeFileInfo) ModTime() time.Time { return time.Unix(0, 0) }
+func (fileinfo fakeFileInfo) IsDir() bool        { return fileinfo.isDir }
+func (fileinfo fakeFileInfo) Sys() any           { return nil }
+
 func TestGetFileExtension(t *testing.T) {
-	dir := t.TempDir()
 	tests := []struct {
 		name              string
 		fileName          string
+		isDir             bool
 		expectedExtension string
 	}{
-		{"normal file", "file.txt", ".txt"},
-		{"file without extension", "file", ""},
-		{"hidden file", ".gitignore", ""},
-		{"hidden file with extension", ".file.txt", ".txt"},
+		{"normal file", "file.txt", false, ".txt"},
+		{"file without extension", "file", false, ""},
+		{"hidden file", ".gitignore", false, ""},
+		{"hidden file with extension", ".file.txt", false, ".txt"},
+		{"directory", "dir", true, ""},
 	}
 
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
-			file, err := os.Create(dir + "/" + test.fileName)
-			if err != nil {
-				t.Fatalf("failed to create file: %v", err)
-			}
-			defer file.Close()
-
-			fileInfo, err := file.Stat()
-			if err != nil {
-				t.Fatalf("failed to get file info: %v", err)
-			}
-
-			if got := getFileExtension(fileInfo); got != test.expectedExtension {
+			if got := getFileExtension(fakeFileInfo{test.fileName, test.isDir}); got != test.expectedExtension {
 				t.Errorf("at input %q expected %q but got %q", test.fileName, test.expectedExtension, got)
 			}
 		})
 	}
-
-	t.Run("directory", func(t *testing.T) {
-		fileInfo, err := os.Stat(dir)
-		if err != nil {
-			t.Fatalf("failed to get file info: %v", err)
-		}
-
-		expectedExtension := ""
-		if got := getFileExtension(fileInfo); got != expectedExtension {
-			t.Errorf("at input %q expected %q but got %q", dir, expectedExtension, got)
-		}
-	})
 }
