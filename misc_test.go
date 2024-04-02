@@ -319,6 +319,8 @@ func TestGetFileExtension(t *testing.T) {
 		{"hidden file", ".gitignore", false, ""},
 		{"hidden file with extension", ".file.txt", false, ".txt"},
 		{"directory", "dir", true, ""},
+		{"hidden directory", ".git", true, ""},
+		{"directory with dot", "profile.d", true, ""},
 	}
 
 	for _, test := range tests {
