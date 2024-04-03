@@ -114,6 +114,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
 		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
+		if err == nil {
+			if gOpts.hidecursorinactive {
+				app.ui.screen.EnableFocus()
+			} else {
+				app.ui.screen.DisableFocus()
+			}
+		}
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
