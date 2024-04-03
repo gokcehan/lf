@@ -155,7 +155,7 @@ func splitWord(s string) (word, rest string) {
 // or double quotes can be used to escape whitespaces. Hash characters can be
 // used to add a comment until the end of line. Leading and trailing space is
 // trimmed. Empty lines are skipped.
-func readPairs(r io.Reader) ([][]string, error) {
+func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 	var pairs [][]string
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -181,7 +181,7 @@ func readPairs(r io.Reader) ([][]string, error) {
 		}
 
 		squote, dquote = false, false
-		pair := strings.FieldsFunc(line, func(r rune) bool {
+		arr := strings.FieldsFunc(line, func(r rune) bool {
 			if r == '\'' && !dquote {
 				squote = !squote
 			} else if r == '"' && !squote {
@@ -190,14 +190,17 @@ func readPairs(r io.Reader) ([][]string, error) {
 			return !squote && !dquote && unicode.IsSpace(r)
 		})
 
-		if len(pair) != 2 {
-			return nil, fmt.Errorf("expected pair but found: %s", s.Text())
+		if len(arr) < min_cols || len(arr) > max_cols {
+			if min_cols == max_cols {
+				return nil, fmt.Errorf("expected %d columns but found: %s", min_cols, s.Text())
+			}
+			return nil, fmt.Errorf("expected %d~%d columns but found: %s", min_cols, max_cols, s.Text())
 		}
 
-		for i := 0; i < len(pair); i++ {
+		for i := 0; i < len(arr); i++ {
 			squote, dquote = false, false
-			buf := make([]rune, 0, len(pair[i]))
-			for _, r := range pair[i] {
+			buf := make([]rune, 0, len(arr[i]))
+			for _, r := range arr[i] {
 				if r == '\'' && !dquote {
 					squote = !squote
 					continue
@@ -208,13 +211,17 @@ func readPairs(r io.Reader) ([][]string, error) {
 				}
 				buf = append(buf, r)
 			}
-			pair[i] = string(buf)
+			arr[i] = string(buf)
 		}
 
-		pairs = append(pairs, pair)
+		pairs = append(pairs, arr)
 	}
 
 	return pairs, nil
+}
+
+func readPairs(r io.Reader) ([][]string, error) {
+	return readArrays(r, 2, 2)
 }
 
 // This function converts a size in bytes to a human readable form using metric

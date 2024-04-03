@@ -5,9 +5,25 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
 )
 
-type iconMap map[string]string
+type iconDef struct {
+	icon     string
+	hasStyle bool
+	style    tcell.Style
+}
+
+type iconMap map[string]iconDef
+
+func iconWithoutStyle(icon string) iconDef {
+	return iconDef{icon, false, tcell.StyleDefault}
+}
+
+func iconWithStyle(icon string, style tcell.Style) iconDef {
+	return iconDef{icon, true, style}
+}
 
 func parseIcons() iconMap {
 	im := make(iconMap)
@@ -54,14 +70,14 @@ func (im iconMap) parseFile(path string) {
 	}
 	defer f.Close()
 
-	pairs, err := readPairs(f)
+	arrs, err := readArrays(f, 1, 3)
 	if err != nil {
 		log.Printf("reading icons file: %s", err)
 		return
 	}
 
-	for _, pair := range pairs {
-		key, val := pair[0], pair[1]
+	for _, arr := range arrs {
+		key := arr[0]
 
 		key = replaceTilde(key)
 
@@ -69,7 +85,16 @@ func (im iconMap) parseFile(path string) {
 			key = filepath.Clean(key)
 		}
 
-		im[key] = val
+		switch len(arr) {
+		case 1:
+			delete(im, key)
+		case 2:
+			icon := arr[1]
+			im[key] = iconWithoutStyle(icon)
+		case 3:
+			icon, color := arr[1], arr[2]
+			im[key] = iconWithStyle(icon, applyAnsiCodes(color, tcell.StyleDefault))
+		}
 	}
 }
 
@@ -94,11 +119,11 @@ func (im iconMap) parseEnv(env string) {
 			key = filepath.Clean(key)
 		}
 
-		im[key] = val
+		im[key] = iconWithoutStyle(val)
 	}
 }
 
-func (im iconMap) get(f *file) string {
+func (im iconMap) get(f *file) iconDef {
 	if val, ok := im[f.path]; ok {
 		return val
 	}
@@ -164,5 +189,5 @@ func (im iconMap) get(f *file) string {
 		return val
 	}
 
-	return " "
+	return iconWithoutStyle(" ")
 }

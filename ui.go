@@ -450,8 +450,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// leave space for displaying the tag
 		s = append(s, ' ')
 
+		var icon iconDef
+
 		if gOpts.icons {
-			s = append(s, []rune(dirStyle.icons.get(f))...)
+			icon = dirStyle.icons.get(f)
+			s = append(s, []rune(icon.icon)...)
 			s = append(s, ' ')
 		}
 
@@ -496,6 +499,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		s = append(s, ' ')
 		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
 		win.print(ui.screen, lnwidth+1, i, st, styledFilename)
+
+		if icon.hasStyle && i != dir.pos {
+			win.print(ui.screen, lnwidth+2, i, icon.style, icon.icon)
+		}
 
 		tag, ok := context.tags[path]
 		if ok {
