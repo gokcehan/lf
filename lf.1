@@ -208,6 +208,7 @@ timefmt             string    (default \[aq]Mon Jan _2 15:04:05 2006\[aq])
 truncatechar        string    (default \[aq]\[ti]\[aq])
 truncatepct         int       (default 100)
 waitmsg             string    (default \[aq]Press any key to continue\[aq])
+watch               bool      (default false)   
 wrapscan            bool      (default true)
 wrapscroll          bool      (default false)
 user_{option}       string    (default none)
@@ -1127,6 +1128,10 @@ value of 0 will only show the end of the filename, e.g.:
 .SS waitmsg (string) (default \f[C]Press any key to continue\f[R])
 .PP
 String shown after commands of shell-wait type.
+.SS watch (bool) (default false)
+Watch the file system for changes using fsnotify to automatically
+refresh file information.
+(FUSE currently not supported)
 .SS wrapscan (bool) (default true)
 .PP
 Searching can wrap around the file list.
