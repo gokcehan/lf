@@ -428,29 +428,6 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
-		case f := <-app.nav.fileChan:
-			dirs := app.nav.dirs
-			if app.ui.dirPrev != nil {
-				dirs = append(dirs, app.ui.dirPrev)
-			}
-			for _, dir := range dirs {
-				if dir.path != filepath.Dir(f.path) {
-					continue
-				}
-
-				for i := range dir.allFiles {
-					if dir.allFiles[i].path == f.path {
-						dir.allFiles[i] = f
-						break
-					}
-				}
-
-				name := dir.name()
-				dir.sort()
-				dir.sel(name, app.nav.height)
-			}
-			app.ui.loadFile(app, false)
-			app.ui.draw(app.nav)
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
@@ -485,19 +462,22 @@ func (app *app) loop() {
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
 		case ev := <-app.nav.watcherEvents:
-			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
-				go func() {
-					app.nav.fileChan <- newFile(filepath.Dir(ev.Name))
-				}()
-				app.nav.renew()
+			if ev.Has(fsnotify.Create) {
+				app.addFile(newFile(ev.Name))
+				app.changeFile(newFile(filepath.Dir(ev.Name)))
+				app.ui.loadFile(app, false)
+				app.ui.draw(app.nav)
+			}
+
+			if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				app.removeFile(ev.Name)
+				app.changeFile(newFile(filepath.Dir(ev.Name)))
 				app.ui.loadFile(app, false)
 				app.ui.draw(app.nav)
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				go func() {
-					app.nav.fileChan <- newFile(ev.Name)
-				}()
+				app.changeFile(newFile(ev.Name))
 				currFile, err := app.nav.currFile()
 				if err == nil && currFile.path == ev.Name {
 					app.nav.startPreview()
@@ -638,4 +618,78 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}()
 	}
 
+}
+
+func (app *app) addFile(f *file) {
+	dirs := app.nav.dirs
+	if app.ui.dirPrev != nil {
+		dirs = append(dirs, app.ui.dirPrev)
+	}
+
+	for _, dir := range dirs {
+		if dir.path != filepath.Dir(f.path) {
+			continue
+		}
+
+		for i := range dir.allFiles {
+			if dir.allFiles[i].path == f.path {
+				dir.allFiles[i] = f
+				return
+			}
+		}
+
+		dir.allFiles = append(dir.allFiles, f)
+		name := dir.name()
+		dir.sort()
+		dir.sel(name, app.nav.height)
+	}
+}
+
+func (app *app) changeFile(f *file) {
+	dirs := app.nav.dirs
+	if app.ui.dirPrev != nil {
+		dirs = append(dirs, app.ui.dirPrev)
+	}
+
+	for _, dir := range dirs {
+		if dir.path != filepath.Dir(f.path) {
+			continue
+		}
+
+		for i := range dir.allFiles {
+			if dir.allFiles[i].path == f.path {
+				dir.allFiles[i] = f
+				break
+			}
+		}
+
+		name := dir.name()
+		dir.sort()
+		dir.sel(name, app.nav.height)
+	}
+}
+
+func (app *app) removeFile(path string) {
+	dirs := app.nav.dirs
+	if app.ui.dirPrev != nil {
+		dirs = append(dirs, app.ui.dirPrev)
+	}
+
+	for _, dir := range dirs {
+		if dir.path != filepath.Dir(path) {
+			continue
+		}
+
+		var allFiles []*file
+		for _, file := range dir.allFiles {
+			if file.path != path {
+				allFiles = append(allFiles, file)
+			}
+		}
+
+		dir.allFiles = allFiles
+		name := dir.name()
+		dir.sort()
+		dir.sel(name, app.nav.height)
+	}
 }
