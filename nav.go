@@ -468,7 +468,7 @@ type nav struct {
 	watcher         *fsnotify.Watcher
 	watcherEvents   <-chan fsnotify.Event
 	watcherWrites   map[string]bool
-	watcherTicker   *time.Ticker
+	watcherTimer    *time.Timer
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
@@ -607,7 +607,7 @@ func newNav(height int) *nav {
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 		watcherWrites:   make(map[string]bool),
-		watcherTicker:   new(time.Ticker),
+		watcherTimer:    time.NewTimer(0),
 	}
 
 	return nav
@@ -2084,7 +2084,6 @@ func (nav *nav) startWatcher() {
 
 	nav.watcher = watcher
 	nav.watcherEvents = watcher.Events
-	nav.watcherTicker = time.NewTicker(10 * time.Millisecond)
 }
 
 func (nav *nav) stopWatcher() {
@@ -2096,7 +2095,6 @@ func (nav *nav) stopWatcher() {
 
 	nav.watcher = nil
 	nav.watcherEvents = nil
-	nav.watcherTicker.Stop()
 }
 
 func (nav *nav) setWatches() {

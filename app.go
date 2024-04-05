@@ -477,9 +477,13 @@ func (app *app) loop() {
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				app.nav.watcherWrites[ev.Name] = true
+				if !app.nav.watcherWrites[ev.Name] {
+					app.nav.watcherWrites[ev.Name] = true
+					app.nav.watcherTimer.Stop()
+					app.nav.watcherTimer.Reset(10 * time.Millisecond)
+				}
 			}
-		case <-app.nav.watcherTicker.C:
+		case <-app.nav.watcherTimer.C:
 			for path := range app.nav.watcherWrites {
 				app.updateFile(path, true)
 				currFile, err := app.nav.currFile()
