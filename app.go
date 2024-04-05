@@ -477,14 +477,19 @@ func (app *app) loop() {
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				app.updateFile(ev.Name, true)
+				app.nav.watcherWrites[ev.Name] = true
+			}
+		case <-app.nav.watcherTicker.C:
+			for path := range app.nav.watcherWrites {
+				app.updateFile(path, true)
 				currFile, err := app.nav.currFile()
-				if err == nil && currFile.path == ev.Name {
+				if err == nil && currFile.path == path {
 					app.nav.startPreview()
-					app.nav.previewChan <- ev.Name
+					app.nav.previewChan <- path
 				}
 				app.ui.draw(app.nav)
 			}
+			app.nav.watcherWrites = make(map[string]bool)
 		}
 	}
 }
