@@ -569,6 +569,12 @@ func onSelect(app *app) {
 	}
 }
 
+func onQuit(app *app) {
+	if cmd, ok := gOpts.cmds["on-quit"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func splitKeys(s string) (keys []string) {
 	for i := 0; i < len(s); {
 		r, w := utf8.DecodeRuneInString(s[i:])
