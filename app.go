@@ -379,9 +379,6 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
-
-			app.nav.checkDir(d)
-
 			if gOpts.dircache {
 				prev, ok := app.nav.dirCache[d.path]
 				if ok {
@@ -416,8 +413,6 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
-			app.nav.checkReg(r)
-
 			app.nav.regCache[r.path] = r
 
 			curr, err := app.nav.currFile()
@@ -457,7 +452,6 @@ func (app *app) loop() {
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
-			app.ui.draw(app.nav)
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)

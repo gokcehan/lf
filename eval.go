@@ -96,14 +96,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
-	case "globsearch", "noglobsearch", "globsearch!":
-		err = applyBoolOpt(&gOpts.globsearch, e)
+	case "globfilter", "noglobfilter", "globfilter!":
+		err = applyBoolOpt(&gOpts.globfilter, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "globsearch", "noglobsearch", "globsearch!":
+		err = applyBoolOpt(&gOpts.globsearch, e)
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
@@ -114,6 +116,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
 		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
+		if err == nil {
+			if gOpts.hidecursorinactive {
+				app.ui.screen.EnableFocus()
+			} else {
+				app.ui.screen.DisableFocus()
+			}
+		}
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
@@ -1614,8 +1623,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
 			extension := filepath.Ext(curr.Name())
-			if len(extension) == 0 || extension == curr.Name() {
-				// no extension or .hidden
+			if len(extension) == 0 || extension == curr.Name() || curr.IsDir() {
+				// no extension or .hidden or is directory
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 			} else {
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
