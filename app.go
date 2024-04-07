@@ -64,6 +64,8 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
+	onQuit(app)
+
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
 			log.Printf("writing history file: %s", err)
@@ -318,10 +320,6 @@ func (app *app) loop() {
 			if app.nav.deleteTotal > 0 {
 				app.ui.echoerr("quit: delete operation in progress")
 				continue
-			}
-
-			if cmd, ok := gOpts.cmds["on-quit"]; ok {
-				cmd.eval(app, nil)
 			}
 
 			app.quit()
