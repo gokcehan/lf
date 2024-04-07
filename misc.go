@@ -151,12 +151,12 @@ func splitWord(s string) (word, rest string) {
 	return
 }
 
-// This function reads whitespace separated string pairs at each line. Single
+// This function reads whitespace separated string arrays at each line. Single
 // or double quotes can be used to escape whitespaces. Hash characters can be
 // used to add a comment until the end of line. Leading and trailing space is
 // trimmed. Empty lines are skipped.
 func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
-	var pairs [][]string
+	var arrays [][]string
 	s := bufio.NewScanner(r)
 	for s.Scan() {
 		line := s.Text()
@@ -214,10 +214,10 @@ func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 			arr[i] = string(buf)
 		}
 
-		pairs = append(pairs, arr)
+		arrays = append(arrays, arr)
 	}
 
-	return pairs, nil
+	return arrays, nil
 }
 
 func readPairs(r io.Reader) ([][]string, error) {
