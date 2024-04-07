@@ -189,6 +189,7 @@ promptfmt           string    (default \[dq]\[rs]033[32;1m%u\[at]%h\[rs]033[0m:\
 ratios              []int     (default \[aq]1:2:3\[aq])
 relativenumber      bool      (default false)
 reverse             bool      (default false)
+roundbox            bool      (default false)
 ruler               []string  (default \[aq]acc:progress:selection:filter:ind\[aq])
 rulerfmt            string    (default \[dq]  %a|  %p|  \[rs]033[7;31m %m \[rs]033[0m|  \[rs]033[7;33m %c \[rs]033[0m|  \[rs]033[7;35m %s \[rs]033[0m|  \[rs]033[7;34m %f \[rs]033[0m|  %i/%t\[dq])
 scrolloff           int       (default 0)
@@ -974,6 +975,9 @@ position, otherwise nothing is shown.
 .SS reverse (bool) (default false)
 .PP
 Reverse the direction of sort.
+.SS roundbox (bool) (default false)
+.PP
+Draw rounded outer corners when the \f[C]drawbox\f[R] option is enabled.
 .SS ruler ([]string) (default \f[C]acc:progress:selection:filter:ind\f[R])
 .PP
 This option is deprecated in favor of using the \f[C]rulerfmt\f[R]

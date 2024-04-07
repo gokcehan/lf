@@ -59,6 +59,7 @@ var gOpts struct {
 	preview            bool
 	relativenumber     bool
 	reverse            bool
+	roundbox           bool
 	selectfmt          string
 	sixel              bool
 	sortby             sortMethod
@@ -205,6 +206,7 @@ func init() {
 	gOpts.preview = true
 	gOpts.relativenumber = false
 	gOpts.reverse = false
+	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort

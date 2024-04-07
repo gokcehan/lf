@@ -181,6 +181,7 @@ The following options can be used to customize the behavior of lf:
 	ratios              []int     (default '1:2:3')
 	relativenumber      bool      (default false)
 	reverse             bool      (default false)
+	roundbox            bool      (default false)
 	ruler               []string  (default 'acc:progress:selection:filter:ind')
 	rulerfmt            string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
 	scrolloff           int       (default 0)
@@ -888,6 +889,10 @@ When `number` is enabled, the current line shows the absolute position, otherwis
 ## reverse (bool) (default false)
 
 Reverse the direction of sort.
+
+## roundbox (bool) (default false)
+
+Draw rounded outer corners when the `drawbox` option is enabled.
 
 ## ruler ([]string) (default `acc:progress:selection:filter:ind`)
 
