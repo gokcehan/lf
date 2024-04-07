@@ -40,7 +40,7 @@ Adding a new command usually requires the following steps:
 - Implement the command somewhere in the code
 - Add command name to `gCmdWords` in `complete.go` for tab completion
 - Add command name to `Quick Reference` and `Commands` sections in `doc.md`
-- Run `gen/doc-with-docker.sh` to update the documentation
+- Optionally, run `gen/doc-with-docker.sh` to update the documentation
 - Commit your changes and send a pull request
 
 ## Platform specific code

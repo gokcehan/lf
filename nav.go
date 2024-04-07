@@ -1482,6 +1482,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 	}
 
 	if errCount == 0 {
+		app.ui.exprChan <- &callExpr{"clear", nil, 1}
 		app.ui.exprChan <- &callExpr{"echo", []string{"\033[0;32mMoved successfully\033[0m"}, 1}
 	}
 }
@@ -1502,19 +1503,6 @@ func (nav *nav) paste(app *app) error {
 		go nav.copyAsync(app, srcs, dstDir)
 	} else {
 		go nav.moveAsync(app, srcs, dstDir)
-		if err := saveFiles(nil, false); err != nil {
-			return fmt.Errorf("clearing copy/cut buffer: %s", err)
-		}
-
-		if gSingleMode {
-			if err := nav.sync(); err != nil {
-				return fmt.Errorf("paste: %s", err)
-			}
-		} else {
-			if err := remote("send sync"); err != nil {
-				return fmt.Errorf("paste: %s", err)
-			}
-		}
 	}
 
 	return nil
@@ -1868,9 +1856,12 @@ func (nav *nav) readMarks() error {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		toks := strings.SplitN(scanner.Text(), ":", 2)
-		if _, ok := nav.marks[toks[0]]; !ok {
-			nav.marks[toks[0]] = toks[1]
+		mark, path, found := strings.Cut(scanner.Text(), ":")
+		if !found {
+			return fmt.Errorf("invalid marks file entry: %s", scanner.Text())
+		}
+		if _, ok := nav.marks[mark]; !ok {
+			nav.marks[mark] = path
 		}
 	}
 
@@ -1924,11 +1915,16 @@ func (nav *nav) readTags() error {
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
 		text := scanner.Text()
+
 		ind := strings.LastIndex(text, ":")
+		if ind == -1 {
+			return fmt.Errorf("invalid tags file entry: %s", text)
+		}
+
 		path := text[0:ind]
-		mark := text[ind+1:]
+		tag := text[ind+1:]
 		if _, ok := nav.tags[path]; !ok {
-			nav.tags[path] = mark
+			nav.tags[path] = tag
 		}
 	}
 

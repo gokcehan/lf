@@ -36,7 +36,6 @@ func run() {
 	if gOpts.mouse {
 		screen.EnableMouse()
 	}
-	screen.EnableFocus()
 
 	if gLogPath != "" {
 		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0600)

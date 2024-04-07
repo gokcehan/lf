@@ -4,10 +4,10 @@ go 1.18
 
 require (
 	github.com/djherbis/times v1.6.0
-	github.com/gdamore/tcell/v2 v2.7.1
+	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/mattn/go-runewidth v0.0.15
-	golang.org/x/sys v0.17.0
-	golang.org/x/term v0.17.0
+	golang.org/x/sys v0.19.0
+	golang.org/x/term v0.19.0
 )
 
 require (

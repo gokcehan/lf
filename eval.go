@@ -90,6 +90,9 @@ func (e *setExpr) eval(app *app, args []string) {
 			if app.nav.height != app.ui.wins[0].h {
 				app.nav.height = app.ui.wins[0].h
 				app.nav.regCache = make(map[string]*reg)
+				if gOpts.sixel {
+					app.ui.sxScreen.lastFile = ""
+				}
 			}
 			app.ui.loadFile(app, true)
 		}
@@ -111,6 +114,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
 		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
+		if err == nil {
+			if gOpts.hidecursorinactive {
+				app.ui.screen.EnableFocus()
+			} else {
+				app.ui.screen.DisableFocus()
+			}
+		}
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
@@ -336,6 +346,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
+		if gOpts.sixel {
+			app.nav.regCache = make(map[string]*reg)
+			app.ui.sxScreen.lastFile = ""
+		}
 		app.ui.loadFile(app, true)
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
@@ -1352,6 +1366,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.height = app.ui.wins[0].h
 			app.nav.regCache = make(map[string]*reg)
 		}
+		if gOpts.sixel {
+			app.nav.regCache = make(map[string]*reg)
+			app.ui.sxScreen.lastFile = ""
+		}
 		for _, dir := range app.nav.dirs {
 			dir.boundPos(app.nav.height)
 		}
@@ -1601,8 +1619,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
 			extension := filepath.Ext(curr.Name())
-			if len(extension) == 0 || extension == curr.Name() {
-				// no extension or .hidden
+			if len(extension) == 0 || extension == curr.Name() || curr.IsDir() {
+				// no extension or .hidden or is directory
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 			} else {
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
