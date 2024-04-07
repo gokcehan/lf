@@ -1622,8 +1622,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
-			extension := filepath.Ext(curr.Name())
-			if len(extension) == 0 || extension == curr.Name() || curr.IsDir() {
+			extension := getFileExtension(curr)
+			if len(extension) == 0 {
 				// no extension or .hidden or is directory
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 			} else {
