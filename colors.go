@@ -295,9 +295,9 @@ func (sm styleMap) get(f *file) tcell.Style {
 		key = "ln"
 	case f.linkState == broken:
 		key = "or"
-	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0002 != 0:
+	case f.IsDir() && f.Mode()&os.ModeSticky != 0 && f.Mode()&0o002 != 0:
 		key = "tw"
-	case f.IsDir() && f.Mode()&0002 != 0:
+	case f.IsDir() && f.Mode()&0o002 != 0:
 		key = "ow"
 	case f.IsDir() && f.Mode()&os.ModeSticky != 0:
 		key = "st"
@@ -315,7 +315,7 @@ func (sm styleMap) get(f *file) tcell.Style {
 		key = "su"
 	case f.Mode()&os.ModeSetgid != 0:
 		key = "sg"
-	case f.Mode()&0111 != 0:
+	case f.Mode()&0o111 != 0:
 		key = "ex"
 	}
 

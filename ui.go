@@ -293,7 +293,7 @@ func fileInfo(f *file, d *dir) string {
 	for _, s := range getInfo(d.path) {
 		switch s {
 		case "size":
-			if !(f.IsDir() && gOpts.dircounts) {
+			if !f.IsDir() || !gOpts.dircounts {
 				var sz string
 				if f.IsDir() && f.dirSize < 0 {
 					sz = "-"
@@ -471,7 +471,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			filename = append(filename, []rune(gOpts.truncatechar)...)
 			filename = append(filename, lastPart...)
 		}
-		for i := runeSliceWidth(filename); i < maxFilenameWidth; i++ {
+		for j := runeSliceWidth(filename); j < maxFilenameWidth; j++ {
 			filename = append(filename, ' ')
 		}
 		s = append(s, filename...)
@@ -778,11 +778,11 @@ func (ui *ui) drawPromptLine(nav *nav) {
 
 	var prompt string
 
-	prompt = strings.Replace(gOpts.promptfmt, "%u", gUser.Username, -1)
-	prompt = strings.Replace(prompt, "%h", gHostname, -1)
-	prompt = strings.Replace(prompt, "%f", fname, -1)
+	prompt = strings.ReplaceAll(gOpts.promptfmt, "%u", gUser.Username)
+	prompt = strings.ReplaceAll(prompt, "%h", gHostname)
+	prompt = strings.ReplaceAll(prompt, "%f", fname)
 
-	if printLength(strings.Replace(strings.Replace(prompt, "%w", pwd, -1), "%d", pwd, -1)) > ui.promptWin.w {
+	if printLength(strings.ReplaceAll(strings.ReplaceAll(prompt, "%w", pwd), "%d", pwd)) > ui.promptWin.w {
 		names := strings.Split(pwd, sep)
 		for i := range names {
 			if names[i] == "" {
@@ -790,23 +790,23 @@ func (ui *ui) drawPromptLine(nav *nav) {
 			}
 			r, _ := utf8.DecodeRuneInString(names[i])
 			names[i] = string(r)
-			if printLength(strings.Replace(strings.Replace(prompt, "%w", strings.Join(names, sep), -1), "%d", strings.Join(names, sep), -1)) <= ui.promptWin.w {
+			if printLength(strings.ReplaceAll(strings.ReplaceAll(prompt, "%w", strings.Join(names, sep)), "%d", strings.Join(names, sep))) <= ui.promptWin.w {
 				break
 			}
 		}
 		pwd = strings.Join(names, sep)
 	}
 
-	prompt = strings.Replace(prompt, "%w", pwd, -1)
+	prompt = strings.ReplaceAll(prompt, "%w", pwd)
 	if !strings.HasSuffix(pwd, sep) {
 		pwd += sep
 	}
-	prompt = strings.Replace(prompt, "%d", pwd, -1)
+	prompt = strings.ReplaceAll(prompt, "%d", pwd)
 
 	if len(dir.filter) != 0 {
-		prompt = strings.Replace(prompt, "%F", fmt.Sprint(dir.filter), -1)
+		prompt = strings.ReplaceAll(prompt, "%F", fmt.Sprint(dir.filter))
 	} else {
-		prompt = strings.Replace(prompt, "%F", "", -1)
+		prompt = strings.ReplaceAll(prompt, "%F", "")
 	}
 
 	// spacer
@@ -814,7 +814,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	if avail > 0 {
 		prompt = strings.Replace(prompt, "%S", strings.Repeat(" ", avail), 1)
 	}
-	prompt = strings.Replace(prompt, "%S", "", -1)
+	prompt = strings.ReplaceAll(prompt, "%S", "")
 
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
@@ -1109,7 +1109,6 @@ func (ui *ui) draw(nav *nav) {
 		ui.sxScreen.lastFile = ui.regPrev.path
 		ui.sxScreen.showSixels()
 	}
-
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {

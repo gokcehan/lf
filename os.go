@@ -177,11 +177,11 @@ func setDefaults() {
 }
 
 func setUserUmask() {
-	unix.Umask(0077)
+	unix.Umask(0o077)
 }
 
 func isExecutable(f os.FileInfo) bool {
-	return f.Mode()&0111 != 0
+	return f.Mode()&0o111 != 0
 }
 
 func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
