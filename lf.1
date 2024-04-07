@@ -2363,6 +2363,10 @@ ex=01;32:\[rs]
 \f[R]
 .fi
 .PP
+The \f[C]ln\f[R] entry supports the special value \f[C]target\f[R],
+which will use the link target to select a style.
+File name rules will still apply based on the link\[aq]s name -- this
+mirrors GNU\[aq]s \f[C]ls\f[R] and \f[C]dircolors\f[R] behavior.
 Having such a long variable definition in a shell configuration file
 might be undesirable.
 You may instead use the colors file (refer to the CONFIGURATION
@@ -2380,6 +2384,10 @@ section (https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as \f[C]LS_COLORS/LF_COLORS\f[R].
 Instead of colors, you should put a single characters as values of
 entries.
+The \f[C]ln\f[R] entry supports the special value \f[C]target\f[R],
+which will use the link target to select a icon.
+File name rules will still apply based on the link\[aq]s name -- this
+mirrors GNU\[aq]s \f[C]ls\f[R] and \f[C]dircolors\f[R] behavior.
 The icons file (refer to the CONFIGURATION
 section (https://github.com/gokcehan/lf/blob/master/doc.md#configuration))
 should consist of whitespace-separated pairs with a \f[C]#\f[R]

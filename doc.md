@@ -1790,6 +1790,7 @@ You may instead divide it into multiple lines in between double quotes by escapi
 	ex=01;32:\
 	"
 
+The `ln` entry supports the special value `target`, which will use the link target to select a style. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 Having such a long variable definition in a shell configuration file might be undesirable.
 You may instead use the colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) for configuration.
 A sample colors file can be found at
@@ -1802,6 +1803,7 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
+The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated pairs with a `#` character to start comments until the end of the line.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
 Default values are as follows given with their matching order in lf:
