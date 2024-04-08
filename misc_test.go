@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestIsRoot(t *testing.T) {
@@ -295,5 +296,42 @@ func TestNaturalLess(t *testing.T) {
 		if got := naturalLess(test.s1, test.s2); got != test.exp {
 			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
 		}
+	}
+}
+
+type fakeFileInfo struct {
+	name  string
+	isDir bool
+}
+
+func (fileinfo fakeFileInfo) Name() string       { return fileinfo.name }
+func (fileinfo fakeFileInfo) Size() int64        { return 0 }
+func (fileinfo fakeFileInfo) Mode() os.FileMode  { return os.FileMode(0o000) }
+func (fileinfo fakeFileInfo) ModTime() time.Time { return time.Unix(0, 0) }
+func (fileinfo fakeFileInfo) IsDir() bool        { return fileinfo.isDir }
+func (fileinfo fakeFileInfo) Sys() any           { return nil }
+
+func TestGetFileExtension(t *testing.T) {
+	tests := []struct {
+		name              string
+		fileName          string
+		isDir             bool
+		expectedExtension string
+	}{
+		{"normal file", "file.txt", false, ".txt"},
+		{"file without extension", "file", false, ""},
+		{"hidden file", ".gitignore", false, ""},
+		{"hidden file with extension", ".file.txt", false, ".txt"},
+		{"directory", "dir", true, ""},
+		{"hidden directory", ".git", true, ""},
+		{"directory with dot", "profile.d", true, ""},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := getFileExtension(fakeFileInfo{test.fileName, test.isDir}); got != test.expectedExtension {
+				t.Errorf("at input %q expected %q but got %q", test.fileName, test.expectedExtension, got)
+			}
+		})
 	}
 }

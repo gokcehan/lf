@@ -46,6 +46,7 @@ var gOpts struct {
 	dirpreviews        bool
 	drawbox            bool
 	dupfilefmt         string
+	globfilter         bool
 	globsearch         bool
 	hidden             bool
 	icons              bool
@@ -58,6 +59,7 @@ var gOpts struct {
 	preview            bool
 	relativenumber     bool
 	reverse            bool
+	roundbox           bool
 	selectfmt          string
 	sixel              bool
 	sortby             sortMethod
@@ -191,6 +193,7 @@ func init() {
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
 	gOpts.hidecursorinactive = false
+	gOpts.globfilter = false
 	gOpts.globsearch = false
 	gOpts.hidden = false
 	gOpts.icons = false
@@ -203,6 +206,7 @@ func init() {
 	gOpts.preview = true
 	gOpts.relativenumber = false
 	gOpts.reverse = false
+	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort

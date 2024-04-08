@@ -145,6 +145,7 @@ The following options can be used to customize the behavior of lf:
     errorfmt            string    (default "\033[7;31;47m")
     filesep             string    (default "\n")
     findlen             int       (default 1)
+    globfilter          bool      (default false)
     globsearch          bool      (default false)
     hidden              bool      (default false)
     hiddenfiles         []string  (default '.*')
@@ -170,6 +171,7 @@ The following options can be used to customize the behavior of lf:
     ratios              []int     (default '1:2:3')
     relativenumber      bool      (default false)
     reverse             bool      (default false)
+    roundbox            bool      (default false)
     ruler               []string  (default 'acc:progress:selection:filter:ind')
     rulerfmt            string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
     scrolloff           int       (default 0)
@@ -797,6 +799,11 @@ findlen (int) (default 1)
 Number of characters prompted for the find command. When this value is
 set to 0, find command prompts until there is only a single match left.
 
+globfilter (bool) (default false)
+
+Patterns are treated as globs for the filter command, see globsearch for
+more details.
+
 globsearch (bool) (default false)
 
 When this option is enabled, search command patterns are considered as
@@ -952,6 +959,10 @@ is shown.
 reverse (bool) (default false)
 
 Reverse the direction of sort.
+
+roundbox (bool) (default false)
+
+Draw rounded outer corners when the drawbox option is enabled.
 
 ruler ([]string) (default acc:progress:selection:filter:ind)
 
@@ -2026,8 +2037,11 @@ escaping newlines with backslashes as follows:
     ex=01;32:\
     "
 
-Having such a long variable definition in a shell configuration file
-might be undesirable. You may instead use the colors file (refer to the
+The ln entry supports the special value target, which will use the link
+target to select a style. File name rules will still apply based on the
+link's name -- this mirrors GNU's ls and dircolors behavior. Having such
+a long variable definition in a shell configuration file might be
+undesirable. You may instead use the colors file (refer to the
 CONFIGURATION section) for configuration. A sample colors file can be
 found at https://github.com/gokcehan/lf/blob/master/etc/colors.example
 You may also see the wiki page for ANSI escape codes
@@ -2038,7 +2052,10 @@ ICONS
 Icons are configured using LF_ICONS environment variable or an icons
 file (refer to the CONFIGURATION section). The variable uses the same
 syntax as LS_COLORS/LF_COLORS. Instead of colors, you should put a
-single characters as values of entries. The icons file (refer to the
+single characters as values of entries. The ln entry supports the
+special value target, which will use the link target to select a icon.
+File name rules will still apply based on the link's name -- this
+mirrors GNU's ls and dircolors behavior. The icons file (refer to the
 CONFIGURATION section) should consist of whitespace-separated pairs with
 a # character to start comments until the end of the line. Each line
 should contain 1-3 columns, first column is filetype or filename

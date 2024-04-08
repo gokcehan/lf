@@ -15,7 +15,10 @@ type iconDef struct {
 	style    tcell.Style
 }
 
-type iconMap map[string]iconDef
+type iconMap struct {
+	icons         map[string]iconDef
+	useLinkTarget bool
+}
 
 func iconWithoutStyle(icon string) iconDef {
 	return iconDef{icon, false, tcell.StyleDefault}
@@ -26,7 +29,10 @@ func iconWithStyle(icon string, style tcell.Style) iconDef {
 }
 
 func parseIcons() iconMap {
-	im := make(iconMap)
+	im := iconMap{
+		icons:         make(map[string]iconDef),
+		useLinkTarget: false,
+	}
 
 	defaultIcons := []string{
 		"ln=l",
@@ -60,7 +66,7 @@ func parseIcons() iconMap {
 	return im
 }
 
-func (im iconMap) parseFile(path string) {
+func (im *iconMap) parseFile(path string) {
 	log.Printf("reading file: %s", path)
 
 	f, err := os.Open(path)
@@ -77,28 +83,11 @@ func (im iconMap) parseFile(path string) {
 	}
 
 	for _, arr := range arrs {
-		key := arr[0]
-
-		key = replaceTilde(key)
-
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
-		}
-
-		switch len(arr) {
-		case 1:
-			delete(im, key)
-		case 2:
-			icon := arr[1]
-			im[key] = iconWithoutStyle(icon)
-		case 3:
-			icon, color := arr[1], arr[2]
-			im[key] = iconWithStyle(icon, applyAnsiCodes(color, tcell.StyleDefault))
-		}
+		im.parseArray(arr)
 	}
 }
 
-func (im iconMap) parseEnv(env string) {
+func (im *iconMap) parseEnv(env string) {
 	for _, entry := range strings.Split(env, ":") {
 		if entry == "" {
 			continue
@@ -111,25 +100,42 @@ func (im iconMap) parseEnv(env string) {
 			return
 		}
 
-		key, val := pair[0], pair[1]
+		im.parseArray(pair)
+	}
+}
 
-		key = replaceTilde(key)
+func (im *iconMap) parseArray(arr []string) {
+	key := arr[0]
 
-		if filepath.IsAbs(key) {
-			key = filepath.Clean(key)
+	key = replaceTilde(key)
+
+	if filepath.IsAbs(key) {
+		key = filepath.Clean(key)
+	}
+
+	switch len(arr) {
+	case 1:
+		delete(im.icons, key)
+	case 2:
+		icon := arr[1]
+		if key == "ln" && icon == "target" {
+			im.useLinkTarget = true
+		} else {
+			im.icons[key] = iconWithoutStyle(icon)
 		}
-
-		im[key] = iconWithoutStyle(val)
+	case 3:
+		icon, color := arr[1], arr[2]
+		im.icons[key] = iconWithStyle(icon, applyAnsiCodes(color, tcell.StyleDefault))
 	}
 }
 
 func (im iconMap) get(f *file) iconDef {
-	if val, ok := im[f.path]; ok {
+	if val, ok := im.icons[f.path]; ok {
 		return val
 	}
 
 	if f.IsDir() {
-		if val, ok := im[f.Name()+"/"]; ok {
+		if val, ok := im.icons[f.Name()+"/"]; ok {
 			return val
 		}
 	}
@@ -137,7 +143,7 @@ func (im iconMap) get(f *file) iconDef {
 	var key string
 
 	switch {
-	case f.linkState == working:
+	case f.linkState == working && !im.useLinkTarget:
 		key = "ln"
 	case f.linkState == broken:
 		key = "or"
@@ -165,27 +171,27 @@ func (im iconMap) get(f *file) iconDef {
 		key = "ex"
 	}
 
-	if val, ok := im[key]; ok {
+	if val, ok := im.icons[key]; ok {
 		return val
 	}
 
-	if val, ok := im[f.Name()+"*"]; ok {
+	if val, ok := im.icons[f.Name()+"*"]; ok {
 		return val
 	}
 
-	if val, ok := im["*"+f.Name()]; ok {
+	if val, ok := im.icons["*"+f.Name()]; ok {
 		return val
 	}
 
-	if val, ok := im[filepath.Base(f.Name())+".*"]; ok {
+	if val, ok := im.icons[filepath.Base(f.Name())+".*"]; ok {
 		return val
 	}
 
-	if val, ok := im["*"+strings.ToLower(f.ext)]; ok {
+	if val, ok := im.icons["*"+strings.ToLower(f.ext)]; ok {
 		return val
 	}
 
-	if val, ok := im["fi"]; ok {
+	if val, ok := im.icons["fi"]; ok {
 		return val
 	}
 

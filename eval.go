@@ -96,14 +96,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
-	case "globsearch", "noglobsearch", "globsearch!":
-		err = applyBoolOpt(&gOpts.globsearch, e)
+	case "globfilter", "noglobfilter", "globfilter!":
+		err = applyBoolOpt(&gOpts.globfilter, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "globsearch", "noglobsearch", "globsearch!":
+		err = applyBoolOpt(&gOpts.globsearch, e)
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
@@ -114,6 +116,13 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
 		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
+		if err == nil {
+			if gOpts.hidecursorinactive {
+				app.ui.screen.EnableFocus()
+			} else {
+				app.ui.screen.DisableFocus()
+			}
+		}
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
@@ -167,6 +176,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.nav.sort()
 			app.ui.sort()
 		}
+	case "roundbox", "noroundbox", "roundbox!":
+		err = applyBoolOpt(&gOpts.roundbox, e)
 	case "sixel", "nosixel", "sixel!":
 		err = applyBoolOpt(&gOpts.sixel, e)
 	case "smartcase", "nosmartcase", "smartcase!":
@@ -565,6 +576,12 @@ func onRedraw(app *app) {
 
 func onSelect(app *app) {
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
+func onQuit(app *app) {
+	if cmd, ok := gOpts.cmds["on-quit"]; ok {
 		cmd.eval(app, nil)
 	}
 }
@@ -1611,8 +1628,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			normal(app)
 			app.ui.cmdPrefix = "rename: "
-			extension := filepath.Ext(curr.Name())
-			if len(extension) == 0 || extension == curr.Name() || curr.IsDir() {
+			extension := getFileExtension(curr)
+			if len(extension) == 0 {
 				// no extension or .hidden or is directory
 				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
 			} else {
