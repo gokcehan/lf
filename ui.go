@@ -293,27 +293,27 @@ func fileInfo(f *file, d *dir) string {
 	for _, s := range getInfo(d.path) {
 		switch s {
 		case "size":
-			if !f.IsDir() || !gOpts.dircounts {
-				var sz string
-				if f.IsDir() && f.dirSize < 0 {
-					sz = "-"
-				} else {
-					sz = humanize(f.TotalSize())
+			if f.IsDir() && gOpts.dircounts {
+				switch {
+				case f.dirCount < -1:
+					info = fmt.Sprintf("%s    !", info)
+				case f.dirCount < 0:
+					info = fmt.Sprintf("%s    ?", info)
+				case f.dirCount < 1000:
+					info = fmt.Sprintf("%s %4d", info, f.dirCount)
+				default:
+					info = fmt.Sprintf("%s 999+", info)
 				}
-				info = fmt.Sprintf("%s %4s", info, sz)
 				continue
 			}
 
-			switch {
-			case f.dirCount < -1:
-				info = fmt.Sprintf("%s    !", info)
-			case f.dirCount < 0:
-				info = fmt.Sprintf("%s    ?", info)
-			case f.dirCount < 1000:
-				info = fmt.Sprintf("%s %4d", info, f.dirCount)
-			default:
-				info = fmt.Sprintf("%s 999+", info)
+			var sz string
+			if f.IsDir() && f.dirSize < 0 {
+				sz = "-"
+			} else {
+				sz = humanize(f.TotalSize())
 			}
+			info = fmt.Sprintf("%s %4s", info, sz)
 		case "time":
 			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
