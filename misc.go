@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"fmt"
 	"io"
+	"io/fs"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -291,12 +292,30 @@ func naturalLess(s1, s2 string) bool {
 	}
 }
 
-var reModKey = regexp.MustCompile(`<(c|s|a)-(.+)>`)
-var reRulerSub = regexp.MustCompile(`%[apmcsfithd]|%\{[^}]+\}`)
+// This function returns the extension of a file with a leading dot
+// it returns an empty string if extension could not be determined
+// i.e. directories, filenames without extensions
+func getFileExtension(file fs.FileInfo) string {
+	if file.IsDir() {
+		return ""
+	}
+	if strings.Count(file.Name(), ".") == 1 && file.Name()[0] == '.' {
+		// hidden file without extension
+		return ""
+	}
+	return filepath.Ext(file.Name())
+}
 
-var reWord = regexp.MustCompile(`(\pL|\pN)+`)
-var reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
-var reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
+var (
+	reModKey   = regexp.MustCompile(`<(c|s|a)-(.+)>`)
+	reRulerSub = regexp.MustCompile(`%[apmcsfithd]|%\{[^}]+\}`)
+)
+
+var (
+	reWord    = regexp.MustCompile(`(\pL|\pN)+`)
+	reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
+	reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
+)
 
 func min(a, b int) int {
 	if a < b {

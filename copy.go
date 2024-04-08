@@ -37,7 +37,7 @@ func copySize(srcs []string) (int64, error) {
 }
 
 func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan int64) error {
-	var dst_mode os.FileMode = 0666
+	var dst_mode os.FileMode = 0o666
 	preserve_timestamps := false
 	for _, s := range preserve {
 		switch s {
@@ -107,9 +107,9 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			file := filepath.Base(src)
 			dst := filepath.Join(dstDir, file)
 
-			_, err := os.Lstat(dst)
+			lstat, err := os.Lstat(dst)
 			if !os.IsNotExist(err) {
-				ext := filepath.Ext(file)
+				ext := getFileExtension(lstat)
 				basename := file[:len(file)-len(ext)]
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {

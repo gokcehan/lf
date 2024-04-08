@@ -66,6 +66,8 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
+	onQuit(app)
+
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
 			log.Printf("writing history file: %s", err)
@@ -323,10 +325,6 @@ func (app *app) loop() {
 				continue
 			}
 
-			if cmd, ok := gOpts.cmds["on-quit"]; ok {
-				cmd.eval(app, nil)
-			}
-
 			app.quit()
 
 			app.nav.previewChan <- ""
@@ -457,7 +455,6 @@ func (app *app) loop() {
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
-			app.ui.draw(app.nav)
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)

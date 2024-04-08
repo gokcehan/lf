@@ -87,10 +87,6 @@ func newFile(path string) *file {
 		ct = lstat.ModTime()
 	}
 
-	// returns an empty string if extension could not be determined
-	// i.e. directories, filenames without extensions
-	ext := filepath.Ext(path)
-
 	dirCount := -1
 	if lstat.IsDir() && gOpts.dircounts {
 		d, err := os.Open(path)
@@ -117,7 +113,7 @@ func newFile(path string) *file {
 		dirSize:    -1,
 		accessTime: at,
 		changeTime: ct,
-		ext:        ext,
+		ext:        getFileExtension(lstat),
 		err:        nil,
 	}
 }
@@ -138,7 +134,7 @@ type fakeStat struct {
 
 func (fs *fakeStat) Name() string       { return fs.name }
 func (fs *fakeStat) Size() int64        { return 0 }
-func (fs *fakeStat) Mode() os.FileMode  { return os.FileMode(0000) }
+func (fs *fakeStat) Mode() os.FileMode  { return os.FileMode(0o000) }
 func (fs *fakeStat) ModTime() time.Time { return time.Unix(0, 0) }
 func (fs *fakeStat) IsDir() bool        { return false }
 func (fs *fakeStat) Sys() any           { return nil }
@@ -495,7 +491,6 @@ func (nav *nav) loadDirInternal(path string) *dir {
 			nav.dirPreviewChan <- d
 		}
 		nav.dirChan <- d
-
 	}()
 	return d
 }
@@ -778,7 +773,6 @@ func matchPattern(pattern, name, path string) bool {
 }
 
 func (nav *nav) previewDir(dir *dir, win *win) {
-
 	defer func() {
 		dir.loading = false
 		nav.dirChan <- dir
@@ -834,11 +828,9 @@ func (nav *nav) previewDir(dir *dir, win *win) {
 			log.Printf("loading dir: %s", buf.Err())
 		}
 	}
-
 }
 
 func (nav *nav) preview(path string, win *win) {
-
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() { nav.regChan <- reg }()
 
@@ -1413,7 +1405,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			app.ui.exprChan <- echo
 			continue
 		} else if !os.IsNotExist(err) {
-			ext := filepath.Ext(file)
+			ext := getFileExtension(dstStat)
 			basename := file[:len(file)-len(ext)]
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
@@ -1761,7 +1753,7 @@ func (nav *nav) findPrev() (bool, bool) {
 	return false, false
 }
 
-func searchMatch(name, pattern string) (matched bool, err error) {
+func searchMatch(name, pattern string, glob bool) (matched bool, err error) {
 	if gOpts.ignorecase {
 		lpattern := strings.ToLower(pattern)
 		if !gOpts.smartcase || lpattern == pattern {
@@ -1776,7 +1768,7 @@ func searchMatch(name, pattern string) (matched bool, err error) {
 			name = removeDiacritics(name)
 		}
 	}
-	if gOpts.globsearch {
+	if glob {
 		return filepath.Match(pattern, name)
 	}
 	return strings.Contains(name, pattern), nil
@@ -1785,7 +1777,7 @@ func searchMatch(name, pattern string) (matched bool, err error) {
 func (nav *nav) searchNext() (bool, error) {
 	dir := nav.currDir()
 	for i := dir.ind + 1; i < len(dir.files); i++ {
-		if matched, err := searchMatch(dir.files[i].Name(), nav.search); err != nil {
+		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 			return false, err
 		} else if matched {
 			return nav.down(i - dir.ind), nil
@@ -1793,7 +1785,7 @@ func (nav *nav) searchNext() (bool, error) {
 	}
 	if gOpts.wrapscan {
 		for i := 0; i < dir.ind; i++ {
-			if matched, err := searchMatch(dir.files[i].Name(), nav.search); err != nil {
+			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 				return false, err
 			} else if matched {
 				return nav.up(dir.ind - i), nil
@@ -1806,7 +1798,7 @@ func (nav *nav) searchNext() (bool, error) {
 func (nav *nav) searchPrev() (bool, error) {
 	dir := nav.currDir()
 	for i := dir.ind - 1; i >= 0; i-- {
-		if matched, err := searchMatch(dir.files[i].Name(), nav.search); err != nil {
+		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 			return false, err
 		} else if matched {
 			return nav.up(dir.ind - i), nil
@@ -1814,7 +1806,7 @@ func (nav *nav) searchPrev() (bool, error) {
 	}
 	if gOpts.wrapscan {
 		for i := len(dir.files) - 1; i > dir.ind; i-- {
-			if matched, err := searchMatch(dir.files[i].Name(), nav.search); err != nil {
+			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 				return false, err
 			} else if matched {
 				return nav.down(i - dir.ind), nil
@@ -1826,7 +1818,7 @@ func (nav *nav) searchPrev() (bool, error) {
 
 func isFiltered(f os.FileInfo, filter []string) bool {
 	for _, pattern := range filter {
-		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"))
+		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"), gOpts.globfilter)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 			return false
@@ -1996,7 +1988,6 @@ func (m indexedSelections) Swap(i, j int) {
 func (m indexedSelections) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
 
 func (nav *nav) currSelections() []string {
-
 	currDirOnly := gOpts.selmode == "dir"
 	currDirPath := ""
 	if currDirOnly {

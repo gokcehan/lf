@@ -8,6 +8,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"strings"
+	"syscall"
 
 	"golang.org/x/sys/windows"
 )
@@ -24,8 +25,8 @@ var envPathExt = os.Getenv("PATHEXT")
 var (
 	gDefaultShell      = "cmd"
 	gDefaultShellFlag  = "/c"
-	gDefaultSocketProt = "tcp"
-	gDefaultSocketPath = "127.0.0.1:12345"
+	gDefaultSocketProt = "unix"
+	gDefaultSocketPath string
 )
 
 var (
@@ -98,6 +99,16 @@ func init() {
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
+
+	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
+	if err != nil {
+		gDefaultSocketProt = "tcp"
+		gDefaultSocketPath = "127.0.0.1:12345"
+	} else {
+		runtime := os.TempDir()
+		gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
+		syscall.Close(socket)
+	}
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {

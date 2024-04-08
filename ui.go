@@ -980,10 +980,17 @@ func (ui *ui) drawBox() {
 		ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
 	}
 
-	ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
-	ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
-	ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
-	ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
+	if gOpts.roundbox {
+		ui.screen.SetContent(0, 1, '╭', nil, st)
+		ui.screen.SetContent(w-1, 1, '╮', nil, st)
+		ui.screen.SetContent(0, h-2, '╰', nil, st)
+		ui.screen.SetContent(w-1, h-2, '╯', nil, st)
+	} else {
+		ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
+		ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
+		ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
+		ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
+	}
 
 	wacc := 0
 	for wind := 0; wind < len(ui.wins)-1; wind++ {
