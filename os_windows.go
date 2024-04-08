@@ -181,7 +181,22 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	if err != nil {
 		return false
 	}
-	return attrs&windows.FILE_ATTRIBUTE_HIDDEN != 0
+
+	if attrs&windows.FILE_ATTRIBUTE_HIDDEN != 0 {
+		return true
+	}
+
+	hidden := false
+	for _, pattern := range hiddenfiles {
+		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
+		if strings.HasPrefix(pattern, "!") && matched {
+			hidden = false
+		} else if matched {
+			hidden = true
+		}
+	}
+
+	return hidden
 }
 
 func userName(f os.FileInfo) string {
