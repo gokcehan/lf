@@ -645,7 +645,9 @@ func (app *app) updateFile(path string, add bool) {
 		}
 
 		if add {
-			allFiles = append(allFiles, newFile(path))
+			if _, err := os.Stat(path); err == nil {
+				allFiles = append(allFiles, newFile(path))
+			}
 		}
 		dir.allFiles = allFiles
 
