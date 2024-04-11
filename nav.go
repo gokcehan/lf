@@ -1566,7 +1566,9 @@ func (nav *nav) rename() error {
 	dir := nav.loadDir(filepath.Dir(newPath))
 
 	if dir.loading {
-		dir.files = append(dir.files, &file{FileInfo: lstat})
+		file := &file{FileInfo: lstat}
+		dir.allFiles = append(dir.allFiles, file)
+		dir.files = append(dir.files, file)
 	}
 
 	dir.sel(lstat.Name(), nav.height)
