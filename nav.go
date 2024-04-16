@@ -751,7 +751,6 @@ func (nav *nav) previewLoop(ui *ui) {
 	}
 }
 
-//lint:ignore U1000 This function is not used on Windows
 func matchPattern(pattern, name, path string) bool {
 	s := name
 

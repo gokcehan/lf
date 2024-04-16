@@ -765,7 +765,7 @@ Otherwise, these characters are interpreted as they are.
 
 Show hidden files.
 On Unix systems, hidden files are determined by the value of `hiddenfiles`.
-On Windows, only files with hidden attributes are considered hidden files.
+On Windows, the files with the hidden attributes are also considered hidden files.
 
 ## hiddenfiles ([]string) (default `.*`)
 
