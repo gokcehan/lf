@@ -1884,7 +1884,7 @@ func (nav *nav) writeMarks() error {
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		_, err = f.WriteString(fmt.Sprintf("%s:%s\n", k, nav.marks[k]))
+		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.marks[k])
 		if err != nil {
 			return fmt.Errorf("writing marks file: %s", err)
 		}
@@ -1945,7 +1945,7 @@ func (nav *nav) writeTags() error {
 	sort.Strings(keys)
 
 	for _, k := range keys {
-		_, err = f.WriteString(fmt.Sprintf("%s:%s\n", k, nav.tags[k]))
+		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.tags[k])
 		if err != nil {
 			return fmt.Errorf("writing tags file: %s", err)
 		}

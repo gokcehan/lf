@@ -330,7 +330,7 @@ func TestGetFileExtension(t *testing.T) {
 	for _, test := range tests {
 		t.Run(test.name, func(t *testing.T) {
 			if got := getFileExtension(fakeFileInfo{test.fileName, test.isDir}); got != test.expectedExtension {
-				t.Errorf("at input %q expected %q but got %q", test.fileName, test.expectedExtension, got)
+				t.Errorf("at input '%s' expected '%s' but got '%s'", test.fileName, test.expectedExtension, got)
 			}
 		})
 	}
