@@ -5,16 +5,32 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+
+	"github.com/gdamore/tcell/v2"
 )
 
+type iconDef struct {
+	icon     string
+	hasStyle bool
+	style    tcell.Style
+}
+
 type iconMap struct {
-	icons         map[string]string
+	icons         map[string]iconDef
 	useLinkTarget bool
+}
+
+func iconWithoutStyle(icon string) iconDef {
+	return iconDef{icon, false, tcell.StyleDefault}
+}
+
+func iconWithStyle(icon string, style tcell.Style) iconDef {
+	return iconDef{icon, true, style}
 }
 
 func parseIcons() iconMap {
 	im := iconMap{
-		icons:         make(map[string]string),
+		icons:         make(map[string]iconDef),
 		useLinkTarget: false,
 	}
 
@@ -60,14 +76,14 @@ func (im *iconMap) parseFile(path string) {
 	}
 	defer f.Close()
 
-	pairs, err := readPairs(f)
+	arrs, err := readArrays(f, 1, 3)
 	if err != nil {
 		log.Printf("reading icons file: %s", err)
 		return
 	}
 
-	for _, pair := range pairs {
-		im.parsePair(pair)
+	for _, arr := range arrs {
+		im.parseArray(arr)
 	}
 }
 
@@ -84,12 +100,12 @@ func (im *iconMap) parseEnv(env string) {
 			return
 		}
 
-		im.parsePair(pair)
+		im.parseArray(pair)
 	}
 }
 
-func (im *iconMap) parsePair(pair []string) {
-	key, val := pair[0], pair[1]
+func (im *iconMap) parseArray(arr []string) {
+	key := arr[0]
 
 	key = replaceTilde(key)
 
@@ -97,14 +113,23 @@ func (im *iconMap) parsePair(pair []string) {
 		key = filepath.Clean(key)
 	}
 
-	if key == "ln" && val == "target" {
-		im.useLinkTarget = true
+	switch len(arr) {
+	case 1:
+		delete(im.icons, key)
+	case 2:
+		icon := arr[1]
+		if key == "ln" && icon == "target" {
+			im.useLinkTarget = true
+		} else {
+			im.icons[key] = iconWithoutStyle(icon)
+		}
+	case 3:
+		icon, color := arr[1], arr[2]
+		im.icons[key] = iconWithStyle(icon, applyAnsiCodes(color, tcell.StyleDefault))
 	}
-
-	im.icons[key] = val
 }
 
-func (im iconMap) get(f *file) string {
+func (im iconMap) get(f *file) iconDef {
 	if val, ok := im.icons[f.path]; ok {
 		return val
 	}
@@ -170,5 +195,5 @@ func (im iconMap) get(f *file) string {
 		return val
 	}
 
-	return " "
+	return iconWithoutStyle(" ")
 }

@@ -217,23 +217,27 @@ func TestSplitWord(t *testing.T) {
 	}
 }
 
-func TestReadPairs(t *testing.T) {
+func TestReadArrays(t *testing.T) {
 	tests := []struct {
-		s   string
-		exp [][]string
+		s        string
+		min_cols int
+		max_cols int
+		exp      [][]string
 	}{
-		{"foo bar", [][]string{{"foo", "bar"}}},
-		{"foo bar ", [][]string{{"foo", "bar"}}},
-		{" foo bar", [][]string{{"foo", "bar"}}},
-		{" foo bar ", [][]string{{"foo", "bar"}}},
-		{"foo bar#baz", [][]string{{"foo", "bar"}}},
-		{"foo bar #baz", [][]string{{"foo", "bar"}}},
-		{`'foo#baz' bar`, [][]string{{"foo#baz", "bar"}}},
-		{`"foo#baz" bar`, [][]string{{"foo#baz", "bar"}}},
+		{"foo bar", 2, 2, [][]string{{"foo", "bar"}}},
+		{"foo bar ", 2, 2, [][]string{{"foo", "bar"}}},
+		{" foo bar", 2, 2, [][]string{{"foo", "bar"}}},
+		{" foo bar ", 2, 2, [][]string{{"foo", "bar"}}},
+		{"foo bar#baz", 2, 2, [][]string{{"foo", "bar"}}},
+		{"foo bar #baz", 2, 2, [][]string{{"foo", "bar"}}},
+		{`'foo#baz' bar`, 2, 2, [][]string{{"foo#baz", "bar"}}},
+		{`"foo#baz" bar`, 2, 2, [][]string{{"foo#baz", "bar"}}},
+		{"foo bar baz", 3, 3, [][]string{{"foo", "bar", "baz"}}},
+		{`"foo bar baz"`, 1, 1, [][]string{{"foo bar baz"}}},
 	}
 
 	for _, test := range tests {
-		if got, _ := readPairs(strings.NewReader(test.s)); !reflect.DeepEqual(got, test.exp) {
+		if got, _ := readArrays(strings.NewReader(test.s), test.min_cols, test.max_cols); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}

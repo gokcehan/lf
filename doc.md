@@ -1814,7 +1814,8 @@ Icons are configured using `LF_ICONS` environment variable or an icons file (ref
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
 The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
-The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated pairs with a `#` character to start comments until the end of the line.
+The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
+Each line should contain 1-3 columns, first column is filetype or filename pattern, second column is the icon, third column is an optional icon color. If there is only one column, means to disable rule for this filetype or pattern.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
 Default values are as follows given with their matching order in lf:
 
@@ -1835,3 +1836,6 @@ Default values are as follows given with their matching order in lf:
 
 A sample icons file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/icons.example
+
+A sample colored icons file can be found at
+https://github.com/gokcehan/lf/blob/master/etc/icons_colored.example
