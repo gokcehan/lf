@@ -158,7 +158,7 @@ The following options can be used to customize the behavior of lf:
 	globfilter          bool      (default false)
 	globsearch          bool      (default false)
 	hidden              bool      (default false)
-	hiddenfiles         []string  (default '.*')
+	hiddenfiles         []string  (default '.*' for Unix and '' for Windows)
 	hidecursorinactive  bool      (default false)
 	history             bool      (default true)
 	icons               bool      (default false)
@@ -767,7 +767,7 @@ Show hidden files.
 On Unix systems, hidden files are determined by the value of `hiddenfiles`.
 On Windows, files with hidden attributes are also considered hidden files.
 
-## hiddenfiles ([]string) (default `.*`)
+## hiddenfiles ([]string) (default `.*` for Unix and `` for Windows)
 
 List of hidden file glob patterns.
 Patterns can be given as relative or absolute paths.

@@ -23,10 +23,11 @@ var (
 var envPathExt = os.Getenv("PATHEXT")
 
 var (
-	gDefaultShell      = "cmd"
-	gDefaultShellFlag  = "/c"
-	gDefaultSocketProt = "unix"
-	gDefaultSocketPath string
+	gDefaultShell       = "cmd"
+	gDefaultShellFlag   = "/c"
+	gDefaultSocketProt  = "unix"
+	gDefaultSocketPath  string
+	gDefaultHiddenFiles []string
 )
 
 var (
