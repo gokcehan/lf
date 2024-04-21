@@ -1343,7 +1343,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
 			}
 		}
-		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 	case "clear":
 		if !app.nav.init {
@@ -1637,7 +1636,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
 			}
 		}
-		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 	case "sync":
 		if err := app.nav.sync(); err != nil {
