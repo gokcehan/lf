@@ -645,11 +645,8 @@ func (app *app) updateFile(path string, add bool) {
 		}
 
 		if add {
-			if stat, err := os.Stat(path); err == nil {
+			if _, err := os.Stat(path); err == nil {
 				allFiles = append(allFiles, newFile(path))
-				if stat.IsDir() {
-					app.nav.setWatches()
-				}
 			}
 		}
 		dir.allFiles = allFiles
