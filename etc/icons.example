@@ -35,6 +35,22 @@ sg      g       # SETGID
 ex             # EXEC
 fi             # FILE
 
+# disable some default filetype icons, let them choose icon by filename
+# ln             # LINK
+# or             # ORPHAN
+# tw              # STICKY_OTHER_WRITABLE
+# ow              # OTHER_WRITABLE
+# st              # STICKY
+# di             # DIR
+# pi              # FIFO
+# so              # SOCK
+# bd              # BLK
+# cd              # CHR
+# su              # SETUID
+# sg              # SETGID
+# ex              # EXEC
+# fi             # FILE
+
 # file extensions (vim-devicons)
 *.styl          
 *.sass          

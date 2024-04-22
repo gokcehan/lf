@@ -234,7 +234,7 @@ func (app *app) writeHistory() error {
 	}
 
 	for _, cmd := range app.cmdHistory {
-		_, err = f.WriteString(fmt.Sprintf("%s %s\n", cmd.prefix, cmd.value))
+		_, err = fmt.Fprintf(f, "%s %s\n", cmd.prefix, cmd.value)
 		if err != nil {
 			return fmt.Errorf("writing history file: %s", err)
 		}
@@ -623,7 +623,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
-
 }
 
 func (app *app) updateFile(path string, add bool) {
