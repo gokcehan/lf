@@ -470,8 +470,13 @@ func (app *app) loop() {
 				app.watch.addUpdate(ev.Name)
 			}
 		case <-app.watch.loadTimer.C:
-			app.nav.renew()
-			app.ui.loadFile(app, false)
+			for path := range app.watch.loads {
+				go func(path string) {
+					dir := newDir(path)
+					dir.sort()
+					app.nav.dirChan <- dir
+				}(path)
+			}
 			app.ui.draw(app.nav)
 			app.watch.loads = make(map[string]bool)
 		case <-app.watch.updateTimer.C:
