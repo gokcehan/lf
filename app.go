@@ -459,30 +459,30 @@ func (app *app) loop() {
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
 		case ev := <-app.nav.watcherEvents:
-			if ev.Has(fsnotify.Create) {
-				app.updateFile(ev.Name, true)
-				app.updateFile(filepath.Dir(ev.Name), true)
-				app.ui.loadFile(app, false)
-				app.ui.draw(app.nav)
-			}
-
-			if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
-				app.updateFile(ev.Name, false)
-				app.updateFile(filepath.Dir(ev.Name), true)
-				app.ui.loadFile(app, false)
-				app.ui.draw(app.nav)
+			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				app.updateFile(filepath.Dir(ev.Name))
+				if !app.nav.watcherRenew {
+					app.nav.watcherRenew = true
+					app.nav.watcherRenewTimer.Stop()
+					app.nav.watcherRenewTimer.Reset(10 * time.Millisecond)
+				}
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
 				if !app.nav.watcherWrites[ev.Name] {
 					app.nav.watcherWrites[ev.Name] = true
-					app.nav.watcherTimer.Stop()
-					app.nav.watcherTimer.Reset(10 * time.Millisecond)
+					app.nav.watcherWriteTimer.Stop()
+					app.nav.watcherWriteTimer.Reset(10 * time.Millisecond)
 				}
 			}
-		case <-app.nav.watcherTimer.C:
+		case <-app.nav.watcherRenewTimer.C:
+			app.nav.renew()
+			app.ui.loadFile(app, false)
+			app.ui.draw(app.nav)
+			app.nav.watcherRenew = false
+		case <-app.nav.watcherWriteTimer.C:
 			for path := range app.nav.watcherWrites {
-				app.updateFile(path, true)
+				app.updateFile(path)
 				currFile, err := app.nav.currFile()
 				if err == nil && currFile.path == path {
 					app.nav.startPreview()
@@ -625,7 +625,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 }
 
-func (app *app) updateFile(path string, add bool) {
+func (app *app) updateFile(path string) {
 	dirs := app.nav.dirs
 	if app.ui.dirPrev != nil {
 		dirs = append(dirs, app.ui.dirPrev)
@@ -636,22 +636,12 @@ func (app *app) updateFile(path string, add bool) {
 			continue
 		}
 
-		var allFiles []*file
-		for _, file := range dir.allFiles {
-			if file.path != path {
-				allFiles = append(allFiles, file)
+		for i := range dir.allFiles {
+			if dir.allFiles[i].path == path {
+				dir.allFiles[i] = newFile(path)
+				break
 			}
 		}
-
-		if add {
-			if stat, err := os.Stat(path); err == nil {
-				allFiles = append(allFiles, newFile(path))
-				if stat.IsDir() {
-					app.nav.setWatches()
-				}
-			}
-		}
-		dir.allFiles = allFiles
 
 		name := dir.name()
 		dir.sort()
