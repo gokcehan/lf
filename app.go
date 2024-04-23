@@ -36,6 +36,7 @@ type app struct {
 	menuComps      []string
 	menuCompInd    int
 	selectionOut   []string
+	watch          *watch
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -46,6 +47,7 @@ func newApp(ui *ui, nav *nav) *app {
 		nav:      nav,
 		ticker:   new(time.Ticker),
 		quitChan: quitChan,
+		watch:    newWatch(),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -291,7 +293,6 @@ func (app *app) loop() {
 
 	app.nav.getDirs(wd)
 	app.nav.addJumpList()
-	app.nav.setWatches()
 	app.nav.init = true
 
 	if gSelect != "" {
@@ -412,7 +413,7 @@ func (app *app) loop() {
 				}
 			}
 
-			app.nav.setWatches()
+			app.setWatchPaths()
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
@@ -458,39 +459,31 @@ func (app *app) loop() {
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
-		case ev := <-app.nav.watcherEvents:
+		case ev := <-app.watch.events:
 			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
-				app.updateFile(filepath.Dir(ev.Name))
-				if !app.nav.watcherRenew {
-					app.nav.watcherRenew = true
-					app.nav.watcherRenewTimer.Stop()
-					app.nav.watcherRenewTimer.Reset(10 * time.Millisecond)
-				}
+				dir := filepath.Dir(ev.Name)
+				app.watch.addLoad(dir)
+				app.watch.addUpdate(dir)
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				if !app.nav.watcherWrites[ev.Name] {
-					app.nav.watcherWrites[ev.Name] = true
-					app.nav.watcherWriteTimer.Stop()
-					app.nav.watcherWriteTimer.Reset(10 * time.Millisecond)
-				}
+				app.watch.addUpdate(ev.Name)
 			}
-		case <-app.nav.watcherRenewTimer.C:
+		case <-app.watch.loadTimer.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
 			app.ui.draw(app.nav)
-			app.nav.watcherRenew = false
-		case <-app.nav.watcherWriteTimer.C:
-			for path := range app.nav.watcherWrites {
+			app.watch.loads = make(map[string]bool)
+		case <-app.watch.updateTimer.C:
+			for path := range app.watch.updates {
 				app.updateFile(path)
-				currFile, err := app.nav.currFile()
-				if err == nil && currFile.path == path {
+				if currFile, err := app.nav.currFile(); err == nil && currFile.path == path {
 					app.nav.startPreview()
 					app.nav.previewChan <- path
 				}
 				app.ui.draw(app.nav)
 			}
-			app.nav.watcherWrites = make(map[string]bool)
+			app.watch.updates = make(map[string]bool)
 		}
 	}
 }
@@ -623,6 +616,25 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
+}
+
+func (app *app) setWatchPaths() {
+	if !gOpts.watch || len(app.nav.dirs) == 0 {
+		return
+	}
+
+	paths := make(map[string]bool)
+	for _, dir := range app.nav.dirs {
+		paths[dir.path] = true
+	}
+
+	for _, file := range app.nav.currDir().allFiles {
+		if file.IsDir() {
+			paths[file.path] = true
+		}
+	}
+
+	app.watch.set(paths)
 }
 
 func (app *app) updateFile(path string) {

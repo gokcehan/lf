@@ -200,10 +200,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.watch, e)
 		if err == nil {
 			if gOpts.watch {
-				app.nav.startWatcher()
-				app.nav.setWatches()
+				app.watch.start()
+				app.setWatchPaths()
 			} else {
-				app.nav.stopWatcher()
+				app.watch.stop()
 			}
 		}
 	case "wrapscan", "nowrapscan", "wrapscan!":
@@ -573,7 +573,7 @@ func preChdir(app *app) {
 
 func onChdir(app *app) {
 	app.nav.addJumpList()
-	app.nav.setWatches()
+	app.setWatchPaths()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
 	}

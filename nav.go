@@ -16,7 +16,6 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
-	"github.com/fsnotify/fsnotify"
 )
 
 type linkState byte
@@ -418,55 +417,49 @@ func (dir *dir) boundPos(height int) {
 }
 
 type nav struct {
-	init              bool
-	dirs              []*dir
-	copyBytes         int64
-	copyTotal         int64
-	copyUpdate        int
-	moveCount         int
-	moveTotal         int
-	moveUpdate        int
-	deleteCount       int
-	deleteTotal       int
-	deleteUpdate      int
-	copyBytesChan     chan int64
-	copyTotalChan     chan int64
-	moveCountChan     chan int
-	moveTotalChan     chan int
-	deleteCountChan   chan int
-	deleteTotalChan   chan int
-	previewChan       chan string
-	dirPreviewChan    chan *dir
-	dirChan           chan *dir
-	regChan           chan *reg
-	dirCache          map[string]*dir
-	regCache          map[string]*reg
-	saves             map[string]bool
-	marks             map[string]string
-	renameOldPath     string
-	renameNewPath     string
-	selections        map[string]int
-	tags              map[string]string
-	selectionInd      int
-	height            int
-	find              string
-	findBack          bool
-	search            string
-	searchBack        bool
-	searchInd         int
-	searchPos         int
-	prevFilter        []string
-	volatilePreview   bool
-	previewTimer      *time.Timer
-	previewLoading    bool
-	jumpList          []string
-	jumpListInd       int
-	watcher           *fsnotify.Watcher
-	watcherEvents     <-chan fsnotify.Event
-	watcherRenew      bool
-	watcherWrites     map[string]bool
-	watcherRenewTimer *time.Timer
-	watcherWriteTimer *time.Timer
+	init            bool
+	dirs            []*dir
+	copyBytes       int64
+	copyTotal       int64
+	copyUpdate      int
+	moveCount       int
+	moveTotal       int
+	moveUpdate      int
+	deleteCount     int
+	deleteTotal     int
+	deleteUpdate    int
+	copyBytesChan   chan int64
+	copyTotalChan   chan int64
+	moveCountChan   chan int
+	moveTotalChan   chan int
+	deleteCountChan chan int
+	deleteTotalChan chan int
+	previewChan     chan string
+	dirPreviewChan  chan *dir
+	dirChan         chan *dir
+	regChan         chan *reg
+	dirCache        map[string]*dir
+	regCache        map[string]*reg
+	saves           map[string]bool
+	marks           map[string]string
+	renameOldPath   string
+	renameNewPath   string
+	selections      map[string]int
+	tags            map[string]string
+	selectionInd    int
+	height          int
+	find            string
+	findBack        bool
+	search          string
+	searchBack      bool
+	searchInd       int
+	searchPos       int
+	prevFilter      []string
+	volatilePreview bool
+	previewTimer    *time.Timer
+	previewLoading  bool
+	jumpList        []string
+	jumpListInd     int
 }
 
 func (nav *nav) loadDirInternal(path string) *dir {
@@ -582,31 +575,27 @@ func (nav *nav) getDirs(wd string) {
 
 func newNav(height int) *nav {
 	nav := &nav{
-		copyBytesChan:     make(chan int64, 1024),
-		copyTotalChan:     make(chan int64, 1024),
-		moveCountChan:     make(chan int, 1024),
-		moveTotalChan:     make(chan int, 1024),
-		deleteCountChan:   make(chan int, 1024),
-		deleteTotalChan:   make(chan int, 1024),
-		previewChan:       make(chan string, 1024),
-		dirPreviewChan:    make(chan *dir, 1024),
-		dirChan:           make(chan *dir),
-		regChan:           make(chan *reg),
-		dirCache:          make(map[string]*dir),
-		regCache:          make(map[string]*reg),
-		saves:             make(map[string]bool),
-		marks:             make(map[string]string),
-		selections:        make(map[string]int),
-		tags:              make(map[string]string),
-		selectionInd:      0,
-		height:            height,
-		previewTimer:      time.NewTimer(0),
-		jumpList:          make([]string, 0),
-		jumpListInd:       -1,
-		watcherRenew:      false,
-		watcherWrites:     make(map[string]bool),
-		watcherRenewTimer: time.NewTimer(0),
-		watcherWriteTimer: time.NewTimer(0),
+		copyBytesChan:   make(chan int64, 1024),
+		copyTotalChan:   make(chan int64, 1024),
+		moveCountChan:   make(chan int, 1024),
+		moveTotalChan:   make(chan int, 1024),
+		deleteCountChan: make(chan int, 1024),
+		deleteTotalChan: make(chan int, 1024),
+		previewChan:     make(chan string, 1024),
+		dirPreviewChan:  make(chan *dir, 1024),
+		dirChan:         make(chan *dir),
+		regChan:         make(chan *reg),
+		dirCache:        make(map[string]*dir),
+		regCache:        make(map[string]*reg),
+		saves:           make(map[string]bool),
+		marks:           make(map[string]string),
+		selections:      make(map[string]int),
+		tags:            make(map[string]string),
+		selectionInd:    0,
+		height:          height,
+		previewTimer:    time.NewTimer(0),
+		jumpList:        make([]string, 0),
+		jumpListInd:     -1,
 	}
 
 	return nav
@@ -2070,57 +2059,4 @@ func (nav *nav) calcDirSize() error {
 	}
 
 	return nil
-}
-
-func (nav *nav) startWatcher() {
-	if nav.watcher != nil {
-		return
-	}
-
-	watcher, err := fsnotify.NewWatcher()
-	if err != nil {
-		log.Printf("start watcher: %s", err)
-		return
-	}
-
-	nav.watcher = watcher
-	nav.watcherEvents = watcher.Events
-}
-
-func (nav *nav) stopWatcher() {
-	if nav.watcher == nil {
-		return
-	}
-
-	nav.watcher.Close()
-
-	nav.watcher = nil
-	nav.watcherEvents = nil
-}
-
-func (nav *nav) setWatches() {
-	if nav.watcher == nil || len(nav.dirs) == 0 {
-		return
-	}
-
-	watches := make(map[string]bool)
-	for _, dir := range nav.dirs {
-		watches[dir.path] = true
-	}
-
-	for _, file := range nav.currDir().allFiles {
-		if file.IsDir() {
-			watches[file.path] = true
-		}
-	}
-
-	for _, watch := range nav.watcher.WatchList() {
-		if !watches[watch] {
-			nav.watcher.Remove(watch)
-		}
-	}
-
-	for watch := range watches {
-		nav.watcher.Add(watch)
-	}
 }
