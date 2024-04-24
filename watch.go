@@ -70,7 +70,7 @@ func (watch *watch) set(paths map[string]bool) {
 func (watch *watch) addLoad(path string) {
 	if len(watch.loads) == 0 {
 		watch.loadTimer.Stop()
-		watch.loadTimer.Reset(10 * time.Millisecond)
+		watch.loadTimer.Reset(100 * time.Millisecond)
 	}
 	watch.loads[path] = true
 }
@@ -78,7 +78,7 @@ func (watch *watch) addLoad(path string) {
 func (watch *watch) addUpdate(path string) {
 	if len(watch.updates) == 0 {
 		watch.updateTimer.Stop()
-		watch.updateTimer.Reset(10 * time.Millisecond)
+		watch.updateTimer.Reset(100 * time.Millisecond)
 	}
 	watch.updates[path] = true
 }
