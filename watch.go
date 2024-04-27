@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"path/filepath"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -10,18 +11,24 @@ import (
 type watch struct {
 	watcher     *fsnotify.Watcher
 	events      <-chan fsnotify.Event
+	quit        chan struct{}
 	loads       map[string]bool
 	loadTimer   *time.Timer
 	updates     map[string]bool
 	updateTimer *time.Timer
+	dirChan     chan<- *dir
+	fileChan    chan<- *file
 }
 
-func newWatch() *watch {
+func newWatch(dirChan chan<- *dir, fileChan chan<- *file) *watch {
 	return &watch{
+		quit:        make(chan struct{}),
 		loads:       make(map[string]bool),
 		loadTimer:   time.NewTimer(0),
 		updates:     make(map[string]bool),
 		updateTimer: time.NewTimer(0),
+		dirChan:     dirChan,
+		fileChan:    fileChan,
 	}
 }
 
@@ -38,6 +45,8 @@ func (watch *watch) start() {
 
 	watch.watcher = watcher
 	watch.events = watcher.Events
+
+	go watch.loop()
 }
 
 func (watch *watch) stop() {
@@ -45,6 +54,7 @@ func (watch *watch) stop() {
 		return
 	}
 
+	watch.quit <- struct{}{}
 	watch.watcher.Close()
 
 	watch.watcher = nil
@@ -67,10 +77,41 @@ func (watch *watch) set(paths map[string]bool) {
 	}
 }
 
+func (watch *watch) loop() {
+	for {
+		select {
+		case ev := <-watch.events:
+			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				dir := filepath.Dir(ev.Name)
+				watch.addLoad(dir)
+				watch.addUpdate(dir)
+			}
+
+			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
+				watch.addUpdate(ev.Name)
+			}
+		case <-watch.loadTimer.C:
+			for path := range watch.loads {
+				dir := newDir(path)
+				dir.sort()
+				watch.dirChan <- dir
+			}
+			watch.loads = make(map[string]bool)
+		case <-watch.updateTimer.C:
+			for path := range watch.updates {
+				watch.fileChan <- newFile(path)
+			}
+			watch.updates = make(map[string]bool)
+		case <-watch.quit:
+			return
+		}
+	}
+}
+
 func (watch *watch) addLoad(path string) {
 	if len(watch.loads) == 0 {
 		watch.loadTimer.Stop()
-		watch.loadTimer.Reset(100 * time.Millisecond)
+		watch.loadTimer.Reset(10 * time.Millisecond)
 	}
 	watch.loads[path] = true
 }
@@ -78,7 +119,7 @@ func (watch *watch) addLoad(path string) {
 func (watch *watch) addUpdate(path string) {
 	if len(watch.updates) == 0 {
 		watch.updateTimer.Stop()
-		watch.updateTimer.Reset(100 * time.Millisecond)
+		watch.updateTimer.Reset(10 * time.Millisecond)
 	}
 	watch.updates[path] = true
 }

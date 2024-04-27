@@ -12,8 +12,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	"github.com/fsnotify/fsnotify"
 )
 
 type cmdItem struct {
@@ -47,7 +45,7 @@ func newApp(ui *ui, nav *nav) *app {
 		nav:      nav,
 		ticker:   new(time.Ticker),
 		quitChan: quitChan,
-		watch:    newWatch(),
+		watch:    newWatch(nav.dirChan, nav.fileChan),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -427,6 +425,31 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
+		case f := <-app.nav.fileChan:
+			dirs := app.nav.dirs
+			if app.ui.dirPrev != nil {
+				dirs = append(dirs, app.ui.dirPrev)
+			}
+
+			for _, dir := range dirs {
+				if dir.path != filepath.Dir(f.path) {
+					continue
+				}
+
+				for i := range dir.allFiles {
+					if dir.allFiles[i].path == f.path {
+						dir.allFiles[i] = f
+						break
+					}
+				}
+
+				name := dir.name()
+				dir.sort()
+				dir.sel(name, app.nav.height)
+			}
+
+			app.ui.loadFile(app, false)
+			app.ui.draw(app.nav)
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
@@ -459,36 +482,6 @@ func (app *app) loop() {
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
-		case ev := <-app.watch.events:
-			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
-				dir := filepath.Dir(ev.Name)
-				app.watch.addLoad(dir)
-				app.watch.addUpdate(dir)
-			}
-
-			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				app.watch.addUpdate(ev.Name)
-			}
-		case <-app.watch.loadTimer.C:
-			for path := range app.watch.loads {
-				go func(path string) {
-					dir := newDir(path)
-					dir.sort()
-					app.nav.dirChan <- dir
-				}(path)
-			}
-			app.ui.draw(app.nav)
-			app.watch.loads = make(map[string]bool)
-		case <-app.watch.updateTimer.C:
-			for path := range app.watch.updates {
-				app.updateFile(path)
-				if currFile, err := app.nav.currFile(); err == nil && currFile.path == path {
-					app.nav.startPreview()
-					app.nav.previewChan <- path
-				}
-				app.ui.draw(app.nav)
-			}
-			app.watch.updates = make(map[string]bool)
 		}
 	}
 }
@@ -640,28 +633,4 @@ func (app *app) setWatchPaths() {
 	}
 
 	app.watch.set(paths)
-}
-
-func (app *app) updateFile(path string) {
-	dirs := app.nav.dirs
-	if app.ui.dirPrev != nil {
-		dirs = append(dirs, app.ui.dirPrev)
-	}
-
-	for _, dir := range dirs {
-		if dir.path != filepath.Dir(path) {
-			continue
-		}
-
-		for i := range dir.allFiles {
-			if dir.allFiles[i].path == path {
-				dir.allFiles[i] = newFile(path)
-				break
-			}
-		}
-
-		name := dir.name()
-		dir.sort()
-		dir.sel(name, app.nav.height)
-	}
 }
