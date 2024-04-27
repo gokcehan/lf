@@ -88,7 +88,7 @@ func readdir(path string) ([]*file, error) {
 				dirSize:    -1,
 				accessTime: time.Unix(0, 0),
 				changeTime: time.Unix(0, 0),
-				ext:        getFileExtension(lstat),
+				ext:        "",
 				err:        err,
 			})
 			continue
