@@ -53,7 +53,7 @@ func newFile(path string) *file {
 			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
-			ext:        filepath.Ext(path),
+			ext:        "",
 			err:        err,
 		}
 	}
