@@ -16,6 +16,8 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
 )
 
 type linkState byte
@@ -193,27 +195,28 @@ func newDir(path string) *dir {
 	}
 }
 
-func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
-	if ignorecase {
-		s1 = strings.ToLower(s1)
-		s2 = strings.ToLower(s2)
-	}
-	if ignoredia {
-		s1 = removeDiacritics(s1)
-		s2 = removeDiacritics(s2)
-	}
-	return s1, s2
-}
-
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dirfirst = getDirFirst(dir.path)
 	dir.dironly = getDirOnly(dir.path)
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
+
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
+
+	collopts := []collate.Option{}
+	if dir.ignorecase {
+		collopts = append(collopts, collate.IgnoreCase)
+	}
+	if dir.ignoredia {
+		collopts = append(collopts, collate.IgnoreDiacritics)
+	}
+	if dir.sortby == naturalSort {
+		collopts = append(collopts, collate.Numeric)
+	}
+	coll := collate.New(language.English, collopts...)
 
 	dir.files = dir.allFiles
 
@@ -222,20 +225,18 @@ func (dir *dir) sort() {
 	switch dir.sortby {
 	case naturalSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
 			if !dir.reverse {
-				return naturalLess(s1, s2)
+				return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
 			} else {
-				return naturalLess(s2, s1)
+				return coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
 			}
 		})
 	case nameSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
 			if !dir.reverse {
-				return s1 < s2
+				return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
 			} else {
-				return s2 < s1
+				return coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
 			}
 		})
 	case sizeSort:
@@ -272,7 +273,7 @@ func (dir *dir) sort() {
 		})
 	case extSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
-			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext, dir.ignorecase, dir.ignoredia)
+			ext1, ext2 := dir.files[i].ext, dir.files[j].ext
 
 			// if the extension could not be determined (directories, files without)
 			// use a zero byte so that these files can be ranked higher
@@ -283,14 +284,16 @@ func (dir *dir) sort() {
 				ext2 = "\x00"
 			}
 
-			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
 			if !dir.reverse {
-				return ext1 < ext2 || ext1 == ext2 && name1 < name2
+				extcmp := coll.CompareString(ext1, ext2)
+				return extcmp == -1 || extcmp == 0 &&
+					coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
 			} else {
-				return ext2 < ext1 || ext2 == ext1 && name2 < name1
+				extcmp := coll.CompareString(ext2, ext1)
+				return extcmp == -1 || extcmp == 0 &&
+					coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
 			}
 		})
 	}
