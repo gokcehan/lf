@@ -276,15 +276,6 @@ func (dir *dir) sort() {
 	}
 	sort.SliceStable(dir.files, lessfun)
 
-	if dir.dirfirst {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if dir.files[i].IsDir() == dir.files[j].IsDir() {
-				return i < j
-			}
-			return dir.files[i].IsDir()
-		})
-	}
-
 	// when dironly option is enabled, we move files to the beginning of our file
 	// list and then set the beginning of displayed files to the first directory
 	// in the list
@@ -303,6 +294,13 @@ func (dir *dir) sort() {
 			}
 			return dir.files[len(dir.files):]
 		}()
+	} else if dir.dirfirst {
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			if dir.files[i].IsDir() == dir.files[j].IsDir() {
+				return i < j
+			}
+			return dir.files[i].IsDir()
+		})
 	}
 
 	// when hidden option is disabled, we move hidden files to the
