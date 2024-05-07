@@ -220,59 +220,35 @@ func (dir *dir) sort() {
 
 	dir.files = dir.allFiles
 
-	// reverse order cannot be applied after stable sorting, otherwise the order
-	// of equivalent elements will be reversed
+	var lessfun func(i, j int) bool
+
 	switch dir.sortby {
 	case naturalSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
-			} else {
-				return coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+		}
 	case nameSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
-			} else {
-				return coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+		}
 	case sizeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
-			} else {
-				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+		}
 	case timeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].ModTime().Before(dir.files[j].ModTime())
-			} else {
-				return dir.files[j].ModTime().Before(dir.files[i].ModTime())
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+		}
 	case atimeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].accessTime.Before(dir.files[j].accessTime)
-			} else {
-				return dir.files[j].accessTime.Before(dir.files[i].accessTime)
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+		}
 	case ctimeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].changeTime.Before(dir.files[j].changeTime)
-			} else {
-				return dir.files[j].changeTime.Before(dir.files[i].changeTime)
-			}
-		})
+		lessfun = func(i, j int) bool {
+			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+		}
 	case extSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
+		lessfun = func(i, j int) bool {
 			ext1, ext2 := dir.files[i].ext, dir.files[j].ext
 
 			// if the extension could not be determined (directories, files without)
@@ -286,17 +262,19 @@ func (dir *dir) sort() {
 
 			// in order to also have natural sorting with the filenames
 			// combine the name with the ext but have the ext at the front
-			if !dir.reverse {
-				extcmp := coll.CompareString(ext1, ext2)
-				return extcmp == -1 || extcmp == 0 &&
-					coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
-			} else {
-				extcmp := coll.CompareString(ext2, ext1)
-				return extcmp == -1 || extcmp == 0 &&
-					coll.CompareString(dir.files[j].Name(), dir.files[i].Name()) == -1
-			}
-		})
+			extcmp := coll.CompareString(ext1, ext2)
+			return extcmp == -1 || extcmp == 0 &&
+				coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+		}
 	}
+
+	if dir.reverse {
+		oldlessfun := lessfun // In order to capture lessfun by value
+		lessfun = func(i, j int) bool {
+			return oldlessfun(j, i)
+		}
+	}
+	sort.SliceStable(dir.files, lessfun)
 
 	if dir.dirfirst {
 		sort.SliceStable(dir.files, func(i, j int) bool {
