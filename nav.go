@@ -201,10 +201,51 @@ func (dir *dir) sort() {
 	dir.dironly = getDirOnly(dir.path)
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
-
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
+
+	dir.files = dir.allFiles
+
+	var filterFun func(*file) bool = nil
+	addFilter := func(fun func(*file) bool) {
+		if filterFun == nil {
+			filterFun = fun
+		} else {
+			oldFilterFun := filterFun
+			filterFun = func(f *file) bool {
+				return oldFilterFun(f) && fun(f)
+			}
+		}
+	}
+
+	if dir.dironly {
+		addFilter(func(f *file) bool {
+			return f.IsDir()
+		})
+	}
+
+	if !dir.hidden {
+		addFilter(func(f *file) bool {
+			return !isHidden(f, dir.path, dir.hiddenfiles)
+		})
+	}
+
+	if len(dir.filter) != 0 {
+		addFilter(func(f *file) bool {
+			return !isFiltered(f, dir.filter)
+		})
+	}
+
+	if filterFun != nil {
+		var filtered []*file
+		for _, file := range dir.files {
+			if filterFun(file) {
+				filtered = append(filtered, file)
+			}
+		}
+		dir.files = filtered
+	}
 
 	collopts := []collate.Option{}
 	if dir.ignorecase {
@@ -216,18 +257,12 @@ func (dir *dir) sort() {
 	if dir.sortby == naturalSort {
 		collopts = append(collopts, collate.Numeric)
 	}
-	coll := collate.New(language.English, collopts...)
-
-	dir.files = dir.allFiles
+	coll := collate.New(language.Und, collopts...)
 
 	var lessfun func(i, j int) bool
 
 	switch dir.sortby {
-	case naturalSort:
-		lessfun = func(i, j int) bool {
-			return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
-		}
-	case nameSort:
+	case nameSort, naturalSort:
 		lessfun = func(i, j int) bool {
 			return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
 		}
@@ -249,53 +284,21 @@ func (dir *dir) sort() {
 		}
 	case extSort:
 		lessfun = func(i, j int) bool {
-			ext1, ext2 := dir.files[i].ext, dir.files[j].ext
-
-			// if the extension could not be determined (directories, files without)
-			// use a zero byte so that these files can be ranked higher
-			if ext1 == "" {
-				ext1 = "\x00"
-			}
-			if ext2 == "" {
-				ext2 = "\x00"
-			}
-
-			// in order to also have natural sorting with the filenames
-			// combine the name with the ext but have the ext at the front
-			extcmp := coll.CompareString(ext1, ext2)
-			return extcmp == -1 || extcmp == 0 &&
-				coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+			cmp := coll.CompareString(dir.files[i].ext, dir.files[j].ext)
+			return cmp == -1 || cmp == 0 && coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
 		}
 	}
 
 	if dir.reverse {
-		oldlessfun := lessfun // In order to capture lessfun by value
+		oldlessfun := lessfun
 		lessfun = func(i, j int) bool {
 			return oldlessfun(j, i)
 		}
 	}
 
-	// when dironly option is enabled, we move files to the beginning of our file
-	// list and then set the beginning of displayed files to the first directory
-	// in the list
-	if dir.dironly {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.files[i].IsDir() && !dir.files[j].IsDir() {
-				return i < j
-			}
-			return !dir.files[i].IsDir()
-		})
-		dir.files = func() []*file {
-			for i, f := range dir.files {
-				if f.IsDir() {
-					return dir.files[i:]
-				}
-			}
-			return dir.files[len(dir.files):]
-		}()
-	} else if dir.dirfirst {
+	if dir.dirfirst && !dir.dironly {
 		oldlessfun := lessfun
-		lessfun =  func(i, j int) bool {
+		lessfun = func(i, j int) bool {
 			if dir.files[i].IsDir() == dir.files[j].IsDir() {
 				return oldlessfun(i, j)
 			}
@@ -303,46 +306,6 @@ func (dir *dir) sort() {
 		}
 	}
 
-	// when hidden option is disabled, we move hidden files to the
-	// beginning of our file list and then set the beginning of displayed
-	// files to the first non-hidden file in the list
-	if !dir.hidden {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isHidden(dir.files[i], dir.path, dir.hiddenfiles) && isHidden(dir.files[j], dir.path, dir.hiddenfiles) {
-				return i < j
-			}
-			return isHidden(dir.files[i], dir.path, dir.hiddenfiles)
-		})
-		for i, f := range dir.files {
-			if !isHidden(f, dir.path, dir.hiddenfiles) {
-				dir.files = dir.files[i:]
-				break
-			}
-		}
-		if len(dir.files) > 0 && isHidden(dir.files[len(dir.files)-1], dir.path, dir.hiddenfiles) {
-			dir.files = dir.files[len(dir.files):]
-		}
-	}
-
-	if len(dir.filter) != 0 {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isFiltered(dir.files[i], dir.filter) && isFiltered(dir.files[j], dir.filter) {
-				return i < j
-			}
-			return isFiltered(dir.files[i], dir.filter)
-		})
-		for i, f := range dir.files {
-			if !isFiltered(f, dir.filter) {
-				dir.files = dir.files[i:]
-				break
-			}
-		}
-		if len(dir.files) > 0 && isFiltered(dir.files[len(dir.files)-1], dir.filter) {
-			dir.files = dir.files[len(dir.files):]
-		}
-	}
-
-	// Finally sort after filtering it all
 	sort.SliceStable(dir.files, lessfun)
 
 	dir.ind = max(dir.ind, 0)
