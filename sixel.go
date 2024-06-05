@@ -21,21 +21,16 @@ const (
 )
 
 type sixelScreen struct {
-	xprev, yprev int
-	sixel        *string
-	altFill      bool
-	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
+	win      *win
+	sixel    *string
+	lastFile string // TODO maybe use hash of sixels instead
 }
 
-func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
-	if sxs.lastFile != filePath {
-		sxs.altFill = !sxs.altFill
+func (sxs *sixelScreen) clearSixels(screen tcell.Screen) {
+	win := sxs.win
+	for y := 0; y < win.h; y++ {
+		win.print(screen, 0, y, tcell.StyleDefault, strings.Repeat(string(gSixelFiller), win.w))
 	}
-
-	if sxs.altFill {
-		return tcell.StyleDefault.Bold(true)
-	}
-	return tcell.StyleDefault
 }
 
 func (sxs *sixelScreen) showSixels() {
@@ -43,27 +38,8 @@ func (sxs *sixelScreen) showSixels() {
 		return
 	}
 
-	// XXX: workaround for bug where quitting lf might leave the terminal in bold
-	fmt.Fprint(os.Stderr, "\033[0m")
-
-	fmt.Fprint(os.Stderr, "\0337")                              // Save cursor position
-	fmt.Fprintf(os.Stderr, "\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
-	fmt.Fprint(os.Stderr, *sxs.sixel)                           //
-	fmt.Fprint(os.Stderr, "\0338")                              // Restore cursor position
-}
-
-func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
-	if reg.sixel == nil {
-		return
-	}
-
-	// HACK: fillers are used to control when tcell redraws the region where a sixel image is drawn.
-	// alternating between bold and regular is to clear the image before drawing a new one.
-	st := sxs.fillerStyle(reg.path)
-	for y := 0; y < win.h; y++ {
-		st = win.print(screen, 0, y, st, strings.Repeat(string(gSixelFiller), win.w))
-	}
-
-	sxs.xprev, sxs.yprev = win.x+1, win.y+1
-	sxs.sixel = reg.sixel
+	fmt.Fprint(os.Stderr, "\0337")                                  // Save cursor position
+	fmt.Fprintf(os.Stderr, "\033[%d;%dH", sxs.win.y+1, sxs.win.x+1) // Move cursor to position
+	fmt.Fprint(os.Stderr, *sxs.sixel)                               //
+	fmt.Fprint(os.Stderr, "\0338")                                  // Restore cursor position
 }
