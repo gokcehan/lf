@@ -30,9 +30,9 @@ func (sxs *sixelScreen) clearSixels(screen tcell.Screen) {
 		return
 	}
 
-	win := sxs.win
-	for y := 0; y < win.h; y++ {
-		win.print(screen, 0, y, tcell.StyleDefault, strings.Repeat(string(gSixelFiller), win.w))
+	filler := strings.Repeat(string(gSixelFiller), sxs.win.w)
+	for y := 0; y < sxs.win.h; y++ {
+		sxs.win.print(screen, 0, y, tcell.StyleDefault, filler)
 	}
 
 	sxs.sixel = nil
