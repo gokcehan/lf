@@ -15,8 +15,7 @@ const (
 	// - rarely used: the filler is used to trick tcell into redrawing, if the
 	//   filler character appears in the user's preview, that cell might not
 	//   be cleaned up properly
-	// - ideally renders as empty space: the filler alternates between bold
-	//   and regular, using a non-space would look weird to the user.
+	// - ideally renders as empty space
 	gSixelFiller = '\u2000'
 )
 
