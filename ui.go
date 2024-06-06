@@ -268,8 +268,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 	}
 
 	if reg.sixel != nil {
-		sxs.sixel = reg.sixel
-		sxs.win = win
+		sxs.setSixels(win, reg.sixel)
 	} else {
 		sxs.clearSixels(screen)
 	}
@@ -1032,7 +1031,6 @@ func (ui *ui) draw(nav *nav) {
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
 	ui.screen.Clear()
-	ui.sxScreen.sixel = nil
 
 	ui.drawPromptLine(nav)
 
@@ -1076,7 +1074,7 @@ func (ui *ui) draw(nav *nav) {
 		if err == nil {
 			preview := ui.wins[len(ui.wins)-1]
 
-			if ui.menuBuf != nil || ui.cmdPrefix != "" {
+			if ui.menuBuf != nil {
 				ui.sxScreen.clearSixels(ui.screen)
 			}
 
@@ -1116,12 +1114,8 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
-		if ui.regPrev.path != ui.sxScreen.lastFile {
-			ui.sxScreen.clearSixels(ui.screen)
-		}
-		ui.sxScreen.showSixels()
-		ui.sxScreen.lastFile = ui.regPrev.path
+	if ui.menuBuf == nil && ui.sxScreen.sixel != nil {
+		ui.sxScreen.showSixels(ui.screen, ui.regPrev.path)
 	}
 }
 
