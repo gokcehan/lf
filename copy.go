@@ -47,7 +47,7 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 		}
 	}
 
-	buf := make([]byte, 4096)
+	buf := make([]byte, 32*1024)
 
 	r, err := os.Open(src)
 	if err != nil {
