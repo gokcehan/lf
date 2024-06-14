@@ -332,7 +332,7 @@ func (app *app) loop() {
 			return
 		case n := <-app.nav.copyBytesChan:
 			app.nav.copyBytes += n
-			// n is usually 4096B so update roughly per 4096B x 1024 = 4MB copied
+			// n is usually 32*1024B (default io.Copy() buffer) so update roughly per 32KB x 1024 = 32MB copied
 			if app.nav.copyUpdate++; app.nav.copyUpdate >= 1024 {
 				app.nav.copyUpdate = 0
 				app.ui.draw(app.nav)
