@@ -77,9 +77,7 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 	}
 
 	_, err = io.Copy(NewProgressWriter(w, nums), r)
-	if err == io.ErrShortWrite {
-		return err
-	} else if err != nil {
+	if err != nil {
 		w.Close()
 		os.Remove(dst)
 		return err
