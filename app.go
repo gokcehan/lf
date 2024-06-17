@@ -388,6 +388,11 @@ func (app *app) loop() {
 				app.nav.dirCache[d.path] = d
 			}
 
+			var oldCurrPath string
+			if curr, err := app.nav.currFile(); err == nil {
+				oldCurrPath = curr.path
+			}
+
 			for i := range app.nav.dirs {
 				if app.nav.dirs[i].path == d.path {
 					app.nav.dirs[i] = d
@@ -398,7 +403,7 @@ func (app *app) loop() {
 
 			curr, err := app.nav.currFile()
 			if err == nil {
-				if d.path == app.nav.currDir().path {
+				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
 					if app.ui.msgIsStat {
 						app.ui.loadFileInfo(app.nav)
