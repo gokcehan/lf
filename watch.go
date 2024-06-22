@@ -18,9 +18,10 @@ type watch struct {
 	updateTimer *time.Timer
 	dirChan     chan<- *dir
 	fileChan    chan<- *file
+	delChan     chan<- string
 }
 
-func newWatch(dirChan chan<- *dir, fileChan chan<- *file) *watch {
+func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
 	return &watch{
 		quit:        make(chan struct{}),
 		loads:       make(map[string]bool),
@@ -29,6 +30,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file) *watch {
 		updateTimer: time.NewTimer(0),
 		dirChan:     dirChan,
 		fileChan:    fileChan,
+		delChan:     delChan,
 	}
 }
 
@@ -81,7 +83,14 @@ func (watch *watch) loop() {
 	for {
 		select {
 		case ev := <-watch.events:
-			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+			if ev.Has(fsnotify.Create) {
+				dir := filepath.Dir(ev.Name)
+				watch.addLoad(dir)
+				watch.addUpdate(dir)
+			}
+
+			if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				watch.delChan <- ev.Name
 				dir := filepath.Dir(ev.Name)
 				watch.addLoad(dir)
 				watch.addUpdate(dir)

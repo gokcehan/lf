@@ -45,7 +45,7 @@ func newApp(ui *ui, nav *nav) *app {
 		nav:      nav,
 		ticker:   new(time.Ticker),
 		quitChan: quitChan,
-		watch:    newWatch(nav.dirChan, nav.fileChan),
+		watch:    newWatch(nav.dirChan, nav.fileChan, nav.delChan),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -457,6 +457,9 @@ func (app *app) loop() {
 
 			app.ui.loadFile(app, false)
 			app.ui.draw(app.nav)
+		case path := <-app.nav.delChan:
+			delete(app.nav.dirCache, path)
+			delete(app.nav.regCache, path)
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
