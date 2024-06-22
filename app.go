@@ -34,6 +34,7 @@ type app struct {
 	menuComps      []string
 	menuCompInd    int
 	selectionOut   []string
+	watch          *watch
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -44,6 +45,7 @@ func newApp(ui *ui, nav *nav) *app {
 		nav:      nav,
 		ticker:   new(time.Ticker),
 		quitChan: quitChan,
+		watch:    newWatch(nav.dirChan, nav.fileChan),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -382,6 +384,8 @@ func (app *app) loop() {
 				if ok {
 					d.ind = prev.ind
 					d.pos = prev.pos
+					d.filter = prev.filter
+					d.sort()
 					d.sel(prev.name(), app.nav.height)
 				}
 
@@ -414,6 +418,8 @@ func (app *app) loop() {
 				}
 			}
 
+			app.setWatchPaths()
+
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
@@ -425,6 +431,31 @@ func (app *app) loop() {
 				}
 			}
 
+			app.ui.draw(app.nav)
+		case f := <-app.nav.fileChan:
+			dirs := app.nav.dirs
+			if app.ui.dirPrev != nil {
+				dirs = append(dirs, app.ui.dirPrev)
+			}
+
+			for _, dir := range dirs {
+				if dir.path != filepath.Dir(f.path) {
+					continue
+				}
+
+				for i := range dir.allFiles {
+					if dir.allFiles[i].path == f.path {
+						dir.allFiles[i] = f
+						break
+					}
+				}
+
+				name := dir.name()
+				dir.sort()
+				dir.sel(name, app.nav.height)
+			}
+
+			app.ui.loadFile(app, false)
 			app.ui.draw(app.nav)
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
@@ -590,4 +621,23 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
+}
+
+func (app *app) setWatchPaths() {
+	if !gOpts.watch || len(app.nav.dirs) == 0 {
+		return
+	}
+
+	paths := make(map[string]bool)
+	for _, dir := range app.nav.dirs {
+		paths[dir.path] = true
+	}
+
+	for _, file := range app.nav.currDir().allFiles {
+		if file.IsDir() {
+			paths[file.path] = true
+		}
+	}
+
+	app.watch.set(paths)
 }

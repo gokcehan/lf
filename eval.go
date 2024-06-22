@@ -196,6 +196,16 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "watch", "nowatch", "watch!":
+		err = applyBoolOpt(&gOpts.watch, e)
+		if err == nil {
+			if gOpts.watch {
+				app.watch.start()
+				app.setWatchPaths()
+			} else {
+				app.watch.stop()
+			}
+		}
 	case "wrapscan", "nowrapscan", "wrapscan!":
 		err = applyBoolOpt(&gOpts.wrapscan, e)
 	case "wrapscroll", "nowrapscroll", "wrapscroll!":
@@ -563,6 +573,7 @@ func preChdir(app *app) {
 
 func onChdir(app *app) {
 	app.nav.addJumpList()
+	app.setWatchPaths()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
 	}

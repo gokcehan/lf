@@ -39,6 +39,84 @@ type file struct {
 	err        error
 }
 
+func newFile(path string) *file {
+	lstat, err := os.Lstat(path)
+
+	if err != nil {
+		log.Printf("getting file information: %s", err)
+		return &file{
+			FileInfo:   &fakeStat{name: filepath.Base(path)},
+			linkState:  notLink,
+			linkTarget: "",
+			path:       path,
+			dirCount:   -1,
+			dirSize:    -1,
+			accessTime: time.Unix(0, 0),
+			changeTime: time.Unix(0, 0),
+			ext:        "",
+			err:        err,
+		}
+	}
+
+	var linkState linkState
+	var linkTarget string
+
+	if lstat.Mode()&os.ModeSymlink != 0 {
+		stat, err := os.Stat(path)
+		if err == nil {
+			linkState = working
+			lstat = stat
+		} else {
+			linkState = broken
+		}
+		linkTarget, err = os.Readlink(path)
+		if err != nil {
+			log.Printf("reading link target: %s", err)
+		}
+	}
+
+	ts := times.Get(lstat)
+	at := ts.AccessTime()
+	var ct time.Time
+	// from times docs: ChangeTime() panics unless HasChangeTime() is true
+	if ts.HasChangeTime() {
+		ct = ts.ChangeTime()
+	} else {
+		// fall back to ModTime if ChangeTime cannot be determined
+		ct = lstat.ModTime()
+	}
+
+	dirCount := -1
+	if lstat.IsDir() && gOpts.dircounts {
+		d, err := os.Open(path)
+		if err != nil {
+			dirCount = -2
+		} else {
+			names, err := d.Readdirnames(1000)
+			d.Close()
+
+			if names == nil && err != io.EOF {
+				dirCount = -2
+			} else {
+				dirCount = len(names)
+			}
+		}
+	}
+
+	return &file{
+		FileInfo:   lstat,
+		linkState:  linkState,
+		linkTarget: linkTarget,
+		path:       path,
+		dirCount:   dirCount,
+		dirSize:    -1,
+		accessTime: at,
+		changeTime: ct,
+		ext:        getFileExtension(lstat),
+		err:        nil,
+	}
+}
+
 func (file *file) TotalSize() int64 {
 	if file.IsDir() {
 		if file.dirSize >= 0 {
@@ -70,87 +148,7 @@ func readdir(path string) ([]*file, error) {
 
 	files := make([]*file, 0, len(names))
 	for _, fname := range names {
-		fpath := filepath.Join(path, fname)
-
-		lstat, err := os.Lstat(fpath)
-
-		if os.IsNotExist(err) {
-			continue
-		}
-		if err != nil {
-			log.Printf("getting file information: %s", err)
-			files = append(files, &file{
-				FileInfo:   &fakeStat{name: fname},
-				linkState:  notLink,
-				linkTarget: "",
-				path:       fpath,
-				dirCount:   -1,
-				dirSize:    -1,
-				accessTime: time.Unix(0, 0),
-				changeTime: time.Unix(0, 0),
-				ext:        "",
-				err:        err,
-			})
-			continue
-		}
-
-		var linkState linkState
-		var linkTarget string
-
-		if lstat.Mode()&os.ModeSymlink != 0 {
-			stat, err := os.Stat(fpath)
-			if err == nil {
-				linkState = working
-				lstat = stat
-			} else {
-				linkState = broken
-			}
-			linkTarget, err = os.Readlink(fpath)
-			if err != nil {
-				log.Printf("reading link target: %s", err)
-			}
-		}
-
-		ts := times.Get(lstat)
-		at := ts.AccessTime()
-		var ct time.Time
-		// from times docs: ChangeTime() panics unless HasChangeTime() is true
-		if ts.HasChangeTime() {
-			ct = ts.ChangeTime()
-		} else {
-			// fall back to ModTime if ChangeTime cannot be determined
-			ct = lstat.ModTime()
-		}
-
-		dirCount := -1
-		if lstat.IsDir() && gOpts.dircounts {
-			d, err := os.Open(fpath)
-			if err != nil {
-				dirCount = -2
-			} else {
-				names, err := d.Readdirnames(1000)
-				d.Close()
-
-				if names == nil && err != io.EOF {
-					dirCount = -2
-				} else {
-					dirCount = len(names)
-				}
-			}
-		}
-
-		files = append(files, &file{
-			FileInfo:   lstat,
-			linkState:  linkState,
-			linkTarget: linkTarget,
-			path:       fpath,
-			dirCount:   dirCount,
-			dirSize:    -1,
-			accessTime: at,
-			changeTime: ct,
-			ext:        getFileExtension(lstat),
-			err:        nil,
-		})
+		files = append(files, newFile(filepath.Join(path, fname)))
 	}
 
 	return files, err
@@ -440,6 +438,7 @@ type nav struct {
 	dirPreviewChan  chan *dir
 	dirChan         chan *dir
 	regChan         chan *reg
+	fileChan        chan *file
 	dirCache        map[string]*dir
 	regCache        map[string]*reg
 	saves           map[string]bool
@@ -530,8 +529,6 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.loadTime = now
 		go func() {
 			nd := newDir(dir.path)
-			nd.filter = dir.filter
-			nd.sort()
 			if gOpts.dirpreviews {
 				nav.dirPreviewChan <- nd
 			}
@@ -587,6 +584,7 @@ func newNav(height int) *nav {
 		dirPreviewChan:  make(chan *dir, 1024),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
+		fileChan:        make(chan *file),
 		dirCache:        make(map[string]*dir),
 		regCache:        make(map[string]*reg),
 		saves:           make(map[string]bool),
@@ -1564,7 +1562,13 @@ func (nav *nav) rename() error {
 	dir := nav.loadDir(filepath.Dir(newPath))
 
 	if dir.loading {
-		dir.files = append(dir.files, &file{FileInfo: lstat})
+		for i := range dir.allFiles {
+			if dir.allFiles[i].path == oldPath {
+				dir.allFiles[i] = &file{FileInfo: lstat}
+				break
+			}
+		}
+		dir.sort()
 	}
 
 	dir.sel(lstat.Name(), nav.height)

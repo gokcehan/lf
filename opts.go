@@ -66,6 +66,7 @@ var gOpts struct {
 	smartcase          bool
 	smartdia           bool
 	waitmsg            string
+	watch              bool
 	wrapscan           bool
 	wrapscroll         bool
 	findlen            int
@@ -213,6 +214,7 @@ func init() {
 	gOpts.smartcase = true
 	gOpts.smartdia = false
 	gOpts.waitmsg = "Press any key to continue"
+	gOpts.watch = false
 	gOpts.wrapscan = true
 	gOpts.wrapscroll = false
 	gOpts.findlen = 1
