@@ -456,6 +456,9 @@ func (app *app) loop() {
 			}
 
 			app.ui.loadFile(app, false)
+			if app.ui.msgIsStat {
+				app.ui.loadFileInfo(app.nav)
+			}
 			app.ui.draw(app.nav)
 		case path := <-app.nav.delChan:
 			delete(app.nav.dirCache, path)
