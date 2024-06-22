@@ -1530,7 +1530,7 @@ func (nav *nav) del(app *app) error {
 		if gSingleMode {
 			nav.renew()
 			app.ui.loadFile(app, true)
-		} else if !gOpts.watch {
+		} else {
 			if err := remote("send load"); err != nil {
 				errCount++
 				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
