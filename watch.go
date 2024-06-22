@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -101,6 +102,9 @@ func (watch *watch) loop() {
 			}
 		case <-watch.loadTimer.C:
 			for path := range watch.loads {
+				if _, err := os.Lstat(path); err != nil {
+					continue
+				}
 				dir := newDir(path)
 				dir.sort()
 				watch.dirChan <- dir
@@ -108,6 +112,9 @@ func (watch *watch) loop() {
 			watch.loads = make(map[string]bool)
 		case <-watch.updateTimer.C:
 			for path := range watch.updates {
+				if _, err := os.Lstat(path); err != nil {
+					continue
+				}
 				watch.fileChan <- newFile(path)
 			}
 			watch.updates = make(map[string]bool)
