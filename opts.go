@@ -237,7 +237,7 @@ func init() {
 	gOpts.truncatechar = "~"
 	gOpts.truncatepct = 100
 	gOpts.ratios = []int{1, 2, 3}
-	gOpts.hiddenfiles = []string{".*"}
+	gOpts.hiddenfiles = gDefaultHiddenFiles
 	gOpts.history = true
 	gOpts.info = nil
 	gOpts.ruler = nil

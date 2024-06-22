@@ -11,6 +11,24 @@ import (
 	"github.com/djherbis/times"
 )
 
+type ProgressWriter struct {
+	writer io.Writer
+	nums   chan<- int64
+}
+
+func NewProgressWriter(writer io.Writer, nums chan<- int64) *ProgressWriter {
+	return &ProgressWriter{
+		writer: writer,
+		nums:   nums,
+	}
+}
+
+func (progressWriter *ProgressWriter) Write(b []byte) (int, error) {
+	n, err := progressWriter.writer.Write(b)
+	progressWriter.nums <- int64(n)
+	return n, err
+}
+
 func copySize(srcs []string) (int64, error) {
 	var total int64
 
@@ -47,8 +65,6 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 		}
 	}
 
-	buf := make([]byte, 4096)
-
 	r, err := os.Open(src)
 	if err != nil {
 		return err
@@ -60,23 +76,11 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 		return err
 	}
 
-	for {
-		n, err := r.Read(buf)
-		if err != nil && err != io.EOF {
-			w.Close()
-			os.Remove(dst)
-			return err
-		}
-
-		if n == 0 {
-			break
-		}
-
-		if _, err := w.Write(buf[:n]); err != nil {
-			return err
-		}
-
-		nums <- int64(n)
+	_, err = io.Copy(NewProgressWriter(w, nums), r)
+	if err != nil {
+		w.Close()
+		os.Remove(dst)
+		return err
 	}
 
 	if err := w.Close(); err != nil {

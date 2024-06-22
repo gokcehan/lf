@@ -751,7 +751,6 @@ func (nav *nav) previewLoop(ui *ui) {
 	}
 }
 
-//lint:ignore U1000 This function is not used on Windows
 func matchPattern(pattern, name, path string) bool {
 	s := name
 
@@ -890,25 +889,29 @@ func (nav *nav) preview(path string, win *win) {
 
 	// bufio.Scanner can't handle files containing long lines if they exceed the
 	// size of its internal buffer
-	addLine := true
+	line := []byte{}
 	for len(reg.lines) < win.h {
-		line, isPrefix, err := reader.ReadLine()
+		bytes, isPrefix, err := reader.ReadLine()
 		if err != nil {
+			if len(line) > 0 {
+				reg.lines = append(reg.lines, string(line))
+			}
 			break
 		}
 
-		for _, r := range line {
-			if r == 0 {
+		for _, byte := range bytes {
+			if byte == 0 {
 				reg.lines = []string{"\033[7mbinary\033[0m"}
 				return
 			}
 		}
 
-		if addLine {
-			reg.lines = append(reg.lines, string(line))
-		}
+		line = append(line, bytes...)
 
-		addLine = !isPrefix
+		if !isPrefix {
+			reg.lines = append(reg.lines, string(line))
+			line = []byte{}
+		}
 	}
 }
 
