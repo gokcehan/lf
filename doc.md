@@ -202,6 +202,7 @@ The following options can be used to customize the behavior of lf:
 	truncatechar        string    (default '~')
 	truncatepct         int       (default 100)
 	waitmsg             string    (default 'Press any key to continue')
+	watch               bool      (default false)
 	wrapscan            bool      (default true)
 	wrapscroll          bool      (default false)
 	user_{option}       string    (default none)
@@ -1015,6 +1016,11 @@ while a value of 0 will only show the end of the filename, e.g.:
 ## waitmsg (string) (default `Press any key to continue`)
 
 String shown after commands of shell-wait type.
+
+## watch (bool) (default false)
+
+Watch the filesystem for changes using `fsnotify` to automatically refresh file information.
+FUSE is currently not supported due to limitations in `fsnotify`.
 
 ## wrapscan (bool) (default true)
 
