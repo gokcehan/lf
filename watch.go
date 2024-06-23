@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 	"path/filepath"
 	"time"
 
@@ -18,9 +19,10 @@ type watch struct {
 	updateTimer *time.Timer
 	dirChan     chan<- *dir
 	fileChan    chan<- *file
+	delChan     chan<- string
 }
 
-func newWatch(dirChan chan<- *dir, fileChan chan<- *file) *watch {
+func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
 	return &watch{
 		quit:        make(chan struct{}),
 		loads:       make(map[string]bool),
@@ -29,6 +31,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file) *watch {
 		updateTimer: time.NewTimer(0),
 		dirChan:     dirChan,
 		fileChan:    fileChan,
+		delChan:     delChan,
 	}
 }
 
@@ -81,7 +84,14 @@ func (watch *watch) loop() {
 	for {
 		select {
 		case ev := <-watch.events:
-			if ev.Has(fsnotify.Create) || ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+			if ev.Has(fsnotify.Create) {
+				dir := filepath.Dir(ev.Name)
+				watch.addLoad(dir)
+				watch.addUpdate(dir)
+			}
+
+			if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
+				watch.delChan <- ev.Name
 				dir := filepath.Dir(ev.Name)
 				watch.addLoad(dir)
 				watch.addUpdate(dir)
@@ -92,6 +102,9 @@ func (watch *watch) loop() {
 			}
 		case <-watch.loadTimer.C:
 			for path := range watch.loads {
+				if _, err := os.Lstat(path); err != nil {
+					continue
+				}
 				dir := newDir(path)
 				dir.sort()
 				watch.dirChan <- dir
@@ -99,6 +112,9 @@ func (watch *watch) loop() {
 			watch.loads = make(map[string]bool)
 		case <-watch.updateTimer.C:
 			for path := range watch.updates {
+				if _, err := os.Lstat(path); err != nil {
+					continue
+				}
 				watch.fileChan <- newFile(path)
 			}
 			watch.updates = make(map[string]bool)

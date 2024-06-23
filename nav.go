@@ -439,6 +439,7 @@ type nav struct {
 	dirChan         chan *dir
 	regChan         chan *reg
 	fileChan        chan *file
+	delChan         chan string
 	dirCache        map[string]*dir
 	regCache        map[string]*reg
 	saves           map[string]bool
@@ -585,6 +586,7 @@ func newNav(height int) *nav {
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
 		fileChan:        make(chan *file),
+		delChan:         make(chan string),
 		dirCache:        make(map[string]*dir),
 		regCache:        make(map[string]*reg),
 		saves:           make(map[string]bool),

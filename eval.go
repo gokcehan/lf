@@ -1396,7 +1396,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFile(app, true)
 		onRedraw(app)
 	case "load":
-		if !app.nav.init {
+		if !app.nav.init || gOpts.watch {
 			return
 		}
 		app.nav.renew()
