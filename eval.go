@@ -96,15 +96,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
-	case "focusreport", "nofocusreport", "focusreport!":
-		err = applyBoolOpt(&gOpts.focusreport, e)
-		if err == nil {
-			if gOpts.focusreport {
-				app.ui.screen.EnableFocus()
-			} else {
-				app.ui.screen.DisableFocus()
-			}
-		}
 	case "globfilter", "noglobfilter", "globfilter!":
 		err = applyBoolOpt(&gOpts.globfilter, e)
 		if err == nil {
@@ -562,6 +553,18 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	} else {
 		gOpts.cmds[e.name] = e.expr
 	}
+
+	// only enable focus reporting if required by the user
+	if e.name == "on-focus-gained" || e.name == "on-focus-lost" {
+		_, onFocusGainedExists := gOpts.cmds["on-focus-gained"]
+		_, onFocusLostExists := gOpts.cmds["on-focus-lost"]
+		if onFocusGainedExists || onFocusLostExists {
+			app.ui.screen.EnableFocus()
+		} else {
+			app.ui.screen.DisableFocus()
+		}
+	}
+
 	app.ui.loadFileInfo(app.nav)
 }
 

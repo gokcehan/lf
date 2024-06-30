@@ -155,7 +155,6 @@ The following options can be used to customize the behavior of lf:
 	errorfmt          string    (default "\033[7;31;47m")
 	filesep           string    (default "\n")
 	findlen           int       (default 1)
-	focusreport       bool      (default false)
 	globfilter        bool      (default false)
 	globsearch        bool      (default false)
 	hidden            bool      (default false)
@@ -754,12 +753,6 @@ File separator used in environment variables `fs` and `fx`.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
-## focusreport (bool) (default false)
-
-Enable `lf` to receive terminal focus events.
-This is useful for performing custom actions when the terminal gains or loses focus.
-When enabled, the command `on-focus-gained` will be run when the terminal gains focus, and `on-focus-lost` for when the terminal loses focus.
-
 ## globfilter (bool) (default false)
 
 Patterns are treated as globs for the filter command, see `globsearch` for more details.
@@ -1148,12 +1141,10 @@ This shell command can be defined to be executed after changing a directory.
 ## on-focus-gained
 
 This shell command can be defined to be executed when the terminal gains focus.
-Requires the `focusreport` option to be enabled.
 
 ## on-focus-lost
 
 This shell command can be defined to be executed when the terminal loses focus.
-Requires the `focusreport` option to be enabled.
 
 ## on-select
 
