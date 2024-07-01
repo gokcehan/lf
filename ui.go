@@ -848,8 +848,6 @@ func (ui *ui) drawRuler(nav *nav) {
 	hid := len(dir.allFiles) - tot
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
-	selection := []string{}
-
 	copy := 0
 	move := 0
 	if len(nav.saves) > 0 {
@@ -860,21 +858,9 @@ func (ui *ui) drawRuler(nav *nav) {
 				move++
 			}
 		}
-		if copy > 0 {
-			copyStr := fmt.Sprintf(optionToFmtstr(gOpts.copyfmt), fmt.Sprintf(" %d ", copy))
-			selection = append(selection, copyStr)
-		}
-		if move > 0 {
-			moveStr := fmt.Sprintf(optionToFmtstr(gOpts.cutfmt), fmt.Sprintf(" %d ", move))
-			selection = append(selection, moveStr)
-		}
 	}
 
 	currSelections := nav.currSelections()
-	if len(currSelections) > 0 {
-		selectStr := fmt.Sprintf(optionToFmtstr(gOpts.selectfmt), fmt.Sprintf(" %d ", len(currSelections)))
-		selection = append(selection, selectStr)
-	}
 
 	progress := []string{}
 
