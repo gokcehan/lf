@@ -171,7 +171,6 @@ The following options can be used to customize the behavior of lf:
     relativenumber    bool      (default false)
     reverse           bool      (default false)
     roundbox          bool      (default false)
-    ruler             []string  (default 'acc:progress:selection:filter:ind')
     rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
     scrolloff         int       (default 0)
     selectfmt         string    (default "\033[7;35m")
@@ -961,25 +960,6 @@ Reverse the direction of sort.
 roundbox (bool) (default false)
 
 Draw rounded outer corners when the drawbox option is enabled.
-
-ruler ([]string) (default acc:progress:selection:filter:ind)
-
-This option is deprecated in favor of using the rulerfmt option (see
-below). List of information shown in status line ruler. Currently
-supported information types are acc, progress, selection, filter, ind,
-df and names starting with lf_. acc shows the pressed keys (e.g. for
-bindings with multiple key presses or counts given to bindings).
-progress shows the progress of file operations (e.g. copying a large
-directory). selection shows the number of files that are selected, or
-designated for being cut/copied. filter shows F if a filter is currently
-being applied. ind shows the current position of the cursor as well as
-the number of files in the current directory. df shows the amount of
-free disk space remaining. Names starting with lf_ show the value of
-environment variables exported by lf. This is useful for displaying the
-current settings (e.g. lf_selmode displays the current setting for the
-selmode option). User-defined options starting with lf_user_ are also
-supported, so it is possible to display information set from external
-sources.
 
 rulerfmt (string) (default   %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t)
 
