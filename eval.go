@@ -114,15 +114,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
-	case "hidecursorinactive", "nohidecursorinactive", "hidecursorinactive!":
-		err = applyBoolOpt(&gOpts.hidecursorinactive, e)
-		if err == nil {
-			if gOpts.hidecursorinactive {
-				app.ui.screen.EnableFocus()
-			} else {
-				app.ui.screen.DisableFocus()
-			}
-		}
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
@@ -562,6 +553,18 @@ func (e *cmdExpr) eval(app *app, args []string) {
 	} else {
 		gOpts.cmds[e.name] = e.expr
 	}
+
+	// only enable focus reporting if required by the user
+	if e.name == "on-focus-gained" || e.name == "on-focus-lost" {
+		_, onFocusGainedExists := gOpts.cmds["on-focus-gained"]
+		_, onFocusLostExists := gOpts.cmds["on-focus-lost"]
+		if onFocusGainedExists || onFocusLostExists {
+			app.ui.screen.EnableFocus()
+		} else {
+			app.ui.screen.DisableFocus()
+		}
+	}
+
 	app.ui.loadFileInfo(app.nav)
 }
 
@@ -575,6 +578,18 @@ func onChdir(app *app) {
 	app.nav.addJumpList()
 	app.setWatchPaths()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
+func onFocusGained(app *app) {
+	if cmd, ok := gOpts.cmds["on-focus-gained"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
+func onFocusLost(app *app) {
+	if cmd, ok := gOpts.cmds["on-focus-lost"]; ok {
 		cmd.eval(app, nil)
 	}
 }
@@ -1774,6 +1789,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
+	case "on-focus-gained":
+		onFocusGained(app)
+	case "on-focus-lost":
+		onFocusLost(app)
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return

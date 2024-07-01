@@ -126,76 +126,75 @@ The following command line commands are provided by lf:
 
 The following options can be used to customize the behavior of lf:
 
-    anchorfind          bool      (default true)
-    autoquit            bool      (default false)
-    borderfmt           string    (default "\033[0m")
-    cleaner             string    (default '')
-    copyfmt             string    (default "\033[7;33m")
-    cursoractivefmt     string    (default "\033[7m")
-    cursorparentfmt     string    (default "\033[7m")
-    cursorpreviewfmt    string    (default "\033[4m")
-    cutfmt              string    (default "\033[7;31m")
-    dircache            bool      (default true)
-    dircounts           bool      (default false)
-    dirfirst            bool      (default true)
-    dironly             bool      (default false)
-    dirpreviews         bool      (default false)
-    drawbox             bool      (default false)
-    dupfilefmt          string    (default '%f.~%n~')
-    errorfmt            string    (default "\033[7;31;47m")
-    filesep             string    (default "\n")
-    findlen             int       (default 1)
-    globfilter          bool      (default false)
-    globsearch          bool      (default false)
-    hidden              bool      (default false)
-    hiddenfiles         []string  (default '.*' for Unix and '' for Windows)
-    hidecursorinactive  bool      (default false)
-    history             bool      (default true)
-    icons               bool      (default false)
-    ifs                 string    (default '')
-    ignorecase          bool      (default true)
-    ignoredia           bool      (default true)
-    incfilter           bool      (default false)
-    incsearch           bool      (default false)
-    info                []string  (default '')
-    infotimefmtnew      string    (default 'Jan _2 15:04')
-    infotimefmtold      string    (default 'Jan _2  2006')
-    mouse               bool      (default false)
-    number              bool      (default false)
-    numberfmt           string    (default "\033[33m")
-    period              int       (default 0)
-    preserve            []string  (default "mode")
-    preview             bool      (default true)
-    previewer           string    (default '')
-    promptfmt           string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
-    ratios              []int     (default '1:2:3')
-    relativenumber      bool      (default false)
-    reverse             bool      (default false)
-    roundbox            bool      (default false)
-    ruler               []string  (default 'acc:progress:selection:filter:ind')
-    rulerfmt            string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
-    scrolloff           int       (default 0)
-    selectfmt           string    (default "\033[7;35m")
-    selmode             string    (default 'all')
-    shell               string    (default 'sh' for Unix and 'cmd' for Windows)
-    shellflag           string    (default '-c' for Unix and '/c' for Windows)
-    shellopts           []string  (default '')
-    sixel               bool      (default false)
-    smartcase           bool      (default true)
-    smartdia            bool      (default false)
-    sortby              string    (default 'natural')
-    statfmt             string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
-    tabstop             int       (default 8)
-    tagfmt              string    (default "\033[31m")
-    tempmarks           string    (default '')
-    timefmt             string    (default 'Mon Jan _2 15:04:05 2006')
-    truncatechar        string    (default '~')
-    truncatepct         int       (default 100)
-    waitmsg             string    (default 'Press any key to continue')
-    watch               bool      (default false)
-    wrapscan            bool      (default true)
-    wrapscroll          bool      (default false)
-    user_{option}       string    (default none)
+    anchorfind        bool      (default true)
+    autoquit          bool      (default false)
+    borderfmt         string    (default "\033[0m")
+    cleaner           string    (default '')
+    copyfmt           string    (default "\033[7;33m")
+    cursoractivefmt   string    (default "\033[7m")
+    cursorparentfmt   string    (default "\033[7m")
+    cursorpreviewfmt  string    (default "\033[4m")
+    cutfmt            string    (default "\033[7;31m")
+    dircache          bool      (default true)
+    dircounts         bool      (default false)
+    dirfirst          bool      (default true)
+    dironly           bool      (default false)
+    dirpreviews       bool      (default false)
+    drawbox           bool      (default false)
+    dupfilefmt        string    (default '%f.~%n~')
+    errorfmt          string    (default "\033[7;31;47m")
+    filesep           string    (default "\n")
+    findlen           int       (default 1)
+    globfilter        bool      (default false)
+    globsearch        bool      (default false)
+    hidden            bool      (default false)
+    hiddenfiles       []string  (default '.*' for Unix and '' for Windows)
+    history           bool      (default true)
+    icons             bool      (default false)
+    ifs               string    (default '')
+    ignorecase        bool      (default true)
+    ignoredia         bool      (default true)
+    incfilter         bool      (default false)
+    incsearch         bool      (default false)
+    info              []string  (default '')
+    infotimefmtnew    string    (default 'Jan _2 15:04')
+    infotimefmtold    string    (default 'Jan _2  2006')
+    mouse             bool      (default false)
+    number            bool      (default false)
+    numberfmt         string    (default "\033[33m")
+    period            int       (default 0)
+    preserve          []string  (default "mode")
+    preview           bool      (default true)
+    previewer         string    (default '')
+    promptfmt         string    (default "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m")
+    ratios            []int     (default '1:2:3')
+    relativenumber    bool      (default false)
+    reverse           bool      (default false)
+    roundbox          bool      (default false)
+    ruler             []string  (default 'acc:progress:selection:filter:ind')
+    rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
+    scrolloff         int       (default 0)
+    selectfmt         string    (default "\033[7;35m")
+    selmode           string    (default 'all')
+    shell             string    (default 'sh' for Unix and 'cmd' for Windows)
+    shellflag         string    (default '-c' for Unix and '/c' for Windows)
+    shellopts         []string  (default '')
+    sixel             bool      (default false)
+    smartcase         bool      (default true)
+    smartdia          bool      (default false)
+    sortby            string    (default 'natural')
+    statfmt           string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
+    tabstop           int       (default 8)
+    tagfmt            string    (default "\033[31m")
+    tempmarks         string    (default '')
+    timefmt           string    (default 'Mon Jan _2 15:04:05 2006')
+    truncatechar      string    (default '~')
+    truncatepct       int       (default 100)
+    waitmsg           string    (default 'Press any key to continue')
+    watch             bool      (default false)
+    wrapscan          bool      (default true)
+    wrapscroll        bool      (default false)
+    user_{option}     string    (default none)
 
 The following environment variables are exported for shell commands:
 
@@ -228,6 +227,8 @@ of lf when defined:
     delete
     pre-cd
     on-cd
+    on-focus-gained
+    on-focus-lost
     on-select
     on-redraw
     on-quit
@@ -827,10 +828,6 @@ match character sets or ranges. In addition, if a pattern starts with !,
 then its matches are excluded from hidden files. To add multiple
 patterns, use : as a separator. Example: .*:lost+found:*.bak
 
-hidecursorinactive (bool) (default false)
-
-Hide the cursor when the terminal or tmux pane loses focus.
-
 history (bool) (default true)
 
 Save command history.
@@ -1259,6 +1256,16 @@ on-cd
 
 This shell command can be defined to be executed after changing a
 directory.
+
+on-focus-gained
+
+This shell command can be defined to be executed when the terminal gains
+focus.
+
+on-focus-lost
+
+This shell command can be defined to be executed when the terminal loses
+focus.
 
 on-select
 

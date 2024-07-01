@@ -484,7 +484,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		ce := ""
-		if i == dir.pos && (ui.focused || !gOpts.hidecursorinactive) {
+		if i == dir.pos {
 			switch dirStyle.role {
 			case Active:
 				ce = gOpts.cursoractivefmt
@@ -564,7 +564,6 @@ type ui struct {
 	screen      tcell.Screen
 	sxScreen    sixelScreen
 	polling     bool
-	focused     bool
 	wins        []*win
 	promptWin   *win
 	msgWin      *win
@@ -596,7 +595,6 @@ func newUI(screen tcell.Screen) *ui {
 	ui := &ui{
 		screen:      screen,
 		polling:     true,
-		focused:     true,
 		wins:        getWins(screen),
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
@@ -1463,8 +1461,11 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	case *tcell.EventInterrupt:
 		log.Printf("Got EventInterrupt: at %s", tev.When())
 	case *tcell.EventFocus:
-		ui.focused = tev.Focused
-		return draw
+		if tev.Focused {
+			return &callExpr{"on-focus-gained", nil, 1}
+		} else {
+			return &callExpr{"on-focus-lost", nil, 1}
+		}
 	}
 	return nil
 }
