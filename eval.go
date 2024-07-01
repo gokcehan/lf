@@ -267,25 +267,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
-	case "ruler":
-		if e.val == "" {
-			gOpts.ruler = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "df", "acc", "progress", "selection", "filter", "ind":
-			default:
-				if !strings.HasPrefix(s, "lf_") {
-					app.ui.echoerr("ruler: should consist of 'df', 'acc', 'progress', 'selection', 'filter', 'ind' or 'lf_<option_name>' separated with colon")
-					return
-				}
-			}
-		}
-		gOpts.ruler = toks
-		app.ui.echoerr("option 'ruler' is deprecated, use 'rulerfmt' instead")
-		return
 	case "rulerfmt":
 		gOpts.rulerfmt = e.val
 	case "preserve":
