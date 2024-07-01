@@ -392,7 +392,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	var lnwidth int
 
-	if gOpts.number || gOpts.relativenumber {
+	if dirStyle.role == Active && (gOpts.number || gOpts.relativenumber) {
 		lnwidth = 1
 		if gOpts.number && gOpts.relativenumber {
 			lnwidth++
