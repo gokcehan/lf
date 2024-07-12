@@ -267,6 +267,12 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		return
 	}
 
+	if reg.sixel != nil {
+		sxs.setSixels(win, reg.sixel)
+	} else {
+		sxs.clearSixels(screen)
+	}
+
 	for i, l := range reg.lines {
 		if i > win.h-1 {
 			break
@@ -274,8 +280,6 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 
 		st = win.print(screen, 2, i, st, l)
 	}
-
-	sxs.printSixel(win, screen, reg)
 }
 
 var gThisYear = time.Now().Year()
@@ -977,14 +981,7 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
-	// XXX: manual clean without flush to avoid flicker on Windows
-	wtot, htot := ui.screen.Size()
-	for i := 0; i < wtot; i++ {
-		for j := 0; j < htot; j++ {
-			ui.screen.SetContent(i, j, ' ', nil, st)
-		}
-	}
-	ui.sxScreen.sixel = nil
+	ui.screen.Clear()
 
 	ui.drawPromptLine(nav)
 
@@ -1028,7 +1025,12 @@ func (ui *ui) draw(nav *nav) {
 		if err == nil {
 			preview := ui.wins[len(ui.wins)-1]
 
+			if ui.menuBuf != nil {
+				ui.sxScreen.clearSixels(ui.screen)
+			}
+
 			if curr.IsDir() {
+				ui.sxScreen.clearSixels(ui.screen)
 				preview.printDir(ui, ui.dirPrev, &context,
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
 					nav.previewLoading)
@@ -1063,9 +1065,8 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
-		ui.sxScreen.lastFile = ui.regPrev.path
-		ui.sxScreen.showSixels()
+	if ui.menuBuf == nil && ui.sxScreen.sixel != nil {
+		ui.sxScreen.showSixels(ui.screen, ui.regPrev.path)
 	}
 }
 
