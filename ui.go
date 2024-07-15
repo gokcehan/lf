@@ -445,20 +445,21 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxWidth -= 1
 		}
 
-		var s []rune
-
-		// leave space for displaying the tag
-		s = append(s, ' ')
-
-		var icon iconDef
-
-		if gOpts.icons {
-			icon = dirStyle.icons.get(f)
-			s = append(s, []rune(icon.icon)...)
-			s = append(s, ' ')
+		tag := ' '
+		if val, ok := context.tags[path]; ok && len(val) > 0 {
+			tag = rune(val[0])
 		}
 
-		maxFilenameWidth := maxWidth - runeSliceWidth(s)
+		var icon []rune
+		var iconDef iconDef
+		if gOpts.icons {
+			iconDef = dirStyle.icons.get(f)
+			icon = append(icon, []rune(iconDef.icon)...)
+			icon = append(icon, ' ')
+		}
+
+		// subtract space for tag and icon
+		maxFilenameWidth := maxWidth - 1 - runeSliceWidth(icon)
 
 		info := fileInfo(f, dir)
 		showInfo := len(info) > 0 && 2*len(info) < maxWidth
@@ -477,40 +478,37 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		for j := runeSliceWidth(filename); j < maxFilenameWidth; j++ {
 			filename = append(filename, ' ')
 		}
-		s = append(s, filename...)
 
 		if showInfo {
-			s = append(s, []rune(info)...)
+			filename = append(filename, []rune(info)...)
 		}
 
-		ce := ""
 		if i == dir.pos {
+			var cursorFmt string
 			switch dirStyle.role {
 			case Active:
-				ce = gOpts.cursoractivefmt
+				cursorFmt = optionToFmtstr(gOpts.cursoractivefmt)
 			case Parent:
-				ce = gOpts.cursorparentfmt
+				cursorFmt = optionToFmtstr(gOpts.cursorparentfmt)
 			case Preview:
-				ce = gOpts.cursorpreviewfmt
+				cursorFmt = optionToFmtstr(gOpts.cursorpreviewfmt)
 			}
-		}
-		cursorescapefmt := optionToFmtstr(ce)
+			line := append([]rune{tag}, icon...)
+			line = append(line, filename...)
+			line = append(line, ' ')
+			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
-		s = append(s, ' ')
-		styledFilename := fmt.Sprintf(cursorescapefmt, string(s))
-		win.print(ui.screen, lnwidth+1, i, st, styledFilename)
+		} else {
+			tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), string(tag))
+			win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
 
-		if icon.hasStyle && i != dir.pos {
-			win.print(ui.screen, lnwidth+2, i, icon.style, icon.icon)
-		}
-
-		tag, ok := context.tags[path]
-		if ok {
-			if i == dir.pos {
-				win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorescapefmt, tag))
-			} else {
-				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag))
+			iconStyle := st
+			if iconDef.hasStyle {
+				iconStyle = iconDef.style
 			}
+			win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
+
+			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(filename))
 		}
 	}
 }
