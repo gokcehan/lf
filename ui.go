@@ -499,14 +499,18 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
 		} else {
-			tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), string(tag))
-			win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
-
-			iconStyle := st
-			if iconDef.hasStyle {
-				iconStyle = iconDef.style
+			if tag != ' ' {
+				tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), string(tag))
+				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
 			}
-			win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
+
+			if len(icon) > 0 {
+				iconStyle := st
+				if iconDef.hasStyle {
+					iconStyle = iconDef.style
+				}
+				win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
+			}
 
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(filename))
 		}
