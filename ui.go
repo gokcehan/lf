@@ -445,9 +445,9 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxWidth -= 1
 		}
 
-		tag := ' '
+		tag := " "
 		if val, ok := context.tags[path]; ok && len(val) > 0 {
-			tag = rune(val[0])
+			tag = val
 		}
 
 		var icon []rune
@@ -493,14 +493,16 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			case Preview:
 				cursorFmt = optionToFmtstr(gOpts.cursorpreviewfmt)
 			}
-			line := append([]rune{tag}, icon...)
-			line = append(line, filename...)
-			line = append(line, ' ')
-			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
+			// print tag separately as it can contain color escape sequences
+			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, tag))
+
+			line := append(icon, filename...)
+			line = append(line, ' ')
+			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
 		} else {
-			if tag != ' ' {
-				tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), string(tag))
+			if tag != " " {
+				tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag)
 				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
 			}
 
