@@ -16,8 +16,6 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
-	"golang.org/x/text/collate"
-	"golang.org/x/text/language"
 )
 
 type linkState byte
@@ -247,24 +245,35 @@ func (dir *dir) sort() {
 		dir.files = filtered
 	}
 
-	collopts := []collate.Option{}
-	if dir.ignorecase {
-		collopts = append(collopts, collate.IgnoreCase)
+	normalizefun := func(s1, s2 string) (string, string) {
+		return s1, s2
 	}
-	if dir.ignoredia {
-		collopts = append(collopts, collate.IgnoreDiacritics)
+	if dir.ignorecase && dir.ignoredia {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return removeDiacritics(strings.ToLower(s1)), removeDiacritics(strings.ToLower(s2))
+		}
+	} else if dir.ignorecase {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return strings.ToLower(s1), strings.ToLower(s2)
+		}
+	} else if dir.ignoredia {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return removeDiacritics(s1), removeDiacritics(s2)
+		}
 	}
-	if dir.sortby == naturalSort {
-		collopts = append(collopts, collate.Numeric)
-	}
-	coll := collate.New(language.Und, collopts...)
 
 	var lessfun func(i, j int) bool
 
 	switch dir.sortby {
-	case nameSort, naturalSort:
+	case naturalSort:
 		lessfun = func(i, j int) bool {
-			return coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+			s1, s2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+			return naturalLess(s1, s2)
+		}
+	case nameSort:
+		lessfun = func(i, j int) bool {
+			s1, s2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+			return s1 < s2
 		}
 	case sizeSort:
 		lessfun = func(i, j int) bool {
@@ -284,8 +293,16 @@ func (dir *dir) sort() {
 		}
 	case extSort:
 		lessfun = func(i, j int) bool {
-			cmp := coll.CompareString(dir.files[i].ext, dir.files[j].ext)
-			return cmp == -1 || cmp == 0 && coll.CompareString(dir.files[i].Name(), dir.files[j].Name()) == -1
+			ext1, ext2 := normalizefun(dir.files[i].ext, dir.files[j].ext)
+			extcmp := strings.Compare(ext1, ext2)
+			if extcmp == -1 {
+				return true
+			}
+			if extcmp == 0 {
+				name1, name2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+				return name1 < name2
+			}
+			return false
 		}
 	}
 
