@@ -811,7 +811,7 @@ Apply filter pattern after each keystroke during filtering.
 ## info ([]string)  (default ``)
 
 A list of information that is shown for directory items at the right side of the pane.
-Currently supported information types are `size`, `time`, `atime`, `ctime`, `mode`, `user` and `group`.
+Currently supported information types are `size`, `time`, `atime`, `ctime`, `perm`, `user` and `group`.
 Information is only shown when the pane width is more than twice the width of information.
 
 ## infotimefmtnew (string) (default `Jan _2 15:04`)

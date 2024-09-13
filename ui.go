@@ -320,7 +320,7 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int) string {
 			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.accessTime))
 		case "ctime":
 			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.changeTime))
-		case "mode":
+		case "perm":
 			info = fmt.Sprintf("%s %s", info, f.FileInfo.Mode().String())
 		case "user":
 			info = fmt.Sprintf("%s %-*s", info, userWidth, userName(f.FileInfo))
