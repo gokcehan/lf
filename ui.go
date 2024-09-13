@@ -542,7 +542,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	}
 }
 
-func getGroupWidth(dir *dir, beg int, end int) int {
+func getUserWidth(dir *dir, beg int, end int) int {
 	maxw := 0
 
 	for _, f := range dir.files[beg:end] {
@@ -552,7 +552,7 @@ func getGroupWidth(dir *dir, beg int, end int) int {
 	return maxw
 }
 
-func getUserWidth(dir *dir, beg int, end int) int {
+func getGroupWidth(dir *dir, beg int, end int) int {
 	maxw := 0
 
 	for _, f := range dir.files[beg:end] {
