@@ -864,8 +864,8 @@ info ([]string) (default ``)
 
 A list of information that is shown for directory items at the right
 side of the pane. Currently supported information types are size, time,
-atime, and ctime. Information is only shown when the pane width is more
-than twice the width of information.
+atime, ctime, mode, user and group. Information is only shown when the
+pane width is more than twice the width of information.
 
 infotimefmtnew (string) (default Jan _2 15:04)
 

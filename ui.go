@@ -287,7 +287,7 @@ func infotimefmt(t time.Time) string {
 	return t.Format(gOpts.infotimefmtold)
 }
 
-func fileInfo(f *file, d *dir) string {
+func fileInfo(f *file, d *dir, userWidth int, groupWidth int) string {
 	var info string
 
 	for _, s := range getInfo(d.path) {
@@ -320,6 +320,12 @@ func fileInfo(f *file, d *dir) string {
 			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.accessTime))
 		case "ctime":
 			info = fmt.Sprintf("%s %*s", info, max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.changeTime))
+		case "mode":
+			info = fmt.Sprintf("%s %s", info, f.FileInfo.Mode().String())
+		case "user":
+			info = fmt.Sprintf("%s %-*s", info, userWidth, userName(f.FileInfo))
+		case "group":
+			info = fmt.Sprintf("%s %-*s", info, groupWidth, groupName(f.FileInfo))
 		default:
 			log.Printf("unknown info type: %s", s)
 		}
@@ -402,6 +408,23 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
+	var userWidth int
+	var groupWidth int
+
+	// Only fetch user/group widths if configured to display them
+	for _, s := range getInfo(dir.path) {
+		switch s {
+		case "user":
+			userWidth = getUserWidth(dir, beg, end)
+		case "group":
+			groupWidth = getGroupWidth(dir, beg, end)
+		}
+
+		if userWidth > 0 && groupWidth > 0 {
+			break
+		}
+	}
+
 	for i, f := range dir.files[beg:end] {
 		st := dirStyle.colors.get(f)
 
@@ -461,7 +484,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// subtract space for tag and icon
 		maxFilenameWidth := maxWidth - 1 - runeSliceWidth(icon)
 
-		info := fileInfo(f, dir)
+		info := fileInfo(f, dir, userWidth, groupWidth)
 		showInfo := len(info) > 0 && 2*len(info) < maxWidth
 		if showInfo {
 			maxFilenameWidth -= len(info)
@@ -517,6 +540,26 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(filename))
 		}
 	}
+}
+
+func getGroupWidth(dir *dir, beg int, end int) int {
+	maxw := 0
+
+	for _, f := range dir.files[beg:end] {
+		maxw = max(len(userName(f.FileInfo)), maxw)
+	}
+
+	return maxw
+}
+
+func getUserWidth(dir *dir, beg int, end int) int {
+	maxw := 0
+
+	for _, f := range dir.files[beg:end] {
+		maxw = max(len(groupName(f.FileInfo)), maxw)
+	}
+
+	return maxw
 }
 
 func getWidths(wtot int) []int {
