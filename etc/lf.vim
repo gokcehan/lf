@@ -13,28 +13,28 @@
 "     nnoremap <leader>l :LF<cr>
 "
 
+let s:temp = tempname()
 if executable('lf')
-  command! -bar LF call FilePicker('lf', '-selection-path')
+  command! -nargs=? -bar -complete=dir FilePicker call FilePicker('lf', '-selection-path', s:temp, <q-args>)
 elseif executable('ranger')
   " The option --choosefiles was added in ranger 1.5.1.
   " Use --choosefile with ranger 1.4.2 through 1.5.0 instead.
-  command! -bar LF call FilePicker('ranger', '--choosefiles')
+  command! -nargs=? -bar -complete=dir FilePicker call FilePicker('ranger', '--choosefiles='..s:temp, '--selectfile', <q-args>)
 elseif executable('nnn')
-  command! -bar LF call FilePicker('nnn', '-P')
+  command! -nargs=? -bar -complete=dir FilePicker call FilePicker('nnn', '-p', s:temp, <q-args>)
 endif
 
-if exists(':LF') == 2
-  " From https://github.com/philFernandez/rangerFilePicker.vim/blob/master/plugin/rangerFilePicker.vim
-  let s:temp = tempname()
-
+if exists(':FilePicker') == 2
   function! FilePicker(...)
-    let cmd = a:000 + [s:temp]
+    let path = a:000[-1]
+    let cmd = a:000[:-2] + (empty(path) ?
+          \ [filereadable(expand('%')) ? expand('%:p') : '.'] : [path])
     if has('nvim')
+      enew
       call termopen(cmd, { 'on_exit': function('s:open') })
     else
       if has('gui_running')
         if has('terminal')
-          " exec 'terminal' join(cmd) | call s:open()
           call term_start(cmd, {'exit_cb': function('s:term_close'), 'curwin': 1})
         else
           echomsg 'GUI is running but terminal is not supported.'
@@ -48,6 +48,7 @@ if exists(':LF') == 2
   if has('gui_running') && has('terminal')
     function! s:term_close(job_id, event)
       if a:event == 'exit'
+        bwipeout!
         call s:open()
       endif
     endfunction
@@ -55,6 +56,9 @@ if exists(':LF') == 2
 
   function! s:open(...)
     if !filereadable(s:temp)
+      " if &buftype ==# 'terminal'
+      "   bwipeout!
+      " endif
       redraw!
       " Nothing to read.
       return
@@ -66,10 +70,10 @@ if exists(':LF') == 2
       return
     endif
     " Edit the first item.
-    exec 'edit ' . fnameescape(names[0])
+    exec 'edit' fnameescape(names[0])
     " Add any remaning items to the arg list/buffer list.
     for name in names[1:]
-      exec 'argadd ' . fnameescape(name)
+      exec 'argadd' fnameescape(name)
     endfor
     redraw!
   endfunction
