@@ -412,16 +412,12 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	var groupWidth int
 
 	// Only fetch user/group widths if configured to display them
+iterInfo:
 	for _, s := range getInfo(dir.path) {
 		switch s {
-		case "user":
-			userWidth = getUserWidth(dir, beg, end)
-		case "group":
-			groupWidth = getGroupWidth(dir, beg, end)
-		}
-
-		if userWidth > 0 && groupWidth > 0 {
-			break
+		case "user", "group":
+			userWidth, groupWidth = getUserGroupWidth(dir, beg, end)
+			break iterInfo
 		}
 	}
 
@@ -542,24 +538,16 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	}
 }
 
-func getUserWidth(dir *dir, beg int, end int) int {
-	maxw := 0
+func getUserGroupWidth(dir *dir, beg int, end int) (int, int) {
+	userMaxw := 0
+	groupMaxw := 0
 
 	for _, f := range dir.files[beg:end] {
-		maxw = max(len(userName(f.FileInfo)), maxw)
+		userMaxw = max(len(userName(f.FileInfo)), userMaxw)
+		groupMaxw = max(len(groupName(f.FileInfo)), groupMaxw)
 	}
 
-	return maxw
-}
-
-func getGroupWidth(dir *dir, beg int, end int) int {
-	maxw := 0
-
-	for _, f := range dir.files[beg:end] {
-		maxw = max(len(groupName(f.FileInfo)), maxw)
-	}
-
-	return maxw
+	return userMaxw, groupMaxw
 }
 
 func getWidths(wtot int) []int {
