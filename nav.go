@@ -193,18 +193,6 @@ func newDir(path string) *dir {
 	}
 }
 
-func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
-	if ignorecase {
-		s1 = strings.ToLower(s1)
-		s2 = strings.ToLower(s2)
-	}
-	if ignoredia {
-		s1 = removeDiacritics(s1)
-		s2 = removeDiacritics(s2)
-	}
-	return s1, s2
-}
-
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dirfirst = getDirFirst(dir.path)
@@ -217,151 +205,125 @@ func (dir *dir) sort() {
 
 	dir.files = dir.allFiles
 
-	// reverse order cannot be applied after stable sorting, otherwise the order
-	// of equivalent elements will be reversed
-	switch dir.sortby {
-	case naturalSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return naturalLess(s1, s2)
-			} else {
-				return naturalLess(s2, s1)
+	var filterFun func(*file) bool = nil
+	addFilter := func(fun func(*file) bool) {
+		if filterFun == nil {
+			filterFun = fun
+		} else {
+			oldFilterFun := filterFun
+			filterFun = func(f *file) bool {
+				return oldFilterFun(f) && fun(f)
 			}
-		})
-	case nameSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return s1 < s2
-			} else {
-				return s2 < s1
-			}
-		})
-	case sizeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
-			} else {
-				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
-			}
-		})
-	case timeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].ModTime().Before(dir.files[j].ModTime())
-			} else {
-				return dir.files[j].ModTime().Before(dir.files[i].ModTime())
-			}
-		})
-	case atimeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].accessTime.Before(dir.files[j].accessTime)
-			} else {
-				return dir.files[j].accessTime.Before(dir.files[i].accessTime)
-			}
-		})
-	case ctimeSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.reverse {
-				return dir.files[i].changeTime.Before(dir.files[j].changeTime)
-			} else {
-				return dir.files[j].changeTime.Before(dir.files[i].changeTime)
-			}
-		})
-	case extSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext, dir.ignorecase, dir.ignoredia)
-
-			// if the extension could not be determined (directories, files without)
-			// use a zero byte so that these files can be ranked higher
-			if ext1 == "" {
-				ext1 = "\x00"
-			}
-			if ext2 == "" {
-				ext2 = "\x00"
-			}
-
-			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-
-			// in order to also have natural sorting with the filenames
-			// combine the name with the ext but have the ext at the front
-			if !dir.reverse {
-				return ext1 < ext2 || ext1 == ext2 && name1 < name2
-			} else {
-				return ext2 < ext1 || ext2 == ext1 && name2 < name1
-			}
-		})
+		}
 	}
 
-	if dir.dirfirst {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if dir.files[i].IsDir() == dir.files[j].IsDir() {
-				return i < j
-			}
-			return dir.files[i].IsDir()
-		})
-	}
-
-	// when dironly option is enabled, we move files to the beginning of our file
-	// list and then set the beginning of displayed files to the first directory
-	// in the list
 	if dir.dironly {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if !dir.files[i].IsDir() && !dir.files[j].IsDir() {
-				return i < j
-			}
-			return !dir.files[i].IsDir()
+		addFilter(func(f *file) bool {
+			return f.IsDir()
 		})
-		dir.files = func() []*file {
-			for i, f := range dir.files {
-				if f.IsDir() {
-					return dir.files[i:]
-				}
-			}
-			return dir.files[len(dir.files):]
-		}()
 	}
 
-	// when hidden option is disabled, we move hidden files to the
-	// beginning of our file list and then set the beginning of displayed
-	// files to the first non-hidden file in the list
 	if !dir.hidden {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isHidden(dir.files[i], dir.path, dir.hiddenfiles) && isHidden(dir.files[j], dir.path, dir.hiddenfiles) {
-				return i < j
-			}
-			return isHidden(dir.files[i], dir.path, dir.hiddenfiles)
+		addFilter(func(f *file) bool {
+			return !isHidden(f, dir.path, dir.hiddenfiles)
 		})
-		for i, f := range dir.files {
-			if !isHidden(f, dir.path, dir.hiddenfiles) {
-				dir.files = dir.files[i:]
-				break
-			}
-		}
-		if len(dir.files) > 0 && isHidden(dir.files[len(dir.files)-1], dir.path, dir.hiddenfiles) {
-			dir.files = dir.files[len(dir.files):]
-		}
 	}
 
 	if len(dir.filter) != 0 {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if isFiltered(dir.files[i], dir.filter) && isFiltered(dir.files[j], dir.filter) {
-				return i < j
-			}
-			return isFiltered(dir.files[i], dir.filter)
+		addFilter(func(f *file) bool {
+			return !isFiltered(f, dir.filter)
 		})
-		for i, f := range dir.files {
-			if !isFiltered(f, dir.filter) {
-				dir.files = dir.files[i:]
-				break
+	}
+
+	if filterFun != nil {
+		var filtered []*file
+		for _, file := range dir.files {
+			if filterFun(file) {
+				filtered = append(filtered, file)
 			}
 		}
-		if len(dir.files) > 0 && isFiltered(dir.files[len(dir.files)-1], dir.filter) {
-			dir.files = dir.files[len(dir.files):]
+		dir.files = filtered
+	}
+
+	normalizefun := func(s1, s2 string) (string, string) {
+		return s1, s2
+	}
+	if dir.ignorecase && dir.ignoredia {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return removeDiacritics(strings.ToLower(s1)), removeDiacritics(strings.ToLower(s2))
+		}
+	} else if dir.ignorecase {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return strings.ToLower(s1), strings.ToLower(s2)
+		}
+	} else if dir.ignoredia {
+		normalizefun = func(s1, s2 string) (string, string) {
+			return removeDiacritics(s1), removeDiacritics(s2)
 		}
 	}
+
+	var lessfun func(i, j int) bool
+
+	switch dir.sortby {
+	case naturalSort:
+		lessfun = func(i, j int) bool {
+			s1, s2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+			return naturalLess(s1, s2)
+		}
+	case nameSort:
+		lessfun = func(i, j int) bool {
+			s1, s2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+			return s1 < s2
+		}
+	case sizeSort:
+		lessfun = func(i, j int) bool {
+			return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+		}
+	case timeSort:
+		lessfun = func(i, j int) bool {
+			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+		}
+	case atimeSort:
+		lessfun = func(i, j int) bool {
+			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+		}
+	case ctimeSort:
+		lessfun = func(i, j int) bool {
+			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+		}
+	case extSort:
+		lessfun = func(i, j int) bool {
+			ext1, ext2 := normalizefun(dir.files[i].ext, dir.files[j].ext)
+			extcmp := strings.Compare(ext1, ext2)
+			if extcmp == -1 {
+				return true
+			}
+			if extcmp == 0 {
+				name1, name2 := normalizefun(dir.files[i].Name(), dir.files[j].Name())
+				return name1 < name2
+			}
+			return false
+		}
+	}
+
+	if dir.reverse {
+		oldlessfun := lessfun
+		lessfun = func(i, j int) bool {
+			return oldlessfun(j, i)
+		}
+	}
+
+	if dir.dirfirst && !dir.dironly {
+		oldlessfun := lessfun
+		lessfun = func(i, j int) bool {
+			if dir.files[i].IsDir() == dir.files[j].IsDir() {
+				return oldlessfun(i, j)
+			}
+			return dir.files[i].IsDir()
+		}
+	}
+
+	sort.SliceStable(dir.files, lessfun)
 
 	dir.ind = max(dir.ind, 0)
 	dir.ind = min(dir.ind, len(dir.files)-1)
