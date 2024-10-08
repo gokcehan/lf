@@ -273,20 +273,7 @@ func (dir *dir) sort() {
 	case extSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext, dir.ignorecase, dir.ignoredia)
-
-			// if the extension could not be determined (directories, files without)
-			// use a zero byte so that these files can be ranked higher
-			if ext1 == "" {
-				ext1 = "\x00"
-			}
-			if ext2 == "" {
-				ext2 = "\x00"
-			}
-
 			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-
-			// in order to also have natural sorting with the filenames
-			// combine the name with the ext but have the ext at the front
 			if !dir.reverse {
 				return ext1 < ext2 || ext1 == ext2 && name1 < name2
 			} else {
