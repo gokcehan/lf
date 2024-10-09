@@ -773,6 +773,9 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		return
 	}
 
+	ui.msg = ""
+	ui.msgIsStat = true
+
 	curr, err := nav.currFile()
 	if err != nil {
 		return
@@ -807,7 +810,6 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	}
 
 	ui.msg = fileInfo
-	ui.msgIsStat = true
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
