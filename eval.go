@@ -1082,6 +1082,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
+		app.ui.loadFileInfo(app.nav)
+
 		if cmd, ok := gOpts.cmds["open"]; ok {
 			cmd.eval(app, e.args)
 		}
