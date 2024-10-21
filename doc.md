@@ -150,6 +150,7 @@ The following options can be used to customize the behavior of lf:
 	dirfirst          bool      (default true)
 	dironly           bool      (default false)
 	dirpreviews       bool      (default false)
+	drawbinds         bool      (default true)
 	drawbox           bool      (default false)
 	dupfilefmt        string    (default '%f.~%n~')
 	errorfmt          string    (default "\033[7;31;47m")
@@ -726,6 +727,10 @@ Show only directories.
 ## dirpreviews (bool) (default false)
 
 If enabled, directories will also be passed to the previewer script. This allows custom previews for directories.
+
+## drawbinds (bool) (default true)
+
+Draw bindings associated with pressed keys.
 
 ## drawbox (bool) (default false)
 
