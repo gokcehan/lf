@@ -1013,7 +1013,7 @@ List of shell options to pass to the shell executable.
 
 showbinds (bool) (default true)
 
-Draw bindings associated with pressed keys.
+Show bindings associated with pressed keys.
 
 sixel (bool) (default false)
 
