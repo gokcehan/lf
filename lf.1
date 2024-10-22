@@ -196,6 +196,7 @@ selmode           string    (default \[aq]all\[aq])
 shell             string    (default \[aq]sh\[aq] for Unix and \[aq]cmd\[aq] for Windows)
 shellflag         string    (default \[aq]-c\[aq] for Unix and \[aq]/c\[aq] for Windows)
 shellopts         []string  (default \[aq]\[aq])
+showbinds         bool      (default true)
 sixel             bool      (default false)
 smartcase         bool      (default true)
 smartdia          bool      (default false)
@@ -1027,6 +1028,9 @@ Command line flag used to pass shell commands.
 .SS shellopts ([]string) (default \[ga]\[ga])
 .PP
 List of shell options to pass to the shell executable.
+.SS showbinds (bool) (default true)
+.PP
+Show bindings associated with pressed keys.
 .SS sixel (bool) (default false)
 .PP
 Render sixel images in preview.

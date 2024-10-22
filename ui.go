@@ -1359,7 +1359,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				ui.menuBuf = nil
 				return expr
 			}
-			ui.menuBuf = listBinds(binds)
+			if gOpts.showbinds {
+				ui.menuBuf = listBinds(binds)
+			}
 			return draw
 		}
 	case *tcell.EventMouse:

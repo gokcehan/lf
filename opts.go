@@ -60,6 +60,7 @@ var gOpts struct {
 	reverse          bool
 	roundbox         bool
 	selectfmt        string
+	showbinds        bool
 	sixel            bool
 	sortby           sortMethod
 	smartcase        bool
@@ -206,6 +207,7 @@ func init() {
 	gOpts.reverse = false
 	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
+	gOpts.showbinds = true
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort
 	gOpts.smartcase = true

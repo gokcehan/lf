@@ -169,6 +169,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "roundbox", "noroundbox", "roundbox!":
 		err = applyBoolOpt(&gOpts.roundbox, e)
+	case "showbinds", "noshowbinds", "showbinds!":
+		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "sixel", "nosixel", "sixel!":
 		err = applyBoolOpt(&gOpts.sixel, e)
 	case "smartcase", "nosmartcase", "smartcase!":
