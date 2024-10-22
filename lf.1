@@ -158,7 +158,6 @@ dircounts         bool      (default false)
 dirfirst          bool      (default true)
 dironly           bool      (default false)
 dirpreviews       bool      (default false)
-drawbinds         bool      (default true)
 drawbox           bool      (default false)
 dupfilefmt        string    (default \[aq]%f.\[ti]%n\[ti]\[aq])
 errorfmt          string    (default \[dq]\[rs]033[7;31;47m\[dq])
@@ -197,6 +196,7 @@ selmode           string    (default \[aq]all\[aq])
 shell             string    (default \[aq]sh\[aq] for Unix and \[aq]cmd\[aq] for Windows)
 shellflag         string    (default \[aq]-c\[aq] for Unix and \[aq]/c\[aq] for Windows)
 shellopts         []string  (default \[aq]\[aq])
+showbinds         bool      (default true)
 sixel             bool      (default false)
 smartcase         bool      (default true)
 smartdia          bool      (default false)
@@ -788,9 +788,6 @@ Show only directories.
 .PP
 If enabled, directories will also be passed to the previewer script.
 This allows custom previews for directories.
-.SS drawbinds (bool) (default true)
-.PP
-Draw bindings associated with pressed keys.
 .SS drawbox (bool) (default false)
 .PP
 Draw boxes around panes with box drawing characters.
@@ -1031,6 +1028,9 @@ Command line flag used to pass shell commands.
 .SS shellopts ([]string) (default \[ga]\[ga])
 .PP
 List of shell options to pass to the shell executable.
+.SS showbinds (bool) (default true)
+.PP
+Draw bindings associated with pressed keys.
 .SS sixel (bool) (default false)
 .PP
 Render sixel images in preview.

@@ -43,7 +43,6 @@ var gOpts struct {
 	dirfirst         bool
 	dironly          bool
 	dirpreviews      bool
-	drawbinds        bool
 	drawbox          bool
 	dupfilefmt       string
 	globfilter       bool
@@ -61,6 +60,7 @@ var gOpts struct {
 	reverse          bool
 	roundbox         bool
 	selectfmt        string
+	showbinds        bool
 	sixel            bool
 	sortby           sortMethod
 	smartcase        bool
@@ -184,7 +184,6 @@ func init() {
 	gOpts.dirfirst = true
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
-	gOpts.drawbinds = true
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
@@ -208,6 +207,7 @@ func init() {
 	gOpts.reverse = false
 	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
+	gOpts.showbinds = true
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort
 	gOpts.smartcase = true

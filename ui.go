@@ -1359,7 +1359,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				ui.menuBuf = nil
 				return expr
 			}
-			if gOpts.drawbinds {
+			if gOpts.showbinds {
 				ui.menuBuf = listBinds(binds)
 			}
 			return draw

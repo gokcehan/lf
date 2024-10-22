@@ -83,8 +83,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "dirpreviews", "nodirpreviews", "dirpreviews!":
 		err = applyBoolOpt(&gOpts.dirpreviews, e)
-	case "drawbinds", "nodrawbinds", "drawbinds!":
-		err = applyBoolOpt(&gOpts.drawbinds, e)
+	case "showbinds", "noshowbinds", "showbinds!":
+		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "drawbox", "nodrawbox", "drawbox!":
 		err = applyBoolOpt(&gOpts.drawbox, e)
 		if err == nil {

@@ -140,7 +140,6 @@ The following options can be used to customize the behavior of lf:
     dirfirst          bool      (default true)
     dironly           bool      (default false)
     dirpreviews       bool      (default false)
-    drawbinds         bool      (default true)
     drawbox           bool      (default false)
     dupfilefmt        string    (default '%f.~%n~')
     errorfmt          string    (default "\033[7;31;47m")
@@ -179,6 +178,7 @@ The following options can be used to customize the behavior of lf:
     shell             string    (default 'sh' for Unix and 'cmd' for Windows)
     shellflag         string    (default '-c' for Unix and '/c' for Windows)
     shellopts         []string  (default '')
+    showbinds         bool      (default true)
     sixel             bool      (default false)
     smartcase         bool      (default true)
     smartdia          bool      (default false)
@@ -770,10 +770,6 @@ dirpreviews (bool) (default false)
 If enabled, directories will also be passed to the previewer script.
 This allows custom previews for directories.
 
-drawbinds (bool) (default true)
-
-Draw bindings associated with pressed keys.
-
 drawbox (bool) (default false)
 
 Draw boxes around panes with box drawing characters.
@@ -1014,6 +1010,10 @@ Command line flag used to pass shell commands.
 shellopts ([]string) (default ``)
 
 List of shell options to pass to the shell executable.
+
+showbinds (bool) (default true)
+
+Draw bindings associated with pressed keys.
 
 sixel (bool) (default false)
 
