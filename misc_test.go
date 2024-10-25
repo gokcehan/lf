@@ -335,3 +335,52 @@ func TestGetFileExtension(t *testing.T) {
 		})
 	}
 }
+
+func TestLocaleNaturalLess(t *testing.T) {
+	tests := []struct {
+		s1  string
+		s2  string
+		exp bool
+	}{
+		// preserving behavior of `naturalLess`
+		{"foo", "bar", false},
+		{"bar", "baz", true},
+		{"foo", "123", false},
+		{"foo1", "foobar", true},
+		{"foo1", "foo10", true},
+		{"foo2", "foo10", true},
+		{"foo1", "foo10bar", true},
+		{"foo2", "foo10bar", true},
+		{"foo1bar", "foo10bar", true},
+		{"foo2bar", "foo10bar", true},
+		{"foo1bar", "foo10", true},
+		{"foo2bar", "foo10", true},
+
+		// locale sort
+		{"你好", "他好", true},     // \u4F60\u597D, \u4ED6\u597D
+		{"到这", "到那", false},    // \u5230\u8FD9, \u5230\u90A3
+		{"你说", "什么", true},     // \u4f60\u8bf4, \u4ec0\u4e48
+		{"你好", "World", false}, // \u4F60\u597D, \u57\u6f\u72\u6c\u64
+		{"甲1", "甲乙", true},
+		{"甲1", "甲10", true},
+		{"甲2", "甲10", true},
+		{"甲1", "甲10乙", true},
+		{"甲2", "甲10乙", true},
+		{"甲1乙", "甲10乙", true},
+		{"甲2乙", "甲10乙", true},
+		{"甲1乙", "甲10", true},
+		{"甲2乙", "甲10", true},
+	}
+
+	localeStr := "zh-CN"
+	collator, err := makeCollator(localeStr)
+	if err != nil {
+		t.Fatalf("failed to create collator for %q: %s", localeStr, err)
+	}
+
+	for _, test := range tests {
+		if got := localeNaturalLess(collator, test.s1, test.s2); got != test.exp {
+			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
+		}
+	}
+}
