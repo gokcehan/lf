@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
+	"golang.org/x/text/collate"
 )
 
 type linkState byte
@@ -233,13 +234,14 @@ func (dir *dir) sort() {
 		}
 
 		if dir.locale != localeStrDisable {
-			if collator, err := makeCollator(dir.locale); err == nil {
+			if collator, err := makeCollator(dir.locale, collate.Numeric); err == nil {
 				sort.SliceStable(dir.files, func(i, j int) bool {
 					s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+					result := collator.CompareString(s1, s2)
 					if !dir.reverse {
-						return localeNaturalLess(collator, s1, s2)
+						return result < 0
 					} else {
-						return localeNaturalLess(collator, s2, s1)
+						return result > 0
 					}
 				})
 			} else {

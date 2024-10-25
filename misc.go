@@ -11,7 +11,7 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/jeandeaual/go-locale"
+	"github.com/Xuanwo/go-locale"
 	"github.com/mattn/go-runewidth"
 	"golang.org/x/text/collate"
 	"golang.org/x/text/language"
@@ -354,10 +354,7 @@ func getLocaleTag(localeStr string) (language.Tag, error) {
 
 	if localeStr == localeStrSys {
 		// read environment locale
-		localeStr, err = locale.GetLocale()
-		if err != nil {
-			return localeTag, err
-		}
+		return locale.Detect()
 	}
 
 	localeTag, err = language.Parse(localeStr)
@@ -370,7 +367,7 @@ func getLocaleTag(localeStr string) (language.Tag, error) {
 
 // This function creates new collator for given locale. Passing empty string as
 // as locale means reading locale value from environment.
-func makeCollator(localeStr string) (*collate.Collator, error) {
+func makeCollator(localeStr string, o ...collate.Option) (*collate.Collator, error) {
 	if localeStr == localeStrDisable {
 		return nil, fmt.Errorf("locale suppose to be disabled with given string")
 	}
@@ -380,48 +377,9 @@ func makeCollator(localeStr string) (*collate.Collator, error) {
 		return nil, err
 	}
 
-	collator := collate.New(localeTag)
+	collator := collate.New(localeTag, o...)
 
 	return collator, nil
-}
-
-// This function works like `naturalLess`, except it use locale order when
-// comparing non-digit parts of names.
-func localeNaturalLess(collator *collate.Collator, s1, s2 string) bool {
-	lo1, lo2, hi1, hi2 := 0, 0, 0, 0
-	for {
-		if hi1 >= len(s1) {
-			return hi2 != len(s2)
-		}
-
-		if hi2 >= len(s2) {
-			return false
-		}
-
-		isDigit1 := isDigit(s1[hi1])
-		isDigit2 := isDigit(s2[hi2])
-
-		for lo1 = hi1; hi1 < len(s1) && isDigit(s1[hi1]) == isDigit1; hi1++ {
-		}
-
-		for lo2 = hi2; hi2 < len(s2) && isDigit(s2[hi2]) == isDigit2; hi2++ {
-		}
-
-		if s1[lo1:hi1] == s2[lo2:hi2] {
-			continue
-		}
-
-		if isDigit1 && isDigit2 {
-			num1, err1 := strconv.Atoi(s1[lo1:hi1])
-			num2, err2 := strconv.Atoi(s2[lo2:hi2])
-
-			if err1 == nil && err2 == nil {
-				return num1 < num2
-			}
-		}
-
-		return collator.CompareString(s1[lo1:hi1], s2[lo2:hi2]) < 0
-	}
 }
 
 // We don't need no generic code

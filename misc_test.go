@@ -6,6 +6,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"golang.org/x/text/collate"
 )
 
 func TestIsRoot(t *testing.T) {
@@ -373,13 +375,13 @@ func TestLocaleNaturalLess(t *testing.T) {
 	}
 
 	localeStr := "zh-CN"
-	collator, err := makeCollator(localeStr)
+	collator, err := makeCollator(localeStr, collate.Numeric)
 	if err != nil {
 		t.Fatalf("failed to create collator for %q: %s", localeStr, err)
 	}
 
 	for _, test := range tests {
-		if got := localeNaturalLess(collator, test.s1, test.s2); got != test.exp {
+		if got := collator.CompareString(test.s1, test.s2) < 0; got != test.exp {
 			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
 		}
 	}
