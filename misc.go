@@ -349,15 +349,12 @@ func max(a, b int) int {
 // This function parses given locale string into language tag value. Passing empty
 // string as locale means reading locale value from environment.
 func getLocaleTag(localeStr string) (language.Tag, error) {
-	localeTag := language.Und
-	var err error
-
 	if localeStr == localeStrSys {
 		// read environment locale
 		return locale.Detect()
 	}
 
-	localeTag, err = language.Parse(localeStr)
+	localeTag, err := language.Parse(localeStr)
 	if err != nil {
 		return localeTag, fmt.Errorf("invalid locale %q: %s", localeStr, err)
 	}
@@ -367,7 +364,10 @@ func getLocaleTag(localeStr string) (language.Tag, error) {
 
 // This function creates new collator for given locale. Passing empty string as
 // as locale means reading locale value from environment.
-func makeCollator(localeStr string, o ...collate.Option) (*collate.Collator, error) {
+//
+// *Note*: this function returns error when given `localeStr` has value `localeStrDisable`
+// or is an invalid locale tag.
+func makeCollator(localeStr string, opts ...collate.Option) (*collate.Collator, error) {
 	if localeStr == localeStrDisable {
 		return nil, fmt.Errorf("locale is disabled")
 	}
@@ -377,9 +377,7 @@ func makeCollator(localeStr string, o ...collate.Option) (*collate.Collator, err
 		return nil, err
 	}
 
-	collator := collate.New(localeTag, o...)
-
-	return collator, nil
+	return collate.New(localeTag, opts...), nil
 }
 
 // We don't need no generic code

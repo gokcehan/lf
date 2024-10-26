@@ -224,58 +224,46 @@ func (dir *dir) sort() {
 	// of equivalent elements will be reversed
 	switch dir.sortby {
 	case naturalSort:
-		fallback := func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return naturalLess(s1, s2)
-			} else {
-				return naturalLess(s2, s1)
-			}
-		}
-
-		if dir.locale != localeStrDisable {
-			if collator, err := makeCollator(dir.locale, collate.Numeric); err == nil {
-				sort.SliceStable(dir.files, func(i, j int) bool {
-					s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-					result := collator.CompareString(s1, s2)
-					if !dir.reverse {
-						return result < 0
-					} else {
-						return result > 0
-					}
-				})
-			} else {
-				sort.SliceStable(dir.files, fallback)
-			}
+		if collator, err := makeCollator(dir.locale, collate.Numeric); err == nil {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				result := collator.CompareString(s1, s2)
+				if !dir.reverse {
+					return result < 0
+				} else {
+					return result > 0
+				}
+			})
 		} else {
-			sort.SliceStable(dir.files, fallback)
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				if !dir.reverse {
+					return naturalLess(s1, s2)
+				} else {
+					return naturalLess(s2, s1)
+				}
+			})
 		}
 	case nameSort:
-		fallbackSort := func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return s1 < s2
-			} else {
-				return s2 < s1
-			}
-		}
-
-		if dir.locale != localeStrDisable {
-			if collator, err := makeCollator(dir.locale); err == nil {
-				sort.SliceStable(dir.files, func(i, j int) bool {
-					s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-					result := collator.CompareString(s1, s2)
-					if !dir.reverse {
-						return result < 0
-					} else {
-						return result > 0
-					}
-				})
-			} else {
-				sort.SliceStable(dir.files, fallbackSort)
-			}
+		if collator, err := makeCollator(dir.locale); err == nil {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				result := collator.CompareString(s1, s2)
+				if !dir.reverse {
+					return result < 0
+				} else {
+					return result > 0
+				}
+			})
 		} else {
-			sort.SliceStable(dir.files, fallbackSort)
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				if !dir.reverse {
+					return s1 < s2
+				} else {
+					return s2 < s1
+				}
+			})
 		}
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
