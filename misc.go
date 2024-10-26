@@ -369,7 +369,7 @@ func getLocaleTag(localeStr string) (language.Tag, error) {
 // as locale means reading locale value from environment.
 func makeCollator(localeStr string, o ...collate.Option) (*collate.Collator, error) {
 	if localeStr == localeStrDisable {
-		return nil, fmt.Errorf("locale suppose to be disabled with given string")
+		return nil, fmt.Errorf("locale is disabled")
 	}
 
 	localeTag, err := getLocaleTag(localeStr)
