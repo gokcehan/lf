@@ -169,7 +169,7 @@ The following options can be used to customize the behavior of lf:
 	info              []string  (default '')
 	infotimefmtnew    string    (default 'Jan _2 15:04')
 	infotimefmtold    string    (default 'Jan _2  2006')
-    locale            string    (default '')
+	locale            string    (default '')
 	mouse             bool      (default false)
 	number            bool      (default false)
 	numberfmt         string    (default "\033[33m")
@@ -824,13 +824,11 @@ Format string of the file time shown in the info column when it matches this yea
 
 Format string of the file time shown in the info column when it doesn't match this year.
 
-## locale (string) (default `''`)
+## locale (string) (default ``)
 
-An IETF BCP 47 language tag (e.g. `zh-CN`) for specifying the locale used when using sort type
-`natural` and `name`.
+An IETF BCP 47 language tag (e.g. `zh-CN`) for specifying the locale used when using sort type `natural` and `name`.
 
-An empty string means disable locale ordering, and the special value `'*'` is used
-to indicate reading the locale setting from the system environment.
+An empty string means disable locale ordering, and the special value `*` is used to indicate reading the locale setting from the system environment.
 
 ## mouse (bool) (default false)
 

@@ -177,6 +177,7 @@ incsearch         bool      (default false)
 info              []string  (default \[aq]\[aq])
 infotimefmtnew    string    (default \[aq]Jan _2 15:04\[aq])
 infotimefmtold    string    (default \[aq]Jan _2  2006\[aq])
+locale            string    (default \[aq]\[aq])
 mouse             bool      (default false)
 number            bool      (default false)
 numberfmt         string    (default \[dq]\[rs]033[33m\[dq])
@@ -895,6 +896,15 @@ this year.
 .PP
 Format string of the file time shown in the info column when it
 doesn\[aq]t match this year.
+.SS locale (string) (default \[ga]\[ga])
+.PP
+An IETF BCP 47 language tag (e.g.
+\f[C]zh-CN\f[R]) for specifying the locale used when using sort type
+\f[C]natural\f[R] and \f[C]name\f[R].
+.PP
+An empty string means disable locale ordering, and the special value
+\f[C]*\f[R] is used to indicate reading the locale setting from the
+system environment.
 .SS mouse (bool) (default false)
 .PP
 Send mouse events as input.
@@ -1316,7 +1326,7 @@ Command \f[C]setlocal\f[R] is used to set a local option for a directory
 which can be a boolean or string.
 Currently supported local options are \f[C]dirfirst\f[R],
 \f[C]dironly\f[R], \f[C]hidden\f[R], \f[C]info\f[R], \f[C]reverse\f[R],
-and \f[C]sortby\f[R].
+\f[C]sortby\f[R] and \f[C]locale\f[R].
 Adding a trailing path separator (i.e.
 \f[C]/\f[R] for Unix and \f[C]\[rs]\f[R] for Windows) sets the option
 for the given directory along with its subdirectories:
