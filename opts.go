@@ -53,6 +53,7 @@ var gOpts struct {
 	ignoredia        bool
 	incfilter        bool
 	incsearch        bool
+	locale           string
 	mouse            bool
 	number           bool
 	preview          bool
@@ -111,6 +112,7 @@ var gLocalOpts struct {
 	hiddens   map[string]bool
 	reverses  map[string]bool
 	infos     map[string][]string
+	locales   map[string]string
 }
 
 func localOptPaths(path string) []string {
@@ -176,6 +178,15 @@ func getSortBy(path string) sortMethod {
 	return gOpts.sortby
 }
 
+func getLocale(path string) string {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.locales[key]; ok {
+			return val
+		}
+	}
+	return gOpts.locale
+}
+
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = false
@@ -200,6 +211,7 @@ func init() {
 	gOpts.ignoredia = true
 	gOpts.incfilter = false
 	gOpts.incsearch = false
+	gOpts.locale = localeStrDisable
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.preview = true
@@ -370,6 +382,7 @@ func init() {
 	gLocalOpts.hiddens = make(map[string]bool)
 	gLocalOpts.reverses = make(map[string]bool)
 	gLocalOpts.infos = make(map[string][]string)
+	gLocalOpts.locales = make(map[string]string)
 
 	setDefaults()
 }

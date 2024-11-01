@@ -11,7 +11,15 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/Xuanwo/go-locale"
 	"github.com/mattn/go-runewidth"
+	"golang.org/x/text/collate"
+	"golang.org/x/text/language"
+)
+
+const (
+	localeStrDisable = ""  // disable locale ordering for this locale value
+	localeStrSys     = "*" // replace this locale value with locale value read from environment
 )
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
@@ -336,6 +344,40 @@ func max(a, b int) int {
 		return a
 	}
 	return b
+}
+
+// This function parses given locale string into language tag value. Passing empty
+// string as locale means reading locale value from environment.
+func getLocaleTag(localeStr string) (language.Tag, error) {
+	if localeStr == localeStrSys {
+		// read environment locale
+		return locale.Detect()
+	}
+
+	localeTag, err := language.Parse(localeStr)
+	if err != nil {
+		return localeTag, fmt.Errorf("invalid locale %q: %s", localeStr, err)
+	}
+
+	return localeTag, nil
+}
+
+// This function creates new collator for given locale. Passing empty string as
+// as locale means reading locale value from environment.
+//
+// *Note*: this function returns error when given `localeStr` has value `localeStrDisable`
+// or is an invalid locale tag.
+func makeCollator(localeStr string, opts ...collate.Option) (*collate.Collator, error) {
+	if localeStr == localeStrDisable {
+		return nil, fmt.Errorf("locale is disabled")
+	}
+
+	localeTag, err := getLocaleTag(localeStr)
+	if err != nil {
+		return nil, err
+	}
+
+	return collate.New(localeTag, opts...), nil
 }
 
 // We don't need no generic code

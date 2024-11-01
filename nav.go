@@ -16,6 +16,7 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
+	"golang.org/x/text/collate"
 )
 
 type linkState byte
@@ -171,6 +172,7 @@ type dir struct {
 	filter      []string   // last filter for this directory
 	ignorecase  bool       // ignorecase value from last sort
 	ignoredia   bool       // ignoredia value from last sort
+	locale      string     // locale value from last sort
 	noPerm      bool       // whether lf has no permission to open the directory
 	lines       []string   // lines of text to display if directory previews are enabled
 }
@@ -211,6 +213,7 @@ func (dir *dir) sort() {
 	dir.dironly = getDirOnly(dir.path)
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
+	dir.locale = getLocale(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -221,23 +224,47 @@ func (dir *dir) sort() {
 	// of equivalent elements will be reversed
 	switch dir.sortby {
 	case naturalSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return naturalLess(s1, s2)
-			} else {
-				return naturalLess(s2, s1)
-			}
-		})
+		if collator, err := makeCollator(dir.locale, collate.Numeric); err == nil {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				result := collator.CompareString(s1, s2)
+				if !dir.reverse {
+					return result < 0
+				} else {
+					return result > 0
+				}
+			})
+		} else {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				if !dir.reverse {
+					return naturalLess(s1, s2)
+				} else {
+					return naturalLess(s2, s1)
+				}
+			})
+		}
 	case nameSort:
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			if !dir.reverse {
-				return s1 < s2
-			} else {
-				return s2 < s1
-			}
-		})
+		if collator, err := makeCollator(dir.locale); err == nil {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				result := collator.CompareString(s1, s2)
+				if !dir.reverse {
+					return result < 0
+				} else {
+					return result > 0
+				}
+			})
+		} else {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				if !dir.reverse {
+					return s1 < s2
+				} else {
+					return s2 < s1
+				}
+			})
+		}
 	case sizeSort:
 		sort.SliceStable(dir.files, func(i, j int) bool {
 			if !dir.reverse {
@@ -463,6 +490,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		dironly:     getDirOnly(path),
 		hidden:      getHidden(path),
 		reverse:     getReverse(path),
+		locale:      getLocale(path),
 		hiddenfiles: gOpts.hiddenfiles,
 		ignorecase:  gOpts.ignorecase,
 		ignoredia:   gOpts.ignoredia,
@@ -527,6 +555,7 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.dironly != getDirOnly(dir.path) ||
 		dir.hidden != getHidden(dir.path) ||
 		dir.reverse != getReverse(dir.path) ||
+		dir.locale != getLocale(dir.path) ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:

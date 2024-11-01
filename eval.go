@@ -269,6 +269,17 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
+	case "locale":
+		localeStr := e.val
+		if localeStr != localeStrDisable {
+			if _, err = getLocaleTag(localeStr); err != nil {
+				app.ui.echoerrf("locale: %s", err.Error())
+				return
+			}
+		}
+		gOpts.locale = localeStr
+		app.nav.sort()
+		app.ui.sort()
 	case "rulerfmt":
 		gOpts.rulerfmt = e.val
 	case "preserve":
@@ -498,6 +509,17 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			return
 		}
 		gLocalOpts.sortbys[e.path] = method
+		app.nav.sort()
+		app.ui.sort()
+	case "locale":
+		localeStr := e.val
+		if localeStr != localeStrDisable {
+			if _, err = getLocaleTag(localeStr); err != nil {
+				app.ui.echoerrf("locale: %s", err.Error())
+				return
+			}
+		}
+		gLocalOpts.locales[e.path] = localeStr
 		app.nav.sort()
 		app.ui.sort()
 	default:
