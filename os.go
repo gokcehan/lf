@@ -189,11 +189,9 @@ func isExecutable(f os.FileInfo) bool {
 func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	hidden := false
 	for _, pattern := range hiddenfiles {
-		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if !matched {
-			continue
+		if matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path) {
+			hidden = !strings.HasPrefix(pattern, "!")
 		}
-		hidden = !strings.HasPrefix(pattern, "!")
 	}
 	return hidden
 }
