@@ -188,10 +188,14 @@ func getLocale(path string) string {
 }
 
 func init() {
-	// Values missing from here relies on their Go default values
 	gOpts.anchorfind = true
+	gOpts.autoquit = false
 	gOpts.dircache = true
+	gOpts.dircounts = false
 	gOpts.dirfirst = true
+	gOpts.dironly = false
+	gOpts.dirpreviews = false
+	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
 	gOpts.copyfmt = "\033[7;33m"
@@ -199,20 +203,40 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
+	gOpts.globfilter = false
+	gOpts.globsearch = false
+	gOpts.hidden = false
+	gOpts.icons = false
 	gOpts.ignorecase = true
 	gOpts.ignoredia = true
+	gOpts.incfilter = false
+	gOpts.incsearch = false
 	gOpts.locale = localeStrDisable
+	gOpts.mouse = false
+	gOpts.number = false
 	gOpts.preview = true
+	gOpts.relativenumber = false
+	gOpts.reverse = false
+	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
 	gOpts.showbinds = true
+	gOpts.sixel = false
 	gOpts.sortby = naturalSort
 	gOpts.smartcase = true
+	gOpts.smartdia = false
 	gOpts.waitmsg = "Press any key to continue"
+	gOpts.watch = false
 	gOpts.wrapscan = true
+	gOpts.wrapscroll = false
 	gOpts.findlen = 1
+	gOpts.period = 0
+	gOpts.scrolloff = 0
 	gOpts.tabstop = 8
 	gOpts.errorfmt = "\033[7;31;47m"
 	gOpts.filesep = "\n"
+	gOpts.ifs = ""
+	gOpts.previewer = ""
+	gOpts.cleaner = ""
 	gOpts.promptfmt = "\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m"
 	gOpts.selmode = "all"
 	gOpts.shell = gDefaultShell
@@ -226,8 +250,10 @@ func init() {
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.hiddenfiles = gDefaultHiddenFiles
 	gOpts.history = true
+	gOpts.info = nil
 	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
 	gOpts.preserve = []string{"mode"}
+	gOpts.shellopts = nil
 	gOpts.tempmarks = "'"
 	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
