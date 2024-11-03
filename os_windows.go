@@ -190,30 +190,29 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	hidden := false
 	for _, pattern := range hiddenfiles {
 		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if strings.HasPrefix(pattern, "!") && matched {
-			hidden = false
-		} else if matched {
-			hidden = true
+		if !matched {
+			continue
 		}
+		hidden = !strings.HasPrefix(pattern, "!")
 	}
 
 	return hidden
 }
 
-func userName(f os.FileInfo) string {
+func userName(_ os.FileInfo) string {
 	return ""
 }
 
-func groupName(f os.FileInfo) string {
+func groupName(_ os.FileInfo) string {
 	return ""
 }
 
-func linkCount(f os.FileInfo) string {
+func linkCount(_ os.FileInfo) string {
 	return ""
 }
 
 func errCrossDevice(err error) bool {
-	return err.(*os.LinkError).Err.(windows.Errno) == 17
+	return err.(*os.LinkError).Err.(windows.Errno) == windows.ERROR_NOT_SAME_DEVICE
 }
 
 func quoteString(s string) string {

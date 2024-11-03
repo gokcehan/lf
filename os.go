@@ -10,6 +10,7 @@ import (
 	"os/user"
 	"path/filepath"
 	"runtime"
+	"strconv"
 	"strings"
 	"syscall"
 
@@ -155,7 +156,7 @@ func shellKill(cmd *exec.Cmd) error {
 	pgid, err := unix.Getpgid(cmd.Process.Pid)
 	if err == nil && cmd.Process.Pid == pgid {
 		// kill the process group
-		err = unix.Kill(-pgid, 15)
+		err = unix.Kill(-pgid, syscall.SIGTERM)
 		if err == nil {
 			return nil
 		}
@@ -189,42 +190,39 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	hidden := false
 	for _, pattern := range hiddenfiles {
 		matched := matchPattern(strings.TrimPrefix(pattern, "!"), f.Name(), path)
-		if strings.HasPrefix(pattern, "!") && matched {
-			hidden = false
-		} else if matched {
-			hidden = true
+		if !matched {
+			continue
 		}
+		hidden = !strings.HasPrefix(pattern, "!")
 	}
 	return hidden
 }
 
 func userName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		uid := fmt.Sprint(stat.Uid)
+		uid := strconv.FormatUint(uint64(stat.Uid), 10)
 		if u, err := user.LookupId(uid); err == nil {
 			return u.Username
-		} else {
-			return uid
 		}
+		return uid
 	}
 	return ""
 }
 
 func groupName(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		gid := fmt.Sprint(stat.Gid)
+		gid := strconv.FormatUint(uint64(stat.Gid), 10)
 		if g, err := user.LookupGroupId(gid); err == nil {
 			return g.Name
-		} else {
-			return gid
 		}
+		return gid
 	}
 	return ""
 }
 
 func linkCount(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		return fmt.Sprint(stat.Nlink)
+		return strconv.FormatUint(uint64(stat.Nlink), 10)
 	}
 	return ""
 }
