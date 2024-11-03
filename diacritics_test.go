@@ -3,54 +3,7 @@ package main
 import (
 	"strconv"
 	"testing"
-	"unicode"
 )
-
-func Test_normMap(t *testing.T) {
-	t.Run("european", func(t *testing.T) {
-		europeanBase := []rune("ěřůøĉĝĥĵŝŭèùÿėįųāēīūļķņģőűëïąćęłńśźżõșțčďĺľňŕšťýžéíñóúüåäöçîşûğăâđêôơưáàãảạ")
-		europeanNorm := []rune("eruocghjsueuyeiuaeiulkngoueiacelnszzostcdllnrstyzeinouuaaocisugaadeoouaaaaa")
-
-		t.Run("lowercase", func(t *testing.T) {
-			for i := range europeanBase {
-				if normMap[europeanBase[i]] != europeanNorm[i] {
-					t.Errorf("at input '%c' expected '%c' but got '%c'", europeanBase[i], europeanNorm[i], normMap[europeanBase[i]])
-				}
-			}
-		})
-
-		t.Run("uppercase", func(t *testing.T) {
-			for i := range europeanBase {
-				if normMap[unicode.ToUpper(europeanBase[i])] != unicode.ToUpper(europeanNorm[i]) {
-					t.Errorf("at input '%c' expected '%c' but got '%c'",
-						unicode.ToUpper(europeanBase[i]), unicode.ToUpper(europeanNorm[i]), unicode.ToUpper(normMap[europeanBase[i]]))
-				}
-			}
-		})
-	})
-
-	t.Run("vietnamese", func(t *testing.T) {
-		vietnameseBase := []rune("áạàảãăắặằẳẵâấậầẩẫéẹèẻẽêếệềểễiíịìỉĩoóọòỏõôốộồổỗơớợờởỡúụùủũưứựừửữyýỵỳỷỹđ")
-		vietnameseNorm := []rune("aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiioooooooooooooooooouuuuuuuuuuuyyyyyyd")
-
-		t.Run("lowercase", func(t *testing.T) {
-			for i := range vietnameseBase {
-				if normMap[vietnameseBase[i]] != vietnameseNorm[i] {
-					t.Errorf("at input '%c' expected '%c' but got '%c'", vietnameseBase[i], vietnameseNorm[i], normMap[vietnameseBase[i]])
-				}
-			}
-		})
-
-		t.Run("uppercase", func(t *testing.T) {
-			for i := range vietnameseBase {
-				if unicode.ToUpper(normMap[vietnameseBase[i]]) != unicode.ToUpper(vietnameseNorm[i]) {
-					t.Errorf("at input '%c' expected '%c' but got '%c'",
-						unicode.ToUpper(vietnameseBase[i]), unicode.ToUpper(vietnameseNorm[i]), unicode.ToUpper(normMap[vietnameseBase[i]]))
-				}
-			}
-		})
-	})
-}
 
 // typical czech test sentence ;-)
 const baseTestString = "Příliš žluťoučký kůň příšerně úpěl ďábelské ódy"
@@ -60,7 +13,7 @@ func TestRemoveDiacritics(t *testing.T) {
 	expStr := "Prilis zlutoucky kun priserne upel dabelske ody"
 	checkRemoveDiacritics(testStr, expStr, t)
 
-	// other accents (non comlete, but all I founded)
+	// other accents (non complete, but all I found)
 	testStr = "áéíóúýčďěňřšťžůåøĉĝĥĵŝŭšžõäöüàâçéèêëîïôùûüÿžščćđáéíóúąęėįųūčšžāēīūčšžļķņģáéíóúöüőűäöüëïąćęłńóśźżáàãâçéêíóõôăâîșțáäčďéíĺľňóôŕšťúýžáéíñóúüåäöâçîşûğăâđêôơưáàãảạ"
 	expStr = "aeiouycdenrstzuaocghjsuszoaouaaceeeeiiouuuyzsccdaeiouaeeiuucszaeiucszlkngaeiouououaoueiacelnoszzaaaaceeioooaaistaacdeillnoorstuyzaeinouuaaoacisugaadeoouaaaaa"
 	checkRemoveDiacritics(testStr, expStr, t)

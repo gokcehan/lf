@@ -38,7 +38,6 @@ var normMap = map[rune]rune{
 	'Y': 'Y', 'Ỵ': 'Y', 'Ỳ': 'Y', 'Ỷ': 'Y', 'Ỹ': 'Y',
 }
 
-// Remove diacritics and make lowercase.
 func removeDiacritics(baseString string) string {
 	normalizedRunes := make([]rune, 0, len(baseString))
 	for _, baseRune := range baseString {
