@@ -1,6 +1,6 @@
 module github.com/gokcehan/lf
 
-go 1.18
+go 1.23
 
 require (
 	github.com/Xuanwo/go-locale v1.1.2

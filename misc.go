@@ -335,22 +335,6 @@ var (
 	reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
 )
 
-// TODO: Remove when bumping to Go 1.21+
-func min(a, b int) int {
-	if a < b {
-		return a
-	}
-	return b
-}
-
-// TODO: Remove when bumping to Go 1.21+
-func max(a, b int) int {
-	if a > b {
-		return a
-	}
-	return b
-}
-
 // This function parses given locale string into language tag value. Passing empty
 // string as locale means reading locale value from environment.
 func getLocaleTag(localeStr string) (language.Tag, error) {
