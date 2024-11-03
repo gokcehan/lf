@@ -105,9 +105,7 @@ func (im *iconMap) parseEnv(env string) {
 }
 
 func (im *iconMap) parseArray(arr []string) {
-	key := arr[0]
-
-	key = replaceTilde(key)
+	key := replaceTilde(arr[0])
 
 	if filepath.IsAbs(key) {
 		key = filepath.Clean(key)

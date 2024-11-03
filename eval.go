@@ -326,7 +326,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.promptfmt = e.val
 	case "ratios":
 		toks := strings.Split(e.val, ":")
-		var rats []int
+		rats := make([]int, 0, len(toks))
 		for _, s := range toks {
 			n, err := strconv.Atoi(s)
 			if err != nil {

@@ -98,7 +98,7 @@ func parseEscapeSequence(s string) tcell.Style {
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
-	var nums []int
+	nums := make([]int, 0, len(toks))
 	for _, tok := range toks {
 		if tok == "" {
 			nums = append(nums, 0)
@@ -115,7 +115,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	// ECMA-48 details the standard
 	// TODO: should we support turning off attributes?
 	//    Probably because this is used for previewers too
-	for i := 0; i < len(nums); i++ {
+	numslen := len(nums)
+	for i := 0; i < numslen; i++ {
 		n := nums[i]
 		switch {
 		case n == 0:
@@ -143,10 +144,10 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 		case n >= 90 && n <= 97:
 			st = st.Foreground(tcell.PaletteColor(n - 82))
 		case n == 38:
-			if i+3 <= len(nums) && nums[i+1] == 5 {
+			if i+3 <= numslen && nums[i+1] == 5 {
 				st = st.Foreground(tcell.PaletteColor(nums[i+2]))
 				i += 2
-			} else if i+5 <= len(nums) && nums[i+1] == 2 {
+			} else if i+5 <= numslen && nums[i+1] == 2 {
 				st = st.Foreground(tcell.NewRGBColor(
 					int32(nums[i+2]),
 					int32(nums[i+3]),
@@ -160,10 +161,10 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 		case n >= 100 && n <= 107:
 			st = st.Background(tcell.PaletteColor(n - 92))
 		case n == 48:
-			if i+3 <= len(nums) && nums[i+1] == 5 {
+			if i+3 <= numslen && nums[i+1] == 5 {
 				st = st.Background(tcell.PaletteColor(nums[i+2]))
 				i += 2
-			} else if i+5 <= len(nums) && nums[i+1] == 2 {
+			} else if i+5 <= numslen && nums[i+1] == 2 {
 				st = st.Background(tcell.NewRGBColor(
 					int32(nums[i+2]),
 					int32(nums[i+3]),

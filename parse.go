@@ -324,9 +324,6 @@ func (p *parser) parseExpr() expr {
 }
 
 func (p *parser) parse() bool {
-	if p.expr = p.parseExpr(); p.expr == nil {
-		return false
-	}
-
-	return true
+	p.expr = p.parseExpr()
+	return p.expr != nil
 }

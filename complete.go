@@ -215,9 +215,9 @@ func matchExec(s string) (matches []string, longest []rune) {
 		}
 	}
 
-	sort.Strings(words)
-
 	if len(words) > 0 {
+		sort.Strings(words)
+
 		uniq := words[:1]
 		for i := 1; i < len(words); i++ {
 			if words[i] != words[i-1] {
@@ -294,7 +294,8 @@ func matchFile(s string) (matches []string, longest []rune) {
 }
 
 func matchCmd(s string) (matches []string, longest []rune) {
-	words := gCmdWords
+	words := make([]string, 0, len(gCmdWords)+len(gOpts.cmds))
+	words = append(words, gCmdWords...)
 	for c := range gOpts.cmds {
 		words = append(words, c)
 	}

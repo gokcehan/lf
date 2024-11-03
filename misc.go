@@ -26,7 +26,7 @@ func isRoot(name string) bool { return filepath.Dir(name) == name }
 
 func replaceTilde(s string) string {
 	if strings.HasPrefix(s, "~") {
-		s = strings.Replace(s, "~", gUser.HomeDir, 1)
+		return gUser.HomeDir + s[1:]
 	}
 	return s
 }
@@ -76,7 +76,7 @@ func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 }
 
 // This function is used to escape whitespaces and special characters with
-// backlashes in a given string.
+// backslashes in a given string.
 func escape(s string) string {
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
@@ -88,7 +88,7 @@ func escape(s string) string {
 	return string(buf)
 }
 
-// This function is used to remove backlashes that are used to escape
+// This function is used to remove backslashes that are used to escape
 // whitespaces and special characters in a given string.
 func unescape(s string) string {
 	esc := false
@@ -139,8 +139,7 @@ func tokenize(s string) []string {
 			buf = nil
 		}
 	}
-	toks = append(toks, string(buf))
-	return toks
+	return append(toks, string(buf))
 }
 
 // This function splits the first word of a string delimited by whitespace from
@@ -198,15 +197,16 @@ func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 			}
 			return !squote && !dquote && unicode.IsSpace(r)
 		})
+		arrlen := len(arr)
 
-		if len(arr) < min_cols || len(arr) > max_cols {
+		if arrlen < min_cols || arrlen > max_cols {
 			if min_cols == max_cols {
 				return nil, fmt.Errorf("expected %d columns but found: %s", min_cols, s.Text())
 			}
 			return nil, fmt.Errorf("expected %d~%d columns but found: %s", min_cols, max_cols, s.Text())
 		}
 
-		for i := 0; i < len(arr); i++ {
+		for i := 0; i < arrlen; i++ {
 			squote, dquote = false, false
 			buf := make([]rune, 0, len(arr[i]))
 			for _, r := range arr[i] {
@@ -257,7 +257,8 @@ func humanize(size int64) string {
 	for _, s := range suffix {
 		if curr < 10 {
 			return fmt.Sprintf("%.1f%s", curr-0.0499, s)
-		} else if curr < 1000 {
+		}
+		if curr < 1000 {
 			return fmt.Sprintf("%d%s", int(curr), s)
 		}
 		curr /= 1000
@@ -272,22 +273,24 @@ func humanize(size int64) string {
 // than 'foo10bar'.
 func naturalLess(s1, s2 string) bool {
 	lo1, lo2, hi1, hi2 := 0, 0, 0, 0
+	s1len := len(s1)
+	s2len := len(s2)
 	for {
-		if hi1 >= len(s1) {
-			return hi2 != len(s2)
+		if hi1 >= s1len {
+			return hi2 != s2len
 		}
 
-		if hi2 >= len(s2) {
+		if hi2 >= s2len {
 			return false
 		}
 
 		isDigit1 := isDigit(s1[hi1])
 		isDigit2 := isDigit(s2[hi2])
 
-		for lo1 = hi1; hi1 < len(s1) && isDigit(s1[hi1]) == isDigit1; hi1++ {
+		for lo1 = hi1; hi1 < s1len && isDigit(s1[hi1]) == isDigit1; hi1++ {
 		}
 
-		for lo2 = hi2; hi2 < len(s2) && isDigit(s2[hi2]) == isDigit2; hi2++ {
+		for lo2 = hi2; hi2 < s2len && isDigit(s2[hi2]) == isDigit2; hi2++ {
 		}
 
 		if s1[lo1:hi1] == s2[lo2:hi2] {
@@ -332,6 +335,7 @@ var (
 	reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
 )
 
+// TODO: Remove when bumping to Go 1.21+
 func min(a, b int) int {
 	if a < b {
 		return a
@@ -339,6 +343,7 @@ func min(a, b int) int {
 	return b
 }
 
+// TODO: Remove when bumping to Go 1.21+
 func max(a, b int) int {
 	if a > b {
 		return a
