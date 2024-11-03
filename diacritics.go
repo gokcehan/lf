@@ -1,51 +1,45 @@
 package main
 
-import (
-	"strconv"
-	"unicode"
-)
+var normMap = map[rune]rune{
+	// lowercase (not only) european
+	'ě': 'e', 'ř': 'r', 'ů': 'u', 'ø': 'o', 'ĉ': 'c', 'ĝ': 'g', 'ĥ': 'h', 'ĵ': 'j', 'ŝ': 's',
+	'ŭ': 'u', 'è': 'e', 'ù': 'u', 'ÿ': 'y', 'ė': 'e', 'į': 'i', 'ų': 'u', 'ā': 'a', 'ē': 'e',
+	'ī': 'i', 'ū': 'u', 'ļ': 'l', 'ķ': 'k', 'ņ': 'n', 'ģ': 'g', 'ő': 'o', 'ű': 'u', 'ë': 'e',
+	'ï': 'i', 'ą': 'a', 'ć': 'c', 'ę': 'e', 'ł': 'l', 'ń': 'n', 'ś': 's', 'ź': 'z', 'ż': 'z',
+	'õ': 'o', 'ș': 's', 'ț': 't', 'č': 'c', 'ď': 'd', 'ĺ': 'l', 'ľ': 'l', 'ň': 'n', 'ŕ': 'r',
+	'š': 's', 'ť': 't', 'ý': 'y', 'ž': 'z', 'é': 'e', 'í': 'i', 'ñ': 'n', 'ó': 'o', 'ú': 'u',
+	'ü': 'u', 'å': 'a', 'ä': 'a', 'ö': 'o', 'ç': 'c', 'î': 'i', 'ş': 's', 'û': 'u', 'ğ': 'g',
+	'ă': 'a', 'â': 'a', 'đ': 'd', 'ê': 'e', 'ô': 'o', 'ơ': 'o', 'ư': 'u', 'á': 'a', 'à': 'a',
+	'ã': 'a', 'ả': 'a', 'ạ': 'a',
+	// uppercase (not only) european
+	'Ě': 'E', 'Ř': 'R', 'Ů': 'U', 'Ø': 'O', 'Ĉ': 'C', 'Ĝ': 'G', 'Ĥ': 'H', 'Ĵ': 'J', 'Ŝ': 'S',
+	'Ŭ': 'U', 'È': 'E', 'Ù': 'U', 'Ÿ': 'Y', 'Ė': 'E', 'Į': 'I', 'Ų': 'U', 'Ā': 'A', 'Ē': 'E',
+	'Ī': 'I', 'Ū': 'U', 'Ļ': 'L', 'Ķ': 'K', 'Ņ': 'N', 'Ģ': 'G', 'Ő': 'O', 'Ű': 'U', 'Ë': 'E',
+	'Ï': 'I', 'Ą': 'A', 'Ć': 'C', 'Ę': 'E', 'Ł': 'L', 'Ń': 'N', 'Ś': 'S', 'Ź': 'Z', 'Ż': 'Z',
+	'Õ': 'O', 'Ș': 'S', 'Ț': 'T', 'Č': 'C', 'Ď': 'D', 'Ĺ': 'L', 'Ľ': 'L', 'Ň': 'N', 'Ŕ': 'R',
+	'Š': 'S', 'Ť': 'T', 'Ý': 'Y', 'Ž': 'Z', 'É': 'E', 'Í': 'I', 'Ñ': 'N', 'Ó': 'O', 'Ú': 'U',
+	'Ü': 'U', 'Å': 'A', 'Ä': 'A', 'Ö': 'O', 'Ç': 'C', 'Î': 'I', 'Ş': 'S', 'Û': 'U', 'Ğ': 'G',
+	'Ă': 'A', 'Â': 'A', 'Đ': 'D', 'Ê': 'E', 'Ô': 'O', 'Ơ': 'O', 'Ư': 'U', 'Á': 'A', 'À': 'A',
+	'Ã': 'A', 'Ả': 'A', 'Ạ': 'A',
 
-var normMap map[rune]rune
-
-func init() {
-	normMap = make(map[rune]rune)
-
-	// (not only) european
-	appendTransliterate(
-		"ěřůøĉĝĥĵŝŭèùÿėįųāēīūļķņģőűëïąćęłńśźżõșțčďĺľňŕšťýžéíñóúüåäöçîşûğăâđêôơưáàãảạ",
-		"eruocghjsueuyeiuaeiulkngoueiacelnszzostcdllnrstyzeinouuaaocisugaadeoouaaaaa",
-	)
-
-	// Vietnamese
-	appendTransliterate(
-		"áạàảãăắặằẳẵâấậầẩẫéẹèẻẽêếệềểễiíịìỉĩoóọòỏõôốộồổỗơớợờởỡúụùủũưứựừửữyýỵỳỷỹđ",
-		"aaaaaaaaaaaaaaaaaeeeeeeeeeeeiiiiiioooooooooooooooooouuuuuuuuuuuyyyyyyd",
-	)
+	// lowercase Vietnamese
+	'ắ': 'a', 'ặ': 'a', 'ằ': 'a', 'ẳ': 'a', 'ẵ': 'a', 'ấ': 'a', 'ậ': 'a', 'ầ': 'a', 'ẩ': 'a',
+	'ẫ': 'a', 'ẹ': 'e', 'ẻ': 'e', 'ẽ': 'e', 'ế': 'e', 'ệ': 'e', 'ề': 'e', 'ể': 'e', 'ễ': 'e',
+	'i': 'i', 'ị': 'i', 'ì': 'i', 'ỉ': 'i', 'ĩ': 'i', 'o': 'o', 'ọ': 'o', 'ò': 'o', 'ỏ': 'o',
+	'ố': 'o', 'ộ': 'o', 'ồ': 'o', 'ổ': 'o', 'ỗ': 'o', 'ớ': 'o', 'ợ': 'o', 'ờ': 'o', 'ở': 'o',
+	'ỡ': 'o', 'ụ': 'u', 'ủ': 'u', 'ũ': 'u', 'ứ': 'u', 'ự': 'u', 'ừ': 'u', 'ử': 'u', 'ữ': 'u',
+	'y': 'y', 'ỵ': 'y', 'ỳ': 'y', 'ỷ': 'y', 'ỹ': 'y',
+	// uppercase Vietnamese
+	'Ắ': 'A', 'Ặ': 'A', 'Ằ': 'A', 'Ẳ': 'A', 'Ẵ': 'A', 'Ấ': 'A', 'Ậ': 'A', 'Ầ': 'A', 'Ẩ': 'A',
+	'Ẫ': 'A', 'Ẹ': 'E', 'Ẻ': 'E', 'Ẽ': 'E', 'Ế': 'E', 'Ệ': 'E', 'Ề': 'E', 'Ể': 'E', 'Ễ': 'E',
+	'I': 'I', 'Ị': 'I', 'Ì': 'I', 'Ỉ': 'I', 'Ĩ': 'I', 'O': 'O', 'Ọ': 'O', 'Ò': 'O', 'Ỏ': 'O',
+	'Ố': 'O', 'Ộ': 'O', 'Ồ': 'O', 'Ổ': 'O', 'Ỗ': 'O', 'Ớ': 'O', 'Ợ': 'O', 'Ờ': 'O', 'Ở': 'O',
+	'Ỡ': 'O', 'Ụ': 'U', 'Ủ': 'U', 'Ũ': 'U', 'Ứ': 'U', 'Ự': 'U', 'Ừ': 'U', 'Ử': 'U', 'Ữ': 'U',
+	'Y': 'Y', 'Ỵ': 'Y', 'Ỳ': 'Y', 'Ỷ': 'Y', 'Ỹ': 'Y',
 }
 
-func appendTransliterate(base, norm string) {
-	normRunes := []rune(norm)
-	baseRunes := []rune(base)
-
-	lenNorm := len(normRunes)
-	lenBase := len(baseRunes)
-	if lenNorm != lenBase {
-		panic("Base and normalized strings have differend length: base=" + strconv.Itoa(lenBase) + ", norm=" + strconv.Itoa(lenNorm)) // programmer error in constant length
-	}
-
-	for i := 0; i < lenBase; i++ {
-		normMap[baseRunes[i]] = normRunes[i]
-
-		baseUpper := unicode.ToUpper(baseRunes[i])
-		normUpper := unicode.ToUpper(normRunes[i])
-
-		normMap[baseUpper] = normUpper
-	}
-}
-
-// Remove diacritics and make lowercase.
 func removeDiacritics(baseString string) string {
-	var normalizedRunes []rune
+	normalizedRunes := make([]rune, 0, len(baseString))
 	for _, baseRune := range baseString {
 		if normRune, ok := normMap[baseRune]; ok {
 			normalizedRunes = append(normalizedRunes, normRune)
