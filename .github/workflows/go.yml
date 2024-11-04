@@ -21,7 +21,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.18"
+        go-version: "1.23"
 
     - name: Build
       run: go build -v ./...
@@ -31,7 +31,7 @@ jobs:
 
     - uses: dominikh/staticcheck-action@v1.3.1
       with:
-        version: "2022.1.3"
+        version: "2024.1.1"
         install-go: false
 
   cross-compile:
@@ -44,7 +44,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.18"
+        go-version: "1.23"
 
     - name: Cross-compile on all supported platforms
       run: gen/xbuild.sh
@@ -59,7 +59,7 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v5
       with:
-        go-version: "1.18"
+        go-version: "1.23"
 
     - name: Test `go fmt` creates no diffs
       run: go fmt && git diff --exit-code
