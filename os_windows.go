@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log"
 	"os"
@@ -47,10 +48,7 @@ func init() {
 	}
 
 	if envEditor == "" {
-		envEditor = os.Getenv("EDITOR")
-		if envEditor == "" {
-			envEditor = "notepad"
-		}
+		envEditor = cmp.Or(os.Getenv("EDITOR"), "notepad")
 	}
 
 	if envPager == "" {
@@ -76,10 +74,7 @@ func init() {
 		Username: username,
 	}
 
-	data := os.Getenv("LF_CONFIG_HOME")
-	if data == "" {
-		data = os.Getenv("LOCALAPPDATA")
-	}
+	data := cmp.Or(os.Getenv("LF_CONFIG_HOME"), os.Getenv("LOCALAPPDATA"))
 
 	gConfigPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
