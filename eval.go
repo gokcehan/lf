@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -2111,8 +2112,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		ind := locs[len(locs)-1][3]
 		old := app.ui.cmdAccRight
-		app.ui.cmdAccRight = append([]rune{}, []rune(string(app.ui.cmdAccLeft)[ind:])...)
-		app.ui.cmdAccRight = append(app.ui.cmdAccRight, old...)
+		app.ui.cmdAccRight = append([]rune(string(app.ui.cmdAccLeft)[ind:]), old...)
 		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
 	case "cmd-capitalize-word":
 		if len(app.ui.cmdAccRight) == 0 {
@@ -2205,15 +2205,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		beg1, end1 := locs[len(locs)-2][0], locs[len(locs)-2][1]
 		beg2, end2 := locs[len(locs)-1][0], locs[len(locs)-1][1]
 
-		var acc []rune
-
-		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[:beg1])...)
-		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[beg2:end2])...)
-		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[end1:beg2])...)
-		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[beg1:end1])...)
-		acc = append(acc, []rune(string(app.ui.cmdAccLeft)[end2:])...)
-
-		app.ui.cmdAccLeft = acc
+		app.ui.cmdAccLeft = slices.Concat(
+			[]rune(string(app.ui.cmdAccLeft)[:beg1]),
+			[]rune(string(app.ui.cmdAccLeft)[beg2:end2]),
+			[]rune(string(app.ui.cmdAccLeft)[end1:beg2]),
+			[]rune(string(app.ui.cmdAccLeft)[beg1:end1]),
+			[]rune(string(app.ui.cmdAccLeft)[end2:]),
+		)
 		update(app)
 	default:
 		cmd, ok := gOpts.cmds[e.name]

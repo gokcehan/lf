@@ -3,6 +3,7 @@
 package main
 
 import (
+	"cmp"
 	"fmt"
 	"log"
 	"os"
@@ -53,10 +54,7 @@ func init() {
 	}
 
 	if envEditor == "" {
-		envEditor = os.Getenv("EDITOR")
-		if envEditor == "" {
-			envEditor = "vi"
-		}
+		envEditor = cmp.Or(os.Getenv("EDITOR"), "vi")
 	}
 
 	if envPager == "" {
@@ -86,13 +84,11 @@ func init() {
 	}
 	gUser = u
 
-	config := os.Getenv("LF_CONFIG_HOME")
-	if config == "" {
-		config = os.Getenv("XDG_CONFIG_HOME")
-	}
-	if config == "" {
-		config = filepath.Join(gUser.HomeDir, ".config")
-	}
+	config := cmp.Or(
+		os.Getenv("LF_CONFIG_HOME"),
+		os.Getenv("XDG_CONFIG_HOME"),
+		filepath.Join(gUser.HomeDir, ".config"),
+	)
 
 	gConfigPaths = []string{
 		filepath.Join("/etc", "lf", "lfrc"),
@@ -109,23 +105,18 @@ func init() {
 		filepath.Join(config, "lf", "icons"),
 	}
 
-	data := os.Getenv("LF_DATA_HOME")
-	if data == "" {
-		data = os.Getenv("XDG_DATA_HOME")
-	}
-	if data == "" {
-		data = filepath.Join(gUser.HomeDir, ".local", "share")
-	}
+	data := cmp.Or(
+		os.Getenv("LF_DATA_HOME"),
+		os.Getenv("XDG_DATA_HOME"),
+		filepath.Join(gUser.HomeDir, ".local", "share"),
+	)
 
 	gFilesPath = filepath.Join(data, "lf", "files")
 	gMarksPath = filepath.Join(data, "lf", "marks")
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	runtime := os.Getenv("XDG_RUNTIME_DIR")
-	if runtime == "" {
-		runtime = os.TempDir()
-	}
+	runtime := cmp.Or(os.Getenv("XDG_RUNTIME_DIR"), os.TempDir())
 
 	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
 }
