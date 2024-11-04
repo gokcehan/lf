@@ -10,7 +10,7 @@ require (
 	github.com/mattn/go-runewidth v0.0.16
 	golang.org/x/sys v0.26.0
 	golang.org/x/term v0.25.0
-	golang.org/x/text v0.18.0
+	golang.org/x/text v0.19.0
 )
 
 require (
