@@ -137,7 +137,7 @@ The following command line commands are provided by lf:
 The following options can be used to customize the behavior of lf:
 
 	anchorfind        bool      (default true)
-	autoquit          bool      (default false)
+	autoquit          bool      (default true)
 	borderfmt         string    (default "\033[0m")
 	cleaner           string    (default '')
 	copyfmt           string    (default "\033[7;33m")
@@ -668,7 +668,7 @@ Character `:` is used as the separator for list options `[]int` and `[]string`.
 
 When this option is enabled, the find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
 
-## autoquit (bool) (default false)
+## autoquit (bool) (default true)
 
 Automatically quit the server when there are no clients left connected.
 

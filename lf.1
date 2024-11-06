@@ -145,7 +145,7 @@ The following options can be used to customize the behavior of lf:
 .nf
 \f[C]
 anchorfind        bool      (default true)
-autoquit          bool      (default false)
+autoquit          bool      (default true)
 borderfmt         string    (default \[dq]\[rs]033[0m\[dq])
 cleaner           string    (default \[aq]\[aq])
 copyfmt           string    (default \[dq]\[rs]033[7;33m\[dq])
@@ -719,7 +719,7 @@ Character \f[C]:\f[R] is used as the separator for list options
 When this option is enabled, the find command starts matching patterns
 from the beginning of file names, otherwise, it can match at an
 arbitrary position.
-.SS autoquit (bool) (default false)
+.SS autoquit (bool) (default true)
 .PP
 Automatically quit the server when there are no clients left connected.
 .SS borderfmt (string) (default \f[C]\[rs]033[0m\f[R])
