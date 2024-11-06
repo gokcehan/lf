@@ -189,7 +189,7 @@ func getLocale(path string) string {
 
 func init() {
 	gOpts.anchorfind = true
-	gOpts.autoquit = false
+	gOpts.autoquit = true
 	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
