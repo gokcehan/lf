@@ -600,6 +600,12 @@ func onFocusLost(app *app) {
 	}
 }
 
+func onInit(app *app) {
+	if cmd, ok := gOpts.cmds["on-init"]; ok {
+		cmd.eval(app, nil)
+	}
+}
+
 func onRedraw(app *app) {
 	if cmd, ok := gOpts.cmds["on-redraw"]; ok {
 		cmd.eval(app, nil)
@@ -1801,6 +1807,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		onFocusGained(app)
 	case "on-focus-lost":
 		onFocusLost(app)
+	case "on-init":
+		onInit(app)
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return

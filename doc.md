@@ -239,6 +239,7 @@ The following special shell commands are used to customize the behavior of lf wh
 	on-cd
 	on-focus-gained
 	on-focus-lost
+	on-init
 	on-select
 	on-redraw
 	on-quit
@@ -1142,6 +1143,10 @@ This shell command can be defined to be executed when the terminal gains focus.
 ## on-focus-lost
 
 This shell command can be defined to be executed when the terminal loses focus.
+
+## on-init
+
+This shell command can be defined to be executed after initializing and connecting to the server.
 
 ## on-select
 

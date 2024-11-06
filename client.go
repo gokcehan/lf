@@ -117,7 +117,7 @@ func readExpr() <-chan expr {
 	ch := make(chan expr)
 
 	go func() {
-		duration := 1 * time.Second
+		duration := 100 * time.Millisecond
 
 		c, err := net.Dial(gSocketProt, gSocketPath)
 		for err != nil {
@@ -130,6 +130,7 @@ func readExpr() <-chan expr {
 		fmt.Fprintf(c, "conn %d\n", gClientID)
 
 		ch <- &callExpr{"sync", nil, 1}
+		ch <- &callExpr{"on-init", nil, 1}
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {
