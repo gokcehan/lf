@@ -71,7 +71,13 @@ func (watch *watch) set(paths map[string]bool) {
 
 	for _, path := range watch.watcher.WatchList() {
 		if !paths[path] {
-			watch.watcher.Remove(path)
+			// Hacky workaround since fsnotify panics when removing a symlink
+			func() {
+				defer func() {
+					recover()
+				}()
+				watch.watcher.Remove(path)
+			}()
 		}
 	}
 
