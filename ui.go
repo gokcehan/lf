@@ -1347,12 +1347,13 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				}
 				expr := gOpts.keys[string(ui.keyAcc)]
 
-				if e, ok := expr.(*callExpr); ok && count != 0 {
-					expr = &callExpr{e.name, e.args, e.count}
-					expr.(*callExpr).count = count
-				} else if e, ok := expr.(*listExpr); ok && count != 0 {
-					expr = &listExpr{e.exprs, e.count}
-					expr.(*listExpr).count = count
+				if count != 0 {
+					switch e := expr.(type) {
+					case *callExpr:
+						expr = &callExpr{name: e.name, args: e.args, count: count}
+					case *listExpr:
+						expr = &listExpr{exprs: e.exprs, count: count}
+					}
 				}
 
 				ui.keyAcc = nil
