@@ -108,8 +108,31 @@ func unescape(s string) string {
 }
 
 // This function splits the given string by whitespaces. It is aware of escaped
-// whitespaces so that they are not split unintentionally.
+// whitespaces and quoted strings so that they are not split unintentionally.
 func tokenize(s string) []string {
+	quoted := false
+	esc := false
+	toks := strings.FieldsFunc(s, func(r rune) bool {
+		if r == '\'' || r == '"' || r == '`' {
+			quoted = !quoted
+		}
+		if esc {
+			esc = false
+			return false
+		}
+		if r == '\\' {
+			esc = true
+			return false
+		}
+		return !quoted && unicode.IsSpace(r)
+	})
+	if len(toks) == 0 {
+		toks = append(toks, s)
+	}
+	return toks
+}
+
+func tokenize_old(s string) []string {
 	esc := false
 	var buf []rune
 	var toks []string

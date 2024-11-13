@@ -368,6 +368,12 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
+	case "shellcmd":
+		if e.val == "" {
+			gOpts.shellcmd = nil
+			return
+		}
+		gOpts.shellcmd = tokenize(e.val)
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {

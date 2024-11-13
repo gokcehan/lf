@@ -188,10 +188,11 @@ func TestTokenize(t *testing.T) {
 
 	for _, test := range tests {
 		if got := tokenize(test.s); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
+			t.Errorf("at input '%#v' expected '%#v' but got '%#v'", test.s, test.exp, got)
 		}
 	}
 }
+
 
 func TestSplitWord(t *testing.T) {
 	tests := []struct {
