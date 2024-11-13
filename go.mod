@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/Xuanwo/go-locale v1.1.2
 	github.com/djherbis/times v1.6.0
-	github.com/fsnotify/fsnotify v1.8.0
+	github.com/fsnotify/fsnotify v1.7.0
 	github.com/gdamore/tcell/v2 v2.7.4
 	github.com/mattn/go-runewidth v0.0.16
 	golang.org/x/sys v0.27.0
