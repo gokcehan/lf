@@ -528,7 +528,9 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			line = append(line, ' ')
 			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
 		} else {
-			if tag != " " {
+			if tag == " " {
+				win.print(ui.screen, lnwidth+1, i, st, " ")
+			} else {
 				tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag)
 				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
 			}
@@ -541,7 +543,8 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
 			}
 
-			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(filename))
+			line := append(filename, ' ')
+			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
 		}
 	}
 }
