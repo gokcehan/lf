@@ -442,12 +442,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case f := <-app.nav.fileChan:
-			dirs := app.nav.dirs
-			if app.ui.dirPrev != nil {
-				dirs = append(dirs, app.ui.dirPrev)
-			}
-
-			for _, dir := range dirs {
+			for _, dir := range app.nav.dirCache {
 				if dir.path != filepath.Dir(f.path) {
 					continue
 				}
