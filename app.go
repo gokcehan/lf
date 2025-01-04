@@ -427,7 +427,7 @@ func (app *app) loop() {
 				}
 			}
 
-			app.setWatchPaths()
+			app.addWatchPaths()
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
@@ -633,7 +633,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 }
 
-func (app *app) setWatchPaths() {
+func (app *app) addWatchPaths() {
 	if !gOpts.watch || len(app.nav.dirs) == 0 {
 		return
 	}
@@ -649,5 +649,5 @@ func (app *app) setWatchPaths() {
 		}
 	}
 
-	app.watch.set(paths)
+	app.watch.add(paths)
 }
