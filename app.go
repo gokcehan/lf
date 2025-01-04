@@ -634,7 +634,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 }
 
 func (app *app) addWatchPaths() {
-	if !gOpts.watch {
+	if !gOpts.watch || len(app.nav.dirs) == 0 {
 		return
 	}
 
@@ -644,6 +644,16 @@ func (app *app) addWatchPaths() {
 		for _, file := range dir.allFiles {
 			if file.IsDir() {
 				paths[file.path] = true
+			}
+		}
+	}
+
+	if curr, err := app.nav.currFile(); err == nil {
+		if dir, ok := app.nav.dirCache[curr.path]; ok {
+			for _, file := range dir.allFiles {
+				if file.IsDir() {
+					paths[file.path] = true
+				}
 			}
 		}
 	}
