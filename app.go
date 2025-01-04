@@ -634,18 +634,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 }
 
 func (app *app) addWatchPaths() {
-	if !gOpts.watch || len(app.nav.dirs) == 0 {
+	if !gOpts.watch {
 		return
 	}
 
 	paths := make(map[string]bool)
 	for _, dir := range app.nav.dirs {
 		paths[dir.path] = true
-	}
-
-	for _, file := range app.nav.currDir().allFiles {
-		if file.IsDir() {
-			paths[file.path] = true
+		for _, file := range dir.allFiles {
+			if file.IsDir() {
+				paths[file.path] = true
+			}
 		}
 	}
 
