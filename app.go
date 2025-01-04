@@ -427,7 +427,7 @@ func (app *app) loop() {
 				}
 			}
 
-			app.setWatchPaths()
+			app.addWatchPaths()
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
@@ -442,12 +442,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case f := <-app.nav.fileChan:
-			dirs := app.nav.dirs
-			if app.ui.dirPrev != nil {
-				dirs = append(dirs, app.ui.dirPrev)
-			}
-
-			for _, dir := range dirs {
+			for _, dir := range app.nav.dirCache {
 				if dir.path != filepath.Dir(f.path) {
 					continue
 				}
@@ -638,21 +633,33 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 }
 
-func (app *app) setWatchPaths() {
+func (app *app) addWatchPaths() {
 	if !gOpts.watch || len(app.nav.dirs) == 0 {
 		return
 	}
 
 	paths := make(map[string]bool)
+
+	// ensure dircounts are updated in current/parent windows
 	for _, dir := range app.nav.dirs {
 		paths[dir.path] = true
-	}
-
-	for _, file := range app.nav.currDir().allFiles {
-		if file.IsDir() {
-			paths[file.path] = true
+		for _, file := range dir.allFiles {
+			if file.IsDir() {
+				paths[file.path] = true
+			}
 		}
 	}
 
-	app.watch.set(paths)
+	// ensure dircounts are updated in preview window
+	if curr, err := app.nav.currFile(); err == nil {
+		if dir, ok := app.nav.dirCache[curr.path]; ok {
+			for _, file := range dir.allFiles {
+				if file.IsDir() {
+					paths[file.path] = true
+				}
+			}
+		}
+	}
+
+	app.watch.add(paths)
 }
