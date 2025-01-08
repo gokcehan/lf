@@ -70,7 +70,10 @@ func (watch *watch) add(paths map[string]bool) {
 	}
 
 	for path := range paths {
-		watch.watcher.Add(path)
+		// ignore /dev since write updates to /dev/tty causes high cpu usage
+		if path != "/dev" {
+			watch.watcher.Add(path)
+		}
 	}
 }
 
