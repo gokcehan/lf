@@ -9,7 +9,7 @@
 [![Go Build](https://github.com/gokcehan/lf/actions/workflows/go.yml/badge.svg)](https://github.com/gokcehan/lf/actions/workflows/go.yml)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gokcehan/lf)](https://goreportcard.com/report/github.com/gokcehan/lf)
 
-`lf` (as in "list files") is a terminal file manager written in Go with a heavy inspiration from ranger file manager.
+`lf` (as in "list files") is a terminal file manager written in Go with a heavy inspiration from [`ranger`](https://github.com/ranger/ranger) file manager.
 See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tutorial](https://github.com/gokcehan/lf/wiki/Tutorial) for a gentle introduction with screencasts.
 
 ![multicol-screenshot](http://i.imgur.com/DaTUenu.png)
