@@ -64,19 +64,16 @@ func (watch *watch) stop() {
 	watch.events = nil
 }
 
-func (watch *watch) set(paths map[string]bool) {
+func (watch *watch) add(paths map[string]bool) {
 	if watch.watcher == nil {
 		return
 	}
 
-	for _, path := range watch.watcher.WatchList() {
-		if !paths[path] {
-			watch.watcher.Remove(path)
-		}
-	}
-
 	for path := range paths {
-		watch.watcher.Add(path)
+		// ignore /dev since write updates to /dev/tty causes high cpu usage
+		if path != "/dev" {
+			watch.watcher.Add(path)
+		}
 	}
 }
 
