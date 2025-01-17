@@ -143,6 +143,8 @@ func (watch *watch) addUpdate(path string) {
 	watch.updates[path] = true
 }
 
+// Hacky workaround since fsnotify reports changes for only one path if a
+// directory is located at more than one path.
 func (watch *watch) getSameDirs(dir string) []string {
 	var paths []string
 
