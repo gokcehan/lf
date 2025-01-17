@@ -64,16 +64,14 @@ func (watch *watch) stop() {
 	watch.events = nil
 }
 
-func (watch *watch) add(paths map[string]bool) {
+func (watch *watch) add(path string) {
 	if watch.watcher == nil {
 		return
 	}
 
-	for path := range paths {
-		// ignore /dev since write updates to /dev/tty causes high cpu usage
-		if path != "/dev" {
-			watch.watcher.Add(path)
-		}
+	// ignore /dev since write updates to /dev/tty causes high cpu usage
+	if path != "/dev" {
+		watch.watcher.Add(path)
 	}
 }
 
@@ -144,7 +142,7 @@ func (watch *watch) addUpdate(path string) {
 }
 
 // Hacky workaround since fsnotify reports changes for only one path if a
-// directory is located at more than one path.
+// directory is located at more than one path (e.g. bind mounts).
 func (watch *watch) getSameDirs(dir string) []string {
 	var paths []string
 
