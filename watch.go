@@ -82,20 +82,26 @@ func (watch *watch) loop() {
 		select {
 		case ev := <-watch.events:
 			if ev.Has(fsnotify.Create) {
-				dir := filepath.Dir(ev.Name)
-				watch.addLoad(dir)
-				watch.addUpdate(dir)
+				for _, path := range watch.getSameDirs(filepath.Dir(ev.Name)) {
+					watch.addLoad(path)
+					watch.addUpdate(path)
+				}
 			}
 
 			if ev.Has(fsnotify.Remove) || ev.Has(fsnotify.Rename) {
-				watch.delChan <- ev.Name
-				dir := filepath.Dir(ev.Name)
-				watch.addLoad(dir)
-				watch.addUpdate(dir)
+				dir, file := filepath.Split(ev.Name)
+				for _, path := range watch.getSameDirs(dir) {
+					watch.delChan <- filepath.Join(path, file)
+					watch.addLoad(path)
+					watch.addUpdate(path)
+				}
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				watch.addUpdate(ev.Name)
+				dir, file := filepath.Split(ev.Name)
+				for _, path := range watch.getSameDirs(dir) {
+					watch.addUpdate(filepath.Join(path, file))
+				}
 			}
 		case <-watch.loadTimer.C:
 			for path := range watch.loads {
@@ -135,4 +141,31 @@ func (watch *watch) addUpdate(path string) {
 		watch.updateTimer.Reset(10 * time.Millisecond)
 	}
 	watch.updates[path] = true
+}
+
+func (watch *watch) getSameDirs(dir string) []string {
+	var paths []string
+
+	dirStat, err := os.Stat(dir)
+	if err != nil {
+		return nil
+	}
+
+	for _, path := range watch.watcher.WatchList() {
+		if path == dir {
+			paths = append(paths, path)
+			continue
+		}
+
+		stat, err := os.Stat(path)
+		if err != nil {
+			continue
+		}
+
+		if os.SameFile(stat, dirStat) {
+			paths = append(paths, path)
+		}
+	}
+
+	return paths
 }
