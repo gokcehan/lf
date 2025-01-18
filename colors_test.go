@@ -35,6 +35,14 @@ func TestApplyAnsiCodes(t *testing.T) {
 		{"4", none.Bold(true), none.Bold(true).Underline(true)},
 		{"4", none.Foreground(tcell.ColorMaroon).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true).Underline(true)},
 
+		{"4:0", none, none},
+		{"4:0", none.Underline(true), none},
+		{"4:1", none, none.Underline(true)},
+		{"4:2", none, none.Underline(tcell.UnderlineStyleDouble)},
+		{"4:3", none, none.Underline(tcell.UnderlineStyleCurly)},
+		{"4:4", none, none.Underline(tcell.UnderlineStyleDotted)},
+		{"4:5", none, none.Underline(tcell.UnderlineStyleDashed)},
+
 		{"31", none, none.Foreground(tcell.ColorMaroon)},
 		{"31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon)},
 		{"31", none.Foreground(tcell.ColorGreen).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true)},

@@ -98,83 +98,116 @@ func parseEscapeSequence(s string) tcell.Style {
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
-	nums := make([]int, 0, len(toks))
-	for _, tok := range toks {
-		if tok == "" {
-			nums = append(nums, 0)
-			continue
-		}
-		n, err := strconv.Atoi(tok)
-		if err != nil {
-			log.Printf("converting escape code: %s", err)
-			continue
-		}
-		nums = append(nums, n)
-	}
-
 	// ECMA-48 details the standard
 	// TODO: should we support turning off attributes?
 	//    Probably because this is used for previewers too
-	numslen := len(nums)
-	for i := 0; i < numslen; i++ {
-		n := nums[i]
-		switch {
-		case n == 0:
+	tokslen := len(toks)
+	for i := 0; i < tokslen; i++ {
+		switch toks[i] {
+		case "", "0":
 			st = tcell.StyleDefault
-		case n == 1:
+		case "1":
 			st = st.Bold(true)
-		case n == 2:
+		case "2":
 			st = st.Dim(true)
-		case n == 3:
+		case "3":
 			st = st.Italic(true)
-		case n == 4:
+		case "4:0":
+			st = st.Underline(false)
+		case "4", "4:1":
 			st = st.Underline(true)
-		case n == 5 || n == 6:
+		case "4:2":
+			st = st.Underline(tcell.UnderlineStyleDouble)
+		case "4:3":
+			st = st.Underline(tcell.UnderlineStyleCurly)
+		case "4:4":
+			st = st.Underline(tcell.UnderlineStyleDotted)
+		case "4:5":
+			st = st.Underline(tcell.UnderlineStyleDashed)
+		case "5", "6":
 			st = st.Blink(true)
-		case n == 7:
+		case "7":
 			st = st.Reverse(true)
-		case n == 8:
+		case "8":
 			// TODO: tcell PR for proper conceal
 			_, bg, _ := st.Decompose()
 			st = st.Foreground(bg)
-		case n == 9:
+		case "9":
 			st = st.StrikeThrough(true)
-		case n >= 30 && n <= 37:
+		case "30", "31", "32", "33", "34", "35", "36", "37":
+			n, _ := strconv.Atoi(toks[i])
 			st = st.Foreground(tcell.PaletteColor(n - 30))
-		case n >= 90 && n <= 97:
+		case "90", "91", "92", "93", "94", "95", "96", "97":
+			n, _ := strconv.Atoi(toks[i])
 			st = st.Foreground(tcell.PaletteColor(n - 82))
-		case n == 38:
-			if i+3 <= numslen && nums[i+1] == 5 {
-				st = st.Foreground(tcell.PaletteColor(nums[i+2]))
+		case "38":
+			if toks[i+1] == "5" && i+2 < tokslen {
+				n, err := strconv.Atoi(toks[i+2])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+2])
+					continue
+				}
+				st = st.Foreground(tcell.PaletteColor(n))
 				i += 2
-			} else if i+5 <= numslen && nums[i+1] == 2 {
-				st = st.Foreground(tcell.NewRGBColor(
-					int32(nums[i+2]),
-					int32(nums[i+3]),
-					int32(nums[i+4])))
+			} else if toks[i+1] == "2" && i+4 < tokslen {
+				r, err := strconv.Atoi(toks[i+2])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+2])
+					continue
+				}
+				g, err := strconv.Atoi(toks[i+3])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+3])
+					continue
+				}
+				b, err := strconv.Atoi(toks[i+4])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+4])
+					continue
+				}
+				st = st.Foreground(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
 				i += 4
 			} else {
-				log.Printf("unknown ansi code or incorrect form: %d", n)
+				log.Printf("unknown ansi code or incorrect form: %s", toks[i])
 			}
-		case n >= 40 && n <= 47:
+		case "40", "41", "42", "43", "44", "45", "46", "47":
+			n, _ := strconv.Atoi(toks[i])
 			st = st.Background(tcell.PaletteColor(n - 40))
-		case n >= 100 && n <= 107:
+		case "100", "101", "102", "103", "104", "105", "106", "107":
+			n, _ := strconv.Atoi(toks[i])
 			st = st.Background(tcell.PaletteColor(n - 92))
-		case n == 48:
-			if i+3 <= numslen && nums[i+1] == 5 {
-				st = st.Background(tcell.PaletteColor(nums[i+2]))
+		case "48":
+			if toks[i+1] == "5" && i+2 < tokslen {
+				n, err := strconv.Atoi(toks[i+2])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+2])
+					continue
+				}
+				st = st.Background(tcell.PaletteColor(n))
 				i += 2
-			} else if i+5 <= numslen && nums[i+1] == 2 {
-				st = st.Background(tcell.NewRGBColor(
-					int32(nums[i+2]),
-					int32(nums[i+3]),
-					int32(nums[i+4])))
+			} else if toks[i+1] == "2" && i+4 < tokslen {
+				r, err := strconv.Atoi(toks[i+2])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+2])
+					continue
+				}
+				g, err := strconv.Atoi(toks[i+3])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+3])
+					continue
+				}
+				b, err := strconv.Atoi(toks[i+4])
+				if err != nil {
+					log.Printf("unknown ansi code: %s", toks[i+4])
+					continue
+				}
+				st = st.Background(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
 				i += 4
 			} else {
-				log.Printf("unknown ansi code or incorrect form: %d", n)
+				log.Printf("unknown ansi code or incorrect form: %s", toks[i])
 			}
 		default:
-			log.Printf("unknown ansi code: %d", n)
+			log.Printf("unknown ansi code: %s", toks[i])
 		}
 	}
 
