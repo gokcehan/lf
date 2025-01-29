@@ -427,7 +427,7 @@ func (app *app) loop() {
 				}
 			}
 
-			app.addWatchPaths()
+			app.watchDir(d)
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
@@ -633,21 +633,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 }
 
-func (app *app) addWatchPaths() {
-	if !gOpts.watch || len(app.nav.dirs) == 0 {
+func (app *app) watchDir(dir *dir) {
+	if !gOpts.watch {
 		return
 	}
 
-	paths := make(map[string]bool)
-	for _, dir := range app.nav.dirs {
-		paths[dir.path] = true
-	}
+	app.watch.add(dir.path)
 
-	for _, file := range app.nav.currDir().allFiles {
+	// ensure dircounts are updated for child directories
+	for _, file := range dir.allFiles {
 		if file.IsDir() {
-			paths[file.path] = true
+			app.watch.add(file.path)
 		}
 	}
-
-	app.watch.add(paths)
 }

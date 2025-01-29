@@ -195,7 +195,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		if err == nil {
 			if gOpts.watch {
 				app.watch.start()
-				app.addWatchPaths()
+				for _, dir := range app.nav.dirCache {
+					app.watchDir(dir)
+				}
 			} else {
 				app.watch.stop()
 			}
@@ -582,7 +584,6 @@ func preChdir(app *app) {
 
 func onChdir(app *app) {
 	app.nav.addJumpList()
-	app.addWatchPaths()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
 	}
