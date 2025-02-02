@@ -467,6 +467,11 @@ func (app *app) loop() {
 		case path := <-app.nav.delChan:
 			delete(app.nav.dirCache, path)
 			delete(app.nav.regCache, path)
+
+			delete(app.nav.selections, path)
+			if len(app.nav.selections) == 0 {
+				app.nav.selectionInd = 0
+			}
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
