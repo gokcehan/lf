@@ -3,7 +3,7 @@ module github.com/gokcehan/lf
 go 1.23
 
 require (
-	github.com/Xuanwo/go-locale v1.1.2
+	github.com/Xuanwo/go-locale v1.1.3
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.8.0
 	github.com/gdamore/tcell/v2 v2.8.1
