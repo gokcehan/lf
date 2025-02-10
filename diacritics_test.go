@@ -63,10 +63,10 @@ func runSearch(t *testing.T, ignorecase, smartcase, ignorediacritics, smartdiacr
 	gOpts.smartdia = smartdiacritics
 	matched, _ := searchMatch(base, pattern, false)
 	if matched != expected {
-		t.Errorf("False search for" +
-			" ignorecase = " + strconv.FormatBool(gOpts.ignorecase) + ", " +
-			" smartcase = " + strconv.FormatBool(gOpts.smartcase) + ", " +
-			" ignoredia = " + strconv.FormatBool(gOpts.ignoredia) + ", " +
-			" smartdia = " + strconv.FormatBool(gOpts.smartdia) + ", ")
+		t.Errorf("False search for ignorecase = %s, smartcase = %s, ignoredia = %s, smartdia = %s",
+			strconv.FormatBool(gOpts.ignorecase),
+			strconv.FormatBool(gOpts.smartcase),
+			strconv.FormatBool(gOpts.ignoredia),
+			strconv.FormatBool(gOpts.smartdia))
 	}
 }
