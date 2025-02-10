@@ -53,6 +53,9 @@ func TestApplyAnsiCodes(t *testing.T) {
 		{"1;31", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
 		{"1;31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
 
+		{"01;31", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"01;31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
+
 		{"38;5;0", none, none.Foreground(tcell.ColorBlack)},
 		{"38;5;1", none, none.Foreground(tcell.ColorMaroon)},
 		{"38;5;8", none, none.Foreground(tcell.ColorGray)},

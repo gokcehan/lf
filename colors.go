@@ -103,8 +103,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	//    Probably because this is used for previewers too
 	tokslen := len(toks)
 	for i := 0; i < tokslen; i++ {
-		switch toks[i] {
-		case "", "0":
+		switch strings.TrimLeft(toks[i], "0") {
+		case "":
 			st = tcell.StyleDefault
 		case "1":
 			st = st.Bold(true)
