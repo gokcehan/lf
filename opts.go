@@ -107,13 +107,14 @@ var gOpts struct {
 }
 
 var gLocalOpts struct {
-	sortby   map[string]sortMethod
-	dirfirst map[string]bool
-	dironly  map[string]bool
-	hidden   map[string]bool
-	reverse  map[string]bool
-	info     map[string][]string
-	locale   map[string]string
+	sortby    map[string]sortMethod
+	dircounts map[string]bool
+	dirfirst  map[string]bool
+	dironly   map[string]bool
+	hidden    map[string]bool
+	reverse   map[string]bool
+	info      map[string][]string
+	locale    map[string]string
 }
 
 func localOptPaths(path string) []string {
@@ -122,6 +123,15 @@ func localOptPaths(path string) []string {
 		list = append(list, curr+string(filepath.Separator))
 	}
 	return list
+}
+
+func getDirCounts(path string) bool {
+	for _, key := range localOptPaths(path) {
+		if val, ok := gLocalOpts.dircounts[key]; ok {
+			return val
+		}
+	}
+	return gOpts.dircounts
 }
 
 func getDirFirst(path string) bool {
@@ -377,6 +387,7 @@ func init() {
 	gOpts.user = make(map[string]string)
 
 	gLocalOpts.sortby = make(map[string]sortMethod)
+	gLocalOpts.dircounts = make(map[string]bool)
 	gLocalOpts.dirfirst = make(map[string]bool)
 	gLocalOpts.dironly = make(map[string]bool)
 	gLocalOpts.hidden = make(map[string]bool)

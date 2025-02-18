@@ -462,6 +462,8 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 
 	var err error
 	switch e.opt {
+	case "dircounts", "nodircounts", "dircounts!":
+		err = applyLocalBoolOpt(gLocalOpts.dircounts, gOpts.dircounts, e)
 	case "dirfirst", "nodirfirst", "dirfirst!":
 		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
 		if err == nil {
