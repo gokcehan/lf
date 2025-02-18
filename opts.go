@@ -107,13 +107,13 @@ var gOpts struct {
 }
 
 var gLocalOpts struct {
-	sortbys   map[string]sortMethod
-	dirfirsts map[string]bool
-	dironlys  map[string]bool
-	hiddens   map[string]bool
-	reverses  map[string]bool
-	infos     map[string][]string
-	locales   map[string]string
+	sortby   map[string]sortMethod
+	dirfirst map[string]bool
+	dironly  map[string]bool
+	hidden   map[string]bool
+	reverse  map[string]bool
+	info     map[string][]string
+	locale   map[string]string
 }
 
 func localOptPaths(path string) []string {
@@ -126,7 +126,7 @@ func localOptPaths(path string) []string {
 
 func getDirFirst(path string) bool {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dirfirsts[key]; ok {
+		if val, ok := gLocalOpts.dirfirst[key]; ok {
 			return val
 		}
 	}
@@ -135,7 +135,7 @@ func getDirFirst(path string) bool {
 
 func getDirOnly(path string) bool {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dironlys[key]; ok {
+		if val, ok := gLocalOpts.dironly[key]; ok {
 			return val
 		}
 	}
@@ -144,7 +144,7 @@ func getDirOnly(path string) bool {
 
 func getHidden(path string) bool {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.hiddens[key]; ok {
+		if val, ok := gLocalOpts.hidden[key]; ok {
 			return val
 		}
 	}
@@ -153,7 +153,7 @@ func getHidden(path string) bool {
 
 func getInfo(path string) []string {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.infos[key]; ok {
+		if val, ok := gLocalOpts.info[key]; ok {
 			return val
 		}
 	}
@@ -162,7 +162,7 @@ func getInfo(path string) []string {
 
 func getReverse(path string) bool {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.reverses[key]; ok {
+		if val, ok := gLocalOpts.reverse[key]; ok {
 			return val
 		}
 	}
@@ -171,7 +171,7 @@ func getReverse(path string) bool {
 
 func getSortBy(path string) sortMethod {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.sortbys[key]; ok {
+		if val, ok := gLocalOpts.sortby[key]; ok {
 			return val
 		}
 	}
@@ -180,7 +180,7 @@ func getSortBy(path string) sortMethod {
 
 func getLocale(path string) string {
 	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.locales[key]; ok {
+		if val, ok := gLocalOpts.locale[key]; ok {
 			return val
 		}
 	}
@@ -376,13 +376,13 @@ func init() {
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
 
-	gLocalOpts.sortbys = make(map[string]sortMethod)
-	gLocalOpts.dirfirsts = make(map[string]bool)
-	gLocalOpts.dironlys = make(map[string]bool)
-	gLocalOpts.hiddens = make(map[string]bool)
-	gLocalOpts.reverses = make(map[string]bool)
-	gLocalOpts.infos = make(map[string][]string)
-	gLocalOpts.locales = make(map[string]string)
+	gLocalOpts.sortby = make(map[string]sortMethod)
+	gLocalOpts.dirfirst = make(map[string]bool)
+	gLocalOpts.dironly = make(map[string]bool)
+	gLocalOpts.hidden = make(map[string]bool)
+	gLocalOpts.reverse = make(map[string]bool)
+	gLocalOpts.info = make(map[string][]string)
+	gLocalOpts.locale = make(map[string]string)
 
 	setDefaults()
 }

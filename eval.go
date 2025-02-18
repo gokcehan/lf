@@ -463,13 +463,13 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 	var err error
 	switch e.opt {
 	case "dirfirst", "nodirfirst", "dirfirst!":
-		err = applyLocalBoolOpt(gLocalOpts.dirfirsts, gOpts.dirfirst, e)
+		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
 		if err == nil {
 			app.nav.sort()
 			app.ui.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
-		err = applyLocalBoolOpt(gLocalOpts.dironlys, gOpts.dironly, e)
+		err = applyLocalBoolOpt(gLocalOpts.dironly, gOpts.dironly, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
@@ -477,7 +477,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
-		err = applyLocalBoolOpt(gLocalOpts.hiddens, gOpts.hidden, e)
+		err = applyLocalBoolOpt(gLocalOpts.hidden, gOpts.hidden, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
@@ -485,14 +485,14 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app, true)
 		}
 	case "reverse", "noreverse", "reverse!":
-		err = applyLocalBoolOpt(gLocalOpts.reverses, gOpts.reverse, e)
+		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
 		if err == nil {
 			app.nav.sort()
 			app.ui.sort()
 		}
 	case "info":
 		if e.val == "" {
-			gLocalOpts.infos[e.path] = nil
+			gLocalOpts.info[e.path] = nil
 			return
 		}
 		toks := strings.Split(e.val, ":")
@@ -504,14 +504,14 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 				return
 			}
 		}
-		gLocalOpts.infos[e.path] = toks
+		gLocalOpts.info[e.path] = toks
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
-		gLocalOpts.sortbys[e.path] = method
+		gLocalOpts.sortby[e.path] = method
 		app.nav.sort()
 		app.ui.sort()
 	case "locale":
@@ -522,7 +522,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 				return
 			}
 		}
-		gLocalOpts.locales[e.path] = localeStr
+		gLocalOpts.locale[e.path] = localeStr
 		app.nav.sort()
 		app.ui.sort()
 	default:
