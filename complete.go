@@ -136,7 +136,7 @@ func getLocalOptWords(localOpts any) (localOptWords []string) {
 	t := reflect.TypeOf(localOpts)
 	for i := 0; i < t.NumField(); i++ {
 		field := t.Field(i)
-		name := strings.TrimSuffix(field.Name, "s")
+		name := field.Name
 		if field.Type.Kind() != reflect.Map {
 			continue
 		}

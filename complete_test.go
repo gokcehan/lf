@@ -79,10 +79,10 @@ func TestGetLocalOptWords(t *testing.T) {
 		localOpts any
 		exp       []string
 	}{
-		{struct{ features map[string]bool }{}, []string{"feature", "feature!", "nofeature"}},
-		{struct{ features map[string]int }{}, []string{"feature"}},
-		{struct{ features map[string]string }{}, []string{"feature"}},
-		{struct{ features map[string][]string }{}, []string{"feature"}},
+		{struct{ feature map[string]bool }{}, []string{"feature", "feature!", "nofeature"}},
+		{struct{ feature map[string]int }{}, []string{"feature"}},
+		{struct{ feature map[string]string }{}, []string{"feature"}},
+		{struct{ feature map[string][]string }{}, []string{"feature"}},
 	}
 
 	for _, test := range tests {
