@@ -295,7 +295,7 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int) string {
 	for _, s := range getInfo(d.path) {
 		switch s {
 		case "size":
-			if f.IsDir() && gOpts.dircounts {
+			if f.IsDir() && getDirCounts(d.path) {
 				switch {
 				case f.dirCount < -1:
 					info.WriteString("    !")
