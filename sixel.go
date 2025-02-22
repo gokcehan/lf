@@ -60,7 +60,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	// HACK: fillers are used to control when tcell redraws the region where a sixel image is drawn.
 	// alternating between bold and regular is to clear the image before drawing a new one.
 	st := sxs.fillerStyle(reg.path)
-	for y := 0; y < win.h; y++ {
+	for y := range win.h {
 		st = win.print(screen, 0, y, st, strings.Repeat(string(gSixelFiller), win.w))
 	}
 

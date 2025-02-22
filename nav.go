@@ -17,6 +17,7 @@ import (
 
 	"github.com/djherbis/times"
 	"golang.org/x/text/collate"
+	"slices"
 )
 
 type linkState byte
@@ -915,11 +916,9 @@ func (nav *nav) preview(path string, win *win) {
 			break
 		}
 
-		for _, byte := range bytes {
-			if byte == 0 {
-				reg.lines = []string{"\033[7mbinary\033[0m"}
-				return
-			}
+		if slices.Contains(bytes, 0) {
+			reg.lines = []string{"\033[7mbinary\033[0m"}
+			return
 		}
 
 		line = append(line, bytes...)
@@ -1674,7 +1673,7 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 	dir := nav.currDir()
 	anyMatched := false
 
-	for i := 0; i < len(dir.files); i++ {
+	for i := range dir.files {
 		matched, err := filepath.Match(pattern, dir.files[i].Name())
 		if err != nil {
 			return fmt.Errorf("glob-select: %s", err)
@@ -1720,7 +1719,7 @@ func (nav *nav) findSingle() int {
 	count := 0
 	index := 0
 	dir := nav.currDir()
-	for i := 0; i < len(dir.files); i++ {
+	for i := range dir.files {
 		if findMatch(dir.files[i].Name(), nav.find) {
 			count++
 			if count > 1 {
@@ -1747,7 +1746,7 @@ func (nav *nav) findNext() (bool, bool) {
 		}
 	}
 	if gOpts.wrapscan {
-		for i := 0; i < dir.ind; i++ {
+		for i := range dir.ind {
 			if findMatch(dir.files[i].Name(), nav.find) {
 				return nav.up(dir.ind - i), true
 			}
@@ -1804,7 +1803,7 @@ func (nav *nav) searchNext() (bool, error) {
 		}
 	}
 	if gOpts.wrapscan {
-		for i := 0; i < dir.ind; i++ {
+		for i := range dir.ind {
 			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 				return false, err
 			} else if matched {

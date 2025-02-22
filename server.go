@@ -64,7 +64,7 @@ func echoerr(c net.Conn, msg string) {
 	log.Print(msg)
 }
 
-func echoerrf(c net.Conn, format string, a ...interface{}) {
+func echoerrf(c net.Conn, format string, a ...any) {
 	echoerr(c, fmt.Sprintf(format, a...))
 }
 

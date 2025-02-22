@@ -242,7 +242,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 	return st
 }
 
-func (win *win) printf(screen tcell.Screen, x, y int, st tcell.Style, format string, a ...interface{}) {
+func (win *win) printf(screen tcell.Screen, x, y int, st tcell.Style, format string, a ...any) {
 	win.print(screen, x, y, st, fmt.Sprintf(format, a...))
 }
 
@@ -583,7 +583,7 @@ func getWidths(wtot int) []int {
 	}
 
 	wsum := 0
-	for i := 0; i < wlen-1; i++ {
+	for i := range wlen - 1 {
 		widths[i] = gOpts.ratios[i] * wtot / rsum
 		wsum += widths[i]
 	}
@@ -600,7 +600,7 @@ func getWins(screen tcell.Screen) []*win {
 	wacc := 0
 	wlen := len(widths)
 	wins := make([]*win, 0, wlen)
-	for i := 0; i < wlen; i++ {
+	for i := range wlen {
 		if gOpts.drawbox {
 			wacc++
 			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
@@ -731,7 +731,7 @@ func (ui *ui) echoerr(msg string) {
 	log.Printf("error: %s", msg)
 }
 
-func (ui *ui) echoerrf(format string, a ...interface{}) {
+func (ui *ui) echoerrf(format string, a ...any) {
 	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
@@ -1004,7 +1004,7 @@ func (ui *ui) drawBox() {
 	}
 
 	wacc := 0
-	for wind := 0; wind < len(ui.wins)-1; wind++ {
+	for wind := range len(ui.wins) - 1 {
 		wacc += ui.wins[wind].w + 1
 		ui.screen.SetContent(wacc, 1, tcell.RuneTTee, nil, st)
 		for i := 2; i < h-2; i++ {
@@ -1032,8 +1032,8 @@ func (ui *ui) draw(nav *nav) {
 
 	// XXX: manual clean without flush to avoid flicker on Windows
 	wtot, htot := ui.screen.Size()
-	for i := 0; i < wtot; i++ {
-		for j := 0; j < htot; j++ {
+	for i := range wtot {
+		for j := range htot {
 			ui.screen.SetContent(i, j, ' ', nil, st)
 		}
 	}
@@ -1045,7 +1045,7 @@ func (ui *ui) draw(nav *nav) {
 	if gOpts.preview {
 		wins--
 	}
-	for i := 0; i < wins; i++ {
+	for i := range wins {
 		role := Parent
 		if i == wins-1 {
 			role = Active
