@@ -666,8 +666,8 @@ func (nav *nav) renew() {
 }
 
 func (nav *nav) reload() error {
-	nav.dirCache = make(map[string]*dir)
-	nav.regCache = make(map[string]*reg)
+	clear(nav.dirCache)
+	clear(nav.regCache)
 
 	curr, err := nav.currFile()
 	nav.getDirs(nav.currDir().path)
@@ -1307,7 +1307,7 @@ func (nav *nav) invertBelow() {
 }
 
 func (nav *nav) unselect() {
-	nav.selections = make(map[string]int)
+	clear(nav.selections)
 	nav.selectionInd = 0
 }
 
@@ -1321,7 +1321,7 @@ func (nav *nav) save(cp bool) error {
 		return err
 	}
 
-	nav.saves = make(map[string]bool)
+	clear(nav.saves)
 	for _, f := range list {
 		nav.saves[f] = cp
 	}
@@ -1599,7 +1599,7 @@ func (nav *nav) sync() error {
 		return err
 	}
 
-	nav.saves = make(map[string]bool)
+	clear(nav.saves)
 	for _, f := range list {
 		nav.saves[f] = cp
 	}
@@ -1860,7 +1860,7 @@ func (nav *nav) removeMark(mark string) error {
 }
 
 func (nav *nav) readMarks() error {
-	nav.marks = make(map[string]string)
+	clear(nav.marks)
 	f, err := os.Open(gMarksPath)
 	if os.IsNotExist(err) {
 		return nil
@@ -1918,7 +1918,7 @@ func (nav *nav) writeMarks() error {
 }
 
 func (nav *nav) readTags() error {
-	nav.tags = make(map[string]string)
+	clear(nav.tags)
 	f, err := os.Open(gTagsPath)
 	if os.IsNotExist(err) {
 		return nil
