@@ -110,7 +110,7 @@ func (watch *watch) loop() {
 				dir.sort()
 				watch.dirChan <- dir
 			}
-			watch.loads = make(map[string]bool)
+			clear(watch.loads)
 		case <-watch.updateTimer.C:
 			for path := range watch.updates {
 				if _, err := os.Lstat(path); err != nil {
@@ -118,7 +118,7 @@ func (watch *watch) loop() {
 				}
 				watch.fileChan <- newFile(path)
 			}
-			watch.updates = make(map[string]bool)
+			clear(watch.updates)
 		case <-watch.quit:
 			return
 		}

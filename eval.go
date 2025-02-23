@@ -90,7 +90,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.renew()
 			if app.nav.height != app.ui.wins[0].h {
 				app.nav.height = app.ui.wins[0].h
-				app.nav.regCache = make(map[string]*reg)
+				clear(app.nav.regCache)
 				if gOpts.sixel {
 					app.ui.sxScreen.lastFile = ""
 				}
@@ -349,7 +349,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
 		if gOpts.sixel {
-			app.nav.regCache = make(map[string]*reg)
+			clear(app.nav.regCache)
 			app.ui.sxScreen.lastFile = ""
 		}
 		app.ui.loadFile(app, true)
@@ -1293,7 +1293,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "clearmaps":
 		// leave `:` and cmaps bound so the user can still exit using `:quit`
-		gOpts.keys = make(map[string]expr)
+		clear(gOpts.keys)
 		gOpts.keys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {
@@ -1416,10 +1416,10 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.screen.Sync()
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
-			app.nav.regCache = make(map[string]*reg)
+			clear(app.nav.regCache)
 		}
 		if gOpts.sixel {
-			app.nav.regCache = make(map[string]*reg)
+			clear(app.nav.regCache)
 			app.ui.sxScreen.lastFile = ""
 		}
 		for _, dir := range app.nav.dirs {
