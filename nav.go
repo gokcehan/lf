@@ -10,6 +10,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -17,7 +18,6 @@ import (
 
 	"github.com/djherbis/times"
 	"golang.org/x/text/collate"
-	"slices"
 )
 
 type linkState byte
