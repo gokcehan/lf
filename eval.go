@@ -1075,7 +1075,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		resetIncCmd(app)
 		preChdir(app)
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			if err := app.nav.updir(); err != nil {
 				app.ui.echoerrf("%s", err)
 				return
@@ -1124,7 +1124,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "jump-prev":
 		resetIncCmd(app)
 		preChdir(app)
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			app.nav.cdJumpListPrev()
 		}
 		app.ui.loadFile(app, true)
@@ -1134,7 +1134,7 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "jump-next":
 		resetIncCmd(app)
 		preChdir(app)
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			app.nav.cdJumpListNext()
 		}
 		app.ui.loadFile(app, true)
@@ -1499,7 +1499,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		dir := app.nav.currDir()
 		old := dir.ind
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			if app.nav.findBack {
 				app.nav.findPrev()
 			} else {
@@ -1516,7 +1516,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		dir := app.nav.currDir()
 		old := dir.ind
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			if app.nav.findBack {
 				app.nav.findNext()
 			} else {
@@ -1559,7 +1559,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			if app.nav.searchBack {
 				if moved, err := app.nav.searchPrev(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
@@ -1580,7 +1580,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		for i := 0; i < e.count; i++ {
+		for range e.count {
 			if app.nav.searchBack {
 				if moved, err := app.nav.searchNext(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
@@ -2254,7 +2254,7 @@ func (e *execExpr) eval(app *app, args []string) {
 }
 
 func (e *listExpr) eval(app *app, args []string) {
-	for i := 0; i < e.count; i++ {
+	for range e.count {
 		for _, expr := range e.exprs {
 			expr.eval(app, nil)
 		}

@@ -170,7 +170,7 @@ func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 		line := s.Text()
 
 		squote, dquote := false, false
-		for i := 0; i < len(line); i++ {
+		for i := range len(line) {
 			if line[i] == '\'' && !dquote {
 				squote = !squote
 			} else if line[i] == '"' && !squote {
@@ -206,7 +206,7 @@ func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 			return nil, fmt.Errorf("expected %d~%d columns but found: %s", min_cols, max_cols, s.Text())
 		}
 
-		for i := 0; i < arrlen; i++ {
+		for i := range arrlen {
 			squote, dquote = false, false
 			buf := make([]rune, 0, len(arr[i]))
 			for _, r := range arr[i] {

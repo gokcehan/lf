@@ -107,7 +107,7 @@ func fieldToString(field reflect.Value) string {
 	case reflect.Bool:
 		value = strconv.FormatBool(field.Bool())
 	case reflect.Slice:
-		for i := 0; i < field.Len(); i++ {
+		for i := range field.Len() {
 			element := field.Index(i)
 
 			if i == 0 {
@@ -128,7 +128,7 @@ func getOptsMap() map[string]string {
 	v := reflect.ValueOf(gOpts)
 	t := v.Type()
 
-	for i := 0; i < v.NumField(); i++ {
+	for i := range v.NumField() {
 		// Get field name and prefix it with lf_
 		name := "lf_" + t.Field(i).Name
 
