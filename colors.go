@@ -139,6 +139,8 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	// TODO: should we support turning off attributes?
 	//    Probably because this is used for previewers too
 	tokslen := len(toks)
+
+loop:
 	for i := 0; i < tokslen; i++ {
 		switch strings.TrimLeft(toks[i], "0") {
 		case "":
@@ -181,7 +183,7 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
 				log.Printf("error processing ansi code 38: %s", err)
-				break
+				break loop
 			}
 			st = st.Foreground(color)
 			i += offset
@@ -195,7 +197,7 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
 				log.Printf("error processing ansi code 38: %s", err)
-				break
+				break loop
 			}
 			st = st.Background(color)
 			i += offset
