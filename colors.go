@@ -196,7 +196,7 @@ loop:
 		case "48":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 38: %s", err)
+				log.Printf("error processing ansi code 48: %s", err)
 				break loop
 			}
 			st = st.Background(color)
