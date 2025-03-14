@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"path/filepath"
@@ -95,6 +96,42 @@ func parseEscapeSequence(s string) tcell.Style {
 	return applyAnsiCodes(s, tcell.StyleDefault)
 }
 
+func parseColor(toks []string) (tcell.Color, int, error) {
+	if len(toks) == 0 {
+		return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+	}
+
+	if toks[0] == "5" && len(toks) >= 2 {
+		n, err := strconv.Atoi(toks[1])
+		if err != nil {
+			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+		}
+
+		return tcell.PaletteColor(n), 2, nil
+	}
+
+	if toks[0] == "2" && len(toks) >= 4 {
+		r, err := strconv.Atoi(toks[1])
+		if err != nil {
+			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+		}
+
+		g, err := strconv.Atoi(toks[2])
+		if err != nil {
+			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+		}
+
+		b, err := strconv.Atoi(toks[3])
+		if err != nil {
+			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+		}
+
+		return tcell.NewRGBColor(int32(r), int32(g), int32(b)), 4, nil
+	}
+
+	return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+}
+
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
@@ -141,35 +178,13 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			n, _ := strconv.Atoi(toks[i])
 			st = st.Foreground(tcell.PaletteColor(n - 82))
 		case "38":
-			if toks[i+1] == "5" && i+2 < tokslen {
-				n, err := strconv.Atoi(toks[i+2])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+2])
-					continue
-				}
-				st = st.Foreground(tcell.PaletteColor(n))
-				i += 2
-			} else if toks[i+1] == "2" && i+4 < tokslen {
-				r, err := strconv.Atoi(toks[i+2])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+2])
-					continue
-				}
-				g, err := strconv.Atoi(toks[i+3])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+3])
-					continue
-				}
-				b, err := strconv.Atoi(toks[i+4])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+4])
-					continue
-				}
-				st = st.Foreground(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
-				i += 4
-			} else {
-				log.Printf("unknown ansi code or incorrect form: %s", toks[i])
+			color, offset, err := parseColor(toks[i+1:])
+			if err != nil {
+				log.Printf("error processing ansi code 38: %s", err)
+				break
 			}
+			st = st.Foreground(color)
+			i += offset
 		case "40", "41", "42", "43", "44", "45", "46", "47":
 			n, _ := strconv.Atoi(toks[i])
 			st = st.Background(tcell.PaletteColor(n - 40))
@@ -177,35 +192,13 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 			n, _ := strconv.Atoi(toks[i])
 			st = st.Background(tcell.PaletteColor(n - 92))
 		case "48":
-			if toks[i+1] == "5" && i+2 < tokslen {
-				n, err := strconv.Atoi(toks[i+2])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+2])
-					continue
-				}
-				st = st.Background(tcell.PaletteColor(n))
-				i += 2
-			} else if toks[i+1] == "2" && i+4 < tokslen {
-				r, err := strconv.Atoi(toks[i+2])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+2])
-					continue
-				}
-				g, err := strconv.Atoi(toks[i+3])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+3])
-					continue
-				}
-				b, err := strconv.Atoi(toks[i+4])
-				if err != nil {
-					log.Printf("unknown ansi code: %s", toks[i+4])
-					continue
-				}
-				st = st.Background(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
-				i += 4
-			} else {
-				log.Printf("unknown ansi code or incorrect form: %s", toks[i])
+			color, offset, err := parseColor(toks[i+1:])
+			if err != nil {
+				log.Printf("error processing ansi code 38: %s", err)
+				break
 			}
+			st = st.Background(color)
+			i += offset
 		default:
 			log.Printf("unknown ansi code: %s", toks[i])
 		}
