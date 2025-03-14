@@ -98,13 +98,13 @@ func parseEscapeSequence(s string) tcell.Style {
 
 func parseColor(toks []string) (tcell.Color, int, error) {
 	if len(toks) == 0 {
-		return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+		return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 	}
 
 	if toks[0] == "5" && len(toks) >= 2 {
 		n, err := strconv.Atoi(toks[1])
 		if err != nil {
-			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		return tcell.PaletteColor(n), 2, nil
@@ -113,23 +113,23 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 	if toks[0] == "2" && len(toks) >= 4 {
 		r, err := strconv.Atoi(toks[1])
 		if err != nil {
-			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		g, err := strconv.Atoi(toks[2])
 		if err != nil {
-			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		b, err := strconv.Atoi(toks[3])
 		if err != nil {
-			return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		return tcell.NewRGBColor(int32(r), int32(g), int32(b)), 4, nil
 	}
 
-	return tcell.ColorDefault, 0, fmt.Errorf("incorrect form: %v", toks)
+	return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 }
 
 func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
