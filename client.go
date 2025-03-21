@@ -26,6 +26,19 @@ func init() {
 }
 
 func run() {
+	if gLogPath != "" {
+		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
+		if err != nil {
+			log.Fatalf("failed to open log file: %s", err)
+		}
+		defer f.Close()
+		log.SetOutput(f)
+	} else {
+		log.SetOutput(io.Discard)
+	}
+
+	log.Print("hi!")
+
 	var screen tcell.Screen
 	var err error
 	if screen, err = tcell.NewScreen(); err != nil {
@@ -36,19 +49,6 @@ func run() {
 	if gOpts.mouse {
 		screen.EnableMouse()
 	}
-
-	if gLogPath != "" {
-		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
-		if err != nil {
-			panic(err)
-		}
-		defer f.Close()
-		log.SetOutput(f)
-	} else {
-		log.SetOutput(io.Discard)
-	}
-
-	log.Print("hi!")
 
 	ui := newUI(screen)
 	nav := newNav(ui.wins[0].h)
