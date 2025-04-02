@@ -1,69 +1,54 @@
 package main
 
 import (
-	"fmt"
 	"os"
-	"strings"
 
 	"github.com/gdamore/tcell/v2"
 )
 
 const (
 	gSixelBegin = "\033P"
-
-	// The filler character should be:
-	// - rarely used: the filler is used to trick tcell into redrawing, if the
-	//   filler character appears in the user's preview, that cell might not
-	//   be cleaned up properly
-	// - ideally renders as empty space: the filler alternates between bold
-	//   and regular, using a non-space would look weird to the user.
-	gSixelFiller = '\u2000'
 )
 
 type sixelScreen struct {
-	xprev, yprev int
-	sixel        *string
-	altFill      bool
-	lastFile     string // TODO maybe use hash of sixels instead to flip altFill
+	lastFile string
+	lastWinW    int
+	lastWinH    int
 }
 
-func (sxs *sixelScreen) fillerStyle(filePath string) tcell.Style {
-	if sxs.lastFile != filePath {
-		sxs.altFill = !sxs.altFill
+func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
+	if filePath != sxs.lastFile || win.w != sxs.lastWinW || win.h != sxs.lastWinH {
+		screen.LockRegion(win.x, win.y, win.w, win.h, false)
 	}
 
-	if sxs.altFill {
-		return tcell.StyleDefault.Bold(true)
-	}
-	return tcell.StyleDefault
 }
-
-func (sxs *sixelScreen) showSixels() {
-	if sxs.sixel == nil {
-		return
-	}
-
-	// XXX: workaround for bug where quitting lf might leave the terminal in bold
-	fmt.Fprint(os.Stderr, "\033[0m")
-
-	fmt.Fprint(os.Stderr, "\0337")                              // Save cursor position
-	fmt.Fprintf(os.Stderr, "\033[%d;%dH", sxs.yprev, sxs.xprev) // Move cursor to position
-	fmt.Fprint(os.Stderr, *sxs.sixel)                           //
-	fmt.Fprint(os.Stderr, "\0338")                              // Restore cursor position
-}
-
 func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
+
+	if reg.path == sxs.lastFile && win.w == sxs.lastWinW && win.h == sxs.lastWinH {
+		return
+	}
 	if reg.sixel == nil {
+		sxs.lastFile = ""
 		return
 	}
 
-	// HACK: fillers are used to control when tcell redraws the region where a sixel image is drawn.
-	// alternating between bold and regular is to clear the image before drawing a new one.
-	st := sxs.fillerStyle(reg.path)
-	for y := range win.h {
-		st = win.print(screen, 0, y, st, strings.Repeat(string(gSixelFiller), win.w))
+	tty, ok := screen.Tty()
+	if !ok {
+		screen.Fini()
 	}
 
-	sxs.xprev, sxs.yprev = win.x+1, win.y+1
-	sxs.sixel = reg.sixel
+	screen.LockRegion(win.x, win.y, win.w, win.h, true)
+
+	// Get the terminfo for our current terminal
+	ti, err := tcell.LookupTerminfo(os.Getenv("TERM"))
+	if err != nil {
+		screen.Fini()
+	}
+
+	// Move the cursor to our draw position
+	ti.TPuts(tty, ti.TGoto(win.x, win.y))
+	ti.TPuts(tty, *reg.sixel)
+	sxs.lastFile = reg.path
+	sxs.lastWinW = win.w
+	sxs.lastWinH = win.h
 }

@@ -92,7 +92,6 @@ func (e *setExpr) eval(app *app, args []string) {
 				app.nav.height = app.ui.wins[0].h
 				clear(app.nav.regCache)
 				if gOpts.sixel {
-					app.ui.sxScreen.lastFile = ""
 				}
 			}
 			app.ui.loadFile(app, true)
@@ -350,7 +349,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.wins = getWins(app.ui.screen)
 		if gOpts.sixel {
 			clear(app.nav.regCache)
-			app.ui.sxScreen.lastFile = ""
 		}
 		app.ui.loadFile(app, true)
 	case "scrolloff":
@@ -1420,7 +1418,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		if gOpts.sixel {
 			clear(app.nav.regCache)
-			app.ui.sxScreen.lastFile = ""
 		}
 		for _, dir := range app.nav.dirs {
 			dir.boundPos(app.nav.height)
