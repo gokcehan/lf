@@ -1,6 +1,7 @@
 package main
 
 import (
+	"log"
 	"os"
 
 	"github.com/gdamore/tcell/v2"
@@ -12,8 +13,8 @@ const (
 
 type sixelScreen struct {
 	lastFile string
-	lastWinW    int
-	lastWinH    int
+	lastWinW int
+	lastWinH int
 }
 
 func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
@@ -34,16 +35,16 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 
 	tty, ok := screen.Tty()
 	if !ok {
-		screen.Fini()
+		log.Printf("returning underlying tty failed during sixel render")
+		return
 	}
-
-	screen.LockRegion(win.x, win.y, win.w, win.h, true)
 
 	// Get the terminfo for our current terminal
 	ti, err := tcell.LookupTerminfo(os.Getenv("TERM"))
 	if err != nil {
-		screen.Fini()
+		log.Printf("terminal lookup failed during sixel render %s", err)
 	}
+	screen.LockRegion(win.x, win.y, win.w, win.h, true)
 
 	// Move the cursor to our draw position
 	ti.TPuts(tty, ti.TGoto(win.x, win.y))
