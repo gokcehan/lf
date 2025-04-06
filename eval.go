@@ -91,8 +91,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			if app.nav.height != app.ui.wins[0].h {
 				app.nav.height = app.ui.wins[0].h
 				clear(app.nav.regCache)
-				if gOpts.sixel {
-				}
 			}
 			app.ui.loadFile(app, true)
 		}
