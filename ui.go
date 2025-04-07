@@ -629,7 +629,7 @@ type ui struct {
 	keyChan     chan string
 	tevChan     chan tcell.Event
 	evChan      chan tcell.Event
-	menuBuf     *bytes.Buffer
+	menu        string
 	cmdPrefix   string
 	cmdAccLeft  []rune
 	cmdAccRight []rune
@@ -1095,8 +1095,8 @@ func (ui *ui) draw(nav *nav) {
 		ui.drawBox()
 	}
 
-	if ui.menuBuf != nil {
-		lines := strings.Split(ui.menuBuf.String(), "\n")
+	if ui.menu != "" {
+		lines := strings.Split(ui.menu, "\n")
 
 		lines = lines[:len(lines)-1]
 
@@ -1116,7 +1116,7 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
-	if ui.menuBuf == nil && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
+	if ui.menu == "" && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
 		ui.sxScreen.lastFile = ui.regPrev.path
 		ui.sxScreen.showSixels()
 	}
@@ -1136,7 +1136,7 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listExprMap(binds map[string]expr, title string) *bytes.Buffer {
+func listExprMap(binds map[string]expr, title string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1153,18 +1153,18 @@ func listExprMap(binds map[string]expr, title string) *bytes.Buffer {
 	}
 	t.Flush()
 
-	return b
+	return b.String()
 }
 
-func listBinds(binds map[string]expr) *bytes.Buffer {
+func listBinds(binds map[string]expr) string {
 	return listExprMap(binds, "keys")
 }
 
-func listCmds() *bytes.Buffer {
+func listCmds() string {
 	return listExprMap(gOpts.cmds, "name")
 }
 
-func listJumps(jumps []string, ind int) *bytes.Buffer {
+func listJumps(jumps []string, ind int) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1185,10 +1185,10 @@ func listJumps(jumps []string, ind int) *bytes.Buffer {
 	}
 	t.Flush()
 
-	return b
+	return b.String()
 }
 
-func listHistory(history []cmdItem) *bytes.Buffer {
+func listHistory(history []cmdItem) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1201,10 +1201,10 @@ func listHistory(history []cmdItem) *bytes.Buffer {
 	}
 	t.Flush()
 
-	return b
+	return b.String()
 }
 
-func listMarks(marks map[string]string) *bytes.Buffer {
+func listMarks(marks map[string]string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1221,7 +1221,7 @@ func listMarks(marks map[string]string) *bytes.Buffer {
 	}
 	t.Flush()
 
-	return b
+	return b.String()
 }
 
 func (ui *ui) pollEvent() tcell.Event {
@@ -1320,7 +1320,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if val == "<esc>" && len(ui.keyAcc) != 0 {
 				ui.keyAcc = nil
 				ui.keyCount = nil
-				ui.menuBuf = nil
+				ui.menu = ""
 				return draw
 			}
 			ui.keyAcc = append(ui.keyAcc, []rune(val)...)
@@ -1337,7 +1337,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			ui.echoerrf("unknown mapping: %s", string(ui.keyAcc))
 			ui.keyAcc = nil
 			ui.keyCount = nil
-			ui.menuBuf = nil
+			ui.menu = ""
 			return draw
 		default:
 			if ok {
@@ -1361,11 +1361,11 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 				ui.keyAcc = nil
 				ui.keyCount = nil
-				ui.menuBuf = nil
+				ui.menu = ""
 				return expr
 			}
 			if gOpts.showbinds {
-				ui.menuBuf = listBinds(binds)
+				ui.menu = listBinds(binds)
 			}
 			return draw
 		}
@@ -1414,7 +1414,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			ui.echoerrf("unknown mapping: %s", button)
 			ui.keyAcc = nil
 			ui.keyCount = nil
-			ui.menuBuf = nil
+			ui.menu = ""
 			return draw
 		}
 
@@ -1591,12 +1591,13 @@ func anyKey() {
 	os.Stdin.Read(b)
 }
 
-func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.Buffer {
+func listMatches(screen tcell.Screen, matches []string, selectedInd int) string {
 	mlen := len(matches)
 	if mlen < 2 {
-		return nil
+		return ""
 	}
-	b := new(bytes.Buffer)
+
+	var b strings.Builder
 
 	wtot, _ := screen.Size()
 	wcol := 0
@@ -1613,13 +1614,13 @@ func listMatches(screen tcell.Screen, matches []string, selectedInd int) *bytes.
 			target := matches[i]
 
 			if selectedInd == i {
-				fmt.Fprintf(b, "\033[7m%s\033[0m%*s", target, wcol-len(target), "")
+				fmt.Fprintf(&b, "\033[7m%s\033[0m%*s", target, wcol-len(target), "")
 			} else {
-				fmt.Fprintf(b, "%s%*s", target, wcol-len(target), "")
+				fmt.Fprintf(&b, "%s%*s", target, wcol-len(target), "")
 			}
 		}
 		b.WriteByte('\n')
 	}
 
-	return b
+	return b.String()
 }
