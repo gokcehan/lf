@@ -1224,6 +1224,24 @@ func listMarks(marks map[string]string) string {
 	return b.String()
 }
 
+func listFilesInCurrDir(nav *nav) string {
+	if !nav.init {
+		return ""
+	}
+	dir := nav.currDir()
+	if dir.loading {
+		log.Printf("listFilesInCurrDir(): %s is still loading, `files` isn't ready for remote query", dir.path)
+		return ""
+	}
+
+	b := new(strings.Builder)
+	for _, file := range dir.files {
+		fmt.Fprintln(b, file.path)
+	}
+
+	return b.String()
+}
+
 func (ui *ui) pollEvent() tcell.Event {
 	select {
 	case val := <-ui.keyChan:
