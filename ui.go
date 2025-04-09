@@ -1605,7 +1605,7 @@ func anyKey() {
 	}
 	defer term.Restore(int(os.Stdin.Fd()), oldState)
 
-	b := make([]byte, 1)
+	b := make([]byte, 8)
 	os.Stdin.Read(b)
 }
 
