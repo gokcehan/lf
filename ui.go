@@ -1030,13 +1030,7 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
-	// XXX: manual clean without flush to avoid flicker on Windows
-	wtot, htot := ui.screen.Size()
-	for i := range wtot {
-		for j := range htot {
-			ui.screen.SetContent(i, j, ' ', nil, st)
-		}
-	}
+	ui.screen.Clear()
 	ui.sxScreen.sixel = nil
 
 	ui.drawPromptLine(nav)
