@@ -14,15 +14,13 @@ const (
 
 type sixelScreen struct {
 	lastFile string
-	lastSxW  int
-	lastSxH  int
 	lastWinW int
 	lastWinH int
 }
 
-func (sxs *sixelScreen) unlockSixel(win *win, screen tcell.Screen, filePath string) {
-	if filePath != "" && (filePath != sxs.lastFile || win.w != sxs.lastWinW || win.h != sxs.lastWinH) {
-		screen.LockRegion(win.x, win.y, sxs.lastSxW, sxs.lastSxH, false)
+func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
+	if sxs.lastFile != "" && (filePath != sxs.lastFile || win.w != sxs.lastWinW || win.h != sxs.lastWinH) {
+		screen.LockRegion(win.x, win.y, win.w, win.h, false)
 
 	}
 
@@ -47,8 +45,12 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		log.Printf("terminal lookup failed during sixel render %s", err)
 		return
 	}
-	v, _ := tty.WindowSize()
-	w, h := v.CellDimensions()
+	ws, err := tty.WindowSize()
+	if err != nil {
+		log.Printf("window size lookup failed during sixel render %s", err)
+		return
+	}
+	cw, ch := ws.CellDimensions()
 	matches := reSixelSize.FindStringSubmatch(*reg.sixel)
 	if matches == nil {
 		log.Printf("sixel dimensions cannot be looked up")
@@ -58,12 +60,10 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	ih, _ := strconv.Atoi(matches[2])
 
 	// width and height are -1 to avoid showing half filled sixels
-	screen.LockRegion(win.x, win.y, iw/w-1, ih/h-1, true)
+	screen.LockRegion(win.x, win.y, iw/cw-1, ih/ch-1, true)
 	ti.TPuts(tty, ti.TGoto(win.x, win.y))
 	ti.TPuts(tty, *reg.sixel)
 	sxs.lastFile = reg.path
-	sxs.lastSxW = iw
-	sxs.lastSxH = ih
 	sxs.lastWinW = win.w
 	sxs.lastWinH = win.h
 }

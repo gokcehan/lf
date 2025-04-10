@@ -660,7 +660,7 @@ func newUI(screen tcell.Screen) *ui {
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
-		sxScreen:    sixelScreen{"", 0, 0, 0, 0},
+		sxScreen:    sixelScreen{"", 0, 0},
 	}
 
 	go ui.pollEvents()
@@ -1079,7 +1079,7 @@ func (ui *ui) draw(nav *nav) {
 		curr, err := nav.currFile()
 		if err == nil {
 			preview := ui.wins[len(ui.wins)-1]
-			ui.sxScreen.unlockSixel(preview, ui.screen, curr.path)
+			ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
 			if curr.IsDir() {
 				ui.sxScreen.lastFile = ""
 				preview.printDir(ui, ui.dirPrev, &context,
