@@ -356,7 +356,7 @@ type dirStyle struct {
 	role   dirRole
 }
 
-func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle, previewLoading bool) {
+func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -368,25 +368,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		return
 	}
 	fileslen := len(dir.files)
-	if (dir.loading && fileslen == 0) || (dirStyle.role == Preview && dir.loading && gOpts.dirpreviews) {
-		if dirStyle.role != Preview || previewLoading {
-			win.print(ui.screen, 2, 0, messageStyle, "loading...")
-		}
+	if dir.loading && fileslen == 0 {
+		win.print(ui.screen, 2, 0, messageStyle, "loading...")
 		return
 	}
 
-	if dirStyle.role == Preview && gOpts.dirpreviews && len(gOpts.previewer) > 0 {
-		// Print previewer result instead of default directory print operation.
-		st := tcell.StyleDefault
-		for i, l := range dir.lines {
-			if i > win.h-1 {
-				break
-			}
-
-			st = win.print(ui.screen, 2, i, st, l)
-		}
-		return
-	}
 	if fileslen == 0 {
 		win.print(ui.screen, 2, 0, messageStyle, "empty")
 		return
@@ -735,6 +721,9 @@ func (ui *ui) echoerrf(format string, a ...any) {
 	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
+// This represents the preview for a regular file.
+// This can also be used to represent the preview of a directory if
+// `dirpreviews` is enabled.
 type reg struct {
 	loading  bool
 	volatile bool
@@ -767,10 +756,10 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		return
 	}
 
-	if curr.IsDir() {
-		ui.dirPrev = app.nav.loadDir(curr.path)
-	} else if curr.Mode().IsRegular() {
+	if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
 		ui.regPrev = app.nav.loadReg(curr.path, volatile)
+	} else if curr.IsDir() {
+		ui.dirPrev = app.nav.loadDir(curr.path)
 	}
 }
 
@@ -1046,8 +1035,7 @@ func (ui *ui) draw(nav *nav) {
 		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
 			ui.wins[i].printDir(ui, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, role: role},
-				nav.previewLoading)
+				&dirStyle{colors: ui.styles, icons: ui.icons, role: role})
 		}
 	}
 
@@ -1075,12 +1063,11 @@ func (ui *ui) draw(nav *nav) {
 		if err == nil {
 			preview := ui.wins[len(ui.wins)-1]
 
-			if curr.IsDir() {
-				preview.printDir(ui, ui.dirPrev, &context,
-					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
-					nav.previewLoading)
-			} else if curr.Mode().IsRegular() {
+			if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
 				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
+			} else if curr.IsDir() {
+				preview.printDir(ui, ui.dirPrev, &context,
+					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
 			}
 		}
 	}
