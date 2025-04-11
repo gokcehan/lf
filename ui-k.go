@@ -646,7 +646,7 @@ func newUI(screen tcell.Screen) *ui {
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
-		sxScreen:    sixelScreen{},
+		sxScreen:    sixelScreen{"", 0, 0},
 	}
 
 	go ui.pollEvents()
@@ -1019,7 +1019,18 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
+<<<<<<< HEAD
+	// XXX: manual clean without flush to avoid flicker on Windows
+	wtot, htot := ui.screen.Size()
+	for i := range wtot {
+		for j := range htot {
+			ui.screen.SetContent(i, j, ' ', nil, st)
+		}
+	}
+=======
 	ui.screen.Clear()
+	ui.sxScreen.sixel = nil
+>>>>>>> origin/master
 
 	ui.drawPromptLine(nav)
 
@@ -1057,15 +1068,24 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
-	curr, err := nav.currFile()
-	if err == nil {
-		preview := ui.wins[len(ui.wins)-1]
-		ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
-		if gOpts.preview {
+	if gOpts.preview {
+		curr, err := nav.currFile()
+		if err == nil {
+			preview := ui.wins[len(ui.wins)-1]
+<<<<<<< HEAD
+			ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
+			if curr.IsDir() {
+				ui.sxScreen.lastFile = ""
+				preview.printDir(ui, ui.dirPrev, &context,
+					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview},
+					nav.previewLoading)
+			} else if curr.Mode().IsRegular() {
+=======
+
 			if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
+>>>>>>> origin/master
 				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			} else if curr.IsDir() {
-				ui.sxScreen.lastFile = ""
 				preview.printDir(ui, ui.dirPrev, &context,
 					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
 			}
@@ -1097,6 +1117,13 @@ func (ui *ui) draw(nav *nav) {
 	}
 
 	ui.screen.Show()
+<<<<<<< HEAD
+=======
+	if ui.menu == "" && ui.cmdPrefix == "" && ui.sxScreen.sixel != nil {
+		ui.sxScreen.lastFile = ui.regPrev.path
+		ui.sxScreen.showSixels()
+	}
+>>>>>>> origin/master
 }
 
 func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
@@ -1518,7 +1545,7 @@ func (ui *ui) readExpr() {
 }
 
 func (ui *ui) suspend() error {
-	ui.sxScreen.forceClear = true
+	ui.sxScreen.lastFile = ""
 	return ui.screen.Suspend()
 }
 
