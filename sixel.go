@@ -8,62 +8,64 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const (
-	gSixelBegin = "\033P"
-)
+const gSixelBegin = "\033P"
 
 type sixelScreen struct {
-	lastFile string
-	lastWinW int
-	lastWinH int
+	lastFile   string
+	lastWin    win
+	forceClear bool
 }
 
 func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
-	if sxs.lastFile != "" && (filePath != sxs.lastFile || win.w != sxs.lastWinW || win.h != sxs.lastWinH) {
-		screen.LockRegion(win.x, win.y, win.w, win.h, false)
-
+	if sxs.lastFile != "" && (filePath != sxs.lastFile || *win != sxs.lastWin || sxs.forceClear) {
+		screen.LockRegion(sxs.lastWin.x, sxs.lastWin.y, sxs.lastWin.w, sxs.lastWin.h, false)
 	}
-
 }
 
 func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
-
-	if reg.path == sxs.lastFile && win.w == sxs.lastWinW && win.h == sxs.lastWinH {
+	if reg.path == sxs.lastFile && *win == sxs.lastWin && !sxs.forceClear {
 		return
 	}
+
 	if reg.sixel == nil {
 		sxs.lastFile = ""
 		return
 	}
-	tty, ok := screen.Tty()
-	if !ok {
-		log.Printf("returning underlying tty failed during sixel render")
-		return
-	}
+
 	ti, err := tcell.LookupTerminfo(os.Getenv("TERM"))
 	if err != nil {
-		log.Printf("terminal lookup failed during sixel render %s", err)
+		log.Printf("sixel: failed to look up term into %s", err)
 		return
 	}
+
+	tty, ok := screen.Tty()
+	if !ok {
+		log.Printf("sixel: failed to get tty")
+		return
+	}
+
 	ws, err := tty.WindowSize()
 	if err != nil {
-		log.Printf("window size lookup failed during sixel render %s", err)
+		log.Printf("sixel: failed to get window size %s", err)
 		return
 	}
 	cw, ch := ws.CellDimensions()
+
 	matches := reSixelSize.FindStringSubmatch(*reg.sixel)
 	if matches == nil {
-		log.Printf("sixel dimensions cannot be looked up")
+		log.Printf("sixel: failed to get image size")
 		return
 	}
 	iw, _ := strconv.Atoi(matches[1])
 	ih, _ := strconv.Atoi(matches[2])
 
-	// width and height are -1 to avoid showing half filled sixels
-	screen.LockRegion(win.x, win.y, iw/cw-1, ih/ch-1, true)
+	// clear sixel area first before drawing the image to prevent residue from
+	// the previous preview
+	screen.LockRegion(win.x, win.y, iw/cw, ih/ch, true)
 	ti.TPuts(tty, ti.TGoto(win.x, win.y))
 	ti.TPuts(tty, *reg.sixel)
+
 	sxs.lastFile = reg.path
-	sxs.lastWinW = win.w
-	sxs.lastWinH = win.h
+	sxs.lastWin = *win
+	sxs.forceClear = false
 }
