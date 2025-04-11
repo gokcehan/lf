@@ -258,7 +258,6 @@ func (app *app) writeHistory() error {
 // separate goroutines and sent here for update.
 func (app *app) loop() {
 	go app.nav.previewLoop(app.ui)
-	go app.nav.dirPreviewLoop(app.ui)
 
 	var serverChan <-chan expr
 	if !gSingleMode {
@@ -336,7 +335,6 @@ func (app *app) loop() {
 			app.quit()
 
 			app.nav.previewChan <- ""
-			app.nav.dirPreviewChan <- nil
 
 			log.Print("bye!")
 
@@ -510,7 +508,6 @@ func (app *app) loop() {
 
 func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	app.nav.previewChan <- ""
-	app.nav.dirPreviewChan <- nil
 
 	if err := app.ui.suspend(); err != nil {
 		log.Printf("suspend: %s", err)
@@ -547,11 +544,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	exportOpts()
 
 	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(gOpts.keys).String()
-	gState.data["cmaps"] = listBinds(gOpts.cmdkeys).String()
-	gState.data["cmds"] = listCmds().String()
-	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd).String()
-	gState.data["history"] = listHistory(app.cmdHistory).String()
+	gState.data["maps"] = listBinds(gOpts.keys)
+	gState.data["cmaps"] = listBinds(gOpts.cmdkeys)
+	gState.data["cmds"] = listCmds()
+	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	gState.data["history"] = listHistory(app.cmdHistory)
+	gState.data["files"] = listFilesInCurrDir(app.nav)
 	gState.mutex.Unlock()
 
 	cmd := shellCommand(s, args)

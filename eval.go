@@ -687,11 +687,11 @@ func menuComplete(app *app, dir int) {
 		ind := len(app.ui.cmdTmp) - len([]rune(last))
 		app.ui.cmdAccLeft = append(app.ui.cmdTmp[:ind], []rune(comp)...)
 	}
-	app.ui.menuBuf = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
+	app.ui.menu = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
 }
 
 func update(app *app) {
-	app.ui.menuBuf = nil
+	app.ui.menu = ""
 	app.menuCompActive = false
 
 	switch {
@@ -782,7 +782,7 @@ func normal(app *app) {
 	app.cmdHistoryInd = 0
 	app.menuCompActive = false
 
-	app.ui.menuBuf = nil
+	app.ui.menu = ""
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
@@ -991,7 +991,7 @@ func insert(app *app, arg string) {
 		}
 		fallthrough
 	default:
-		app.ui.menuBuf = nil
+		app.ui.menu = ""
 		app.menuCompActive = false
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
@@ -1630,14 +1630,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		normal(app)
-		app.ui.menuBuf = listMarks(app.nav.marks)
+		app.ui.menu = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-load: "
 	case "mark-remove":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
 		normal(app)
-		app.ui.menuBuf = listMarks(app.nav.marks)
+		app.ui.menu = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
 	case "rename":
 		if !app.nav.init {
@@ -1819,13 +1819,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		normal(app)
 	case "cmd-complete":
 		matches := doComplete(app)
-		app.ui.menuBuf = listMatches(app.ui.screen, matches, -1)
+		app.ui.menu = listMatches(app.ui.screen, matches, -1)
 	case "cmd-menu-complete":
 		menuComplete(app, 1)
 	case "cmd-menu-complete-back":
 		menuComplete(app, -1)
 	case "cmd-menu-accept":
-		app.ui.menuBuf = nil
+		app.ui.menu = ""
 		app.menuCompActive = false
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
@@ -1833,7 +1833,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		app.ui.menuBuf = nil
+		app.ui.menu = ""
 		app.menuCompActive = false
 
 		app.ui.cmdAccLeft = nil

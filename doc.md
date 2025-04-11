@@ -1470,6 +1470,7 @@ The following types of information are supported:
 	cmds     list of commands created by the 'cmd' command
 	jumps    contents of the jump list, showing previously visited locations
 	history  list of previously executed commands on the command line
+	files    list of files in the currently open directory as displayed by lf, empty if dir is still loading
 
 This is useful for scripting actions based on the internal state of lf.
 For example, to select a previous command using fzf and execute it:
