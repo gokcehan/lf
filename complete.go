@@ -80,6 +80,7 @@ var (
 		"mark-remove",
 		"tag",
 		"tag-toggle",
+		"tty-write",
 		"cmd-escape",
 		"cmd-complete",
 		"cmd-menu-complete",

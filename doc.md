@@ -102,6 +102,7 @@ The following commands are provided by lf:
 	mark-remove    (modal)   (default '"')
 	tag
 	tag-toggle               (default 't')
+	tty-write
 
 The following command line commands are provided by lf:
 
@@ -568,6 +569,12 @@ You can define a new tag-clearing command by combining `tag` with `tag-toggle` (
 ## tag-toggle (default `t`)
 
 Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
+
+## tty-write
+
+Write the given string to the tty.
+This is useful for sending escape sequences to the terminal to control its behavior (e.g. OSC 0 to set the window title).
+Using `tty-write` is preferred over directly writing to `/dev/tty` because the latter is not synchronized and can interfere with drawing the UI.
 
 # COMMAND LINE COMMANDS
 
