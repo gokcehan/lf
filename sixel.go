@@ -59,8 +59,6 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	iw, _ := strconv.Atoi(matches[1])
 	ih, _ := strconv.Atoi(matches[2])
 
-	// clear sixel area first before drawing the image to prevent residue from
-	// the previous preview
 	screen.LockRegion(win.x, win.y, iw/cw, ih/ch, true)
 	ti.TPuts(tty, ti.TGoto(win.x, win.y))
 	ti.TPuts(tty, *reg.sixel)
