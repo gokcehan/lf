@@ -1688,11 +1688,11 @@ You can define it just as you would define any other command:
 	    '
 	}}
 
-If you want to print escape sequences, you may redirect `printf` output to `/dev/tty`.
+If you want to send escape sequences to the terminal, you can use the `tty-write` command to do so.
 The following xterm-specific escape sequence sets the terminal title to the working directory:
 
 	cmd on-cd &{{
-	    printf "\033]0; $PWD\007" > /dev/tty
+        lf -remote "send $id tty-write \"\033]0;$PWD\007\""
 	}}
 
 This command runs whenever you change the directory but not on startup.
