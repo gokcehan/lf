@@ -50,7 +50,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		return
 	}
 	cw, ch := ws.CellDimensions()
-	if cw < 0 || ch < 0 {
+	if cw <= 0 || ch <= 0 {
 		log.Printf("sixel: cell dimensions should not be 0")
 		return
 	}
