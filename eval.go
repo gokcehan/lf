@@ -91,9 +91,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			if app.nav.height != app.ui.wins[0].h {
 				app.nav.height = app.ui.wins[0].h
 				clear(app.nav.regCache)
-				if gOpts.sixel {
-					app.ui.sxScreen.lastFile = ""
-				}
 			}
 			app.ui.loadFile(app, true)
 		}
@@ -157,6 +154,9 @@ func (e *setExpr) eval(app *app, args []string) {
 			err = errors.New("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
 		}
 		if err == nil {
+			if gOpts.sixel {
+				app.ui.sxScreen.forceClear = true
+			}
 			gOpts.preview = preview
 			app.ui.loadFile(app, true)
 		}
@@ -174,6 +174,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "sixel", "nosixel", "sixel!":
 		err = applyBoolOpt(&gOpts.sixel, e)
+		clear(app.nav.regCache)
+		app.ui.sxScreen.forceClear = true
+		app.ui.loadFile(app, true)
 	case "smartcase", "nosmartcase", "smartcase!":
 		err = applyBoolOpt(&gOpts.smartcase, e)
 		if err == nil {
@@ -350,7 +353,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.wins = getWins(app.ui.screen)
 		if gOpts.sixel {
 			clear(app.nav.regCache)
-			app.ui.sxScreen.lastFile = ""
 		}
 		app.ui.loadFile(app, true)
 	case "scrolloff":
@@ -1433,7 +1435,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		if gOpts.sixel {
 			clear(app.nav.regCache)
-			app.ui.sxScreen.lastFile = ""
+			app.ui.sxScreen.forceClear = true
 		}
 		for _, dir := range app.nav.dirs {
 			dir.boundPos(app.nav.height)
