@@ -2009,7 +2009,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
 	case "cmd-history-next":
-		if app.ui.cmdPrefix == "" || app.ui.cmdPrefix == ">" {
+		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
 		}
 		if app.cmdHistoryInd > 0 {
@@ -2027,7 +2027,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-history-prev":
-		if app.ui.cmdPrefix == ">" {
+		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
 		}
 		if app.cmdHistoryInd == len(app.cmdHistory) {
