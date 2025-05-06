@@ -2181,7 +2181,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		ind := locs[len(locs)-1][3]
 		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
+		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
 		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
