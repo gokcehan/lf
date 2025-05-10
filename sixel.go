@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"fmt"
 	"log"
 	"os"
 	"strconv"
@@ -32,26 +34,9 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		return
 	}
 
-	ti, err := tcell.LookupTerminfo(os.Getenv("TERM"))
+	cw, ch, err := cellSize(screen)
 	if err != nil {
-		log.Printf("sixel: failed to look up term into %s", err)
-		return
-	}
-
-	tty, ok := screen.Tty()
-	if !ok {
-		log.Printf("sixel: failed to get tty")
-		return
-	}
-
-	ws, err := tty.WindowSize()
-	if err != nil {
-		log.Printf("sixel: failed to get window size %s", err)
-		return
-	}
-	cw, ch := ws.CellDimensions()
-	if cw <= 0 || ch <= 0 {
-		log.Printf("sixel: cell dimensions should not be 0")
+		log.Printf("sixel: %s", err)
 		return
 	}
 
@@ -64,10 +49,33 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	ih, _ := strconv.Atoi(matches[2])
 
 	screen.LockRegion(win.x, win.y, iw/cw, ih/ch, true)
-	ti.TPuts(tty, ti.TGoto(win.x, win.y))
-	ti.TPuts(tty, *reg.sixel)
+	fmt.Fprint(os.Stderr, "\0337")                          // Save cursor position
+	fmt.Fprintf(os.Stderr, "\033[%d;%dH", win.y+1, win.x+1) // Move cursor to position
+	fmt.Fprint(os.Stderr, *reg.sixel)                       // Print sixel
+	fmt.Fprint(os.Stderr, "\0338")                          // Restore cursor position
 
 	sxs.lastFile = reg.path
 	sxs.lastWin = *win
 	sxs.forceClear = false
+}
+
+func cellSize(screen tcell.Screen) (int, int, error) {
+	tty, ok := screen.Tty()
+	if !ok {
+		// fallback for Windows Terminal
+		return 10, 20, nil
+	}
+
+	ws, err := tty.WindowSize()
+	if err != nil {
+		log.Printf("sixel: failed to get window size %s", err)
+		return -1, -1, err
+	}
+
+	cw, ch := ws.CellDimensions()
+	if cw <= 0 || ch <= 0 {
+		return -1, -1, errors.New("cell dimensions should be greater than 0")
+	}
+
+	return cw, ch, nil
 }
