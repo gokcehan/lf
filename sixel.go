@@ -48,7 +48,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	iw, _ := strconv.Atoi(matches[1])
 	ih, _ := strconv.Atoi(matches[2])
 
-	screen.LockRegion(win.x, win.y, iw/cw, ih/ch, true)
+	screen.LockRegion(win.x, win.y, (iw+cw-1)/cw, (ih+ch-1)/ch, true)
 	fmt.Fprint(os.Stderr, "\0337")                          // Save cursor position
 	fmt.Fprintf(os.Stderr, "\033[%d;%dH", win.y+1, win.x+1) // Move cursor to position
 	fmt.Fprint(os.Stderr, *reg.sixel)                       // Print sixel
@@ -68,8 +68,7 @@ func cellSize(screen tcell.Screen) (int, int, error) {
 
 	ws, err := tty.WindowSize()
 	if err != nil {
-		log.Printf("sixel: failed to get window size %s", err)
-		return -1, -1, err
+		return -1, -1, fmt.Errorf("failed to get window size: %s", err)
 	}
 
 	cw, ch := ws.CellDimensions()
