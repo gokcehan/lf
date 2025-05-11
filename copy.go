@@ -133,7 +133,11 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				newPath := filepath.Join(dst, rel)
 				switch {
 				case info.IsDir():
-					if err := os.MkdirAll(newPath, info.Mode()); err != nil {
+					var dst_mode os.FileMode = os.ModePerm
+					if slices.Contains(preserve, "mode") {
+						dst_mode = info.Mode()
+					}
+					if err := os.MkdirAll(newPath, dst_mode); err != nil {
 						errs <- fmt.Errorf("mkdir: %s", err)
 					}
 					if slices.Contains(preserve, "timestamps") {
