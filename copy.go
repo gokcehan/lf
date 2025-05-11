@@ -5,6 +5,7 @@ import (
 	"io"
 	"os"
 	"path/filepath"
+	"slices"
 	"strconv"
 	"strings"
 
@@ -54,30 +55,22 @@ func copySize(srcs []string) (int64, error) {
 }
 
 func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan int64) error {
-	var dst_mode os.FileMode = 0o666
-	preserve_timestamps := false
-	for _, s := range preserve {
-		switch s {
-		case "timestamps":
-			preserve_timestamps = true
-		case "mode":
-			dst_mode = info.Mode()
-		}
-	}
-
 	r, err := os.Open(src)
 	if err != nil {
 		return err
 	}
 	defer r.Close()
 
+	var dst_mode os.FileMode = 0o666
+	if slices.Contains(preserve, "mode") {
+		dst_mode = info.Mode()
+	}
 	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dst_mode)
 	if err != nil {
 		return err
 	}
 
-	_, err = io.Copy(NewProgressWriter(w, nums), r)
-	if err != nil {
+	if _, err := io.Copy(NewProgressWriter(w, nums), r); err != nil {
 		w.Close()
 		os.Remove(dst)
 		return err
@@ -88,10 +81,9 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 		return err
 	}
 
-	if preserve_timestamps {
-		ts := times.Get(info)
+	if slices.Contains(preserve, "timestamps") {
+		atime := times.Get(info).AccessTime()
 		mtime := info.ModTime()
-		atime := ts.AccessTime()
 		if err := os.Chtimes(dst, atime, mtime); err != nil {
 			os.Remove(dst)
 			return err
@@ -106,6 +98,8 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 	errs = make(chan error, 1024)
 
 	go func() {
+		dirInfos := make(map[string]os.FileInfo)
+
 		for _, src := range srcs {
 			file := filepath.Base(src)
 			dst := filepath.Join(dstDir, file)
@@ -137,12 +131,16 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					return nil
 				}
 				newPath := filepath.Join(dst, rel)
-				if info.IsDir() {
+				switch {
+				case info.IsDir():
 					if err := os.MkdirAll(newPath, info.Mode()); err != nil {
 						errs <- fmt.Errorf("mkdir: %s", err)
 					}
+					if slices.Contains(preserve, "timestamps") {
+						dirInfos[newPath] = info
+					}
 					nums <- info.Size()
-				} else if info.Mode()&os.ModeSymlink != 0 { /* Symlink */
+				case info.Mode()&os.ModeSymlink != 0:
 					if rlink, err := os.Readlink(path); err != nil {
 						errs <- fmt.Errorf("symlink: %s", err)
 					} else {
@@ -151,13 +149,21 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 						}
 					}
 					nums <- info.Size()
-				} else {
+				default:
 					if err := copyFile(path, newPath, preserve, info, nums); err != nil {
 						errs <- fmt.Errorf("copy: %s", err)
 					}
 				}
 				return nil
 			})
+		}
+
+		for path, info := range dirInfos {
+			atime := times.Get(info).AccessTime()
+			mtime := info.ModTime()
+			if err := os.Chtimes(path, atime, mtime); err != nil {
+				errs <- fmt.Errorf("chtimes: %s", err)
+			}
 		}
 
 		close(errs)
