@@ -326,7 +326,7 @@ func getFileExtension(file fs.FileInfo) string {
 
 var (
 	reModKey    = regexp.MustCompile(`<(c|s|a)-(.+)>`)
-	reRulerSub  = regexp.MustCompile(`%[apmcsfithd]|%\{[^}]+\}`)
+	reRulerSub  = regexp.MustCompile(`%[apmcsfithPd]|%\{[^}]+\}`)
 	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
 )
 
