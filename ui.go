@@ -892,6 +892,19 @@ func (ui *ui) drawRuler(nav *nav) {
 	hid := len(dir.allFiles) - tot
 	acc := string(ui.keyCount) + string(ui.keyAcc)
 
+	var percentage string
+	beg := max(dir.ind-dir.pos, 0)
+	switch {
+	case tot <= nav.height:
+		percentage = "All"
+	case beg == 0:
+		percentage = "Top"
+	case beg == tot-nav.height:
+		percentage = "Bot"
+	default:
+		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
+	}
+
 	copy := 0
 	move := 0
 	for _, cp := range nav.saves {
@@ -943,6 +956,8 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = strconv.Itoa(tot)
 		case "%h":
 			result = strconv.Itoa(hid)
+		case "%P":
+			result = percentage
 		case "%d":
 			result = diskFree(dir.path)
 		default:

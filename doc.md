@@ -910,7 +910,7 @@ Draw rounded outer corners when the `drawbox` option is enabled.
 ## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
-Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, and `%d` as the amount of free disk space remaining.
+Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%P` as the scroll percentage, and `%d` as the amount of free disk space remaining.
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
