@@ -920,8 +920,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	progress := []string{}
 
 	if nav.copyTotal > 0 {
-		percentage := int((100 * float64(nav.copyBytes)) / float64(nav.copyTotal))
-		progress = append(progress, fmt.Sprintf("[%d%%]", percentage))
+		progress = append(progress, fmt.Sprintf("[%d%%]", nav.copyBytes*100/nav.copyTotal))
 	}
 
 	if nav.moveTotal > 0 {
