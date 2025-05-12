@@ -1066,7 +1066,7 @@ func (nav *nav) bottom() bool {
 
 	old := dir.ind
 
-	dir.ind = len(dir.files) - 1
+	dir.ind = max(len(dir.files)-1, 0)
 	dir.pos = min(dir.ind, nav.height-1)
 
 	return old != dir.ind
