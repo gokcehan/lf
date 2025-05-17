@@ -87,13 +87,6 @@ func exportEnvVars() {
 	level++
 
 	os.Setenv("LF_LEVEL", strconv.Itoa(level))
-
-	lfPath, err := os.Executable()
-	if err != nil {
-		log.Printf("getting path to lf binary: %s", err)
-		lfPath = "lf"
-	}
-	os.Setenv("lf", quoteString(lfPath))
 }
 
 // used by exportOpts below
@@ -148,6 +141,15 @@ func getOptsMap() map[string]string {
 	}
 
 	return opts
+}
+
+func exportLfPath() {
+	lfPath, err := os.Executable()
+	if err != nil {
+		log.Printf("getting path to lf binary: %s", err)
+		lfPath = "lf"
+	}
+	os.Setenv("lf", quoteString(lfPath))
 }
 
 func exportOpts() {
