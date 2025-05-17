@@ -21,11 +21,11 @@ cmd open &&$Env:OPENER.Trim('"', ' ') "$Env:f"
 map e $&$Env:EDITOR "$Env:f"
 map i !&$Env:PAGER "$Env:f"
 map w $&$Env:SHELL
-cmd doc !&$Env:lf.Trim('"', ' ') -doc | &$Env:PAGER
+cmd doc !&$Env:lf -doc | &$Env:PAGER
 map <f-1> doc
-cmd maps !&$Env:lf.Trim('"', ' ') -remote "query $Env:id maps" | &$Env:PAGER
-cmd cmaps !&$Env:lf.Trim('"', ' ') -remote "query $Env:id cmaps" | &$Env:PAGER
-cmd cmds !&$Env:lf.Trim('"', ' ') -remote "query $Env:id cmds" | &$Env:PAGER
+cmd maps !&$Env:lf -remote "query $Env:id maps" | &$Env:PAGER
+cmd cmaps !&$Env:lf -remote "query $Env:id cmaps" | &$Env:PAGER
+cmd cmds !&$Env:lf. -remote "query $Env:id cmds" | &$Env:PAGER
 
 # change the editor used in default editor keybinding
 # There is no builtin terminal editor installed in Windows. The default editor
