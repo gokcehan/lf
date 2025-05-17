@@ -25,7 +25,7 @@ cmd doc !&$Env:lf -doc | &$Env:PAGER
 map <f-1> doc
 cmd maps !&$Env:lf -remote "query $Env:id maps" | &$Env:PAGER
 cmd cmaps !&$Env:lf -remote "query $Env:id cmaps" | &$Env:PAGER
-cmd cmds !&$Env:lf. -remote "query $Env:id cmds" | &$Env:PAGER
+cmd cmds !&$Env:lf -remote "query $Env:id cmds" | &$Env:PAGER
 
 # change the editor used in default editor keybinding
 # There is no builtin terminal editor installed in Windows. The default editor
