@@ -549,6 +549,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
 	app.ui.exportMode()
+	exportLfPath()
 	exportOpts()
 
 	gState.mutex.Lock()
