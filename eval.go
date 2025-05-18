@@ -64,6 +64,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.anchorfind, e)
 	case "autoquit", "noautoquit", "autoquit!":
 		err = applyBoolOpt(&gOpts.autoquit, e)
+	case "classify", "noclassify", "classify!":
+		err = applyBoolOpt(&gOpts.classify, e)
 	case "dircache", "nodircache", "dircache!":
 		err = applyBoolOpt(&gOpts.dircache, e)
 	case "dircounts", "nodircounts", "dircounts!":

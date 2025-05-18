@@ -34,6 +34,7 @@ var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
 	borderfmt        string
+	classify         bool
 	copyfmt          string
 	cursoractivefmt  string
 	cursorparentfmt  string
@@ -208,6 +209,7 @@ func init() {
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.borderfmt = "\033[0m"
+	gOpts.classify = false
 	gOpts.copyfmt = "\033[7;33m"
 	gOpts.cursoractivefmt = "\033[7m"
 	gOpts.cursorparentfmt = "\033[7m"

@@ -140,6 +140,7 @@ The following options can be used to customize the behavior of lf:
 	anchorfind        bool      (default true)
 	autoquit          bool      (default true)
 	borderfmt         string    (default "\033[0m")
+	classify          bool      (default false)
 	cleaner           string    (default '')
 	copyfmt           string    (default "\033[7;33m")
 	cursoractivefmt   string    (default "\033[7m")
@@ -682,6 +683,11 @@ Automatically quit the server when there are no clients left connected.
 ## borderfmt (string) (default `\033[0m`)
 
 Format string of the box drawing characters enabled by the `drawbox` option.
+
+## classify (bool) (default false)
+
+Append indicator (one of */=>@|) at the end of the file names.
+`*` means executable, `/` means directory, `=` means socket, `>` means door (currently unused), `@` means symbolic link and `|` means named pipe.
 
 ## cleaner (string) (default ``) (not called if empty)
 

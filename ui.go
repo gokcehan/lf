@@ -470,6 +470,22 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			icon = append(icon, ' ')
 		}
 
+		var suffix rune
+		if gOpts.classify {
+			switch {
+			case f.linkState == working || f.linkState == broken:
+				suffix = '@'
+			case f.IsDir():
+				suffix = '/'
+			case f.Mode()&os.ModeNamedPipe != 0:
+				suffix = '|'
+			case f.Mode()&os.ModeSocket != 0:
+				suffix = '='
+			case f.Mode()&0o111 != 0:
+				suffix = '*'
+			}
+		}
+
 		// subtract space for tag and icon
 		maxFilenameWidth := maxWidth - 1 - runeSliceWidth(icon)
 
@@ -481,6 +497,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := []rune(f.Name())
+		filename = append(filename, suffix)
 		if runeSliceWidth(filename) > maxFilenameWidth {
 			truncatePos := (maxFilenameWidth - 1) * gOpts.truncatepct / 100
 			lastPart := runeSliceWidthLastRange(filename, maxFilenameWidth-truncatePos-1)
