@@ -1516,15 +1516,20 @@ func (nav *nav) sync() error {
 		nav.saves[f] = cp
 	}
 
-	oldmarks := nav.marks
-	errMarks := nav.readMarks()
+	tempmarks := make(map[string]string)
 	for _, ch := range gOpts.tempmarks {
-		tmp := string(ch)
-		if v, e := oldmarks[tmp]; e {
-			nav.marks[tmp] = v
+		k := string(ch)
+		if v, ok := nav.marks[k]; ok {
+			tempmarks[k] = v
 		}
 	}
+	errMarks := nav.readMarks()
+	for k, v := range tempmarks {
+		nav.marks[k] = v
+	}
+
 	err = nav.readTags()
+
 	if errMarks != nil {
 		return errMarks
 	}
