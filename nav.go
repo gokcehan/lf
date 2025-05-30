@@ -1161,6 +1161,8 @@ func (nav *nav) toggle() {
 }
 
 func (nav *nav) tagToggleSelection(path string, tag string) {
+	path = evalSymlinks(path)
+
 	if _, ok := nav.tags[path]; ok {
 		delete(nav.tags, path)
 	} else {
@@ -1196,7 +1198,7 @@ func (nav *nav) tag(tag string) error {
 	}
 
 	for _, path := range list {
-		nav.tags[path] = tag
+		nav.tags[evalSymlinks(path)] = tag
 	}
 
 	return nil
