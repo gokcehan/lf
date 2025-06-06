@@ -603,8 +603,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		normal(app)
 		app.cmd = cmd
 		app.cmdOutBuf = nil
-		app.ui.msg = ""
 		app.ui.cmdPrefix = ">"
+		app.ui.echo("")
 
 		go func() {
 			eol := false
