@@ -404,18 +404,13 @@ func (app *app) loop() {
 				oldCurrPath = curr.path
 			}
 
-			if wd, err := os.Getwd(); err == nil && wd != app.nav.currDir().path {
-				// if any path component in the current path is renamed, then
-				// the entire set of directories has to be reloaded
-				app.nav.cd(wd)
-			} else {
-				for i := range app.nav.dirs {
-					if app.nav.dirs[i].path == d.path {
-						app.nav.dirs[i] = d
-					}
+			for i := range app.nav.dirs {
+				if app.nav.dirs[i].path == d.path {
+					app.nav.dirs[i] = d
 				}
-				app.nav.position()
 			}
+
+			app.nav.position()
 
 			curr, err := app.nav.currFile()
 			if err == nil {
