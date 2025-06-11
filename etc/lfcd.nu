@@ -1,6 +1,6 @@
 # Change working dir in shell to last dir in lf on exit (adapted from ranger).
 #
-# You need to add this to your Nushell Enviroment Config File
+# You need to add this to your Nushell Environment Config File
 # (Execute 'config env' in the nushell to open it).
 
 # You may also like to assign a key (Ctrl-O) to this command:
