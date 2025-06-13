@@ -381,7 +381,7 @@ func makeCollator(localeStr string, opts ...collate.Option) (*collate.Collator, 
 // This function deletes entries from a map if the key is either the given path
 // or a subpath of it.
 // This is useful for clearing cached data when a directory is moved or deleted.
-func deletePathRecusrive[T any](m map[string]T, path string) {
+func deletePathRecursive[T any](m map[string]T, path string) {
 	delete(m, path)
 	prefix := path + string(filepath.Separator)
 	for k := range m {

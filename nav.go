@@ -1488,8 +1488,8 @@ func (nav *nav) rename() error {
 	// existed and was deleted. In this case the cache entries should be deleted
 	// before loading newPath to prevent displaying a stale preview. However,
 	// this clears only the current instance of lf, and not any other instances.
-	deletePathRecusrive(nav.regCache, newPath)
-	deletePathRecusrive(nav.dirCache, newPath)
+	deletePathRecursive(nav.regCache, newPath)
+	deletePathRecursive(nav.dirCache, newPath)
 	dir := nav.loadDir(filepath.Dir(newPath))
 
 	if dir.loading {

@@ -466,14 +466,14 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case path := <-app.nav.delChan:
-			deletePathRecusrive(app.nav.selections, path)
+			deletePathRecursive(app.nav.selections, path)
 			if len(app.nav.selections) == 0 {
 				app.nav.selectionInd = 0
 			}
 
-			deletePathRecusrive(app.nav.regCache, path)
+			deletePathRecursive(app.nav.regCache, path)
 
-			deletePathRecusrive(app.nav.dirCache, path)
+			deletePathRecursive(app.nav.dirCache, path)
 			currPath := app.nav.currDir().path
 			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
 				if wd, err := os.Getwd(); err == nil {
