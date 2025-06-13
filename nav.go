@@ -43,7 +43,6 @@ type file struct {
 
 func newFile(path string) *file {
 	lstat, err := os.Lstat(path)
-
 	if err != nil {
 		log.Printf("getting file information: %s", err)
 		return &file{
@@ -386,6 +385,15 @@ func (dir *dir) name() string {
 	}
 
 	return dir.files[dir.ind].Name()
+}
+
+func (d *dir) fileNames() []string {
+	names := []string{}
+	for _, file := range d.files {
+		names = append(names, file.path)
+	}
+
+	return names
 }
 
 func (dir *dir) sel(name string, height int) {
