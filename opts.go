@@ -16,6 +16,7 @@ const (
 	atimeSort   sortMethod = "atime"
 	ctimeSort   sortMethod = "ctime"
 	extSort     sortMethod = "ext"
+	customSort  sortMethod = "custom"
 )
 
 func isValidSortMethod(method sortMethod) bool {
@@ -25,10 +26,11 @@ func isValidSortMethod(method sortMethod) bool {
 		method == timeSort ||
 		method == atimeSort ||
 		method == ctimeSort ||
-		method == extSort
+		method == extSort ||
+		method == customSort
 }
 
-const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime' or 'ext'`
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime', 'ext' or 'custom'`
 
 var gOpts struct {
 	anchorfind       bool

@@ -37,13 +37,13 @@ type file struct {
 	dirSize    int64
 	accessTime time.Time
 	changeTime time.Time
+	customInfo string
 	ext        string
 	err        error
 }
 
 func newFile(path string) *file {
 	lstat, err := os.Lstat(path)
-
 	if err != nil {
 		log.Printf("getting file information: %s", err)
 		return &file{
@@ -55,6 +55,7 @@ func newFile(path string) *file {
 			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
+			customInfo: "",
 			ext:        "",
 			err:        err,
 		}
@@ -114,6 +115,7 @@ func newFile(path string) *file {
 		dirSize:    -1,
 		accessTime: at,
 		changeTime: ct,
+		customInfo: "",
 		ext:        getFileExtension(lstat),
 		err:        nil,
 	}
@@ -257,6 +259,27 @@ func (dir *dir) sort() {
 		} else {
 			sort.SliceStable(dir.files, func(i, j int) bool {
 				s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
+				if !dir.reverse {
+					return s1 < s2
+				} else {
+					return s2 < s1
+				}
+			})
+		}
+	case customSort:
+		if collator, err := makeCollator(dir.locale); err == nil {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].customInfo, dir.files[j].customInfo, dir.ignorecase, dir.ignoredia)
+				result := collator.CompareString(s1, s2)
+				if !dir.reverse {
+					return result < 0
+				} else {
+					return result > 0
+				}
+			})
+		} else {
+			sort.SliceStable(dir.files, func(i, j int) bool {
+				s1, s2 := normalize(dir.files[i].customInfo, dir.files[j].customInfo, dir.ignorecase, dir.ignoredia)
 				if !dir.reverse {
 					return s1 < s2
 				} else {
