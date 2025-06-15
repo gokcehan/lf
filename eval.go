@@ -593,6 +593,17 @@ func onChdir(app *app) {
 	}
 }
 
+func onLoad(app *app, files []string) {
+	// prevent infinite loops
+	if !gOpts.dircache {
+		return
+	}
+
+	if cmd, ok := gOpts.cmds["on-load"]; ok {
+		cmd.eval(app, files)
+	}
+}
+
 func onFocusGained(app *app) {
 	if cmd, ok := gOpts.cmds["on-focus-gained"]; ok {
 		cmd.eval(app, nil)
@@ -1827,6 +1838,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		onFocusLost(app)
 	case "on-init":
 		onInit(app)
+	case "on-load":
+		onLoad(app, app.nav.currDir().fileNames())
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return

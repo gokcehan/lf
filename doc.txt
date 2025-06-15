@@ -229,6 +229,7 @@ of lf when defined:
     delete
     pre-cd
     on-cd
+    on-load
     on-focus-gained
     on-focus-lost
     on-init
@@ -1105,11 +1106,11 @@ pieces are separated by the truncation character (truncatechar). A value
 of 100 will only show the beginning of the filename, while a value of 0
 will only show the end of the filename, e.g.:
 
--   set truncatepct 100 -> very-long-filename-tr~ (default)
+- set truncatepct 100 -> very-long-filename-tr~ (default)
 
--   set truncatepct 50 -> very-long-f~-truncated
+- set truncatepct 50 -> very-long-f~-truncated
 
--   set truncatepct 0 -> ~ng-filename-truncated
+- set truncatepct 0 -> ~ng-filename-truncated
 
 waitmsg (string) (default Press any key to continue)
 
@@ -1260,6 +1261,11 @@ on-cd
 
 This shell command can be defined to be executed after changing a
 directory.
+
+on-load
+
+This shell command can be defined to be executed after loading a
+directory. It provides the files inside the directory as arguments.
 
 on-focus-gained
 
@@ -1920,7 +1926,8 @@ Note that all shell commands are possible but % and & are usually more
 appropriate as $ and ! causes flickers and pauses respectively.
 
 There is also a pre-cd command, that works like on-cd, but is run before
-the directory is actually changed.
+the directory is actually changed. Another related command is on-load
+which gets executed when reading a directory.
 
 COLORS
 
