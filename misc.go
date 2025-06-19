@@ -10,6 +10,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
+	"unicode/utf8"
 
 	"github.com/Xuanwo/go-locale"
 	"github.com/mattn/go-runewidth"
@@ -389,6 +390,37 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 			delete(m, k)
 		}
 	}
+}
+
+// This function is used to remove style-related ANSI escape sequences from
+// a given string.
+//
+// *Note*: this function is based entirely on `printLength()` and strips only
+// style-related escape sequences and the `erase in line` sequence. Other codes
+// (e.g., cursor moves), as well as broken escape sequences, aren't removed.
+// This prevents mismatches between the two functions and avoids misalignment
+// when rendering the UI.
+func stripAnsi(s string) string {
+	var b strings.Builder
+	slen := len(s)
+	for i := 0; i < slen; i++ {
+		r, w := utf8.DecodeRuneInString(s[i:])
+
+		if r == gEscapeCode && i+1 < slen && s[i+1] == '[' {
+			j := strings.IndexAny(s[i:min(slen, i+64)], "mK")
+			if j == -1 {
+				continue
+			}
+
+			i += j
+			continue
+		}
+
+		i += w - 1
+		b.WriteRune(r)
+	}
+
+	return b.String()
 }
 
 // We don't need no generic code

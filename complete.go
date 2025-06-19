@@ -80,6 +80,7 @@ var (
 		"mark-remove",
 		"tag",
 		"tag-toggle",
+		"addcustominfo",
 		"tty-write",
 		"cmd-escape",
 		"cmd-complete",
@@ -342,6 +343,8 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		case "map", "cmap":
 			matches, longest = matchCmd(f[2])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
+		case "addcustominfo":
+			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)

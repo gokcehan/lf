@@ -386,3 +386,35 @@ func TestLocaleNaturalLess(t *testing.T) {
 		}
 	}
 }
+
+func TestStripAnsi(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp string
+	}{
+		{"", ""},                      // empty
+		{"foo bar", "foo bar"},        // plain text
+		{"\033[31mRed\033[0m", "Red"}, // octal syntax
+		{"\x1b[31mRed\x1b[0m", "Red"}, // hexadecimal syntax
+		{"foo\x1b[31mRed", "fooRed"},  // no reset parameter
+		{
+			"foo\x1b[1;31;102mBoldRedGreen\x1b[0mbar",
+			"fooBoldRedGreenbar",
+		}, // multiple attributes
+		{
+			"misc.go:func \x1b[01;31m\x1b[KstripAnsi\x1b[m\x1b[K(s string) string {",
+			"misc.go:func stripAnsi(s string) string {",
+		}, // `grep` output containing `erase in line` sequence
+	}
+
+	for _, test := range tests {
+		if got := stripAnsi(test.s); got != test.exp {
+			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
+		}
+		// we rely on both functions extracting the same runes
+		// to avoid misalignment
+		if printLength(test.s) != len(stripAnsi(test.s)) {
+			t.Errorf("at input %q expected '%d' but got '%d'", test.s, printLength(test.s), len(stripAnsi(test.s)))
+		}
+	}
+}
