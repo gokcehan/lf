@@ -443,6 +443,13 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case f := <-app.nav.fileChan:
+			// skip updates for the log path, otherwise it is possible to have
+			// an infinite loop where writing to a log file causes it to be
+			// reloaded, which in turn triggers more events that are logged
+			if f.path == gLogPath {
+				continue
+			}
+
 			for _, dir := range app.nav.dirCache {
 				if dir.path != filepath.Dir(f.path) {
 					continue

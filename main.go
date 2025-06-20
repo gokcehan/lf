@@ -298,6 +298,14 @@ func main() {
 	gSocketProt = gDefaultSocketProt
 	gSocketPath = gDefaultSocketPath
 
+	if gLogPath != "" {
+		path, err := filepath.Abs(gLogPath)
+		if err != nil {
+			log.Fatalf("getting log path: %s", err)
+		}
+		gLogPath = path
+	}
+
 	if *cpuprofile != "" {
 		f, err := os.Create(*cpuprofile)
 		if err != nil {
@@ -319,14 +327,6 @@ func main() {
 			log.Fatalf("remote command: %s", err)
 		}
 	case *serverMode:
-		if gLogPath != "" && !filepath.IsAbs(gLogPath) {
-			wd, err := os.Getwd()
-			if err != nil {
-				log.Fatalf("getting current directory: %s", err)
-			} else {
-				gLogPath = filepath.Join(wd, gLogPath)
-			}
-		}
 		os.Chdir(gUser.HomeDir)
 		serve()
 	default:
