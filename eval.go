@@ -2276,7 +2276,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		var f *file
-		for _, file := range d.files {
+		for _, file := range d.allFiles {
 			if file.path == path {
 				f = file
 				break
