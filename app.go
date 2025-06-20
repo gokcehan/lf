@@ -427,6 +427,7 @@ func (app *app) loop() {
 
 			app.watchDir(d)
 
+			onLoad(app, d.fileNames())
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
@@ -464,6 +465,8 @@ func (app *app) loop() {
 			if app.ui.msgIsStat {
 				app.ui.loadFileInfo(app.nav)
 			}
+
+			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
 		case path := <-app.nav.delChan:
 			deletePathRecursive(app.nav.selections, path)
