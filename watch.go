@@ -96,10 +96,10 @@ func (watch *watch) loop() {
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
-				// skip updates for the log file, otherwise it is possible to
-				// have an infinite loop where writing to the log file causes it
-				// to be reloaded, which in turn triggers more events that are
-				// then logged
+				// skip write updates for the log file, otherwise it is possible
+				// to have an infinite loop where writing to the log file causes
+				// it to be reloaded, which in turn triggers more events that
+				// are then logged
 				if ev.Name == gLogPath && ev.Has(fsnotify.Write) {
 					continue
 				}
