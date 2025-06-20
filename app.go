@@ -426,7 +426,6 @@ func (app *app) loop() {
 			}
 
 			app.watchDir(d)
-
 			onLoad(app, d.fileNames())
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:

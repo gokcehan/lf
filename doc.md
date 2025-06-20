@@ -1497,14 +1497,14 @@ This is useful for scripting actions based on the internal state of lf.
 For example, to select a previous command using fzf and execute it:
 
 	map <a-h> ${{
-		clear
-		cmd=$(
-			lf -remote "query $id history" |
-			awk -F'\t' 'NR > 1 { print $NF}' |
-			sort -u |
-			fzf --reverse --prompt='Execute command: '
-		)
-		lf -remote "send $id $cmd"
+	    clear
+	    cmd=$(
+	        lf -remote "query $id history" |
+	        awk -F'\t' 'NR > 1 { print $NF}' |
+	        sort -u |
+	        fzf --reverse --prompt='Execute command: '
+	    )
+	    lf -remote "send $id $cmd"
 	}}
 
 There is also a `quit` command to quit the server when there are no connected clients left, and a `quit!` command to force quit the server by closing client connections first:
@@ -1728,22 +1728,22 @@ It works well when combined with `addcustominfo`.
 The following example can be used to display git indicators in the info column:
 
 	cmd on-load &{{
-		cd "$(dirname "$1")" || exit 1
-		git rev-parse >/dev/null 2>&1 || exit 0
+	    cd "$(dirname "$1")" || exit 1
+	    git rev-parse >/dev/null 2>&1 || exit 0
 
-		cmds=""
+	    cmds=""
 
-		for file in "$@"; do
-			status=$(git status --porcelain --ignored -- "$file" | cut -c1-2 | head -n1)
+	    for file in "$@"; do
+	        status=$(git status --porcelain --ignored -- "$file" | cut -c1-2 | head -n1)
 
-			if [ -n "$status" ]; then
-				cmds="${cmds}addcustominfo ${file} \"$status\"; "
-			else
-				cmds="${cmds}addcustominfo ${file} ''; "
-			fi
-		done
+	        if [ -n "$status" ]; then
+	            cmds="${cmds}addcustominfo ${file} \"$status\"; "
+	        else
+	            cmds="${cmds}addcustominfo ${file} ''; "
+	        fi
+	    done
 
-		lf -remote "send $id :$cmds"
+	    lf -remote "send $id :$cmds"
 	}}
 
 # COLORS

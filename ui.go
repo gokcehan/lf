@@ -549,6 +549,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			line := append(filename, ' ')
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
 
+			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
 				win.print(ui.screen, off, i, st, custom)
 			}
