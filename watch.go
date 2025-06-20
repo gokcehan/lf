@@ -96,6 +96,14 @@ func (watch *watch) loop() {
 			}
 
 			if ev.Has(fsnotify.Write) || ev.Has(fsnotify.Chmod) {
+				// skip write updates for the log file, otherwise it is possible
+				// to have an infinite loop where writing to the log file causes
+				// it to be reloaded, which in turn triggers more events that
+				// are then logged
+				if ev.Name == gLogPath && ev.Has(fsnotify.Write) {
+					continue
+				}
+
 				dir, file := filepath.Split(ev.Name)
 				for _, path := range watch.getSameDirs(dir) {
 					watch.addUpdate(filepath.Join(path, file))
