@@ -37,6 +37,7 @@ type file struct {
 	dirSize    int64
 	accessTime time.Time
 	changeTime time.Time
+	customInfo string
 	ext        string
 	err        error
 }
@@ -54,6 +55,7 @@ func newFile(path string) *file {
 			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
+			customInfo: "",
 			ext:        "",
 			err:        err,
 		}
@@ -113,6 +115,7 @@ func newFile(path string) *file {
 		dirSize:    -1,
 		accessTime: at,
 		changeTime: ct,
+		customInfo: "",
 		ext:        getFileExtension(lstat),
 		err:        nil,
 	}

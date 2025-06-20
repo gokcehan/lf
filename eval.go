@@ -268,9 +268,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "size", "time", "atime", "ctime", "perm", "user", "group":
+			case "size", "time", "atime", "ctime", "perm", "user", "group", "custom":
 			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user' or 'group' separated with colon")
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
 				return
 			}
 		}
@@ -502,9 +502,9 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "size", "time", "atime", "ctime", "perm", "user", "group":
+			case "size", "time", "atime", "ctime", "perm", "user", "group", "custom":
 			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user' or 'group' separated with colon")
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
 				return
 			}
 		}
@@ -2250,6 +2250,48 @@ func (e *callExpr) eval(app *app, args []string) {
 			[]rune(string(app.ui.cmdAccLeft)[end2:]),
 		)
 		update(app)
+	case "addcustominfo":
+		var k, v string
+		switch len(e.args) {
+		case 1:
+			k, v = e.args[0], ""
+		case 2:
+			k, v = e.args[0], e.args[1]
+		default:
+			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
+			return
+		}
+
+		path, err := filepath.Abs(replaceTilde(k))
+		if err != nil {
+			app.ui.echoerrf("addcustominfo: %s", err)
+			return
+		}
+
+		dir := filepath.Dir(path)
+		d, ok := app.nav.dirCache[dir]
+		if !ok {
+			app.ui.echoerrf("addcustominfo: dir not loaded: %s", dir)
+			return
+		}
+
+		var f *file
+		for _, file := range d.files {
+			if file.path == path {
+				f = file
+				break
+			}
+		}
+		if f == nil {
+			app.ui.echoerrf("addcustominfo: file not found: %s", path)
+			return
+		}
+
+		if len(strings.Trim(v, " ")) == 0 {
+			f.customInfo = ""
+		} else {
+			f.customInfo = v
+		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

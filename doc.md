@@ -102,6 +102,7 @@ The following commands are provided by lf:
 	mark-remove    (modal)   (default '"')
 	tag
 	tag-toggle               (default 't')
+	addcustominfo
 	tty-write
 
 The following command line commands are provided by lf:
@@ -571,6 +572,12 @@ You can define a new tag-clearing command by combining `tag` with `tag-toggle` (
 
 Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
+## addcustominfo
+
+Update the `custom` info field of the given file with the given string.
+The info string may contain ANSI escape codes to further customize its appearance.
+If no info is provided, clear the file's info instead.
+
 ## tty-write
 
 Write the given string to the tty.
@@ -822,7 +829,8 @@ Apply filter pattern after each keystroke during filtering.
 ## info ([]string)  (default ``)
 
 A list of information that is shown for directory items at the right side of the pane.
-Currently supported information types are `size`, `time`, `atime`, `ctime`, `perm`, `user` and `group`.
+Currently supported information types are `size`, `time`, `atime`, `ctime`, `perm`, `user`, `group` and `custom`.
+The `custom` type is empty by default and can be updated using the `addcustominfo` command.
 Information is only shown when the pane width is more than twice the width of information.
 
 ## infotimefmtnew (string) (default `Jan _2 15:04`)
@@ -1711,6 +1719,32 @@ Note that all shell commands are possible but `%` and `&` are usually more appro
 
 There is also a `pre-cd` command, that works like `on-cd`, but is run before the directory is actually changed.
 Another related command is `on-load` which gets executed when loading a directory.
+
+# LOADING DIRECTORY
+
+Similar to `on-cd` there also is `on-load` that when defined runs a shell command after loading a directory.
+It works well when combined with `addcustominfo`.
+
+The following example can be used to display git indicators in the info column:
+
+	cmd on-load &{{
+		cd "$(dirname "$1")" || exit 1
+		git rev-parse >/dev/null 2>&1 || exit 0
+
+		cmds=""
+
+		for file in "$@"; do
+			status=$(git status --porcelain --ignored -- "$file" | cut -c1-2 | head -n1)
+
+			if [ -n "$status" ]; then
+				cmds="${cmds}addcustominfo ${file} \"$status\"; "
+			else
+				cmds="${cmds}addcustominfo ${file} ''; "
+			fi
+		done
+
+		lf -remote "send $id :$cmds"
+	}}
 
 # COLORS
 

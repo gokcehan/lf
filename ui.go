@@ -289,8 +289,10 @@ func infotimefmt(t time.Time) string {
 	return t.Format(gOpts.infotimefmtold)
 }
 
-func fileInfo(f *file, d *dir, userWidth int, groupWidth int) string {
+func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (string, string, int) {
 	var info strings.Builder
+	var custom string
+	var off int
 
 	for _, s := range getInfo(d.path) {
 		switch s {
@@ -328,12 +330,18 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int) string {
 			fmt.Fprintf(&info, " %-*s", userWidth, userName(f.FileInfo))
 		case "group":
 			fmt.Fprintf(&info, " %-*s", groupWidth, groupName(f.FileInfo))
+		case "custom":
+			// To allow for the usage of escape sequences, store `custom`
+			// separately and print it later using the offset.
+			off = info.Len()
+			fmt.Fprintf(&info, " %*s", customWidth, "")
+			custom = fmt.Sprintf(" %s%*s", f.customInfo, customWidth-printLength(f.customInfo), "")
 		default:
 			log.Printf("unknown info type: %s", s)
 		}
 	}
 
-	return info.String()
+	return info.String(), custom, off
 }
 
 type dirContext struct {
@@ -399,17 +407,20 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	var userWidth int
 	var groupWidth int
+	var customWidth int
 
-	// Only fetch user/group widths if configured to display them
+	// Only fetch user/group/custom widths if configured to display them
 	for _, s := range getInfo(dir.path) {
 		switch s {
 		case "user":
 			userWidth = getUserWidth(dir, beg, end)
 		case "group":
 			groupWidth = getGroupWidth(dir, beg, end)
+		case "custom":
+			customWidth = getCustomWidth(dir, beg, end)
 		}
 
-		if userWidth > 0 && groupWidth > 0 {
+		if userWidth > 0 && groupWidth > 0 && customWidth > 0 {
 			break
 		}
 	}
@@ -473,7 +484,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// subtract space for tag and icon
 		maxFilenameWidth := maxWidth - 1 - runeSliceWidth(icon)
 
-		info := fileInfo(f, dir, userWidth, groupWidth)
+		info, custom, off := fileInfo(f, dir, userWidth, groupWidth, customWidth)
 		infolen := len(info)
 		showInfo := infolen > 0 && 2*infolen < maxWidth
 		if showInfo {
@@ -494,6 +505,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		if showInfo {
 			filename = append(filename, []rune(info)...)
+			off += lnwidth + 2 + runeSliceWidth(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -513,6 +525,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			line := append(icon, filename...)
 			line = append(line, ' ')
 			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
+
+			// print over the empty space we reserved for the custom info
+			if showInfo && custom != "" {
+				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripAnsi(custom)))
+			}
 		} else {
 			if tag == " " {
 				win.print(ui.screen, lnwidth+1, i, st, " ")
@@ -531,6 +548,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 			line := append(filename, ' ')
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
+
+			if showInfo && custom != "" {
+				win.print(ui.screen, off, i, st, custom)
+			}
 		}
 	}
 }
@@ -550,6 +571,16 @@ func getGroupWidth(dir *dir, beg int, end int) int {
 
 	for _, f := range dir.files[beg:end] {
 		maxw = max(len(groupName(f.FileInfo)), maxw)
+	}
+
+	return maxw
+}
+
+func getCustomWidth(dir *dir, beg int, end int) int {
+	maxw := 0
+
+	for _, f := range dir.files[beg:end] {
+		maxw = max(printLength(f.customInfo), maxw)
 	}
 
 	return maxw
