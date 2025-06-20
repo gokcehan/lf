@@ -239,6 +239,7 @@ The following special shell commands are used to customize the behavior of lf wh
 	delete
 	pre-cd
 	on-cd
+	on-load
 	on-focus-gained
 	on-focus-lost
 	on-init
@@ -1151,6 +1152,11 @@ This shell command can be defined to be executed before changing a directory.
 
 This shell command can be defined to be executed after changing a directory.
 
+## on-load
+
+This shell command can be defined to be executed after loading a directory.
+It provides the files inside the directory as arguments.
+
 ## on-focus-gained
 
 This shell command can be defined to be executed when the terminal gains focus.
@@ -1712,6 +1718,7 @@ You can add an extra call to make it run on startup as well:
 Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
 
 There is also a `pre-cd` command, that works like `on-cd`, but is run before the directory is actually changed.
+Another related command is `on-load` which gets executed when loading a directory.
 
 # LOADING DIRECTORY
 

@@ -256,6 +256,7 @@ rename
 delete
 pre-cd
 on-cd
+on-load
 on-focus-gained
 on-focus-lost
 on-init
@@ -1276,6 +1277,11 @@ directory.
 .PP
 This shell command can be defined to be executed after changing a
 directory.
+.SS on-load
+.PP
+This shell command can be defined to be executed after loading a
+directory.
+It provides the files inside the directory as arguments.
 .SS on-focus-gained
 .PP
 This shell command can be defined to be executed when the terminal gains
@@ -2204,6 +2210,8 @@ causes flickers and pauses respectively.
 .PP
 There is also a \f[C]pre-cd\f[R] command, that works like
 \f[C]on-cd\f[R], but is run before the directory is actually changed.
+Another related command is \f[C]on-load\f[R] which gets executed when
+loading a directory.
 .SH LOADING DIRECTORY
 .PP
 Similar to \f[C]on-cd\f[R] there also is \f[C]on-load\f[R] that when

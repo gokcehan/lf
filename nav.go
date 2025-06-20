@@ -390,6 +390,15 @@ func (dir *dir) name() string {
 	return dir.files[dir.ind].Name()
 }
 
+func (d *dir) fileNames() []string {
+	names := []string{}
+	for _, file := range d.files {
+		names = append(names, file.path)
+	}
+
+	return names
+}
+
 func (dir *dir) sel(name string, height int) {
 	if len(dir.files) == 0 {
 		dir.ind, dir.pos = 0, 0
