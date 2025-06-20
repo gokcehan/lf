@@ -100,7 +100,7 @@ func (watch *watch) loop() {
 				// have an infinite loop where writing to the log file causes it
 				// to be reloaded, which in turn triggers more events that are
 				// then logged
-				if ev.Name == gLogPath {
+				if ev.Name == gLogPath && ev.Has(fsnotify.Write) {
 					continue
 				}
 
