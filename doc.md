@@ -1729,11 +1729,15 @@ The following example can be used to display git indicators in the info column:
 
 	cmd on-load &{{
 	    cd "$(dirname "$1")" || exit 1
-	    git rev-parse >/dev/null 2>&1 || exit 0
+	    [ "$(git rev-parse --is-inside-git-dir 2>/dev/null)" = false ] || exit 0
 
 	    cmds=""
 
 	    for file in "$@"; do
+	        case "$file" in
+	            */.git|*/.git/*) continue;;
+	        esac
+
 	        status=$(git status --porcelain --ignored -- "$file" | cut -c1-2 | head -n1)
 
 	        if [ -n "$status" ]; then
