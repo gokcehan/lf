@@ -974,7 +974,7 @@ This option has no effect when `ignoredia` is disabled.
 ## sortby (string) (default `natural`)
 
 Sort type for directories.
-Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `atime`, and `ext`.
+Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `atime`, `ext` and `custom`.
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
