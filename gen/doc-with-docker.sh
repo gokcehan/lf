@@ -14,7 +14,7 @@
 [ -z $version ] && version=$(git describe --tags)
 [ -z $date ] && date=$(date +%F)
 
-PANDOC_IMAGE=pandoc/minimal:2.11
+PANDOC_IMAGE=pandoc/minimal:3.7
 
 docker run --rm -v "$PWD:/data" --user "$(id -u):$(id -g)" $PANDOC_IMAGE \
     --standalone \
