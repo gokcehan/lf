@@ -820,7 +820,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
-	replace("%p", curr.Mode().String())
+	if nav.visualMode {
+		replace("%p", "--VISUAL--")
+	} else {
+		replace("%p", curr.Mode().String())
+	}
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
@@ -1577,7 +1581,7 @@ func (ui *ui) resume() error {
 	return err
 }
 
-func (ui *ui) exportMode() {
+func (ui *ui) exportMode(nav *nav) {
 	getMode := func() string {
 		if strings.HasPrefix(ui.cmdPrefix, "delete") {
 			return "delete"
@@ -1605,6 +1609,9 @@ func (ui *ui) exportMode() {
 		case ">":
 			return "pipe"
 		case "":
+			if nav.visualMode {
+				return "visual"
+			}
 			return "normal"
 		default:
 			return "unknown"

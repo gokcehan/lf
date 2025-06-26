@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -587,6 +588,9 @@ func preChdir(app *app) {
 }
 
 func onChdir(app *app) {
+	if app.nav.visualMode {
+		normal(app)
+	}
 	app.nav.addJumpList()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
@@ -803,6 +807,27 @@ func normal(app *app) {
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
+
+	clear(app.nav.oldSelections)
+	app.nav.visualMode = false
+	app.ui.loadFileInfo(app.nav)
+}
+
+func visual(app *app) {
+	dir := app.nav.currDir()
+	app.nav.visualInd = dir.ind
+	app.nav.visualPos = dir.pos
+
+	maps.Copy(app.nav.oldSelections, app.nav.selections)
+
+	path := dir.files[dir.ind].path
+	if _, ok := app.nav.selections[path]; !ok {
+		app.nav.selections[path] = app.nav.selectionInd
+		app.nav.selectionInd++
+	}
+
+	app.nav.visualMode = true
+	app.ui.loadFileInfo(app.nav)
 }
 
 func insert(app *app, arg string) {
@@ -1023,6 +1048,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1031,6 +1057,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height / 2) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1039,6 +1066,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.up(e.count * app.nav.height) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1047,6 +1075,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.scrollUp(e.count) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1055,6 +1084,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1063,6 +1093,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height / 2) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1071,6 +1102,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.down(e.count * app.nav.height) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1092,6 +1124,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.scrollDown(e.count) {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1180,6 +1213,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1196,6 +1230,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			moved = app.nav.move(e.count - 1)
 		}
 		if moved {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1204,6 +1239,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.high() {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1212,6 +1248,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		if app.nav.middle() {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1222,6 +1259,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.nav.low() {
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
+			app.nav.updateVisualSelections()
 		}
 	case "toggle":
 		if !app.nav.init {
@@ -1832,6 +1870,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
+	case "escape":
+		normal(app)
 	case "on-focus-gained":
 		onFocusGained(app)
 	case "on-focus-lost":
@@ -2297,6 +2337,14 @@ func (e *callExpr) eval(app *app, args []string) {
 				d.sort()
 			}
 		}
+	case "visual":
+		if app.nav.visualMode {
+			normal(app)
+		} else {
+			visual(app)
+		}
+	case "visual-change":
+		app.nav.visualChange()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

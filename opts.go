@@ -271,6 +271,7 @@ func init() {
 	gOpts.tagfmt = "\033[31m"
 
 	gOpts.keys = map[string]expr{
+		"<esc>":      &callExpr{"escape", nil, 1},
 		"k":          &callExpr{"up", nil, 1},
 		"<up>":       &callExpr{"up", nil, 1},
 		"<m-up>":     &callExpr{"up", nil, 1},
@@ -303,6 +304,8 @@ func init() {
 		"]":          &callExpr{"jump-next", nil, 1},
 		"<space>":    &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
 		"t":          &callExpr{"tag-toggle", nil, 1},
+		"V":          &callExpr{"visual", nil, 1},
+		"o":          &callExpr{"visual-change", nil, 1},
 		"v":          &callExpr{"invert", nil, 1},
 		"u":          &callExpr{"unselect", nil, 1},
 		"y":          &callExpr{"copy", nil, 1},

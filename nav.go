@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -491,6 +492,7 @@ type nav struct {
 	renameOldPath   string
 	renameNewPath   string
 	selections      map[string]int
+	oldSelections   map[string]int
 	tags            map[string]string
 	selectionInd    int
 	height          int
@@ -500,6 +502,9 @@ type nav struct {
 	searchBack      bool
 	searchInd       int
 	searchPos       int
+	visualInd       int
+	visualPos       int
+	visualMode      bool
 	prevFilter      []string
 	volatilePreview bool
 	previewTimer    *time.Timer
@@ -628,6 +633,7 @@ func newNav(height int) *nav {
 		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
+		oldSelections:   make(map[string]int),
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
@@ -1988,6 +1994,52 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 		return []string{curr.path}, nil
 	}
 	return sel, nil
+}
+
+func (nav *nav) updateVisualSelections() {
+	if !nav.visualMode {
+		return
+	}
+
+	dir := nav.currDir()
+
+	beg, end := dir.ind, nav.visualInd
+	if beg > end {
+		beg, end = end, beg
+	}
+
+	newSel := make(map[string]int)
+	maps.Copy(newSel, nav.oldSelections)
+
+	for _, f := range dir.files[beg : end+1] {
+		if _, ok := newSel[f.path]; !ok {
+			newSel[f.path] = nav.selectionInd
+			nav.selectionInd++
+		}
+	}
+
+	nav.selections = newSel
+}
+
+func (nav *nav) visualChange() {
+	if !nav.visualMode {
+		return
+	}
+
+	dir := nav.currDir()
+	ind, pos := dir.ind, dir.pos
+
+	row := ind - pos
+
+	curr := dir.ind
+	anchor := nav.visualInd
+	nav.visualInd = curr
+	dir.ind = anchor
+
+	dir.pos = dir.ind - row
+	dir.boundPos(nav.height)
+
+	nav.updateVisualSelections()
 }
 
 func (nav *nav) calcDirSize() error {
