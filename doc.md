@@ -1706,7 +1706,7 @@ If you want to send escape sequences to the terminal, you can use the `tty-write
 The following xterm-specific escape sequence sets the terminal title to the working directory:
 
 	cmd on-cd &{{
-        lf -remote "send $id tty-write \"\033]0;$PWD\007\""
+	    lf -remote "send $id tty-write \"\033]0;$PWD\007\""
 	}}
 
 This command runs whenever you change the directory but not on startup.
@@ -1741,13 +1741,38 @@ The following example can be used to display git indicators in the info column:
 	        status=$(git status --porcelain --ignored -- "$file" | cut -c1-2 | head -n1)
 
 	        if [ -n "$status" ]; then
-	            cmds="${cmds}addcustominfo ${file} \"$status\"; "
+	            cmds="${cmds}addcustominfo \"${file}\" \"$status\"; "
 	        else
-	            cmds="${cmds}addcustominfo ${file} ''; "
+	            cmds="${cmds}addcustominfo \"${file}\" ''; "
 	        fi
 	    done
 
-	    lf -remote "send $id :$cmds"
+	    if [ -n "$cmds" ]; then
+	        lf -remote "send $id :$cmds"
+	    fi
+	}}
+
+Another use case could be showing the dimensions of images and videos:
+
+	cmd on-load &{{
+	    cmds=""
+
+	    for file in "$@"; do
+	        mime=$(file --mime-type -Lb -- "$file")
+	        case "$mime" in
+	            # vector images cause problems
+	            image/svg+xml)
+	                ;;
+	            image/*|video/*)
+	                dimensions=$(exiftool -s3 -imagesize -- "$file")
+	                cmds="${cmds}addcustominfo \"${file}\" \"$dimensions\"; "
+	                ;;
+	        esac
+	    done
+
+	    if [ -n "$cmds" ]; then
+	        lf -remote "send $id :$cmds"
+	    fi
 	}}
 
 # COLORS
