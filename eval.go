@@ -2288,9 +2288,14 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		if len(strings.Trim(v, " ")) == 0 {
-			f.customInfo = ""
-		} else {
+			v = ""
+		}
+		if f.customInfo != v {
 			f.customInfo = v
+			// only sort when order changes
+			if getSortBy(dir) == customSort {
+				d.sort()
+			}
 		}
 	default:
 		cmd, ok := gOpts.cmds[e.name]
