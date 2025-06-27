@@ -849,6 +849,7 @@ func insert(app *app, arg string) {
 			case 0:
 				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
 			case 1:
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			default:
@@ -864,6 +865,7 @@ func insert(app *app, arg string) {
 			if moved, found := app.nav.findNext(); !found {
 				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
 			} else if moved {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -878,6 +880,7 @@ func insert(app *app, arg string) {
 			case 0:
 				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
 			case 1:
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			default:
@@ -893,6 +896,7 @@ func insert(app *app, arg string) {
 			if moved, found := app.nav.findPrev(); !found {
 				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
 			} else if moved {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -928,6 +932,7 @@ func insert(app *app, arg string) {
 					return
 				}
 			}
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -952,6 +957,7 @@ func insert(app *app, arg string) {
 					return
 				}
 			}
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1189,6 +1195,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		for range e.count {
 			app.nav.cdJumpListPrev()
 		}
+		app.nav.updateVisualSelections()
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
@@ -1199,6 +1206,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		for range e.count {
 			app.nav.cdJumpListNext()
 		}
+		app.nav.updateVisualSelections()
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
@@ -1561,6 +1569,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		normal(app)
 		app.ui.cmdPrefix = "find-back: "
 		app.nav.findBack = true
+		app.nav.updateVisualSelections()
 		app.ui.loadFileInfo(app.nav)
 	case "find-next":
 		if !app.nav.init {
@@ -1576,6 +1585,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 		if old != dir.ind {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1593,6 +1603,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 		if old != dir.ind {
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
@@ -1609,6 +1620,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchInd = dir.ind
 		app.nav.searchPos = dir.pos
 		app.nav.searchBack = false
+		app.nav.updateVisualSelections()
 		app.ui.loadFileInfo(app.nav)
 	case "search-back":
 		if !app.nav.init {
@@ -1623,6 +1635,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.searchInd = dir.ind
 		app.nav.searchPos = dir.pos
 		app.nav.searchBack = true
+		app.nav.updateVisualSelections()
 		app.ui.loadFileInfo(app.nav)
 	case "search-next":
 		if !app.nav.init {
@@ -1633,6 +1646,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				if moved, err := app.nav.searchPrev(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 				} else if moved {
+					app.nav.updateVisualSelections()
 					app.ui.loadFile(app, true)
 					app.ui.loadFileInfo(app.nav)
 				}
@@ -1640,6 +1654,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				if moved, err := app.nav.searchNext(); err != nil {
 					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 				} else if moved {
+					app.nav.updateVisualSelections()
 					app.ui.loadFile(app, true)
 					app.ui.loadFileInfo(app.nav)
 				}
@@ -1654,6 +1669,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				if moved, err := app.nav.searchNext(); err != nil {
 					app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 				} else if moved {
+					app.nav.updateVisualSelections()
 					app.ui.loadFile(app, true)
 					app.ui.loadFileInfo(app.nav)
 				}
@@ -1661,6 +1677,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				if moved, err := app.nav.searchPrev(); err != nil {
 					app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 				} else if moved {
+					app.nav.updateVisualSelections()
 					app.ui.loadFile(app, true)
 					app.ui.loadFileInfo(app.nav)
 				}
@@ -1915,6 +1932,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
 
+		app.nav.updateVisualSelections()
 		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
@@ -1962,6 +1980,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			if _, err := app.nav.searchNext(); err != nil {
 				app.ui.echoerrf("search: %s: %s", err, app.nav.search)
 			} else if old != dir.ind {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -1978,6 +1997,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			if _, err := app.nav.searchPrev(); err != nil {
 				app.ui.echoerrf("search-back: %s: %s", err, app.nav.search)
 			} else if old != dir.ind {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -1987,6 +2007,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			if err := app.nav.setFilter(strings.Split(s, " ")); err != nil {
 				app.ui.echoerrf("filter: %s", err)
 			}
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		case "find: ":
@@ -1994,6 +2015,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			if moved, found := app.nav.findNext(); !found {
 				app.ui.echoerrf("find: pattern not found: %s", app.nav.find)
 			} else if moved {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -2002,6 +2024,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			if moved, found := app.nav.findPrev(); !found {
 				app.ui.echoerrf("find-back: pattern not found: %s", app.nav.find)
 			} else if moved {
+				app.nav.updateVisualSelections()
 				app.ui.loadFile(app, true)
 				app.ui.loadFileInfo(app.nav)
 			}
@@ -2059,6 +2082,7 @@ func (e *callExpr) eval(app *app, args []string) {
 					return
 				}
 			}
+			app.nav.updateVisualSelections()
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		default:
