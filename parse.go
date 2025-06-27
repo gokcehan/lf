@@ -68,6 +68,13 @@ type mapExpr struct {
 
 func (e *mapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
 
+type vmapExpr struct {
+	keys string
+	expr expr
+}
+
+func (e *vmapExpr) String() string { return fmt.Sprintf("vmap %s %s", e.keys, e.expr) }
+
 type cmapExpr struct {
 	key  string
 	expr expr
@@ -225,6 +232,20 @@ func (p *parser) parseExpr() expr {
 			}
 
 			result = &mapExpr{keys, expr}
+		case "vmap":
+			var expr expr
+
+			s.scan()
+			keys := s.tok
+
+			s.scan()
+			if s.typ != tokenSemicolon {
+				expr = p.parseExpr()
+			} else {
+				s.scan()
+			}
+
+			result = &vmapExpr{keys, expr}
 		case "cmap":
 			var expr expr
 

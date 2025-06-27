@@ -1341,6 +1341,11 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 0
 
+	keys := gOpts.keys
+	if nav.visualMode {
+		keys = gOpts.vkeys
+	}
+
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
 		// KeyRune is a regular character
@@ -1375,7 +1380,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return draw
 		}
 
-		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
+		binds, ok := findBinds(keys, string(ui.keyAcc))
 
 		switch len(binds) {
 		case 0:
@@ -1393,7 +1398,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 					}
 					count = c
 				}
-				expr := gOpts.keys[string(ui.keyAcc)]
+				expr := keys[string(ui.keyAcc)]
 
 				if count != 0 {
 					switch e := expr.(type) {
@@ -1452,7 +1457,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		if tev.Modifiers() == tcell.ModCtrl {
 			button = "<c-" + button[1:]
 		}
-		if expr, ok := gOpts.keys[button]; ok {
+		if expr, ok := keys[button]; ok {
 			return expr
 		}
 		if button != "<m-1>" && button != "<m-2>" {

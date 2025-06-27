@@ -551,6 +551,15 @@ func (e *mapExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func (e *vmapExpr) eval(app *app, args []string) {
+	if e.expr == nil {
+		delete(gOpts.vkeys, e.keys)
+	} else {
+		gOpts.vkeys[e.keys] = e.expr
+	}
+	app.ui.loadFileInfo(app.nav)
+}
+
 func (e *cmapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
@@ -1358,7 +1367,9 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "clearmaps":
 		// leave `:` and cmaps bound so the user can still exit using `:quit`
 		clear(gOpts.keys)
+		clear(gOpts.vkeys)
 		gOpts.keys[":"] = &callExpr{"read", nil, 1}
+		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {
 			return
