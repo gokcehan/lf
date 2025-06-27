@@ -36,7 +36,6 @@ var (
 		"low",
 		"toggle",
 		"invert",
-		"invert-below",
 		"unselect",
 		"glob-select",
 		"glob-unselect",

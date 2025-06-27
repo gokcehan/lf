@@ -1254,10 +1254,6 @@ func (nav *nav) invert() {
 	nav.invertAfter(0)
 }
 
-func (nav *nav) invertBelow() {
-	nav.invertAfter(nav.currDir().ind)
-}
-
 func (nav *nav) unselect() {
 	clear(nav.selections)
 	nav.selectionInd = 0
