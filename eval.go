@@ -453,6 +453,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	}
 
 	app.ui.loadFileInfo(app.nav)
+	app.nav.updateVisualSelections()
 }
 
 func (e *setLocalExpr) eval(app *app, args []string) {
