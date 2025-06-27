@@ -823,10 +823,11 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
+	replace("%p", curr.Mode().String())
 	if nav.visualMode {
-		replace("%p", "--VISUAL--")
+		replace("%P", "--VISUAL--")
 	} else {
-		replace("%p", curr.Mode().String())
+		replace("%P", curr.Mode().String())
 	}
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
@@ -955,6 +956,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	currSelections := nav.currSelections()
+	currVSelections := nav.vSelections
 
 	progress := []string{}
 
@@ -986,6 +988,8 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = fmt.Sprintf("%.d", copy)
 		case "%s":
 			result = fmt.Sprintf("%.d", len(currSelections))
+		case "%v":
+			result = fmt.Sprintf("%.d", len(currVSelections))
 		case "%f":
 			result = strings.Join(dir.filter, " ")
 		case "%i":
