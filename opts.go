@@ -266,7 +266,7 @@ func init() {
 	gOpts.hiddenfiles = gDefaultHiddenFiles
 	gOpts.history = true
 	gOpts.info = nil
-	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
+	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
 	gOpts.preserve = []string{"mode"}
 	gOpts.shellopts = nil
 	gOpts.tempmarks = "'"
@@ -350,45 +350,6 @@ func init() {
 		"gh": &callExpr{"cd", []string{"~"}, 1},
 	}
 
-	gOpts.cmdkeys = map[string]expr{
-		"<space>":        &callExpr{"cmd-insert", []string{" "}, 1},
-		"<esc>":          &callExpr{"cmd-escape", nil, 1},
-		"<tab>":          &callExpr{"cmd-complete", nil, 1},
-		"<enter>":        &callExpr{"cmd-enter", nil, 1},
-		"<c-j>":          &callExpr{"cmd-enter", nil, 1},
-		"<down>":         &callExpr{"cmd-history-next", nil, 1},
-		"<c-n>":          &callExpr{"cmd-history-next", nil, 1},
-		"<up>":           &callExpr{"cmd-history-prev", nil, 1},
-		"<c-p>":          &callExpr{"cmd-history-prev", nil, 1},
-		"<delete>":       &callExpr{"cmd-delete", nil, 1},
-		"<c-d>":          &callExpr{"cmd-delete", nil, 1},
-		"<backspace>":    &callExpr{"cmd-delete-back", nil, 1},
-		"<backspace2>":   &callExpr{"cmd-delete-back", nil, 1},
-		"<left>":         &callExpr{"cmd-left", nil, 1},
-		"<c-b>":          &callExpr{"cmd-left", nil, 1},
-		"<right>":        &callExpr{"cmd-right", nil, 1},
-		"<c-f>":          &callExpr{"cmd-right", nil, 1},
-		"<home>":         &callExpr{"cmd-home", nil, 1},
-		"<c-a>":          &callExpr{"cmd-home", nil, 1},
-		"<end>":          &callExpr{"cmd-end", nil, 1},
-		"<c-e>":          &callExpr{"cmd-end", nil, 1},
-		"<c-u>":          &callExpr{"cmd-delete-home", nil, 1},
-		"<c-k>":          &callExpr{"cmd-delete-end", nil, 1},
-		"<c-w>":          &callExpr{"cmd-delete-unix-word", nil, 1},
-		"<c-y>":          &callExpr{"cmd-yank", nil, 1},
-		"<c-t>":          &callExpr{"cmd-transpose", nil, 1},
-		"<c-c>":          &callExpr{"cmd-interrupt", nil, 1},
-		"<a-f>":          &callExpr{"cmd-word", nil, 1},
-		"<a-b>":          &callExpr{"cmd-word-back", nil, 1},
-		"<a-c>":          &callExpr{"cmd-capitalize-word", nil, 1},
-		"<a-d>":          &callExpr{"cmd-delete-word", nil, 1},
-		"<a-backspace>":  &callExpr{"cmd-delete-word-back", nil, 1},
-		"<a-backspace2>": &callExpr{"cmd-delete-word-back", nil, 1},
-		"<a-u>":          &callExpr{"cmd-uppercase-word", nil, 1},
-		"<a-l>":          &callExpr{"cmd-lowercase-word", nil, 1},
-		"<a-t>":          &callExpr{"cmd-transpose-word", nil, 1},
-	}
-
 	gOpts.vkeys = map[string]expr{
 		"<esc>":      &callExpr{"visual-discard", nil, 1},
 		"k":          &callExpr{"up", nil, 1},
@@ -421,7 +382,7 @@ func init() {
 		"L":          &callExpr{"low", nil, 1},
 		"[":          &callExpr{"jump-prev", nil, 1},
 		"]":          &callExpr{"jump-next", nil, 1},
-		"<space>":    &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
+		"<space>":    &callExpr{"down", nil, 1},
 		"t":          &callExpr{"tag-toggle", nil, 1},
 		"V":          &callExpr{"visual-accept", nil, 1},
 		"o":          &callExpr{"visual-change", nil, 1},
@@ -466,6 +427,46 @@ func init() {
 		"se": &listExpr{[]expr{&setExpr{"sortby", "ext"}, &setExpr{"info", ""}}, 1},
 		"gh": &callExpr{"cd", []string{"~"}, 1},
 	}
+
+	gOpts.cmdkeys = map[string]expr{
+		"<space>":        &callExpr{"cmd-insert", []string{" "}, 1},
+		"<esc>":          &callExpr{"cmd-escape", nil, 1},
+		"<tab>":          &callExpr{"cmd-complete", nil, 1},
+		"<enter>":        &callExpr{"cmd-enter", nil, 1},
+		"<c-j>":          &callExpr{"cmd-enter", nil, 1},
+		"<down>":         &callExpr{"cmd-history-next", nil, 1},
+		"<c-n>":          &callExpr{"cmd-history-next", nil, 1},
+		"<up>":           &callExpr{"cmd-history-prev", nil, 1},
+		"<c-p>":          &callExpr{"cmd-history-prev", nil, 1},
+		"<delete>":       &callExpr{"cmd-delete", nil, 1},
+		"<c-d>":          &callExpr{"cmd-delete", nil, 1},
+		"<backspace>":    &callExpr{"cmd-delete-back", nil, 1},
+		"<backspace2>":   &callExpr{"cmd-delete-back", nil, 1},
+		"<left>":         &callExpr{"cmd-left", nil, 1},
+		"<c-b>":          &callExpr{"cmd-left", nil, 1},
+		"<right>":        &callExpr{"cmd-right", nil, 1},
+		"<c-f>":          &callExpr{"cmd-right", nil, 1},
+		"<home>":         &callExpr{"cmd-home", nil, 1},
+		"<c-a>":          &callExpr{"cmd-home", nil, 1},
+		"<end>":          &callExpr{"cmd-end", nil, 1},
+		"<c-e>":          &callExpr{"cmd-end", nil, 1},
+		"<c-u>":          &callExpr{"cmd-delete-home", nil, 1},
+		"<c-k>":          &callExpr{"cmd-delete-end", nil, 1},
+		"<c-w>":          &callExpr{"cmd-delete-unix-word", nil, 1},
+		"<c-y>":          &callExpr{"cmd-yank", nil, 1},
+		"<c-t>":          &callExpr{"cmd-transpose", nil, 1},
+		"<c-c>":          &callExpr{"cmd-interrupt", nil, 1},
+		"<a-f>":          &callExpr{"cmd-word", nil, 1},
+		"<a-b>":          &callExpr{"cmd-word-back", nil, 1},
+		"<a-c>":          &callExpr{"cmd-capitalize-word", nil, 1},
+		"<a-d>":          &callExpr{"cmd-delete-word", nil, 1},
+		"<a-backspace>":  &callExpr{"cmd-delete-word-back", nil, 1},
+		"<a-backspace2>": &callExpr{"cmd-delete-word-back", nil, 1},
+		"<a-u>":          &callExpr{"cmd-uppercase-word", nil, 1},
+		"<a-l>":          &callExpr{"cmd-lowercase-word", nil, 1},
+		"<a-t>":          &callExpr{"cmd-transpose-word", nil, 1},
+	}
+
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
 
