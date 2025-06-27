@@ -492,7 +492,7 @@ type nav struct {
 	renameOldPath   string
 	renameNewPath   string
 	selections      map[string]int
-	oldSelections   map[string]int
+	vSelections     map[string]int
 	tags            map[string]string
 	selectionInd    int
 	height          int
@@ -633,7 +633,7 @@ func newNav(height int) *nav {
 		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
-		oldSelections:   make(map[string]int),
+		vSelections:     make(map[string]int),
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
@@ -2001,24 +2001,19 @@ func (nav *nav) updateVisualSelections() {
 		return
 	}
 
-	dir := nav.currDir()
+	clear(nav.vSelections)
 
+	dir := nav.currDir()
 	beg, end := dir.ind, nav.visualInd
 	if beg > end {
 		beg, end = end, beg
 	}
 
-	newSel := make(map[string]int)
-	maps.Copy(newSel, nav.oldSelections)
-
-	for _, f := range dir.files[beg : end+1] {
-		if _, ok := newSel[f.path]; !ok {
-			newSel[f.path] = nav.selectionInd
-			nav.selectionInd++
+	for i, f := range dir.files[beg : end+1] {
+		if _, ok := nav.vSelections[f.path]; !ok {
+			nav.vSelections[f.path] = beg + i
 		}
 	}
-
-	nav.selections = newSel
 }
 
 func (nav *nav) visualChange() {
@@ -2040,6 +2035,17 @@ func (nav *nav) visualChange() {
 	dir.boundPos(nav.height)
 
 	nav.updateVisualSelections()
+}
+
+func (nav *nav) acceptVisualSelections() {
+	maps.Copy(nav.selections, nav.vSelections)
+	clear(nav.vSelections)
+	nav.visualMode = false
+}
+
+func (nav *nav) discardVisualSelections() {
+	clear(nav.vSelections)
+	nav.visualMode = false
 }
 
 func (nav *nav) calcDirSize() error {

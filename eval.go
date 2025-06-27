@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -598,7 +597,9 @@ func preChdir(app *app) {
 
 func onChdir(app *app) {
 	if app.nav.visualMode {
-		normal(app)
+		// not sure about this yet
+		// app.nav.acceptVisualSelections()
+		app.nav.discardVisualSelections()
 	}
 	app.nav.addJumpList()
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
@@ -817,8 +818,6 @@ func normal(app *app) {
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
 
-	clear(app.nav.oldSelections)
-	app.nav.visualMode = false
 	app.ui.loadFileInfo(app.nav)
 }
 
@@ -827,13 +826,8 @@ func visual(app *app) {
 	app.nav.visualInd = dir.ind
 	app.nav.visualPos = dir.pos
 
-	maps.Copy(app.nav.oldSelections, app.nav.selections)
-
 	path := dir.files[dir.ind].path
-	if _, ok := app.nav.selections[path]; !ok {
-		app.nav.selections[path] = app.nav.selectionInd
-		app.nav.selectionInd++
-	}
+	app.nav.vSelections[path] = app.nav.visualInd
 
 	app.nav.visualMode = true
 	app.ui.loadFileInfo(app.nav)
@@ -2350,12 +2344,19 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 	case "visual":
 		if app.nav.visualMode {
+			app.nav.acceptVisualSelections()
 			normal(app)
 		} else {
 			visual(app)
 		}
 	case "visual-change":
 		app.nav.visualChange()
+	case "visual-accept":
+		app.nav.acceptVisualSelections()
+		normal(app)
+	case "visual-discard":
+		app.nav.discardVisualSelections()
+		normal(app)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

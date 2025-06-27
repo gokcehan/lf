@@ -345,9 +345,10 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 }
 
 type dirContext struct {
-	selections map[string]int
-	saves      map[string]bool
-	tags       map[string]string
+	selections  map[string]int
+	vSelections map[string]int
+	saves       map[string]bool
+	tags        map[string]string
 }
 
 type dirRole byte
@@ -451,7 +452,9 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := context.selections[path]; ok {
+		if _, ok := context.vSelections[path]; ok {
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
+		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
 		} else if cp, ok := context.saves[path]; ok {
 			if cp {
@@ -1067,7 +1070,7 @@ func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
-	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
+	context := dirContext{selections: nav.selections, vSelections: nav.vSelections, saves: nav.saves, tags: nav.tags}
 
 	ui.screen.Clear()
 

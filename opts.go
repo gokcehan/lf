@@ -64,6 +64,7 @@ var gOpts struct {
 	reverse          bool
 	roundbox         bool
 	selectfmt        string
+	visualfmt        string
 	showbinds        bool
 	sixel            bool
 	sortby           sortMethod
@@ -232,6 +233,7 @@ func init() {
 	gOpts.reverse = false
 	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
+	gOpts.visualfmt = "\033[7;36m"
 	gOpts.showbinds = true
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort
@@ -388,7 +390,7 @@ func init() {
 	}
 
 	gOpts.vkeys = map[string]expr{
-		"<esc>":      &callExpr{"escape", nil, 1},
+		"<esc>":      &callExpr{"visual-discard", nil, 1},
 		"k":          &callExpr{"up", nil, 1},
 		"<up>":       &callExpr{"up", nil, 1},
 		"<m-up>":     &callExpr{"up", nil, 1},
@@ -421,7 +423,7 @@ func init() {
 		"]":          &callExpr{"jump-next", nil, 1},
 		"<space>":    &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
 		"t":          &callExpr{"tag-toggle", nil, 1},
-		"V":          &callExpr{"visual", nil, 1},
+		"V":          &callExpr{"visual-accept", nil, 1},
 		"o":          &callExpr{"visual-change", nil, 1},
 		"u":          &callExpr{"unselect", nil, 1},
 		"y":          &callExpr{"copy", nil, 1},

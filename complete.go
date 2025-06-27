@@ -110,6 +110,9 @@ var (
 		"cmd-capitalize-word",
 		"cmd-uppercase-word",
 		"cmd-lowercase-word",
+		"visual",
+		"visual-accept",
+		"visual-discard",
 	}
 
 	gOptWords      = getOptWords(gOpts)
