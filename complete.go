@@ -14,6 +14,7 @@ var (
 		"set",
 		"setlocal",
 		"map",
+		"vmap",
 		"cmap",
 		"cmd",
 		"quit",
@@ -36,7 +37,6 @@ var (
 		"low",
 		"toggle",
 		"invert",
-		"invert-below",
 		"unselect",
 		"glob-select",
 		"glob-unselect",
@@ -110,6 +110,10 @@ var (
 		"cmd-capitalize-word",
 		"cmd-uppercase-word",
 		"cmd-lowercase-word",
+		"visual",
+		"visual-accept",
+		"visual-discard",
+		"visual-change",
 	}
 
 	gOptWords      = getOptWords(gOpts)
@@ -329,7 +333,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		case "set":
 			matches, longest = matchWord(f[1], gOptWords)
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "map", "cmap", "cmd":
+		case "map", "vmap", "cmap", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])
@@ -340,7 +344,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		case "setlocal":
 			matches, longest = matchWord(f[2], gLocalOptWords)
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "map", "cmap":
+		case "map", "vmap", "cmap":
 			matches, longest = matchCmd(f[2])
 			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		case "addcustominfo":
@@ -351,7 +355,7 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		}
 	default:
 		switch f[0] {
-		case "set", "setlocal", "map", "cmap", "cmd":
+		case "set", "setlocal", "map", "vmap", "cmap", "cmd":
 			longestAcc = acc
 		default:
 			matches, longest = matchFile(f[len(f)-1])

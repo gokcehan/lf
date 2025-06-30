@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -550,6 +551,15 @@ func (e *mapExpr) eval(app *app, args []string) {
 	app.ui.loadFileInfo(app.nav)
 }
 
+func (e *vmapExpr) eval(app *app, args []string) {
+	if e.expr == nil {
+		delete(gOpts.vkeys, e.keys)
+	} else {
+		gOpts.vkeys[e.keys] = e.expr
+	}
+	app.ui.loadFileInfo(app.nav)
+}
+
 func (e *cmapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
@@ -803,6 +813,16 @@ func normal(app *app) {
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
+
+	app.ui.loadFileInfo(app.nav)
+}
+
+func visual(app *app) {
+	dir := app.nav.currDir()
+	dir.visualMode = true
+	dir.visualAnchor = dir.ind
+
+	app.ui.loadFileInfo(app.nav)
 }
 
 func insert(app *app, arg string) {
@@ -1298,11 +1318,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		app.nav.invert()
-	case "invert-below":
-		if !app.nav.init {
-			return
-		}
-		app.nav.invertBelow()
 	case "unselect":
 		app.nav.unselect()
 	case "calcdirsize":
@@ -1320,7 +1335,9 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "clearmaps":
 		// leave `:` and cmaps bound so the user can still exit using `:quit`
 		clear(gOpts.keys)
+		clear(gOpts.vkeys)
 		gOpts.keys[":"] = &callExpr{"read", nil, 1}
+		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {
 			return
@@ -2297,6 +2314,30 @@ func (e *callExpr) eval(app *app, args []string) {
 				d.sort()
 			}
 		}
+	case "visual":
+		visual(app)
+	case "visual-accept":
+		dir := app.nav.currDir()
+		maps.Copy(app.nav.selections, dir.visualSelections())
+		// resetting visual mode here instead of inside `normal()`
+		// allows us to use visual mode inside search, find etc.
+		dir.visualMode = false
+		dir.visualAnchor = -1
+		normal(app)
+	case "visual-discard":
+		dir := app.nav.currDir()
+		dir.visualMode = false
+		dir.visualAnchor = -1
+		normal(app)
+	case "visual-change":
+		dir := app.nav.currDir()
+		if !dir.visualMode {
+			return
+		}
+		row := dir.ind - dir.pos
+		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
+		dir.pos = dir.ind - row
+		dir.boundPos(app.nav.height)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

@@ -425,6 +425,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
+	visualSelections := dir.visualSelections()
 	for i, f := range dir.files[beg:end] {
 		st := dirStyle.colors.get(f)
 
@@ -451,7 +452,9 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := context.selections[path]; ok {
+		if _, ok := visualSelections[path]; ok {
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
+		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
 		} else if cp, ok := context.saves[path]; ok {
 			if cp {
@@ -820,6 +823,13 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
+	if nav.currDir().visualMode {
+		replace("%m", "VISUAL")
+		replace("%M", "VISUAL")
+	} else {
+		replace("%m", "")
+		replace("%M", "NORMAL")
+	}
 	replace("%p", curr.Mode().String())
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
@@ -948,6 +958,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	currSelections := nav.currSelections()
+	currVSelections := nav.currDir().visualSelections()
 
 	progress := []string{}
 
@@ -979,6 +990,8 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = fmt.Sprintf("%.d", copy)
 		case "%s":
 			result = fmt.Sprintf("%.d", len(currSelections))
+		case "%v":
+			result = fmt.Sprintf("%.d", len(currVSelections))
 		case "%f":
 			result = strings.Join(dir.filter, " ")
 		case "%i":
@@ -1337,6 +1350,11 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 0
 
+	keys := gOpts.keys
+	if nav.currDir().visualMode {
+		keys = gOpts.vkeys
+	}
+
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
 		// KeyRune is a regular character
@@ -1371,7 +1389,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return draw
 		}
 
-		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
+		binds, ok := findBinds(keys, string(ui.keyAcc))
 
 		switch len(binds) {
 		case 0:
@@ -1389,7 +1407,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 					}
 					count = c
 				}
-				expr := gOpts.keys[string(ui.keyAcc)]
+				expr := keys[string(ui.keyAcc)]
 
 				if count != 0 {
 					switch e := expr.(type) {
@@ -1448,7 +1466,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		if tev.Modifiers() == tcell.ModCtrl {
 			button = "<c-" + button[1:]
 		}
-		if expr, ok := gOpts.keys[button]; ok {
+		if expr, ok := keys[button]; ok {
 			return expr
 		}
 		if button != "<m-1>" && button != "<m-2>" {
@@ -1577,7 +1595,7 @@ func (ui *ui) resume() error {
 	return err
 }
 
-func (ui *ui) exportMode() {
+func (ui *ui) exportMode(nav *nav) {
 	getMode := func() string {
 		if strings.HasPrefix(ui.cmdPrefix, "delete") {
 			return "delete"
@@ -1605,6 +1623,9 @@ func (ui *ui) exportMode() {
 		case ">":
 			return "pipe"
 		case "":
+			if nav.init && nav.currDir().visualMode {
+				return "visual"
+			}
 			return "normal"
 		default:
 			return "unknown"

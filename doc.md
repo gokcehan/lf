@@ -38,6 +38,7 @@ You can run `lf -help` to see descriptions of command line options.
 
 The following commands are provided by lf:
 
+	escape                   (default '<esc>')
 	quit                     (default 'q')
 	up                       (default 'k' and '<up>')
 	half-up                  (default '<c-u>')
@@ -57,6 +58,8 @@ The following commands are provided by lf:
 	middle                   (default 'M')
 	low                      (default 'L')
 	toggle
+	visual         (modal)   (default 'V')
+	visual-change  (modal)   (default 'o')
 	invert                   (default 'v')
 	invert-below
 	unselect                 (default 'u')
@@ -366,6 +369,10 @@ https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
 This section shows information about built-in commands.
 Modal commands do not take any arguments, but instead change the operation mode to read their input conveniently, and so they are meant to be assigned to keybindings.
 
+## escape (default `<esc>`)
+
+Quit visual mode and return to normal mode.
+
 ## quit (default `q`)
 
 Quit lf and return to the shell.
@@ -400,6 +407,14 @@ Move the current file selection to the high/middle/low of the screen.
 ## toggle
 
 Toggle the selection of the current file or files given as arguments.
+
+## visual (modal) (default 'V')
+
+Switch between visual and normal mode.
+
+## visual-change (modal) (default 'o')
+
+Go to the other end of the current selection in visual mode.
 
 ## invert (default `v`)
 
@@ -1122,7 +1137,7 @@ Value of the count associated with the current command.
 
 Current mode that `lf` is operating in.
 This is useful for customizing keybindings depending on what the current mode is.
-Possible values are `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, and `unknown`.
+Possible values are `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, `visual` and `unknown`.
 
 # SPECIAL COMMANDS
 
@@ -1195,6 +1210,7 @@ The same evaluator is used for the command line and the configuration file for r
 The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
+Visual mode mappings are defined the same way normal mode mappings are defined.
 
 # SYNTAX
 

@@ -552,12 +552,13 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
-	app.ui.exportMode()
+	app.ui.exportMode(app.nav)
 	exportLfPath()
 	exportOpts()
 
 	gState.mutex.Lock()
 	gState.data["maps"] = listBinds(gOpts.keys)
+	gState.data["vmaps"] = listBinds(gOpts.vkeys)
 	gState.data["cmaps"] = listBinds(gOpts.cmdkeys)
 	gState.data["cmds"] = listCmds()
 	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
