@@ -2315,8 +2315,14 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "visual":
+		if !app.nav.init {
+			return
+		}
 		visual(app)
 	case "visual-accept":
+		if !app.nav.init {
+			return
+		}
 		dir := app.nav.currDir()
 		maps.Copy(app.nav.selections, dir.visualSelections())
 		// resetting visual mode here instead of inside `normal()`
@@ -2325,11 +2331,17 @@ func (e *callExpr) eval(app *app, args []string) {
 		dir.visualAnchor = -1
 		normal(app)
 	case "visual-discard":
+		if !app.nav.init {
+			return
+		}
 		dir := app.nav.currDir()
 		dir.visualMode = false
 		dir.visualAnchor = -1
 		normal(app)
 	case "visual-change":
+		if !app.nav.init {
+			return
+		}
 		dir := app.nav.currDir()
 		if !dir.visualMode {
 			return
