@@ -1357,13 +1357,13 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 		file := filepath.Base(src)
 		dst := filepath.Join(dstDir, file)
 
-		dstStat, err := os.Stat(dst)
-		if os.SameFile(srcStat, dstStat) {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] rename %s %s: source and destination are the same file", errCount, src, dst)
-			app.ui.exprChan <- echo
-			continue
-		} else if !os.IsNotExist(err) {
+		if dstStat, err := os.Stat(dst); err == nil {
+			if os.SameFile(srcStat, dstStat) {
+				errCount++
+				echo.args[0] = fmt.Sprintf("[%d] rename %s %s: source and destination are the same file", errCount, src, dst)
+				app.ui.exprChan <- echo
+				continue
+			}
 			ext := getFileExtension(dstStat)
 			basename := file[:len(file)-len(ext)]
 			var newPath string
