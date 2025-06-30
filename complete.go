@@ -111,9 +111,9 @@ var (
 		"cmd-uppercase-word",
 		"cmd-lowercase-word",
 		"visual",
-		"visual-change",
 		"visual-accept",
 		"visual-discard",
+		"visual-change",
 	}
 
 	gOptWords      = getOptWords(gOpts)

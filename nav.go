@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -2005,33 +2004,6 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 		return []string{curr.path}, nil
 	}
 	return sel, nil
-}
-
-func (nav *nav) visualChange() {
-	dir := nav.currDir()
-
-	if !dir.visualMode {
-		return
-	}
-
-	row := dir.ind - dir.pos
-	dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
-	dir.pos = dir.ind - row
-
-	dir.boundPos(nav.height)
-}
-
-func (nav *nav) acceptVisualSelections() {
-	dir := nav.currDir()
-	maps.Copy(nav.selections, dir.visualSelections())
-	dir.visualMode = false
-	dir.visualAnchor = -1
-}
-
-func (nav *nav) discardVisualSelections() {
-	dir := nav.currDir()
-	dir.visualMode = false
-	dir.visualAnchor = -1
 }
 
 func (nav *nav) calcDirSize() error {

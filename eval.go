@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -1848,8 +1849,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
-	case "escape":
-		normal(app)
 	case "on-focus-gained":
 		onFocusGained(app)
 	case "on-focus-lost":
@@ -2316,20 +2315,29 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 	case "visual":
-		if app.nav.currDir().visualMode {
-			app.nav.acceptVisualSelections()
-			normal(app)
-		} else {
-			visual(app)
-		}
-	case "visual-change":
-		app.nav.visualChange()
+		visual(app)
 	case "visual-accept":
-		app.nav.acceptVisualSelections()
+		dir := app.nav.currDir()
+		maps.Copy(app.nav.selections, dir.visualSelections())
+		// resetting visual mode here instead of inside `normal()`
+		// allows us to use visual mode inside search, find etc.
+		dir.visualMode = false
+		dir.visualAnchor = -1
 		normal(app)
 	case "visual-discard":
-		app.nav.discardVisualSelections()
+		dir := app.nav.currDir()
+		dir.visualMode = false
+		dir.visualAnchor = -1
 		normal(app)
+	case "visual-change":
+		dir := app.nav.currDir()
+		if !dir.visualMode {
+			return
+		}
+		row := dir.ind - dir.pos
+		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
+		dir.pos = dir.ind - row
+		dir.boundPos(app.nav.height)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
