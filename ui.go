@@ -345,10 +345,9 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 }
 
 type dirContext struct {
-	selections  map[string]int
-	vSelections map[string]int
-	saves       map[string]bool
-	tags        map[string]string
+	selections map[string]int
+	saves      map[string]bool
+	tags       map[string]string
 }
 
 type dirRole byte
@@ -426,6 +425,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
+	visualSelections := dir.visualSelections()
 	for i, f := range dir.files[beg:end] {
 		st := dirStyle.colors.get(f)
 
@@ -452,7 +452,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := context.vSelections[path]; ok {
+		if _, ok := visualSelections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
 		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
@@ -824,7 +824,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
 	replace("%p", curr.Mode().String())
-	if nav.visualMode {
+	if nav.currDir().visualMode {
 		replace("%P", "--VISUAL--")
 	} else {
 		replace("%P", curr.Mode().String())
@@ -956,7 +956,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	currSelections := nav.currSelections()
-	currVSelections := nav.vSelections
+	currVSelections := nav.currDir().visualSelections()
 
 	progress := []string{}
 
@@ -1074,7 +1074,7 @@ func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
-	context := dirContext{selections: nav.selections, vSelections: nav.vSelections, saves: nav.saves, tags: nav.tags}
+	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
 
 	ui.screen.Clear()
 
@@ -1349,7 +1349,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	count := 0
 
 	keys := gOpts.keys
-	if nav.visualMode {
+	if nav.currDir().visualMode {
 		keys = gOpts.vkeys
 	}
 
@@ -1621,7 +1621,7 @@ func (ui *ui) exportMode(nav *nav) {
 		case ">":
 			return "pipe"
 		case "":
-			if nav.visualMode {
+			if nav.init && nav.currDir().visualMode {
 				return "visual"
 			}
 			return "normal"

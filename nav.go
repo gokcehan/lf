@@ -160,24 +160,26 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading     bool       // directory is loading from disk
-	loadTime    time.Time  // current loading or last load time
-	ind         int        // index of current entry in files
-	pos         int        // position of current entry in ui
-	path        string     // full path of directory
-	files       []*file    // displayed files in directory including or excluding hidden ones
-	allFiles    []*file    // all files in directory including hidden ones (same array as files)
-	sortby      sortMethod // sortby value from last sort
-	dirfirst    bool       // dirfirst value from last sort
-	dironly     bool       // dironly value from last sort
-	hidden      bool       // hidden value from last sort
-	reverse     bool       // reverse value from last sort
-	hiddenfiles []string   // hiddenfiles value from last sort
-	filter      []string   // last filter for this directory
-	ignorecase  bool       // ignorecase value from last sort
-	ignoredia   bool       // ignoredia value from last sort
-	locale      string     // locale value from last sort
-	noPerm      bool       // whether lf has no permission to open the directory
+	loading      bool       // directory is loading from disk
+	loadTime     time.Time  // current loading or last load time
+	ind          int        // index of current entry in files
+	pos          int        // position of current entry in ui
+	path         string     // full path of directory
+	files        []*file    // displayed files in directory including or excluding hidden ones
+	allFiles     []*file    // all files in directory including hidden ones (same array as files)
+	sortby       sortMethod // sortby value from last sort
+	dirfirst     bool       // dirfirst value from last sort
+	dironly      bool       // dironly value from last sort
+	hidden       bool       // hidden value from last sort
+	reverse      bool       // reverse value from last sort
+	visualMode   bool       // whether directory is in visual mode
+	visualAnchor int        // index where visual mode was initiated
+	hiddenfiles  []string   // hiddenfiles value from last sort
+	filter       []string   // last filter for this directory
+	ignorecase   bool       // ignorecase value from last sort
+	ignoredia    bool       // ignoredia value from last sort
+	locale       string     // locale value from last sort
+	noPerm       bool       // whether lf has no permission to open the directory
 }
 
 func newDir(path string) *dir {
@@ -189,11 +191,12 @@ func newDir(path string) *dir {
 	}
 
 	return &dir{
-		loadTime: time,
-		path:     path,
-		files:    files,
-		allFiles: files,
-		noPerm:   os.IsPermission(err),
+		loadTime:     time,
+		path:         path,
+		files:        files,
+		allFiles:     files,
+		visualAnchor: -1,
+		noPerm:       os.IsPermission(err),
 	}
 }
 
@@ -421,6 +424,23 @@ func (d *dir) fileNames() []string {
 	return names
 }
 
+func (dir *dir) visualSelections() map[string]int {
+	names := make(map[string]int)
+	if dir.visualAnchor == -1 || len(dir.files) == 0 {
+		return names
+	}
+
+	beg, end := dir.ind, dir.visualAnchor
+	if beg > end {
+		beg, end = end, beg
+	}
+
+	for i, f := range dir.files[beg : end+1] {
+		names[f.path] = beg + i
+	}
+	return names
+}
+
 func (dir *dir) sel(name string, height int) {
 	if len(dir.files) == 0 {
 		dir.ind, dir.pos = 0, 0
@@ -492,7 +512,6 @@ type nav struct {
 	renameOldPath   string
 	renameNewPath   string
 	selections      map[string]int
-	vSelections     map[string]int
 	tags            map[string]string
 	selectionInd    int
 	height          int
@@ -502,9 +521,6 @@ type nav struct {
 	searchBack      bool
 	searchInd       int
 	searchPos       int
-	visualInd       int
-	visualPos       int
-	visualMode      bool
 	prevFilter      []string
 	volatilePreview bool
 	previewTimer    *time.Timer
@@ -633,7 +649,6 @@ func newNav(height int) *nav {
 		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
-		vSelections:     make(map[string]int),
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		height:          height,
@@ -1992,56 +2007,31 @@ func (nav *nav) currFileOrSelections() (list []string, err error) {
 	return sel, nil
 }
 
-func (nav *nav) updateVisualSelections() {
-	if !nav.visualMode {
-		return
-	}
-
-	clear(nav.vSelections)
-
-	dir := nav.currDir()
-	beg, end := dir.ind, nav.visualInd
-	if beg > end {
-		beg, end = end, beg
-	}
-
-	for i, f := range dir.files[beg : end+1] {
-		if _, ok := nav.vSelections[f.path]; !ok {
-			nav.vSelections[f.path] = beg + i
-		}
-	}
-}
-
 func (nav *nav) visualChange() {
-	if !nav.visualMode {
+	dir := nav.currDir()
+
+	if !dir.visualMode {
 		return
 	}
 
-	dir := nav.currDir()
-	ind, pos := dir.ind, dir.pos
-
-	row := ind - pos
-
-	curr := dir.ind
-	anchor := nav.visualInd
-	nav.visualInd = curr
-	dir.ind = anchor
-
+	row := dir.ind - dir.pos
+	dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
 	dir.pos = dir.ind - row
-	dir.boundPos(nav.height)
 
-	nav.updateVisualSelections()
+	dir.boundPos(nav.height)
 }
 
 func (nav *nav) acceptVisualSelections() {
-	maps.Copy(nav.selections, nav.vSelections)
-	clear(nav.vSelections)
-	nav.visualMode = false
+	dir := nav.currDir()
+	maps.Copy(nav.selections, dir.visualSelections())
+	dir.visualMode = false
+	dir.visualAnchor = -1
 }
 
 func (nav *nav) discardVisualSelections() {
-	clear(nav.vSelections)
-	nav.visualMode = false
+	dir := nav.currDir()
+	dir.visualMode = false
+	dir.visualAnchor = -1
 }
 
 func (nav *nav) calcDirSize() error {
