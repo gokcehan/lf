@@ -823,12 +823,14 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
-	replace("%p", curr.Mode().String())
 	if nav.currDir().visualMode {
-		replace("%P", "--VISUAL--")
+		replace("%m", "VISUAL")
+		replace("%M", "VISUAL")
 	} else {
-		replace("%P", curr.Mode().String())
+		replace("%m", "")
+		replace("%M", "NORMAL")
 	}
+	replace("%p", curr.Mode().String())
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
