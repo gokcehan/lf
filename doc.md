@@ -261,6 +261,7 @@ The following commands/keybindings are provided by default:
 	cmd doc $$lf -doc | $PAGER
 	map <f-1> doc
 	cmd maps $lf -remote "query $id maps" | $PAGER
+	cmd nmaps $lf -remote "query $id nmaps" | $PAGER
 	cmd vmaps $lf -remote "query $id vmaps" | $PAGER
 	cmd cmaps $lf -remote "query $id cmaps" | $PAGER
 	cmd cmds $lf -remote "query $id cmds" | $PAGER
@@ -273,6 +274,7 @@ The following commands/keybindings are provided by default:
 	cmd doc !%lf% -doc | %PAGER%
 	map <f-1> doc
 	cmd maps !%lf% -remote "query %id% maps" | %PAGER%
+	cmd nmaps !%lf% -remote "query %id% nmaps" | %PAGER%
 	cmd vmaps !%lf% -remote "query %id% vmaps" | %PAGER%
 	cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
 	cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
@@ -292,7 +294,7 @@ The following additional keybindings are provided by default:
 	map sc :set sortby ctime; set info ctime
 	map se :set sortby ext; set info
 	map gh cd ~
-	map <space> :toggle; down
+	nmap <space> :toggle; down
 
 If the `mouse` option is enabled, mouse buttons have the following default effects:
 
@@ -446,7 +448,7 @@ If the total size of a directory is not calculated, it will be shown as `-`.
 
 ## clearmaps
 
-Remove all keybindings associated with the `map` and `vmap` command.
+Remove all keybindings associated with the `map`, `nmap` and `vmap` command.
 This command can be used in the config file to remove the default keybindings.
 For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
@@ -1219,7 +1221,7 @@ Characters from `#` to newline are comments and ignored:
 
 	# comments start with `#`
 
-There are six special commands (`set`, `setlocal`, `map`, `vmap`, `cmap`, and `cmd`) for configuration.
+There are seven special commands (`set`, `setlocal`, `map`, `nmap`, `vmap`, `cmap`, and `cmd`) for configuration.
 
 Command `set` is used to set an option which can be a boolean, integer, or string:
 
@@ -1248,24 +1250,34 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command 'map' is used to bind a key to a command which can be a builtin command, custom command, or shell command:
+Command `map` is used to bind a key in normal and visual mode to a command which can be a builtin command, custom command, or shell command:
 
 	map gh cd ~        # builtin command
 	map D trash        # custom command
 	map i $less $f     # shell command
 	map U !du -csh *   # waiting shell command
 
-Command 'vmap' is used in the same way except it works in visual mode.
+Command `nmap` does the same but for normal mode only.
 
-Command 'cmap' is used to bind a key on the command line to a command line command or any other command:
+Command `vmap` does the same but for visual mode only.
+
+Overview of which map command works in which mode:
+
+	map                Normal, Visual
+	nmap               Normal
+	vmap               Visual
+	cmap               Command-line
+
+Command `cmap` is used to bind a key on the command line to a command line command or any other command:
 
 	cmap <c-g> cmd-escape
 	cmap <a-i> set incsearch!
 
 You can delete an existing binding by leaving the expression empty:
 
-	map gh             # deletes 'gh' mapping
-	vmap o             # deletes 'o' mapping
+	map gh             # deletes 'gh' mapping in normal and visual mode
+	nmap v             # deletes 'v' mapping in normal mode
+	vmap o             # deletes 'o' mapping in visual mode
 	cmap <c-g>         # deletes '<c-g>' mapping
 
 Command `cmd` is used to define a custom command:
@@ -1506,12 +1518,20 @@ In addition, the `query` command can be used to obtain information about a speci
 
 The following types of information are supported:
 
-	maps     list of mappings created by the 'map' command
+	maps     list of mappings created by the 'map', 'nmap' and 'vmap' command
+	nmaps    list of mappings created by the 'nmap' and 'map' command
+	vmaps    list of mappings created by the 'vmap' and 'map' command
 	cmaps    list of mappings created by the 'cmap' command
 	cmds     list of commands created by the 'cmd' command
 	jumps    contents of the jump list, showing previously visited locations
 	history  list of previously executed commands on the command line
 	files    list of files in the currently open directory as displayed by lf, empty if dir is still loading
+
+When listing mappings the characters in the first column are:
+
+	n  Normal
+	v  Visual
+	c  Command-line
 
 This is useful for scripting actions based on the internal state of lf.
 For example, to select a previous command using fzf and execute it:

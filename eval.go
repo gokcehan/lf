@@ -544,9 +544,20 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 
 func (e *mapExpr) eval(app *app, args []string) {
 	if e.expr == nil {
-		delete(gOpts.keys, e.keys)
+		delete(gOpts.nkeys, e.keys)
+		delete(gOpts.vkeys, e.keys)
 	} else {
-		gOpts.keys[e.keys] = e.expr
+		gOpts.nkeys[e.keys] = e.expr
+		gOpts.vkeys[e.keys] = e.expr
+	}
+	app.ui.loadFileInfo(app.nav)
+}
+
+func (e *nmapExpr) eval(app *app, args []string) {
+	if e.expr == nil {
+		delete(gOpts.nkeys, e.keys)
+	} else {
+		gOpts.nkeys[e.keys] = e.expr
 	}
 	app.ui.loadFileInfo(app.nav)
 }
@@ -1334,9 +1345,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "clearmaps":
 		// leave `:` and cmaps bound so the user can still exit using `:quit`
-		clear(gOpts.keys)
+		clear(gOpts.nkeys)
 		clear(gOpts.vkeys)
-		gOpts.keys[":"] = &callExpr{"read", nil, 1}
+		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
 		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {

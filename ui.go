@@ -1172,32 +1172,66 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listExprMap(binds map[string]expr, title string) string {
+func listBinds(binds map[string]map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
-	keys := make([]string, 0, len(binds))
-	for k := range binds {
-		keys = append(keys, k)
+	type entry struct {
+		mode, key, cmd string
 	}
-	sort.Strings(keys)
+
+	var entries []entry
+	for mode, keys := range binds {
+		for key, expr := range keys {
+			entries = append(entries, entry{mode, key, expr.String()})
+		}
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].key != entries[j].key {
+			return entries[i].key < entries[j].key
+		}
+		if entries[i].cmd != entries[j].cmd {
+			return entries[i].cmd < entries[j].cmd
+		}
+		return entries[i].mode < entries[j].mode
+	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintf(t, "%s\tcommand\n", title)
-	for _, k := range keys {
-		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
+	fmt.Fprintln(t, "mode\tkeys\tcommand")
+	for i := 0; i < len(entries); {
+		key, cmd := entries[i].key, entries[i].cmd
+		modes := ""
+		j := i
+		for ; j < len(entries) && entries[j].key == key && entries[j].cmd == cmd; j++ {
+			modes += entries[j].mode
+		}
+		fmt.Fprintf(t, "%s\t%s\t%s\n", modes, key, cmd)
+		i = j
 	}
 	t.Flush()
 
 	return b.String()
 }
 
-func listBinds(binds map[string]expr) string {
-	return listExprMap(binds, "keys")
-}
+func listCmds(cmds map[string]expr) string {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
 
-func listCmds() string {
-	return listExprMap(gOpts.cmds, "name")
+	keys := make([]string, 0, len(cmds))
+	for k := range cmds {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "name\tcommand")
+	for _, k := range keys {
+		fmt.Fprintf(t, "%s\t%v\n", k, cmds[k])
+	}
+	t.Flush()
+
+	return b.String()
 }
 
 func listJumps(jumps []string, ind int) string {
@@ -1350,9 +1384,11 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 0
 
-	keys := gOpts.keys
+	keys := gOpts.nkeys
+	mode := "n"
 	if nav.currDir().visualMode {
 		keys = gOpts.vkeys
+		mode = "v"
 	}
 
 	switch tev := ev.(type) {
@@ -1424,7 +1460,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				return expr
 			}
 			if gOpts.showbinds {
-				ui.menu = listBinds(binds)
+				ui.menu = listBinds(map[string]map[string]expr{
+					mode: binds,
+				})
 			}
 			return draw
 		}

@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maps"
 	"path/filepath"
 	"time"
 )
@@ -100,7 +101,7 @@ var gOpts struct {
 	rulerfmt         string
 	preserve         []string
 	shellopts        []string
-	keys             map[string]expr
+	nkeys            map[string]expr
 	vkeys            map[string]expr
 	cmdkeys          map[string]expr
 	cmds             map[string]expr
@@ -273,7 +274,8 @@ func init() {
 	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
 
-	gOpts.keys = map[string]expr{
+	// normal and visual mode
+	keys := map[string]expr{
 		"k":          &callExpr{"up", nil, 1},
 		"<up>":       &callExpr{"up", nil, 1},
 		"<m-up>":     &callExpr{"up", nil, 1},
@@ -304,10 +306,7 @@ func init() {
 		"L":          &callExpr{"low", nil, 1},
 		"[":          &callExpr{"jump-prev", nil, 1},
 		"]":          &callExpr{"jump-next", nil, 1},
-		"<space>":    &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
 		"t":          &callExpr{"tag-toggle", nil, 1},
-		"V":          &callExpr{"visual", nil, 1},
-		"v":          &callExpr{"invert", nil, 1},
 		"u":          &callExpr{"unselect", nil, 1},
 		"y":          &callExpr{"copy", nil, 1},
 		"d":          &callExpr{"cut", nil, 1},
@@ -350,84 +349,25 @@ func init() {
 		"gh": &callExpr{"cd", []string{"~"}, 1},
 	}
 
-	gOpts.vkeys = map[string]expr{
-		"<esc>":      &callExpr{"visual-discard", nil, 1},
-		"k":          &callExpr{"up", nil, 1},
-		"<up>":       &callExpr{"up", nil, 1},
-		"<m-up>":     &callExpr{"up", nil, 1},
-		"<c-u>":      &callExpr{"half-up", nil, 1},
-		"<c-b>":      &callExpr{"page-up", nil, 1},
-		"<pgup>":     &callExpr{"page-up", nil, 1},
-		"<c-y>":      &callExpr{"scroll-up", nil, 1},
-		"<c-m-up>":   &callExpr{"scroll-up", nil, 1},
-		"j":          &callExpr{"down", nil, 1},
-		"<down>":     &callExpr{"down", nil, 1},
-		"<m-down>":   &callExpr{"down", nil, 1},
-		"<c-d>":      &callExpr{"half-down", nil, 1},
-		"<c-f>":      &callExpr{"page-down", nil, 1},
-		"<pgdn>":     &callExpr{"page-down", nil, 1},
-		"<c-e>":      &callExpr{"scroll-down", nil, 1},
-		"<c-m-down>": &callExpr{"scroll-down", nil, 1},
-		"h":          &callExpr{"updir", nil, 1},
-		"<left>":     &callExpr{"updir", nil, 1},
-		"l":          &callExpr{"open", nil, 1},
-		"<right>":    &callExpr{"open", nil, 1},
-		"q":          &callExpr{"quit", nil, 1},
-		"gg":         &callExpr{"top", nil, 1},
-		"<home>":     &callExpr{"top", nil, 1},
-		"G":          &callExpr{"bottom", nil, 1},
-		"<end>":      &callExpr{"bottom", nil, 1},
-		"H":          &callExpr{"high", nil, 1},
-		"M":          &callExpr{"middle", nil, 1},
-		"L":          &callExpr{"low", nil, 1},
-		"[":          &callExpr{"jump-prev", nil, 1},
-		"]":          &callExpr{"jump-next", nil, 1},
-		"<space>":    &callExpr{"down", nil, 1},
-		"t":          &callExpr{"tag-toggle", nil, 1},
-		"V":          &callExpr{"visual-accept", nil, 1},
-		"o":          &callExpr{"visual-change", nil, 1},
-		"u":          &callExpr{"unselect", nil, 1},
-		"y":          &callExpr{"copy", nil, 1},
-		"d":          &callExpr{"cut", nil, 1},
-		"c":          &callExpr{"clear", nil, 1},
-		"p":          &callExpr{"paste", nil, 1},
-		"<c-l>":      &callExpr{"redraw", nil, 1},
-		"<c-r>":      &callExpr{"reload", nil, 1},
-		":":          &callExpr{"read", nil, 1},
-		"$":          &callExpr{"shell", nil, 1},
-		"%":          &callExpr{"shell-pipe", nil, 1},
-		"!":          &callExpr{"shell-wait", nil, 1},
-		"&":          &callExpr{"shell-async", nil, 1},
-		"f":          &callExpr{"find", nil, 1},
-		"F":          &callExpr{"find-back", nil, 1},
-		";":          &callExpr{"find-next", nil, 1},
-		",":          &callExpr{"find-prev", nil, 1},
-		"/":          &callExpr{"search", nil, 1},
-		"?":          &callExpr{"search-back", nil, 1},
-		"n":          &callExpr{"search-next", nil, 1},
-		"N":          &callExpr{"search-prev", nil, 1},
-		"m":          &callExpr{"mark-save", nil, 1},
-		"'":          &callExpr{"mark-load", nil, 1},
-		`"`:          &callExpr{"mark-remove", nil, 1},
-		`r`:          &callExpr{"rename", nil, 1},
-		"<c-n>":      &callExpr{"cmd-history-next", nil, 1},
-		"<c-p>":      &callExpr{"cmd-history-prev", nil, 1},
+	// insert bindings that apply to both normal & visual mode first
+	gOpts.nkeys = maps.Clone(keys)
+	// now insert normal mode specific ones while overriding potential duplicates
+	maps.Copy(gOpts.nkeys, map[string]expr{
+		"<space>": &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
+		"V":       &callExpr{"visual", nil, 1},
+		"v":       &callExpr{"invert", nil, 1},
+	})
 
-		"zh": &setExpr{"hidden!", ""},
-		"zr": &setExpr{"reverse!", ""},
-		"zn": &setExpr{"info", ""},
-		"zs": &setExpr{"info", "size"},
-		"zt": &setExpr{"info", "time"},
-		"za": &setExpr{"info", "size:time"},
-		"sn": &listExpr{[]expr{&setExpr{"sortby", "natural"}, &setExpr{"info", ""}}, 1},
-		"ss": &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}, 1},
-		"st": &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}, 1},
-		"sa": &listExpr{[]expr{&setExpr{"sortby", "atime"}, &setExpr{"info", "atime"}}, 1},
-		"sc": &listExpr{[]expr{&setExpr{"sortby", "ctime"}, &setExpr{"info", "ctime"}}, 1},
-		"se": &listExpr{[]expr{&setExpr{"sortby", "ext"}, &setExpr{"info", ""}}, 1},
-		"gh": &callExpr{"cd", []string{"~"}, 1},
-	}
+	// now do the same for visual mode
+	gOpts.vkeys = maps.Clone(keys)
+	maps.Copy(gOpts.vkeys, map[string]expr{
+		"<space>": &callExpr{"down", nil, 1},
+		"<esc>":   &callExpr{"visual-discard", nil, 1},
+		"V":       &callExpr{"visual-accept", nil, 1},
+		"o":       &callExpr{"visual-change", nil, 1},
+	})
 
+	// command line mode bindings can be assigned directly
 	gOpts.cmdkeys = map[string]expr{
 		"<space>":        &callExpr{"cmd-insert", []string{" "}, 1},
 		"<esc>":          &callExpr{"cmd-escape", nil, 1},

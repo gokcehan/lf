@@ -557,10 +557,20 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	exportOpts()
 
 	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(gOpts.keys)
-	gState.data["vmaps"] = listBinds(gOpts.vkeys)
-	gState.data["cmaps"] = listBinds(gOpts.cmdkeys)
-	gState.data["cmds"] = listCmds()
+	gState.data["maps"] = listBinds(map[string]map[string]expr{
+		"n": gOpts.nkeys,
+		"v": gOpts.vkeys,
+	})
+	gState.data["nmaps"] = listBinds(map[string]map[string]expr{
+		"n": gOpts.nkeys,
+	})
+	gState.data["vmaps"] = listBinds(map[string]map[string]expr{
+		"v": gOpts.vkeys,
+	})
+	gState.data["cmaps"] = listBinds(map[string]map[string]expr{
+		"c": gOpts.cmdkeys,
+	})
+	gState.data["cmds"] = listCmds(gOpts.cmds)
 	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
 	gState.data["history"] = listHistory(app.cmdHistory)
 	gState.data["files"] = listFilesInCurrDir(app.nav)
