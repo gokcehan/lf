@@ -104,8 +104,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			file := filepath.Base(src)
 			dst := filepath.Join(dstDir, file)
 
-			lstat, err := os.Lstat(dst)
-			if !os.IsNotExist(err) {
+			if lstat, err := os.Lstat(dst); err == nil {
 				ext := getFileExtension(lstat)
 				basename := file[:len(file)-len(ext)]
 				var newPath string
