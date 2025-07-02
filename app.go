@@ -552,7 +552,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
-	app.ui.exportMode(app.nav)
+	app.exportMode()
 	exportLfPath()
 	exportOpts()
 
@@ -673,4 +673,44 @@ func (app *app) watchDir(dir *dir) {
 			app.watch.add(file.path)
 		}
 	}
+}
+
+func (app *app) exportMode() {
+	getMode := func() string {
+		if strings.HasPrefix(app.ui.cmdPrefix, "delete") {
+			return "delete"
+		}
+
+		if strings.HasPrefix(app.ui.cmdPrefix, "replace") || strings.HasPrefix(app.ui.cmdPrefix, "create") {
+			return "rename"
+		}
+
+		switch app.ui.cmdPrefix {
+		case "filter: ":
+			return "filter"
+		case "find: ", "find-back: ":
+			return "find"
+		case "mark-save: ", "mark-load: ", "mark-remove: ":
+			return "mark"
+		case "rename: ":
+			return "rename"
+		case "/", "?":
+			return "search"
+		case ":":
+			return "command"
+		case "$", "%", "!", "&":
+			return "shell"
+		case ">":
+			return "pipe"
+		case "":
+			if app.nav.init && app.nav.currDir().visualMode {
+				return "visual"
+			}
+			return "normal"
+		default:
+			return "unknown"
+		}
+	}
+
+	os.Setenv("lf_mode", getMode())
 }
