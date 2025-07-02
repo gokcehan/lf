@@ -47,10 +47,7 @@ The following commands are provided by lf:
     middle                   (default 'M')
     low                      (default 'L')
     toggle
-    visual         (modal)   (default 'V')
-    visual-accept  (modal)   (default 'V')
-    visual-discard (modal)   (default '<esc>')
-    visual-change            (default 'o')
+    visual                   (default 'V')
     invert                   (default 'v')
     unselect                 (default 'u')
     glob-select
@@ -97,6 +94,12 @@ The following commands are provided by lf:
     tag-toggle               (default 't')
     addcustominfo
     tty-write
+
+The following visual mode commands are provided by lf:
+
+    visual-accept            (default 'V')
+    visual-discard           (default '<esc>')
+    visual-change            (default 'o')
 
 The following command line commands are provided by lf:
 
@@ -410,18 +413,18 @@ Toggle the selection of the current file or files given as arguments.
 
 visual (modal) (default 'V')
 
-Switch to visual selection mode. If already in visual mode, discard
-visual selection and stay in visual mode.
+Switch to visual mode. If already in visual mode, discard visual
+selection and stay in visual mode.
 
 visual-accept (modal) (default 'V')
 
-Accept visual selection, quit visual selection mode and return to normal
-mode.
+Add the visual selection to the selection list, quit visual mode and
+return to normal mode.
 
 visual-discard (modal) (default '')
 
-Discard visual selection, quit visual selection mode and return to
-normal mode.
+Discard the visual selection, quit visual mode and return to normal
+mode.
 
 visual-change (default 'o')
 
@@ -1346,8 +1349,8 @@ Characters from # to newline are comments and ignored:
 
     # comments start with `#`
 
-There are seven special commands (set, setlocal, map, nmap, vmap, cmap,
-and cmd) for configuration.
+There following commands (set, setlocal, map, nmap, vmap, cmap, and cmd)
+are used for configuration.
 
 Command set is used to set an option which can be a boolean, integer, or
 string:

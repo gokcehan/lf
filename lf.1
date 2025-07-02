@@ -56,10 +56,7 @@ high                     (default \(aqH\(aq)
 middle                   (default \(aqM\(aq)
 low                      (default \(aqL\(aq)
 toggle
-visual         (modal)   (default \(aqV\(aq)
-visual\-accept  (modal)   (default \(aqV\(aq)
-visual\-discard (modal)   (default \(aq<esc>\(aq)
-visual\-change            (default \(aqo\(aq)
+visual                   (default \(aqV\(aq)
 invert                   (default \(aqv\(aq)
 unselect                 (default \(aqu\(aq)
 glob\-select
@@ -106,6 +103,14 @@ tag
 tag\-toggle               (default \(aqt\(aq)
 addcustominfo
 tty\-write
+.EE
+.PP
+The following visual mode commands are provided by lf:
+.IP
+.EX
+visual\-accept            (default \(aqV\(aq)
+visual\-discard           (default \(aq<esc>\(aq)
+visual\-change            (default \(aqo\(aq)
 .EE
 .PP
 The following command line commands are provided by lf:
@@ -430,15 +435,15 @@ Move the current file selection to the high/middle/low of the screen.
 .SS toggle
 Toggle the selection of the current file or files given as arguments.
 .SS visual (modal) (default \(aqV\(aq)
-Switch to visual selection mode.
+Switch to visual mode.
 If already in visual mode, discard visual selection and stay in visual
 mode.
 .SS visual\-accept (modal) (default \(aqV\(aq)
-Accept visual selection, quit visual selection mode and return to normal
-mode.
+Add the visual selection to the selection list, quit visual mode and
+return to normal mode.
 .SS visual\-discard (modal) (default \(aq\(aq)
-Discard visual selection, quit visual selection mode and return to
-normal mode.
+Discard the visual selection, quit visual mode and return to normal
+mode.
 .SS visual\-change (default \(aqo\(aq)
 Go to the other end of the current visual mode selection.
 .SS invert (default \f[CR]v\f[R])
@@ -1143,9 +1148,9 @@ Characters from \f[CR]#\f[R] to newline are comments and ignored:
 # comments start with \(ga#\(ga
 .EE
 .PP
-There are seven special commands (\f[CR]set\f[R], \f[CR]setlocal\f[R],
+There following commands (\f[CR]set\f[R], \f[CR]setlocal\f[R],
 \f[CR]map\f[R], \f[CR]nmap\f[R], \f[CR]vmap\f[R], \f[CR]cmap\f[R], and
-\f[CR]cmd\f[R]) for configuration.
+\f[CR]cmd\f[R]) are used for configuration.
 .PP
 Command \f[CR]set\f[R] is used to set an option which can be a boolean,
 integer, or string:
