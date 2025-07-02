@@ -171,7 +171,6 @@ type dir struct {
 	dironly      bool       // dironly value from last sort
 	hidden       bool       // hidden value from last sort
 	reverse      bool       // reverse value from last sort
-	visualMode   bool       // whether directory is in visual mode
 	visualAnchor int        // index where visual mode was initiated
 	hiddenfiles  []string   // hiddenfiles value from last sort
 	filter       []string   // last filter for this directory
@@ -421,6 +420,10 @@ func (d *dir) fileNames() []string {
 	}
 
 	return names
+}
+
+func (nav *nav) isVisualMode() bool {
+	return nav.init && nav.currDir().visualAnchor != -1
 }
 
 func (dir *dir) visualSelections() map[string]int {

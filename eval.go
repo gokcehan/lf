@@ -830,7 +830,6 @@ func normal(app *app) {
 
 func visual(app *app) {
 	dir := app.nav.currDir()
-	dir.visualMode = true
 	dir.visualAnchor = dir.ind
 
 	app.ui.loadFileInfo(app.nav)
@@ -2338,7 +2337,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		maps.Copy(app.nav.selections, dir.visualSelections())
 		// resetting visual mode here instead of inside `normal()`
 		// allows us to use visual mode inside search, find etc.
-		dir.visualMode = false
 		dir.visualAnchor = -1
 		normal(app)
 	case "visual-discard":
@@ -2346,17 +2344,13 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		dir := app.nav.currDir()
-		dir.visualMode = false
 		dir.visualAnchor = -1
 		normal(app)
 	case "visual-change":
-		if !app.nav.init {
+		if !app.nav.isVisualMode() {
 			return
 		}
 		dir := app.nav.currDir()
-		if !dir.visualMode {
-			return
-		}
 		row := dir.ind - dir.pos
 		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
 		dir.pos = dir.ind - row

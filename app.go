@@ -703,7 +703,7 @@ func (app *app) exportMode() {
 		case ">":
 			return "pipe"
 		case "":
-			if app.nav.init && app.nav.currDir().visualMode {
+			if app.nav.isVisualMode() {
 				return "visual"
 			}
 			return "normal"

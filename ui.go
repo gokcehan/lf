@@ -823,7 +823,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
-	if nav.currDir().visualMode {
+	if nav.isVisualMode() {
 		replace("%m", "VISUAL")
 		replace("%M", "VISUAL")
 	} else {
@@ -1386,7 +1386,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 	keys := gOpts.nkeys
 	mode := "n"
-	if nav.currDir().visualMode {
+	if nav.isVisualMode() {
 		keys = gOpts.vkeys
 		mode = "v"
 	}
