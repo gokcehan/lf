@@ -127,16 +127,40 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+func shellCommand2(s string, args []string) *exec.Cmd {
+	var words []string
+	for _, word := range gOpts.shellcmd {
+		switch word {
+		case "%a":
+			words = append(words, args...)
+		case "%c":
+			words = append(words, s)
+		default:
+			words = append(words, word)
+		}
+	}
+	cmd := exec.Command(words[0], words[1:]...)
+	return cmd
+}
+
 func shellCommand(s string, args []string) *exec.Cmd {
+
 	if len(gOpts.ifs) != 0 {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
 	}
+
+	if len(gOpts.shellcmd) > 0 {
+		return shellCommand2(s, args)
+	}
+
+	// original legacy configuration which uses shell, shellopts and shellflag
 
 	args = append([]string{gOpts.shellflag, s, "--"}, args...)
 
 	args = append(gOpts.shellopts, args...)
 
-	return exec.Command(gOpts.shell, args...)
+	cmd := exec.Command(gOpts.shell, args...)
+	return cmd
 }
 
 func shellSetPG(cmd *exec.Cmd) {
