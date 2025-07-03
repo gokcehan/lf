@@ -533,18 +533,19 @@ type nav struct {
 
 func (nav *nav) loadDirInternal(path string) *dir {
 	d := &dir{
-		loading:     true,
-		loadTime:    time.Now(),
-		path:        path,
-		sortby:      getSortBy(path),
-		dirfirst:    getDirFirst(path),
-		dironly:     getDirOnly(path),
-		hidden:      getHidden(path),
-		reverse:     getReverse(path),
-		locale:      getLocale(path),
-		hiddenfiles: gOpts.hiddenfiles,
-		ignorecase:  gOpts.ignorecase,
-		ignoredia:   gOpts.ignoredia,
+		loading:      true,
+		loadTime:     time.Now(),
+		path:         path,
+		sortby:       getSortBy(path),
+		dirfirst:     getDirFirst(path),
+		dironly:      getDirOnly(path),
+		hidden:       getHidden(path),
+		reverse:      getReverse(path),
+		locale:       getLocale(path),
+		visualAnchor: -1,
+		hiddenfiles:  gOpts.hiddenfiles,
+		ignorecase:   gOpts.ignorecase,
+		ignoredia:    gOpts.ignoredia,
 	}
 	go func() {
 		d := newDir(path)

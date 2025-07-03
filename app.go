@@ -391,6 +391,7 @@ func (app *app) loop() {
 				if ok {
 					d.ind = prev.ind
 					d.pos = prev.pos
+					d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
 					d.filter = prev.filter
 					d.sort()
 					d.sel(prev.name(), app.nav.height)
