@@ -2351,9 +2351,9 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		dir := app.nav.currDir()
-		row := dir.ind - dir.pos
+		beg := max(dir.ind-dir.pos, 0)
 		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
-		dir.pos = dir.ind - row
+		dir.pos = dir.ind - beg
 		dir.boundPos(app.nav.height)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
