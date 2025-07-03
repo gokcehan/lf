@@ -426,10 +426,10 @@ func (nav *nav) isVisualMode() bool {
 	return nav.init && nav.currDir().visualAnchor != -1
 }
 
-func (dir *dir) visualSelections() map[string]int {
-	names := make(map[string]int)
+func (dir *dir) visualSelections() []string {
+	paths := []string{}
 	if dir.visualAnchor == -1 || len(dir.files) == 0 {
-		return names
+		return paths
 	}
 
 	beg, end := dir.ind, dir.visualAnchor
@@ -437,10 +437,11 @@ func (dir *dir) visualSelections() map[string]int {
 		beg, end = end, beg
 	}
 
-	for i, f := range dir.files[beg : end+1] {
-		names[f.path] = beg + i
+	for _, f := range dir.files[beg : end+1] {
+		paths = append(paths, f.path)
 	}
-	return names
+
+	return paths
 }
 
 func (dir *dir) sel(name string, height int) {

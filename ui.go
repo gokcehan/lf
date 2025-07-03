@@ -453,7 +453,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := visualSelections[path]; ok {
+		if slices.Contains(visualSelections, path) {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
 		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")

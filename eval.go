@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"io"
 	"log"
-	"maps"
 	"os"
 	"path/filepath"
 	"slices"
@@ -2334,7 +2333,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 		dir := app.nav.currDir()
-		maps.Copy(app.nav.selections, dir.visualSelections())
+		for _, path := range dir.visualSelections() {
+			if _, ok := app.nav.selections[path]; !ok {
+				app.nav.selections[path] = app.nav.selectionInd
+				app.nav.selectionInd++
+			}
+		}
 		// resetting visual mode here instead of inside `normal()`
 		// allows us to use visual mode inside search, find etc.
 		dir.visualAnchor = -1
