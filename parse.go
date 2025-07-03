@@ -19,9 +19,9 @@ package main
 //
 // MapExpr      = 'map' <keys> Expr
 //
-// NMapExpr     = 'nmap' <key> Expr
+// NMapExpr     = 'nmap' <keys> Expr
 //
-// VMapExpr     = 'vmap' <key> Expr
+// VMapExpr     = 'vmap' <keys> Expr
 //
 // CMapExpr     = 'cmap' <key> Expr
 //
