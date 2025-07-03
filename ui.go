@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -1176,14 +1177,26 @@ func listBinds(binds map[string]map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
+	m := make(map[string]map[string]string)
+	for mode, keys := range binds {
+		for key, expr := range keys {
+			if _, ok := m[key]; !ok {
+				m[key] = make(map[string]string)
+			}
+			m[key][expr.String()] += mode
+		}
+	}
+
 	type entry struct {
 		mode, key, cmd string
 	}
 
 	var entries []entry
-	for mode, keys := range binds {
-		for key, expr := range keys {
-			entries = append(entries, entry{mode, key, expr.String()})
+	for key, cmds := range m {
+		for cmd, modes := range cmds {
+			tmp := []rune(modes)
+			slices.Sort(tmp)
+			entries = append(entries, entry{string(tmp), key, cmd})
 		}
 	}
 
@@ -1191,23 +1204,13 @@ func listBinds(binds map[string]map[string]expr) string {
 		if entries[i].key != entries[j].key {
 			return entries[i].key < entries[j].key
 		}
-		if entries[i].cmd != entries[j].cmd {
-			return entries[i].cmd < entries[j].cmd
-		}
 		return entries[i].mode < entries[j].mode
 	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mode\tkeys\tcommand")
-	for i := 0; i < len(entries); {
-		key, cmd := entries[i].key, entries[i].cmd
-		modes := ""
-		j := i
-		for ; j < len(entries) && entries[j].key == key && entries[j].cmd == cmd; j++ {
-			modes += entries[j].mode
-		}
-		fmt.Fprintf(t, "%s\t%s\t%s\n", modes, key, cmd)
-		i = j
+	for _, e := range entries {
+		fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
 	}
 	t.Flush()
 
