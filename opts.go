@@ -351,21 +351,16 @@ func init() {
 
 	// insert bindings that apply to both normal & visual mode first
 	gOpts.nkeys = maps.Clone(keys)
-	// now insert normal mode specific ones while overriding potential duplicates
-	maps.Copy(gOpts.nkeys, map[string]expr{
-		"<space>": &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
-		"V":       &callExpr{"visual", nil, 1},
-		"v":       &callExpr{"invert", nil, 1},
-	})
+	// now add normal mode specific ones
+	gOpts.nkeys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
+	gOpts.nkeys["V"] = &callExpr{"visual", nil, 1}
+	gOpts.nkeys["v"] = &callExpr{"invert", nil, 1}
 
 	// now do the same for visual mode
 	gOpts.vkeys = maps.Clone(keys)
-	maps.Copy(gOpts.vkeys, map[string]expr{
-		"<space>": &callExpr{"down", nil, 1},
-		"<esc>":   &callExpr{"visual-discard", nil, 1},
-		"V":       &callExpr{"visual-accept", nil, 1},
-		"o":       &callExpr{"visual-change", nil, 1},
-	})
+	gOpts.vkeys["<esc>"] = &callExpr{"visual-discard", nil, 1}
+	gOpts.vkeys["V"] = &callExpr{"visual-accept", nil, 1}
+	gOpts.vkeys["o"] = &callExpr{"visual-change", nil, 1}
 
 	// command line mode bindings can be assigned directly
 	gOpts.cmdkeys = map[string]expr{
