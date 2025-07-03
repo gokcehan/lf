@@ -51,7 +51,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `ruler` option (deprecated in favor of `rulerfmt`) is now removed (#1766).
 - Line numbers from the `number` and `relativenumber` options are displayed in the main window only, instead of all windows (#1789).
 
-### Fixed
+### Added
 
 - Support for UNIX domain sockets (for communicating with the `lf` server) is added for Windows (#1637).
 - Color and icon configurations now support the `target` keyword for symbolic links (#1644).
@@ -61,7 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `info` option now supports `perm`, `user` and `group` to display the permissions, user and group respectively for each file (#1799).
 - A new option `showbinds` is added to toggle whether the keybinding hints are shown when a keybinding is partially typed (#1815).
 
-### Added
+### Fixed
 
 - Sorting by extension is fixed for hidden files (#1670).
 - The `on-quit` hook command is now triggered when the terminal is closed (#1681).
