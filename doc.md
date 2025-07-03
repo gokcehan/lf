@@ -1224,7 +1224,7 @@ Characters from `#` to newline are comments and ignored:
 
 	# comments start with `#`
 
-There following commands (`set`, `setlocal`, `map`, `nmap`, `vmap`, `cmap`, and `cmd`) are used for configuration.
+The following commands (`set`, `setlocal`, `map`, `nmap`, `vmap`, `cmap`, and `cmd`) are used for configuration.
 
 Command `set` is used to set an option which can be a boolean, integer, or string:
 
