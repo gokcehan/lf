@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
-## r35
+## [r35](https://github.com/gokcehan/lf/releases/tag/r35)
 
 ### Added
 
@@ -24,7 +24,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Arrow keys are now handled properly when waiting for a key press after executing a shell-wait (`!`) command (#1956).
 - The `previewer` script is now only invoked for the current directory (instead of all directories), when starting `lf` with `dirpreviews` enabled (#1958).
 
-## r34
+## [r34](https://github.com/gokcehan/lf/releases/tag/r34)
 
 ### Changed
 
@@ -42,7 +42,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - File sizes now display correctly after being copied when `watch` is enabled (#1881).
 - Files are now automatically unselected when removed by an external process, when `watch` is enabled (#1901).
 
-## r33
+## [r33](https://github.com/gokcehan/lf/releases/tag/r33)
 
 ### Changed
 
