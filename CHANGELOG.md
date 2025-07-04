@@ -218,3 +218,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Command `doc` should now work even if `lf` is not in the `PATH` variable (#1176).
 - Directory option changes should not crash the program anymore (#1204).
 - Option `selmode` is now validated for the accepted values (#1206).
+
+## [r28](https://github.com/gokcehan/lf/releases/tag/r28)
+
+### Changed
+
+- Extension matching for colors and icons are now case insensitive (#908).
+
+### Added
+
+- Three new commands `high`, `middle`, and `low` are added to move the current selection relative to the screen (#824).
+- Backspace on empty prompt now switches to normal mode (#836).
+- A new `history` option is now added to be able to disable history (#866).
+- A new special expansion `%S` spacer is added for `promptfmt` to be able to right align parts (#867).
+- A new command-line command `cmd-menu-accept` is now added to accept the currently selected match (#934).
+- Command-line commands should now be shown in completion for `map` and `cmap` (#934).
+- Italic escape codes should now be working in previews (#936).
+- Position and size information are now also passed to the `cleaner` script as arguments (#945).
+- A new option `dirpreviews` is now added to also pass directories to the `previewer` script (#842).
+- A new option `selmode` is now added to be able to limit the selection to the current directory (#849).
+- User defined options with `user_` prefix are now supported (#865).
+- Adding or removing `$`/`%`/`!`/`&` characters in `:` mode should now change the mode accordingly (#960).
+- A new special command `on-select` is now added to be able to run a command after the selection changes (#864).
+- Mouse support is extended to be able to click filenames for selection and opening (#963).
+- Two new environment variables `lf_width` and `lf_height` are now exported for shell commands.
+
+### Fixed
+
+- Option `tagfmt` can now be changed properly.
+- User name, group name, and link count should now be displayed as before where available (#829).
+- Tagging files with colons in their names should now work as expected (#857).
+- Some multibyte characters should now be handled properly for completion (#934).
+- Menu completion for a file in a subdirectory should now be working properly (#934).
+- File completion should now be escaped properly in menu completion (#934).
+- First use of `cmd-menu-complete-back` should now select the last completion as expected (#934).
+- Broken symlinks should now be working properly in completion (#934).
+- Files with stat errors should now be skipped properly in completion (#934).
+- Empty search with `incsearch` option should now be handled properly (#944).
+- History position is now also reset when leaving command line (#953).
+- Mouse drag events are now ignored properly to avoid command repetition (#962).
+- Environment variables `HOME` and `USER` should now be used as fallback for locations on some systems (#972).
+- File information is now displayed in the status line at first launch when there are no errors in the configuration file (#994).
