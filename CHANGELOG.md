@@ -356,12 +356,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A new `-config` command line flag is added to use a custom config file path.
-- Current working directory is now exported as `PWD` environment variable. Subshells in symlink directories should now start in their own paths properly.
-- Initial working directory is now exported as `OLDPWD` environment variable.
+- A new `-config` command line flag is added to use a custom config file path (#587).
+- The current working directory is now exported as `PWD` environment variable (#591). Subshells in symlink directories should now start in their own paths properly.
+- The initial working directory is now exported as `OLDPWD` environment variable.
 - A new `shellflag` option is added to customize the shell flag used for passing commands (i.e. default `-c` for Unix and `/c` for Windows).
-- Command `cmd-enter` during `find` and `find-back` now jumps to the first match.
-- A new `waitmsg` option is added to customize the prompt message after `shell-wait` commands (i.e. default `Press any key to continue`).
+- Using the command `cmd-enter` during `find` and `find-back` now jumps to the first match (#605).
+- A new `waitmsg` option is added to customize the prompt message after `shell-wait` commands (i.e. default `Press any key to continue`) (#604).
 
 ### Fixed
 
