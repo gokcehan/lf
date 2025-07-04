@@ -425,7 +425,35 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Extension sorting should now handle extensions with different lenghts properly.
+- Extension sorting should now handle extensions with different lengths properly.
 - Heuristic used to show `info` should now take into account the `number` and `icons` options properly.
 - Environment variable `id` is now set to the process ID instead to avoid two clients getting the same ID when launched at the same time.
 - Unicode combining characters in texts should now be displayed properly.
+
+## [r18](https://github.com/gokcehan/lf/releases/tag/r18)
+
+### Changed
+
+- The `ignorecase` and `ignoredia` options should now also apply to sorting in addition to searching.
+- The `ignoredia` option is now enabled by default to be consistent with `ignorecase`.
+- The terminal UI library Tcell has been updated to version 2. This version highlights adding 24-bit true colors on Windows and better support for colors on Unix. The environment variable `TCELL_TRUECOLOR` is not required anymore so that terminal themes and true colors can be used at the same time.
+- The deprecated option `color256` is now removed.
+
+### Added
+
+- Two new command line commands `cmd-menu-complete` and `cmd-menu-complete-back` are added for completion menu cycling.
+- Simple configuration files for Windows `etc/lfrc.cmd.example` and `etc/lfrc.ps1.example` are now added to the repository.
+- Bash completion script `etc/lf.bash` is now added to the repository.
+- Time formats in `info` option should now show the year instead of `hh:mm` for times older than the current year.
+
+### Fixed
+
+- Signals `SIGHUP`, `SIGQUIT`, and `SIGTERM` should now quit the program properly.
+- Setting `info` to an empty value should not print errors to the log file anymore.
+- Natural sorting is optimized to work faster using less memory.
+- Files and directories that incorrectly show modification times in the future (e.g. Linux builtin exFAT driver) should not cause CPU hogging anymore.
+- The keybinding example in `etc/lfcd.fish` is now updated to avoid hanging in shell commands.
+- Using the `bottom` command immediately after startup should not crash the program anymore.
+- Changing sorting options during sorting operations should not crash the program anymore.
+- Output in `shell-pipe` commands now uses lazy redrawing so that verbose commands should not block the program anymore.
+- The server is now daemonized properly on Unix so that it is not killed anymore when the controlling terminal is killed.
