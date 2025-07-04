@@ -53,7 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Support for UNIX domain sockets (for communicating with the `lf` server) is added for Windows (#1637).
+- Support for Unix domain sockets (for communicating with the `lf` server) is added for Windows (#1637).
 - Color and icon configurations now support the `target` keyword for symbolic links (#1644).
 - A new option `roundbox` is added to use rounded corners when `drawbox` is enabled (#1653).
 - A new option `watch` is added to allow using filesystem notifications to detect and display changes to files. This is an alternative to the `period` option, which polls the filesystem periodically for changes (#1667).
@@ -351,3 +351,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Prompt line should now scroll accordingly when the text is wider than the screen.
 - Text width in the prompt line should now be calculated properly when non-ASCII characters are involved.
 - Erase line escape codes (i.e. `\033[K`) used in some command outputs should now be ignored properly.
+
+## [r22](https://github.com/gokcehan/lf/releases/tag/r22)
+
+### Added
+
+- A new `-config` command line flag is added to use a custom config file path.
+- Current working directory is now exported as `PWD` environment variable. Subshells in symlink directories should now start in their own paths properly.
+- Initial working directory is now exported as `OLDPWD` environment variable.
+- A new `shellflag` option is added to customize the shell flag used for passing commands (i.e. default `-c` for Unix and `/c` for Windows).
+- Command `cmd-enter` during `find` and `find-back` now jumps to the first match.
+- A new `waitmsg` option is added to customize the prompt message after `shell-wait` commands (i.e. default `Press any key to continue`).
+
+### Fixed
+
+- A regression bug is fixed to print a newline in the prompt message properly after `shell-wait` commands.
+- A regression bug is fixed to avoid CPU stuck at 100% when the terminal is closed unexpectedly.
+- A regression bug is fixed to make shell commands use the alternate screen properly and keep the terminal history after quitting.
+- Enter keypad terminfo sequence is now sent on startup so the `delete` key should be recognized properly in `st` terminal.
