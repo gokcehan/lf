@@ -441,7 +441,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Two new command line commands `cmd-menu-complete` and `cmd-menu-complete-back` are added for completion menu cycling.
+- Two new command line commands `cmd-menu-complete` and `cmd-menu-complete-back` are added for completion menu cycling (#482).
 - Simple configuration files for Windows `etc/lfrc.cmd.example` and `etc/lfrc.ps1.example` are now added to the repository.
 - Bash completion script `etc/lf.bash` is now added to the repository.
 - Time formats in `info` option should now show the year instead of `hh:mm` for times older than the current year.
@@ -456,7 +456,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Using the `bottom` command immediately after startup should not crash the program anymore.
 - Changing sorting options during sorting operations should not crash the program anymore.
 - Output in `shell-pipe` commands now uses lazy redrawing so that verbose commands should not block the program anymore.
-- The server is now daemonized properly on Unix so that it is not killed anymore when the controlling terminal is killed.
+- The server is now daemonized properly on Unix so that it is not killed anymore when the controlling terminal is killed (#517).
 
 ## [r17](https://github.com/gokcehan/lf/releases/tag/r17)
 
