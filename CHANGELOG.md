@@ -389,3 +389,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Autocompletion in a directory containing a broken symlink should now work as intended.
 - Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.
 - Previously given tip to trap `SIGPIPE` in the preview script to enable caching is now updated in the documentation. Trapping the signal in the preview script avoids sending the signal to the program when enough lines are read. This may result in reading redundant lines escpecially for big files. The recommended method is now to add a trailing `|| true` to each command exiting with a non-zero return code after a `SIGPIPE`.
+
+## [r20](https://github.com/gokcehan/lf/releases/tag/r20)
+
+### Added
+
+- A new `mouse` option is added to enable mouse events. This option is disabled by default to leave mouse events to the terminal. Also unbound mouse events when `mouse` is enabled should now show an `unknown mapping` error in the message line.
+
+### Fixed
+
+- Newline characters in the output of `%` commands should no longer shift the content up which was a bug introduced in the previous release due to a fix to handle combining characters in texts.
+- Redundant preview loadings for the `search` and `find` commands are now avoided.
+- Scanner now only considers ASCII characters for spaces and digits which should avoid unexpected splits in some non-ASCII inputs.
