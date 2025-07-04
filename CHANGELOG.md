@@ -323,3 +323,31 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Data directory is automatically created before the selection file is written.
 - An error is returned for remote commands when the given ID is not connected to the server.
 - Prompts longer than the width should not crash the program anymore.
+
+## [r23](https://github.com/gokcehan/lf/releases/tag/r23)
+
+### Changed
+
+- There has been some changes in the server protocol. Make sure to kill the old server process when you update to avoid errors.
+- Server `load` and `save` commands are now removed. Instead a local file is used to record file selections (e.g. `~/.local/share/lf/files`). See the documentation for more information.
+- Clients are now disconnected from server on quit. The old server `quit` command is renamed to `quit!` to act as a force quit by closing connected client connections first. A new `quit` command is added to only quit when there are no connected clients left.
+
+### Added
+
+- A new `autoquit` option is added to automatically quit the server when there are no connected clients left. This option is disabled by default to keep the old behavior. This is added as an option to avoid respawning server repeatedly when there is often a single client involved but more clients are spawned from time to time.
+- A new `-single` command line flag is added to avoid spawning and/or connecting to server on startup. Remote commands would not work in this case as the client does not connect to a server. Local versions of internal `load` and `sync` commands are implemented properly.
+- Errors for remote commands are now also shown in the output in addition to the server log file.
+- Bright ANSI color escape codes (i.e. 90-97 and 100-107) are now supported.
+
+### Fixed
+
+- Lookahead size for escape codes are increased to recognize longer escape codes used in some image previewers.
+- File preview cache is invalidated when the terminal height changes to fill the screen properly.
+- File preview cache is invalidated when `drawbox` option changes and true image previews should be triggered to be drawn at updated positions.
+- A crash scenario is fixed when `hidden` option is changed.
+- Pane widths should now be calculated properly when big numbers are used in `ratios`.
+- Special bookmark `'` is preserved properly after `sync` commands.
+- On some platforms, a bug has been fixed on the Tcell side to avoid an extra key press after terminal suspend/resume and the Tcell version used in `lf` is bumped accordingly to include the fix.
+- Prompt line should now scroll accordingly when the text is wider than the screen.
+- Text width in the prompt line should now be calculated properly when non-ASCII characters are involved.
+- Erase line escape codes (i.e. `\033[K`) used in some command outputs should now be ignored properly.
