@@ -122,7 +122,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - There has been some changes in the server protocol. Make sure to kill the old server process when you update to avoid errors (i.e. `lf -remote 'quit!'`).
 - A new server command `query` is added to expose internal state to users (#1384). A new builtin command `cmds` is added to display the commands. The old builtin command `jumps` is now removed. The builtin commands `maps` and `cmaps` now use the new server command.
 - Environment variable exporting for files and options are not performed anymore while previewing and cleaning to avoid various issues with race conditions (#1354). Cleaning program should now instead receive an additional sixth argument for the next file path to be previewed to allow comparisons with the previous file path. User options (i.e. `user_{option}`) are now exported whenever they are changed (#1418).
-- Command outputs are now exclusively attached to `stderr` to allow printing the last directory or selection to `stdout` (#1399 and #1402). Two new command line options `-print-last-dir` and `-print-selection` are added to print the last directory and selection to `stdout`. The example script `etc/lfcd.sh` is updated to use `-print-last-dir` instead. Other `lfcd` scripts are also likely to be updated in the future to use the new method (patches are welcome).
+- Command outputs are now exclusively attached to `stderr` to allow printing the last directory or selection to `stdout` (#1399) (#1402). Two new command line options `-print-last-dir` and `-print-selection` are added to print the last directory and selection to `stdout`. The example script `etc/lfcd.sh` is updated to use `-print-last-dir` instead. Other `lfcd` scripts are also likely to be updated in the future to use the new method (patches are welcome).
 - The option `ruler` is now deprecated in favor of its replacement `rulerfmt` (#1386). The new `rulerfmt` option is more capable (i.e. displays option values, supports colors and attributes, and supports optional fields) and more consistent with the rest of our options. See the documentation for more information.
 
 ### Added
@@ -175,3 +175,46 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Broken mappings for `bottom` command due to recent changes are fixed (#1240).
 - Selecting a file does not scroll to bottom anymore (#1222).
 - Broken builds on some platforms due to recent changes are fixed (#1168).
+
+## [r29](https://github.com/gokcehan/lf/releases/tag/r29)
+
+### Changed
+
+- Three new options `cursoractivefmt`, `cursorparentfmt` and `cursorpreviewfmt` have been added (#1086) (#1106). The default style for the preview cursor is changed to underline. You can revert back to the old style with `set cursorpreviewfmt "\033[7m"`.
+- An alternative boolean option syntax `set option true/false` is added in addition to the previous syntax `set option/nooption` (#758). If you have `set option true` in your configuration, then there is no need for any changes as it was already working as expected accidentally. If you have `set option false` in your configuration, then previously it was enabling the option instead accidentally but now it is disabling the option as intended. Any other syntax including `set option on/off` are now considered errors and result in error messages. Boolean option toggling `set option!` remains unchanged with no new alternative syntax added.
+- Cursor is now placed at the file extension by default in rename prompts (#1162).
+- The environment variable `VISUAL` is checked before `EDITOR` for the default editor choice (#1197).
+
+### Added
+
+- Mouse wheel events with the Control modifier have been bound to scrolling by default (#1051).
+- Option values for `tagfmt` and `errorfmt` have been simplified to be able to avoid the reset sequence (#1086).
+- Two default command line bindings for `<down>` and `<up>` have been added for `cmd-history-next` and `cmd-history-prev` respectively (#1112).
+- A new command `invert-below` is added to invert all selections below the cursor (#1101). **This feature is currently experimental.**
+- Two new commands `maps` and `cmaps` have been added to display the current list of bindings (#1146) (#1201).
+- A new option `numberfmt` is added to customize line numbers (#1177).
+- A new environment variable `lf_count` is now exported to use the count in shell commands (#1187).
+- A new environment variable `lf` is now exported to be used as the executable path (#1176).
+- An example `mkdir` binding is added to the example configuration (#1188).
+- An example binding to show execution results is added to the example configuration (#1188).
+- Commands `top` and `bottom` now accepts counts to move to a specific line (#1196).
+- A new option `ruler` is added to customize the ruler information with a new addition for free disk space (#1168) (#1205).
+
+### Fixed
+
+- Example `lfcd` files have been made safer to be able to alias the commands as `lf` (#1049).
+- Backspace should not exit from `rename:` mode anymore (#1060).
+- Preview is now refreshed even if the selection does not change (#1074).
+- Stale directory cache entry is now deleted during rename (#1138).
+- File information is now updated properly after reloading (#1149).
+- Window widths are now calculated properly when `drawbox` is enabled (#1150).
+- Line number widths are now calculated properly when there are exactly 10 entries (#1151).
+- Preview is not redrawn in async shell commands (#1164).
+- A small delay is added before showing loading text in preview pane to avoid flickering (#1154).
+- Hard-coded box drawing characters are replaced with Tcell constants to enable the fallback mechanism (#1170).
+- Option `relativenumber` now shows zero in the current line (#1171).
+- Completion is not stuck in an infinite loop anymore when a match is longer than the window width (#1183).
+- Completion now inserts the longest match even if there is no word before the cursor (#1184).
+- Command `doc` should now work even if `lf` is not in the `PATH` variable (#1176).
+- Directory option changes should not crash the program anymore (#1204).
+- Option `selmode` is now validated for the accepted values (#1206).
