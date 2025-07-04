@@ -824,6 +824,7 @@ func normal(app *app) {
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
 
+	// ensure the mode indicator in `statfmt` is updated properly
 	app.ui.loadFileInfo(app.nav)
 }
 
