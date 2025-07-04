@@ -162,3 +162,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Filenames should only be quoted for `cmd` on Windows to avoid quoting issues for `powershell` (#1371).
 - Inaccessible files should now be included in the directory list and display their `lstat` errors in the status line at the bottom (#1382).
 - Command line command `cmd-delete-word` should now add the deleted text to the yank buffer (#1409).
+
+## [r30](https://github.com/gokcehan/lf/releases/tag/r30)
+
+### Added
+
+- A new builtin command `jumps` is addded to display the jump list (#1233).
+- A new possible field `filter` is added to `ruler` option to display the filter indicator (#1223).
+
+### Fixed
+
+- Broken mappings for `bottom` command due to recent changes are fixed (#1240).
+- Selecting a file does not scroll to bottom anymore (#1222).
+- Broken builds on some platforms due to recent changes are fixed (#1168).
