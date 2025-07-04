@@ -611,3 +611,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Terminal initialization errors are now shown in the terminal instead of the log file.
+
+## [r10](https://github.com/gokcehan/lf/releases/tag/r10)
+
+### Changed
+
+- The ability to map normal commands in `cmap` is removed. This has caused a number of bugs in the previous release. A different mechanism for a similar functionality is planned.
+
+### Added
+
+- A new command line flag `-command` has been added to execute a command on client initialization.
+- A `select` command is now executed after initialization if the first command line argument is a file.
+- A prompting mechanism has been added to the builtin `delete` command.
+
+### Fixed
+
+- Input and output in `shell-pipe` commands were broken with the `cmap` patch. This should now work as before.
+- Some `push` commands were broken with the `cmap` patch and sometimes ignored command line mode for some keys to execute as in normal mode. This should now work as before.
+- `read` and shell commands should now also work when typed manually (e.g. typing `:shell` should switch the prefix to `$`).
+- Configuration files are now read after initialization.
+- Background colors are removed from defaults to avoid confusion with selection highlighting.
