@@ -315,3 +315,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Marking a symlink directory should now save the symlink path instead of the target path.
 - A number of crashes have been fixed when the `hidden` option is changed.
+
+## [r24](https://github.com/gokcehan/lf/releases/tag/r24)
+
+### Fixed
+
+- Data directory is automatically created before the selection file is written.
+- An error is returned for remote commands when the given ID is not connected to the server.
+- Prompts longer than the width should not crash the program anymore.
