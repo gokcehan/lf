@@ -668,3 +668,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `shell-pipe` command now triggers `load` instead of `reload`.
 - Error messages are now more informative when `lf` fails to start due to either `$HOME` or `$USER` variables being empty or not set.
 - Searching for the next/prev item is now based on the direction of the initial search.
+
+## [r7](https://github.com/gokcehan/lf/releases/tag/r7)
+
+### Changed
+
+- The system-wide configuration path on Unix is changed from `/etc/lfrc` to `/etc/lf/lfrc`.
+
+### Added
+
+- A man page is now automatically generated from the documentation which can be installed to make the documentation available with the `man` command. On a related note, there is now a packaging guide section in packages wiki page.
+- A new `doc` command (default `<f-1>`) is added to view the documentation in a pager.
+- Commands `mark-save` (default `m`) and `mark-load` (default `'`) are added to implement builtin bookmarks. Marks are saved in a file in the data folder which can be found in the documentation.
+- The history is now saved in a file in the data folder which can be found in the documentation.
