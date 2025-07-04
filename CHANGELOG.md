@@ -769,3 +769,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Resize events that change the height are now handled properly.
 - Changes in sorting methods and options are checked for cached directories and these directories are sorted again if necessary while loading.
 - A `~` character is added as a suffix to file names when they do not fit in the window.
+
+## [r2](https://github.com/gokcehan/lf/releases/tag/r2)
+
+### Changed
+
+- Shell command names are shortened (e.g. `read-shell-wait` is renamed to `shell-wait`).
+
+### Added
+
+- A new shell command type named `shell-pipe` is introduced that runs with the UI. See the updated documentation for the motivation and some example use cases.
+- A new command named `cmd-interrupt` (default `<c-c>`) is introduced to interrupt the current `shell-pipe` command.
+- A new command named `select` is introduced that changes the current file selection to its argument.
+
+### Fixed
+
+- Running `cmd-hist-prev` in normal mode now always starts with the last item to avoid confusion. Running `cmd-hist-next` in normal mode now has no effect for consistency.
