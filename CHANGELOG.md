@@ -667,7 +667,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The old index is now kept when the current selection is deleted.
 - The `shell-pipe` command now triggers `load` instead of `reload`.
 - Error messages are now more informative when `lf` fails to start due to either `$HOME` or `$USER` variables being empty or not set.
-- Searching for the next/prev item is now based on the direction of the initial search.
+- Searching for the next/previous item is now based on the direction of the initial search.
 
 ## [r7](https://github.com/gokcehan/lf/releases/tag/r7)
 
