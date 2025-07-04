@@ -717,3 +717,36 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - All clients are now refreshed when the `put` command is used.
 - The correct hidden parent is selected when the `hidden` option is changed.
 - The preview is properly updated when the `hidden` option is changed.
+
+## [r4](https://github.com/gokcehan/lf/releases/tag/r4)
+
+### Changed
+
+- The following commands are renamed for clarity and consistency:
+  - `bot` is renamed to `bottom`
+  - `cmd-delete-word` is renamed to `cmd-delete-unix-word`
+  - `cmd-beg` is renamed to `cmd-home`
+  - `cmd-delete-beg` is renamed to `cmd-delete-home`
+  - `cmd-comp` is renamed to `cmd-complete`
+  - `cmd-hist-next` is renamed to `cmd-history-next`
+  - `cmd-hist-prev` is renamed to `cmd-history-prev`
+  - `cmd-put` is renamed to `cmd-yank`
+
+### Added
+
+- Support for alt key bindings have been added using the commonly used escape delaying mechanism. The delay value is set to 100ms which is also used for other escape codes in Termbox. Keys are named with an `a` prefix, as in `<a-f>` for the `alt` and `f` keys. Also note that the old mechanism for alt keybindings on 8-bit terminals still works as before.
+- The following command line commands and their default alt keybindings have been added:
+  - `cmd-word` with `<a-f>`
+  - `cmd-word-back` with `<a-b>`
+  - `cmd-capitalize-word` with `<a-c>`
+  - `cmd-delete-word` with `<a-d>`
+  - `cmd-uppercase-word` with `<a-u>`
+  - `cmd-lowercase-word` with `<a-l>`
+  - `cmd-transpose-word` with `<a-t>`
+
+### Fixed
+
+- The default editor, pager, and opener commands should now work in Windows. Opener still only works with paths without spaces though.
+- 8-bit color codes and attributes are not confused anymore.
+- History selection is disabled when a `shell-pipe` command is running.
+- Searches are now excluded from the history.
