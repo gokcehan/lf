@@ -411,23 +411,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
   - Preview scripts should now get as arguments the current file path, width, height, horizontal position, and vertical position. Note that height is still passed as an argument but its order is changed.
   - A new `cleaner` option is added to set the path to a file to be executed when the preview is changed.
   - Redundant preview loadings for movement commands are now avoided.
-- Expansion `%w` in `promptfmt` is changed back to its old behavior without a trailing separator. Instead, a new expansion `%d` is added with a trailing separator. Expansion `%w` is meant to be used to display the current working directory, whereas `%d%f` is meant to be used to display the current file.
+- Expansion `%w` in `promptfmt` is changed back to its old behavior without a trailing separator. Instead, a new expansion `%d` is added with a trailing separator (#545). Expansion `%w` is meant to be used to display the current working directory, whereas `%d%f` is meant to be used to display the current file.
 - A new `LF_COLORS` environment variable is now checked to be able to make `lf` specific configurations. Also, environment variables for colors are now read cumulatively starting from the default behavior (i.e. default, `LSCOLORS`, `LS_COLORS`, `LF_COLORS`).
 
 ### Added
 
 - Full path, dir name, file name, and base name matching patterns are added to colors and icons. See the updated documentation for more information.
-- PowerShell keybinding example has been added to `etc/lfcd.ps1`.
-- PowerShell autocompletion script has been added as `etc/lf.ps1`.
-- Multiple `-command` flags can now be given.
+- PowerShell keybinding example has been added to `etc/lfcd.ps1` (#532).
+- PowerShell autocompletion script has been added as `etc/lf.ps1` (#535).
+- Multiple `-command` flags can now be given (#552).
 - Basic mouse support has been added. Mouse buttons (e.g. `<m-1>` for primary button, `<m-2>` for secondary button, `<m-3>` for middle button etc.) and mouse wheels (e.g. `<m-up>` for wheel up, `<m-down>` for wheel down etc.) can be used in bindings.
 - Commands `top` and `bottom` are now allowed in `cmap` mappings in addition to movement commands.
 
 ### Fixed
 
-- Extension sorting should now handle extensions with different lengths properly.
+- Extension sorting should now handle extensions with different lengths properly (#539).
 - Heuristic used to show `info` should now take into account the `number` and `icons` options properly.
-- Environment variable `id` is now set to the process ID instead to avoid two clients getting the same ID when launched at the same time.
+- The environment variable `id` is now set to the process ID instead to avoid two clients getting the same ID when launched at the same time (#550).
 - Unicode combining characters in texts should now be displayed properly.
 
 ## [r18](https://github.com/gokcehan/lf/releases/tag/r18)
