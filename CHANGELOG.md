@@ -485,3 +485,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Environment variables are now exported automatically for preview scripts without having to call a shell command first.
 - The escape key can now be bound to be used on its own, instead of escaping a keybinding combination, which was a regression due to a bug fix in a previous release.
 - Changing the `hiddenfiles` option should now automatically trigger directory updates when necessary.
+
+## [r16](https://github.com/gokcehan/lf/releases/tag/r16)
+
+### Added
+
+- Option values are now available in shell commands as environment variables with a prefix of `lf_` (e.g. `$lf_hidden`, `$lf_ratios`).
+
+### Fixed
+
+- Directories containing internal Windows links that show permission denied errors should now display properly.
