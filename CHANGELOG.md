@@ -701,3 +701,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Executable completion now works on Windows as well.
+
+## [r5](https://github.com/gokcehan/lf/releases/tag/r5)
+
+### Added
+
+- The server is automatically restarted on startup if it does not work anymore.
+- A new option `period` is added to set time duration in seconds for periodic refreshes. Setting the value of this option to zero disables periodic refreshes which is the default behavior.
+- A new command `load` is added to refresh only modified files and directories which is more efficient than `reload` command.
+
+### Fixed
+
+- `cmd-word-back` does not change the command line anymore.
+- Modified files and directories are automatically detected and refreshed when they are loaded from cache.
+- All clients are now refreshed when the `put` command is used.
+- The correct hidden parent is selected when the `hidden` option is changed.
+- The preview is properly updated when the `hidden` option is changed.
