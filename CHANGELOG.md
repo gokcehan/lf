@@ -761,7 +761,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Pressed keys are now shown in the ruler when they are not matched yet.
 - A new builtin `draw` command has been added which is more efficient than the `redraw` command. The latter is replaced with the former in many places to prevent flickers on the screen.
-- Support for the `$LS_COLORS` and `$LSCOLORS` environment variables are added for color customization. See the updated documentation for more information.
+- Support for the `$LS_COLORS` and `$LSCOLORS` environment variables are added for color customization (#96). See the updated documentation for more information.
 - A new option `drawbox` is added to draw a box around panes.
 
 ### Fixed
