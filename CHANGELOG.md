@@ -374,7 +374,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- `cut` and `copy` do not follow symlinks anymore. Broken symlinks can now be selected for the `cut` and `copy` commands.
+- `cut` and `copy` do not follow symlinks anymore. Broken symlinks can now be selected for the `cut` and `copy` commands (#581).
 
 ### Added
 
@@ -385,8 +385,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - A longstanding issue regarding UI suspend/resume for shell commands in MacOS is now fixed in Tcell.
-- Renaming a symlink to its target or a symlink to another with the same target should now be handled properly.
-- Autocompletion in a directory containing a broken symlink should now work as intended.
+- Renaming a symlink to its target or a symlink to another with the same target should now be handled properly (#581).
+- Autocompletion in a directory containing a broken symlink should now work as intended (#581).
 - Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.
 - Previously given tip to trap `SIGPIPE` in the preview script to enable caching is now updated in the documentation. Trapping the signal in the preview script avoids sending the signal to the program when enough lines are read. This may result in reading redundant lines especially for big files. The recommended method is now to add a trailing `|| true` to each command exiting with a non-zero return code after a `SIGPIPE`.
 
