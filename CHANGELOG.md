@@ -750,3 +750,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - 8-bit color codes and attributes are not confused anymore.
 - History selection is disabled when a `shell-pipe` command is running.
 - Searches are now excluded from the history.
+
+## [r3](https://github.com/gokcehan/lf/releases/tag/r3)
+
+### Changed
+
+- Command counts are now only applied for the `up`/`down` (and variants), `updir`, `toggle`, `search-next`, and `search-prev` commands. These commands are now handled more efficiently when used with counts.
+
+### Added
+
+- Pressed keys are now shown in the ruler when they are not matched yet.
+- A new builtin `draw` command has been added which is more efficient than the `redraw` command. The latter is replaced with the former in many places to prevent flickers on the screen.
+- Support for the `$LS_COLORS` and `$LSCOLORS` environment variables are added for color customization. See the updated documentation for more information.
+- A new option `drawbox` is added to draw a box around panes.
+
+### Fixed
+
+- Resize events that change the height are now handled properly.
+- Changes in sorting methods and options are checked for cached directories and these directories are sorted again if necessary while loading.
+- A `~` character is added as a suffix to file names when they do not fit in the window.
