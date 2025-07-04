@@ -620,7 +620,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A new command line flag `-command` has been added to execute a command on client initialization.
+- A new command line flag `-command` has been added to execute a command on client initialization (#135).
 - A `select` command is now executed after initialization if the first command line argument is a file.
 - A prompting mechanism has been added to the builtin `delete` command.
 
