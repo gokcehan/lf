@@ -657,7 +657,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - Four new commands `find`, `find-back`, `find-next`, and `find-prev` are added to implement file finding. Two options `anchorfind` and `findlen` are added to customize the behavior of these commands.
 - A new `quit` command is added to the server protocol to quit the server.
-- A new `$LF_LEVEL` variable is added to show the nesting level.
+- A new `$LF_LEVEL` environment variable is added to show the nesting level.
 
 ### Fixed
 
@@ -681,3 +681,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new `doc` command (default `<f-1>`) is added to view the documentation in a pager.
 - Commands `mark-save` (default `m`) and `mark-load` (default `'`) are added to implement builtin bookmarks. Marks are saved in a file in the data folder which can be found in the documentation.
 - The history is now saved in a file in the data folder which can be found in the documentation.
+
+## [r6](https://github.com/gokcehan/lf/releases/tag/r6)
+
+### Changed
+
+- The `yank`, `delete`, and `put` commands are renamed to `copy`, `cut`, and `paste` respectively. In the example configuration, the `remove` command is renamed to `delete`.
+- The special command `open-file` to configure file opening is renamed to `open`.
+
+### Added
+
+- A new option `shellopts` is added to be able to pass command line arguments to the shell interpreter (i.e. `<shell> <shellopts> -c <cmd> -- <args>`) which is useful to set safety options for all shell commands (i.e. `sh -eu ...`). See the example configuration file for more information.
+- The special keys `<home>`, `<end>`, `<pgup>`, and `<pgdn>` are mapped to the `top`, `bottom`, `page-up`, and `page-down` commands respectively by default.
+- A new command `source` is added to read a configuration file.
+- Support is added to read a system-wide configuration file on startup located in `/etc/lfrc` on Unix and `C:\ProgramData\lf\lfrc` on Windows. The documentation is updated to show the locations of all configuration files.
+- Environment variables used for configuration (i.e. `$EDITOR`, `$PAGER`, `$SHELL`) are set to their default values when they are not set or empty and they are exported to shell commands.
+- A new environment variable `$OPENER` is added to configure the default file opener using the previous default values and it is exported to shell commands.
+
+### Fixed
+
+- Executable completion now works on Windows as well.
