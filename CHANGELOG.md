@@ -399,7 +399,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Newline characters in the output of `%` commands should no longer shift the content up which was a bug introduced in the previous release due to a fix to handle combining characters in texts.
-- Redundant preview loadings for the `search` and `find` commands are now avoided.
+- Redundant preview loadings for the `search` and `find` commands are now avoided (#569).
 - Scanner now only considers ASCII characters for spaces and digits which should avoid unexpected splits in some non-ASCII inputs.
 
 ## [r19](https://github.com/gokcehan/lf/releases/tag/r19)
