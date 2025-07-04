@@ -541,22 +541,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- The `delete` command now shows a prompt with the current filename or the number of selected files.
+- The `delete` command now shows a prompt with the current filename or the number of selected files (#206).
 - Backslash can now be escaped with a backslash even without quotes.
-- A new desktop entry file `lf.desktop` is added.
-- Three new `sortby` types are added, access time (i.e. `atime`), change time (i.e. `ctime`), and extension (i.e. `ext`). New default keybindings are added for these sorts correspondingly (i.e. `sa`, `sc`, and `se`). The `info` option can now also contain `atime` and `ctime` values accordingly.
-- A new shell completion for `zsh` is added to `etc/lf.zsh`.
-- The `delete` command now works asynchronously and shows the progress.
-- Completion and directory change scripts are added for `csh` and `tcsh` as `etc/lf.csh` and `etc/lfcd.csh` respectively.
-- A new special command `on-cd` is added to run a shell command when the directory is changed. See the documentation for more information.
+- A new desktop entry file `lf.desktop` is added (#222).
+- Three new `sortby` types are added, access time (i.e. `atime`), change time (i.e. `ctime`) (#226), and extension (i.e. `ext`) (#230). New default keybindings are added for these sorts correspondingly (i.e. `sa`, `sc`, and `se`). The `info` option can now also contain `atime` and `ctime` values accordingly.
+- A new shell completion for `zsh` is added to `etc/lf.zsh` (#239).
+- The `delete` command now works asynchronously and shows the progress (#238).
+- Completion and directory change scripts are added for `csh` and `tcsh` as `etc/lf.csh` and `etc/lfcd.csh` respectively (#264).
+- A new special command `on-cd` is added to run a shell command when the directory is changed. See the documentation for more information (#291).
 
 ### Fixed
 
 - Some directories with special permissions that previously show a file icon now shows a directory icon properly.
-- The `etc/lfcd.cmd` script can now also change to a different volume drive.
+- The `etc/lfcd.cmd` script can now also change to a different volume drive (#221).
 - The proper use of `setsid` for opening files is now added to the example configuration and the documentation.
-- The home directory abbreviation `~` is now only applied properly to paths starting with the home directory.
-- The `rename` command now cancels the operation if the old and new paths are the same.
+- The home directory abbreviation `~` is now only applied properly to paths starting with the home directory (#241).
+- The `rename` command now cancels the operation if the old and new paths are the same (#266).
 - Autocompletion and word movements should now work properly with all Unicode characters.
 - The `shell-pipe` command which was broken some time ago should now work as expected.
 - The `$TERM` environment variable can now work with values containing `tmux` with custom `$TERMINFO` values. @doronbehar now maintains a Termbox fork for `lf` (https://github.com/doronbehar/termbox-go).
