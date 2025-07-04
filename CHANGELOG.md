@@ -581,3 +581,17 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Previous error messages are now cleared after successful commands.
 - Symlink to directories are now colored as symlinks.
 - Permission errors for directories are now displayed properly instead of showing as empty.
+
+## [r12](https://github.com/gokcehan/lf/releases/tag/r12)
+
+### Added
+
+- Go modules replaced `godep` for dependency management. Package maintainers may need to update accordingly.
+- A new `errorfmt` option is added to customize the colors and attributes of error messages.
+
+### Fixed
+
+- Autocompletion for searches now complete filenames instead of commands.
+- Permanent environment variables (e.g. `$id`, `$EDITOR`, `$LF_LEVEL`) are now exported on startup so they can be used in preview scripts without running a shell command first.
+- On Windows, quotes are added to the exported values `$f`, `$fs`, and `$fx` to handle filenames with spaces properly.
+- On Windows, filenames starting with `.` characters are now shown to avoid crashes when filenames show up as empty.
