@@ -631,3 +631,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `read` and shell commands should now also work when typed manually (e.g. typing `:shell` should switch the prefix to `$`).
 - Configuration files are now read after initialization.
 - Background colors are removed from defaults to avoid confusion with selection highlighting.
+
+## [r9](https://github.com/gokcehan/lf/releases/tag/r9)
+
+### Changed
+
+- The default number of colors is set to 8 to have better defaults in some terminals. A new option `color256` is added to use 256 colors instead. Users who want the old behavior should enable this option in their configuration files.
+
+### Added
+
+- A new `incsearch` option is added to enable incremental matching while searching.
+- Two new options `ignoredia` and `smartdia` are added to ignore diacritics in Latin letters for `search` and `find`.
+- A new builtin `delete` command is added for file deletion. This command is not assigned to a key by default to prevent accidental deletions. In the future, a prompting mechanism may be added to this command for more safety.
+- Normal mode commands can now be used in `cmap` which can be used to immediately finish command mode and execute a normal command afterwards.
+- A new `fish` completion script is added to the `etc` folder.
+- Two new options `number` and `relativenumber` are added to enable line numbers in directories.
+
+### Fixed
+
+- Autocompletion should now show only a single match for redefined builtin commands.
