@@ -159,7 +159,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Asynchronous shell commands should now trigger `load` automatically when they are finished (#1345).
 - Changing the value of `preview` option should now clear image previews (#1350).
 - Cursor position in the status line at the bottom should now consider double width characters properly (#1348).
-- Filenames should only be quoted for `cmd` on Windows to avoid quoting issues for `powershell` (#1371).
+- Filenames should only be quoted for `cmd` on Windows to avoid quoting issues for PowerShell (#1371).
 - Inaccessible files should now be included in the directory list and display their `lstat` errors in the status line at the bottom (#1382).
 - Command line command `cmd-delete-word` should now add the deleted text to the yank buffer (#1409).
 
@@ -259,3 +259,38 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Mouse drag events are now ignored properly to avoid command repetition (#962).
 - Environment variables `HOME` and `USER` should now be used as fallback for locations on some systems (#972).
 - File information is now displayed in the status line at first launch when there are no errors in the configuration file (#994).
+
+## [r27](https://github.com/gokcehan/lf/releases/tag/r27)
+
+### Changed
+
+- Creation of log files are now disabled by default. Instead, a new command line option `-log` is provided.
+- `copy` selections are now kept after `paste`. You can use `map p :paste; clear` to get the old behavior.
+- Socket file is now created in `XDG_RUNTIME_DIR` when set, with a fallback to the temporary directory otherwise.
+- Directory counting with `dircounts` option is moved from UI drawing to directory reading to be run asynchronously without locking the UI. With this change, manual `reload` commands might be necessary when `dircounts` is changed at runtime. Indicators for errors are changed to `!` instead of `?` to distinguish them from missing values.
+- The default icons are now replaced with ASCII characters to avoid font issues.
+
+### Added
+
+- Files and options are now exported for `previewer` and `cleaner` scripts. For `cleaner` scripts, this can be used to detect if the file selection is changed or not (e.g. `$1 == $f`) and act accordingly (e.g. skip cleaning).
+- A new `tempmarks` option is added to set some marks as temporary.
+- Pattern `*filename` is added for colors and icons.
+- A new `calcdirsize` command is added to calculate directory sizes.
+- Two new options `infotimefmtnew` and `infotimefmtold` are added to configure the time format used in `info`.
+- Two new commands `jump-next` (default `]`) and `jump-prev` (default `[`) are added to navigate the jumplist.
+- Colors and icons file support is now added to be able to configure without environment variables. Example colors and icons files are added to the repository under `etc` directory. See the documentation for more information.
+- For Windows, an example `open` command is now provided in the PowerShell example configuration.
+- Two new commands `scroll-up` (default `<c-y>`) and `scroll-down` (default `<c-e>`) are added to be able to scroll the file list without moving.
+- A new special command `on-quit` is added to be able to run a command before quitting.
+- Two new commands `tag` and `tag-toggle` (default `t`) are now added to be able to tag files.
+
+### Fixed
+
+- `Chmod` calls in the codebase are now removed to avoid TOC/TOU exploits. Instead, file permissions are now set at file creation.
+- Socket and log files are now created with only user permissions.
+- On Windows, `PWD` variable is now quoted properly.
+- Shell commands `%` and `&` are now run in a separate process group.
+- Navigation initialization is now delayed after the evaluation of configuration files to avoid startup races and redundant loadings.
+- The error message shown when the current working directory does not exist at startup is made more clear.
+- Trailing slashes in `PWD` variable are now handled properly.
+- Files with `stat` errors are now skipped while reading directories.
