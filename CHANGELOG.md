@@ -462,7 +462,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- The terminal UI library has been changed from Termbox to Tcell as the former has been unmaintained for a while. Some of the changes are listed below, though the list may not be complete as this is a relatively big change.
+- The terminal UI library has been changed from Termbox to Tcell as the former has been unmaintained for a while (#439). Some of the changes are listed below, though the list may not be complete as this is a relatively big change.
   - Some special key names are changed to be consistent with the Tcell documentation (e.g. `<bs>` renamed to `<backspace>`). On the other hand, there are also additional keybindings that were not available before (e.g. `<backtab>` for <kbd>Shift+Tab</kbd>). You can either check the Tcell documentation for the list of keys or hit the key combination in `lf` to read the name of the key from the `unknown mapping` error message.
   - 24-bit true colors are now supported on Unix systems. See the updated documentation for more information. There is an ongoing version 2.0 of Tcell in development that we plan to switch to once it becomes stable and it is expected to add support for true colors in Windows consoles as well.
   - Additional platforms are now supported and the list of pre-built binaries provided are updated accordingly.
@@ -481,9 +481,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Loading directories should now display the previous file list if any, which was a regression due to a bug fix in a previous release.
 - `shell-pipe` commands should now automatically update previews when necessary.
 - Errors from failed shell commands should not be overwritten by file information anymore.
-- The server can now also be started automatically when the program is called with a relative path, which was a regression due to a bug fix in a previous release.
-- Environment variables are now exported automatically for preview scripts without having to call a shell command first.
-- The escape key can now be bound to be used on its own, instead of escaping a keybinding combination, which was a regression due to a bug fix in a previous release.
+- The server can now also be started automatically when the program is called with a relative path, which was a regression due to a bug fix in a previous release (#463).
+- Environment variables are now exported automatically for preview scripts without having to call a shell command first (#468).
+- The `<esc>` key can now be bound to be used on its own, instead of escaping a keybinding combination, which was a regression due to a bug fix in a previous release (#475).
 - Changing the `hiddenfiles` option should now automatically trigger directory updates when necessary.
 
 ## [r16](https://github.com/gokcehan/lf/releases/tag/r16)
