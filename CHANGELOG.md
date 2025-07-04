@@ -490,7 +490,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Option values are now available in shell commands as environment variables with a prefix of `lf_` (e.g. `$lf_hidden`, `$lf_ratios`).
+- Option values are now available in shell commands as environment variables with a prefix of `lf_` (e.g. `$lf_hidden`, `$lf_ratios`) (#448).
 
 ### Fixed
 
