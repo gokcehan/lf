@@ -785,3 +785,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Running `cmd-hist-prev` in normal mode now always starts with the last item to avoid confusion. Running `cmd-hist-next` in normal mode now has no effect for consistency.
+
+## [r1](https://github.com/gokcehan/lf/releases/tag/r1)
+
+### Added
+
+- Initial release
