@@ -300,3 +300,18 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - On Windows, input handling is properly resumed after shell commands.
+
+## [r25](https://github.com/gokcehan/lf/releases/tag/r25)
+
+### Added
+
+- A new `dironly` option is added to only show directories and hide regular files.
+- A new `dircache` option is added to disable caching of directories.
+- Two new commands `filter` and `setfilter` is added along with a new option `incfilter` and a `promptfmt` expansion `%F` to implement directory filtering feature.
+- A new special command `pre-cd` is added to run a command before a directory is changed.
+- `cmap` command now accepts all expressions similar to `map`.
+
+### Fixed
+
+- Marking a symlink directory should now save the symlink path instead of the target path.
+- A number of crashes have been fixed when the `hidden` option is changed.
