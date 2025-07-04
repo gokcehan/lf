@@ -114,3 +114,51 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The cut buffer is only cleared if the `paste` operation succeeds (#1652).
 - The extension after `.` is ignored to set the cursor position when renaming a directory (#1664).
 - The option `period` should not cause flickers in sixel previews anymore (#1666).
+
+## [r31](https://github.com/gokcehan/lf/releases/tag/r31)
+
+### Changed
+
+- There has been some changes in the server protocol. Make sure to kill the old server process when you update to avoid errors (i.e. `lf -remote 'quit!'`).
+- A new server command `query` is added to expose internal state to users (#1384). A new builtin command `cmds` is added to display the commands. The old builtin command `jumps` is now removed. The builtin commands `maps` and `cmaps` now use the new server command.
+- Environment variable exporting for files and options are not performed anymore while previewing and cleaning to avoid various issues with race conditions (#1354). Cleaning program should now instead receive an additional sixth argument for the next file path to be previewed to allow comparisons with the previous file path. User options (i.e. `user_{option}`) are now exported whenever they are changed (#1418).
+- Command outputs are now exclusively attached to `stderr` to allow printing the last directory or selection to `stdout` (#1399 and #1402). Two new command line options `-print-last-dir` and `-print-selection` are added to print the last directory and selection to `stdout`. The example script `etc/lfcd.sh` is updated to use `-print-last-dir` instead. Other `lfcd` scripts are also likely to be updated in the future to use the new method (patches are welcome).
+- The option `ruler` is now deprecated in favor of its replacement `rulerfmt` (#1386). The new `rulerfmt` option is more capable (i.e. displays option values, supports colors and attributes, and supports optional fields) and more consistent with the rest of our options. See the documentation for more information.
+
+### Added
+
+- Modifier keys (i.e. control, shift, alt) with special keys (e.g. arrows, enter) are now supported for most combinations (#1248).
+- A new option `borderfmt` is added to configure colors for pane borders (#1251).
+- New `lf` specific environment variables, `LF_CONFIG_HOME` on Windows and `LF_CONFIG/DATA_HOME` on Unix, are now supported to set the configuration directory (#1253).
+- Tilde (i.e. `~`) expansion is performed during completion to be able to use expanded tilde paths as command arguments (#1246).
+- A new option `preserve` is added to preserve attributes (i.e. mode and timestamps) while copying (#1026).
+- The file `etc/icons.example` is updated for nerd-fonts v3.0.0 (#1271).
+- A new builtin command `clearmaps` is added to clear all default keybindings except for `read` (i.e. `:`) and `cmap` keybindings to be able to `:quit` (#1286).
+- A new option `statfmt` is added to configure the status line at the bottom (#1288).
+- A new option `truncatepct` is added to determine the location of truncation from the beginning in terms of percentage (#1029).
+- A new option `dupfilefmt` is added to configure the names of duplicate files while copying (#1315).
+- Shell scripts `etc/lf.nu` and `etc/lfcd.nu` are added to the repository to allow completion and directory change with Nushell (#1341).
+- Sixels are now supported for previewing (#1211). A new option `sixel` is added to enable this behavior.
+- A new configuration keyword `setlocal` is added to configure directory specific options (#1381).
+- A new command line command `cmd-delete-word-back` (default `a-backspace` and `a-backspace2`) is added to use word boundaries when deleting a word backwards (#1409).
+
+### Fixed
+
+- Cursor positions in the directory should now be preserved after file operations that changes the directory (e.g. create or delete) (#1247).
+- Option `reverse` should now respect to sort stability requirements (#1261).
+- Backspace should not exit `filter` mode anymore (#1269).
+- Truncated double width characters should not cause misalignment for the file information (#1272).
+- Piping shell commands should not refresh the preview anymore (#1281).
+- Cursor position should now update properly after a terminal resize (#1290).
+- Directories should now be reloaded properly after a `delete` operation (#1292).
+- Executable file completion should not add entries to the log file anymore (#1307).
+- Blank input lines are now allowed in piping shell commands (#1308).
+- Shell commands arguments on Windows should now be quoted properly to fix various issues (#1309).
+- Reloading in a symlink directory should not follow the symlink anymore (#1327).
+- Command `load` should not flicker image previews anymore (#1335).
+- Asynchronous shell commands should now trigger `load` automatically when they are finished (#1345).
+- Changing the value of `preview` option should now clear image previews (#1350).
+- Cursor position in the status line at the bottom should now consider double width characters properly (#1348).
+- Filenames should only be quoted for `cmd` on Windows to avoid quoting issues for `powershell` (#1371).
+- Inaccessible files should now be included in the directory list and display their `lstat` errors in the status line at the bottom (#1382).
+- Command line command `cmd-delete-word` should now add the deleted text to the yank buffer (#1409).
