@@ -294,3 +294,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The error message shown when the current working directory does not exist at startup is made more clear.
 - Trailing slashes in `PWD` variable are now handled properly.
 - Files with `stat` errors are now skipped while reading directories.
+
+## [r26](https://github.com/gokcehan/lf/releases/tag/r26)
+
+### Fixed
+
+- On Windows, input handling is properly resumed after shell commands.
