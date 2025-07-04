@@ -595,3 +595,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Permanent environment variables (e.g. `$id`, `$EDITOR`, `$LF_LEVEL`) are now exported on startup so they can be used in preview scripts without running a shell command first.
 - On Windows, quotes are added to the exported values `$f`, `$fs`, and `$fx` to handle filenames with spaces properly.
 - On Windows, filenames starting with `.` characters are now shown to avoid crashes when filenames show up as empty.
+
+## [r11](https://github.com/gokcehan/lf/releases/tag/r11)
+
+### Changed
+
+- Copy and move operations are now implemented as builtins instead of using the underlying shell primitives (i.e. `cp` and `mv`). Users who want the old behavior can define a custom `paste` command. See the updated documentation for more information. Please report bugs regarding this change.
+- Preview messages (i.e. `empty`, `binary`, and `loading...`) are now shown with the reverse attribute.
+
+### Added
+
+- Copy and move operations now run asynchronously and the progress is shown in the bottom ruler.
+- Two new commands `echomsg` and `echoerr` are added to print a message to the message line and to the log file at the same time.
+
+### Fixed
+
+- Terminal initialization errors are now shown in the terminal instead of the log file.
