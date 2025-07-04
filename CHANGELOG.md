@@ -506,27 +506,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- Symbolic link destinations are now shown in the bottom status line.
-- A new `hiddenfiles` option which takes a list of globs is implemented to customize which files should be `hidden`.
-- Expressions consisting of multiple commands can now use counts.
+- Symbolic link destinations are now shown in the bottom status line (#374).
+- A new `hiddenfiles` option which takes a list of globs is implemented to customize which files should be `hidden` (#372).
+- Expressions consisting of multiple commands can now use counts (#394).
 - Moving operations now fall back to copy and then delete strategy automatically for cross-device linking.
 - The `hidden` option now works in Windows.
-- The `toggle` command can now take optional arguments to toggle given names instead of the current file.
-- A new option `truncatechar` is implemented to customize the truncate character used in long filenames.
-- Copy and move operations now display a success message when they are finished.
+- The `toggle` command can now take optional arguments to toggle given names instead of the current file (#409).
+- A new option `truncatechar` is implemented to customize the truncate character used in long filenames (#417).
+- Copy and move operations now display a success message when they are finished (#427).
 
 ### Fixed
 
-- `SIGHUP` and `SIGTERM` signals are now properly handled. Log files should not remain when terminals are directly closed.
-- The `info` option should now align properly when used with the `number` and `relativenumber` options.
-- Tilde (`~`) is now only expanded at the beginning of the path for the `cd` and `select` commands.
+- `SIGHUP` and `SIGTERM` signals are now properly handled. Log files should not remain when terminals are directly closed (#305).
+- The `info` option should now align properly when used with the `number` and `relativenumber` options (#373).
+- Tilde (`~`) is now only expanded at the beginning of the path for the `cd` and `select` commands (#373).
 - The `rename` command should now work properly with names differing only cases on case-insensitive filesystems.
 - Tab characters are now expanded to spaces in Windows.
 - The `incsearch` option now respects the search direction accordingly.
 - The server is now started in the home folder and will not hold mounted filesystems busy.
 - Trailing spaces in configuration files do not confuse the parser anymore.
-- Termbox version is updated to fix a keyboard problem in FreeBSD.
-- Async commands do not leave zombie processes anymore.
+- Termbox version is updated to fix a keyboard problem in FreeBSD (#404).
+- Async commands do not leave zombie processes anymore (#407).
 - The `hidden` option now works consistently as expected when set at the initial launch.
 - The `rename` command should now select the new file after the operation.
 - The `rename` command should now handle absolute paths properly.
