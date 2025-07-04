@@ -74,3 +74,43 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Icon colors are no longer clipped when displaying in Windows Terminal (#1777).
 - The file stat info is now cleared when changing to an empty directory (#1808).
 - Error messages are cleared when opening files (#1809).
+
+## [r32](https://github.com/gokcehan/lf/releases/tag/r32)
+
+### Changed
+
+- The example script `etc/lfcd.cmd` is updated to use the `-print-last-dir` option instead of `-last-dir-path` (#1444). Similar changes have been made for `etc/lfcd.ps1` (#1491), `etc/lfcd.fish` (#1503), and `etc/lfcd.nu` (#1575).
+- The documentation from `lf -doc` and the `doc` command is now generated from Markdown using `pandoc` (#1474).
+
+### Added
+
+- A new option `hidecursorinactive` is added to hide the cursor when the terminal is not focused (#965).
+- A new special command `on-redraw` is added to be able to run a command when the screen is redrawn or when the terminal is resized (#1479).
+- Options `cutfmt`, `copyfmt` and `selectfmt` are added to configure the indicator color for cut/copied/selected files respectively (#1540).
+- `zsh` completion is added for the `lfcd` command (#1564).
+- The file stat information now falls back to displaying user/group ID if looking up the user/group name fails (#1590).
+- A new environment variable `lf_mode` is now exported to indicate which mode `lf` is currently running in (#1594).
+- Default icons are added for Docker Compose files (#1626).
+
+### Fixed
+
+- Default value of `rulerfmt` option is now left-padded with spaces to visually separate it from the file stat information (#1437).
+- Previews should now work for files containing lines with 65536 characters or more (#1447).
+- Sixel previews should now work when using `lfcd` scripts (#1451).
+- Colors and icons should now display properly for character device files (#1469).
+- The selection file is now immediately synced to physical storage after writing to it (#1480).
+- Timestamps are preserved when moving files across devices (#1482).
+- Fix crash for `high` and `low` commands when `scrolloff` is set to a large value (#1504).
+- Documentation is updated with various spelling and grammar fixes (#1518).
+- Files beginning with a dot (e.g. `.gitignore`) are named correctly after `paste` if another file with the same name already exists (#1525).
+- Prevent potential race condition when sorting directory contents (#1526).
+- Signals are now handled properly even after receiving and ignoring `SIGINT` (#1549).
+- The file stat information should now update properly after using the `cd` command to change to a directory for the first time (#1536).
+- Previous error messages should now be cleared after a `mark-save`/`mark-remove` operation (#1544).
+- Fix high CPU usage issue when viewing CryFS filesystems (#1607).
+- Invalid entries in the `marks` and `tags` files now raise an error message instead of crashing (#1614).
+- Startup time is improved on Windows (#1617).
+- Sixel previews are now resized properly when the horizontal size of the preview window changes (#1629).
+- The cut buffer is only cleared if the `paste` operation succeeds (#1652).
+- The extension after `.` is ignored to set the cursor position when renaming a directory (#1664).
+- The option `period` should not cause flickers in sixel previews anymore (#1666).
