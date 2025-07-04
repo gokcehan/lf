@@ -305,15 +305,15 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A new `dironly` option is added to only show directories and hide regular files.
-- A new `dircache` option is added to disable caching of directories.
-- Two new commands `filter` and `setfilter` is added along with a new option `incfilter` and a `promptfmt` expansion `%F` to implement directory filtering feature.
-- A new special command `pre-cd` is added to run a command before a directory is changed.
-- `cmap` command now accepts all expressions similar to `map`.
+- A new `dironly` option is added to only show directories and hide regular files (#669).
+- A new `dircache` option is added to disable caching of directories (#673).
+- Two new commands `filter` and `setfilter` is added along with a new option `incfilter` and a `promptfmt` expansion `%F` to implement directory filtering feature (#667).
+- A new special command `pre-cd` is added to run a command before a directory is changed (#685).
+- `cmap` command now accepts all expressions similar to `map` (#686).
 
 ### Fixed
 
-- Marking a symlink directory should now save the symlink path instead of the target path.
+- Marking a symlink directory should now save the symlink path instead of the target path (#659).
 - A number of crashes have been fixed when the `hidden` option is changed.
 
 ## [r24](https://github.com/gokcehan/lf/releases/tag/r24)
