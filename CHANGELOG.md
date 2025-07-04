@@ -369,3 +369,23 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A regression bug is fixed to avoid CPU stuck at 100% when the terminal is closed unexpectedly.
 - A regression bug is fixed to make shell commands use the alternate screen properly and keep the terminal history after quitting.
 - Enter keypad terminfo sequence is now sent on startup so the `delete` key should be recognized properly in `st` terminal.
+
+## [r21](https://github.com/gokcehan/lf/releases/tag/r21)
+
+### Changed
+
+- `cut` and `copy` do not follow symlinks anymore. Broken symlinks can now be selected for the `cut` and `copy` commands.
+
+### Added
+
+- User name, group name, and hard link counts are now shown in the status line at the bottom when available.
+- Number of selected, copied, and cut files are now shown in the ruler at the bottom when they are non-zero.
+- Hard-coded shell commands with `stty` (Unix) and `pause` (Windows) to implement the `Press any key to continue` behavior are now implemented properly with a Go terminal handling library. With this change, the requirement for a POSIX compatible shell for `shell` option is now dropped and other shells can be used.
+
+### Fixed
+
+- A longstanding issue regarding UI suspend/resume for shell commands in MacOS is now fixed in Tcell.
+- Renaming a symlink to its target or a symlink to another with the same target should now be handled properly.
+- Autocompletion in a directory containing a broken symlink should now work as intended.
+- Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.
+- Previously given tip to trap `SIGPIPE` in the preview script to enable caching is now updated in the documentation. Trapping the signal in the preview script avoids sending the signal to the program when enough lines are read. This may result in reading redundant lines escpecially for big files. The recommended method is now to add a trailing `|| true` to each command exiting with a non-zero return code after a `SIGPIPE`.
