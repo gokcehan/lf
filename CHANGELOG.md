@@ -342,13 +342,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Lookahead size for escape codes are increased to recognize longer escape codes used in some image previewers.
-- File preview cache is invalidated when the terminal height changes to fill the screen properly.
-- File preview cache is invalidated when `drawbox` option changes and true image previews should be triggered to be drawn at updated positions.
+- The file preview cache is invalidated when the terminal height changes to fill the screen properly.
+- The file preview cache is invalidated when the `drawbox` option changes and true image previews should be triggered to be drawn at updated positions.
 - A crash scenario is fixed when `hidden` option is changed.
-- Pane widths should now be calculated properly when big numbers are used in `ratios`.
-- Special bookmark `'` is preserved properly after `sync` commands.
+- Pane widths should now be calculated properly when big numbers are used in `ratios` (#622).
+- The special bookmark `'` is now preserved properly after `sync` commands (#624).
 - On some platforms, a bug has been fixed on the Tcell side to avoid an extra key press after terminal suspend/resume and the Tcell version used in `lf` is bumped accordingly to include the fix.
-- Prompt line should now scroll accordingly when the text is wider than the screen.
+- The prompt line should now scroll accordingly when the text is wider than the screen.
 - Text width in the prompt line should now be calculated properly when non-ASCII characters are involved.
 - Erase line escape codes (i.e. `\033[K`) used in some command outputs should now be ignored properly.
 
