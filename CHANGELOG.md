@@ -650,3 +650,21 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Autocompletion should now show only a single match for redefined builtin commands.
+
+## [r8](https://github.com/gokcehan/lf/releases/tag/r8)
+
+### Added
+
+- Four new commands `find`, `find-back`, `find-next`, and `find-prev` are added to implement file finding. Two options `anchorfind` and `findlen` are added to customize the behavior of these commands.
+- A new `quit` command is added to the server protocol to quit the server.
+- A new `$LF_LEVEL` variable is added to show the nesting level.
+
+### Fixed
+
+- The `load` and `reload` commands now work properly when the current directory is deleted. Also `lf` does not start in deleted directories anymore.
+- The server is now started as a detached process in Windows so its lifetime is not tied to the command line window anymore.
+- Clients now try to reconnect to the server at startup with exponentially increasing intervals when they fail. This is to avoid connection failures due to the server not being ready for the first client that automatically starts the server.
+- The old index is now kept when the current selection is deleted.
+- The `shell-pipe` command now triggers `load` instead of `reload`.
+- Error messages are now more informative when `lf` fails to start due to either `$HOME` or `$USER` variables being empty or not set.
+- Searching for the next/prev item is now based on the direction of the initial search.
