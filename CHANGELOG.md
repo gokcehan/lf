@@ -560,3 +560,24 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Autocompletion and word movements should now work properly with all Unicode characters.
 - The `shell-pipe` command which was broken some time ago should now work as expected.
 - The `$TERM` environment variable can now work with values containing `tmux` with custom `$TERMINFO` values. @doronbehar now maintains a Termbox fork for `lf` (https://github.com/doronbehar/termbox-go).
+
+## [r13](https://github.com/gokcehan/lf/releases/tag/r13)
+
+### Added
+
+- A new `wrapscroll` option is added to wrap top and bottom while scrolling.
+- The `up`, `down` movement commands and their variants, `updir`, and `open` are now allowed in `cmap` mappings.
+- Two new `glob-select` and `glob-unselect` commands are added to use globbing for toggling files.
+- A new `mark-remove` (default `"`) command is added to allow removing marks.
+- Icon support is added with the `icon` option. See the wiki page for more details.
+- A new builtin `rename` command is added.
+
+### Fixed
+
+- The `cmd-history-next` command now remains in command mode after the last item.
+- The `select` command does not change directories anymore when used on a directory.
+- The working directory is now changed to the first argument when it is a directory.
+- The `ratios` option is now checked before `preview` to avoid crashes.
+- Previous error messages are now cleared after successful commands.
+- Symlink to directories are now colored as symlinks.
+- Permission errors for directories are now displayed properly instead of showing as empty.
