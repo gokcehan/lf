@@ -641,11 +641,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - A new `incsearch` option is added to enable incremental matching while searching.
-- Two new options `ignoredia` and `smartdia` are added to ignore diacritics in Latin letters for `search` and `find`.
-- A new builtin `delete` command is added for file deletion. This command is not assigned to a key by default to prevent accidental deletions. In the future, a prompting mechanism may be added to this command for more safety.
+- Two new options `ignoredia` and `smartdia` are added to ignore diacritics in Latin letters for `search` and `find` (#118).
+- A new builtin `delete` command is added for file deletion (#121). This command is not assigned to a key by default to prevent accidental deletions. In the future, a prompting mechanism may be added to this command for more safety.
 - Normal mode commands can now be used in `cmap` which can be used to immediately finish command mode and execute a normal command afterwards.
-- A new `fish` completion script is added to the `etc` folder.
-- Two new options `number` and `relativenumber` are added to enable line numbers in directories.
+- A new `fish` completion script is added to the `etc` folder (#131).
+- Two new options `number` and `relativenumber` are added to enable line numbers in directories (#133).
 
 ### Fixed
 
