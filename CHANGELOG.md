@@ -19,7 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- The `trash` command in `lfrc.example` now verifes if the trash directory exists before moving files there (#1918).
+- The `trash` command in `lfrc.example` now verifies if the trash directory exists before moving files there (#1918).
 - `lf` should no longer crash if it fails to open the log file (#1937).
 - Arrow keys are now handled properly when waiting for a key press after executing a `shell-wait` (`!`) command (#1956).
 - The `previewer` script is now only invoked for the current directory (instead of all directories), when starting `lf` with `dirpreviews` enabled (#1958).
@@ -167,7 +167,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A new builtin command `jumps` is addded to display the jump list (#1233).
+- A new builtin command `jumps` is added to display the jump list (#1233).
 - A new possible field `filter` is added to `ruler` option to display the filter indicator (#1223).
 
 ### Fixed
@@ -388,7 +388,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Renaming a symlink to its target or a symlink to another with the same target should now be handled properly.
 - Autocompletion in a directory containing a broken symlink should now work as intended.
 - Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.
-- Previously given tip to trap `SIGPIPE` in the preview script to enable caching is now updated in the documentation. Trapping the signal in the preview script avoids sending the signal to the program when enough lines are read. This may result in reading redundant lines escpecially for big files. The recommended method is now to add a trailing `|| true` to each command exiting with a non-zero return code after a `SIGPIPE`.
+- Previously given tip to trap `SIGPIPE` in the preview script to enable caching is now updated in the documentation. Trapping the signal in the preview script avoids sending the signal to the program when enough lines are read. This may result in reading redundant lines especially for big files. The recommended method is now to add a trailing `|| true` to each command exiting with a non-zero return code after a `SIGPIPE`.
 
 ## [r20](https://github.com/gokcehan/lf/releases/tag/r20)
 
