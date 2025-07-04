@@ -462,7 +462,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- The terminal UI library has been changed from termbox-go to Tcell as the former has been unmaintained for a while. Some of the changes are listed below, though the list may not be complete as this is a relatively big change.
+- The terminal UI library has been changed from Termbox to Tcell as the former has been unmaintained for a while. Some of the changes are listed below, though the list may not be complete as this is a relatively big change.
   - Some special key names are changed to be consistent with the Tcell documentation (e.g. `<bs>` renamed to `<backspace>`). On the other hand, there are also additional keybindings that were not available before (e.g. `<backtab>` for <kbd>Shift+Tab</kbd>). You can either check the Tcell documentation for the list of keys or hit the key combination in `lf` to read the name of the key from the `unknown mapping` error message.
   - 24-bit true colors are now supported on Unix systems. See the updated documentation for more information. There is an ongoing version 2.0 of Tcell in development that we plan to switch to once it becomes stable and it is expected to add support for true colors in Windows consoles as well.
   - Additional platforms are now supported and the list of pre-built binaries provided are updated accordingly.
@@ -495,3 +495,44 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Directories containing internal Windows links that show permission denied errors should now display properly.
+
+## [r15](https://github.com/gokcehan/lf/releases/tag/r15)
+
+### Changed
+
+- The `toggle` command does not move the selection down anymore. The default binding for `<space>` is now assigned to `:toggle; down` instead to keep the default behavior same as before.
+- The expansion `%w` in option `promptfmt` should now have a trailing slash. The default value of `promptfmt` is now changed accordingly, and should not display double slashes in the root directory anymore.
+- The key `<esc>` is now used as the escape key. It should not display an error message when used to cancel a keybinding menu as before. However, it is not possible to bind `<esc>` key to another command anymore.
+
+### Added
+
+- Symbolic link destinations are now shown in the bottom status line.
+- A new `hiddenfiles` option which takes a list of globs is implemented to customize which files should be `hidden`.
+- Expressions consisting of multiple commands can now use counts.
+- Moving operations now fall back to copy and then delete strategy automatically for cross-device linking.
+- The `hidden` option now works in Windows.
+- The `toggle` command can now take optional arguments to toggle given names instead of the current file.
+- A new option `truncatechar` is implemented to customize the truncate character used in long filenames.
+- Copy and move operations now display a success message when they are finished.
+
+### Fixed
+
+- `SIGHUP` and `SIGTERM` signals are now properly handled. Log files should not remain when terminals are directly closed.
+- The `info` option should now align properly when used with the `number` and `relativenumber` options.
+- Tilde (`~`) is now only expanded at the beginning of the path for the `cd` and `select` commands.
+- The `rename` command should now work properly with names differing only cases on case-insensitive filesystems.
+- Tab characters are now expanded to spaces in Windows.
+- The `incsearch` option now respects the search direction accordingly.
+- The server is now started in the home folder and will not hold mounted filesystems busy.
+- Trailing spaces in configuration files do not confuse the parser anymore.
+- Termbox version is updated to fix a keyboard problem in FreeBSD.
+- Async commands do not leave zombie processes anymore.
+- The `hidden` option now works consistently as expected when set at the initial launch.
+- The `rename` command should now select the new file after the operation.
+- The `rename` command should now handle absolute paths properly.
+- The `select` command should now work properly on loading directories. Custom commands that select a file after an operation should now work properly without an explicit `load` operation beforehand.
+- Previous errors in the bottom message line should not persist through the prompt usage anymore.
+- The `push` command should not fail with non-ASCII characters anymore.
+- The `select` command should not fail with broken links anymore.
+- The `load` command should not clear toggled broken links anymore.
+- Copy and move operations do not overwrite broken links anymore.
