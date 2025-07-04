@@ -565,22 +565,22 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Added
 
-- A new `wrapscroll` option is added to wrap top and bottom while scrolling.
+- A new `wrapscroll` option is added to wrap top and bottom while scrolling (#166).
 - The `up`, `down` movement commands and their variants, `updir`, and `open` are now allowed in `cmap` mappings.
-- Two new `glob-select` and `glob-unselect` commands are added to use globbing for toggling files.
-- A new `mark-remove` (default `"`) command is added to allow removing marks.
+- Two new `glob-select` and `glob-unselect` commands are added to use globbing for toggling files (#184).
+- A new `mark-remove` (default `"`) command is added to allow removing marks (#190).
 - Icon support is added with the `icon` option. See the wiki page for more details.
-- A new builtin `rename` command is added.
+- A new builtin `rename` command is added (#197).
 
 ### Fixed
 
-- The `cmd-history-next` command now remains in command mode after the last item.
+- The `cmd-history-next` command now remains in command mode after the last item (#168).
 - The `select` command does not change directories anymore when used on a directory.
 - The working directory is now changed to the first argument when it is a directory.
-- The `ratios` option is now checked before `preview` to avoid crashes.
-- Previous error messages are now cleared after successful commands.
-- Symlink to directories are now colored as symlinks.
-- Permission errors for directories are now displayed properly instead of showing as empty.
+- The `ratios` option is now checked before `preview` to avoid crashes (#174).
+- Previous error messages are now cleared after successful commands (#192).
+- Symlink to directories are now colored as symlinks (#195).
+- Permission errors for directories are now displayed properly instead of showing as empty (#203).
 
 ## [r12](https://github.com/gokcehan/lf/releases/tag/r12)
 
