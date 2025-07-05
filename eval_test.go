@@ -295,6 +295,18 @@ var gEvalTests = []struct {
 	},
 
 	{
+		"nmap <space> :toggle; down",
+		[]string{"nmap", "<space>", ":", "toggle", ";", "down", "\n", "\n"},
+		[]expr{&nmapExpr{"<space>", &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}}},
+	},
+
+	{
+		"vmap <esc> visual-accept",
+		[]string{"vmap", "<esc>", "visual-accept", "\n"},
+		[]expr{&vmapExpr{"<esc>", &callExpr{"visual-accept", nil, 1}}},
+	},
+
+	{
 		"cmap <c-g> cmd-escape",
 		[]string{"cmap", "<c-g>", "cmd-escape", "\n"},
 		[]expr{&cmapExpr{"<c-g>", &callExpr{"cmd-escape", nil, 1}}},

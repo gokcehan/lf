@@ -48,6 +48,13 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 	iw, _ := strconv.Atoi(matches[1])
 	ih, _ := strconv.Atoi(matches[2])
 
+	if os.Getenv("TMUX") != "" {
+		// tmux rounds the image height up to a multiple of 6, so we
+		// need to do the same to avoid overwriting the image, as tmux
+		// would remove the image if we touched it.
+		ih = (ih + 5) / 6 * 6
+	}
+
 	screen.LockRegion(win.x, win.y, (iw+cw-1)/cw, (ih+ch-1)/ch, true)
 	fmt.Fprint(os.Stderr, "\0337")                          // Save cursor position
 	fmt.Fprintf(os.Stderr, "\033[%d;%dH", win.y+1, win.x+1) // Move cursor to position

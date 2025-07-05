@@ -391,6 +391,7 @@ func (app *app) loop() {
 				if ok {
 					d.ind = prev.ind
 					d.pos = prev.pos
+					d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
 					d.filter = prev.filter
 					d.sort()
 					d.sel(prev.name(), app.nav.height)
@@ -552,14 +553,25 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
 	app.ui.exportSizes()
-	app.ui.exportMode()
+	app.exportMode()
 	exportLfPath()
 	exportOpts()
 
 	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(gOpts.keys)
-	gState.data["cmaps"] = listBinds(gOpts.cmdkeys)
-	gState.data["cmds"] = listCmds()
+	gState.data["maps"] = listBinds(map[string]map[string]expr{
+		"n": gOpts.nkeys,
+		"v": gOpts.vkeys,
+	})
+	gState.data["nmaps"] = listBinds(map[string]map[string]expr{
+		"n": gOpts.nkeys,
+	})
+	gState.data["vmaps"] = listBinds(map[string]map[string]expr{
+		"v": gOpts.vkeys,
+	})
+	gState.data["cmaps"] = listBinds(map[string]map[string]expr{
+		"c": gOpts.cmdkeys,
+	})
+	gState.data["cmds"] = listCmds(gOpts.cmds)
 	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
 	gState.data["history"] = listHistory(app.cmdHistory)
 	gState.data["files"] = listFilesInCurrDir(app.nav)
@@ -662,4 +674,44 @@ func (app *app) watchDir(dir *dir) {
 			app.watch.add(file.path)
 		}
 	}
+}
+
+func (app *app) exportMode() {
+	getMode := func() string {
+		if strings.HasPrefix(app.ui.cmdPrefix, "delete") {
+			return "delete"
+		}
+
+		if strings.HasPrefix(app.ui.cmdPrefix, "replace") || strings.HasPrefix(app.ui.cmdPrefix, "create") {
+			return "rename"
+		}
+
+		switch app.ui.cmdPrefix {
+		case "filter: ":
+			return "filter"
+		case "find: ", "find-back: ":
+			return "find"
+		case "mark-save: ", "mark-load: ", "mark-remove: ":
+			return "mark"
+		case "rename: ":
+			return "rename"
+		case "/", "?":
+			return "search"
+		case ":":
+			return "command"
+		case "$", "%", "!", "&":
+			return "shell"
+		case ">":
+			return "pipe"
+		case "":
+			if app.nav.isVisualMode() {
+				return "visual"
+			}
+			return "normal"
+		default:
+			return "unknown"
+		}
+	}
+
+	os.Setenv("lf_mode", getMode())
 }

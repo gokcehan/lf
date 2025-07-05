@@ -5,6 +5,8 @@ package main
 // Expr         = SetExpr
 //              | SetLocalExpr
 //              | MapExpr
+//              | NMapExpr
+//              | VMapExpr
 //              | CMapExpr
 //              | CmdExpr
 //              | CallExpr
@@ -16,6 +18,10 @@ package main
 // SetLocalExpr = 'setlocal' <dir> <opt> <val> ';'
 //
 // MapExpr      = 'map' <keys> Expr
+//
+// NMapExpr     = 'nmap' <keys> Expr
+//
+// VMapExpr     = 'vmap' <keys> Expr
 //
 // CMapExpr     = 'cmap' <key> Expr
 //
@@ -67,6 +73,20 @@ type mapExpr struct {
 }
 
 func (e *mapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
+
+type nmapExpr struct {
+	keys string
+	expr expr
+}
+
+func (e *nmapExpr) String() string { return fmt.Sprintf("nmap %s %s", e.keys, e.expr) }
+
+type vmapExpr struct {
+	keys string
+	expr expr
+}
+
+func (e *vmapExpr) String() string { return fmt.Sprintf("vmap %s %s", e.keys, e.expr) }
 
 type cmapExpr struct {
 	key  string
@@ -225,6 +245,34 @@ func (p *parser) parseExpr() expr {
 			}
 
 			result = &mapExpr{keys, expr}
+		case "nmap":
+			var expr expr
+
+			s.scan()
+			keys := s.tok
+
+			s.scan()
+			if s.typ != tokenSemicolon {
+				expr = p.parseExpr()
+			} else {
+				s.scan()
+			}
+
+			result = &nmapExpr{keys, expr}
+		case "vmap":
+			var expr expr
+
+			s.scan()
+			keys := s.tok
+
+			s.scan()
+			if s.typ != tokenSemicolon {
+				expr = p.parseExpr()
+			} else {
+				s.scan()
+			}
+
+			result = &vmapExpr{keys, expr}
 		case "cmap":
 			var expr expr
 
