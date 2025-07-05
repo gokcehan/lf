@@ -105,13 +105,13 @@ The following commands are provided by lf:
 	addcustominfo
 	tty-write
 
-The following visual mode commands are provided by lf:
+The following Visual mode commands are provided by lf:
 
 	visual-accept            (default 'V')
 	visual-discard           (default '<esc>')
 	visual-change            (default 'o')
 
-The following command line commands are provided by lf:
+The following Command-line mode commands are provided by lf:
 
 	cmd-escape               (default '<esc>')
 	cmd-complete             (default '<tab>')
@@ -414,20 +414,20 @@ Toggle the selection of the current file or files given as arguments.
 
 ## visual (modal) (default 'V')
 
-Switch to visual mode.
-If already in visual mode, discard visual selection and stay in visual mode.
+Switch to Visual mode.
+If already in Visual mode, discard the visual selection and stay in Visual mode.
 
 ## visual-accept (modal) (default 'V')
 
-Add the visual selection to the selection list, quit visual mode and return to normal mode.
+Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
 
 ## visual-discard (modal) (default '<esc>')
 
-Discard the visual selection, quit visual mode and return to normal mode.
+Discard the visual selection, quit Visual mode and return to Normal mode.
 
 ## visual-change (default 'o')
 
-Go to the other end of the current visual mode selection.
+Go to the other end of the current Visual mode selection.
 
 ## invert (default `v`)
 
@@ -603,7 +603,7 @@ Using `tty-write` is preferred over directly writing to `/dev/tty` because the l
 
 # COMMAND LINE COMMANDS
 
-The prompt character specifies which of the several command-line modes you are in.
+The prompt character specifies which of the several Command-line modes you are in.
 For example, the `read` command takes you to the `:` mode.
 
 When the cursor is at the first character in `:` mode, pressing one of the keys `!`, `$`, `%`, or `&` takes you to the corresponding mode.
@@ -614,7 +614,7 @@ A character refers to a Unicode code point, a word consists of letters and digit
 
 ## cmd-escape (default `<esc>`)
 
-Quit command line mode and return to normal mode.
+Quit Command-line mode and return to Normal mode.
 
 ## cmd-complete (default `<tab>`)
 
@@ -636,7 +636,7 @@ Execute the current line.
 
 ## cmd-interrupt (default `<c-c>`)
 
-Interrupt the current shell-pipe command and return to the normal mode.
+Interrupt the current shell-pipe command and return to the Normal mode.
 
 ## cmd-history-next (default `<c-n>` and `<down>`), cmd-history-prev (default `<c-p>` and `<up>`)
 
@@ -657,7 +657,7 @@ Delete the next character.
 ## cmd-delete-back (default `<backspace>` and `<backspace2>`)
 
 Delete the previous character.
-When at the beginning of a prompt, returns either to normal mode or to `:` mode.
+When at the beginning of a prompt, returns either to Normal mode or to `:` mode.
 
 ## cmd-delete-home (default `<c-u>`), cmd-delete-end (default `<c-k>`)
 
@@ -996,7 +996,7 @@ Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
-Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in normal mode (displaying NORMAL instead of a blank string).
+Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
 ## tabstop (int) (default 8)
@@ -1216,7 +1216,7 @@ The same evaluator is used for the command line and the configuration file for r
 The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
-Visual mode mappings are defined the same way normal mode mappings are defined.
+Visual mode mappings are defined the same way Normal mode mappings are defined.
 
 # SYNTAX
 
@@ -1253,16 +1253,16 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command `map` is used to bind a key in normal and visual mode to a command which can be a builtin command, custom command, or shell command:
+Command `map` is used to bind a key in Normal and Visual mode to a command which can be a builtin command, custom command, or shell command:
 
 	map gh cd ~        # builtin command
 	map D trash        # custom command
 	map i $less $f     # shell command
 	map U !du -csh *   # waiting shell command
 
-Command `nmap` does the same but for normal mode only.
+Command `nmap` does the same but for Normal mode only.
 
-Command `vmap` does the same but for visual mode only.
+Command `vmap` does the same but for Visual mode only.
 
 Overview of which map command works in which mode:
 
