@@ -157,14 +157,20 @@ func shellKill(cmd *exec.Cmd) error {
 
 func setDefaults() {
 	gOpts.cmds["open"] = &execExpr{"&", `$OPENER "$f"`}
-	gOpts.keys["e"] = &execExpr{"$", `$EDITOR "$f"`}
-	gOpts.keys["i"] = &execExpr{"$", `$PAGER "$f"`}
-	gOpts.keys["w"] = &execExpr{"$", "$SHELL"}
+	gOpts.nkeys["e"] = &execExpr{"$", `$EDITOR "$f"`}
+	gOpts.vkeys["e"] = &execExpr{"$", `$EDITOR "$f"`}
+	gOpts.nkeys["i"] = &execExpr{"$", `$PAGER "$f"`}
+	gOpts.vkeys["i"] = &execExpr{"$", `$PAGER "$f"`}
+	gOpts.nkeys["w"] = &execExpr{"$", "$SHELL"}
+	gOpts.vkeys["w"] = &execExpr{"$", "$SHELL"}
 
 	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
-	gOpts.keys["<f-1>"] = &callExpr{"doc", nil, 1}
+	gOpts.nkeys["<f-1>"] = &callExpr{"doc", nil, 1}
+	gOpts.vkeys["<f-1>"] = &callExpr{"doc", nil, 1}
 
 	gOpts.cmds["maps"] = &execExpr{"$", `"$lf" -remote "query $id maps" | $PAGER`}
+	gOpts.cmds["nmaps"] = &execExpr{"$", `"$lf" -remote "query $id nmaps" | $PAGER`}
+	gOpts.cmds["vmaps"] = &execExpr{"$", `"$lf" -remote "query $id vmaps" | $PAGER`}
 	gOpts.cmds["cmaps"] = &execExpr{"$", `"$lf" -remote "query $id cmaps" | $PAGER`}
 	gOpts.cmds["cmds"] = &execExpr{"$", `"$lf" -remote "query $id cmds" | $PAGER`}
 }

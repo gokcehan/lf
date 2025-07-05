@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maps"
 	"path/filepath"
 	"time"
 )
@@ -64,6 +65,7 @@ var gOpts struct {
 	reverse          bool
 	roundbox         bool
 	selectfmt        string
+	visualfmt        string
 	showbinds        bool
 	sixel            bool
 	sortby           sortMethod
@@ -99,7 +101,8 @@ var gOpts struct {
 	rulerfmt         string
 	preserve         []string
 	shellopts        []string
-	keys             map[string]expr
+	nkeys            map[string]expr
+	vkeys            map[string]expr
 	cmdkeys          map[string]expr
 	cmds             map[string]expr
 	user             map[string]string
@@ -231,6 +234,7 @@ func init() {
 	gOpts.reverse = false
 	gOpts.roundbox = false
 	gOpts.selectfmt = "\033[7;35m"
+	gOpts.visualfmt = "\033[7;36m"
 	gOpts.showbinds = true
 	gOpts.sixel = false
 	gOpts.sortby = naturalSort
@@ -263,14 +267,15 @@ func init() {
 	gOpts.hiddenfiles = gDefaultHiddenFiles
 	gOpts.history = true
 	gOpts.info = nil
-	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
+	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
 	gOpts.preserve = []string{"mode"}
 	gOpts.shellopts = nil
 	gOpts.tempmarks = "'"
 	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
 
-	gOpts.keys = map[string]expr{
+	// normal and visual mode
+	keys := map[string]expr{
 		"k":          &callExpr{"up", nil, 1},
 		"<up>":       &callExpr{"up", nil, 1},
 		"<m-up>":     &callExpr{"up", nil, 1},
@@ -301,9 +306,7 @@ func init() {
 		"L":          &callExpr{"low", nil, 1},
 		"[":          &callExpr{"jump-prev", nil, 1},
 		"]":          &callExpr{"jump-next", nil, 1},
-		"<space>":    &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1},
 		"t":          &callExpr{"tag-toggle", nil, 1},
-		"v":          &callExpr{"invert", nil, 1},
 		"u":          &callExpr{"unselect", nil, 1},
 		"y":          &callExpr{"copy", nil, 1},
 		"d":          &callExpr{"cut", nil, 1},
@@ -346,6 +349,20 @@ func init() {
 		"gh": &callExpr{"cd", []string{"~"}, 1},
 	}
 
+	// insert bindings that apply to both normal & visual mode first
+	gOpts.nkeys = maps.Clone(keys)
+	// now add normal mode specific ones
+	gOpts.nkeys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
+	gOpts.nkeys["V"] = &callExpr{"visual", nil, 1}
+	gOpts.nkeys["v"] = &callExpr{"invert", nil, 1}
+
+	// now do the same for visual mode
+	gOpts.vkeys = maps.Clone(keys)
+	gOpts.vkeys["<esc>"] = &callExpr{"visual-discard", nil, 1}
+	gOpts.vkeys["V"] = &callExpr{"visual-accept", nil, 1}
+	gOpts.vkeys["o"] = &callExpr{"visual-change", nil, 1}
+
+	// command line mode bindings can be assigned directly
 	gOpts.cmdkeys = map[string]expr{
 		"<space>":        &callExpr{"cmd-insert", []string{" "}, 1},
 		"<esc>":          &callExpr{"cmd-escape", nil, 1},

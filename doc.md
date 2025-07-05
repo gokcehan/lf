@@ -57,8 +57,8 @@ The following commands are provided by lf:
 	middle                   (default 'M')
 	low                      (default 'L')
 	toggle
+	visual                   (default 'V')
 	invert                   (default 'v')
-	invert-below
 	unselect                 (default 'u')
 	glob-select
 	glob-unselect
@@ -104,6 +104,12 @@ The following commands are provided by lf:
 	tag-toggle               (default 't')
 	addcustominfo
 	tty-write
+
+The following visual mode commands are provided by lf:
+
+	visual-accept            (default 'V')
+	visual-discard           (default '<esc>')
+	visual-change            (default 'o')
 
 The following command line commands are provided by lf:
 
@@ -203,6 +209,7 @@ The following options can be used to customize the behavior of lf:
 	timefmt           string    (default 'Mon Jan _2 15:04:05 2006')
 	truncatechar      string    (default '~')
 	truncatepct       int       (default 100)
+	visualfmt         string    (default "\033[7;36m")
 	waitmsg           string    (default 'Press any key to continue')
 	watch             bool      (default false)
 	wrapscan          bool      (default true)
@@ -257,6 +264,8 @@ The following commands/keybindings are provided by default:
 	cmd doc $$lf -doc | $PAGER
 	map <f-1> doc
 	cmd maps $lf -remote "query $id maps" | $PAGER
+	cmd nmaps $lf -remote "query $id nmaps" | $PAGER
+	cmd vmaps $lf -remote "query $id vmaps" | $PAGER
 	cmd cmaps $lf -remote "query $id cmaps" | $PAGER
 	cmd cmds $lf -remote "query $id cmds" | $PAGER
 
@@ -268,6 +277,8 @@ The following commands/keybindings are provided by default:
 	cmd doc !%lf% -doc | %PAGER%
 	map <f-1> doc
 	cmd maps !%lf% -remote "query %id% maps" | %PAGER%
+	cmd nmaps !%lf% -remote "query %id% nmaps" | %PAGER%
+	cmd vmaps !%lf% -remote "query %id% vmaps" | %PAGER%
 	cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
 	cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
 
@@ -286,7 +297,7 @@ The following additional keybindings are provided by default:
 	map sc :set sortby ctime; set info ctime
 	map se :set sortby ext; set info
 	map gh cd ~
-	map <space> :toggle; down
+	nmap <space> :toggle; down
 
 If the `mouse` option is enabled, mouse buttons have the following default effects:
 
@@ -401,22 +412,28 @@ Move the current file selection to the high/middle/low of the screen.
 
 Toggle the selection of the current file or files given as arguments.
 
+## visual (modal) (default 'V')
+
+Switch to visual mode.
+If already in visual mode, discard visual selection and stay in visual mode.
+
+## visual-accept (modal) (default 'V')
+
+Add the visual selection to the selection list, quit visual mode and return to normal mode.
+
+## visual-discard (modal) (default '<esc>')
+
+Discard the visual selection, quit visual mode and return to normal mode.
+
+## visual-change (default 'o')
+
+Go to the other end of the current visual mode selection.
+
 ## invert (default `v`)
 
 Reverse the selection of all files in the current directory (i.e. `toggle` all files).
 Selections in other directories are not affected by this command.
 You can define a new command to select all files in the directory by combining `invert` with `unselect` (i.e. `cmd select-all :unselect; invert`), though this will also remove selections in other directories.
-
-## invert-below
-
-Reverse the selection (i.e. `toggle`) of all files at or after the current file in the current directory.
-
-To select a contiguous block of files, use this command on the first file you want to select.
-Then, move down to the first file you do *not* want to select (the one after the end of the desired selection) and use this command again.
-This achieves an effect similar to the visual mode in Vim.
-
-This command is experimental and may be removed once a better replacement for the visual mode is implemented in `lf`.
-If you'd like to experiment with using this command, you should bind it to a key (e.g. `V`) for a better experience.
 
 ## unselect (default `u`)
 
@@ -434,7 +451,7 @@ If the total size of a directory is not calculated, it will be shown as `-`.
 
 ## clearmaps
 
-Remove all keybindings associated with the `map` command.
+Remove all keybindings associated with the `map`, `nmap` and `vmap` command.
 This command can be used in the config file to remove the default keybindings.
 For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
@@ -916,10 +933,10 @@ Reverse the direction of sort.
 
 Draw rounded outer corners when the `drawbox` option is enabled.
 
-## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
+## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
-Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%P` as the scroll percentage, and `%d` as the amount of free disk space remaining.
+Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%v` as the number of visually selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%P` as the scroll percentage, and `%d` as the amount of free disk space remaining.
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
@@ -979,7 +996,7 @@ Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
-Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, and `%l` as the link target.
+Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in normal mode (displaying NORMAL instead of a blank string).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
 ## tabstop (int) (default 8)
@@ -1023,6 +1040,10 @@ while a value of 0 will only show the end of the filename, e.g.:
 - `set truncatepct 50`  -> `very-long-f~-truncated`
 
 - `set truncatepct 0`   -> `~ng-filename-truncated`
+
+## visualfmt (string) (default `\033[7;36m`)
+
+Format string of the indicator for files that are visually selected.
 
 ## waitmsg (string) (default `Press any key to continue`)
 
@@ -1122,7 +1143,7 @@ Value of the count associated with the current command.
 
 Current mode that `lf` is operating in.
 This is useful for customizing keybindings depending on what the current mode is.
-Possible values are `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, and `unknown`.
+Possible values are `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, `visual` and `unknown`.
 
 # SPECIAL COMMANDS
 
@@ -1195,6 +1216,7 @@ The same evaluator is used for the command line and the configuration file for r
 The difference is that prefixes are not necessary in the command line.
 Instead, different modes are provided to read corresponding commands.
 These modes are mapped to the prefix keys above by default.
+Visual mode mappings are defined the same way normal mode mappings are defined.
 
 # SYNTAX
 
@@ -1202,7 +1224,7 @@ Characters from `#` to newline are comments and ignored:
 
 	# comments start with `#`
 
-There are five special commands (`set`, `setlocal`, `map`, `cmap`, and `cmd`) for configuration.
+The following commands (`set`, `setlocal`, `map`, `nmap`, `vmap`, `cmap`, and `cmd`) are used for configuration.
 
 Command `set` is used to set an option which can be a boolean, integer, or string:
 
@@ -1231,21 +1253,34 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command 'map' is used to bind a key to a command which can be a builtin command, custom command, or shell command:
+Command `map` is used to bind a key in normal and visual mode to a command which can be a builtin command, custom command, or shell command:
 
 	map gh cd ~        # builtin command
 	map D trash        # custom command
 	map i $less $f     # shell command
 	map U !du -csh *   # waiting shell command
 
-Command 'cmap' is used to bind a key on the command line to a command line command or any other command:
+Command `nmap` does the same but for normal mode only.
+
+Command `vmap` does the same but for visual mode only.
+
+Overview of which map command works in which mode:
+
+	map                Normal, Visual
+	nmap               Normal
+	vmap               Visual
+	cmap               Command-line
+
+Command `cmap` is used to bind a key on the command line to a command line command or any other command:
 
 	cmap <c-g> cmd-escape
 	cmap <a-i> set incsearch!
 
 You can delete an existing binding by leaving the expression empty:
 
-	map gh             # deletes 'gh' mapping
+	map gh             # deletes 'gh' mapping in normal and visual mode
+	nmap v             # deletes 'v' mapping in normal mode
+	vmap o             # deletes 'o' mapping in visual mode
 	cmap <c-g>         # deletes '<c-g>' mapping
 
 Command `cmd` is used to define a custom command:
@@ -1486,12 +1521,20 @@ In addition, the `query` command can be used to obtain information about a speci
 
 The following types of information are supported:
 
-	maps     list of mappings created by the 'map' command
+	maps     list of mappings created by the 'map', 'nmap' and 'vmap' command
+	nmaps    list of mappings created by the 'nmap' and 'map' command
+	vmaps    list of mappings created by the 'vmap' and 'map' command
 	cmaps    list of mappings created by the 'cmap' command
 	cmds     list of commands created by the 'cmd' command
 	jumps    contents of the jump list, showing previously visited locations
 	history  list of previously executed commands on the command line
 	files    list of files in the currently open directory as displayed by lf, empty if dir is still loading
+
+When listing mappings the characters in the first column are:
+
+	n  Normal
+	v  Visual
+	c  Command-line
 
 This is useful for scripting actions based on the internal state of lf.
 For example, to select a previous command using fzf and execute it:

@@ -6,6 +6,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -425,6 +426,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
+	visualSelections := dir.visualSelections()
 	for i, f := range dir.files[beg:end] {
 		st := dirStyle.colors.get(f)
 
@@ -451,7 +453,9 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		if _, ok := context.selections[path]; ok {
+		if slices.Contains(visualSelections, path) {
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
+		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
 		} else if cp, ok := context.saves[path]; ok {
 			if cp {
@@ -820,6 +824,13 @@ func (ui *ui) loadFileInfo(nav *nav) {
 		}
 		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
+	if nav.isVisualMode() {
+		replace("%m", "VISUAL")
+		replace("%M", "VISUAL")
+	} else {
+		replace("%m", "")
+		replace("%M", "NORMAL")
+	}
 	replace("%p", curr.Mode().String())
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
@@ -948,6 +959,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	currSelections := nav.currSelections()
+	currVSelections := nav.currDir().visualSelections()
 
 	progress := []string{}
 
@@ -979,6 +991,8 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = fmt.Sprintf("%.d", copy)
 		case "%s":
 			result = fmt.Sprintf("%.d", len(currSelections))
+		case "%v":
+			result = fmt.Sprintf("%.d", len(currVSelections))
 		case "%f":
 			result = strings.Join(dir.filter, " ")
 		case "%i":
@@ -1159,32 +1173,68 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listExprMap(binds map[string]expr, title string) string {
+func listBinds(binds map[string]map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
-	keys := make([]string, 0, len(binds))
-	for k := range binds {
-		keys = append(keys, k)
+	m := make(map[string]map[string]string)
+	for mode, keys := range binds {
+		for key, expr := range keys {
+			if _, ok := m[key]; !ok {
+				m[key] = make(map[string]string)
+			}
+			m[key][expr.String()] += mode
+		}
 	}
-	sort.Strings(keys)
+
+	type entry struct {
+		mode, key, cmd string
+	}
+
+	var entries []entry
+	for key, cmds := range m {
+		for cmd, modes := range cmds {
+			tmp := []rune(modes)
+			slices.Sort(tmp)
+			entries = append(entries, entry{string(tmp), key, cmd})
+		}
+	}
+
+	sort.Slice(entries, func(i, j int) bool {
+		if entries[i].key != entries[j].key {
+			return entries[i].key < entries[j].key
+		}
+		return entries[i].mode < entries[j].mode
+	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintf(t, "%s\tcommand\n", title)
-	for _, k := range keys {
-		fmt.Fprintf(t, "%s\t%v\n", k, binds[k])
+	fmt.Fprintln(t, "mode\tkeys\tcommand")
+	for _, e := range entries {
+		fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
 	}
 	t.Flush()
 
 	return b.String()
 }
 
-func listBinds(binds map[string]expr) string {
-	return listExprMap(binds, "keys")
-}
+func listCmds(cmds map[string]expr) string {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
 
-func listCmds() string {
-	return listExprMap(gOpts.cmds, "name")
+	keys := make([]string, 0, len(cmds))
+	for k := range cmds {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "name\tcommand")
+	for _, k := range keys {
+		fmt.Fprintf(t, "%s\t%v\n", k, cmds[k])
+	}
+	t.Flush()
+
+	return b.String()
 }
 
 func listJumps(jumps []string, ind int) string {
@@ -1337,6 +1387,13 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
 	count := 0
 
+	keys := gOpts.nkeys
+	mode := "n"
+	if nav.isVisualMode() {
+		keys = gOpts.vkeys
+		mode = "v"
+	}
+
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
 		// KeyRune is a regular character
@@ -1371,7 +1428,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return draw
 		}
 
-		binds, ok := findBinds(gOpts.keys, string(ui.keyAcc))
+		binds, ok := findBinds(keys, string(ui.keyAcc))
 
 		switch len(binds) {
 		case 0:
@@ -1389,7 +1446,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 					}
 					count = c
 				}
-				expr := gOpts.keys[string(ui.keyAcc)]
+				expr := keys[string(ui.keyAcc)]
 
 				if count != 0 {
 					switch e := expr.(type) {
@@ -1406,7 +1463,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				return expr
 			}
 			if gOpts.showbinds {
-				ui.menu = listBinds(binds)
+				ui.menu = listBinds(map[string]map[string]expr{
+					mode: binds,
+				})
 			}
 			return draw
 		}
@@ -1448,7 +1507,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		if tev.Modifiers() == tcell.ModCtrl {
 			button = "<c-" + button[1:]
 		}
-		if expr, ok := gOpts.keys[button]; ok {
+		if expr, ok := keys[button]; ok {
 			return expr
 		}
 		if button != "<m-1>" && button != "<m-2>" {
@@ -1575,43 +1634,6 @@ func (ui *ui) resume() error {
 		ui.polling = true
 	}
 	return err
-}
-
-func (ui *ui) exportMode() {
-	getMode := func() string {
-		if strings.HasPrefix(ui.cmdPrefix, "delete") {
-			return "delete"
-		}
-
-		if strings.HasPrefix(ui.cmdPrefix, "replace") || strings.HasPrefix(ui.cmdPrefix, "create") {
-			return "rename"
-		}
-
-		switch ui.cmdPrefix {
-		case "filter: ":
-			return "filter"
-		case "find: ", "find-back: ":
-			return "find"
-		case "mark-save: ", "mark-load: ", "mark-remove: ":
-			return "mark"
-		case "rename: ":
-			return "rename"
-		case "/", "?":
-			return "search"
-		case ":":
-			return "command"
-		case "$", "%", "!", "&":
-			return "shell"
-		case ">":
-			return "pipe"
-		case "":
-			return "normal"
-		default:
-			return "unknown"
-		}
-	}
-
-	os.Setenv("lf_mode", getMode())
 }
 
 func (ui *ui) exportSizes() {
