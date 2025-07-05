@@ -228,7 +228,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Three new commands `high`, `middle`, and `low` are added to move the current selection relative to the screen (#824).
-- Backspace on empty prompt now switches to normal mode (#836).
+- Backspace on empty prompt now switches to Normal mode (#836).
 - A new `history` option is now added to be able to disable history (#866).
 - A new special expansion `%S` spacer is added for `promptfmt` to be able to right align parts (#867).
 - A new command-line command `cmd-menu-accept` is now added to accept the currently selected match (#934).
@@ -255,7 +255,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Broken symlinks should now be working properly in completion (#934).
 - Files with stat errors should now be skipped properly in completion (#934).
 - Empty search with `incsearch` option should now be handled properly (#944).
-- History position is now also reset when leaving command line (#953).
+- History position is now also reset when leaving the command line (#953).
 - Mouse drag events are now ignored properly to avoid command repetition (#962).
 - Environment variables `HOME` and `USER` should now be used as fallback for locations on some systems (#972).
 - File information is now displayed in the status line at first launch when there are no errors in the configuration file (#994).
@@ -574,7 +574,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- The `cmd-history-next` command now remains in command mode after the last item (#168).
+- The `cmd-history-next` command now remains in Command-line mode after the last item (#168).
 - The `select` command does not change directories anymore when used on a directory.
 - The working directory is now changed to the first argument when it is a directory.
 - The `ratios` option is now checked before `preview` to avoid crashes (#174).
@@ -616,7 +616,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
-- The ability to map normal commands in `cmap` is removed. This has caused a number of bugs in the previous release. A different mechanism for a similar functionality is planned.
+- The ability to map Normal mode commands in `cmap` is removed. This has caused a number of bugs in the previous release. A different mechanism for a similar functionality is planned.
 
 ### Added
 
@@ -627,7 +627,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Input and output in `shell-pipe` commands were broken with the `cmap` patch. This should now work as before.
-- Some `push` commands were broken with the `cmap` patch and sometimes ignored command line mode for some keys to execute as in normal mode. This should now work as before.
+- Some `push` commands were broken with the `cmap` patch and sometimes ignored Command-line mode for some keys to execute as in Normal mode. This should now work as before.
 - `read` and shell commands should now also work when typed manually (e.g. typing `:shell` should switch the prefix to `$`).
 - Configuration files are now read after initialization.
 - Background colors are removed from defaults to avoid confusion with selection highlighting.
@@ -643,7 +643,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new `incsearch` option is added to enable incremental matching while searching.
 - Two new options `ignoredia` and `smartdia` are added to ignore diacritics in Latin letters for `search` and `find` (#118).
 - A new builtin `delete` command is added for file deletion (#121). This command is not assigned to a key by default to prevent accidental deletions. In the future, a prompting mechanism may be added to this command for more safety.
-- Normal mode commands can now be used in `cmap` which can be used to immediately finish command mode and execute a normal command afterwards.
+- Normal mode commands can now be used in `cmap` which can be used to immediately finish Command-line mode and execute a Normal mode command afterwards.
 - A new `fish` completion script is added to the `etc` folder (#131).
 - Two new options `number` and `relativenumber` are added to enable line numbers in directories (#133).
 
@@ -784,7 +784,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- Running `cmd-hist-prev` in normal mode now always starts with the last item to avoid confusion. Running `cmd-hist-next` in normal mode now has no effect for consistency.
+- Running `cmd-hist-prev` in Normal mode now always starts with the last item to avoid confusion. Running `cmd-hist-next` in Normal mode now has no effect for consistency.
 
 ## [r1](https://github.com/gokcehan/lf/releases/tag/r1)
 
