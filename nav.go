@@ -290,11 +290,18 @@ func (dir *dir) sort() {
 			})
 		}
 	case sizeSort:
+		sizeVal := func(f *file) int64 {
+			if f.IsDir() && getDirCounts(dir.path) {
+				return int64(f.dirCount)
+			}
+			return f.TotalSize()
+		}
 		sort.SliceStable(dir.files, func(i, j int) bool {
+			s1, s2 := sizeVal(dir.files[i]), sizeVal(dir.files[j])
 			if !dir.reverse {
-				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+				return s1 < s2
 			} else {
-				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
+				return s2 < s1
 			}
 		})
 	case timeSort:
