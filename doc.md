@@ -412,16 +412,16 @@ Move the current file selection to the high/middle/low of the screen.
 
 Toggle the selection of the current file or files given as arguments.
 
-## visual (modal) (default 'V')
+## visual (default 'V')
 
 Switch to Visual mode.
 If already in Visual mode, discard the visual selection and stay in Visual mode.
 
-## visual-accept (modal) (default 'V')
+## visual-accept (default 'V')
 
 Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
 
-## visual-discard (modal) (default '<esc>')
+## visual-discard (default `<esc>`)
 
 Discard the visual selection, quit Visual mode and return to Normal mode.
 
