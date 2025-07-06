@@ -432,6 +432,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.truncatepct = n
+	case "visualfmt":
+		gOpts.visualfmt = e.val
 	case "waitmsg":
 		gOpts.waitmsg = e.val
 	default:
