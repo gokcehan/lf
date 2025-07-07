@@ -108,6 +108,7 @@ The following commands are provided by lf:
 The following Visual mode commands are provided by lf:
 
 	visual-accept            (default 'V')
+	visual-unselect
 	visual-discard           (default '<esc>')
 	visual-change            (default 'o')
 
@@ -412,20 +413,24 @@ Move the current file selection to the high/middle/low of the screen.
 
 Toggle the selection of the current file or files given as arguments.
 
-## visual (default 'V')
+## visual (default `V`)
 
 Switch to Visual mode.
 If already in Visual mode, discard the visual selection and stay in Visual mode.
 
-## visual-accept (default 'V')
+## visual-accept (default `V`)
 
 Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
+
+## visual-unselect
+
+Remove the visual selection from the selection list, quit Visual mode and return to Normal mode.
 
 ## visual-discard (default `<esc>`)
 
 Discard the visual selection, quit Visual mode and return to Normal mode.
 
-## visual-change (default 'o')
+## visual-change (default `o`)
 
 Go to the other end of the current Visual mode selection.
 
