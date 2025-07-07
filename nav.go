@@ -751,8 +751,15 @@ func (nav *nav) exportFiles() {
 	}
 	currSelections := strings.Join(selections, gOpts.filesep)
 
+	var vSelections []string
+	for _, selection := range nav.currDir().visualSelections() {
+		vSelections = append(vSelections, quoteString(selection))
+	}
+	currVSelections := strings.Join(vSelections, gOpts.filesep)
+
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
+	os.Setenv("fv", currVSelections)
 	os.Setenv("PWD", quoteString(nav.currDir().path))
 
 	if len(selections) == 0 {

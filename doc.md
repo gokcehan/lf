@@ -221,6 +221,7 @@ The following environment variables are exported for shell commands:
 
 	f
 	fs
+	fv
 	fx
 	id
 	PWD
@@ -785,7 +786,7 @@ For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
 ## filesep (string) (default `\n`)
 
-File separator used in environment variables `fs` and `fx`.
+File separator used in environment variables `fs`, `fv` and `fx`.
 
 ## findlen (int) (default 1)
 
@@ -1086,9 +1087,13 @@ Current file selection as a full path.
 
 Selected file(s) separated with the value of `filesep` option as full path(s).
 
+## fv
+
+Visually selected file(s) separated with the value of `filesep` option as full path(s).
+
 ## fx
 
-Selected file(s) (i.e. `fs`) if there are any selected files, otherwise current file selection (i.e. `f`).
+Selected file(s) (i.e. `fs`, never `fv`) if there are any selected files, otherwise current file selection (i.e. `f`).
 
 ## id
 

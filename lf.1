@@ -228,6 +228,7 @@ The following environment variables are exported for shell commands:
 .EX
 f
 fs
+fv
 fx
 id
 PWD
@@ -731,8 +732,8 @@ Such a string should end with the terminal reset sequence.
 For example, \f[CR]\(rs033[4m%s\(rs033[0m\f[R] has the same effect as
 \f[CR]\(rs033[4m\f[R].
 .SS filesep (string) (default \f[CR]\(rsn\f[R])
-File separator used in environment variables \f[CR]fs\f[R] and
-\f[CR]fx\f[R].
+File separator used in environment variables \f[CR]fs\f[R],
+\f[CR]fv\f[R] and \f[CR]fx\f[R].
 .SS findlen (int) (default 1)
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a
@@ -1029,10 +1030,13 @@ Current file selection as a full path.
 .SS fs
 Selected file(s) separated with the value of \f[CR]filesep\f[R] option
 as full path(s).
+.SS fv
+Visually selected file(s) separated with the value of \f[CR]filesep\f[R]
+option as full path(s).
 .SS fx
 Selected file(s) (i.e.
-\f[CR]fs\f[R]) if there are any selected files, otherwise current file
-selection (i.e.
+\f[CR]fs\f[R], never \f[CR]fv\f[R]) if there are any selected files,
+otherwise current file selection (i.e.
 \f[CR]f\f[R]).
 .SS id
 Id of the running client.
