@@ -108,6 +108,7 @@ The following commands are provided by lf:
 The following Visual mode commands are provided by lf:
 
 	visual-accept            (default 'V')
+	visual-unselect
 	visual-discard           (default '<esc>')
 	visual-change            (default 'o')
 
@@ -220,6 +221,7 @@ The following environment variables are exported for shell commands:
 
 	f
 	fs
+	fv
 	fx
 	id
 	PWD
@@ -412,20 +414,24 @@ Move the current file selection to the high/middle/low of the screen.
 
 Toggle the selection of the current file or files given as arguments.
 
-## visual (default 'V')
+## visual (default `V`)
 
 Switch to Visual mode.
 If already in Visual mode, discard the visual selection and stay in Visual mode.
 
-## visual-accept (default 'V')
+## visual-accept (default `V`)
 
 Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
+
+## visual-unselect
+
+Remove the visual selection from the selection list, quit Visual mode and return to Normal mode.
 
 ## visual-discard (default `<esc>`)
 
 Discard the visual selection, quit Visual mode and return to Normal mode.
 
-## visual-change (default 'o')
+## visual-change (default `o`)
 
 Go to the other end of the current Visual mode selection.
 
@@ -780,7 +786,7 @@ For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
 ## filesep (string) (default `\n`)
 
-File separator used in environment variables `fs` and `fx`.
+File separator used in environment variables `fs`, `fv` and `fx`.
 
 ## findlen (int) (default 1)
 
@@ -1081,9 +1087,13 @@ Current file selection as a full path.
 
 Selected file(s) separated with the value of `filesep` option as full path(s).
 
+## fv
+
+Visually selected file(s) separated with the value of `filesep` option as full path(s).
+
 ## fx
 
-Selected file(s) (i.e. `fs`) if there are any selected files, otherwise current file selection (i.e. `f`).
+Selected file(s) (i.e. `fs`, never `fv`) if there are any selected files, otherwise current file selection (i.e. `f`).
 
 ## id
 

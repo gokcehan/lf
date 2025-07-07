@@ -113,6 +113,7 @@ var (
 		"cmd-lowercase-word",
 		"visual",
 		"visual-accept",
+		"visual-unselect",
 		"visual-discard",
 		"visual-change",
 	}
