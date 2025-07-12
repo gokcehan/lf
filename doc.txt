@@ -800,7 +800,9 @@ directory at most, and bigger directories are shown as 999+.
 
 dirfirst (bool) (default true)
 
-Show directories first above regular files.
+Show directories first above regular files. With dircounts enabled,
+sorting by size always separates directories and files, regardless of
+dirfirst.
 
 dironly (bool) (default false)
 

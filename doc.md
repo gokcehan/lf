@@ -759,6 +759,7 @@ This option only has an effect when `info` has a `size` field and the pane is wi
 ## dirfirst (bool) (default true)
 
 Show directories first above regular files.
+With `dircounts` enabled, sorting by `size` always separates directories and files, regardless of `dirfirst`.
 
 ## dironly (bool) (default false)
 
