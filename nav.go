@@ -167,6 +167,7 @@ type dir struct {
 	files        []*file    // displayed files in directory including or excluding hidden ones
 	allFiles     []*file    // all files in directory including hidden ones (same array as files)
 	sortby       sortMethod // sortby value from last sort
+	dircounts    bool       // dircounts value from last sort
 	dirfirst     bool       // dirfirst value from last sort
 	dironly      bool       // dironly value from last sort
 	hidden       bool       // hidden value from last sort
@@ -212,6 +213,7 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
+	dir.dircounts = getDirCounts(dir.path)
 	dir.dirfirst = getDirFirst(dir.path)
 	dir.dironly = getDirOnly(dir.path)
 	dir.hidden = getHidden(dir.path)
@@ -290,11 +292,18 @@ func (dir *dir) sort() {
 			})
 		}
 	case sizeSort:
+		sizeVal := func(f *file) int64 {
+			if f.IsDir() && dir.dircounts {
+				return int64(f.dirCount)
+			}
+			return f.TotalSize()
+		}
 		sort.SliceStable(dir.files, func(i, j int) bool {
+			s1, s2 := sizeVal(dir.files[i]), sizeVal(dir.files[j])
 			if !dir.reverse {
-				return dir.files[i].TotalSize() < dir.files[j].TotalSize()
+				return s1 < s2
 			} else {
-				return dir.files[j].TotalSize() < dir.files[i].TotalSize()
+				return s2 < s1
 			}
 		})
 	case timeSort:
@@ -538,6 +547,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		loadTime:     time.Now(),
 		path:         path,
 		sortby:       getSortBy(path),
+		dircounts:    getDirCounts(path),
 		dirfirst:     getDirFirst(path),
 		dironly:      getDirOnly(path),
 		hidden:       getHidden(path),
@@ -597,6 +607,7 @@ func (nav *nav) checkDir(dir *dir) {
 			nav.dirChan <- nd
 		}()
 	case dir.sortby != getSortBy(dir.path) ||
+		dir.dircounts != getDirCounts(dir.path) ||
 		dir.dirfirst != getDirFirst(dir.path) ||
 		dir.dironly != getDirOnly(dir.path) ||
 		dir.hidden != getHidden(dir.path) ||
