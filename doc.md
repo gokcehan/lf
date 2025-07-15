@@ -296,6 +296,7 @@ The following additional keybindings are provided by default:
 	map ss :set sortby size; set info size
 	map st :set sortby time; set info time
 	map sa :set sortby atime; set info atime
+	map sb :set sortby btime; set info btime
 	map sc :set sortby ctime; set info ctime
 	map se :set sortby ext; set info
 	map gh cd ~
@@ -852,7 +853,7 @@ Apply filter pattern after each keystroke during filtering.
 ## info ([]string)  (default ``)
 
 A list of information that is shown for directory items at the right side of the pane.
-Currently supported information types are `size`, `time`, `atime`, `ctime`, `perm`, `user`, `group` and `custom`.
+Currently supported information types are `size`, `time`, `atime`, `btime`, `ctime`, `perm`, `user`, `group` and `custom`.
 The `custom` type is empty by default and can be updated using the `addcustominfo` command.
 Information is only shown when the pane width is more than twice the width of information.
 
@@ -997,7 +998,19 @@ This option has no effect when `ignoredia` is disabled.
 ## sortby (string) (default `natural`)
 
 Sort type for directories.
-Currently supported sort types are `natural`, `name`, `size`, `time`, `ctime`, `atime`, `ext` and `custom`.
+Currently supported sort types are `natural`, `name`, `size`, `time`, `atime`, `btime`, `ctime`, `ext` and `custom`.
+
+Meaning of each sort type:
+
+	natural   file name (track_2.flac comes before track_10.flac)
+	name      file name (track_10.flac comes before track_2.flac)
+	size      file size
+	time      time of last data modification
+	atime     time of last access
+	btime     time of file birth
+	ctime     time of last status (inode) change
+	ext       file extension
+	custom    property defined via `addcustominfo`
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
