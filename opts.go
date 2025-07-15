@@ -15,6 +15,7 @@ const (
 	sizeSort    sortMethod = "size"
 	timeSort    sortMethod = "time"
 	atimeSort   sortMethod = "atime"
+	btimeSort   sortMethod = "btime"
 	ctimeSort   sortMethod = "ctime"
 	extSort     sortMethod = "ext"
 	customSort  sortMethod = "custom"
@@ -26,12 +27,13 @@ func isValidSortMethod(method sortMethod) bool {
 		method == sizeSort ||
 		method == timeSort ||
 		method == atimeSort ||
+		method == btimeSort ||
 		method == ctimeSort ||
 		method == extSort ||
 		method == customSort
 }
 
-const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'ctime', 'ext' or 'custom'`
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
 
 var gOpts struct {
 	anchorfind       bool
@@ -344,6 +346,7 @@ func init() {
 		"ss": &listExpr{[]expr{&setExpr{"sortby", "size"}, &setExpr{"info", "size"}}, 1},
 		"st": &listExpr{[]expr{&setExpr{"sortby", "time"}, &setExpr{"info", "time"}}, 1},
 		"sa": &listExpr{[]expr{&setExpr{"sortby", "atime"}, &setExpr{"info", "atime"}}, 1},
+		"sb": &listExpr{[]expr{&setExpr{"sortby", "btime"}, &setExpr{"info", "btime"}}, 1},
 		"sc": &listExpr{[]expr{&setExpr{"sortby", "ctime"}, &setExpr{"info", "ctime"}}, 1},
 		"se": &listExpr{[]expr{&setExpr{"sortby", "ext"}, &setExpr{"info", ""}}, 1},
 		"gh": &callExpr{"cd", []string{"~"}, 1},

@@ -36,6 +36,7 @@ type file struct {
 	dirCount   int
 	dirSize    int64
 	accessTime time.Time
+	birthTime  time.Time
 	changeTime time.Time
 	customInfo string
 	ext        string
@@ -54,6 +55,7 @@ func newFile(path string) *file {
 			dirCount:   -1,
 			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
+			birthTime:  time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
 			customInfo: "",
 			ext:        "",
@@ -80,13 +82,16 @@ func newFile(path string) *file {
 
 	ts := times.Get(lstat)
 	at := ts.AccessTime()
-	var ct time.Time
-	// from times docs: ChangeTime() panics unless HasChangeTime() is true
+	// default to ModTime if BirthTime or ChangeTime cannot be determined
+	bt, ct := lstat.ModTime(), lstat.ModTime()
+	// from times docs:
+	// ChangeTime() panics unless HasChangeTime() is true and
+	// BirthTime() panics unless HasBirthTime() is true.
 	if ts.HasChangeTime() {
 		ct = ts.ChangeTime()
-	} else {
-		// fall back to ModTime if ChangeTime cannot be determined
-		ct = lstat.ModTime()
+	}
+	if ts.HasBirthTime() {
+		bt = ts.BirthTime()
 	}
 
 	dirCount := -1
@@ -114,6 +119,7 @@ func newFile(path string) *file {
 		dirCount:   dirCount,
 		dirSize:    -1,
 		accessTime: at,
+		birthTime:  bt,
 		changeTime: ct,
 		customInfo: "",
 		ext:        getFileExtension(lstat),
@@ -311,6 +317,14 @@ func (dir *dir) sort() {
 				return dir.files[i].accessTime.Before(dir.files[j].accessTime)
 			} else {
 				return dir.files[j].accessTime.Before(dir.files[i].accessTime)
+			}
+		})
+	case btimeSort:
+		sort.SliceStable(dir.files, func(i, j int) bool {
+			if !dir.reverse {
+				return dir.files[i].birthTime.Before(dir.files[j].birthTime)
+			} else {
+				return dir.files[j].birthTime.Before(dir.files[i].birthTime)
 			}
 		})
 	case ctimeSort:
