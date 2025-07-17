@@ -126,7 +126,7 @@ func getOptsMap() map[string]string {
 		name := "lf_" + t.Field(i).Name
 
 		// Skip maps
-		if name == "lf_keys" || name == "lf_cmdkeys" || name == "lf_cmds" {
+		if name == "lf_nkeys" || name == "lf_vkeys" || name == "lf_cmdkeys" || name == "lf_cmds" {
 			continue
 		}
 
