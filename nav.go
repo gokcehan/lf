@@ -82,16 +82,19 @@ func newFile(path string) *file {
 
 	ts := times.Get(lstat)
 	at := ts.AccessTime()
-	// default to ModTime if BirthTime or ChangeTime cannot be determined
-	bt, ct := lstat.ModTime(), lstat.ModTime()
 	// from times docs:
 	// ChangeTime() panics unless HasChangeTime() is true and
 	// BirthTime() panics unless HasBirthTime() is true.
-	if ts.HasChangeTime() {
-		ct = ts.ChangeTime()
-	}
+
+	// default to ModTime if BirthTime cannot be determined
+	bt := lstat.ModTime()
 	if ts.HasBirthTime() {
 		bt = ts.BirthTime()
+	}
+	// default to ModTime if ChangeTime cannot be determined
+	ct := lstat.ModTime()
+	if ts.HasChangeTime() {
+		ct = ts.ChangeTime()
 	}
 
 	dirCount := -1
