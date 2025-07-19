@@ -578,10 +578,7 @@ func (nav *nav) loadDirInternal(path string) *dir {
 		ignoredia:    gOpts.ignoredia,
 	}
 	go func() {
-		d := newDir(path)
-		d.sort()
-		d.ind, d.pos = 0, 0
-		nav.dirChan <- d
+		nav.dirChan <- newDir(path)
 	}()
 	return d
 }
@@ -603,6 +600,10 @@ func (nav *nav) loadDir(path string) *dir {
 }
 
 func (nav *nav) checkDir(dir *dir) {
+	if dir.loading {
+		return
+	}
+
 	s, err := os.Stat(dir.path)
 	if err != nil {
 		log.Printf("getting directory info: %s", err)
@@ -611,25 +612,20 @@ func (nav *nav) checkDir(dir *dir) {
 
 	switch {
 	case s.ModTime().After(dir.loadTime):
-		now := time.Now()
-
 		// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 		// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
-		if s.ModTime().After(now) {
+		if s.ModTime().After(time.Now()) {
 			return
 		}
 
 		dir.loading = true
-		dir.loadTime = now
 		go func() {
-			nd := newDir(dir.path)
-			nav.dirChan <- nd
+			nav.dirChan <- newDir(dir.path)
 		}()
 	case dir.dircounts != getDirCounts(dir.path):
 		dir.loading = true
 		go func() {
-			nd := newDir(dir.path)
-			nav.dirChan <- nd
+			nav.dirChan <- newDir(dir.path)
 		}()
 	// Although toggling dircounts can affect sorting, it is already handled by
 	// reloading the directory which should sort the files anyway, so it is not
