@@ -398,6 +398,8 @@ func (app *app) loop() {
 				}
 
 				app.nav.dirCache[d.path] = d
+			} else {
+				d.sort()
 			}
 
 			var oldCurrPath string
