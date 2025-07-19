@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -1613,9 +1614,7 @@ func (nav *nav) sync() error {
 		}
 	}
 	errMarks := nav.readMarks()
-	for k, v := range tempmarks {
-		nav.marks[k] = v
-	}
+	maps.Copy(nav.marks, tempmarks)
 
 	err = nav.readTags()
 

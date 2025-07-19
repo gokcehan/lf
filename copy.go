@@ -132,7 +132,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				newPath := filepath.Join(dst, rel)
 				switch {
 				case info.IsDir():
-					var dst_mode os.FileMode = os.ModePerm
+					var dst_mode = os.ModePerm
 					if slices.Contains(preserve, "mode") {
 						dst_mode = info.Mode()
 					}
