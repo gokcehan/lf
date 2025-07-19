@@ -169,7 +169,7 @@ func readdir(path string) ([]*file, error) {
 
 type dir struct {
 	loading      bool       // directory is loading from disk
-	loadTime     time.Time  // current loading or last load time
+	loadTime     time.Time  // last load time
 	ind          int        // index of current entry in files
 	pos          int        // position of current entry in ui
 	path         string     // full path of directory
@@ -191,15 +191,13 @@ type dir struct {
 }
 
 func newDir(path string) *dir {
-	time := time.Now()
-
 	files, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
 
 	return &dir{
-		loadTime:     time,
+		loadTime:     time.Now(),
 		path:         path,
 		files:        files,
 		allFiles:     files,
@@ -563,7 +561,6 @@ type nav struct {
 func (nav *nav) loadDirInternal(path string) *dir {
 	d := &dir{
 		loading:      true,
-		loadTime:     time.Now(),
 		path:         path,
 		sortby:       getSortBy(path),
 		dircounts:    getDirCounts(path),
