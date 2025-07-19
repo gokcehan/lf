@@ -625,8 +625,16 @@ func (nav *nav) checkDir(dir *dir) {
 			nd := newDir(dir.path)
 			nav.dirChan <- nd
 		}()
+	case dir.dircounts != getDirCounts(dir.path):
+		dir.loading = true
+		go func() {
+			nd := newDir(dir.path)
+			nav.dirChan <- nd
+		}()
+	// Although toggling dircounts can affect sorting, it is already handled by
+	// reloading the directory which should sort the files anyway, so it is not
+	// checked below.
 	case dir.sortby != getSortBy(dir.path) ||
-		dir.dircounts != getDirCounts(dir.path) ||
 		dir.dirfirst != getDirFirst(dir.path) ||
 		dir.dironly != getDirOnly(dir.path) ||
 		dir.hidden != getHidden(dir.path) ||
