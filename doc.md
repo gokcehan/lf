@@ -1301,9 +1301,9 @@ Command `cmap` is used to bind a key on the command line to a command line comma
 
 You can delete an existing binding by leaving the expression empty:
 
-	map gh             # deletes 'gh' mapping in normal and visual mode
-	nmap v             # deletes 'v' mapping in normal mode
-	vmap o             # deletes 'o' mapping in visual mode
+	map gh             # deletes 'gh' mapping in Normal and Visual mode
+	nmap v             # deletes 'v' mapping in Normal mode
+	vmap o             # deletes 'o' mapping in Visual mode
 	cmap <c-g>         # deletes '<c-g>' mapping
 
 Command `cmd` is used to define a custom command:
