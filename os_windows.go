@@ -74,22 +74,24 @@ func init() {
 		Username: username,
 	}
 
-	data := cmp.Or(os.Getenv("LF_CONFIG_HOME"), os.Getenv("LOCALAPPDATA"))
+	config := cmp.Or(os.Getenv("LF_CONFIG_HOME"), os.Getenv("APPDATA"))
 
 	gConfigPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "lfrc"),
-		filepath.Join(data, "lf", "lfrc"),
+		filepath.Join(config, "lf", "lfrc"),
 	}
 
 	gColorsPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "colors"),
-		filepath.Join(data, "lf", "colors"),
+		filepath.Join(config, "lf", "colors"),
 	}
 
 	gIconsPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "icons"),
-		filepath.Join(data, "lf", "icons"),
+		filepath.Join(config, "lf", "icons"),
 	}
+
+	data := cmp.Or(os.Getenv("LF_DATA_HOME"), os.Getenv("LOCALAPPDATA"))
 
 	gFilesPath = filepath.Join(data, "lf", "files")
 	gMarksPath = filepath.Join(data, "lf", "marks")
