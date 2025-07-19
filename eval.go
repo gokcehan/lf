@@ -68,6 +68,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.dircache, e)
 	case "dircounts", "nodircounts", "dircounts!":
 		err = applyBoolOpt(&gOpts.dircounts, e)
+		if err == nil {
+			app.nav.renew()
+			app.ui.loadFile(app, false)
+		}
 	case "dirfirst", "nodirfirst", "dirfirst!":
 		err = applyBoolOpt(&gOpts.dirfirst, e)
 		if err == nil {
