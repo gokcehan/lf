@@ -319,19 +319,19 @@ Configuration files should be located at:
 
 	OS       system-wide               user-specific
 	Unix     /etc/lf/lfrc              ~/.config/lf/lfrc
-	Windows  C:\ProgramData\lf\lfrc    C:\Users\<user>\AppData\Local\lf\lfrc
+	Windows  C:\ProgramData\lf\lfrc    C:\Users\<user>\AppData\Roaming\lf\lfrc
 
 The colors file should be located at:
 
 	OS       system-wide               user-specific
 	Unix     /etc/lf/colors            ~/.config/lf/colors
-	Windows  C:\ProgramData\lf\colors  C:\Users\<user>\AppData\Local\lf\colors
+	Windows  C:\ProgramData\lf\colors  C:\Users\<user>\AppData\Roaming\lf\colors
 
 The icons file should be located at:
 
 	OS       system-wide               user-specific
 	Unix     /etc/lf/icons             ~/.config/lf/icons
-	Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Local\lf\icons
+	Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Roaming\lf\icons
 
 The selection file should be located at:
 
@@ -365,12 +365,11 @@ You can configure these locations with the following variables given with their 
 	    ~/.local/share
 
 	Windows
-	    %ProgramData%
-	    C:\ProgramData
-
 	    %LF_CONFIG_HOME%
+	    %APPDATA%
+
+	    %LF_DATA_HOME%
 	    %LOCALAPPDATA%
-	    C:\Users\<user>\AppData\Local
 
 A sample configuration file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/lfrc.example
