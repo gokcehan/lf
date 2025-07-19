@@ -268,9 +268,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "size", "time", "atime", "ctime", "perm", "user", "group", "custom":
+			case "size", "time", "atime", "btime", "ctime", "perm", "user", "group", "custom":
 			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'btime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
 				return
 			}
 		}
@@ -504,9 +504,9 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "size", "time", "atime", "ctime", "perm", "user", "group", "custom":
+			case "size", "time", "atime", "btime", "ctime", "perm", "user", "group", "custom":
 			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'btime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
 				return
 			}
 		}
