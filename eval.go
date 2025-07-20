@@ -2346,8 +2346,8 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.selectionInd++
 			}
 		}
-		// resetting visual mode here instead of inside `normal()`
-		// allows us to use visual mode inside search, find etc.
+		// resetting Visual mode here instead of inside `normal()`
+		// allows us to use Visual mode inside search, find etc.
 		dir.visualAnchor = -1
 		normal(app)
 	case "visual-unselect":

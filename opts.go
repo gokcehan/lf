@@ -276,7 +276,7 @@ func init() {
 	gOpts.numberfmt = "\033[33m"
 	gOpts.tagfmt = "\033[31m"
 
-	// normal and visual mode
+	// Normal and Visual mode
 	keys := map[string]expr{
 		"k":          &callExpr{"up", nil, 1},
 		"<up>":       &callExpr{"up", nil, 1},
@@ -352,20 +352,20 @@ func init() {
 		"gh": &callExpr{"cd", []string{"~"}, 1},
 	}
 
-	// insert bindings that apply to both normal & visual mode first
+	// insert bindings that apply to both Normal & Visual mode first
 	gOpts.nkeys = maps.Clone(keys)
-	// now add normal mode specific ones
+	// now add Normal mode specific ones
 	gOpts.nkeys["<space>"] = &listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}
 	gOpts.nkeys["V"] = &callExpr{"visual", nil, 1}
 	gOpts.nkeys["v"] = &callExpr{"invert", nil, 1}
 
-	// now do the same for visual mode
+	// now do the same for Visual mode
 	gOpts.vkeys = maps.Clone(keys)
 	gOpts.vkeys["<esc>"] = &callExpr{"visual-discard", nil, 1}
 	gOpts.vkeys["V"] = &callExpr{"visual-accept", nil, 1}
 	gOpts.vkeys["o"] = &callExpr{"visual-change", nil, 1}
 
-	// command line mode bindings can be assigned directly
+	// Command-line mode bindings can be assigned directly
 	gOpts.cmdkeys = map[string]expr{
 		"<space>":        &callExpr{"cmd-insert", []string{" "}, 1},
 		"<esc>":          &callExpr{"cmd-escape", nil, 1},
