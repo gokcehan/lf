@@ -182,7 +182,8 @@ type dir struct {
 	dironly      bool       // dironly value from last sort
 	hidden       bool       // hidden value from last sort
 	reverse      bool       // reverse value from last sort
-	visualAnchor int        // index where visual mode was initiated
+	visualAnchor int        // index where Visual mode was initiated
+	visualWrap   int        // wrap direction in Visual mode
 	hiddenfiles  []string   // hiddenfiles value from last sort
 	filter       []string   // last filter for this directory
 	ignorecase   bool       // ignorecase value from last sort
@@ -459,13 +460,21 @@ func (dir *dir) visualSelections() []string {
 		return paths
 	}
 
-	beg, end := dir.ind, dir.visualAnchor
-	if beg > end {
-		beg, end = end, beg
+	var beg, end int
+	switch {
+	case dir.visualWrap == 0:
+		beg = min(dir.ind, dir.visualAnchor)
+		end = max(dir.ind, dir.visualAnchor)
+	case dir.visualWrap < 0:
+		beg = dir.ind
+		end = dir.visualAnchor - dir.visualWrap*len(dir.files)
+	case dir.visualWrap > 0:
+		beg = dir.visualAnchor
+		end = dir.ind + dir.visualWrap*len(dir.files)
 	}
 
-	for _, f := range dir.files[beg : end+1] {
-		paths = append(paths, f.path)
+	for i := beg; i < min(end+1, beg+len(dir.files)); i++ {
+		paths = append(paths, dir.files[i%len(dir.files)].path)
 	}
 
 	return paths
@@ -1017,6 +1026,7 @@ func (nav *nav) up(dist int) bool {
 	if dir.ind == 0 {
 		if gOpts.wrapscroll {
 			nav.bottom()
+			dir.visualWrap -= 1
 		}
 		return old != dir.ind
 	}
@@ -1040,6 +1050,7 @@ func (nav *nav) down(dist int) bool {
 	if dir.ind >= maxind {
 		if gOpts.wrapscroll {
 			nav.top()
+			dir.visualWrap += 1
 		}
 		return old != dir.ind
 	}
@@ -1751,6 +1762,7 @@ func (nav *nav) findNext() (bool, bool) {
 	if gOpts.wrapscan {
 		for i := range dir.ind {
 			if findMatch(dir.files[i].Name(), nav.find) {
+				dir.visualWrap += 1
 				return nav.up(dir.ind - i), true
 			}
 		}
@@ -1768,6 +1780,7 @@ func (nav *nav) findPrev() (bool, bool) {
 	if gOpts.wrapscan {
 		for i := len(dir.files) - 1; i > dir.ind; i-- {
 			if findMatch(dir.files[i].Name(), nav.find) {
+				dir.visualWrap -= 1
 				return nav.down(i - dir.ind), true
 			}
 		}
@@ -1810,6 +1823,7 @@ func (nav *nav) searchNext() (bool, error) {
 			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 				return false, err
 			} else if matched {
+				dir.visualWrap += 1
 				return nav.up(dir.ind - i), nil
 			}
 		}
@@ -1831,6 +1845,7 @@ func (nav *nav) searchPrev() (bool, error) {
 			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
 				return false, err
 			} else if matched {
+				dir.visualWrap -= 1
 				return nav.down(i - dir.ind), nil
 			}
 		}
