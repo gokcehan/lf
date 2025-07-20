@@ -475,7 +475,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		tag := " "
-		if val, ok := context.tags[evalSymlinks(path)]; ok && len(val) > 0 {
+		if val, ok := context.tags[path]; ok && len(val) > 0 {
 			tag = val
 		}
 

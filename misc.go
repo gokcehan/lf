@@ -32,14 +32,6 @@ func replaceTilde(s string) string {
 	return s
 }
 
-func evalSymlinks(path string) string {
-	if target, err := filepath.EvalSymlinks(path); err == nil {
-		return target
-	}
-
-	return path
-}
-
 func runeSliceWidth(rs []rune) int {
 	w := 0
 	for _, r := range rs {
