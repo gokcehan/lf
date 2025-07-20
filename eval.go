@@ -837,6 +837,7 @@ func normal(app *app) {
 func visual(app *app) {
 	dir := app.nav.currDir()
 	dir.visualAnchor = dir.ind
+	dir.visualWrap = 0
 
 	app.ui.loadFileInfo(app.nav)
 }
@@ -2378,6 +2379,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		beg := max(dir.ind-dir.pos, 0)
 		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
 		dir.pos = dir.ind - beg
+		dir.visualWrap = -dir.visualWrap
 		dir.boundPos(app.nav.height)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
