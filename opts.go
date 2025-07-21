@@ -35,6 +35,14 @@ func isValidSortMethod(method sortMethod) bool {
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
 
+type searchMethod string
+
+const (
+	textSearch searchMethod = "text"
+	globSearch searchMethod = "glob"
+	regSearch  searchMethod = "re"
+)
+
 var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
@@ -53,6 +61,8 @@ var gOpts struct {
 	dupfilefmt       string
 	globfilter       bool
 	globsearch       bool
+	searchmethod     searchMethod
+	filtermethod     searchMethod
 	hidden           bool
 	icons            bool
 	ignorecase       bool
@@ -222,6 +232,8 @@ func init() {
 	gOpts.cutfmt = "\033[7;31m"
 	gOpts.globfilter = false
 	gOpts.globsearch = false
+	gOpts.filtermethod = textSearch
+	gOpts.searchmethod = textSearch
 	gOpts.hidden = false
 	gOpts.icons = false
 	gOpts.ignorecase = true

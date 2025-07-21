@@ -11,6 +11,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"slices"
 	"sort"
 	"strconv"
@@ -1788,7 +1789,7 @@ func (nav *nav) findPrev() (bool, bool) {
 	return false, false
 }
 
-func searchMatch(name, pattern string, glob bool) (matched bool, err error) {
+func searchMatch(name, pattern string, method searchMethod) (matched bool, err error) {
 	if gOpts.ignorecase {
 		lpattern := strings.ToLower(pattern)
 		if !gOpts.smartcase || lpattern == pattern {
@@ -1803,16 +1804,22 @@ func searchMatch(name, pattern string, glob bool) (matched bool, err error) {
 			name = removeDiacritics(name)
 		}
 	}
-	if glob {
+	switch method {
+	case textSearch:
+		return strings.Contains(name, pattern), nil
+	case globSearch:
 		return filepath.Match(pattern, name)
+	case regSearch:
+		return regexp.MatchString(pattern, name)
+	default:
+		return false, fmt.Errorf("searchMatch: invalid searchMethod")
 	}
-	return strings.Contains(name, pattern), nil
 }
 
 func (nav *nav) searchNext() (bool, error) {
 	dir := nav.currDir()
 	for i := dir.ind + 1; i < len(dir.files); i++ {
-		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
+		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 			return false, err
 		} else if matched {
 			return nav.down(i - dir.ind), nil
@@ -1820,7 +1827,7 @@ func (nav *nav) searchNext() (bool, error) {
 	}
 	if gOpts.wrapscan {
 		for i := range dir.ind {
-			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
+			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 				return false, err
 			} else if matched {
 				dir.visualWrap += 1
@@ -1834,7 +1841,7 @@ func (nav *nav) searchNext() (bool, error) {
 func (nav *nav) searchPrev() (bool, error) {
 	dir := nav.currDir()
 	for i := dir.ind - 1; i >= 0; i-- {
-		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
+		if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 			return false, err
 		} else if matched {
 			return nav.up(dir.ind - i), nil
@@ -1842,7 +1849,7 @@ func (nav *nav) searchPrev() (bool, error) {
 	}
 	if gOpts.wrapscan {
 		for i := len(dir.files) - 1; i > dir.ind; i-- {
-			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.globsearch); err != nil {
+			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 				return false, err
 			} else if matched {
 				dir.visualWrap -= 1
@@ -1855,7 +1862,7 @@ func (nav *nav) searchPrev() (bool, error) {
 
 func isFiltered(f os.FileInfo, filter []string) bool {
 	for _, pattern := range filter {
-		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"), gOpts.globfilter)
+		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"), gOpts.filtermethod)
 		if err != nil {
 			log.Printf("Filter Error: %s", err)
 			return false

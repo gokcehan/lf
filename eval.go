@@ -106,8 +106,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+		app.ui.echoerr("option 'globfilter' is deprecated, use 'filtermethod' instead")
 	case "globsearch", "noglobsearch", "globsearch!":
 		err = applyBoolOpt(&gOpts.globsearch, e)
+		app.ui.echoerr("option 'globsearch' is deprecated, use 'searchmethod' instead")
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
@@ -379,6 +381,26 @@ func (e *setExpr) eval(app *app, args []string) {
 		default:
 			app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
 			return
+		}
+	case "filtermethod":
+		switch e.val {
+		case "text", "glob", "re":
+			gOpts.filtermethod = searchMethod(e.val)
+		default:
+			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 're")
+		}
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
+	case "searchmethod":
+		switch e.val {
+		case "text", "glob", "re":
+			gOpts.searchmethod = searchMethod(e.val)
+		default:
+			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 're'")
 		}
 	case "shell":
 		gOpts.shell = e.val
