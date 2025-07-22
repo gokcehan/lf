@@ -382,12 +382,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
 			return
 		}
-		if err == nil {
-			app.nav.sort()
-			app.nav.position()
-			app.ui.sort()
-			app.ui.loadFile(app, true)
-		}
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
 	case "searchmethod":
 		switch e.val {
 		case "text", "glob", "regex":
