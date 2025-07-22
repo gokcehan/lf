@@ -49,6 +49,7 @@ func run() {
 	if gOpts.mouse {
 		screen.EnableMouse()
 	}
+	screen.EnablePaste()
 
 	ui := newUI(screen)
 	nav := newNav(ui.wins[0].h)
