@@ -40,7 +40,7 @@ type searchMethod string
 const (
 	textSearch searchMethod = "text"
 	globSearch searchMethod = "glob"
-	regSearch  searchMethod = "re"
+	regSearch  searchMethod = "regex"
 )
 
 var gOpts struct {

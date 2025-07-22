@@ -384,10 +384,11 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "filtermethod":
 		switch e.val {
-		case "text", "glob", "re":
+		case "text", "glob", "regex":
 			gOpts.filtermethod = searchMethod(e.val)
 		default:
-			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 're")
+			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
+			return
 		}
 		if err == nil {
 			app.nav.sort()
@@ -397,10 +398,11 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "searchmethod":
 		switch e.val {
-		case "text", "glob", "re":
+		case "text", "glob", "regex":
 			gOpts.searchmethod = searchMethod(e.val)
 		default:
-			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 're'")
+			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 'regex'")
+			return
 		}
 	case "shell":
 		gOpts.shell = e.val
