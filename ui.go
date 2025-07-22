@@ -664,6 +664,7 @@ type ui struct {
 	styles      styleMap
 	icons       iconMap
 	currentFile string
+	pasteEvent  bool
 }
 
 func newUI(screen tcell.Screen) *ui {
@@ -1398,6 +1399,10 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 	switch tev := ev.(type) {
 	case *tcell.EventKey:
+		if ui.pasteEvent {
+			return nil
+		}
+
 		// KeyRune is a regular character
 		if tev.Key() == tcell.KeyRune {
 			switch {
@@ -1576,6 +1581,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return &callExpr{"on-focus-gained", nil, 1}
 		} else {
 			return &callExpr{"on-focus-lost", nil, 1}
+		}
+	case *tcell.EventPaste:
+		if tev.Start() {
+			ui.pasteEvent = true
+		} else if tev.End() {
+			ui.pasteEvent = false
 		}
 	}
 	return nil
