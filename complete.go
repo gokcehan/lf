@@ -343,6 +343,8 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 			break
 		}
 		switch f[1] {
+		case "filtermethod", "searchmethod":
+			matches, longest = matchWord(f[2], []string{"text", "glob", "regex"})
 		case "selmode":
 			matches, longest = matchWord(f[2], []string{"all", "dir"})
 		case "sortby":
