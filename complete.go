@@ -5,6 +5,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"sort"
 	"strings"
 )
@@ -325,46 +326,70 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 	s := string(acc)
 	f := tokenize(s)
 
-	var longest []rune
-
-	switch len(f) {
-	case 1:
+	if len(f) == 1 {
 		matches, longestAcc = matchCmd(s)
-	case 2:
-		switch f[0] {
-		case "set":
+		return
+	}
+
+	longest := []rune(f[len(f)-1])
+
+	switch f[0] {
+	case "set":
+		if len(f) == 2 {
 			matches, longest = matchWord(f[1], gOptWords)
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "map", "nmap", "vmap", "cmap", "cmd":
-			longestAcc = acc
-		default:
-			matches, longest = matchFile(f[len(f)-1])
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
+			break
 		}
-	case 3:
-		switch f[0] {
-		case "setlocal":
-			matches, longest = matchWord(f[2], gLocalOptWords)
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "map", "nmap", "vmap", "cmap":
-			matches, longest = matchCmd(f[2])
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
-		case "addcustominfo":
-			longestAcc = acc
+		if len(f) != 3 {
+			break
+		}
+		switch f[1] {
+		case "selmode":
+			matches, longest = matchWord(f[2], []string{"all", "dir"})
+		case "sortby":
+			matches, longest = matchWord(f[2], []string{"natural", "name", "size", "time", "atime", "btime", "ctime", "ext", "custom"})
 		default:
-			matches, longest = matchFile(f[len(f)-1])
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
+			if slices.Contains(gOptWords, f[1]+"!") {
+				matches, longest = matchWord(f[2], []string{"true", "false"})
+			}
+		}
+	case "setlocal":
+		if len(f) == 2 {
+			matches, longest = matchFile(f[1])
+			break
+		}
+		if len(f) == 3 {
+			matches, longest = matchWord(f[2], gLocalOptWords)
+			break
+		}
+		if len(f) != 4 {
+			break
+		}
+		switch f[2] {
+		case "sortby":
+			matches, longest = matchWord(f[3], []string{"natural", "name", "size", "time", "atime", "btime", "ctime", "ext", "custom"})
+		default:
+			if slices.Contains(gLocalOptWords, f[2]+"!") {
+				matches, longest = matchWord(f[3], []string{"true", "false"})
+			}
+		}
+	case "map", "nmap", "vmap", "cmap":
+		if len(f) == 3 {
+			matches, longest = matchCmd(f[2])
+		}
+	case "cmd":
+	case "toggle":
+		matches, longest = matchFile(f[len(f)-1])
+	case "cd", "select", "source":
+		if len(f) == 2 {
+			matches, longest = matchFile(f[1])
 		}
 	default:
-		switch f[0] {
-		case "set", "setlocal", "map", "nmap", "vmap", "cmap", "cmd":
-			longestAcc = acc
-		default:
+		if !slices.Contains(gCmdWords, f[0]) {
 			matches, longest = matchFile(f[len(f)-1])
-			longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 		}
 	}
 
+	longestAcc = append(acc[:len(acc)-len([]rune(f[len(f)-1]))], longest...)
 	return
 }
 
