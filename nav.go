@@ -1809,7 +1809,7 @@ func searchMatch(name, pattern string, method searchMethod) (matched bool, err e
 		return strings.Contains(name, pattern), nil
 	case globSearch:
 		return filepath.Match(pattern, name)
-	case regSearch:
+	case regexSearch:
 		return regexp.MatchString(pattern, name)
 	default:
 		return false, fmt.Errorf("searchMatch: invalid searchMethod")

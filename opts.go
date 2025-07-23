@@ -38,9 +38,9 @@ const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name
 type searchMethod string
 
 const (
-	textSearch searchMethod = "text"
-	globSearch searchMethod = "glob"
-	regSearch  searchMethod = "regex"
+	textSearch  searchMethod = "text"
+	globSearch  searchMethod = "glob"
+	regexSearch searchMethod = "regex"
 )
 
 var gOpts struct {
