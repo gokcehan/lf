@@ -98,6 +98,18 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
+	case "filtermethod":
+		switch e.val {
+		case "text", "glob", "regex":
+			gOpts.filtermethod = searchMethod(e.val)
+		default:
+			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
+			return
+		}
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
 	case "globfilter", "noglobfilter", "globfilter!":
 		app.ui.echoerr("option 'globfilter' is deprecated, use 'filtermethod' instead")
 	case "globsearch", "noglobsearch", "globsearch!":
@@ -296,7 +308,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			switch s {
 			case "mode", "timestamps":
 			default:
-				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
+				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps' separated with colon")
 				return
 			}
 		}
@@ -364,6 +376,14 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.scrolloff = n
+	case "searchmethod":
+		switch e.val {
+		case "text", "glob", "regex":
+			gOpts.searchmethod = searchMethod(e.val)
+		default:
+			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 'regex'")
+			return
+		}
 	case "selectfmt":
 		gOpts.selectfmt = e.val
 	case "selmode":
@@ -372,26 +392,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			gOpts.selmode = e.val
 		default:
 			app.ui.echoerr("selmode: value should either be 'all' or 'dir'")
-			return
-		}
-	case "filtermethod":
-		switch e.val {
-		case "text", "glob", "regex":
-			gOpts.filtermethod = searchMethod(e.val)
-		default:
-			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "searchmethod":
-		switch e.val {
-		case "text", "glob", "regex":
-			gOpts.searchmethod = searchMethod(e.val)
-		default:
-			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 'regex'")
 			return
 		}
 	case "shell":
