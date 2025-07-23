@@ -1631,7 +1631,7 @@ Searching is the traditional method to move the selection to a file matching a g
 Finding is an alternative way to search for a pattern possibly using fewer keystrokes.
 
 The searching mechanism is implemented with commands `search` (default `/`), `search-back` (default `?`), `search-next` (default `n`), and `search-prev` (default `N`).
-You can set `searchmethod` to `text` to match using a glob pattern.
+You can set `searchmethod` to `glob` to match using a glob pattern.
 Globbing supports `*` to match any sequence, `?` to match any character, and `[...]` or `[^...]` to match character sets or ranges.
 You can set `searchmethod` to `regex` to match using a regex pattern.
 For a full overview of Go's RE2 syntax, see https://pkg.go.dev/regexp/syntax.
