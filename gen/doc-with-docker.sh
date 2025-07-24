@@ -11,22 +11,46 @@
 # the `-doc` command line flag. Thus the same documentation is used for online
 # and terminal display.
 
-[ -z $version ] && version=$(git describe --tags)
-[ -z $date ] && date=$(date +%F)
+set -o errexit -o nounset
+
+[ -z "${version:-}" ] && version=$(git describe --tags)
+[ -z "${date:-}" ] && date=$(date +%F)
 
 PANDOC_IMAGE=pandoc/minimal:3.7
 
-docker run --rm -v "$PWD:/data" --user "$(id -u):$(id -g)" $PANDOC_IMAGE \
-    --standalone \
-    --from gfm --to man \
-    --metadata=title:"LF" \
-    --metadata=section:"1" \
-    --metadata=date:"$date" \
-    --metadata=footer:"$version" \
-    --metadata=header:"DOCUMENTATION" \
-    doc.md -o lf.1
+generate_man_page() {
+  docker run --rm -v "$PWD:/data" "$@" "$PANDOC_IMAGE" \
+      --standalone \
+      --from gfm --to man \
+      --metadata=title:"LF" \
+      --metadata=section:"1" \
+      --metadata=date:"$date" \
+      --metadata=footer:"$version" \
+      --metadata=header:"DOCUMENTATION" \
+      doc.md -o lf.1
+  # Patch the TH man page command.
+  sed -Ei '/^\.TH /{s/(([^"]*"){7})[^"]*(".*)/\1\3/}' lf.1
+}
 
-docker run --rm -v "$PWD:/data" --user "$(id -u):$(id -g)" $PANDOC_IMAGE \
-    --standalone \
-    --from gfm --to plain \
-    doc.md -o doc.txt
+generate_plain_text() {
+  docker run --rm -v "$PWD:/data" "$@" "$PANDOC_IMAGE" \
+      --standalone \
+      --from gfm --to plain \
+      doc.md -o doc.txt
+}
+
+# If you get
+# pandoc: lf.1: withFile: permission denied (Permission denied)
+# try setting the "ROOTLESS" environment variable to a non-empty value.
+
+if [ -z "${ROOTLESS:-}" ]; then
+  generate_man_page --user "$(id -u):$(id -g)" # Not rootless.
+else
+  generate_man_page
+fi
+
+if [ -z "${ROOTLESS:-}" ]; then
+  generate_plain_text --user "$(id -u):$(id -g)" # Not rootless.
+else
+  generate_plain_text
+fi

@@ -6,6 +6,8 @@
 # given to the go compiler to strip the binary. Current git tag is passed to
 # the compiler by default to be used as the version in the binary.
 
-[ -z $version ] && version=$(git describe --tags)
+set -o errexit -o nounset
+
+[ -z "${version:-}" ] && version=$(git describe --tags)
 
 CGO_ENABLED=0 go build -ldflags="-s -w -X main.gVersion=$version" "$@"

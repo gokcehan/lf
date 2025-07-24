@@ -31,7 +31,7 @@ build() {
 }
 
 package() (
-    cd dist || return 1 
+    cd dist || return 1
     # Since the function is surrounded by (), the cd only affects a subshell
     OUTFILE=
     case "$1" in

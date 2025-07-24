@@ -11,8 +11,10 @@
 # the `-doc` command line flag. Thus the same documentation is used for online
 # and terminal display.
 
-[ -z $version ] && version=$(git describe --tags)
-[ -z $date ] && date=$(date +%F)
+set -o errexit -o nounset
+
+[ -z "${version:-}" ] && version=$(git describe --tags)
+[ -z "${date:-}" ] && date=$(date +%F)
 
 pandoc \
     --standalone \
@@ -23,6 +25,9 @@ pandoc \
     --metadata=footer:"$version" \
     --metadata=header:"DOCUMENTATION" \
     doc.md -o lf.1
+
+# Patch the TH man page command.
+sed -Ei '/^\.TH /{s/(([^"]*"){7})[^"]*(".*)/\1\3/}' lf.1
 
 pandoc \
     --standalone \
