@@ -8,7 +8,7 @@
 # compressed in an archive form (`.zip` for windows and `.tar.gz` for the rest)
 # within a folder named `dist`.
 
-[ -z "$version" ] && version=$(git describe --tags)
+[ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
 
 test -d dist && {
     echo "gen/xbuild.sh: WARNING: removing preexisting subdir 'dist'"
@@ -31,7 +31,7 @@ build() {
 }
 
 package() (
-    cd dist || return 1 
+    cd dist || return 1
     # Since the function is surrounded by (), the cd only affects a subshell
     OUTFILE=
     case "$1" in
@@ -90,3 +90,5 @@ if test -n "$ERRORS"; then
     printf "\ngen/xbuild.sh: some targets failed to compile.\n"
     exit 1
 fi
+
+# vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80
