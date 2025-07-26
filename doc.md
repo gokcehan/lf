@@ -1015,8 +1015,11 @@ Meaning of each sort type:
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
-Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of four characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
+Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of five characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
+
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
+
+File size is formatted using first letter of IEC 80000-13:2025 prefixes for binary multiples (i.e. 1024 bytes is `1.0K`).
 
 ## tabstop (int) (default 8)
 
