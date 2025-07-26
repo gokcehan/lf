@@ -8,6 +8,32 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
+## r37 (Unreleased)
+
+### Changed
+
+- The default paths of files read by `lf` is changed on Windows, to separate configuration files from data files (#2051).
+  - Configuration files (`lfrc`/`colors`/`icons`) are now stored in `%APPDATA%`, which can be overridden by `%LF_CONFIG_HOME%`.
+  - Data files (`files`/`marks`/`tags`/`history`) are now stored in `%LOCALAPPDATA%`, which can be overridden by `%LF_DATA_HOME%`.
+- The change for following symbolic links when tagging files from the previous release has been reverted (#2055). The previous change made it impossible to tag symbolic links separately from their targets, and also caused `lf` to run slowly in some cases.
+- The existing `globfilter` and `globsearch` options are now deprecated in favor of the new `filtermethod` and `searchmethod` options, which support regex patterns (#2058).
+  - `set globfilter true` should be replaced by `set filtermethod glob`.
+  - `set globsearch true` should be replaced by `set searchmethod glob`.
+- File sizes are now displayed using binary units (e.g. `1.0K` means 1024 bytes, not 1000 bytes) (#2062). The maximum width for displaying the file size has been increased from four to five characters.
+
+### Added
+
+- `dircounts` are now respected when sorting by size (#2025).
+- The `info` and `sortby` options now support `btime` (file creation time) (#2042). This depends on support for file creation times from the underlying system.
+- The selection in Visual mode now follows wrapping when `wrapscan`/`wrapscroll` is enabled (#2056).
+- Input pasted from the terminal is now ignored while in Normal mode (#2059). This prevents pasted content from being treated as keybindings, which can result in dangerous unintended behavior.
+- The Command-line mode completion now supports keywords for the `selmode` and `sortby` options (#2061).
+
+### Fixed
+
+- `dircounts` are now automatically populated after enabling it (#2049).
+- A bug where directories are unsorted after reloading when `dircache` is disabled is now fixed (#2050).
+
 ## [r36](https://github.com/gokcehan/lf/releases/tag/r36)
 
 ### Changed
