@@ -98,20 +98,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
-	case "filtermethod":
-		switch e.val {
-		case "text", "glob", "regex":
-			gOpts.filtermethod = searchMethod(e.val)
-		default:
-			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
-			return
-		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
+	// DEPRECATED: remove after r37 is released
 	case "globfilter", "noglobfilter", "globfilter!":
 		app.ui.echoerr("option 'globfilter' is deprecated, use 'filtermethod' instead")
+	// DEPRECATED: remove after r37 is released
 	case "globsearch", "noglobsearch", "globsearch!":
 		app.ui.echoerr("option 'globsearch' is deprecated, use 'searchmethod' instead")
 	case "hidden", "nohidden", "hidden!":
@@ -239,6 +229,18 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.errorfmt = e.val
 	case "filesep":
 		gOpts.filesep = e.val
+	case "filtermethod":
+		switch e.val {
+		case "text", "glob", "regex":
+			gOpts.filtermethod = searchMethod(e.val)
+		default:
+			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
+			return
+		}
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {

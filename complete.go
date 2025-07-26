@@ -348,10 +348,10 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		case "selmode":
 			matches, longest = matchWord(f[2], []string{"all", "dir"})
 		case "sortby":
-			matches, longest = matchWord(f[2], []string{"natural", "name", "size", "time", "atime", "btime", "ctime", "ext", "custom"})
+			matches, longest = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
-				matches, longest = matchWord(f[2], []string{"true", "false"})
+				matches, longest = matchWord(f[2], []string{"false", "true"})
 			}
 		}
 	case "setlocal":
@@ -368,10 +368,10 @@ func completeCmd(acc []rune) (matches []string, longestAcc []rune) {
 		}
 		switch f[2] {
 		case "sortby":
-			matches, longest = matchWord(f[3], []string{"natural", "name", "size", "time", "atime", "btime", "ctime", "ext", "custom"})
+			matches, longest = matchWord(f[3], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
 		default:
 			if slices.Contains(gLocalOptWords, f[2]+"!") {
-				matches, longest = matchWord(f[3], []string{"true", "false"})
+				matches, longest = matchWord(f[3], []string{"false", "true"})
 			}
 		}
 	case "map", "nmap", "vmap", "cmap":
