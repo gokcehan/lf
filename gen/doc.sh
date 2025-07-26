@@ -13,7 +13,11 @@
 
 set -o errexit -o nounset
 
-[ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
+get_version() {
+    printf "r%s" $(($(git describe --tags --abbrev=0 | tr -d r) + 1))
+}
+
+[ -z "${version:-}" ] && version=$(get_version)
 [ -z "${date:-}" ] && date=$(date +%F)
 
 PANDOC_IMAGE=pandoc/minimal:3.7
