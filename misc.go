@@ -234,38 +234,43 @@ func readPairs(r io.Reader) ([][]string, error) {
 	return readArrays(r, 2, 2)
 }
 
-// This function converts a size in bytes to a human readable form using metric
-// suffixes (e.g. 1K = 1000). For values less than 10 the first significant
-// digit is shown, otherwise it is hidden. Numbers are always rounded down.
-// This should be fine for most human beings.
-func humanize(size int64) string {
-	if size < 1000 {
+// This function converts a size in bytes to a human readable form using
+// prefixes for binary multiples (e.g., 1 KiB = 1024 B). The output should be
+// no more than 5 characters long.
+func humanize(size uint64) string {
+	if size < 1024 {
 		return fmt.Sprintf("%dB", size)
 	}
 
-	suffix := []string{
-		"K", // kilo
-		"M", // mega
-		"G", // giga
-		"T", // tera
-		"P", // peta
-		"E", // exa
-		"Z", // zeta
-		"Y", // yotta
+	// Shortened (due to TUI space constraints) version of
+	// IEC 80000-13:2025 prefixes for binary multiples.
+	// *Note*: due to [`FileSize.Size()`](https://pkg.go.dev/io/fs#FileInfo)
+	// being `int64`, maximum possible representable value would be 8 EiB.
+	prefixes := []string{
+		"K", // kibi (2^10)
+		"M", // mebi (2^20)
+		"G", // gibi (2^30)
+		"T", // tebi (2^40)
+		"P", // pebi (2^50)
+		"E", // exbi (2^60)
+		"Z", // zebi (2^70)
+		"Y", // yobi (2^80)
+		"R", // robi (2^90)
+		"Q", // quebi (2^100)
 	}
 
-	curr := float64(size) / 1000
-	for _, s := range suffix {
-		if curr < 10 {
-			return fmt.Sprintf("%.1f%s", curr-0.0499, s)
+	curr := float64(size) / 1024
+	for _, prefix := range prefixes {
+		if curr < 99.95 {
+			return fmt.Sprintf("%.1f%s", curr, prefix)
 		}
-		if curr < 1000 {
-			return fmt.Sprintf("%d%s", int(curr), s)
+		if curr < 1023.5 {
+			return fmt.Sprintf("%.0f%s", curr, prefix)
 		}
-		curr /= 1000
+		curr /= 1024
 	}
 
-	return ""
+	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])
 }
 
 // This function compares two strings for natural sorting which takes into

@@ -316,9 +316,9 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 			if f.IsDir() && f.dirSize < 0 {
 				sz = "-"
 			} else {
-				sz = humanize(f.TotalSize())
+				sz = humanize(uint64(f.TotalSize()))
 			}
-			fmt.Fprintf(&info, " %4s", sz)
+			fmt.Fprintf(&info, " %5s", sz)
 		case "time":
 			fmt.Fprintf(&info, " %*s", max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
@@ -838,8 +838,8 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
-	replace("%s", humanize(curr.Size()))
-	replace("%S", fmt.Sprintf("%4s", humanize(curr.Size())))
+	replace("%s", humanize(uint64(curr.Size())))
+	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
 
