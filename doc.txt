@@ -153,9 +153,8 @@ The following options can be used to customize the behavior of lf:
     dupfilefmt        string    (default '%f.~%n~')
     errorfmt          string    (default "\033[7;31;47m")
     filesep           string    (default "\n")
+    filtermethod      string    (default 'text')
     findlen           int       (default 1)
-    globfilter        bool      (default false)
-    globsearch        bool      (default false)
     hidden            bool      (default false)
     hiddenfiles       []string  (default '.*' for Unix and '' for Windows)
     history           bool      (default true)
@@ -183,6 +182,7 @@ The following options can be used to customize the behavior of lf:
     roundbox          bool      (default false)
     rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
     scrolloff         int       (default 0)
+    searchmethod      string    (default 'text')
     selectfmt         string    (default "\033[7;35m")
     selmode           string    (default 'all')
     shell             string    (default 'sh' for Unix and 'cmd' for Windows)
@@ -839,22 +839,16 @@ filesep (string) (default \n)
 
 File separator used in environment variables fs, fv and fx.
 
+filtermethod (string) (default text)
+
+How filter command patterns are treated. Currently supported methods are
+text (i.e. string literals), glob (i.e shell globs) and regex (i.e.
+regular expressions). See SEARCHING FILES for more details.
+
 findlen (int) (default 1)
 
 Number of characters prompted for the find command. When this value is
 set to 0, find command prompts until there is only a single match left.
-
-globfilter (bool) (default false)
-
-Patterns are treated as globs for the filter command, see globsearch for
-more details.
-
-globsearch (bool) (default false)
-
-When this option is enabled, search command patterns are considered as
-globs, otherwise, they are literals. With globbing, * matches any
-sequence, ? matches any character, and [...] or [^...] matches character
-sets or ranges. Otherwise, these characters are interpreted as they are.
 
 hidden (bool) (default false)
 
@@ -958,7 +952,7 @@ disabled when the value of this option is set to zero.
 preserve ([]string) (default mode)
 
 List of attributes that are preserved when copying files. Currently
-supported attributes are mode (i.a. access mode) and timestamps (i.e.
+supported attributes are mode (i.e. access mode) and timestamps (i.e.
 modification time and access time). Note that preserving other
 attributes like ownership of change/birth timestamp is desirable, but
 not portably supported in Go.
@@ -1051,6 +1045,12 @@ when this option is set to a large value that is bigger than the half of
 number of lines. A smaller offset can be used when the current file is
 close to the beginning or end of the list to show the maximum number of
 items.
+
+searchmethod (string) default text)
+
+How search command patterns are treated. Currently supported methods are
+text (i.e. string literals), glob (i.e shell globs) and regex (i.e.
+regular expressions). See SEARCHING FILES for more details.
 
 shell (string) (default sh for Unix and cmd for Windows)
 
@@ -1820,9 +1820,11 @@ way to search for a pattern possibly using fewer keystrokes.
 
 The searching mechanism is implemented with commands search (default /),
 search-back (default ?), search-next (default n), and search-prev
-(default N). You can enable globsearch option to match with a glob
+(default N). You can set searchmethod to glob to match using a glob
 pattern. Globbing supports * to match any sequence, ? to match any
 character, and [...] or [^...] to match character sets or ranges. You
+can set searchmethod to regex to match using a regex pattern. For a full
+overview of Go's RE2 syntax, see https://pkg.go.dev/regexp/syntax. You
 can enable incsearch option to jump to the current match at each
 keystroke while typing. In this mode, you can either use cmd-enter to
 accept the search or use cmd-escape to cancel the search. You can also

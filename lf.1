@@ -168,9 +168,8 @@ drawbox           bool      (default false)
 dupfilefmt        string    (default \(aq%f.\(ti%n\(ti\(aq)
 errorfmt          string    (default \(dq\(rs033[7;31;47m\(dq)
 filesep           string    (default \(dq\(rsn\(dq)
+filtermethod      string    (default \(aqtext\(aq)
 findlen           int       (default 1)
-globfilter        bool      (default false)
-globsearch        bool      (default false)
 hidden            bool      (default false)
 hiddenfiles       []string  (default \(aq.*\(aq for Unix and \(aq\(aq for Windows)
 history           bool      (default true)
@@ -198,6 +197,7 @@ reverse           bool      (default false)
 roundbox          bool      (default false)
 rulerfmt          string    (default \(dq  %a|  %p|  \(rs033[7;31m %m \(rs033[0m|  \(rs033[7;33m %c \(rs033[0m|  \(rs033[7;35m %s \(rs033[0m|  \(rs033[7;34m %f \(rs033[0m|  %i/%t\(dq)
 scrolloff         int       (default 0)
+searchmethod      string    (default \(aqtext\(aq)
 selectfmt         string    (default \(dq\(rs033[7;35m\(dq)
 selmode           string    (default \(aqall\(aq)
 shell             string    (default \(aqsh\(aq for Unix and \(aqcmd\(aq for Windows)
@@ -736,20 +736,17 @@ For example, \f[CR]\(rs033[4m%s\(rs033[0m\f[R] has the same effect as
 .SS filesep (string) (default \f[CR]\(rsn\f[R])
 File separator used in environment variables \f[CR]fs\f[R],
 \f[CR]fv\f[R] and \f[CR]fx\f[R].
+.SS filtermethod (string) (default \f[CR]text\f[R])
+How filter command patterns are treated.
+Currently supported methods are \f[CR]text\f[R] (i.e.
+string literals), \f[CR]glob\f[R] (i.e shell globs) and \f[CR]regex\f[R]
+(i.e.
+regular expressions).
+See \f[CR]SEARCHING FILES\f[R] for more details.
 .SS findlen (int) (default 1)
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a
 single match left.
-.SS globfilter (bool) (default false)
-Patterns are treated as globs for the filter command, see
-\f[CR]globsearch\f[R] for more details.
-.SS globsearch (bool) (default false)
-When this option is enabled, search command patterns are considered as
-globs, otherwise, they are literals.
-With globbing, \f[CR]*\f[R] matches any sequence, \f[CR]?\f[R] matches
-any character, and \f[CR][...]\f[R] or \f[CR][\(ha...]\f[R] matches
-character sets or ranges.
-Otherwise, these characters are interpreted as they are.
 .SS hidden (bool) (default false)
 Show hidden files.
 On Unix systems, hidden files are determined by the value of
@@ -833,7 +830,7 @@ Periodic checks are disabled when the value of this option is set to
 zero.
 .SS preserve ([]string) (default \f[CR]mode\f[R])
 List of attributes that are preserved when copying files.
-Currently supported attributes are \f[CR]mode\f[R] (i.a.
+Currently supported attributes are \f[CR]mode\f[R] (i.e.
 access mode) and \f[CR]timestamps\f[R] (i.e.
 modification time and access time).
 Note that preserving other attributes like ownership of change/birth
@@ -922,6 +919,13 @@ The current line is kept in the middle when this option is set to a
 large value that is bigger than the half of number of lines.
 A smaller offset can be used when the current file is close to the
 beginning or end of the list to show the maximum number of items.
+.SS searchmethod (string) default \f[CR]text\f[R])
+How search command patterns are treated.
+Currently supported methods are \f[CR]text\f[R] (i.e.
+string literals), \f[CR]glob\f[R] (i.e shell globs) and \f[CR]regex\f[R]
+(i.e.
+regular expressions).
+See \f[CR]SEARCHING FILES\f[R] for more details.
 .SS shell (string) (default \f[CR]sh\f[R] for Unix and \f[CR]cmd\f[R] for Windows)
 Shell executable to use for shell commands.
 Shell commands are executed as
@@ -1735,11 +1739,17 @@ The searching mechanism is implemented with commands \f[CR]search\f[R]
 (default \f[CR]/\f[R]), \f[CR]search\-back\f[R] (default \f[CR]?\f[R]),
 \f[CR]search\-next\f[R] (default \f[CR]n\f[R]), and
 \f[CR]search\-prev\f[R] (default \f[CR]N\f[R]).
-You can enable \f[CR]globsearch\f[R] option to match with a glob
-pattern.
+You can set \f[CR]searchmethod\f[R] to \f[CR]glob\f[R] to match using a
+glob pattern.
 Globbing supports \f[CR]*\f[R] to match any sequence, \f[CR]?\f[R] to
 match any character, and \f[CR][...]\f[R] or \f[CR][\(ha...]\f[R] to
 match character sets or ranges.
+You can set \f[CR]searchmethod\f[R] to \f[CR]regex\f[R] to match using a
+regex pattern.
+For a full overview of Go\(aqs RE2 syntax, see \c
+.UR https://pkg.go.dev/regexp/syntax
+.UE \c
+\&.
 You can enable \f[CR]incsearch\f[R] option to jump to the current match
 at each keystroke while typing.
 In this mode, you can either use \f[CR]cmd\-enter\f[R] to accept the

@@ -60,7 +60,7 @@ func runSearch(t *testing.T, ignorecase, smartcase, ignorediacritics, smartdiacr
 	gOpts.smartcase = smartcase
 	gOpts.ignoredia = ignorediacritics
 	gOpts.smartdia = smartdiacritics
-	matched, _ := searchMatch(base, pattern, false)
+	matched, _ := searchMatch(base, pattern, textSearch)
 	if matched != expected {
 		t.Errorf("False search for ignorecase = %t, smartcase = %t, ignoredia = %t, smartdia = %t",
 			gOpts.ignorecase,
