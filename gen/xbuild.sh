@@ -90,3 +90,5 @@ if test -n "$ERRORS"; then
     printf "\ngen/xbuild.sh: some targets failed to compile.\n"
     exit 1
 fi
+
+# vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80

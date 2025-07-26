@@ -11,3 +11,5 @@ set -o errexit -o nounset
 [ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
 
 CGO_ENABLED=0 go build -ldflags="-s -w -X main.gVersion=$version" "$@"
+
+# vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80
