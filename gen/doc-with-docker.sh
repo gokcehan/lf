@@ -13,7 +13,7 @@
 
 set -o errexit -o nounset
 
-[ -z "${version:-}" ] && version=$(git describe --tags)
+[ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
 [ -z "${date:-}" ] && date=$(date +%F)
 
 PANDOC_IMAGE=pandoc/minimal:3.7
@@ -28,8 +28,6 @@ generate_man_page() {
       --metadata=footer:"$version" \
       --metadata=header:"DOCUMENTATION" \
       doc.md -o lf.1
-  # Patch the TH man page command.
-  sed -Ei '/^\.TH /{s/(([^"]*"){7})[^"]*(".*)/\1\3/}' lf.1
 }
 
 generate_plain_text() {

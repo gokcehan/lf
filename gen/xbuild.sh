@@ -8,7 +8,7 @@
 # compressed in an archive form (`.zip` for windows and `.tar.gz` for the rest)
 # within a folder named `dist`.
 
-[ -z "$version" ] && version=$(git describe --tags)
+[ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
 
 test -d dist && {
     echo "gen/xbuild.sh: WARNING: removing preexisting subdir 'dist'"
