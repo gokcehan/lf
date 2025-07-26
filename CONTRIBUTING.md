@@ -28,7 +28,7 @@ Adding a new option usually requires the following steps:
 - Add option evaluation logic to `setExpr.eval` in `eval.go`
 - Implement the option somewhere in the code
 - Add option name and its default value to `Quick Reference` and `Options` sections in `doc.md`
-- Run `gen/doc-with-docker.sh` to update the documentation
+- Run `gen/doc.sh` to update the documentation (requires podman/docker)
 - Commit your changes and send a pull request
 
 ## Adding a new builtin command
@@ -40,7 +40,7 @@ Adding a new command usually requires the following steps:
 - Implement the command somewhere in the code
 - Add command name to `gCmdWords` in `complete.go` for tab completion
 - Add command name to `Quick Reference` and `Commands` sections in `doc.md`
-- Optionally, run `gen/doc-with-docker.sh` to update the documentation
+- Optionally, run `gen/doc.sh` to update the documentation (requires podman/docker)
 - Commit your changes and send a pull request
 
 ## Platform specific code
