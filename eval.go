@@ -64,6 +64,20 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.anchorfind, e)
 	case "autoquit", "noautoquit", "autoquit!":
 		err = applyBoolOpt(&gOpts.autoquit, e)
+	case "borderfmt":
+		gOpts.borderfmt = e.val
+	case "cleaner":
+		gOpts.cleaner = replaceTilde(e.val)
+	case "copyfmt":
+		gOpts.copyfmt = e.val
+	case "cursoractivefmt":
+		gOpts.cursoractivefmt = e.val
+	case "cursorparentfmt":
+		gOpts.cursorparentfmt = e.val
+	case "cursorpreviewfmt":
+		gOpts.cursorpreviewfmt = e.val
+	case "cutfmt":
+		gOpts.cutfmt = e.val
 	case "dircache", "nodircache", "dircache!":
 		err = applyBoolOpt(&gOpts.dircache, e)
 	case "dircounts", "nodircounts", "dircounts!":
@@ -98,6 +112,23 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		}
+	case "dupfilefmt":
+		gOpts.dupfilefmt = e.val
+	case "errorfmt":
+		gOpts.errorfmt = e.val
+	case "filesep":
+		gOpts.filesep = e.val
+	case "findlen":
+		n, err := strconv.Atoi(e.val)
+		if err != nil {
+			app.ui.echoerrf("findlen: %s", err)
+			return
+		}
+		if n < 0 {
+			app.ui.echoerr("findlen: value should be a non-negative number")
+			return
+		}
+		gOpts.findlen = n
 	case "globfilter", "noglobfilter", "globfilter!":
 		err = applyBoolOpt(&gOpts.globfilter, e)
 		if err == nil {
@@ -116,10 +147,45 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
+	case "hiddenfiles":
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			if s == "" {
+				app.ui.echoerr("hiddenfiles: glob should be non-empty")
+				return
+			}
+			_, err := filepath.Match(s, "a")
+			if err != nil {
+				app.ui.echoerrf("hiddenfiles: %s", err)
+				return
+			}
+		}
+		gOpts.hiddenfiles = toks
+		app.nav.sort()
+		app.nav.position()
+		app.ui.sort()
+		app.ui.loadFile(app, true)
 	case "history", "nohistory", "history!":
 		err = applyBoolOpt(&gOpts.history, e)
 	case "icons", "noicons", "icons!":
 		err = applyBoolOpt(&gOpts.icons, e)
+	case "ifs":
+		gOpts.ifs = e.val
+	case "info":
+		if e.val == "" {
+			gOpts.info = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "size", "time", "atime", "btime", "ctime", "perm", "user", "group", "custom":
+			default:
+				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'btime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
+				return
+			}
+		}
+		gOpts.info = toks
 	case "ignorecase", "noignorecase", "ignorecase!":
 		err = applyBoolOpt(&gOpts.ignorecase, e)
 		if err == nil {
@@ -140,145 +206,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
-	case "mouse", "nomouse", "mouse!":
-		err = applyBoolOpt(&gOpts.mouse, e)
-		if err == nil {
-			if gOpts.mouse {
-				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
-			} else {
-				app.ui.screen.DisableMouse()
-			}
-		}
-	case "number", "nonumber", "number!":
-		err = applyBoolOpt(&gOpts.number, e)
-	case "preview", "nopreview", "preview!":
-		preview := gOpts.preview
-		err = applyBoolOpt(&preview, e)
-		if preview && len(gOpts.ratios) < 2 {
-			err = errors.New("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
-		}
-		if err == nil {
-			if gOpts.sixel {
-				app.ui.sxScreen.forceClear = true
-			}
-			gOpts.preview = preview
-			app.ui.loadFile(app, true)
-		}
-	case "relativenumber", "norelativenumber", "relativenumber!":
-		err = applyBoolOpt(&gOpts.relativenumber, e)
-	case "reverse", "noreverse", "reverse!":
-		err = applyBoolOpt(&gOpts.reverse, e)
-		if err == nil {
-			app.nav.sort()
-			app.ui.sort()
-		}
-	case "roundbox", "noroundbox", "roundbox!":
-		err = applyBoolOpt(&gOpts.roundbox, e)
-	case "showbinds", "noshowbinds", "showbinds!":
-		err = applyBoolOpt(&gOpts.showbinds, e)
-	case "sixel", "nosixel", "sixel!":
-		err = applyBoolOpt(&gOpts.sixel, e)
-		clear(app.nav.regCache)
-		app.ui.sxScreen.forceClear = true
-		app.ui.loadFile(app, true)
-	case "smartcase", "nosmartcase", "smartcase!":
-		err = applyBoolOpt(&gOpts.smartcase, e)
-		if err == nil {
-			app.nav.sort()
-			app.nav.position()
-			app.ui.sort()
-			app.ui.loadFile(app, true)
-		}
-	case "smartdia", "nosmartdia", "smartdia!":
-		err = applyBoolOpt(&gOpts.smartdia, e)
-		if err == nil {
-			app.nav.sort()
-			app.nav.position()
-			app.ui.sort()
-			app.ui.loadFile(app, true)
-		}
-	case "watch", "nowatch", "watch!":
-		err = applyBoolOpt(&gOpts.watch, e)
-		if err == nil {
-			if gOpts.watch {
-				app.watch.start()
-				for _, dir := range app.nav.dirCache {
-					app.watchDir(dir)
-				}
-			} else {
-				app.watch.stop()
-			}
-		}
-	case "wrapscan", "nowrapscan", "wrapscan!":
-		err = applyBoolOpt(&gOpts.wrapscan, e)
-	case "wrapscroll", "nowrapscroll", "wrapscroll!":
-		err = applyBoolOpt(&gOpts.wrapscroll, e)
-	case "borderfmt":
-		gOpts.borderfmt = e.val
-	case "cleaner":
-		gOpts.cleaner = replaceTilde(e.val)
-	case "copyfmt":
-		gOpts.copyfmt = e.val
-	case "cursoractivefmt":
-		gOpts.cursoractivefmt = e.val
-	case "cursorparentfmt":
-		gOpts.cursorparentfmt = e.val
-	case "cursorpreviewfmt":
-		gOpts.cursorpreviewfmt = e.val
-	case "cutfmt":
-		gOpts.cutfmt = e.val
-	case "dupfilefmt":
-		gOpts.dupfilefmt = e.val
-	case "errorfmt":
-		gOpts.errorfmt = e.val
-	case "filesep":
-		gOpts.filesep = e.val
-	case "findlen":
-		n, err := strconv.Atoi(e.val)
-		if err != nil {
-			app.ui.echoerrf("findlen: %s", err)
-			return
-		}
-		if n < 0 {
-			app.ui.echoerr("findlen: value should be a non-negative number")
-			return
-		}
-		gOpts.findlen = n
-	case "hiddenfiles":
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			if s == "" {
-				app.ui.echoerr("hiddenfiles: glob should be non-empty")
-				return
-			}
-			_, err := filepath.Match(s, "a")
-			if err != nil {
-				app.ui.echoerrf("hiddenfiles: %s", err)
-				return
-			}
-		}
-		gOpts.hiddenfiles = toks
-		app.nav.sort()
-		app.nav.position()
-		app.ui.sort()
-		app.ui.loadFile(app, true)
-	case "ifs":
-		gOpts.ifs = e.val
-	case "info":
-		if e.val == "" {
-			gOpts.info = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "size", "time", "atime", "btime", "ctime", "perm", "user", "group", "custom":
-			default:
-				app.ui.echoerr("info: should consist of 'size', 'time', 'atime', 'btime', 'ctime', 'perm', 'user', 'group' or 'custom' separated with colon")
-				return
-			}
-		}
-		gOpts.info = toks
+	case "infotimefmtnew":
+		gOpts.infotimefmtnew = e.val
+	case "infotimefmtold":
+		gOpts.infotimefmtold = e.val
 	case "locale":
 		localeStr := e.val
 		if localeStr != localeStrDisable {
@@ -290,27 +221,17 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.locale = localeStr
 		app.nav.sort()
 		app.ui.sort()
-	case "rulerfmt":
-		gOpts.rulerfmt = e.val
-	case "preserve":
-		if e.val == "" {
-			gOpts.preserve = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "mode", "timestamps":
-			default:
-				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
-				return
+	case "mouse", "nomouse", "mouse!":
+		err = applyBoolOpt(&gOpts.mouse, e)
+		if err == nil {
+			if gOpts.mouse {
+				app.ui.screen.EnableMouse(tcell.MouseButtonEvents)
+			} else {
+				app.ui.screen.DisableMouse()
 			}
 		}
-		gOpts.preserve = toks
-	case "infotimefmtnew":
-		gOpts.infotimefmtnew = e.val
-	case "infotimefmtold":
-		gOpts.infotimefmtold = e.val
+	case "number", "nonumber", "number!":
+		err = applyBoolOpt(&gOpts.number, e)
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
@@ -329,6 +250,34 @@ func (e *setExpr) eval(app *app, args []string) {
 		} else {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
+		}
+	case "preserve":
+		if e.val == "" {
+			gOpts.preserve = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "mode", "timestamps":
+			default:
+				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps separated with colon")
+				return
+			}
+		}
+		gOpts.preserve = toks
+	case "preview", "nopreview", "preview!":
+		preview := gOpts.preview
+		err = applyBoolOpt(&preview, e)
+		if preview && len(gOpts.ratios) < 2 {
+			err = errors.New("preview: 'ratios' should consist of at least two numbers before enabling 'preview'")
+		}
+		if err == nil {
+			if gOpts.sixel {
+				app.ui.sxScreen.forceClear = true
+			}
+			gOpts.preview = preview
+			app.ui.loadFile(app, true)
 		}
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
@@ -359,6 +308,18 @@ func (e *setExpr) eval(app *app, args []string) {
 			clear(app.nav.regCache)
 		}
 		app.ui.loadFile(app, true)
+	case "relativenumber", "norelativenumber", "relativenumber!":
+		err = applyBoolOpt(&gOpts.relativenumber, e)
+	case "reverse", "noreverse", "reverse!":
+		err = applyBoolOpt(&gOpts.reverse, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+		}
+	case "roundbox", "noroundbox", "roundbox!":
+		err = applyBoolOpt(&gOpts.roundbox, e)
+	case "rulerfmt":
+		gOpts.rulerfmt = e.val
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -390,6 +351,29 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
+	case "showbinds", "noshowbinds", "showbinds!":
+		err = applyBoolOpt(&gOpts.showbinds, e)
+	case "sixel", "nosixel", "sixel!":
+		err = applyBoolOpt(&gOpts.sixel, e)
+		clear(app.nav.regCache)
+		app.ui.sxScreen.forceClear = true
+		app.ui.loadFile(app, true)
+	case "smartcase", "nosmartcase", "smartcase!":
+		err = applyBoolOpt(&gOpts.smartcase, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
+	case "smartdia", "nosmartdia", "smartdia!":
+		err = applyBoolOpt(&gOpts.smartdia, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.sort()
+			app.ui.loadFile(app, true)
+		}
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
@@ -401,6 +385,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.sort()
 	case "statfmt":
 		gOpts.statfmt = e.val
+	case "tagfmt":
+		gOpts.tagfmt = e.val
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -412,8 +398,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.tabstop = n
-	case "tagfmt":
-		gOpts.tagfmt = e.val
 	case "tempmarks":
 		gOpts.tempmarks = "'" + e.val
 	case "timefmt":
@@ -440,6 +424,22 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.visualfmt = e.val
 	case "waitmsg":
 		gOpts.waitmsg = e.val
+	case "watch", "nowatch", "watch!":
+		err = applyBoolOpt(&gOpts.watch, e)
+		if err == nil {
+			if gOpts.watch {
+				app.watch.start()
+				for _, dir := range app.nav.dirCache {
+					app.watchDir(dir)
+				}
+			} else {
+				app.watch.stop()
+			}
+		}
+	case "wrapscan", "nowrapscan", "wrapscan!":
+		err = applyBoolOpt(&gOpts.wrapscan, e)
+	case "wrapscroll", "nowrapscroll", "wrapscroll!":
+		err = applyBoolOpt(&gOpts.wrapscroll, e)
 	default:
 		// any key with the prefix user_ is accepted as a user defined option
 		if strings.HasPrefix(e.opt, "user_") {
@@ -494,12 +494,6 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
-	case "reverse", "noreverse", "reverse!":
-		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
-		if err == nil {
-			app.nav.sort()
-			app.ui.sort()
-		}
 	case "info":
 		if e.val == "" {
 			gLocalOpts.info[e.path] = nil
@@ -515,15 +509,6 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			}
 		}
 		gLocalOpts.info[e.path] = toks
-	case "sortby":
-		method := sortMethod(e.val)
-		if !isValidSortMethod(method) {
-			app.ui.echoerr(invalidSortErrorMessage)
-			return
-		}
-		gLocalOpts.sortby[e.path] = method
-		app.nav.sort()
-		app.ui.sort()
 	case "locale":
 		localeStr := e.val
 		if localeStr != localeStrDisable {
@@ -533,6 +518,21 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			}
 		}
 		gLocalOpts.locale[e.path] = localeStr
+		app.nav.sort()
+		app.ui.sort()
+	case "reverse", "noreverse", "reverse!":
+		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
+		if err == nil {
+			app.nav.sort()
+			app.ui.sort()
+		}
+	case "sortby":
+		method := sortMethod(e.val)
+		if !isValidSortMethod(method) {
+			app.ui.echoerr(invalidSortErrorMessage)
+			return
+		}
+		gLocalOpts.sortby[e.path] = method
 		app.nav.sort()
 		app.ui.sort()
 	default:
