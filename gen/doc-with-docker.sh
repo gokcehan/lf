@@ -19,36 +19,58 @@ set -o errexit -o nounset
 PANDOC_IMAGE=pandoc/minimal:3.7
 
 generate_man_page() {
-  docker run --rm -v "$PWD:/data" "$@" "$PANDOC_IMAGE" \
-      --standalone \
-      --from gfm --to man \
-      --metadata=title:"LF" \
-      --metadata=section:"1" \
-      --metadata=date:"$date" \
-      --metadata=footer:"$version" \
-      --metadata=header:"DOCUMENTATION" \
-      doc.md -o lf.1
+    "${OCI_PROGRAM?}" run \
+        --rm \
+        --volume "$PWD:/data" \
+        "$@" "$PANDOC_IMAGE" \
+        --standalone \
+        --from gfm --to man \
+        --metadata=title:"LF" \
+        --metadata=section:"1" \
+        --metadata=date:"$date" \
+        --metadata=footer:"$version" \
+        --metadata=header:"DOCUMENTATION" \
+        doc.md -o lf.1
 }
 
 generate_plain_text() {
-  docker run --rm -v "$PWD:/data" "$@" "$PANDOC_IMAGE" \
-      --standalone \
-      --from gfm --to plain \
-      doc.md -o doc.txt
+    "${OCI_PROGRAM?}" run \
+        --rm \
+        --volume "$PWD:/data" \
+        "$@" "$PANDOC_IMAGE" \
+        --standalone \
+        --from gfm --to plain \
+        doc.md -o doc.txt
 }
 
-# If you get
-# pandoc: lf.1: withFile: permission denied (Permission denied)
-# try setting the "ROOTLESS" environment variable to a non-empty value.
+is_rootless() {
+    case "$OCI_PROGRAM" in
+        podman) podman info -f '{{.Host.Security.Rootless}}' | grep -q true ;;
+        docker) docker info -f '{{.SecurityOptions}}' | grep -q rootless ;;
+        *) echo >&2 \
+            "Unknown OCI program \"$OCI_PROGRAM\", assuming rootless mode" ;;
+    esac
+}
 
-if [ -z "${ROOTLESS:-}" ]; then
-  generate_man_page --user "$(id -u):$(id -g)" # Not rootless.
-else
-  generate_man_page
+# You can set your own OCI_PROGRAM, which assumes it runs in rootless mode.
+if [ -z "${OCI_PROGRAM:-}" ]; then
+    if command -v podman > /dev/null; then
+        OCI_PROGRAM=podman
+    elif command -v docker > /dev/null; then
+        OCI_PROGRAM=docker
+    fi
 fi
 
-if [ -z "${ROOTLESS:-}" ]; then
-  generate_plain_text --user "$(id -u):$(id -g)" # Not rootless.
+if is_rootless; then
+    generate_man_page
 else
-  generate_plain_text
+    generate_man_page --user "$(id -u):$(id -g)"
 fi
+
+if is_rootless; then
+    generate_plain_text
+else
+    generate_plain_text --user "$(id -u):$(id -g)"
+fi
+
+# vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80
