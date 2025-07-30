@@ -128,7 +128,7 @@ func TestRuneSliceWidthLastRange(t *testing.T) {
 	}
 }
 
-func TestEscape(t *testing.T) {
+func TestCmdEscape(t *testing.T) {
 	tests := []struct {
 		s   string
 		exp string
@@ -147,13 +147,13 @@ func TestEscape(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := escape(test.s); !reflect.DeepEqual(got, test.exp) {
+		if got := cmdEscape(test.s); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
 
-func TestUnescape(t *testing.T) {
+func TestCmdUnescape(t *testing.T) {
 	tests := []struct {
 		s   string
 		exp string
@@ -172,7 +172,7 @@ func TestUnescape(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := unescape(test.s); !reflect.DeepEqual(got, test.exp) {
+		if got := cmdUnescape(test.s); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
