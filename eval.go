@@ -701,54 +701,6 @@ func splitKeys(s string) (keys []string) {
 	return
 }
 
-func doComplete(app *app) (matches []string) {
-	switch app.ui.cmdPrefix {
-	case ":":
-		matches, app.ui.cmdAccLeft = completeCmd(app.ui.cmdAccLeft)
-	case "/", "?":
-		matches, app.ui.cmdAccLeft = completeFile(app.ui.cmdAccLeft)
-	case "$", "%", "!", "&":
-		matches, app.ui.cmdAccLeft = completeShell(app.ui.cmdAccLeft)
-	}
-	return
-}
-
-func menuComplete(app *app, dir int) {
-	if !app.menuCompActive {
-		toks := tokenize(string(app.ui.cmdAccLeft))
-		for i, tok := range toks {
-			toks[i] = replaceTilde(tok)
-		}
-		app.ui.cmdAccLeft = []rune(strings.Join(toks, " "))
-		app.ui.cmdTmp = app.ui.cmdAccLeft
-		app.menuComps = doComplete(app)
-		if len(app.menuComps) > 1 {
-			app.menuCompInd = -1
-			app.menuCompActive = true
-		}
-	} else {
-		app.menuCompInd += dir
-		if app.menuCompInd == len(app.menuComps) {
-			app.menuCompInd = 0
-		} else if app.menuCompInd < 0 {
-			app.menuCompInd = len(app.menuComps) - 1
-		}
-
-		comp := app.menuComps[app.menuCompInd]
-		toks := tokenize(string(app.ui.cmdTmp))
-		last := toks[len(toks)-1]
-
-		if app.ui.cmdPrefix != "/" && app.ui.cmdPrefix != "?" {
-			comp = escape(comp)
-			_, last = filepath.Split(last)
-		}
-
-		ind := len(app.ui.cmdTmp) - len([]rune(last))
-		app.ui.cmdAccLeft = append(app.ui.cmdTmp[:ind], []rune(comp)...)
-	}
-	app.ui.menu = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
-}
-
 func update(app *app) {
 	app.ui.menu = ""
 	app.menuCompActive = false
@@ -1899,12 +1851,11 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		normal(app)
 	case "cmd-complete":
-		matches := doComplete(app)
-		app.ui.menu = listMatches(app.ui.screen, matches, -1)
+		app.doComplete()
 	case "cmd-menu-complete":
-		menuComplete(app, 1)
+		app.menuComplete(1)
 	case "cmd-menu-complete-back":
-		menuComplete(app, -1)
+		app.menuComplete(-1)
 	case "cmd-menu-accept":
 		app.ui.menu = ""
 		app.menuCompActive = false

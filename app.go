@@ -31,7 +31,8 @@ type app struct {
 	cmdHistoryBeg  int
 	cmdHistoryInd  int
 	menuCompActive bool
-	menuComps      []string
+	menuCompTmp    []string
+	menuComps      []compMatch
 	menuCompInd    int
 	selectionOut   []string
 	watch          *watch
@@ -662,6 +663,45 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	}
+}
+
+func (app *app) doComplete() (matches []compMatch) {
+	var result string
+
+	switch app.ui.cmdPrefix {
+	case ":":
+		matches, result = completeCmd(app.ui.cmdAccLeft)
+	case "$", "%", "!", "&":
+		matches, result = completeShell(app.ui.cmdAccLeft)
+	case "/", "?":
+		matches, result = completeSearch(app.ui.cmdAccLeft)
+	}
+
+	app.ui.cmdAccLeft = []rune(result)
+	app.ui.menu = listMatches(app.ui.screen, matches, -1)
+	return
+}
+
+func (app *app) menuComplete(dir int) {
+	if !app.menuCompActive {
+		app.menuCompTmp = tokenize(string(app.ui.cmdAccLeft))
+		app.menuComps = app.doComplete()
+		if len(app.menuComps) > 1 {
+			app.menuCompInd = -1
+			app.menuCompActive = true
+		}
+	} else {
+		app.menuCompInd += dir
+		if app.menuCompInd == len(app.menuComps) {
+			app.menuCompInd = 0
+		} else if app.menuCompInd < 0 {
+			app.menuCompInd = len(app.menuComps) - 1
+		}
+
+		app.menuCompTmp[len(app.menuCompTmp)-1] = app.menuComps[app.menuCompInd].result
+		app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
+	}
+	app.ui.menu = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
 }
 
 func (app *app) watchDir(dir *dir) {

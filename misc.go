@@ -78,7 +78,7 @@ func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 
 // This function is used to escape whitespaces and special characters with
 // backslashes in a given string.
-func escape(s string) string {
+func cmdEscape(s string) string {
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
 		if unicode.IsSpace(r) || r == '\\' || r == ';' || r == '#' {
@@ -91,7 +91,7 @@ func escape(s string) string {
 
 // This function is used to remove backslashes that are used to escape
 // whitespaces and special characters in a given string.
-func unescape(s string) string {
+func cmdUnescape(s string) string {
 	esc := false
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
