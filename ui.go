@@ -301,13 +301,13 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 			if f.IsDir() && getDirCounts(d.path) {
 				switch {
 				case f.dirCount < -1:
-					info.WriteString("    !")
+					info.WriteString("     !")
 				case f.dirCount < 0:
-					info.WriteString("    ?")
-				case f.dirCount < 1000:
-					fmt.Fprintf(&info, " %4d", f.dirCount)
+					info.WriteString("     ?")
+				case f.dirCount < 10000:
+					fmt.Fprintf(&info, " %5d", f.dirCount)
 				default:
-					info.WriteString(" 999+")
+					info.WriteString(" 9999+")
 				}
 				continue
 			}

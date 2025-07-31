@@ -105,7 +105,7 @@ func newFile(path string) *file {
 		if err != nil {
 			dirCount = -2
 		} else {
-			names, err := d.Readdirnames(1000)
+			names, err := d.Readdirnames(10000)
 			d.Close()
 
 			if names == nil && err != io.EOF {
