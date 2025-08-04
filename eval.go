@@ -287,6 +287,10 @@ func (e *setExpr) eval(app *app, args []string) {
 			}
 		}
 		gOpts.info = toks
+	case "infotimefmtnew":
+		gOpts.infotimefmtnew = e.val
+	case "infotimefmtold":
+		gOpts.infotimefmtold = e.val
 	case "locale":
 		localeStr := e.val
 		if localeStr != localeStrDisable {
@@ -298,27 +302,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.locale = localeStr
 		app.nav.sort()
 		app.ui.sort()
-	case "rulerfmt":
-		gOpts.rulerfmt = e.val
-	case "preserve":
-		if e.val == "" {
-			gOpts.preserve = nil
-			return
-		}
-		toks := strings.Split(e.val, ":")
-		for _, s := range toks {
-			switch s {
-			case "mode", "timestamps":
-			default:
-				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps' separated with colon")
-				return
-			}
-		}
-		gOpts.preserve = toks
-	case "infotimefmtnew":
-		gOpts.infotimefmtnew = e.val
-	case "infotimefmtold":
-		gOpts.infotimefmtold = e.val
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
@@ -338,6 +321,21 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
 		}
+	case "preserve":
+		if e.val == "" {
+			gOpts.preserve = nil
+			return
+		}
+		toks := strings.Split(e.val, ":")
+		for _, s := range toks {
+			switch s {
+			case "mode", "timestamps":
+			default:
+				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps' separated with colon")
+				return
+			}
+		}
+		gOpts.preserve = toks
 	case "previewer":
 		gOpts.previewer = replaceTilde(e.val)
 	case "promptfmt":
@@ -367,6 +365,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			clear(app.nav.regCache)
 		}
 		app.ui.loadFile(app, true)
+	case "rulerfmt":
+		gOpts.rulerfmt = e.val
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
