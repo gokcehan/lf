@@ -5,7 +5,12 @@ import (
 	"os"
 	"strings"
 	"text/template"
+
+	_ "embed"
 )
+
+//go:embed etc/ruler.default
+var gDefaultRuler string
 
 type statData struct {
 	Permissions string
@@ -57,6 +62,10 @@ func parseRuler() *template.Template {
 				continue
 			}
 		}
+	}
+
+	if tmpl == nil {
+		tmpl, _ = template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 	}
 
 	return tmpl
