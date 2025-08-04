@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"text/template"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -663,6 +665,7 @@ type ui struct {
 	keyCount    []rune
 	styles      styleMap
 	icons       iconMap
+	ruler       *template.Template
 	currentFile string
 	pasteEvent  bool
 }
@@ -684,6 +687,7 @@ func newUI(screen tcell.Screen) *ui {
 		evChan:      make(chan tcell.Event, 1000),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
+		ruler:       parseRuler(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
@@ -927,6 +931,10 @@ func formatRulerOpt(name string, val string) string {
 }
 
 func (ui *ui) drawRuler(nav *nav) {
+	if ui.ruler == nil {
+		return
+	}
+
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
@@ -952,12 +960,12 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	copy := 0
-	move := 0
+	cut := 0
 	for _, cp := range nav.saves {
 		if cp {
 			copy++
 		} else {
-			move++
+			cut++
 		}
 	}
 
@@ -989,7 +997,7 @@ func (ui *ui) drawRuler(nav *nav) {
 		case "%p":
 			result = strings.Join(progress, " ")
 		case "%m":
-			result = fmt.Sprintf("%.d", move)
+			result = fmt.Sprintf("%.d", cut)
 		case "%c":
 			result = fmt.Sprintf("%.d", copy)
 		case "%s":
@@ -1019,13 +1027,50 @@ func (ui *ui) drawRuler(nav *nav) {
 		}
 		return result
 	})
-	var ruler strings.Builder
-	for _, section := range strings.Split(rulerfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			ruler.WriteString(section)
+
+	mode := "NORMAL"
+	if nav.isVisualMode() {
+		mode = "VISUAL"
+	}
+
+	options := make(map[string]string)
+	v := reflect.ValueOf(gOpts)
+	t := v.Type()
+	for i := range v.NumField() {
+		name := t.Field(i).Name
+		switch name {
+		case "nkeys", "vkeys", "cmdkeys", "cmds", "user":
+			continue
+		default:
+			options[name] = fieldToString(v.Field(i))
 		}
 	}
-	ui.msgWin.printRight(ui.screen, 0, st, ruler.String())
+
+	data := rulerData{
+		ESC:         "\033",
+		Acc:         acc,
+		Progress:    progress,
+		Cut:         cut,
+		Copy:        copy,
+		Select:      len(currSelections),
+		Visual:      len(currVSelections),
+		Index:       ind,
+		Total:       tot,
+		Hidden:      hid,
+		Percentage:  percentage,
+		Filter:      dir.filter,
+		Mode:        mode,
+		Options:     options,
+		UserOptions: gOpts.user,
+	}
+
+	s, err := renderRuler(ui.ruler, data)
+	if err != nil {
+		log.Printf("render ruler: %s", err)
+		return
+	}
+
+	ui.msgWin.printRight(ui.screen, 0, st, s)
 }
 
 func (ui *ui) drawBox() {
