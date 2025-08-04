@@ -7,6 +7,17 @@ import (
 	"text/template"
 )
 
+type statData struct {
+	Permissions string
+	Count       string
+	User        string
+	Group       string
+	Size        string
+	RawSize     uint64
+	ModTime     string
+	Target      string
+}
+
 type rulerData struct {
 	ESC         string
 	Acc         string
@@ -23,6 +34,7 @@ type rulerData struct {
 	Mode        string
 	Options     map[string]string
 	UserOptions map[string]string
+	Stat        *statData
 }
 
 func parseRuler() *template.Template {

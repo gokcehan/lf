@@ -648,7 +648,7 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
-	msgIsStat   bool
+	msgActive   bool
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
@@ -680,7 +680,6 @@ func newUI(screen tcell.Screen) *ui {
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
 		menuWin:     newWin(wtot, 1, 0, htot-2),
-		msgIsStat:   true,
 		exprChan:    make(chan expr, 1000),
 		keyChan:     make(chan string, 1000),
 		tevChan:     make(chan tcell.Event, 1000),
@@ -739,7 +738,7 @@ func (ui *ui) sort() {
 
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
-	ui.msgIsStat = false
+	ui.msgActive = true
 }
 
 func (ui *ui) echomsg(msg string) {
@@ -812,7 +811,7 @@ func (ui *ui) loadFileInfo(nav *nav) {
 	}
 
 	ui.msg = ""
-	ui.msgIsStat = true
+	ui.msgActive = false
 
 	curr, err := nav.currFile()
 	if err != nil {
@@ -931,11 +930,37 @@ func formatRulerOpt(name string, val string) string {
 }
 
 func (ui *ui) drawRuler(nav *nav) {
-	if ui.ruler == nil {
+	st := tcell.StyleDefault
+
+	if ui.msgActive {
+		ui.msgWin.print(ui.screen, 0, 0, st, ui.msg)
 		return
 	}
 
-	st := tcell.StyleDefault
+	var stat *statData
+	curr, err := nav.currFile()
+	if err == nil {
+		if curr.err != nil {
+			ui.echoerrf("stat: %s", curr.err)
+			ui.msgWin.print(ui.screen, 0, 0, st, ui.msg)
+			return
+		}
+
+		stat = &statData{
+			Permissions: curr.Mode().String(),
+			Count:       linkCount(curr),
+			User:        userName(curr),
+			Group:       groupName(curr),
+			Size:        fmt.Sprintf("%5s", humanize(uint64(curr.Size()))),
+			RawSize:     uint64(curr.Size()),
+			ModTime:     curr.ModTime().Format(gOpts.timefmt),
+			Target:      curr.linkTarget,
+		}
+	}
+
+	if ui.ruler == nil {
+		return
+	}
 
 	dir := nav.currDir()
 
@@ -1062,6 +1087,7 @@ func (ui *ui) drawRuler(nav *nav) {
 		Mode:        mode,
 		Options:     options,
 		UserOptions: gOpts.user,
+		Stat:        stat,
 	}
 
 	s, err := renderRuler(ui.ruler, data)

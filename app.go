@@ -420,9 +420,6 @@ func (app *app) loop() {
 			if err == nil {
 				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
-					if app.ui.msgIsStat {
-						app.ui.loadFileInfo(app.nav)
-					}
 				}
 				if d.path == curr.path {
 					app.ui.dirPrev = d
@@ -465,9 +462,6 @@ func (app *app) loop() {
 			}
 
 			app.ui.loadFile(app, false)
-			if app.ui.msgIsStat {
-				app.ui.loadFileInfo(app.nav)
-			}
 
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
