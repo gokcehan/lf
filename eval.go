@@ -2160,6 +2160,16 @@ func (e *callExpr) eval(app *app, args []string) {
 		default:
 			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
+	case "cmd-interrupt":
+		if app.cmd != nil {
+			err := shellKill(app.cmd)
+			if err != nil {
+				app.ui.echoerrf("kill: %s", err)
+			} else {
+				app.ui.echoerr("process interrupt")
+			}
+		}
+		normal(app)
 	case "cmd-history-next":
 		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
@@ -2259,16 +2269,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
 		update(app)
-	case "cmd-interrupt":
-		if app.cmd != nil {
-			err := shellKill(app.cmd)
-			if err != nil {
-				app.ui.echoerrf("kill: %s", err)
-			} else {
-				app.ui.echoerr("process interrupt")
-			}
-		}
-		normal(app)
 	case "cmd-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
