@@ -233,7 +233,7 @@ func quoteString(s string) string {
 func shellEscape(s string) string {
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
-		if strings.ContainsRune(" !\"$&'()*,/:;<=>?@[\\]^`{|}", r) {
+		if strings.ContainsRune(" !\"$&'()*,:;<=>?@[\\]^`{|}", r) {
 			buf = append(buf, '\\')
 		}
 		buf = append(buf, r)
