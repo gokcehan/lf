@@ -1283,56 +1283,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				}
 			}
 		}
-	case "tag-toggle":
-		if !app.nav.init {
-			return
-		}
-
-		tag := "*"
-		if len(e.args) != 0 {
-			tag = e.args[0]
-		}
-
-		if err := app.nav.tagToggle(tag); err != nil {
-			app.ui.echoerrf("tag-toggle: %s", err)
-		} else if err := app.nav.writeTags(); err != nil {
-			app.ui.echoerrf("tag-toggle: %s", err)
-		}
-
-		if gSingleMode {
-			if err := app.nav.sync(); err != nil {
-				app.ui.echoerrf("tag-toggle: %s", err)
-			}
-		} else {
-			if err := remote("send sync"); err != nil {
-				app.ui.echoerrf("tag-toggle: %s", err)
-			}
-		}
-	case "tag":
-		if !app.nav.init {
-			return
-		}
-
-		tag := "*"
-		if len(e.args) != 0 {
-			tag = e.args[0]
-		}
-
-		if err := app.nav.tag(tag); err != nil {
-			app.ui.echoerrf("tag: %s", err)
-		} else if err := app.nav.writeTags(); err != nil {
-			app.ui.echoerrf("tag: %s", err)
-		}
-
-		if gSingleMode {
-			if err := app.nav.sync(); err != nil {
-				app.ui.echoerrf("tag: %s", err)
-			}
-		} else {
-			if err := remote("send sync"); err != nil {
-				app.ui.echoerrf("tag: %s", err)
-			}
-		}
 	case "invert":
 		if !app.nav.init {
 			return
@@ -1850,6 +1800,56 @@ func (e *callExpr) eval(app *app, args []string) {
 		log.Println("pushing keys", e.args[0])
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
+		}
+	case "tag":
+		if !app.nav.init {
+			return
+		}
+
+		tag := "*"
+		if len(e.args) != 0 {
+			tag = e.args[0]
+		}
+
+		if err := app.nav.tag(tag); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag: %s", err)
+		}
+
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag: %s", err)
+			}
+		}
+	case "tag-toggle":
+		if !app.nav.init {
+			return
+		}
+
+		tag := "*"
+		if len(e.args) != 0 {
+			tag = e.args[0]
+		}
+
+		if err := app.nav.tagToggle(tag); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		} else if err := app.nav.writeTags(); err != nil {
+			app.ui.echoerrf("tag-toggle: %s", err)
+		}
+
+		if gSingleMode {
+			if err := app.nav.sync(); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
+		} else {
+			if err := remote("send sync"); err != nil {
+				app.ui.echoerrf("tag-toggle: %s", err)
+			}
 		}
 	case "addcustominfo":
 		var k, v string
