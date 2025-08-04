@@ -70,15 +70,8 @@ The following commands are provided by lf:
 	redraw                   (default '<c-l>')
 	load
 	reload                   (default '<c-r>')
-	echo
-	echomsg
-	echoerr
-	cd
-	select
 	delete         (modal)
 	rename         (modal)   (default 'r')
-	source
-	push
 	read           (modal)   (default ':')
 	shell          (modal)   (default '$')
 	shell-pipe     (modal)   (default '%')
@@ -99,6 +92,13 @@ The following commands are provided by lf:
 	mark-remove    (modal)   (default '"')
 	tag
 	tag-toggle               (default 't')
+	echo
+	echomsg
+	echoerr
+	cd
+	select
+	source
+	push
 	addcustominfo
 	calcdirsize
 	clearmaps
