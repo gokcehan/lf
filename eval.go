@@ -1882,12 +1882,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
-	case "on-focus-gained":
-		onFocusGained(app)
-	case "on-focus-lost":
-		onFocusLost(app)
-	case "on-init":
-		onInit(app)
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return
@@ -2397,6 +2391,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		dir.pos = dir.ind - beg
 		dir.visualWrap = -dir.visualWrap
 		dir.boundPos(app.nav.height)
+	case "on-focus-gained":
+		onFocusGained(app)
+	case "on-focus-lost":
+		onFocusLost(app)
+	case "on-init":
+		onInit(app)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
