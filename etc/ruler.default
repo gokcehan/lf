@@ -3,7 +3,7 @@
  {{.Stat.Count}}
  {{.Stat.User}}
  {{.Stat.Group}}
- {{.Stat.Size}}
+ {{humanize .Stat.Size | printf "%5s"}}
  {{.Stat.ModTime}}
 {{if .Stat.Target}} -> {{.Stat.Target}}{{end}}
 {{end}}

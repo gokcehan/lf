@@ -897,8 +897,7 @@ func (ui *ui) drawRuler(nav *nav) {
 			Count:       linkCount(curr),
 			User:        userName(curr),
 			Group:       groupName(curr),
-			Size:        fmt.Sprintf("%5s", humanize(uint64(curr.Size()))),
-			RawSize:     uint64(curr.Size()),
+			Size:        uint64(curr.Size()),
 			ModTime:     curr.ModTime().Format(gOpts.timefmt),
 			Target:      curr.linkTarget,
 		}

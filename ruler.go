@@ -17,8 +17,7 @@ type statData struct {
 	Count       string
 	User        string
 	Group       string
-	Size        string
-	RawSize     uint64
+	Size        uint64
 	ModTime     string
 	Target      string
 }
@@ -45,9 +44,10 @@ type rulerData struct {
 
 func parseRuler() *template.Template {
 	funcs := template.FuncMap{
-		"df":   func() string { return diskFree(".") },
-		"env":  os.Getenv,
-		"join": strings.Join,
+		"df":       func() string { return diskFree(".") },
+		"env":      os.Getenv,
+		"humanize": humanize,
+		"join":     strings.Join,
 	}
 
 	var tmpl *template.Template
