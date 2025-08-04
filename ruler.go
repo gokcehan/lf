@@ -5,6 +5,7 @@ import (
 	"os"
 	"strings"
 	"text/template"
+	"time"
 
 	_ "embed"
 )
@@ -18,7 +19,7 @@ type statData struct {
 	User        string
 	Group       string
 	Size        uint64
-	ModTime     string
+	ModTime     time.Time
 	Target      string
 }
 

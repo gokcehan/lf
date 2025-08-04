@@ -4,7 +4,7 @@
  {{.Stat.User}}
  {{.Stat.Group}}
  {{humanize .Stat.Size | printf "%5s"}}
- {{.Stat.ModTime}}
+ {{.Stat.ModTime.Format .Options.timefmt}}
 {{if .Stat.Target}} -> {{.Stat.Target}}{{end}}
 {{end}}
 {{.SPACER}}
