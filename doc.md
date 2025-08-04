@@ -838,13 +838,13 @@ Ignore case in sorting and search patterns.
 
 Ignore diacritics in sorting and search patterns.
 
-## incsearch (bool) (default false)
-
-Jump to the first match after each keystroke during searching.
-
 ## incfilter (bool) (default false)
 
 Apply filter pattern after each keystroke during filtering.
+
+## incsearch (bool) (default false)
+
+Jump to the first match after each keystroke during searching.
 
 ## info ([]string)  (default ``)
 
@@ -944,16 +944,6 @@ Additional expansions are provided for environment variables exported by lf, in 
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
-## selectfmt (string) (default `\033[7;35m`)
-
-Format string of the indicator for files that are selected.
-
-## selmode (string) (default `all`)
-
-Selection mode for commands.
-When set to `all` it will use the selected files from all directories.
-When set to `dir` it will only use the selected files in the current directory.
-
 ## scrolloff (int) (default 0)
 
 Minimum number of offset lines shown at all times at the top and bottom of the screen when scrolling.
@@ -965,6 +955,16 @@ A smaller offset can be used when the current file is close to the beginning or 
 How search command patterns are treated.
 Currently supported methods are `text` (i.e. string literals), `glob` (i.e shell globs) and `regex` (i.e. regular expressions).
 See `SEARCHING FILES` for more details.
+
+## selectfmt (string) (default `\033[7;35m`)
+
+Format string of the indicator for files that are selected.
+
+## selmode (string) (default `all`)
+
+Selection mode for commands.
+When set to `all` it will use the selected files from all directories.
+When set to `dir` it will only use the selected files in the current directory.
 
 ## shell (string) (default `sh` for Unix and `cmd` for Windows)
 
@@ -1267,7 +1267,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby` and `locale`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `locale`, `reverse` and `sortby`.
 Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets the option for the given directory along with its subdirectories:
 
 	setlocal /foo/bar hidden         # boolean enable
