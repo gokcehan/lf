@@ -623,7 +623,7 @@ A character refers to a Unicode code point, a word consists of letters and digit
 
 ## cmd-insert
 
-Insert the given character.
+Insert the character given in the argument.
 This command is automatically called when required.
 
 ## cmd-escape (default `<esc>`)
