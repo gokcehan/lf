@@ -57,7 +57,6 @@ The following commands are provided by lf:
 	middle                   (default 'M')
 	low                      (default 'L')
 	toggle
-	visual                   (default 'V')
 	invert                   (default 'v')
 	unselect                 (default 'u')
 	glob-select
@@ -104,6 +103,7 @@ The following commands are provided by lf:
 	tag-toggle               (default 't')
 	addcustominfo
 	tty-write
+	visual                   (default 'V')
 
 The following Visual mode commands are provided by lf:
 
