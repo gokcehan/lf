@@ -377,6 +377,8 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		return
 	}
 
+	result = f[len(f)-1]
+
 	switch f[0] {
 	case "set":
 		if len(f) == 2 {
