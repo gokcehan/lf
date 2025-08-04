@@ -1129,19 +1129,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app, true)
 			app.ui.loadFileInfo(app.nav)
 		}
-	case "tty-write":
-		if len(e.args) != 1 {
-			app.ui.echoerr("tty-write: requires an argument")
-			return
-		}
-
-		tty, ok := app.ui.screen.Tty()
-		if !ok {
-			log.Printf("tty-write: failed to get tty")
-			return
-		}
-
-		tty.Write([]byte(e.args[0]))
 	case "scroll-down":
 		if !app.nav.init {
 			return
@@ -1882,6 +1869,19 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
+	case "tty-write":
+		if len(e.args) != 1 {
+			app.ui.echoerr("tty-write: requires an argument")
+			return
+		}
+
+		tty, ok := app.ui.screen.Tty()
+		if !ok {
+			log.Printf("tty-write: failed to get tty")
+			return
+		}
+
+		tty.Write([]byte(e.args[0]))
 	case "visual":
 		if !app.nav.init {
 			return
