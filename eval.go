@@ -1371,41 +1371,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
-	case "delete":
-		if !app.nav.init {
-			return
-		}
-
-		if cmd, ok := gOpts.cmds["delete"]; ok {
-			cmd.eval(app, e.args)
-			app.nav.unselect()
-			if gSingleMode {
-				app.nav.renew()
-				app.ui.loadFile(app, true)
-			} else {
-				if err := remote("send load"); err != nil {
-					app.ui.echoerrf("delete: %s", err)
-					return
-				}
-			}
-		} else {
-			list, err := app.nav.currFileOrSelections()
-			if err != nil {
-				app.ui.echoerrf("delete: %s", err)
-				return
-			}
-
-			if app.ui.cmdPrefix == ">" {
-				return
-			}
-			normal(app)
-			if len(list) == 1 {
-				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
-			} else {
-				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
-			}
-		}
-		app.ui.loadFileInfo(app.nav)
 	case "clear":
 		if !app.nav.init {
 			return
@@ -1464,6 +1429,41 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerrf("reload: %s", err)
 		}
 		app.ui.loadFile(app, true)
+		app.ui.loadFileInfo(app.nav)
+	case "delete":
+		if !app.nav.init {
+			return
+		}
+
+		if cmd, ok := gOpts.cmds["delete"]; ok {
+			cmd.eval(app, e.args)
+			app.nav.unselect()
+			if gSingleMode {
+				app.nav.renew()
+				app.ui.loadFile(app, true)
+			} else {
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("delete: %s", err)
+					return
+				}
+			}
+		} else {
+			list, err := app.nav.currFileOrSelections()
+			if err != nil {
+				app.ui.echoerrf("delete: %s", err)
+				return
+			}
+
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
+			normal(app)
+			if len(list) == 1 {
+				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
+			} else {
+				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
+			}
+		}
 		app.ui.loadFileInfo(app.nav)
 	case "rename":
 		if !app.nav.init {
