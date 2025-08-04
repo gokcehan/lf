@@ -2201,6 +2201,24 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.cmdHistoryInd = historyInd
 		app.ui.cmdPrefix = cmd.prefix
 		app.ui.cmdAccLeft = []rune(cmd.value)
+	case "cmd-left":
+		if len(app.ui.cmdAccLeft) == 0 {
+			return
+		}
+		app.ui.cmdAccRight = append([]rune{app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]}, app.ui.cmdAccRight...)
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
+	case "cmd-right":
+		if len(app.ui.cmdAccRight) == 0 {
+			return
+		}
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[0])
+		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
+	case "cmd-home":
+		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
+		app.ui.cmdAccLeft = nil
+	case "cmd-end":
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
+		app.ui.cmdAccRight = nil
 	case "cmd-delete":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -2223,24 +2241,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
 		update(app)
-	case "cmd-left":
-		if len(app.ui.cmdAccLeft) == 0 {
-			return
-		}
-		app.ui.cmdAccRight = append([]rune{app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]}, app.ui.cmdAccRight...)
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
-	case "cmd-right":
-		if len(app.ui.cmdAccRight) == 0 {
-			return
-		}
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[0])
-		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
-	case "cmd-home":
-		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
-		app.ui.cmdAccLeft = nil
-	case "cmd-end":
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
-		app.ui.cmdAccRight = nil
 	case "cmd-delete-home":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
