@@ -1071,6 +1071,8 @@ func (e *callExpr) eval(app *app, args []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
 	switch e.name {
+	case "quit":
+		app.quitChan <- struct{}{}
 	case "up":
 		if !app.nav.init {
 			return
@@ -1220,8 +1222,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.loadFileInfo(app.nav)
 		restartIncCmd(app)
 		onChdir(app)
-	case "quit":
-		app.quitChan <- struct{}{}
 	case "top":
 		if !app.nav.init {
 			return
