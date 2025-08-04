@@ -1869,6 +1869,53 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
+	case "addcustominfo":
+		var k, v string
+		switch len(e.args) {
+		case 1:
+			k, v = e.args[0], ""
+		case 2:
+			k, v = e.args[0], e.args[1]
+		default:
+			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
+			return
+		}
+
+		path, err := filepath.Abs(replaceTilde(k))
+		if err != nil {
+			app.ui.echoerrf("addcustominfo: %s", err)
+			return
+		}
+
+		dir := filepath.Dir(path)
+		d, ok := app.nav.dirCache[dir]
+		if !ok {
+			app.ui.echoerrf("addcustominfo: dir not loaded: %s", dir)
+			return
+		}
+
+		var f *file
+		for _, file := range d.allFiles {
+			if file.path == path {
+				f = file
+				break
+			}
+		}
+		if f == nil {
+			app.ui.echoerrf("addcustominfo: file not found: %s", path)
+			return
+		}
+
+		if len(strings.Trim(v, " ")) == 0 {
+			v = ""
+		}
+		if f.customInfo != v {
+			f.customInfo = v
+			// only sort when order changes
+			if getSortBy(dir) == customSort {
+				d.sort()
+			}
+		}
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")
@@ -2344,53 +2391,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			[]rune(string(app.ui.cmdAccLeft)[end2:]),
 		)
 		update(app)
-	case "addcustominfo":
-		var k, v string
-		switch len(e.args) {
-		case 1:
-			k, v = e.args[0], ""
-		case 2:
-			k, v = e.args[0], e.args[1]
-		default:
-			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
-			return
-		}
-
-		path, err := filepath.Abs(replaceTilde(k))
-		if err != nil {
-			app.ui.echoerrf("addcustominfo: %s", err)
-			return
-		}
-
-		dir := filepath.Dir(path)
-		d, ok := app.nav.dirCache[dir]
-		if !ok {
-			app.ui.echoerrf("addcustominfo: dir not loaded: %s", dir)
-			return
-		}
-
-		var f *file
-		for _, file := range d.allFiles {
-			if file.path == path {
-				f = file
-				break
-			}
-		}
-		if f == nil {
-			app.ui.echoerrf("addcustominfo: file not found: %s", path)
-			return
-		}
-
-		if len(strings.Trim(v, " ")) == 0 {
-			v = ""
-		}
-		if f.customInfo != v {
-			f.customInfo = v
-			// only sort when order changes
-			if getSortBy(dir) == customSort {
-				d.sort()
-			}
-		}
 	case "on-focus-gained":
 		onFocusGained(app)
 	case "on-focus-lost":
