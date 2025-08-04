@@ -2269,6 +2269,38 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
 		update(app)
+	case "cmd-transpose-word":
+		if len(app.ui.cmdAccLeft) == 0 {
+			return
+		}
+
+		locs := reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+		if len(locs) < 2 {
+			return
+		}
+
+		if len(app.ui.cmdAccRight) > 0 {
+			loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+			if loc != nil {
+				ind := loc[3]
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
+				app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+			}
+		}
+
+		locs = reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+
+		beg1, end1 := locs[len(locs)-2][0], locs[len(locs)-2][1]
+		beg2, end2 := locs[len(locs)-1][0], locs[len(locs)-1][1]
+
+		app.ui.cmdAccLeft = slices.Concat(
+			[]rune(string(app.ui.cmdAccLeft)[:beg1]),
+			[]rune(string(app.ui.cmdAccLeft)[beg2:end2]),
+			[]rune(string(app.ui.cmdAccLeft)[end1:beg2]),
+			[]rune(string(app.ui.cmdAccLeft)[beg1:end1]),
+			[]rune(string(app.ui.cmdAccLeft)[end2:]),
+		)
+		update(app)
 	case "cmd-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -2358,38 +2390,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind := loc[3]
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight)[:ind]))...)
 		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
-		update(app)
-	case "cmd-transpose-word":
-		if len(app.ui.cmdAccLeft) == 0 {
-			return
-		}
-
-		locs := reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
-		if len(locs) < 2 {
-			return
-		}
-
-		if len(app.ui.cmdAccRight) > 0 {
-			loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
-			if loc != nil {
-				ind := loc[3]
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
-				app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
-			}
-		}
-
-		locs = reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
-
-		beg1, end1 := locs[len(locs)-2][0], locs[len(locs)-2][1]
-		beg2, end2 := locs[len(locs)-1][0], locs[len(locs)-1][1]
-
-		app.ui.cmdAccLeft = slices.Concat(
-			[]rune(string(app.ui.cmdAccLeft)[:beg1]),
-			[]rune(string(app.ui.cmdAccLeft)[beg2:end2]),
-			[]rune(string(app.ui.cmdAccLeft)[end1:beg2]),
-			[]rune(string(app.ui.cmdAccLeft)[beg1:end1]),
-			[]rune(string(app.ui.cmdAccLeft)[end2:]),
-		)
 		update(app)
 	case "on-focus-gained":
 		onFocusGained(app)
