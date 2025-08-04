@@ -1426,6 +1426,10 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 		app.ui.loadFileInfo(app.nav)
+	case "sync":
+		if err := app.nav.sync(); err != nil {
+			app.ui.echoerrf("sync: %s", err)
+		}
 	case "draw":
 	case "redraw":
 		if !app.nav.init {
@@ -1699,10 +1703,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		}
 		app.ui.loadFileInfo(app.nav)
-	case "sync":
-		if err := app.nav.sync(); err != nil {
-			app.ui.echoerrf("sync: %s", err)
-		}
 	case "echo":
 		app.ui.echo(strings.Join(e.args, " "))
 	case "echomsg":
