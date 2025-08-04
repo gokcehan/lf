@@ -964,8 +964,6 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	dir := nav.currDir()
 
-	ui.msgWin.print(ui.screen, 0, 0, st, ui.msg)
-
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
@@ -1073,6 +1071,7 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	data := rulerData{
 		ESC:         "\033",
+		SPACER:      "\x1f",
 		Acc:         acc,
 		Progress:    progress,
 		Cut:         cut,
@@ -1090,13 +1089,14 @@ func (ui *ui) drawRuler(nav *nav) {
 		Stat:        stat,
 	}
 
-	s, err := renderRuler(ui.ruler, data)
+	left, right, err := renderRuler(ui.ruler, data)
 	if err != nil {
 		log.Printf("render ruler: %s", err)
 		return
 	}
 
-	ui.msgWin.printRight(ui.screen, 0, st, s)
+	ui.msgWin.print(ui.screen, 0, 0, st, left)
+	ui.msgWin.printRight(ui.screen, 0, st, right)
 }
 
 func (ui *ui) drawBox() {

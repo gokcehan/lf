@@ -20,6 +20,7 @@ type statData struct {
 
 type rulerData struct {
 	ESC         string
+	SPACER      string
 	Acc         string
 	Progress    []string
 	Cut         int
@@ -61,11 +62,17 @@ func parseRuler() *template.Template {
 	return tmpl
 }
 
-func renderRuler(tmpl *template.Template, data rulerData) (string, error) {
+func renderRuler(tmpl *template.Template, data rulerData) (string, string, error) {
 	var b strings.Builder
 	if err := tmpl.Execute(&b, data); err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return strings.ReplaceAll(b.String(), "\n", ""), nil
+	s := strings.ReplaceAll(b.String(), "\n", "")
+	left, right, found := strings.Cut(s, "\x1f")
+	if !found {
+		return s, "", nil
+	}
+
+	return left, right, nil
 }
