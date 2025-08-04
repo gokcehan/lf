@@ -812,48 +812,6 @@ func (ui *ui) loadFileInfo(nav *nav) {
 
 	ui.msg = ""
 	ui.msgActive = false
-
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	if curr.err != nil {
-		ui.echoerrf("stat: %s", curr.err)
-		return
-	}
-
-	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-	replace := func(s string, val string) {
-		if val == "" {
-			val = "\x00"
-		}
-		statfmt = strings.ReplaceAll(statfmt, s, val)
-	}
-	if nav.isVisualMode() {
-		replace("%m", "VISUAL")
-		replace("%M", "VISUAL")
-	} else {
-		replace("%m", "")
-		replace("%M", "NORMAL")
-	}
-	replace("%p", curr.Mode().String())
-	replace("%c", linkCount(curr))
-	replace("%u", userName(curr))
-	replace("%g", groupName(curr))
-	replace("%s", humanize(uint64(curr.Size())))
-	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
-	replace("%t", curr.ModTime().Format(gOpts.timefmt))
-	replace("%l", curr.linkTarget)
-
-	var fileInfo strings.Builder
-	for _, section := range strings.Split(statfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			fileInfo.WriteString(section)
-		}
-	}
-
-	ui.msg = fileInfo.String()
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
@@ -915,18 +873,6 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	prompt = strings.ReplaceAll(prompt, "%S", "")
 
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
-}
-
-func formatRulerOpt(name string, val string) string {
-	// handle escape character so it doesn't mess up the ruler
-	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
-
-	// display name of builtin options for clarity
-	if !strings.HasPrefix(name, "lf_user_") {
-		return fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val)
-	}
-
-	return val
 }
 
 func (ui *ui) drawRuler(nav *nav) {
@@ -1008,48 +954,6 @@ func (ui *ui) drawRuler(nav *nav) {
 	if nav.deleteTotal > 0 {
 		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
-
-	opts := getOptsMap()
-
-	rulerfmt := strings.ReplaceAll(gOpts.rulerfmt, "|", "\x1f")
-	rulerfmt = reRulerSub.ReplaceAllStringFunc(rulerfmt, func(s string) string {
-		var result string
-		switch s {
-		case "%a":
-			result = acc
-		case "%p":
-			result = strings.Join(progress, " ")
-		case "%m":
-			result = fmt.Sprintf("%.d", cut)
-		case "%c":
-			result = fmt.Sprintf("%.d", copy)
-		case "%s":
-			result = fmt.Sprintf("%.d", len(currSelections))
-		case "%v":
-			result = fmt.Sprintf("%.d", len(currVSelections))
-		case "%f":
-			result = strings.Join(dir.filter, " ")
-		case "%i":
-			result = strconv.Itoa(ind)
-		case "%t":
-			result = strconv.Itoa(tot)
-		case "%h":
-			result = strconv.Itoa(hid)
-		case "%P":
-			result = percentage
-		case "%d":
-			result = diskFree(dir.path)
-		default:
-			s = strings.TrimSuffix(strings.TrimPrefix(s, "%{"), "}")
-			if val, ok := opts[s]; ok {
-				result = formatRulerOpt(s, val)
-			}
-		}
-		if result == "" {
-			return "\x00"
-		}
-		return result
-	})
 
 	mode := "NORMAL"
 	if nav.isVisualMode() {
