@@ -56,13 +56,10 @@ high                     (default \(aqH\(aq)
 middle                   (default \(aqM\(aq)
 low                      (default \(aqL\(aq)
 toggle
-visual                   (default \(aqV\(aq)
 invert                   (default \(aqv\(aq)
 unselect                 (default \(aqu\(aq)
 glob\-select
 glob\-unselect
-calcdirsize
-clearmaps
 copy                     (default \(aqy\(aq)
 cut                      (default \(aqd\(aq)
 paste                    (default \(aqp\(aq)
@@ -72,15 +69,8 @@ draw
 redraw                   (default \(aq<c\-l>\(aq)
 load
 reload                   (default \(aq<c\-r>\(aq)
-echo
-echomsg
-echoerr
-cd
-select
 delete         (modal)
 rename         (modal)   (default \(aqr\(aq)
-source
-push
 read           (modal)   (default \(aq:\(aq)
 shell          (modal)   (default \(aq$\(aq)
 shell\-pipe     (modal)   (default \(aq%\(aq)
@@ -101,8 +91,18 @@ mark\-load      (modal)   (default \(dq\(aq\(dq)
 mark\-remove    (modal)   (default \(aq\(dq\(aq)
 tag
 tag\-toggle               (default \(aqt\(aq)
+echo
+echomsg
+echoerr
+cd
+select
+source
+push
 addcustominfo
+calcdirsize
+clearmaps
 tty\-write
+visual                   (default \(aqV\(aq)
 .EE
 .PP
 The following Visual mode commands are provided by lf:
@@ -117,6 +117,7 @@ visual\-change            (default \(aqo\(aq)
 The following Command\-line mode commands are provided by lf:
 .IP
 .EX
+cmd\-insert
 cmd\-escape               (default \(aq<esc>\(aq)
 cmd\-complete             (default \(aq<tab>\(aq)
 cmd\-menu\-complete
@@ -436,21 +437,6 @@ A count can be specified to move to a specific line, for example, use
 Move the current file selection to the high/middle/low of the screen.
 .SS toggle
 Toggle the selection of the current file or files given as arguments.
-.SS visual (default \f[CR]V\f[R])
-Switch to Visual mode.
-If already in Visual mode, discard the visual selection and stay in
-Visual mode.
-.SS visual\-accept (default \f[CR]V\f[R])
-Add the visual selection to the selection list, quit Visual mode and
-return to Normal mode.
-.SS visual\-unselect
-Remove the visual selection from the selection list, quit Visual mode
-and return to Normal mode.
-.SS visual\-discard (default \f[CR]<esc>\f[R])
-Discard the visual selection, quit Visual mode and return to Normal
-mode.
-.SS visual\-change (default \f[CR]o\f[R])
-Go to the other end of the current Visual mode selection.
 .SS invert (default \f[CR]v\f[R])
 Reverse the selection of all files in the current directory (i.e.
 \f[CR]toggle\f[R] all files).
@@ -463,20 +449,6 @@ remove selections in other directories.
 Remove the selection of all files in all directories.
 .SS glob\-select, glob\-unselect
 Select/unselect files that match the given glob.
-.SS calcdirsize
-Calculate the total size for each of the selected directories.
-Option \f[CR]info\f[R] should include \f[CR]size\f[R] and option
-\f[CR]dircounts\f[R] should be disabled to show this size.
-If the total size of a directory is not calculated, it will be shown as
-\f[CR]\-\f[R].
-.SS clearmaps
-Remove all keybindings associated with the \f[CR]map\f[R],
-\f[CR]nmap\f[R] and \f[CR]vmap\f[R] command.
-This command can be used in the config file to remove the default
-keybindings.
-For safety purposes, \f[CR]:\f[R] is left mapped to the \f[CR]read\f[R]
-command, and \f[CR]cmap\f[R] keybindings are retained so that it is
-still possible to exit \f[CR]lf\f[R] using \f[CR]:quit\f[R].
 .SS copy (default \f[CR]y\f[R])
 If there are no selections, save the path of the current file to the
 copy buffer, otherwise, copy the paths of selected files.
@@ -502,18 +474,6 @@ Load modified files and directories.
 This command is automatically called when required.
 .SS reload (default \f[CR]<c\-r>\f[R])
 Flush the cache and reload all files and directories.
-.SS echo
-Print the given arguments to the message line at the bottom.
-.SS echomsg
-Print the given arguments to the message line at the bottom and also to
-the log file.
-.SS echoerr
-Print given arguments to the message line at the bottom as
-\f[CR]errorfmt\f[R] and also to the log file.
-.SS cd
-Change the working directory to the given argument.
-.SS select
-Change the current file selection to the given argument.
 .SS delete (modal)
 Remove the current file or selected file(s).
 A custom \f[CR]delete\f[R] command can be defined to override this
@@ -522,10 +482,6 @@ default.
 Rename the current file using the built\-in method.
 A custom \f[CR]rename\f[R] command can be defined to override this
 default.
-.SS source
-Read the configuration file given in the argument.
-.SS push
-Simulate key pushes given in the argument.
 .SS read (modal) (default \f[CR]:\f[R])
 Read a command to evaluate.
 .SS shell (modal) (default \f[CR]$\f[R])
@@ -567,12 +523,42 @@ with \f[CR]tag\-toggle\f[R] (i.e.
 .SS tag\-toggle (default \f[CR]t\f[R])
 Tag a file with \f[CR]*\f[R] or a single width character given in the
 argument if the file is untagged, otherwise remove the tag.
+.SS echo
+Print the given arguments to the message line at the bottom.
+.SS echomsg
+Print the given arguments to the message line at the bottom and also to
+the log file.
+.SS echoerr
+Print given arguments to the message line at the bottom as
+\f[CR]errorfmt\f[R] and also to the log file.
+.SS cd
+Change the working directory to the given argument.
+.SS select
+Change the current file selection to the given argument.
+.SS source
+Read the configuration file given in the argument.
+.SS push
+Simulate key pushes given in the argument.
 .SS addcustominfo
 Update the \f[CR]custom\f[R] info field of the given file with the given
 string.
 The info string may contain ANSI escape codes to further customize its
 appearance.
 If no info is provided, clear the file\(aqs info instead.
+.SS calcdirsize
+Calculate the total size for each of the selected directories.
+Option \f[CR]info\f[R] should include \f[CR]size\f[R] and option
+\f[CR]dircounts\f[R] should be disabled to show this size.
+If the total size of a directory is not calculated, it will be shown as
+\f[CR]\-\f[R].
+.SS clearmaps
+Remove all keybindings associated with the \f[CR]map\f[R],
+\f[CR]nmap\f[R] and \f[CR]vmap\f[R] command.
+This command can be used in the config file to remove the default
+keybindings.
+For safety purposes, \f[CR]:\f[R] is left mapped to the \f[CR]read\f[R]
+command, and \f[CR]cmap\f[R] keybindings are retained so that it is
+still possible to exit \f[CR]lf\f[R] using \f[CR]:quit\f[R].
 .SS tty\-write
 Write the given string to the tty.
 This is useful for sending escape sequences to the terminal to control
@@ -581,7 +567,23 @@ OSC 0 to set the window title).
 Using \f[CR]tty\-write\f[R] is preferred over directly writing to
 \f[CR]/dev/tty\f[R] because the latter is not synchronized and can
 interfere with drawing the UI.
-.SH COMMAND LINE COMMANDS
+.SS visual (default \f[CR]V\f[R])
+Switch to Visual mode.
+If already in Visual mode, discard the visual selection and stay in
+Visual mode.
+.SH VISUAL MODE COMMANDS
+.SS visual\-accept (default \f[CR]V\f[R])
+Add the visual selection to the selection list, quit Visual mode and
+return to Normal mode.
+.SS visual\-unselect
+Remove the visual selection from the selection list, quit Visual mode
+and return to Normal mode.
+.SS visual\-discard (default \f[CR]<esc>\f[R])
+Discard the visual selection, quit Visual mode and return to Normal
+mode.
+.SS visual\-change (default \f[CR]o\f[R])
+Go to the other end of the current Visual mode selection.
+.SH COMMAND\-LINE MODE COMMANDS
 The prompt character specifies which of the several Command\-line modes
 you are in.
 For example, the \f[CR]read\f[R] command takes you to the \f[CR]:\f[R]
@@ -597,6 +599,9 @@ The command line commands should be mostly compatible with readline
 keybindings.
 A character refers to a Unicode code point, a word consists of letters
 and digits, and a unix word consists of any non\-blank characters.
+.SS cmd\-insert
+Insert the character given in the argument.
+This command is automatically called when required.
 .SS cmd\-escape (default \f[CR]<esc>\f[R])
 Quit Command\-line mode and return to Normal mode.
 .SS cmd\-complete (default \f[CR]<tab>\f[R])

@@ -57,13 +57,10 @@ The following commands are provided by lf:
 	middle                   (default 'M')
 	low                      (default 'L')
 	toggle
-	visual                   (default 'V')
 	invert                   (default 'v')
 	unselect                 (default 'u')
 	glob-select
 	glob-unselect
-	calcdirsize
-	clearmaps
 	copy                     (default 'y')
 	cut                      (default 'd')
 	paste                    (default 'p')
@@ -73,15 +70,8 @@ The following commands are provided by lf:
 	redraw                   (default '<c-l>')
 	load
 	reload                   (default '<c-r>')
-	echo
-	echomsg
-	echoerr
-	cd
-	select
 	delete         (modal)
 	rename         (modal)   (default 'r')
-	source
-	push
 	read           (modal)   (default ':')
 	shell          (modal)   (default '$')
 	shell-pipe     (modal)   (default '%')
@@ -102,8 +92,18 @@ The following commands are provided by lf:
 	mark-remove    (modal)   (default '"')
 	tag
 	tag-toggle               (default 't')
+	echo
+	echomsg
+	echoerr
+	cd
+	select
+	source
+	push
 	addcustominfo
+	calcdirsize
+	clearmaps
 	tty-write
+	visual                   (default 'V')
 
 The following Visual mode commands are provided by lf:
 
@@ -114,6 +114,7 @@ The following Visual mode commands are provided by lf:
 
 The following Command-line mode commands are provided by lf:
 
+	cmd-insert
 	cmd-escape               (default '<esc>')
 	cmd-complete             (default '<tab>')
 	cmd-menu-complete
@@ -414,27 +415,6 @@ Move the current file selection to the high/middle/low of the screen.
 
 Toggle the selection of the current file or files given as arguments.
 
-## visual (default `V`)
-
-Switch to Visual mode.
-If already in Visual mode, discard the visual selection and stay in Visual mode.
-
-## visual-accept (default `V`)
-
-Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
-
-## visual-unselect
-
-Remove the visual selection from the selection list, quit Visual mode and return to Normal mode.
-
-## visual-discard (default `<esc>`)
-
-Discard the visual selection, quit Visual mode and return to Normal mode.
-
-## visual-change (default `o`)
-
-Go to the other end of the current Visual mode selection.
-
 ## invert (default `v`)
 
 Reverse the selection of all files in the current directory (i.e. `toggle` all files).
@@ -448,18 +428,6 @@ Remove the selection of all files in all directories.
 ## glob-select, glob-unselect
 
 Select/unselect files that match the given glob.
-
-## calcdirsize
-
-Calculate the total size for each of the selected directories.
-Option `info` should include `size` and option `dircounts` should be disabled to show this size.
-If the total size of a directory is not calculated, it will be shown as `-`.
-
-## clearmaps
-
-Remove all keybindings associated with the `map`, `nmap` and `vmap` command.
-This command can be used in the config file to remove the default keybindings.
-For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
 ## copy (default `y`)
 
@@ -501,26 +469,6 @@ This command is automatically called when required.
 
 Flush the cache and reload all files and directories.
 
-## echo
-
-Print the given arguments to the message line at the bottom.
-
-## echomsg
-
-Print the given arguments to the message line at the bottom and also to the log file.
-
-## echoerr
-
-Print given arguments to the message line at the bottom as `errorfmt` and also to the log file.
-
-## cd
-
-Change the working directory to the given argument.
-
-## select
-
-Change the current file selection to the given argument.
-
 ## delete (modal)
 
 Remove the current file or selected file(s).
@@ -530,14 +478,6 @@ A custom `delete` command can be defined to override this default.
 
 Rename the current file using the built-in method.
 A custom `rename` command can be defined to override this default.
-
-## source
-
-Read the configuration file given in the argument.
-
-## push
-
-Simulate key pushes given in the argument.
 
 ## read (modal) (default `:`)
 
@@ -595,11 +535,51 @@ You can define a new tag-clearing command by combining `tag` with `tag-toggle` (
 
 Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
 
+## echo
+
+Print the given arguments to the message line at the bottom.
+
+## echomsg
+
+Print the given arguments to the message line at the bottom and also to the log file.
+
+## echoerr
+
+Print given arguments to the message line at the bottom as `errorfmt` and also to the log file.
+
+## cd
+
+Change the working directory to the given argument.
+
+## select
+
+Change the current file selection to the given argument.
+
+## source
+
+Read the configuration file given in the argument.
+
+## push
+
+Simulate key pushes given in the argument.
+
 ## addcustominfo
 
 Update the `custom` info field of the given file with the given string.
 The info string may contain ANSI escape codes to further customize its appearance.
 If no info is provided, clear the file's info instead.
+
+## calcdirsize
+
+Calculate the total size for each of the selected directories.
+Option `info` should include `size` and option `dircounts` should be disabled to show this size.
+If the total size of a directory is not calculated, it will be shown as `-`.
+
+## clearmaps
+
+Remove all keybindings associated with the `map`, `nmap` and `vmap` command.
+This command can be used in the config file to remove the default keybindings.
+For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
 
 ## tty-write
 
@@ -607,7 +587,30 @@ Write the given string to the tty.
 This is useful for sending escape sequences to the terminal to control its behavior (e.g. OSC 0 to set the window title).
 Using `tty-write` is preferred over directly writing to `/dev/tty` because the latter is not synchronized and can interfere with drawing the UI.
 
-# COMMAND LINE COMMANDS
+## visual (default `V`)
+
+Switch to Visual mode.
+If already in Visual mode, discard the visual selection and stay in Visual mode.
+
+# VISUAL MODE COMMANDS
+
+## visual-accept (default `V`)
+
+Add the visual selection to the selection list, quit Visual mode and return to Normal mode.
+
+## visual-unselect
+
+Remove the visual selection from the selection list, quit Visual mode and return to Normal mode.
+
+## visual-discard (default `<esc>`)
+
+Discard the visual selection, quit Visual mode and return to Normal mode.
+
+## visual-change (default `o`)
+
+Go to the other end of the current Visual mode selection.
+
+# COMMAND-LINE MODE COMMANDS
 
 The prompt character specifies which of the several Command-line modes you are in.
 For example, the `read` command takes you to the `:` mode.
@@ -617,6 +620,11 @@ You can go back with `cmd-delete-back` (`<backspace>` by default).
 
 The command line commands should be mostly compatible with readline keybindings.
 A character refers to a Unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+
+## cmd-insert
+
+Insert the character given in the argument.
+This command is automatically called when required.
 
 ## cmd-escape (default `<esc>`)
 
