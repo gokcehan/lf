@@ -1189,21 +1189,21 @@ func (e *callExpr) eval(app *app, args []string) {
 		if cmd, ok := gOpts.cmds["open"]; ok {
 			cmd.eval(app, e.args)
 		}
-	case "jump-prev":
-		resetIncCmd(app)
-		preChdir(app)
-		for range e.count {
-			app.nav.cdJumpListPrev()
-		}
-		app.ui.loadFile(app, true)
-		app.ui.loadFileInfo(app.nav)
-		restartIncCmd(app)
-		onChdir(app)
 	case "jump-next":
 		resetIncCmd(app)
 		preChdir(app)
 		for range e.count {
 			app.nav.cdJumpListNext()
+		}
+		app.ui.loadFile(app, true)
+		app.ui.loadFileInfo(app.nav)
+		restartIncCmd(app)
+		onChdir(app)
+	case "jump-prev":
+		resetIncCmd(app)
+		preChdir(app)
+		for range e.count {
+			app.nav.cdJumpListPrev()
 		}
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
