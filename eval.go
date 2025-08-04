@@ -2292,25 +2292,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		old := app.ui.cmdAccRight
 		app.ui.cmdAccRight = append([]rune(string(app.ui.cmdAccLeft)[ind:]), old...)
 		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
-	case "cmd-capitalize-word":
-		if len(app.ui.cmdAccRight) == 0 {
-			return
-		}
-		ind := 0
-		for ; ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]); ind++ {
-		}
-		if ind >= len(app.ui.cmdAccRight) {
-			return
-		}
-		app.ui.cmdAccRight[ind] = unicode.ToUpper(app.ui.cmdAccRight[ind])
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
-		if loc == nil {
-			return
-		}
-		ind = loc[3]
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
-		update(app)
 	case "cmd-delete-word":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
@@ -2334,6 +2315,25 @@ func (e *callExpr) eval(app *app, args []string) {
 		ind := locs[len(locs)-1][3]
 		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
 		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
+		update(app)
+	case "cmd-capitalize-word":
+		if len(app.ui.cmdAccRight) == 0 {
+			return
+		}
+		ind := 0
+		for ; ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]); ind++ {
+		}
+		if ind >= len(app.ui.cmdAccRight) {
+			return
+		}
+		app.ui.cmdAccRight[ind] = unicode.ToUpper(app.ui.cmdAccRight[ind])
+		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		if loc == nil {
+			return
+		}
+		ind = loc[3]
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
+		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
 		update(app)
 	case "cmd-uppercase-word":
 		if len(app.ui.cmdAccRight) == 0 {
