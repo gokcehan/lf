@@ -890,13 +890,13 @@ ignoredia (bool) (default true)
 
 Ignore diacritics in sorting and search patterns.
 
-incsearch (bool) (default false)
-
-Jump to the first match after each keystroke during searching.
-
 incfilter (bool) (default false)
 
 Apply filter pattern after each keystroke during filtering.
+
+incsearch (bool) (default false)
+
+Jump to the first match after each keystroke during searching.
 
 info ([]string) (default ``)
 
@@ -1027,16 +1027,6 @@ for user-defined options, in the form %{lf_user_<name>} (e.g.
 Any section containing a failed expansion (result is a blank string) is
 discarded and not shown.
 
-selectfmt (string) (default \033[7;35m)
-
-Format string of the indicator for files that are selected.
-
-selmode (string) (default all)
-
-Selection mode for commands. When set to all it will use the selected
-files from all directories. When set to dir it will only use the
-selected files in the current directory.
-
 scrolloff (int) (default 0)
 
 Minimum number of offset lines shown at all times at the top and bottom
@@ -1051,6 +1041,16 @@ searchmethod (string) default text)
 How search command patterns are treated. Currently supported methods are
 text (i.e. string literals), glob (i.e shell globs) and regex (i.e.
 regular expressions). See SEARCHING FILES for more details.
+
+selectfmt (string) (default \033[7;35m)
+
+Format string of the indicator for files that are selected.
+
+selmode (string) (default all)
+
+Selection mode for commands. When set to all it will use the selected
+files from all directories. When set to dir it will only use the
+selected files in the current directory.
 
 shell (string) (default sh for Unix and cmd for Windows)
 
@@ -1398,7 +1398,7 @@ string:
 
 Command setlocal is used to set a local option for a directory which can
 be a boolean or string. Currently supported local options are dircounts,
-dirfirst, dironly, hidden, info, reverse, sortby and locale. Adding a
+dirfirst, dironly, hidden, info, locale, reverse and sortby. Adding a
 trailing path separator (i.e. / for Unix and \ for Windows) sets the
 option for the given directory along with its subdirectories:
 
