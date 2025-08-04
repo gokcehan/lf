@@ -1340,24 +1340,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "unselect":
 		app.nav.unselect()
-	case "calcdirsize":
-		if !app.nav.init {
-			return
-		}
-		err := app.nav.calcDirSize()
-		if err != nil {
-			app.ui.echoerrf("calcdirsize: %s", err)
-			return
-		}
-		app.ui.loadFileInfo(app.nav)
-		app.nav.sort()
-		app.ui.sort()
-	case "clearmaps":
-		// leave `:` and cmaps bound so the user can still exit using `:quit`
-		clear(gOpts.nkeys)
-		clear(gOpts.vkeys)
-		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
-		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
 	case "copy":
 		if !app.nav.init {
 			return
@@ -1916,6 +1898,24 @@ func (e *callExpr) eval(app *app, args []string) {
 				d.sort()
 			}
 		}
+	case "calcdirsize":
+		if !app.nav.init {
+			return
+		}
+		err := app.nav.calcDirSize()
+		if err != nil {
+			app.ui.echoerrf("calcdirsize: %s", err)
+			return
+		}
+		app.ui.loadFileInfo(app.nav)
+		app.nav.sort()
+		app.ui.sort()
+	case "clearmaps":
+		// leave `:` and cmaps bound so the user can still exit using `:quit`
+		clear(gOpts.nkeys)
+		clear(gOpts.vkeys)
+		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
+		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")

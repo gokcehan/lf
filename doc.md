@@ -61,8 +61,6 @@ The following commands are provided by lf:
 	unselect                 (default 'u')
 	glob-select
 	glob-unselect
-	calcdirsize
-	clearmaps
 	copy                     (default 'y')
 	cut                      (default 'd')
 	paste                    (default 'p')
@@ -102,6 +100,8 @@ The following commands are provided by lf:
 	tag
 	tag-toggle               (default 't')
 	addcustominfo
+	calcdirsize
+	clearmaps
 	tty-write
 	visual                   (default 'V')
 
