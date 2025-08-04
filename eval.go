@@ -1465,6 +1465,42 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		app.ui.loadFile(app, true)
 		app.ui.loadFileInfo(app.nav)
+	case "rename":
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["rename"]; ok {
+			cmd.eval(app, e.args)
+			if gSingleMode {
+				app.nav.renew()
+				app.ui.loadFile(app, true)
+			} else {
+				if err := remote("send load"); err != nil {
+					app.ui.echoerrf("rename: %s", err)
+					return
+				}
+			}
+		} else {
+			curr, err := app.nav.currFile()
+			if err != nil {
+				app.ui.echoerrf("rename: %s:", err)
+				return
+			}
+			if app.ui.cmdPrefix == ">" {
+				return
+			}
+			normal(app)
+			app.ui.cmdPrefix = "rename: "
+			extension := getFileExtension(curr)
+			if len(extension) == 0 {
+				// no extension or .hidden or is directory
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+			} else {
+				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
+				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
+			}
+		}
+		app.ui.loadFileInfo(app.nav)
 	case "read":
 		if app.ui.cmdPrefix == ">" {
 			return
@@ -1667,42 +1703,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		normal(app)
 		app.ui.menu = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-remove: "
-	case "rename":
-		if !app.nav.init {
-			return
-		}
-		if cmd, ok := gOpts.cmds["rename"]; ok {
-			cmd.eval(app, e.args)
-			if gSingleMode {
-				app.nav.renew()
-				app.ui.loadFile(app, true)
-			} else {
-				if err := remote("send load"); err != nil {
-					app.ui.echoerrf("rename: %s", err)
-					return
-				}
-			}
-		} else {
-			curr, err := app.nav.currFile()
-			if err != nil {
-				app.ui.echoerrf("rename: %s:", err)
-				return
-			}
-			if app.ui.cmdPrefix == ">" {
-				return
-			}
-			normal(app)
-			app.ui.cmdPrefix = "rename: "
-			extension := getFileExtension(curr)
-			if len(extension) == 0 {
-				// no extension or .hidden or is directory
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
-			} else {
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
-				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
-			}
-		}
-		app.ui.loadFileInfo(app.nav)
 	case "echo":
 		app.ui.echo(strings.Join(e.args, " "))
 	case "echomsg":
