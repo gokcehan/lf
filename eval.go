@@ -1290,6 +1290,30 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.nav.invert()
 	case "unselect":
 		app.nav.unselect()
+	case "glob-select":
+		if !app.nav.init {
+			return
+		}
+		if len(e.args) != 1 {
+			app.ui.echoerr("glob-select: requires a pattern to match")
+			return
+		}
+		if err := app.nav.globSel(e.args[0], false); err != nil {
+			app.ui.echoerrf("%s", err)
+			return
+		}
+	case "glob-unselect":
+		if !app.nav.init {
+			return
+		}
+		if len(e.args) != 1 {
+			app.ui.echoerr("glob-unselect: requires a pattern to match")
+			return
+		}
+		if err := app.nav.globSel(e.args[0], true); err != nil {
+			app.ui.echoerrf("%s", err)
+			return
+		}
 	case "copy":
 		if !app.nav.init {
 			return
@@ -1760,30 +1784,6 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.marks["'"] = wd
 			restartIncCmd(app)
 			onChdir(app)
-		}
-	case "glob-select":
-		if !app.nav.init {
-			return
-		}
-		if len(e.args) != 1 {
-			app.ui.echoerr("glob-select: requires a pattern to match")
-			return
-		}
-		if err := app.nav.globSel(e.args[0], false); err != nil {
-			app.ui.echoerrf("%s", err)
-			return
-		}
-	case "glob-unselect":
-		if !app.nav.init {
-			return
-		}
-		if len(e.args) != 1 {
-			app.ui.echoerr("glob-unselect: requires a pattern to match")
-			return
-		}
-		if err := app.nav.globSel(e.args[0], true); err != nil {
-			app.ui.echoerrf("%s", err)
-			return
 		}
 	case "source":
 		if len(e.args) != 1 {
