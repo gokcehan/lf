@@ -1882,6 +1882,56 @@ func (e *callExpr) eval(app *app, args []string) {
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
+	case "visual":
+		if !app.nav.init {
+			return
+		}
+		visual(app)
+	case "visual-accept":
+		if !app.nav.init {
+			return
+		}
+		dir := app.nav.currDir()
+		for _, path := range dir.visualSelections() {
+			if _, ok := app.nav.selections[path]; !ok {
+				app.nav.selections[path] = app.nav.selectionInd
+				app.nav.selectionInd++
+			}
+		}
+		// resetting Visual mode here instead of inside `normal()`
+		// allows us to use Visual mode inside search, find etc.
+		dir.visualAnchor = -1
+		normal(app)
+	case "visual-unselect":
+		if !app.nav.init {
+			return
+		}
+		dir := app.nav.currDir()
+		for _, path := range dir.visualSelections() {
+			delete(app.nav.selections, path)
+		}
+		if len(app.nav.selections) == 0 {
+			app.nav.selectionInd = 0
+		}
+		dir.visualAnchor = -1
+		normal(app)
+	case "visual-discard":
+		if !app.nav.init {
+			return
+		}
+		dir := app.nav.currDir()
+		dir.visualAnchor = -1
+		normal(app)
+	case "visual-change":
+		if !app.nav.isVisualMode() {
+			return
+		}
+		dir := app.nav.currDir()
+		beg := max(dir.ind-dir.pos, 0)
+		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
+		dir.pos = dir.ind - beg
+		dir.visualWrap = -dir.visualWrap
+		dir.boundPos(app.nav.height)
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return
@@ -2341,56 +2391,6 @@ func (e *callExpr) eval(app *app, args []string) {
 				d.sort()
 			}
 		}
-	case "visual":
-		if !app.nav.init {
-			return
-		}
-		visual(app)
-	case "visual-accept":
-		if !app.nav.init {
-			return
-		}
-		dir := app.nav.currDir()
-		for _, path := range dir.visualSelections() {
-			if _, ok := app.nav.selections[path]; !ok {
-				app.nav.selections[path] = app.nav.selectionInd
-				app.nav.selectionInd++
-			}
-		}
-		// resetting Visual mode here instead of inside `normal()`
-		// allows us to use Visual mode inside search, find etc.
-		dir.visualAnchor = -1
-		normal(app)
-	case "visual-unselect":
-		if !app.nav.init {
-			return
-		}
-		dir := app.nav.currDir()
-		for _, path := range dir.visualSelections() {
-			delete(app.nav.selections, path)
-		}
-		if len(app.nav.selections) == 0 {
-			app.nav.selectionInd = 0
-		}
-		dir.visualAnchor = -1
-		normal(app)
-	case "visual-discard":
-		if !app.nav.init {
-			return
-		}
-		dir := app.nav.currDir()
-		dir.visualAnchor = -1
-		normal(app)
-	case "visual-change":
-		if !app.nav.isVisualMode() {
-			return
-		}
-		dir := app.nav.currDir()
-		beg := max(dir.ind-dir.pos, 0)
-		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
-		dir.pos = dir.ind - beg
-		dir.visualWrap = -dir.visualWrap
-		dir.boundPos(app.nav.height)
 	case "on-focus-gained":
 		onFocusGained(app)
 	case "on-focus-lost":
