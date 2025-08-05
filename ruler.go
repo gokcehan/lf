@@ -14,12 +14,14 @@ import (
 var gDefaultRuler string
 
 type statData struct {
+	Path        string
+	Name        string
+	Size        uint64
 	Permissions string
+	ModTime     time.Time
 	Count       string
 	User        string
 	Group       string
-	Size        uint64
-	ModTime     time.Time
 	Target      string
 }
 

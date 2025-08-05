@@ -893,12 +893,14 @@ func (ui *ui) drawRuler(nav *nav) {
 		}
 
 		stat = &statData{
+			Path:        curr.path,
+			Name:        curr.Name(),
+			Size:        uint64(curr.Size()),
 			Permissions: curr.Mode().String(),
+			ModTime:     curr.ModTime(),
 			Count:       linkCount(curr),
 			User:        userName(curr),
 			Group:       groupName(curr),
-			Size:        uint64(curr.Size()),
-			ModTime:     curr.ModTime(),
 			Target:      curr.linkTarget,
 		}
 	}
