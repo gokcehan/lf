@@ -243,7 +243,7 @@ func matchCmd(s string) (matches []compMatch, result string) {
 	return
 }
 
-func matchFile(s string, escape func(string) string, unescape func(string) string) (matches []compMatch, result string) {
+func matchFile(s string, dironly bool, escape func(string) string, unescape func(string) string) (matches []compMatch, result string) {
 	dir, file := filepath.Split(unescape(replaceTilde(s)))
 
 	d := dir
@@ -260,17 +260,26 @@ func matchFile(s string, escape func(string) string, unescape func(string) strin
 	var longest string
 
 	for _, f := range files {
+		isDir := false
+		if f.IsDir() {
+			isDir = true
+		} else if f.Type()&os.ModeSymlink != 0 {
+			if stat, err := os.Stat(filepath.Join(d, f.Name())); err == nil && stat.IsDir() {
+				isDir = true
+			}
+		}
+
+		if !isDir && dironly {
+			continue
+		}
+
 		if !strings.HasPrefix(strings.ToLower(f.Name()), strings.ToLower(file)) {
 			continue
 		}
 
 		name := f.Name()
-		if f.IsDir() {
+		if isDir {
 			name += string(filepath.Separator)
-		} else if f.Type()&os.ModeSymlink != 0 {
-			if stat, err := os.Stat(filepath.Join(d, f.Name())); err == nil && stat.IsDir() {
-				name += string(filepath.Separator)
-			}
 		}
 		result := escape(dir + name)
 		matches = append(matches, compMatch{name, result})
@@ -296,13 +305,13 @@ func matchFile(s string, escape func(string) string, unescape func(string) strin
 	return
 }
 
-func matchCmdFile(s string) (matches []compMatch, result string) {
-	matches, result = matchFile(s, cmdEscape, cmdUnescape)
+func matchCmdFile(s string, dironly bool) (matches []compMatch, result string) {
+	matches, result = matchFile(s, dironly, cmdEscape, cmdUnescape)
 	return
 }
 
 func matchShellFile(s string) (matches []compMatch, result string) {
-	matches, result = matchFile(s, shellEscape, shellUnescape)
+	matches, result = matchFile(s, false, shellEscape, shellUnescape)
 	return
 }
 
@@ -406,7 +415,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		}
 	case "setlocal":
 		if len(f) == 2 {
-			matches, result = matchCmdFile(f[1])
+			matches, result = matchCmdFile(f[1], true)
 			break
 		}
 		if len(f) == 3 {
@@ -431,15 +440,19 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			matches, result = matchCmd(f[2])
 		}
 	case "cmd":
-	case "toggle":
-		matches, result = matchCmdFile(f[len(f)-1])
-	case "cd", "select", "source":
+	case "cd":
 		if len(f) == 2 {
-			matches, result = matchCmdFile(f[1])
+			matches, result = matchCmdFile(f[1], true)
 		}
+	case "select", "source":
+		if len(f) == 2 {
+			matches, result = matchCmdFile(f[1], false)
+		}
+	case "toggle":
+		matches, result = matchCmdFile(f[len(f)-1], false)
 	default:
 		if !slices.Contains(gCmdWords, f[0]) {
-			matches, result = matchCmdFile(f[len(f)-1])
+			matches, result = matchCmdFile(f[len(f)-1], false)
 		}
 	}
 
