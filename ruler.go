@@ -32,8 +32,8 @@ type rulerData struct {
 	Progress    []string
 	Cut         int
 	Copy        int
-	Select      int
-	Visual      int
+	Select      []string
+	Visual      []string
 	Index       int
 	Total       int
 	Hidden      int

@@ -12,7 +12,7 @@
 {{if .Progress}}  {{join .Progress " "}}{{end}}
 {{if gt .Cut 0}}  {{.ESC}}[7;31m {{.Cut}} {{.ESC}}[0m{{end}}
 {{if gt .Copy 0}}  {{.ESC}}[7;33m {{.Copy}} {{.ESC}}[0m{{end}}
-{{if gt .Select 0}}  {{.ESC}}[7;35m {{.Select}} {{.ESC}}[0m{{end}}
-{{if gt .Visual 0}}  {{.ESC}}[7;36m {{.Visual}} {{.ESC}}[0m{{end}}
+{{if .Select}}  {{.ESC}}[7;35m {{len .Select}} {{.ESC}}[0m{{end}}
+{{if .Visual}}  {{.ESC}}[7;36m {{len .Visual}} {{.ESC}}[0m{{end}}
 {{if .Filter}}  {{.ESC}}[7;34m {{join .Filter " "}} {{.ESC}}[0m{{end}}
   {{.Index}}/{{.Total}}
