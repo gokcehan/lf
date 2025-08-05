@@ -1678,7 +1678,7 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) stri
 	wtot, _ := screen.Size()
 	wcol := 0
 	for _, m := range matches {
-		wcol = max(wcol, len(m.name))
+		wcol = max(wcol, runeSliceWidth([]rune(m.name)))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1688,11 +1688,12 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) stri
 	for i := 0; i < mlen; {
 		for j := 0; j < ncol && i < mlen; i, j = i+1, j+1 {
 			name := matches[i].name
+			w := runeSliceWidth([]rune(name))
 
-			if selectedInd == i {
-				fmt.Fprintf(&b, "\033[7m%s\033[0m%*s", name, wcol-len(name), "")
+			if i == selectedInd {
+				fmt.Fprintf(&b, "\033[7m%s\033[0m%*s", name, wcol-w, "")
 			} else {
-				fmt.Fprintf(&b, "%s%*s", name, wcol-len(name), "")
+				fmt.Fprintf(&b, "%s%*s", name, wcol-w, "")
 			}
 		}
 		b.WriteByte('\n')
