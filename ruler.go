@@ -49,6 +49,7 @@ func parseRuler() *template.Template {
 		"env":      os.Getenv,
 		"humanize": humanize,
 		"join":     strings.Join,
+		"substr":   func(s string, beg, end int) string { return string([]rune(s)[beg:end]) },
 	}
 
 	var tmpl *template.Template
