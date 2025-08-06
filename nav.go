@@ -442,15 +442,6 @@ func (dir *dir) name() string {
 	return dir.files[dir.ind].Name()
 }
 
-func (d *dir) fileNames() []string {
-	names := []string{}
-	for _, file := range d.files {
-		names = append(names, file.path)
-	}
-
-	return names
-}
-
 func (nav *nav) isVisualMode() bool {
 	return nav.init && nav.currDir().visualAnchor != -1
 }
