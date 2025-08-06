@@ -430,7 +430,13 @@ func (app *app) loop() {
 			}
 
 			app.watchDir(d)
-			onLoad(app, d.fileNames())
+
+			paths := []string{}
+			for _, file := range d.allFiles {
+				paths = append(paths, file.path)
+			}
+			onLoad(app, paths)
+
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
