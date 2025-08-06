@@ -847,17 +847,6 @@ func normal(app *app) {
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
-
-	// ensure the mode indicator in `statfmt` is updated properly
-	app.ui.loadFileInfo(app.nav)
-}
-
-func visual(app *app) {
-	dir := app.nav.currDir()
-	dir.visualAnchor = dir.ind
-	dir.visualWrap = 0
-
-	app.ui.loadFileInfo(app.nav)
 }
 
 func insert(app *app, arg string) {
@@ -1935,7 +1924,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		visual(app)
+		dir := app.nav.currDir()
+		dir.visualAnchor = dir.ind
+		dir.visualWrap = 0
 	case "visual-accept":
 		if !app.nav.init {
 			return
@@ -1947,10 +1938,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.nav.selectionInd++
 			}
 		}
-		// resetting Visual mode here instead of inside `normal()`
-		// allows us to use Visual mode inside search, find etc.
 		dir.visualAnchor = -1
-		normal(app)
 	case "visual-unselect":
 		if !app.nav.init {
 			return
@@ -1963,14 +1951,12 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.nav.selectionInd = 0
 		}
 		dir.visualAnchor = -1
-		normal(app)
 	case "visual-discard":
 		if !app.nav.init {
 			return
 		}
 		dir := app.nav.currDir()
 		dir.visualAnchor = -1
-		normal(app)
 	case "visual-change":
 		if !app.nav.isVisualMode() {
 			return
