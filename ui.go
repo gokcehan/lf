@@ -746,6 +746,11 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
+func (ui *ui) clearmsg() {
+	ui.msg = ""
+	ui.msgActive = false
+}
+
 func optionToFmtstr(optstr string) string {
 	if !strings.Contains(optstr, "%s") {
 		return optstr + "%s\033[0m"
@@ -803,15 +808,6 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 	} else if curr.IsDir() {
 		ui.dirPrev = app.nav.loadDir(curr.path)
 	}
-}
-
-func (ui *ui) loadFileInfo(nav *nav) {
-	if !nav.init {
-		return
-	}
-
-	ui.msg = ""
-	ui.msgActive = false
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
