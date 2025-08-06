@@ -414,10 +414,6 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			}
 		}
 	case "setlocal":
-		if len(f) == 2 {
-			matches, result = matchCmdFile(f[1], true)
-			break
-		}
 		if len(f) == 3 {
 			matches, result = matchWord(f[2], gLocalOptWords)
 			break
