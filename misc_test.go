@@ -185,8 +185,14 @@ func TestTokenize(t *testing.T) {
 	}{
 		{"", []string{""}},
 		{"foo", []string{"foo"}},
+		{`foo\`, []string{`foo\`}},
+		{`foo"`, []string{`foo"`}},
 		{"foo bar", []string{"foo", "bar"}},
+		{`foo\ bar`, []string{`foo\ bar`}},
+		{`"foo bar"`, []string{`"foo bar"`}},
+		{`"foo\" bar"`, []string{`"foo\" bar"`}},
 		{`:rename foo\ bar`, []string{":rename", `foo\ bar`}},
+		{`:cd "C:\Program Files"`, []string{":cd", `"C:\Program Files"`}},
 	}
 
 	for _, test := range tests {

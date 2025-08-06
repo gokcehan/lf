@@ -296,7 +296,7 @@ func matchFile(s string, dironly bool, escape func(string) string, unescape func
 		result = s
 	case 1:
 		result = escape(dir + longest)
-		if !strings.HasSuffix(result, string(filepath.Separator)) {
+		if !strings.HasSuffix(longest, string(filepath.Separator)) {
 			result += " "
 		}
 	default:

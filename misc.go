@@ -117,27 +117,28 @@ func cmdUnescape(s string) string {
 }
 
 // This function splits the given string by whitespaces. It is aware of escaped
-// whitespaces so that they are not split unintentionally.
+// and quoted whitespaces so that they are not split unintentionally.
 func tokenize(s string) []string {
 	esc := false
+	quote := false
 	var buf []rune
 	var toks []string
 	for _, r := range s {
-		if r == '\\' {
-			esc = true
-			buf = append(buf, r)
-			continue
-		}
-		if esc {
+		switch {
+		case esc:
 			esc = false
 			buf = append(buf, r)
-			continue
-		}
-		if !unicode.IsSpace(r) {
+		case r == '\\':
+			esc = true
 			buf = append(buf, r)
-		} else {
+		case r == '"':
+			quote = !quote
+			buf = append(buf, r)
+		case unicode.IsSpace(r) && !quote:
 			toks = append(toks, string(buf))
 			buf = nil
+		default:
+			buf = append(buf, r)
 		}
 	}
 	return append(toks, string(buf))
