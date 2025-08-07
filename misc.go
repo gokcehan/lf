@@ -78,7 +78,7 @@ func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 
 // This function is used to escape whitespaces and special characters with
 // backslashes in a given string.
-func escape(s string) string {
+func cmdEscape(s string) string {
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
 		if unicode.IsSpace(r) || r == '\\' || r == ';' || r == '#' {
@@ -91,7 +91,7 @@ func escape(s string) string {
 
 // This function is used to remove backslashes that are used to escape
 // whitespaces and special characters in a given string.
-func unescape(s string) string {
+func cmdUnescape(s string) string {
 	esc := false
 	buf := make([]rune, 0, len(s))
 	for _, r := range s {
@@ -117,27 +117,28 @@ func unescape(s string) string {
 }
 
 // This function splits the given string by whitespaces. It is aware of escaped
-// whitespaces so that they are not split unintentionally.
+// and quoted whitespaces so that they are not split unintentionally.
 func tokenize(s string) []string {
 	esc := false
+	quote := false
 	var buf []rune
 	var toks []string
 	for _, r := range s {
-		if r == '\\' {
-			esc = true
-			buf = append(buf, r)
-			continue
-		}
-		if esc {
+		switch {
+		case esc:
 			esc = false
 			buf = append(buf, r)
-			continue
-		}
-		if !unicode.IsSpace(r) {
+		case r == '\\':
+			esc = true
 			buf = append(buf, r)
-		} else {
+		case r == '"':
+			quote = !quote
+			buf = append(buf, r)
+		case unicode.IsSpace(r) && !quote:
 			toks = append(toks, string(buf))
 			buf = nil
+		default:
+			buf = append(buf, r)
 		}
 	}
 	return append(toks, string(buf))

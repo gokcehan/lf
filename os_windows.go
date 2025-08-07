@@ -223,3 +223,16 @@ func quoteString(s string) string {
 	}
 	return s
 }
+
+func shellEscape(s string) string {
+	for _, r := range s {
+		if strings.ContainsRune(" !%&'()+,;=[]^`{}~", r) {
+			return fmt.Sprintf(`"%s"`, s)
+		}
+	}
+	return s
+}
+
+func shellUnescape(s string) string {
+	return strings.ReplaceAll(s, `"`, "")
+}

@@ -1,0 +1,2 @@
+cmap <a-j> cmd-menu-complete
+cmap <a-k> cmd-menu-complete-back

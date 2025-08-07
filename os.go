@@ -229,3 +229,31 @@ func errCrossDevice(err error) bool {
 func quoteString(s string) string {
 	return s
 }
+
+func shellEscape(s string) string {
+	buf := make([]rune, 0, len(s))
+	for _, r := range s {
+		if strings.ContainsRune(" !\"$&'()*,:;<=>?@[\\]^`{|}", r) {
+			buf = append(buf, '\\')
+		}
+		buf = append(buf, r)
+	}
+	return string(buf)
+}
+
+func shellUnescape(s string) string {
+	esc := false
+	buf := make([]rune, 0, len(s))
+	for _, r := range s {
+		if r == '\\' && !esc {
+			esc = true
+			continue
+		}
+		esc = false
+		buf = append(buf, r)
+	}
+	if esc {
+		buf = append(buf, '\\')
+	}
+	return string(buf)
+}
