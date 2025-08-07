@@ -36,6 +36,7 @@ var (
 	gConfigPaths []string
 	gColorsPaths []string
 	gIconsPaths  []string
+	gRulerPaths  []string
 	gFilesPath   string
 	gTagsPath    string
 	gMarksPath   string
@@ -89,6 +90,11 @@ func init() {
 	gIconsPaths = []string{
 		filepath.Join(os.Getenv("ProgramData"), "lf", "icons"),
 		filepath.Join(config, "lf", "icons"),
+	}
+
+	gRulerPaths = []string{
+		filepath.Join(os.Getenv("ProgramData"), "lf", "ruler"),
+		filepath.Join(config, "lf", "ruler"),
 	}
 
 	data := cmp.Or(os.Getenv("LF_DATA_HOME"), os.Getenv("LOCALAPPDATA"))
