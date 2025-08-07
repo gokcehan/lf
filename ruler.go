@@ -54,25 +54,31 @@ func parseRuler() *template.Template {
 		"substr":   func(s string, start, length int) string { return string([]rune(s)[start : start+length]) },
 	}
 
-	var tmpl *template.Template
+	var ruler *template.Template
 
-	for _, path := range gRulerPaths {
-		if _, err := os.Stat(path); !os.IsNotExist(err) {
-			log.Printf("reading file: %s", path)
-
-			tmpl, err = template.New("ruler").Funcs(funcs).ParseFiles(path)
-			if err != nil {
-				log.Printf("reading ruler file: %s", err)
-				continue
-			}
+	for i := len(gRulerPaths) - 1; i >= 0; i-- {
+		path := gRulerPaths[i]
+		if _, err := os.Stat(path); os.IsNotExist(err) {
+			continue
 		}
+
+		log.Printf("reading file: %s", path)
+
+		tmpl, err := template.New("ruler").Funcs(funcs).ParseFiles(path)
+		if err != nil {
+			log.Printf("parsing ruler file: %s", err)
+			continue
+		}
+
+		ruler = tmpl
+		break
 	}
 
-	if tmpl == nil {
-		tmpl, _ = template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
+	if ruler == nil {
+		ruler, _ = template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 	}
 
-	return tmpl
+	return ruler
 }
 
 func renderRuler(tmpl *template.Template, data rulerData) (string, string, error) {
