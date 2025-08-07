@@ -226,6 +226,7 @@ The following environment variables are exported for shell commands:
     lf
     lf_{option}
     lf_user_{option}
+    lf_flag_{flag}
     lf_width
     lf_height
     lf_count
@@ -1282,6 +1283,10 @@ Value of the {option}.
 lf_user_{option}
 
 Value of the user_{option}.
+
+lf_flag_{flag}
+
+Value of the command line {flag}.
 
 lf_width, lf_height
 
