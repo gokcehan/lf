@@ -1448,7 +1448,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				total, err := copySize([]string{src})
 				if err != nil {
 					errCount++
-					echo.args[0] = err.Error()
+					echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 					app.ui.exprChan <- echo
 					continue
 				}
