@@ -191,6 +191,7 @@ func TestTokenize(t *testing.T) {
 		{`foo\ bar`, []string{`foo\ bar`}},
 		{`"foo bar"`, []string{`"foo bar"`}},
 		{`"foo\" bar"`, []string{`"foo\" bar"`}},
+		{`\"foo bar\"`, []string{`\"foo`, `bar\"`}},
 		{`:rename foo\ bar`, []string{":rename", `foo\ bar`}},
 		{`:cd "C:\Program Files"`, []string{":cd", `"C:\Program Files"`}},
 	}
