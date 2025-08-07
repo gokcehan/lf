@@ -1,6 +1,0 @@
-2025/08/07 15:55:35 hi!
-2025/08/07 15:55:35 loading files: []
-2025/08/07 15:55:35 reading file: lfrc
-2025/08/07 15:55:35 loading files: []
-2025/08/07 15:55:36 shell: env | grep ^lf | sort | less
-2025/08/07 15:56:17 bye!
