@@ -434,22 +434,24 @@ Select/unselect files that match the given glob.
 
 copy (default y)
 
-If there are no selections, save the path of the current file to the
-copy buffer, otherwise, copy the paths of selected files.
+Save the paths of selected files to the clipboard as files to be copied.
+If there are no selected files, the path of the current file is used
+instead.
 
 cut (default d)
 
-If there are no selections, save the path of the current file to the cut
-buffer, otherwise, copy the paths of selected files.
+Save the paths of selected files to the clipboard as files to be moved.
+If there are no selected files, the path of the current file is used
+instead.
 
 paste (default p)
 
-Copy/Move files in the copy/cut buffer to the current working directory.
-A custom paste command can be defined to override this default.
+Copy/Move files in the clipboard to the current working directory. A
+custom paste command can be defined to override this default.
 
 clear (default c)
 
-Clear file paths in copy/cut buffer.
+Clear file paths in the clipboard.
 
 sync
 

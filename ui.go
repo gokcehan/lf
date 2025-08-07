@@ -349,7 +349,7 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 
 type dirContext struct {
 	selections map[string]int
-	saves      map[string]bool
+	clipboard  clipboard
 	tags       map[string]string
 }
 
@@ -459,8 +459,8 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
 		} else if _, ok := context.selections[path]; ok {
 			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
-		} else if cp, ok := context.saves[path]; ok {
-			if cp {
+		} else if slices.Contains(context.clipboard.paths, path) {
+			if context.clipboard.mode == clipboardCopy {
 				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.copyfmt), " ")
 			} else {
 				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.cutfmt), " ")
@@ -952,12 +952,10 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	copy := 0
 	move := 0
-	for _, cp := range nav.saves {
-		if cp {
-			copy++
-		} else {
-			move++
-		}
+	if nav.clipboard.mode == clipboardCopy {
+		copy = len(nav.clipboard.paths)
+	} else {
+		move = len(nav.clipboard.paths)
 	}
 
 	currSelections := nav.currSelections()
@@ -1079,7 +1077,7 @@ func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 
 func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
-	context := dirContext{selections: nav.selections, saves: nav.saves, tags: nav.tags}
+	context := dirContext{selections: nav.selections, clipboard: nav.clipboard, tags: nav.tags}
 
 	ui.screen.Clear()
 

@@ -513,6 +513,18 @@ func (dir *dir) boundPos(height int) {
 	dir.pos = max(dir.pos, height-(len(dir.files)-dir.ind))
 }
 
+type clipboardMode byte
+
+const (
+	clipboardCopy = iota
+	clipboardCut
+)
+
+type clipboard struct {
+	paths []string
+	mode  clipboardMode
+}
+
 type nav struct {
 	init            bool
 	dirs            []*dir
@@ -538,7 +550,7 @@ type nav struct {
 	delChan         chan string
 	dirCache        map[string]*dir
 	regCache        map[string]*reg
-	saves           map[string]bool
+	clipboard       clipboard
 	marks           map[string]string
 	renameOldPath   string
 	renameNewPath   string
@@ -683,7 +695,6 @@ func newNav(height int) *nav {
 		delChan:         make(chan string),
 		dirCache:        make(map[string]*dir),
 		regCache:        make(map[string]*reg),
-		saves:           make(map[string]bool),
 		marks:           make(map[string]string),
 		selections:      make(map[string]int),
 		tags:            make(map[string]string),
@@ -1314,21 +1325,18 @@ func (nav *nav) unselect() {
 	nav.selectionInd = 0
 }
 
-func (nav *nav) save(cp bool) error {
+func (nav *nav) save(mode clipboardMode) error {
 	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
 
-	if err := saveFiles(list, cp); err != nil {
+	clipboard := clipboard{list, mode}
+	if err := saveFiles(clipboard); err != nil {
 		return err
 	}
 
-	clear(nav.saves)
-	for _, f := range list {
-		nav.saves[f] = cp
-	}
-
+	nav.clipboard = clipboard
 	return nil
 }
 
@@ -1501,21 +1509,21 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 }
 
 func (nav *nav) paste(app *app) error {
-	srcs, cp, err := loadFiles()
+	clipboard, err := loadFiles()
 	if err != nil {
 		return err
 	}
 
-	if len(srcs) == 0 {
-		return errors.New("no file in copy/cut buffer")
+	if len(clipboard.paths) == 0 {
+		return errors.New("no files in clipboard")
 	}
 
 	dstDir := nav.currDir().path
 
-	if cp {
-		go nav.copyAsync(app, srcs, dstDir)
+	if clipboard.mode == clipboardCopy {
+		go nav.copyAsync(app, clipboard.paths, dstDir)
 	} else {
-		go nav.moveAsync(app, srcs, dstDir)
+		go nav.moveAsync(app, clipboard.paths, dstDir)
 	}
 
 	return nil
@@ -1597,15 +1605,12 @@ func (nav *nav) rename() error {
 }
 
 func (nav *nav) sync() error {
-	list, cp, err := loadFiles()
+	clipboard, err := loadFiles()
 	if err != nil {
 		return err
 	}
 
-	clear(nav.saves)
-	for _, f := range list {
-		nav.saves[f] = cp
-	}
+	nav.clipboard = clipboard
 
 	tempmarks := make(map[string]string)
 	for _, ch := range gOpts.tempmarks {

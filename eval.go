@@ -1271,7 +1271,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if err := app.nav.save(true); err != nil {
+		if err := app.nav.save(clipboardCopy); err != nil {
 			app.ui.echoerrf("copy: %s", err)
 			return
 		}
@@ -1293,7 +1293,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			return
 		}
 
-		if err := app.nav.save(false); err != nil {
+		if err := app.nav.save(clipboardCut); err != nil {
 			app.ui.echoerrf("cut: %s", err)
 			return
 		}
@@ -1327,7 +1327,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		if err := saveFiles(nil, false); err != nil {
+		if err := saveFiles(clipboard{nil, clipboardCut}); err != nil {
 			app.ui.echoerrf("clear: %s", err)
 			return
 		}

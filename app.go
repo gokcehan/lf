@@ -116,7 +116,7 @@ func (app *app) readFile(path string) {
 	}
 }
 
-func loadFiles() (list []string, cp bool, err error) {
+func loadFiles() (clipboard clipboard, err error) {
 	files, err := os.Open(gFilesPath)
 	if os.IsNotExist(err) {
 		err = nil
@@ -134,16 +134,16 @@ func loadFiles() (list []string, cp bool, err error) {
 
 	switch s.Text() {
 	case "copy":
-		cp = true
+		clipboard.mode = clipboardCopy
 	case "move":
-		cp = false
+		clipboard.mode = clipboardCut
 	default:
 		err = fmt.Errorf("unexpected option to copy file(s): %s", s.Text())
 		return
 	}
 
 	for s.Scan() && s.Text() != "" {
-		list = append(list, s.Text())
+		clipboard.paths = append(clipboard.paths, s.Text())
 	}
 
 	if s.Err() != nil {
@@ -151,12 +151,12 @@ func loadFiles() (list []string, cp bool, err error) {
 		return
 	}
 
-	log.Printf("loading files: %v", list)
+	log.Printf("loading files: %v", clipboard.paths)
 
 	return
 }
 
-func saveFiles(list []string, cp bool) error {
+func saveFiles(clipboard clipboard) error {
 	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
 		return fmt.Errorf("creating data directory: %s", err)
 	}
@@ -167,16 +167,16 @@ func saveFiles(list []string, cp bool) error {
 	}
 	defer files.Close()
 
-	log.Printf("saving files: %v", list)
+	log.Printf("saving files: %v", clipboard.paths)
 
-	if cp {
+	if clipboard.mode == clipboardCopy {
 		fmt.Fprintln(files, "copy")
 	} else {
 		fmt.Fprintln(files, "move")
 	}
 
-	for _, f := range list {
-		fmt.Fprintln(files, f)
+	for _, path := range clipboard.paths {
+		fmt.Fprintln(files, path)
 	}
 
 	files.Sync()
