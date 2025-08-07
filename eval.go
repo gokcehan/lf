@@ -365,7 +365,7 @@ func (e *setExpr) eval(app *app, args []string) {
 			clear(app.nav.regCache)
 		}
 		app.ui.loadFile(app, true)
-	// DEPRECATED
+	// DEPRECATED: remove after r37 is released
 	case "rulerfmt":
 		app.ui.echoerr("option 'rulerfmt' is deprecated, use ruler file instead")
 	case "scrolloff":
@@ -416,7 +416,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.sortby = method
 		app.nav.sort()
 		app.ui.sort()
-	// DEPRECATED
+	// DEPRECATED: remove after r37 is released
 	case "statfmt":
 		app.ui.echoerr("option 'statfmt' is deprecated, use ruler file instead")
 	case "tabstop":
