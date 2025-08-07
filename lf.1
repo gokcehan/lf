@@ -451,17 +451,19 @@ Remove the selection of all files in all directories.
 .SS glob\-select, glob\-unselect
 Select/unselect files that match the given glob.
 .SS copy (default \f[CR]y\f[R])
-If there are no selections, save the path of the current file to the
-copy buffer, otherwise, copy the paths of selected files.
+Save the paths of selected files to the clipboard as files to be copied.
+If there are no selected files, the path of the current file is used
+instead.
 .SS cut (default \f[CR]d\f[R])
-If there are no selections, save the path of the current file to the cut
-buffer, otherwise, copy the paths of selected files.
+Save the paths of selected files to the clipboard as files to be moved.
+If there are no selected files, the path of the current file is used
+instead.
 .SS paste (default \f[CR]p\f[R])
-Copy/Move files in the copy/cut buffer to the current working directory.
+Copy/Move files in the clipboard to the current working directory.
 A custom \f[CR]paste\f[R] command can be defined to override this
 default.
 .SS clear (default \f[CR]c\f[R])
-Clear file paths in copy/cut buffer.
+Clear file paths in the clipboard.
 .SS sync
 Synchronize copied/cut files with the server.
 This command is automatically called when required.
