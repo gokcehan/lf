@@ -682,7 +682,7 @@ func (app *app) doComplete() (matches []compMatch) {
 	return
 }
 
-func (app *app) menuComplete(dir int) {
+func (app *app) menuComplete(direction int) {
 	if !app.menuCompActive {
 		app.menuCompTmp = tokenize(string(app.ui.cmdAccLeft))
 		app.menuComps = app.doComplete()
@@ -691,7 +691,7 @@ func (app *app) menuComplete(dir int) {
 			app.menuCompActive = true
 		}
 	} else {
-		app.menuCompInd += dir
+		app.menuCompInd += direction
 		if app.menuCompInd == len(app.menuComps) {
 			app.menuCompInd = 0
 		} else if app.menuCompInd < 0 {
