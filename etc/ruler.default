@@ -1,8 +1,8 @@
 {{if .Stat}}
 {{.ESC}}[36m{{.Stat.Permissions}}{{.ESC}}[0m
- {{.Stat.Count}}
- {{.Stat.User}}
- {{.Stat.Group}}
+{{if .Stat.Count}} {{.Stat.Count}}{{end}}
+{{if .Stat.User}} {{.Stat.User}}{{end}}
+{{if .Stat.Group}} {{.Stat.Group}}{{end}}
  {{humanize .Stat.Size | printf "%5s"}}
  {{.Stat.ModTime.Format .Options.timefmt}}
 {{if .Stat.Target}} -> {{.Stat.Target}}{{end}}
