@@ -197,7 +197,7 @@ func matchWord(s string, words []string) (matches []compMatch, result string) {
 	case 0:
 		result = s
 	case 1:
-		result = result + " "
+		result += " "
 	}
 	return
 }
@@ -205,20 +205,18 @@ func matchWord(s string, words []string) (matches []compMatch, result string) {
 func matchList(s string, words []string) (matches []compMatch, result string) {
 	toks := strings.Split(s, ":")
 
-	var longest string
-
 	for _, w := range words {
 		if slices.Contains(toks[:len(toks)-1], w) || !strings.HasPrefix(w, toks[len(toks)-1]) {
 			continue
 		}
 
-		result := strings.Join(append(slices.Clone(toks[:len(toks)-1]), w), ":")
-		matches = append(matches, compMatch{w, result})
+		matchResult := strings.Join(append(slices.Clone(toks[:len(toks)-1]), w), ":")
+		matches = append(matches, compMatch{w, matchResult})
 
 		if len(matches) == 1 {
-			longest = result
+			result = matchResult
 		} else {
-			longest = commonPrefix(longest, result)
+			result = commonPrefix(result, matchResult)
 		}
 	}
 
@@ -226,12 +224,9 @@ func matchList(s string, words []string) (matches []compMatch, result string) {
 	case 0:
 		result = s
 	case 1:
-		result = longest
 		if result == s {
 			result += " "
 		}
-	default:
-		result = longest
 	}
 	return
 }
@@ -243,7 +238,7 @@ func matchCmd(s string) (matches []compMatch, result string) {
 	return
 }
 
-func matchFile(s string, dironly bool, escape func(string) string, unescape func(string) string) (matches []compMatch, result string) {
+func matchFile(s string, dirOnly bool, escape func(string) string, unescape func(string) string) (matches []compMatch, result string) {
 	dir, file := filepath.Split(unescape(replaceTilde(s)))
 
 	d := dir
@@ -257,7 +252,7 @@ func matchFile(s string, dironly bool, escape func(string) string, unescape func
 		return
 	}
 
-	var longest string
+	var commonName string
 
 	for _, f := range files {
 		isDir := false
@@ -269,7 +264,7 @@ func matchFile(s string, dironly bool, escape func(string) string, unescape func
 			}
 		}
 
-		if !isDir && dironly {
+		if !isDir && dirOnly {
 			continue
 		}
 
@@ -281,13 +276,12 @@ func matchFile(s string, dironly bool, escape func(string) string, unescape func
 		if isDir {
 			name += string(filepath.Separator)
 		}
-		result := escape(dir + name)
-		matches = append(matches, compMatch{name, result})
+		matches = append(matches, compMatch{name, escape(dir + name)})
 
 		if len(matches) == 1 {
-			longest = name
+			commonName = name
 		} else {
-			longest = commonPrefix(strings.ToLower(longest), strings.ToLower(name))
+			commonName = commonPrefix(strings.ToLower(commonName), strings.ToLower(name))
 		}
 	}
 
@@ -295,18 +289,18 @@ func matchFile(s string, dironly bool, escape func(string) string, unescape func
 	case 0:
 		result = s
 	case 1:
-		result = escape(dir + longest)
-		if !strings.HasSuffix(longest, string(filepath.Separator)) {
+		result = escape(dir + commonName)
+		if !strings.HasSuffix(commonName, string(filepath.Separator)) {
 			result += " "
 		}
 	default:
-		result = escape(dir + longest)
+		result = escape(dir + commonName)
 	}
 	return
 }
 
-func matchCmdFile(s string, dironly bool) (matches []compMatch, result string) {
-	matches, result = matchFile(s, dironly, cmdEscape, cmdUnescape)
+func matchCmdFile(s string, dirOnly bool) (matches []compMatch, result string) {
+	matches, result = matchFile(s, dirOnly, cmdEscape, cmdUnescape)
 	return
 }
 
@@ -337,11 +331,9 @@ func matchExec(s string) (matches []compMatch, result string) {
 				continue
 			}
 
-			if !finfo.Mode().IsRegular() || !isExecutable(finfo) {
-				continue
+			if finfo.Mode().IsRegular() && isExecutable(finfo) {
+				words = append(words, f.Name())
 			}
-
-			words = append(words, f.Name())
 		}
 	}
 
