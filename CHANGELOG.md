@@ -27,12 +27,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `info` and `sortby` options now support `btime` (file creation time) (#2042). This depends on support for file creation times from the underlying system.
 - The selection in Visual mode now follows wrapping when `wrapscan`/`wrapscroll` is enabled (#2056).
 - Input pasted from the terminal is now ignored while in Normal mode (#2059). This prevents pasted content from being treated as keybindings, which can result in dangerous unintended behavior.
-- The Command-line mode completion now supports keywords for the `selmode` and `sortby` options (#2061).
+- The Command-line mode completion now supports keywords for the `selmode` and `sortby` options (#2061), as well as the `info` and `preserve` options (#2071).
+- Command line flags are now exported as environment variables in the form `lf_flag_{flag}` (#2079).
 
 ### Fixed
 
 - `dircounts` are now automatically populated after enabling it (#2049).
 - A bug where directories are unsorted after reloading when `dircache` is disabled is now fixed (#2050).
+- Filenames are now escaped when completing shell commands (#2071).
+- A bug where completion menu entries are misaligned when containing fullwidth characters is now fixed (#2071).
+- The `on-load` command now passes all files in the directory as arguments, not just files visible to the user (#2077).
 
 ## [r36](https://github.com/gokcehan/lf/releases/tag/r36)
 
