@@ -1341,19 +1341,22 @@ func (nav *nav) save(mode clipboardMode) error {
 }
 
 func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
-	echo := &callExpr{"echoerr", []string{""}, 1}
+	errCount := 0
+	sendErr := func(format string, a ...any) {
+		errCount++
+		msg := fmt.Sprintf("copy [%d]: %s", errCount, fmt.Sprintf(format, a...))
+		app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+	}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
-		echo.args[0] = err.Error()
-		app.ui.exprChan <- echo
+		sendErr("%v", err)
 		return
 	}
 
 	total, err := copySize(srcs)
 	if err != nil {
-		echo.args[0] = err.Error()
-		app.ui.exprChan <- echo
+		sendErr("%v", err)
 		return
 	}
 
@@ -1361,7 +1364,6 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
-	errCount := 0
 loop:
 	for {
 		select {
@@ -1371,9 +1373,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 		}
 	}
 
@@ -1384,9 +1384,7 @@ loop:
 		app.ui.loadFile(app, true)
 	} else {
 		if err := remote("send load"); err != nil {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 		}
 	}
 
