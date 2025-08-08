@@ -1447,7 +1447,8 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			if errCrossDevice(err) {
 				total, err := copySize([]string{src})
 				if err != nil {
-					echo.args[0] = err.Error()
+					errCount++
+					echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
 					app.ui.exprChan <- echo
 					continue
 				}
