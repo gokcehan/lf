@@ -8,8 +8,8 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gdamore/tcell/v2 v2.8.1
 	github.com/mattn/go-runewidth v0.0.16
-	golang.org/x/sys v0.34.0
-	golang.org/x/term v0.33.0
+	golang.org/x/sys v0.35.0
+	golang.org/x/term v0.34.0
 	golang.org/x/text v0.28.0
 )
 
