@@ -1341,19 +1341,22 @@ func (nav *nav) save(mode clipboardMode) error {
 }
 
 func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
-	echo := &callExpr{"echoerr", []string{""}, 1}
+	errCount := 0
+	sendErr := func(format string, a ...any) {
+		errCount++
+		msg := fmt.Sprintf("copy [%d]: %s", errCount, fmt.Sprintf(format, a...))
+		app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+	}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
-		echo.args[0] = err.Error()
-		app.ui.exprChan <- echo
+		sendErr("%v", err)
 		return
 	}
 
 	total, err := copySize(srcs)
 	if err != nil {
-		echo.args[0] = err.Error()
-		app.ui.exprChan <- echo
+		sendErr("%v", err)
 		return
 	}
 
@@ -1361,7 +1364,6 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
-	errCount := 0
 loop:
 	for {
 		select {
@@ -1371,9 +1373,7 @@ loop:
 			if !ok {
 				break loop
 			}
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 		}
 	}
 
@@ -1384,9 +1384,7 @@ loop:
 		app.ui.loadFile(app, true)
 	} else {
 		if err := remote("send load"); err != nil {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 		}
 	}
 
@@ -1396,26 +1394,27 @@ loop:
 }
 
 func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
-	echo := &callExpr{"echoerr", []string{""}, 1}
+	errCount := 0
+	sendErr := func(format string, a ...any) {
+		errCount++
+		msg := fmt.Sprintf("move [%d]: %s", errCount, fmt.Sprintf(format, a...))
+		app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+	}
 
 	_, err := os.Stat(dstDir)
 	if os.IsNotExist(err) {
-		echo.args[0] = err.Error()
-		app.ui.exprChan <- echo
+		sendErr("%v", err)
 		return
 	}
 
 	nav.moveTotalChan <- len(srcs)
 
-	errCount := 0
 	for _, src := range srcs {
 		nav.moveCountChan <- 1
 
 		srcStat, err := os.Lstat(src)
 		if err != nil {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 			continue
 		}
 
@@ -1424,9 +1423,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 		if dstStat, err := os.Stat(dst); err == nil {
 			if os.SameFile(srcStat, dstStat) {
-				errCount++
-				echo.args[0] = fmt.Sprintf("[%d] rename %s %s: source and destination are the same file", errCount, src, dst)
-				app.ui.exprChan <- echo
+				sendErr("rename %s %s: source and destination are the same file", src, dst)
 				continue
 			}
 			ext := getFileExtension(dstStat)
@@ -1447,9 +1444,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			if errCrossDevice(err) {
 				total, err := copySize([]string{src})
 				if err != nil {
-					errCount++
-					echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-					app.ui.exprChan <- echo
+					sendErr("%v", err)
 					continue
 				}
 
@@ -1467,9 +1462,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 						if !ok {
 							break loop
 						}
-						errCount++
-						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-						app.ui.exprChan <- echo
+						sendErr("%v", err)
 					}
 				}
 
@@ -1477,15 +1470,11 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 				if errCount == oldCount {
 					if err := os.RemoveAll(src); err != nil {
-						errCount++
-						echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-						app.ui.exprChan <- echo
+						sendErr("%v", err)
 					}
 				}
 			} else {
-				errCount++
-				echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-				app.ui.exprChan <- echo
+				sendErr("%v", err)
 			}
 		}
 	}
@@ -1497,9 +1486,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 		app.ui.loadFile(app, true)
 	} else {
 		if err := remote("send load"); err != nil {
-			errCount++
-			echo.args[0] = fmt.Sprintf("[%d] %s", errCount, err)
-			app.ui.exprChan <- echo
+			sendErr("%v", err)
 		}
 	}
 
