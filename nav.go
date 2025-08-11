@@ -917,11 +917,10 @@ func (nav *nav) preview(path string, win *win) {
 	if gOpts.sixel {
 		prefix, err := reader.Peek(2)
 		if err == nil && string(prefix) == gSixelBegin {
-			b, err := io.ReadAll(reader)
+			str, err := loadSixel(reader)
 			if err != nil {
 				log.Printf("loading sixel: %s", err)
 			}
-			str := string(b)
 			reg.sixel = &str
 			return
 		}
