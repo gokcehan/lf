@@ -37,6 +37,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Filenames are now escaped when completing shell commands (#2071).
 - A bug where completion menu entries are misaligned when containing fullwidth characters is now fixed (#2071).
 - The `on-load` command now passes all files in the directory as arguments, not just files visible to the user (#2077).
+- Failure to move files across different filesystems is now shown as an error instead of a success in the UI (#2085).
+- Errors are now logged correctly when there are multiple errors during move/copy operations (#2089).
 
 ## [r36](https://github.com/gokcehan/lf/releases/tag/r36)
 
