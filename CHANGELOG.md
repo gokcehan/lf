@@ -39,6 +39,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `on-load` command now passes all files in the directory as arguments, not just files visible to the user (#2077).
 - Failure to move files across different filesystems is now shown as an error instead of a success in the UI (#2085).
 - Errors are now logged correctly when there are multiple errors during move/copy operations (#2089).
+- The progress for copy operations is now displayed immediately in the UI, even if it takes time to calculate the total size of files to be copied (#2093).
 
 ## [r36](https://github.com/gokcehan/lf/releases/tag/r36)
 
