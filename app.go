@@ -318,7 +318,7 @@ func (app *app) loop() {
 	for {
 		select {
 		case <-app.quitChan:
-			if app.nav.copyTotal > 0 {
+			if app.nav.copyJobs > 0 {
 				app.ui.echoerr("quit: copy operation in progress")
 				continue
 			}
@@ -340,6 +340,9 @@ func (app *app) loop() {
 			log.Print("bye!")
 
 			return
+		case <-app.nav.copyJobsChan:
+			app.nav.copyJobs += 1
+			app.ui.draw(app.nav)
 		case n := <-app.nav.copyBytesChan:
 			app.nav.copyBytes += n
 			// n is usually 32*1024B (default io.Copy() buffer) so update roughly per 32KB x 128 = 4MB copied
@@ -351,6 +354,7 @@ func (app *app) loop() {
 			app.nav.copyTotal += n
 			if n < 0 {
 				app.nav.copyBytes += n
+				app.nav.copyJobs -= 1
 			}
 			if app.nav.copyTotal == 0 {
 				app.nav.copyUpdate = 0

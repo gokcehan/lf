@@ -963,8 +963,12 @@ func (ui *ui) drawRuler(nav *nav) {
 
 	progress := []string{}
 
-	if nav.copyTotal > 0 {
-		progress = append(progress, fmt.Sprintf("[%d%%]", nav.copyBytes*100/nav.copyTotal))
+	if nav.copyJobs > 0 {
+		if nav.copyTotal == 0 {
+			progress = append(progress, fmt.Sprintf("[0%%]"))
+		} else {
+			progress = append(progress, fmt.Sprintf("[%d%%]", nav.copyBytes*100/nav.copyTotal))
+		}
 	}
 
 	if nav.moveTotal > 0 {
