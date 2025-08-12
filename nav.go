@@ -528,6 +528,7 @@ type clipboard struct {
 type nav struct {
 	init            bool
 	dirs            []*dir
+	copyJobs        int
 	copyBytes       int64
 	copyTotal       int64
 	copyUpdate      int
@@ -537,6 +538,7 @@ type nav struct {
 	deleteCount     int
 	deleteTotal     int
 	deleteUpdate    int
+	copyJobsChan    chan struct{}
 	copyBytesChan   chan int64
 	copyTotalChan   chan int64
 	moveCountChan   chan int
@@ -682,6 +684,7 @@ func (nav *nav) getDirs(wd string) {
 
 func newNav(height int) *nav {
 	nav := &nav{
+		copyJobsChan:    make(chan struct{}, 1024),
 		copyBytesChan:   make(chan int64, 1024),
 		copyTotalChan:   make(chan int64, 1024),
 		moveCountChan:   make(chan int, 1024),
@@ -1353,6 +1356,12 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 		sendErr("%v", err)
 		return
 	}
+
+	// indicate that a copy operation is in progress
+	// using the total bytes to determine this instead will mean that it is
+	// possible for copySize to take a while, but not be reflected in the UI
+	// until it has finished
+	nav.copyJobsChan <- struct{}{}
 
 	total, err := copySize(srcs)
 	if err != nil {
