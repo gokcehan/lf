@@ -28,7 +28,7 @@ type statData struct {
 type rulerData struct {
 	ESC         string
 	SPACER      string
-	Acc         string
+	Keys        string
 	Progress    []string
 	Copy        []string
 	Cut         []string

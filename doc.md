@@ -2013,7 +2013,7 @@ The contents of the ruler file should be a Go template which is then rendered to
 
 The following data fields are exported:
 
-	.Acc              string              Key accumulator
+	.Keys             string              Keys pressed by the user
 	.Progress         []string            Progress indicators for copied, moved and deleted files
 	.Copy             []string            List of files in the clipboard to be copied
 	.Cut              []string            List of files in the clipboard to be moved

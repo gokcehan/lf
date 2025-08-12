@@ -907,7 +907,6 @@ func (ui *ui) drawRuler(nav *nav) {
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
-	acc := string(ui.keyCount) + string(ui.keyAcc)
 
 	var percentage string
 	beg := max(dir.ind-dir.pos, 0)
@@ -972,7 +971,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	data := rulerData{
 		ESC:         "\033",
 		SPACER:      "\x1f",
-		Acc:         acc,
+		Keys:        string(ui.keyCount) + string(ui.keyAcc),
 		Progress:    progress,
 		Copy:        copy,
 		Cut:         cut,

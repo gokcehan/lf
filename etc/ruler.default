@@ -8,7 +8,7 @@
 {{if .Stat.Target}} -> {{.Stat.Target}}{{end}}
 {{end}}
 {{.SPACER}}
-  {{.Acc}}
+  {{.Keys}}
 {{if .Progress}}  {{join .Progress " "}}{{end}}
 {{if .Copy}}  {{.ESC}}[7;33m {{len .Copy}} {{.ESC}}[0m{{end}}
 {{if .Cut}}  {{.ESC}}[7;31m {{len .Cut}} {{.ESC}}[0m{{end}}
