@@ -1,11 +1,11 @@
 package main
 
 import (
-	"errors"
+	"bufio"
+	"bytes"
 	"fmt"
-	"log"
+	"io"
 	"os"
-	"strconv"
 
 	"github.com/gdamore/tcell/v2"
 )
@@ -16,6 +16,52 @@ type sixelScreen struct {
 	lastFile   string
 	lastWin    win
 	forceClear bool
+}
+
+func loadSixel(reader *bufio.Reader) (string, error) {
+	buffer := new(bytes.Buffer)
+	inSixel := false
+	shift := false
+	last := '\000'
+
+	// Sixels can start / end on the same line as regular text,
+	// so we can't iterate over lines.
+	//
+	// Start of text (and every new line) needs to be shifted
+	// over to the start of the box, otherwise it gets written
+	// to x=0 of the terminal and not of the preview box.
+	for {
+		rune, _, err := reader.ReadRune()
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return "", err
+		}
+
+		if last == '\033' && rune == 'P' {
+			// sixel start
+			inSixel = true
+		} else if last == '\033' && rune == '\\' {
+			// sixel end, (possible) start of regular line
+			inSixel = false
+			shift = true
+		} else if rune == '\n' && !inSixel {
+			// start of line
+			shift = true
+		}
+
+		buffer.WriteRune(rune)
+		if shift {
+			// for now use 0 as the shift position,
+			// will be updated on every redraw since that can
+			// change
+			buffer.WriteString("\033[0G")
+			shift = false
+		}
+		last = rune
+	}
+	return buffer.String(), nil
 }
 
 func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
@@ -34,54 +80,16 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		return
 	}
 
-	cw, ch, err := cellSize(screen)
-	if err != nil {
-		log.Printf("sixel: %s", err)
-		return
-	}
+	xShift := fmt.Sprintf("\033[%dG", win.x+1)
+	sixel := reAnsiShift.ReplaceAllString(*reg.sixel, xShift)
 
-	matches := reSixelSize.FindStringSubmatch(*reg.sixel)
-	if matches == nil {
-		log.Printf("sixel: failed to get image size")
-		return
-	}
-	iw, _ := strconv.Atoi(matches[1])
-	ih, _ := strconv.Atoi(matches[2])
-
-	if os.Getenv("TMUX") != "" {
-		// tmux rounds the image height up to a multiple of 6, so we
-		// need to do the same to avoid overwriting the image, as tmux
-		// would remove the image if we touched it.
-		ih = (ih + 5) / 6 * 6
-	}
-
-	screen.LockRegion(win.x, win.y, (iw+cw-1)/cw, (ih+ch-1)/ch, true)
+	screen.LockRegion(win.x, win.y, win.w, win.h, true)
 	fmt.Fprint(os.Stderr, "\0337")                          // Save cursor position
 	fmt.Fprintf(os.Stderr, "\033[%d;%dH", win.y+1, win.x+1) // Move cursor to position
-	fmt.Fprint(os.Stderr, *reg.sixel)                       // Print sixel
+	fmt.Fprint(os.Stderr, sixel)                            // Print sixel
 	fmt.Fprint(os.Stderr, "\0338")                          // Restore cursor position
 
 	sxs.lastFile = reg.path
 	sxs.lastWin = *win
 	sxs.forceClear = false
-}
-
-func cellSize(screen tcell.Screen) (int, int, error) {
-	tty, ok := screen.Tty()
-	if !ok {
-		// fallback for Windows Terminal
-		return 10, 20, nil
-	}
-
-	ws, err := tty.WindowSize()
-	if err != nil {
-		return -1, -1, fmt.Errorf("failed to get window size: %s", err)
-	}
-
-	cw, ch := ws.CellDimensions()
-	if cw <= 0 || ch <= 0 {
-		return -1, -1, errors.New("cell dimensions should be greater than 0")
-	}
-
-	return cw, ch, nil
 }
