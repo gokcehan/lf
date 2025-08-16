@@ -864,6 +864,10 @@ func (ui *ui) drawPromptLine(nav *nav) {
 }
 
 func (ui *ui) drawRuler(nav *nav) {
+	if ui.ruler == nil {
+		return
+	}
+
 	var stat *statData
 	curr, err := nav.currFile()
 	if err == nil {
@@ -884,12 +888,7 @@ func (ui *ui) drawRuler(nav *nav) {
 		}
 	}
 
-	if ui.ruler == nil {
-		return
-	}
-
 	dir := nav.currDir()
-
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
