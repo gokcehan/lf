@@ -867,22 +867,20 @@ func (ui *ui) drawRuler(nav *nav) {
 	var stat *statData
 	curr, err := nav.currFile()
 	if err == nil {
-		if curr.err != nil {
+		if curr.err == nil {
+			stat = &statData{
+				Path:        curr.path,
+				Name:        curr.Name(),
+				Size:        uint64(curr.Size()),
+				Permissions: curr.Mode().String(),
+				ModTime:     curr.ModTime(),
+				LinkCount:   linkCount(curr),
+				User:        userName(curr),
+				Group:       groupName(curr),
+				Target:      curr.linkTarget,
+			}
+		} else {
 			ui.echoerrf("stat: %s", curr.err)
-			ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
-			return
-		}
-
-		stat = &statData{
-			Path:        curr.path,
-			Name:        curr.Name(),
-			Size:        uint64(curr.Size()),
-			Permissions: curr.Mode().String(),
-			ModTime:     curr.ModTime(),
-			LinkCount:   linkCount(curr),
-			User:        userName(curr),
-			Group:       groupName(curr),
-			Target:      curr.linkTarget,
 		}
 	}
 
