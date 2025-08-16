@@ -648,7 +648,6 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
-	msgActive   bool
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
@@ -737,7 +736,6 @@ func (ui *ui) sort() {
 
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
-	ui.msgActive = true
 }
 
 func (ui *ui) echomsg(msg string) {
@@ -752,11 +750,6 @@ func (ui *ui) echoerr(msg string) {
 
 func (ui *ui) echoerrf(format string, a ...any) {
 	ui.echoerr(fmt.Sprintf(format, a...))
-}
-
-func (ui *ui) clearmsg() {
-	ui.msg = ""
-	ui.msgActive = false
 }
 
 func optionToFmtstr(optstr string) string {
@@ -871,11 +864,6 @@ func (ui *ui) drawPromptLine(nav *nav) {
 }
 
 func (ui *ui) drawRuler(nav *nav) {
-	if ui.msgActive {
-		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
-		return
-	}
-
 	var stat *statData
 	curr, err := nav.currFile()
 	if err == nil {
@@ -971,6 +959,7 @@ func (ui *ui) drawRuler(nav *nav) {
 	data := rulerData{
 		ESC:         "\033",
 		SPACER:      "\x1f",
+		Message:     ui.msg,
 		Keys:        string(ui.keyCount) + string(ui.keyAcc),
 		Progress:    progress,
 		Copy:        copy,

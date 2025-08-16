@@ -476,7 +476,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		return
 	}
 
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *setLocalExpr) eval(app *app, args []string) {
@@ -562,7 +562,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 		return
 	}
 
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *mapExpr) eval(app *app, args []string) {
@@ -573,7 +573,7 @@ func (e *mapExpr) eval(app *app, args []string) {
 		gOpts.nkeys[e.keys] = e.expr
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *nmapExpr) eval(app *app, args []string) {
@@ -582,7 +582,7 @@ func (e *nmapExpr) eval(app *app, args []string) {
 	} else {
 		gOpts.nkeys[e.keys] = e.expr
 	}
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *vmapExpr) eval(app *app, args []string) {
@@ -591,7 +591,7 @@ func (e *vmapExpr) eval(app *app, args []string) {
 	} else {
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *cmapExpr) eval(app *app, args []string) {
@@ -600,7 +600,7 @@ func (e *cmapExpr) eval(app *app, args []string) {
 	} else {
 		gOpts.cmdkeys[e.key] = e.expr
 	}
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func (e *cmdExpr) eval(app *app, args []string) {
@@ -621,7 +621,7 @@ func (e *cmdExpr) eval(app *app, args []string) {
 		}
 	}
 
-	app.ui.clearmsg()
+	app.ui.echo("")
 }
 
 func preChdir(app *app) {
@@ -2323,7 +2323,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		"on-init",
 	}
 	if !slices.Contains(keepMsgCmds, e.name) {
-		app.ui.clearmsg()
+		app.ui.echo("")
 	}
 }
 

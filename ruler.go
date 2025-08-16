@@ -28,6 +28,7 @@ type statData struct {
 type rulerData struct {
 	ESC         string
 	SPACER      string
+	Message     string
 	Keys        string
 	Progress    []string
 	Copy        []string

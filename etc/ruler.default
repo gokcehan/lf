@@ -1,4 +1,6 @@
-{{if .Stat}}
+{{if .Message}}
+{{.Message}}
+{{else if .Stat}}
 {{.ESC}}[36m{{.Stat.Permissions}}{{.ESC}}[0m
 {{if .Stat.LinkCount}} {{.Stat.LinkCount}}{{end}}
 {{if .Stat.User}} {{.Stat.User}}{{end}}
