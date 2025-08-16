@@ -745,6 +745,15 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
+func (ui *ui) echoerr(msg string) {
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
+	log.Printf("error: %s", msg)
+}
+
+func (ui *ui) echoerrf(format string, a ...any) {
+	ui.echoerr(fmt.Sprintf(format, a...))
+}
+
 func (ui *ui) clearmsg() {
 	ui.msg = ""
 	ui.msgActive = false
@@ -756,15 +765,6 @@ func optionToFmtstr(optstr string) string {
 	} else {
 		return optstr
 	}
-}
-
-func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
-	log.Printf("error: %s", msg)
-}
-
-func (ui *ui) echoerrf(format string, a ...any) {
-	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
 // This represents the preview for a regular file.
