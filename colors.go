@@ -173,6 +173,18 @@ loop:
 			st = st.Foreground(bg)
 		case "9":
 			st = st.StrikeThrough(true)
+		case "22":
+			st = st.Bold(false).Dim(false)
+		case "23":
+			st = st.Italic(false)
+		case "24":
+			st = st.Underline(false)
+		case "25":
+			st = st.Blink(false)
+		case "27":
+			st = st.Reverse(false)
+		case "29":
+			st = st.StrikeThrough(false)
 		case "30", "31", "32", "33", "34", "35", "36", "37":
 			n, _ := strconv.Atoi(toks[i])
 			st = st.Foreground(tcell.PaletteColor(n - 30))
