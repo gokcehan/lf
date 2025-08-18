@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Input pasted from the terminal is now ignored while in Normal mode (#2059). This prevents pasted content from being treated as keybindings, which can result in dangerous unintended behavior.
 - The Command-line mode completion now supports keywords for the `selmode` and `sortby` options (#2061), as well as the `info` and `preserve` options (#2071).
 - Command line flags are now exported as environment variables in the form `lf_flag_{flag}` (#2079).
+- Support is added for terminal escape sequences that disable text styles (#2101).
 
 ### Fixed
 
