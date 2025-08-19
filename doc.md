@@ -2010,6 +2010,7 @@ https://github.com/gokcehan/lf/blob/master/etc/icons_colored.example
 
 The ruler can be configured using a ruler file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The contents of the ruler file should be a Go template which is then rendered to create the actual output (refer to https://pkg.go.dev/text/template for more details on the syntax).
+For convenience, newline characters are stripped after the template is applied, so it is possible to split long lines into multiple smaller lines without affecting the final result.
 
 The following data fields are exported:
 
