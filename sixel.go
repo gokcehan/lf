@@ -11,8 +11,6 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
-const gSixelBegin = "\033P"
-
 type sixelScreen struct {
 	lastFile   string
 	lastWin    win
