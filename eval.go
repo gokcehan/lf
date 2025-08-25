@@ -276,17 +276,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
 		gOpts.infotimefmtold = e.val
-	case "locale":
-		localeStr := e.val
-		if localeStr != localeStrDisable {
-			if _, err = getLocaleTag(localeStr); err != nil {
-				app.ui.echoerrf("locale: %s", err.Error())
-				return
-			}
-		}
-		gOpts.locale = localeStr
-		app.nav.sort()
-		app.ui.sort()
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
@@ -521,17 +510,6 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 			return
 		}
 		gLocalOpts.sortby[e.path] = method
-		app.nav.sort()
-		app.ui.sort()
-	case "locale":
-		localeStr := e.val
-		if localeStr != localeStrDisable {
-			if _, err = getLocaleTag(localeStr); err != nil {
-				app.ui.echoerrf("locale: %s", err.Error())
-				return
-			}
-		}
-		gLocalOpts.locale[e.path] = localeStr
 		app.nav.sort()
 		app.ui.sort()
 	default:

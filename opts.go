@@ -75,7 +75,6 @@ var gOpts struct {
 	info             []string
 	infotimefmtnew   string
 	infotimefmtold   string
-	locale           string
 	mouse            bool
 	number           bool
 	numberfmt        string
@@ -125,7 +124,6 @@ var gLocalOpts struct {
 	dironly   map[string]bool
 	hidden    map[string]bool
 	info      map[string][]string
-	locale    map[string]string
 	reverse   map[string]bool
 	sortby    map[string]sortMethod
 }
@@ -183,15 +181,6 @@ func getInfo(path string) []string {
 	return gOpts.info
 }
 
-func getLocale(path string) string {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.locale[key]; ok {
-			return val
-		}
-	}
-	return gOpts.locale
-}
-
 func getReverse(path string) bool {
 	for _, key := range localOptPaths(path) {
 		if val, ok := gLocalOpts.reverse[key]; ok {
@@ -242,7 +231,6 @@ func init() {
 	gOpts.info = nil
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
-	gOpts.locale = localeStrDisable
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.numberfmt = "\033[33m"
@@ -417,7 +405,6 @@ func init() {
 	gLocalOpts.dironly = make(map[string]bool)
 	gLocalOpts.hidden = make(map[string]bool)
 	gLocalOpts.info = make(map[string][]string)
-	gLocalOpts.locale = make(map[string]string)
 	gLocalOpts.reverse = make(map[string]bool)
 	gLocalOpts.sortby = make(map[string]sortMethod)
 
