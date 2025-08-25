@@ -136,8 +136,6 @@ func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
 	// ECMA-48 details the standard
-	// TODO: should we support turning off attributes?
-	//    Probably because this is used for previewers too
 	tokslen := len(toks)
 
 loop:
