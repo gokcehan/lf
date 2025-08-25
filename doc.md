@@ -155,7 +155,6 @@ The following options can be used to customize the behavior of lf:
 	cursorparentfmt   string    (default "\033[7m")
 	cursorpreviewfmt  string    (default "\033[4m")
 	cutfmt            string    (default "\033[7;31m")
-	dircache          bool      (default true)
 	dircounts         bool      (default false)
 	dirfirst          bool      (default true)
 	dironly           bool      (default false)
@@ -754,10 +753,6 @@ For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 ## cutfmt (string) (default `\033[7;31m`)
 
 Format string of the indicator for files to be cut.
-
-## dircache (bool) (default true)
-
-Cache directory contents.
 
 ## dircounts (bool) (default false)
 

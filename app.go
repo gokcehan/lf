@@ -391,22 +391,17 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
-			if gOpts.dircache {
-				prev, ok := app.nav.dirCache[d.path]
-				if ok {
-					d.ind = prev.ind
-					d.pos = prev.pos
-					d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
-					d.visualWrap = prev.visualWrap
-					d.filter = prev.filter
-					d.sort()
-					d.sel(prev.name(), app.nav.height)
-				}
-
-				app.nav.dirCache[d.path] = d
-			} else {
+			prev, ok := app.nav.dirCache[d.path]
+			if ok {
+				d.ind = prev.ind
+				d.pos = prev.pos
+				d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
+				d.visualWrap = prev.visualWrap
+				d.filter = prev.filter
 				d.sort()
+				d.sel(prev.name(), app.nav.height)
 			}
+			app.nav.dirCache[d.path] = d
 
 			var oldCurrPath string
 			if curr, err := app.nav.currFile(); err == nil {

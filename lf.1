@@ -160,7 +160,6 @@ cursoractivefmt   string    (default \(dq\(rs033[7m\(dq)
 cursorparentfmt   string    (default \(dq\(rs033[7m\(dq)
 cursorpreviewfmt  string    (default \(dq\(rs033[4m\(dq)
 cutfmt            string    (default \(dq\(rs033[7;31m\(dq)
-dircache          bool      (default true)
 dircounts         bool      (default false)
 dirfirst          bool      (default true)
 dironly           bool      (default false)
@@ -699,8 +698,6 @@ For example, \f[CR]\(rs033[4m%s\(rs033[0m\f[R] has the same effect as
 \f[CR]\(rs033[4m\f[R].
 .SS cutfmt (string) (default \f[CR]\(rs033[7;31m\f[R])
 Format string of the indicator for files to be cut.
-.SS dircache (bool) (default true)
-Cache directory contents.
 .SS dircounts (bool) (default false)
 When this option is enabled, directory sizes show the number of items
 inside instead of the total size of the directory, which needs to be

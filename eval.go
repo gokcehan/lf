@@ -64,8 +64,6 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.anchorfind, e)
 	case "autoquit", "noautoquit", "autoquit!":
 		err = applyBoolOpt(&gOpts.autoquit, e)
-	case "dircache", "nodircache", "dircache!":
-		err = applyBoolOpt(&gOpts.dircache, e)
 	case "dircounts", "nodircounts", "dircounts!":
 		err = applyBoolOpt(&gOpts.dircounts, e)
 		if err == nil {
@@ -630,11 +628,6 @@ func onChdir(app *app) {
 }
 
 func onLoad(app *app, files []string) {
-	// prevent infinite loops
-	if !gOpts.dircache {
-		return
-	}
-
 	if cmd, ok := gOpts.cmds["on-load"]; ok {
 		cmd.eval(app, files)
 	}

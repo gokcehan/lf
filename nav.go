@@ -574,42 +574,34 @@ type nav struct {
 	jumpListInd     int
 }
 
-func (nav *nav) loadDirInternal(path string) *dir {
-	d := &dir{
-		loading:      true,
-		path:         path,
-		sortby:       getSortBy(path),
-		dircounts:    getDirCounts(path),
-		dirfirst:     getDirFirst(path),
-		dironly:      getDirOnly(path),
-		hidden:       getHidden(path),
-		reverse:      getReverse(path),
-		locale:       getLocale(path),
-		visualAnchor: -1,
-		hiddenfiles:  gOpts.hiddenfiles,
-		ignorecase:   gOpts.ignorecase,
-		ignoredia:    gOpts.ignoredia,
-	}
-	go func() {
-		nav.dirChan <- newDir(path)
-	}()
-	return d
-}
-
 func (nav *nav) loadDir(path string) *dir {
-	if gOpts.dircache {
-		d, ok := nav.dirCache[path]
-		if !ok {
-			d = nav.loadDirInternal(path)
-			nav.dirCache[path] = d
-			return d
+	d, ok := nav.dirCache[path]
+	if !ok {
+		go func() {
+			nav.dirChan <- newDir(path)
+		}()
+
+		d := &dir{
+			loading:      true,
+			path:         path,
+			sortby:       getSortBy(path),
+			dircounts:    getDirCounts(path),
+			dirfirst:     getDirFirst(path),
+			dironly:      getDirOnly(path),
+			hidden:       getHidden(path),
+			reverse:      getReverse(path),
+			locale:       getLocale(path),
+			visualAnchor: -1,
+			hiddenfiles:  gOpts.hiddenfiles,
+			ignorecase:   gOpts.ignorecase,
+			ignoredia:    gOpts.ignoredia,
 		}
-
-		nav.checkDir(d)
-
+		nav.dirCache[path] = d
 		return d
 	}
-	return nav.loadDirInternal(path)
+
+	nav.checkDir(d)
+	return d
 }
 
 func (nav *nav) checkDir(dir *dir) {

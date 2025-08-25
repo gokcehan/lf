@@ -53,7 +53,6 @@ var gOpts struct {
 	cursorparentfmt  string
 	cursorpreviewfmt string
 	cutfmt           string
-	dircache         bool
 	dircounts        bool
 	dirfirst         bool
 	dironly          bool
@@ -222,7 +221,6 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
-	gOpts.dircache = true
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
 	gOpts.dironly = false
