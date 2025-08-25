@@ -443,3 +443,55 @@ func TestStripAnsi(t *testing.T) {
 		}
 	}
 }
+
+func TestReadLines(t *testing.T) {
+	tests := []struct {
+		s        string
+		maxLines int
+		lines    []string
+		binary   bool
+		sixel    bool
+	}{
+		{"", 10, nil, false, false},
+		{"\r", 10, nil, false, false},
+		{"\r\n", 10, []string{""}, false, false},
+		{"\r\r\n", 10, []string{""}, false, false},
+		{"\n\n", 10, []string{"", ""}, false, false},
+		{"foo", 10, []string{"foo"}, false, false},
+		{"foo\n", 10, []string{"foo"}, false, false},
+		{"foo\r\n", 10, []string{"foo"}, false, false},
+		{"foo\nbar", 10, []string{"foo", "bar"}, false, false},
+		{"foo\nbar\n", 10, []string{"foo", "bar"}, false, false},
+		{"foo\r\nbar", 10, []string{"foo", "bar"}, false, false},
+		{"foo\r\nbar\r\n", 10, []string{"foo", "bar"}, false, false},
+		{"\033[31mfoo\033[0m", 10, []string{"\033[31mfoo\033[0m"}, false, false},
+		{"\000", 10, nil, true, false},
+		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false},
+		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true},
+		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true},
+		{"\033P\000\033\\", 10, []string{"\033P\000\033\\"}, false, true},
+		{"\033P\n\033\\", 10, []string{"\033P\n\033\\"}, false, true},
+		{"\033P\r\n\033\\", 10, []string{"\033P\r\n\033\\"}, false, true},
+		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true},
+		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, true},
+		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, true},
+		{"foo\nbar\nbaz", 2, []string{"foo", "bar"}, false, false},
+		{"foo\nbar\nbaz\n", 2, []string{"foo", "bar"}, false, false},
+		{"foo\nbar\033P\033\\", 2, []string{"foo", "bar"}, false, false},
+		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false},
+		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false},
+		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true},
+	}
+
+	for _, test := range tests {
+		lines, binary, sixel := readLines(strings.NewReader(test.s), test.maxLines)
+		if !reflect.DeepEqual(lines, test.lines) || binary != test.binary || sixel != test.sixel {
+			t.Errorf(
+				"at input (%q, %v) expected (%#v, %v, %v) but got (%#v, %v, %v)",
+				test.s, test.maxLines,
+				test.lines, test.binary, test.sixel,
+				lines, binary, sixel,
+			)
+		}
+	}
+}
