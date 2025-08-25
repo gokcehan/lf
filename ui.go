@@ -270,12 +270,14 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		return
 	}
 
-	for i, l := range reg.lines {
-		if i > win.h-1 {
-			break
-		}
+	if !reg.sixel {
+		for i, l := range reg.lines {
+			if i > win.h-1 {
+				break
+			}
 
-		st = win.print(screen, 2, i, st, l)
+			st = win.print(screen, 2, i, st, l)
+		}
 	}
 
 	sxs.printSixel(win, screen, reg)
@@ -768,7 +770,7 @@ type reg struct {
 	loadTime time.Time
 	path     string
 	lines    []string
-	sixel    *string
+	sixel    bool
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
@@ -1572,6 +1574,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return &callExpr{"cd", []string{dir.path}, 1}
 		}
 	case *tcell.EventResize:
+		clear(nav.regCache)
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())

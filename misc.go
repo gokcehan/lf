@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"fmt"
 	"io"
 	"io/fs"
@@ -419,6 +420,73 @@ func stripAnsi(s string) string {
 	}
 
 	return b.String()
+}
+
+// This function reads lines from a file to be displayed as a preview.
+// The number of lines to read is capped since files can be very large.
+// Lines are split on `\n` characters, and `\r` characters are discarded.
+// Sixel images are also detected and stored as separate lines.
+// The presence of a null byte outside a sixel image indicates a binary file.
+func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
+	var buf bytes.Buffer
+	var last byte
+	inSixel := false
+
+	for {
+		b, err := reader.ReadByte()
+		if err != nil {
+			if buf.Len() > 0 {
+				lines = append(lines, buf.String())
+			}
+			return
+		}
+
+		if inSixel {
+			buf.WriteByte(b)
+			if b == '\\' && last == '\033' {
+				lines = append(lines, buf.String())
+				buf.Reset()
+				if len(lines) >= maxLines {
+					return
+				}
+				inSixel = false
+			}
+		} else {
+			switch {
+			case b == 0:
+				return nil, true, false
+			case b == '\033':
+				// withhold as it could be the start of a sixel image
+			case b == 'P' && last == '\033':
+				if buf.Len() > 0 {
+					lines = append(lines, buf.String())
+					buf.Reset()
+					if len(lines) >= maxLines {
+						return
+					}
+				}
+				buf.WriteByte(last)
+				buf.WriteByte(b)
+				inSixel = true
+				sixel = true
+			case last == '\033':
+				// not a sixel image
+				buf.WriteByte(last)
+				buf.WriteByte(b)
+			case b == '\r':
+			case b == '\n':
+				lines = append(lines, buf.String())
+				buf.Reset()
+				if len(lines) >= maxLines {
+					return
+				}
+			default:
+				buf.WriteByte(b)
+			}
+		}
+
+		last = b
+	}
 }
 
 // We don't need no generic code

@@ -450,9 +450,7 @@ func (app *app) loop() {
 			if err == nil {
 				if r.path == curr.path {
 					app.ui.regPrev = r
-					if gOpts.sixel {
-						app.ui.sxScreen.forceClear = true
-					}
+					app.ui.sxScreen.forceClear = true
 				}
 			}
 
