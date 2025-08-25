@@ -98,7 +98,6 @@ var gOpts struct {
 	shellflag        string
 	shellopts        []string
 	showbinds        bool
-	sixel            bool
 	smartcase        bool
 	smartdia         bool
 	sortby           sortMethod
@@ -267,7 +266,6 @@ func init() {
 	gOpts.shellflag = gDefaultShellFlag
 	gOpts.shellopts = nil
 	gOpts.showbinds = true
-	gOpts.sixel = false
 	gOpts.smartcase = true
 	gOpts.smartdia = false
 	gOpts.sortby = naturalSort

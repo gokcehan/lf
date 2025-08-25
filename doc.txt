@@ -190,7 +190,6 @@ The following options can be used to customize the behavior of lf:
     shellflag         string    (default '-c' for Unix and '/c' for Windows)
     shellopts         []string  (default '')
     showbinds         bool      (default true)
-    sixel             bool      (default false)
     smartcase         bool      (default true)
     smartdia          bool      (default false)
     sortby            string    (default 'natural')
@@ -1079,10 +1078,6 @@ List of shell options to pass to the shell executable.
 showbinds (bool) (default true)
 
 Show bindings associated with pressed keys.
-
-sixel (bool) (default false)
-
-Render sixel images in preview.
 
 smartcase (bool) (default true)
 
