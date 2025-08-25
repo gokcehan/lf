@@ -12,7 +12,6 @@ import (
 	"path/filepath"
 	"reflect"
 	"regexp"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -914,43 +913,12 @@ func (nav *nav) preview(path string, win *win) {
 		reader = bufio.NewReader(f)
 	}
 
-	if gOpts.sixel {
-		prefix, err := reader.Peek(2)
-		if err == nil && string(prefix) == gSixelBegin {
-			b, err := io.ReadAll(reader)
-			if err != nil {
-				log.Printf("loading sixel: %s", err)
-			}
-			str := string(b)
-			reg.sixel = &str
-			return
-		}
+	lines, binary, sixel := readLines(reader, win.h)
+	if binary {
+		lines = []string{"\033[7mbinary\033[0m"}
 	}
-
-	// bufio.Scanner can't handle files containing long lines if they exceed the
-	// size of its internal buffer
-	line := []byte{}
-	for len(reg.lines) < win.h {
-		bytes, isPrefix, err := reader.ReadLine()
-		if err != nil {
-			if len(line) > 0 {
-				reg.lines = append(reg.lines, string(line))
-			}
-			break
-		}
-
-		if slices.Contains(bytes, 0) {
-			reg.lines = []string{"\033[7mbinary\033[0m"}
-			return
-		}
-
-		line = append(line, bytes...)
-
-		if !isPrefix {
-			reg.lines = append(reg.lines, string(line))
-			line = []byte{}
-		}
-	}
+	reg.lines = lines
+	reg.sixel = sixel
 }
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {
