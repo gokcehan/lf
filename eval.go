@@ -750,12 +750,6 @@ func normal(app *app) {
 	app.ui.cmdPrefix = ""
 }
 
-func visual(app *app) {
-	dir := app.nav.currDir()
-	dir.visualAnchor = dir.ind
-	dir.visualWrap = 0
-}
-
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
@@ -1770,7 +1764,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		visual(app)
+		dir := app.nav.currDir()
+		dir.visualAnchor = dir.ind
+		dir.visualWrap = 0
 	case "visual-accept":
 		if !app.nav.init {
 			return
