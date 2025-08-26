@@ -203,6 +203,7 @@ shell             string    (default \(aqsh\(aq for Unix and \(aqcmd\(aq for Win
 shellflag         string    (default \(aq\-c\(aq for Unix and \(aq/c\(aq for Windows)
 shellopts         []string  (default \(aq\(aq)
 showbinds         bool      (default true)
+sizeunits         string    (default \(aqbinary\(aq)
 smartcase         bool      (default true)
 smartdia          bool      (default false)
 sortby            string    (default \(aqnatural\(aq)
@@ -931,6 +932,10 @@ Command line flag used to pass shell commands.
 List of shell options to pass to the shell executable.
 .SS showbinds (bool) (default true)
 Show bindings associated with pressed keys.
+.SS sizeunits (string) (default \f[CR]binary\f[R])
+Determines whether file sizes are displayed using binary units
+(\f[CR]1K\f[R] is 1024 bytes) or decimal units (\f[CR]1K\f[R] is 1000
+bytes).
 .SS smartcase (bool) (default true)
 Override \f[CR]ignorecase\f[R] option when the pattern contains an
 uppercase character.
@@ -972,10 +977,6 @@ Special expansions are provided, \f[CR]%p\f[R] as the file permissions,
 The \f[CR]|\f[R] character splits the format string into sections.
 Any section containing a failed expansion (result is a blank string) is
 discarded and not shown.
-.PP
-File size is formatted using first letter of IEC 80000\-13:2025 prefixes
-for binary multiples (i.e.
-1024 bytes is \f[CR]1.0K\f[R]).
 .SS tabstop (int) (default 8)
 Number of space characters to show for horizontal tabulation (U+0009)
 character.

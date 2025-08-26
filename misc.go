@@ -242,39 +242,43 @@ func readPairs(r io.Reader) ([][]string, error) {
 }
 
 // This function converts a size in bytes to a human readable form using
-// prefixes for binary multiples (e.g., 1 KiB = 1024 B). The output should be
-// no more than 5 characters long.
+// prefixes for either binary (1 KiB = 1024 B) or decimal (1 KB = 1000 B)
+// multiples. The output should be no more than 5 characters long.
 func humanize(size uint64) string {
-	if size < 1024 {
+	var base uint64 = 1024
+	if gOpts.sizeunits == "decimal" {
+		base = 1000
+	}
+
+	if size < base {
 		return fmt.Sprintf("%dB", size)
 	}
 
-	// Shortened (due to TUI space constraints) version of
-	// IEC 80000-13:2025 prefixes for binary multiples.
 	// *Note*: due to [`FileSize.Size()`](https://pkg.go.dev/io/fs#FileInfo)
-	// being `int64`, maximum possible representable value would be 8 EiB.
+	// being `int64`, the maximum possible representable value would be 8 EiB or
+	// 9.2 EB.
 	prefixes := []string{
-		"K", // kibi (2^10)
-		"M", // mebi (2^20)
-		"G", // gibi (2^30)
-		"T", // tebi (2^40)
-		"P", // pebi (2^50)
-		"E", // exbi (2^60)
-		"Z", // zebi (2^70)
-		"Y", // yobi (2^80)
-		"R", // robi (2^90)
-		"Q", // quebi (2^100)
+		"K", // kibi (2^10) or kilo (10^3)
+		"M", // mebi (2^20) or mega (10^6)
+		"G", // gibi (2^30) or giga (10^9)
+		"T", // tebi (2^40) or tera (10^2)
+		"P", // pebi (2^50) or peta (10^15)
+		"E", // exbi (2^60) or exa (10^18)
+		"Z", // zebi (2^70) or zetta (10^21)
+		"Y", // yobi (2^80) or yotta (10^24)
+		"R", // robi (2^90) or ronna (10^27)
+		"Q", // quebi (2^100) or quetta (10^30)
 	}
 
-	curr := float64(size) / 1024
+	curr := float64(size) / float64(base)
 	for _, prefix := range prefixes {
 		if curr < 99.95 {
-			return fmt.Sprintf("%.1f%s", curr, prefix)
+			return fmt.Sprintf("%.1f%s", curr+1e-9, prefix)
 		}
-		if curr < 1023.5 {
-			return fmt.Sprintf("%.0f%s", curr, prefix)
+		if curr < float64(base)-0.5 {
+			return fmt.Sprintf("%.0f%s", curr+1e-9, prefix)
 		}
-		curr /= 1024
+		curr /= float64(base)
 	}
 
 	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])

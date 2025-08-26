@@ -398,6 +398,8 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			matches, result = matchList(f[2], []string{"mode", "timestamps"})
 		case "selmode":
 			matches, result = matchWord(f[2], []string{"all", "dir"})
+		case "sizeunits":
+			matches, result = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
 		default:
