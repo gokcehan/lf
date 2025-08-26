@@ -648,7 +648,6 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
-	msgIsStat   bool
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
@@ -678,7 +677,6 @@ func newUI(screen tcell.Screen) *ui {
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
 		menuWin:     newWin(wtot, 1, 0, htot-2),
-		msgIsStat:   true,
 		exprChan:    make(chan expr, 1000),
 		keyChan:     make(chan string, 1000),
 		tevChan:     make(chan tcell.Event, 1000),
@@ -736,7 +734,6 @@ func (ui *ui) sort() {
 
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
-	ui.msgIsStat = false
 }
 
 func (ui *ui) echomsg(msg string) {
@@ -796,54 +793,7 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 }
 
 func (ui *ui) loadFileInfo(nav *nav) {
-	if !nav.init {
-		return
-	}
-
 	ui.msg = ""
-	ui.msgIsStat = true
-
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	if curr.err != nil {
-		ui.echoerrf("stat: %s", curr.err)
-		return
-	}
-
-	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-	replace := func(s string, val string) {
-		if val == "" {
-			val = "\x00"
-		}
-		statfmt = strings.ReplaceAll(statfmt, s, val)
-	}
-	if nav.isVisualMode() {
-		replace("%m", "VISUAL")
-		replace("%M", "VISUAL")
-	} else {
-		replace("%m", "")
-		replace("%M", "NORMAL")
-	}
-	replace("%p", curr.Mode().String())
-	replace("%c", linkCount(curr))
-	replace("%u", userName(curr))
-	replace("%g", groupName(curr))
-	replace("%s", humanize(uint64(curr.Size())))
-	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
-	replace("%t", curr.ModTime().Format(gOpts.timefmt))
-	replace("%l", curr.linkTarget)
-
-	var fileInfo strings.Builder
-	for _, section := range strings.Split(statfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			fileInfo.WriteString(section)
-		}
-	}
-
-	ui.msg = fileInfo.String()
 }
 
 func (ui *ui) drawPromptLine(nav *nav) {
@@ -919,12 +869,60 @@ func formatRulerOpt(name string, val string) string {
 	return val
 }
 
+func (ui *ui) drawStat(nav *nav) {
+	if ui.msg != "" {
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
+		return
+	}
+
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	if curr.err != nil {
+		ui.echoerrf("stat: %s", curr.err)
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
+		return
+	}
+
+	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
+	replace := func(s string, val string) {
+		if val == "" {
+			val = "\x00"
+		}
+		statfmt = strings.ReplaceAll(statfmt, s, val)
+	}
+	if nav.isVisualMode() {
+		replace("%m", "VISUAL")
+		replace("%M", "VISUAL")
+	} else {
+		replace("%m", "")
+		replace("%M", "NORMAL")
+	}
+	replace("%p", curr.Mode().String())
+	replace("%c", linkCount(curr))
+	replace("%u", userName(curr))
+	replace("%g", groupName(curr))
+	replace("%s", humanize(uint64(curr.Size())))
+	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
+	replace("%t", curr.ModTime().Format(gOpts.timefmt))
+	replace("%l", curr.linkTarget)
+
+	var fileInfo strings.Builder
+	for _, section := range strings.Split(statfmt, "\x1f") {
+		if !strings.Contains(section, "\x00") {
+			fileInfo.WriteString(section)
+		}
+	}
+
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfo.String())
+}
+
 func (ui *ui) drawRuler(nav *nav) {
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
-
-	ui.msgWin.print(ui.screen, 0, 0, st, ui.msg)
 
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
@@ -1098,6 +1096,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
+		ui.drawStat(nav)
 		ui.drawRuler(nav)
 		ui.screen.HideCursor()
 	case ">":
