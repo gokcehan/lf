@@ -871,7 +871,7 @@ func (ui *ui) drawRuler(nav *nav) {
 				Name:        curr.Name(),
 				Size:        uint64(curr.Size()),
 				Permissions: curr.Mode().String(),
-				ModTime:     curr.ModTime(),
+				ModTime:     curr.ModTime().Format(gOpts.timefmt),
 				LinkCount:   linkCount(curr),
 				User:        userName(curr),
 				Group:       groupName(curr),
@@ -948,7 +948,6 @@ func (ui *ui) drawRuler(nav *nav) {
 	}
 
 	data := rulerData{
-		ESC:         "\033",
 		SPACER:      "\x1f",
 		Message:     ui.msg,
 		Keys:        string(ui.keyCount) + string(ui.keyAcc),

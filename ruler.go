@@ -5,7 +5,6 @@ import (
 	"os"
 	"strings"
 	"text/template"
-	"time"
 
 	_ "embed"
 )
@@ -18,7 +17,7 @@ type statData struct {
 	Name        string
 	Size        uint64
 	Permissions string
-	ModTime     time.Time
+	ModTime     string
 	LinkCount   string
 	User        string
 	Group       string
@@ -26,7 +25,6 @@ type statData struct {
 }
 
 type rulerData struct {
-	ESC         string
 	SPACER      string
 	Message     string
 	Keys        string
@@ -88,7 +86,9 @@ func renderRuler(ruler *template.Template, data rulerData) (string, string, erro
 		return "", "", err
 	}
 
-	s := strings.ReplaceAll(b.String(), "\n", "")
+	s := strings.TrimSuffix(b.String(), "\n")
+	s = strings.ReplaceAll(s, "\n", "\033[0;7m\\n\033[0m")
+
 	left, right, found := strings.Cut(s, "\x1f")
 	if !found {
 		return s, "", nil

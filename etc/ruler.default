@@ -1,20 +1,19 @@
-{{if .Message}}
-{{.Message}}
-{{else if .Stat}}
-{{.ESC}}[36m{{.Stat.Permissions}}{{.ESC}}[0m
-{{if .Stat.LinkCount}} {{.Stat.LinkCount}}{{end}}
-{{if .Stat.User}} {{.Stat.User}}{{end}}
-{{if .Stat.Group}} {{.Stat.Group}}{{end}}
- {{humanize .Stat.Size | printf "%5s"}}
- {{.Stat.ModTime.Format .Options.timefmt}}
-{{if .Stat.Target}} -> {{.Stat.Target}}{{end}}
-{{end}}
-{{.SPACER}}
-  {{.Keys}}
-{{if .Progress}}  {{join .Progress " "}}{{end}}
-{{if .Copy}}  {{.ESC}}[7;33m {{len .Copy}} {{.ESC}}[0m{{end}}
-{{if .Cut}}  {{.ESC}}[7;31m {{len .Cut}} {{.ESC}}[0m{{end}}
-{{if .Select}}  {{.ESC}}[7;35m {{len .Select}} {{.ESC}}[0m{{end}}
-{{if .Visual}}  {{.ESC}}[7;36m {{len .Visual}} {{.ESC}}[0m{{end}}
-{{if .Filter}}  {{.ESC}}[7;34m {{join .Filter " "}} {{.ESC}}[0m{{end}}
-  {{.Index}}/{{.Total}}
+{{with .Message -}}
+    {{. -}}
+{{else with .Stat -}}
+    {{.Permissions | printf "\033[36m%s\033[0m" -}}
+    {{with .LinkCount}} {{.}}{{end -}}
+    {{with .User}} {{.}}{{end -}}
+    {{with .Group}} {{.}}{{end -}}
+    {{.Size | humanize | printf " %5s" -}}
+    {{.ModTime | printf " %s" -}}
+{{end -}}
+{{.SPACER -}}
+{{with .Keys}}  {{.}}{{end -}}
+{{with .Progress}}  {{join . " "}}{{end -}}
+{{with .Copy}}  {{len . | printf "\033[7;33m %d \033[0m"}}{{end -}}
+{{with .Cut}}  {{len . | printf "\033[7;31m %d \033[0m"}}{{end -}}
+{{with .Select}}  {{len . | printf "\033[7;35m %d \033[0m"}}{{end -}}
+{{with .Visual}}  {{len . | printf "\033[7;36m %d \033[0m"}}{{end -}}
+{{with .Filter}}  {{join . " " | printf "\033[7;34m %s \033[0m"}}{{end -}}
+{{printf "  %d/%d" .Index .Total}}
