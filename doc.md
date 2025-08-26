@@ -366,9 +366,11 @@ You can configure these locations with the following variables given with their 
 
 	Windows
 	    %LF_CONFIG_HOME%
+	    %XDG_CONFIG_HOME%
 	    %APPDATA%
 
 	    %LF_DATA_HOME%
+	    %XDG_DATA_HOME%
 	    %LOCALAPPDATA%
 
 A sample configuration file can be found at
