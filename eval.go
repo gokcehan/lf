@@ -1053,17 +1053,16 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.loadFile(app, true)
 			restartIncCmd(app)
 			onChdir(app)
-			return
-		}
+		} else {
+			if gSelectionPath != "" || gPrintSelection {
+				app.selectionOut, _ = app.nav.currFileOrSelections()
+				app.quitChan <- struct{}{}
+				return
+			}
 
-		if gSelectionPath != "" || gPrintSelection {
-			app.selectionOut, _ = app.nav.currFileOrSelections()
-			app.quitChan <- struct{}{}
-			return
-		}
-
-		if cmd, ok := gOpts.cmds["open"]; ok {
-			cmd.eval(app, e.args)
+			if cmd, ok := gOpts.cmds["open"]; ok {
+				cmd.eval(app, e.args)
+			}
 		}
 	case "jump-next":
 		resetIncCmd(app)
