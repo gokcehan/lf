@@ -194,7 +194,6 @@ ratios            []int     (default \(aq1:2:3\(aq)
 relativenumber    bool      (default false)
 reverse           bool      (default false)
 roundbox          bool      (default false)
-rulerfmt          string    (default \(dq  %a|  %p|  \(rs033[7;31m %m \(rs033[0m|  \(rs033[7;33m %c \(rs033[0m|  \(rs033[7;35m %s \(rs033[0m|  \(rs033[7;34m %f \(rs033[0m|  %i/%t\(dq)
 scrolloff         int       (default 0)
 searchmethod      string    (default \(aqtext\(aq)
 selectfmt         string    (default \(dq\(rs033[7;35m\(dq)
@@ -207,7 +206,6 @@ sizeunits         string    (default \(aqbinary\(aq)
 smartcase         bool      (default true)
 smartdia          bool      (default false)
 sortby            string    (default \(aqnatural\(aq)
-statfmt           string    (default \(dq\(rs033[36m%p\(rs033[0m| %c| %u| %g| %S| %t| \-> %l\(dq)
 tabstop           int       (default 8)
 tagfmt            string    (default \(dq\(rs033[31m\(dq)
 tempmarks         string    (default \(aq\(aq)
@@ -353,6 +351,14 @@ The icons file should be located at:
 OS       system\-wide               user\-specific
 Unix     /etc/lf/icons             \(ti/.config/lf/icons
 Windows  C:\(rsProgramData\(rslf\(rsicons   C:\(rsUsers\(rs<user>\(rsAppData\(rsRoaming\(rslf\(rsicons
+.EE
+.PP
+The ruler file should be located at:
+.IP
+.EX
+OS       system\-wide               user\-specific
+Unix     /etc/lf/ruler             \(ti/.config/lf/ruler
+Windows  C:\(rsProgramData\(rslf\(rsruler   C:\(rsUsers\(rs<user>\(rsAppData\(rsRoaming\(rslf\(rsruler
 .EE
 .PP
 The selection file should be located at:
@@ -880,28 +886,6 @@ Reverse the direction of sort.
 .SS roundbox (bool) (default false)
 Draw rounded outer corners when the \f[CR]drawbox\f[R] option is
 enabled.
-.SS rulerfmt (string) (default \f[CR]  %a|  %p|  \(rs033[7;31m %m \(rs033[0m|  \(rs033[7;33m %c \(rs033[0m|  \(rs033[7;35m %s \(rs033[0m|  \(rs033[7;36m %v \(rs033[0m|  \(rs033[7;34m %f \(rs033[0m|  %i/%t\f[R])
-Format string of the ruler shown in the bottom right corner.
-Special expansions are provided, \f[CR]%a\f[R] as the pressed keys,
-\f[CR]%p\f[R] as the progress of file operations, \f[CR]%m\f[R] as the
-number of files to be cut (moved), \f[CR]%c\f[R] as the number of files
-to be copied, \f[CR]%s\f[R] as the number of selected files,
-\f[CR]%v\f[R] as the number of visually selected files, \f[CR]%f\f[R] as
-the filter, \f[CR]%i\f[R] as the position of the cursor, \f[CR]%t\f[R]
-as the number of files shown in the current directory, \f[CR]%h\f[R] as
-the number of files hidden in the current directory, \f[CR]%P\f[R] as
-the scroll percentage, and \f[CR]%d\f[R] as the amount of free disk
-space remaining.
-Additional expansions are provided for environment variables exported by
-lf, in the form \f[CR]%{lf_<name>}\f[R] (e.g.
-\f[CR]%{lf_selmode}\f[R]).
-This is useful for displaying the current settings.
-Expansions are also provided for user\-defined options, in the form
-\f[CR]%{lf_user_<name>}\f[R] (e.g.
-\f[CR]%{lf_user_foo}\f[R]).
-The \f[CR]|\f[R] character splits the format string into sections.
-Any section containing a failed expansion (result is a blank string) is
-discarded and not shown.
 .SS scrolloff (int) (default 0)
 Minimum number of offset lines shown at all times at the top and bottom
 of the screen when scrolling.
@@ -965,20 +949,6 @@ ctime     time of last status (inode) change
 ext       file extension
 custom    property defined via \(gaaddcustominfo\(ga
 .EE
-.SS statfmt (string) (default \f[CR]\(rs033[36m%p\(rs033[0m| %c| %u| %g| %S| %t| \-> %l\f[R])
-Format string of the file info shown in the bottom left corner.
-Special expansions are provided, \f[CR]%p\f[R] as the file permissions,
-\f[CR]%c\f[R] as the link count, \f[CR]%u\f[R] as the user,
-\f[CR]%g\f[R] as the group, \f[CR]%s\f[R] as the file size,
-\f[CR]%S\f[R] as the file size but with a fixed width of five characters
-(left\-padded with spaces), \f[CR]%t\f[R] as the last modified time,
-\f[CR]%l\f[R] as the link target, \f[CR]%m\f[R] as the current mode and
-\f[CR]%M\f[R] as the current mode but also shown in Normal mode
-(displaying \f[CR]NORMAL\f[R] instead of a blank string).
-.PP
-The \f[CR]|\f[R] character splits the format string into sections.
-Any section containing a failed expansion (result is a blank string) is
-discarded and not shown.
 .SS tabstop (int) (default 8)
 Number of space characters to show for horizontal tabulation (U+0009)
 character.
@@ -2296,4 +2266,61 @@ A sample icons file can be found at \c
 .PP
 A sample colored icons file can be found at \c
 .UR https://github.com/gokcehan/lf/blob/master/etc/icons_colored.example
+.UE \c
+.SH RULER
+The ruler can be configured using a ruler file (refer to the \c
+.UR https://github.com/gokcehan/lf/blob/master/doc.md#configuration
+CONFIGURATION section
+.UE \c
+).
+The contents of the ruler file should be a Go template which is then
+rendered to create the actual output (refer to \c
+.UR https://pkg.go.dev/text/template
+.UE \c
+\ for more details on the syntax).
+.PP
+The following data fields are exported:
+.IP
+.EX
+\&.Message          string              Includes internal messages, errors, and messages generated by the \(gaecho\(ga/\(gaechomsg\(ga/\(gaechoerr\(ga commands
+\&.Keys             string              Keys pressed by the user
+\&.Progress         []string            Progress indicators for copied, moved and deleted files
+\&.Copy             []string            List of files in the clipboard to be copied
+\&.Cut              []string            List of files in the clipboard to be moved
+\&.Select           []string            Selection list
+\&.Visual           []string            Visual selection
+\&.Index            int                 Index of the cursor
+\&.Total            int                 Number of visible files in the current directory
+\&.Hidden           int                 Number of hidden files in the current directory
+\&.Percentage       string              Scroll percentage
+\&.Filter           []string            Filter currently being applied
+\&.Mode             string              Current mode (\(dqNORMAL\(dq for Normal mode, and \(dqVISUAL\(dq for Visual mode)
+\&.Options          map[string]string   The value of options (e.g. \(ga{{.Options.hidden}}\(ga)
+\&.UserOptions      map[string]string   The value of user\-defined options (e.g. \(ga{{.UserOptions.foo}}\(ga)
+\&.Stat.Path        string              Path of the current file
+\&.Stat.Name        string              Name of the current file
+\&.Stat.Size        uint64              Size of the current file
+\&.Stat.Permissions string              Permissions of the current file
+\&.Stat.ModTime     string              Last modified time of the current file (formatted based on the \(gatimefmt\(ga option)
+\&.Stat.LinkCount   string              Number of hard links for the current file
+\&.Stat.User        string              User of the current file
+\&.Stat.Group       string              Group of the current file
+\&.Stat.Target      string              Target if the current file is a symbolic link, otherwise a blank string
+.EE
+.PP
+The following functions are exported:
+.IP
+.EX
+df       func() string                   Get an indicator representing the amount of free disk space available
+env      func(string) string             Get the value of an environment variable
+humanize func(uint64) string             Express a file size in a human\-readable format
+join     func([]string, string) string   Join a string array by a separator
+substr   func(string, int, int) string   Get a substring based on starting index and length
+.EE
+.PP
+The special identifier \f[CR]{{.SPACER}}\f[R] can be used once to
+separate the ruler into left and right components.
+.PP
+The default ruler file can be found at \c
+.UR https://github.com/gokcehan/lf/blob/master/etc/ruler.default
 .UE \c
