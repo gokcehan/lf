@@ -88,14 +88,6 @@ func parseStyles() styleMap {
 	return sm
 }
 
-func parseEscapeSequence(s string) tcell.Style {
-	s = strings.TrimPrefix(s, "\033[")
-	if i := strings.IndexByte(s, 'm'); i >= 0 {
-		s = s[:i]
-	}
-	return applyAnsiCodes(s, tcell.StyleDefault)
-}
-
 func parseColor(toks []string) (tcell.Color, int, error) {
 	if len(toks) == 0 {
 		return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)

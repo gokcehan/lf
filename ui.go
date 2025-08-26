@@ -744,14 +744,6 @@ func (ui *ui) echomsg(msg string) {
 	log.Print(msg)
 }
 
-func optionToFmtstr(optstr string) string {
-	if !strings.Contains(optstr, "%s") {
-		return optstr + "%s\033[0m"
-	} else {
-		return optstr
-	}
-}
-
 func (ui *ui) echoerr(msg string) {
 	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
 	log.Printf("error: %s", msg)

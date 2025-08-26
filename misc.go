@@ -13,7 +13,20 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
+)
+
+var (
+	reModKey    = regexp.MustCompile(`<(c|s|a)-(.+)>`)
+	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
+	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
+)
+
+var (
+	reWord    = regexp.MustCompile(`(\pL|\pN)+`)
+	reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
+	reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
 )
 
 func isRoot(name string) bool { return filepath.Dir(name) == name }
@@ -324,18 +337,6 @@ func getFileExtension(file fs.FileInfo) string {
 	return filepath.Ext(file.Name())
 }
 
-var (
-	reModKey    = regexp.MustCompile(`<(c|s|a)-(.+)>`)
-	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
-	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
-)
-
-var (
-	reWord    = regexp.MustCompile(`(\pL|\pN)+`)
-	reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
-	reWordEnd = regexp.MustCompile(`(\pL|\pN)([^\pL\pN]|$)`)
-)
-
 // This function deletes entries from a map if the key is either the given path
 // or a subpath of it.
 // This is useful for clearing cached data when a directory is moved or deleted.
@@ -347,6 +348,26 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 			delete(m, k)
 		}
 	}
+}
+
+// This function takes an escape sequence option (e.g. `\033[1m`) and outputs a
+// complete format string (e.g. `\033[1m%s\033[0m`).
+func optionToFmtstr(optstr string) string {
+	if !strings.Contains(optstr, "%s") {
+		return optstr + "%s\033[0m"
+	} else {
+		return optstr
+	}
+}
+
+// This function takes an escape sequence option (e.g. `\033[1m`) and converts
+// it to a `tcell.Style` object.
+func parseEscapeSequence(s string) tcell.Style {
+	s = strings.TrimPrefix(s, "\033[")
+	if i := strings.IndexByte(s, 'm'); i >= 0 {
+		s = s[:i]
+	}
+	return applyAnsiCodes(s, tcell.StyleDefault)
 }
 
 // This function is used to remove style-related ANSI escape sequences from
