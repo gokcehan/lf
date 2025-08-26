@@ -296,7 +296,7 @@ func TestHumanize(t *testing.T) {
 	gOpts.sizeunits = "binary"
 	for _, test := range tests {
 		if got := humanize(test.size); got != test.expected {
-			t.Errorf("at input '%d' expected '%s' but got '%s'", test.size, test.expected, got)
+			t.Errorf("at input ('%d', '%s') expected '%s' but got '%s'", test.size, gOpts.sizeunits, test.expected, got)
 		}
 	}
 
@@ -343,7 +343,7 @@ func TestHumanize(t *testing.T) {
 	gOpts.sizeunits = "decimal"
 	for _, test := range tests {
 		if got := humanize(test.size); got != test.expected {
-			t.Errorf("at input '%d' expected '%s' but got '%s'", test.size, test.expected, got)
+			t.Errorf("at input ('%d', '%s') expected '%s' but got '%s'", test.size, gOpts.sizeunits, test.expected, got)
 		}
 	}
 }
