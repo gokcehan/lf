@@ -256,7 +256,7 @@ func humanize(size uint64) string {
 
 	// *Note*: due to [`FileSize.Size()`](https://pkg.go.dev/io/fs#FileInfo)
 	// being `int64`, the maximum possible representable value would be 8 EiB or
-	// 8 EB.
+	// 9.2 EB.
 	prefixes := []string{
 		"K", // kibi (2^10) or kilo (10^3)
 		"M", // mebi (2^20) or mega (10^6)
