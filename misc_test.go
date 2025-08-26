@@ -289,9 +289,58 @@ func TestHumanize(t *testing.T) {
 		{1319413953332, "1.2T"},       // 1.2 TiB
 		{1463669878895412, "1.3P"},    // 1.3 PiB
 		{7955158381787244544, "6.9E"}, // 6.9 EiB
+		{math.MaxInt64, "8.0E"},       // 8 EiB
 		{math.MaxUint64, "16.0E"},     // 16 EiB
 	}
 
+	gOpts.sizeunits = "binary"
+	for _, test := range tests {
+		if got := humanize(test.size); got != test.expected {
+			t.Errorf("at input '%d' expected '%s' but got '%s'", test.size, test.expected, got)
+		}
+	}
+
+	tests = []struct {
+		size     uint64
+		expected string
+	}{
+		{0, "0B"},
+		{1, "1B"},
+		{2, "2B"},
+		{10, "10B"},
+		{100, "100B"},
+		{999, "999B"},
+		{1000, "1.0K"},
+		{1001, "1.0K"},
+		{1049, "1.0K"},
+		{1050, "1.1K"},
+		{1051, "1.1K"},
+		{9949, "9.9K"},
+		{9950, "10.0K"},
+		{9951, "10.0K"},
+		{9999, "10.0K"},
+		{10000, "10.0K"},
+		{10001, "10.0K"},
+		{99949, "99.9K"},
+		{99950, "100K"},
+		{99951, "100K"},
+		{999499, "999K"},
+		{999500, "1.0M"},
+		{999501, "1.0M"},
+		{999999, "1.0M"},
+		{1000000, "1.0M"},
+		{1000001, "1.0M"},
+		{999499999, "999M"},
+		{999500000, "1.0G"},
+		{999500001, "1.0G"},
+		{999999999, "1.0G"},
+		{1000000000, "1.0G"},
+		{1000000001, "1.0G"},
+		{math.MaxInt64, "9.2E"},
+		{math.MaxUint64, "18.4E"},
+	}
+
+	gOpts.sizeunits = "decimal"
 	for _, test := range tests {
 		if got := humanize(test.size); got != test.expected {
 			t.Errorf("at input '%d' expected '%s' but got '%s'", test.size, test.expected, got)

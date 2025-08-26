@@ -378,6 +378,14 @@ func (e *setExpr) eval(app *app, args []string) {
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
+	case "sizeunits":
+		switch e.val {
+		case "binary", "decimal":
+			gOpts.sizeunits = e.val
+		default:
+			app.ui.echoerr("sizeunits: value should either be 'binary' or 'decimal'")
+			return
+		}
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
