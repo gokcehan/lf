@@ -279,7 +279,7 @@ func humanize(size uint64) string {
 			return fmt.Sprintf("%s%s", curr.FloatString(1), prefix)
 		}
 
-		// if curr < base-0.5 round to the nearest integer
+		// if curr < base-0.5 then round to the nearest integer
 		if curr.Cmp(new(big.Rat).Sub(big.NewRat(int64(base), 1), big.NewRat(1, 2))) < 0 {
 			return fmt.Sprintf("%s%s", curr.FloatString(0), prefix)
 		}

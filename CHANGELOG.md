@@ -8,6 +8,27 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
+## r38 (Unreleased)
+
+### Changed
+
+- The deprecated `globfilter` and `globsearch` options are now removed (#2108).
+- Sixel image support is now enabled by default, and the `sixel` option has been removed as it is no longer required (#2109).
+- The `dircache` option has now been removed (#2110). This was previously used as a workaround to disable the directory cache since at the time changes to files were not detected reliably, but this is no longer the case.
+- The experimental `locale` option has been removed in favor of the recommendation to use `addcustominfo`/`set sortby custom` for custom sorting (#2111).
+
+### Added
+
+- Sixel image previews can now display multiple images as well as text (#2109).
+- A new option `sizeunits` is added to allow displaying file sizes in either binary or decimal units (#2118).
+- `XDG_CONFIG_HOME` and `XDG_DATA_HOME` are now taken into account when looking up config/data files on Windows (#2119).
+- Three new options `menufmt`, `menuheaderfmt`, and `menuselectfmt` are added to customize the appearance of the menu (#2123).
+
+### Fixed
+
+- Error messages are now cleared after running interactive commands such as `invert`/`unselect`/`tag-toggle` (#2117).
+- The menu is now drawn over sixel images instead of being hidden behind it if they overlap (#2122).
+
 ## [r37](https://github.com/gokcehan/lf/releases/tag/r37)
 
 ### Changed
