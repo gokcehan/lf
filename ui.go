@@ -792,10 +792,6 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 	}
 }
 
-func (ui *ui) loadFileInfo(nav *nav) {
-	ui.msg = ""
-}
-
 func (ui *ui) drawPromptLine(nav *nav) {
 	st := tcell.StyleDefault
 
