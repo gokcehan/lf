@@ -7,6 +7,8 @@ import (
 	"strings"
 	"testing"
 	"time"
+
+	"github.com/gdamore/tcell/v2"
 )
 
 func TestIsRoot(t *testing.T) {
@@ -358,6 +360,38 @@ func TestGetFileExtension(t *testing.T) {
 				t.Errorf("at input '%s' expected '%s' but got '%s'", test.fileName, test.expectedExtension, got)
 			}
 		})
+	}
+}
+
+func TestOptionToFmtstr(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp string
+	}{
+		{"\033[1m", "\033[1m%s\033[0m"},
+		{"\033[1;7;31;42m", "\033[1;7;31;42m%s\033[0m"},
+	}
+
+	for _, test := range tests {
+		if got := optionToFmtstr(test.s); got != test.exp {
+			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
+		}
+	}
+}
+
+func TestParseEscapeSequence(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp tcell.Style
+	}{
+		{"\033[1m", tcell.StyleDefault.Bold(true)},
+		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+	}
+
+	for _, test := range tests {
+		if got := parseEscapeSequence(test.s); got != test.exp {
+			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
+		}
 	}
 }
 
