@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"text/template"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -663,6 +665,7 @@ type ui struct {
 	keyCount    []rune
 	styles      styleMap
 	icons       iconMap
+	ruler       *template.Template
 	currentFile string
 	pasteEvent  bool
 }
@@ -683,6 +686,7 @@ func newUI(screen tcell.Screen) *ui {
 		evChan:      make(chan tcell.Event, 1000),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
+		ruler:       parseRuler(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
@@ -853,77 +857,35 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
-func formatRulerOpt(name string, val string) string {
-	// handle escape character so it doesn't mess up the ruler
-	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
-
-	// display name of builtin options for clarity
-	if !strings.HasPrefix(name, "lf_user_") {
-		return fmt.Sprintf("%s=%s", strings.TrimPrefix(name, "lf_"), val)
-	}
-
-	return val
-}
-
-func (ui *ui) drawStat(nav *nav) {
-	if ui.msg != "" {
-		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
-		return
-	}
-
-	curr, err := nav.currFile()
-	if err != nil {
-		return
-	}
-
-	if curr.err != nil {
-		ui.echoerrf("stat: %s", curr.err)
-		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
-		return
-	}
-
-	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-	replace := func(s string, val string) {
-		if val == "" {
-			val = "\x00"
-		}
-		statfmt = strings.ReplaceAll(statfmt, s, val)
-	}
-	if nav.isVisualMode() {
-		replace("%m", "VISUAL")
-		replace("%M", "VISUAL")
-	} else {
-		replace("%m", "")
-		replace("%M", "NORMAL")
-	}
-	replace("%p", curr.Mode().String())
-	replace("%c", linkCount(curr))
-	replace("%u", userName(curr))
-	replace("%g", groupName(curr))
-	replace("%s", humanize(uint64(curr.Size())))
-	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
-	replace("%t", curr.ModTime().Format(gOpts.timefmt))
-	replace("%l", curr.linkTarget)
-
-	var fileInfo strings.Builder
-	for _, section := range strings.Split(statfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			fileInfo.WriteString(section)
-		}
-	}
-
-	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfo.String())
-}
-
 func (ui *ui) drawRuler(nav *nav) {
-	st := tcell.StyleDefault
+	if ui.ruler == nil {
+		return
+	}
+
+	var stat *statData
+	curr, err := nav.currFile()
+	if err == nil {
+		if curr.err == nil {
+			stat = &statData{
+				Path:        curr.path,
+				Name:        curr.Name(),
+				Size:        uint64(curr.Size()),
+				Permissions: curr.Mode().String(),
+				ModTime:     curr.ModTime(),
+				LinkCount:   linkCount(curr),
+				User:        userName(curr),
+				Group:       groupName(curr),
+				Target:      curr.linkTarget,
+			}
+		} else {
+			ui.echoerrf("stat: %s", curr.err)
+		}
+	}
 
 	dir := nav.currDir()
-
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
-	acc := string(ui.keyCount) + string(ui.keyAcc)
 
 	var percentage string
 	beg := max(dir.ind-dir.pos, 0)
@@ -938,12 +900,12 @@ func (ui *ui) drawRuler(nav *nav) {
 		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
 	}
 
-	copy := 0
-	move := 0
+	var copy []string
+	var cut []string
 	if nav.clipboard.mode == clipboardCopy {
-		copy = len(nav.clipboard.paths)
+		copy = nav.clipboard.paths
 	} else {
-		move = len(nav.clipboard.paths)
+		cut = nav.clipboard.paths
 	}
 
 	currSelections := nav.currSelections()
@@ -967,54 +929,53 @@ func (ui *ui) drawRuler(nav *nav) {
 		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
 	}
 
-	opts := getOptsMap()
+	mode := "NORMAL"
+	if nav.isVisualMode() {
+		mode = "VISUAL"
+	}
 
-	rulerfmt := strings.ReplaceAll(gOpts.rulerfmt, "|", "\x1f")
-	rulerfmt = reRulerSub.ReplaceAllStringFunc(rulerfmt, func(s string) string {
-		var result string
-		switch s {
-		case "%a":
-			result = acc
-		case "%p":
-			result = strings.Join(progress, " ")
-		case "%m":
-			result = fmt.Sprintf("%.d", move)
-		case "%c":
-			result = fmt.Sprintf("%.d", copy)
-		case "%s":
-			result = fmt.Sprintf("%.d", len(currSelections))
-		case "%v":
-			result = fmt.Sprintf("%.d", len(currVSelections))
-		case "%f":
-			result = strings.Join(dir.filter, " ")
-		case "%i":
-			result = strconv.Itoa(ind)
-		case "%t":
-			result = strconv.Itoa(tot)
-		case "%h":
-			result = strconv.Itoa(hid)
-		case "%P":
-			result = percentage
-		case "%d":
-			result = diskFree(dir.path)
+	options := make(map[string]string)
+	v := reflect.ValueOf(gOpts)
+	t := v.Type()
+	for i := range v.NumField() {
+		name := t.Field(i).Name
+		switch name {
+		case "nkeys", "vkeys", "cmdkeys", "cmds", "user":
+			continue
 		default:
-			s = strings.TrimSuffix(strings.TrimPrefix(s, "%{"), "}")
-			if val, ok := opts[s]; ok {
-				result = formatRulerOpt(s, val)
-			}
-		}
-		if result == "" {
-			return "\x00"
-		}
-		return result
-	})
-	var ruler strings.Builder
-	for _, section := range strings.Split(rulerfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			ruler.WriteString(section)
+			options[name] = fieldToString(v.Field(i))
 		}
 	}
-	ui.msgWin.printRight(ui.screen, 0, st, ruler.String())
+
+	data := rulerData{
+		ESC:         "\033",
+		SPACER:      "\x1f",
+		Message:     ui.msg,
+		Keys:        string(ui.keyCount) + string(ui.keyAcc),
+		Progress:    progress,
+		Copy:        copy,
+		Cut:         cut,
+		Select:      currSelections,
+		Visual:      currVSelections,
+		Index:       ind,
+		Total:       tot,
+		Hidden:      hid,
+		Percentage:  percentage,
+		Filter:      dir.filter,
+		Mode:        mode,
+		Options:     options,
+		UserOptions: gOpts.user,
+		Stat:        stat,
+	}
+
+	left, right, err := renderRuler(ui.ruler, data)
+	if err != nil {
+		log.Printf("rendering ruler: %s", err)
+		return
+	}
+
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, left)
+	ui.msgWin.printRight(ui.screen, 0, tcell.StyleDefault, right)
 }
 
 func (ui *ui) drawBox() {
@@ -1092,7 +1053,6 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		ui.drawStat(nav)
 		ui.drawRuler(nav)
 		ui.screen.HideCursor()
 	case ">":

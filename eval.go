@@ -337,8 +337,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		app.ui.wins = getWins(app.ui.screen)
 		clear(app.nav.regCache)
 		app.ui.loadFile(app, true)
+	// DEPRECATED: remove after r38 is released
 	case "rulerfmt":
-		gOpts.rulerfmt = e.val
+		app.ui.echoerr("option 'rulerfmt' is deprecated, use ruler file instead")
 	case "scrolloff":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
@@ -395,8 +396,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.sortby = method
 		app.nav.sort()
 		app.ui.sort()
+	// DEPRECATED: remove after r38 is released
 	case "statfmt":
-		gOpts.statfmt = e.val
+		app.ui.echoerr("option 'statfmt' is deprecated, use ruler file instead")
 	case "tabstop":
 		n, err := strconv.Atoi(e.val)
 		if err != nil {
