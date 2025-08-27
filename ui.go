@@ -639,6 +639,11 @@ func getWins(screen tcell.Screen) []*win {
 	return wins
 }
 
+type menuSelect struct {
+	x, y int
+	s    string
+}
+
 type ui struct {
 	screen      tcell.Screen
 	sxScreen    sixelScreen
@@ -655,6 +660,7 @@ type ui struct {
 	tevChan     chan tcell.Event
 	evChan      chan tcell.Event
 	menu        string
+	menuSelect  *menuSelect
 	cmdPrefix   string
 	cmdAccLeft  []rune
 	cmdAccRight []rune
@@ -1077,6 +1083,10 @@ func (ui *ui) drawMenu() {
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
+	}
+
+	if ui.menuSelect != nil {
+		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, tcell.StyleDefault.Reverse(true), ui.menuSelect.s)
 	}
 }
 
@@ -1666,9 +1676,9 @@ func anyKey() {
 	os.Stdin.Read(b)
 }
 
-func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) string {
+func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (string, *menuSelect) {
 	if len(matches) < 2 {
-		return ""
+		return "", nil
 	}
 
 	wtot, _ := screen.Size()
@@ -1691,5 +1701,11 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) stri
 	}
 
 	b.WriteByte('\n')
-	return b.String()
+
+	var selection *menuSelect
+	if selectedInd != -1 {
+		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, matches[selectedInd].name}
+	}
+
+	return b.String(), selection
 }

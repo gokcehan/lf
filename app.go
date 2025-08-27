@@ -674,7 +674,7 @@ func (app *app) doComplete() (matches []compMatch) {
 	}
 
 	app.ui.cmdAccLeft = []rune(result)
-	app.ui.menu = listMatches(app.ui.screen, matches, -1)
+	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, matches, -1)
 	return
 }
 
@@ -697,7 +697,7 @@ func (app *app) menuComplete(direction int) {
 		app.menuCompTmp[len(app.menuCompTmp)-1] = app.menuComps[app.menuCompInd].result
 		app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
 	}
-	app.ui.menu = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
+	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
 }
 
 func (app *app) watchDir(dir *dir) {
