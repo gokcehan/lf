@@ -1667,12 +1667,9 @@ func anyKey() {
 }
 
 func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) string {
-	mlen := len(matches)
-	if mlen < 2 {
+	if len(matches) < 2 {
 		return ""
 	}
-
-	var b strings.Builder
 
 	wtot, _ := screen.Size()
 	wcol := 0
@@ -1682,21 +1679,17 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) stri
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
 
-	b.WriteString("possible matches\n")
+	var b strings.Builder
+	b.WriteString("possible matches")
 
-	for i := 0; i < mlen; {
-		for j := 0; j < ncol && i < mlen; i, j = i+1, j+1 {
-			name := matches[i].name
-			w := runeSliceWidth([]rune(name))
-
-			if i == selectedInd {
-				fmt.Fprintf(&b, "\033[7m%s\033[0m%*s", name, wcol-w, "")
-			} else {
-				fmt.Fprintf(&b, "%s%*s", name, wcol-w, "")
-			}
+	for i, match := range matches {
+		if i%ncol == 0 {
+			b.WriteByte('\n')
 		}
-		b.WriteByte('\n')
+		w := runeSliceWidth([]rune(match.name))
+		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
 	}
 
+	b.WriteByte('\n')
 	return b.String()
 }
