@@ -1055,6 +1055,31 @@ func (ui *ui) drawBox() {
 	}
 }
 
+func (ui *ui) drawMenu() {
+	if ui.menu == "" {
+		return
+	}
+
+	lines := strings.Split(ui.menu, "\n")
+	lines = lines[:len(lines)-1]
+
+	ui.menuWin.h = len(lines)
+	ui.menuWin.y = ui.msgWin.y - ui.menuWin.h
+
+	// clear sixel image if it overlaps with the menu
+	ui.screen.LockRegion(ui.menuWin.x, ui.menuWin.y, ui.menuWin.w, ui.menuWin.h, false)
+	ui.sxScreen.forceClear = true
+
+	for i, line := range lines {
+		st := tcell.StyleDefault
+		if i == 0 {
+			st = st.Bold(true)
+		}
+
+		ui.menuWin.printLine(ui.screen, 0, i, st, line)
+	}
+}
+
 func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 	wins := len(ui.wins)
 	if gOpts.preview {
@@ -1129,25 +1154,7 @@ func (ui *ui) draw(nav *nav) {
 		ui.drawBox()
 	}
 
-	if ui.menu != "" {
-		lines := strings.Split(ui.menu, "\n")
-
-		lines = lines[:len(lines)-1]
-
-		ui.menuWin.h = len(lines) - 1
-		ui.menuWin.y = ui.wins[0].h - ui.menuWin.h
-
-		if gOpts.drawbox {
-			ui.menuWin.y += 2
-		}
-
-		ui.menuWin.printLine(ui.screen, 0, 0, st.Bold(true), lines[0])
-
-		for i, line := range lines[1:] {
-			ui.menuWin.printLine(ui.screen, 0, i+1, st, "")
-			ui.menuWin.print(ui.screen, 0, i+1, st, line)
-		}
-	}
+	ui.drawMenu()
 
 	ui.screen.Show()
 }
