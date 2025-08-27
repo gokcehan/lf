@@ -639,6 +639,11 @@ func getWins(screen tcell.Screen) []*win {
 	return wins
 }
 
+type menuSelect struct {
+	x, y int
+	s    string
+}
+
 type ui struct {
 	screen      tcell.Screen
 	sxScreen    sixelScreen
@@ -655,6 +660,7 @@ type ui struct {
 	tevChan     chan tcell.Event
 	evChan      chan tcell.Event
 	menu        string
+	menuSelect  *menuSelect
 	cmdPrefix   string
 	cmdAccLeft  []rune
 	cmdAccRight []rune
@@ -1071,12 +1077,19 @@ func (ui *ui) drawMenu() {
 	ui.sxScreen.forceClear = true
 
 	for i, line := range lines {
-		st := tcell.StyleDefault
+		var st tcell.Style
 		if i == 0 {
-			st = st.Bold(true)
+			st = parseEscapeSequence(gOpts.menuheaderfmt)
+		} else {
+			st = parseEscapeSequence(gOpts.menufmt)
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
+	}
+
+	if ui.menuSelect != nil {
+		st := parseEscapeSequence(gOpts.menuselectfmt)
+		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, st, ui.menuSelect.s)
 	}
 }
 
@@ -1666,13 +1679,10 @@ func anyKey() {
 	os.Stdin.Read(b)
 }
 
-func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) string {
-	mlen := len(matches)
-	if mlen < 2 {
-		return ""
+func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (string, *menuSelect) {
+	if len(matches) < 2 {
+		return "", nil
 	}
-
-	var b strings.Builder
 
 	wtot, _ := screen.Size()
 	wcol := 0
@@ -1682,21 +1692,23 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) stri
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
 
-	b.WriteString("possible matches\n")
+	var b strings.Builder
+	b.WriteString("possible matches")
 
-	for i := 0; i < mlen; {
-		for j := 0; j < ncol && i < mlen; i, j = i+1, j+1 {
-			name := matches[i].name
-			w := runeSliceWidth([]rune(name))
-
-			if i == selectedInd {
-				fmt.Fprintf(&b, "\033[7m%s\033[0m%*s", name, wcol-w, "")
-			} else {
-				fmt.Fprintf(&b, "%s%*s", name, wcol-w, "")
-			}
+	for i, match := range matches {
+		if i%ncol == 0 {
+			b.WriteByte('\n')
 		}
-		b.WriteByte('\n')
+		w := runeSliceWidth([]rune(match.name))
+		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
 	}
 
-	return b.String()
+	b.WriteByte('\n')
+
+	var selection *menuSelect
+	if selectedInd != -1 {
+		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, matches[selectedInd].name}
+	}
+
+	return b.String(), selection
 }
