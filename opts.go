@@ -75,6 +75,9 @@ var gOpts struct {
 	info             []string
 	infotimefmtnew   string
 	infotimefmtold   string
+	menufmt          string
+	menuheaderfmt    string
+	menuselectfmt    string
 	mouse            bool
 	number           bool
 	numberfmt        string
@@ -232,6 +235,9 @@ func init() {
 	gOpts.info = nil
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
+	gOpts.menufmt = "\033[0m"
+	gOpts.menuheaderfmt = "\033[1m"
+	gOpts.menuselectfmt = "\033[7m"
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.numberfmt = "\033[33m"

@@ -1077,16 +1077,19 @@ func (ui *ui) drawMenu() {
 	ui.sxScreen.forceClear = true
 
 	for i, line := range lines {
-		st := tcell.StyleDefault
+		var st tcell.Style
 		if i == 0 {
-			st = st.Bold(true)
+			st = parseEscapeSequence(gOpts.menuheaderfmt)
+		} else {
+			st = parseEscapeSequence(gOpts.menufmt)
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
 	}
 
 	if ui.menuSelect != nil {
-		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, tcell.StyleDefault.Reverse(true), ui.menuSelect.s)
+		st := parseEscapeSequence(gOpts.menuselectfmt)
+		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, st, ui.menuSelect.s)
 	}
 }
 

@@ -276,6 +276,12 @@ func (e *setExpr) eval(app *app, args []string) {
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
 		gOpts.infotimefmtold = e.val
+	case "menufmt":
+		gOpts.menufmt = e.val
+	case "menuheaderfmt":
+		gOpts.menuheaderfmt = e.val
+	case "menuselectfmt":
+		gOpts.menuselectfmt = e.val
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
