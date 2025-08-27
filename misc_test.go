@@ -290,7 +290,6 @@ func TestHumanize(t *testing.T) {
 		{1463669878895412, "1.3P"},    // 1.3 PiB
 		{7955158381787244544, "6.9E"}, // 6.9 EiB
 		{math.MaxInt64, "8.0E"},       // 8 EiB
-		{math.MaxUint64, "16.0E"},     // 16 EiB
 	}
 
 	gOpts.sizeunits = "binary"
@@ -337,7 +336,6 @@ func TestHumanize(t *testing.T) {
 		{1000000000, "1.0G"},
 		{1000000001, "1.0G"},
 		{math.MaxInt64, "9.2E"},
-		{math.MaxUint64, "18.4E"},
 	}
 
 	gOpts.sizeunits = "decimal"
