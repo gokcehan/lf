@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"math/big"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -270,15 +271,20 @@ func humanize(size uint64) string {
 		"Q", // quebi (2^100) or quetta (10^30)
 	}
 
-	curr := float64(size) / float64(base)
+	curr := big.NewRat(int64(size), int64(base))
+
 	for _, prefix := range prefixes {
-		if curr < 99.95 {
-			return fmt.Sprintf("%.1f%s", curr+1e-9, prefix)
+		// if curr < 99.95 then round to 1 decimal place
+		if curr.Cmp(big.NewRat(9995, 100)) < 0 {
+			return fmt.Sprintf("%s%s", curr.FloatString(1), prefix)
 		}
-		if curr < float64(base)-0.5 {
-			return fmt.Sprintf("%.0f%s", curr+1e-9, prefix)
+
+		// if curr < base-0.5 round to the nearest integer
+		if curr.Cmp(new(big.Rat).Sub(big.NewRat(int64(base), 1), big.NewRat(1, 2))) < 0 {
+			return fmt.Sprintf("%s%s", curr.FloatString(0), prefix)
 		}
-		curr /= float64(base)
+
+		curr.Quo(curr, big.NewRat(int64(base), 1))
 	}
 
 	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])
