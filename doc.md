@@ -177,6 +177,9 @@ The following options can be used to customize the behavior of lf:
 	info              []string  (default '')
 	infotimefmtnew    string    (default 'Jan _2 15:04')
 	infotimefmtold    string    (default 'Jan _2  2006')
+	menufmt           string    (default "\033[0m")
+	menuheaderfmt     string    (default "\033[1m")
+	menuselectfmt     string    (default "\033[7m")
 	mouse             bool      (default false)
 	number            bool      (default false)
 	numberfmt         string    (default "\033[33m")
@@ -867,6 +870,18 @@ Format string of the file time shown in the info column when it matches this yea
 ## infotimefmtold (string) (default `Jan _2  2006`)
 
 Format string of the file time shown in the info column when it doesn't match this year.
+
+## menufmt (string) (default `\033[0m`)
+
+Format string of the menu.
+
+## menuheaderfmt (string) (default `\033[1m`)
+
+Format string of the header row in the menu.
+
+## menuselectfmt (string) (default `\033[7m`)
+
+Format string of the currently selected item in the menu.
 
 ## mouse (bool) (default false)
 
