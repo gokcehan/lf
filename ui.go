@@ -1066,6 +1066,10 @@ func (ui *ui) drawMenu() {
 	ui.menuWin.h = len(lines)
 	ui.menuWin.y = ui.msgWin.y - ui.menuWin.h
 
+	// clear sixel image if it overlaps with the menu
+	ui.screen.LockRegion(ui.menuWin.x, ui.menuWin.y, ui.menuWin.w, ui.menuWin.h, false)
+	ui.sxScreen.forceClear = true
+
 	for i, line := range lines {
 		st := tcell.StyleDefault
 		if i == 0 {
