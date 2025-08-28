@@ -22,8 +22,8 @@ map i $less %f%
 # change the shell used in default shell keybinding
 map w $powershell
 
-# change 'doc' command to use a different pager
-cmd doc $lf -doc | less
+# change 'help' command to use a different pager
+cmd help $lf -doc | less
 
 # leave some space at the top and the bottom of the screen
 set scrolloff 10

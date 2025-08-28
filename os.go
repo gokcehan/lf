@@ -164,9 +164,9 @@ func setDefaults() {
 	gOpts.nkeys["w"] = &execExpr{"$", "$SHELL"}
 	gOpts.vkeys["w"] = &execExpr{"$", "$SHELL"}
 
-	gOpts.cmds["doc"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
-	gOpts.nkeys["<f-1>"] = &callExpr{"doc", nil, 1}
-	gOpts.vkeys["<f-1>"] = &callExpr{"doc", nil, 1}
+	gOpts.cmds["help"] = &execExpr{"$", `"$lf" -doc | $PAGER`}
+	gOpts.nkeys["<f-1>"] = &callExpr{"help", nil, 1}
+	gOpts.vkeys["<f-1>"] = &callExpr{"help", nil, 1}
 
 	gOpts.cmds["maps"] = &execExpr{"$", `"$lf" -remote "query $id maps" | $PAGER`}
 	gOpts.cmds["nmaps"] = &execExpr{"$", `"$lf" -remote "query $id nmaps" | $PAGER`}
