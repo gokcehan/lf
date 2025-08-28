@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Sixel image support is now enabled by default, and the `sixel` option has been removed as it is no longer required (#2109).
 - The `dircache` option has now been removed (#2110). This was previously used as a workaround to disable the directory cache since at the time changes to files were not detected reliably, but this is no longer the case.
 - The experimental `locale` option has been removed in favor of the recommendation to use `addcustominfo`/`set sortby custom` for custom sorting (#2111).
+- The existing `doc` command has been renamed to `help` so that it is more natural for users (#2125).
 
 ### Added
 

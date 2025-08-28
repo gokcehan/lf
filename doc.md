@@ -29,7 +29,7 @@ lf is a terminal file manager.
 The source code can be found in the repository at https://github.com/gokcehan/lf
 
 This documentation can either be read from the terminal using `lf -doc` or online at https://github.com/gokcehan/lf/blob/master/doc.md
-You can also use the `doc` command (default `<f-1>`) inside lf to view the documentation in a pager.
+You can also use the `help` command (default `<f-1>`) inside lf to view the documentation in a pager.
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
 You can run `lf -help` to see descriptions of command line options.
@@ -266,8 +266,8 @@ The following commands/keybindings are provided by default:
 	map e $$EDITOR "$f"
 	map i $$PAGER "$f"
 	map w $$SHELL
-	cmd doc $$lf -doc | $PAGER
-	map <f-1> doc
+	cmd help $$lf -doc | $PAGER
+	map <f-1> help
 	cmd maps $lf -remote "query $id maps" | $PAGER
 	cmd nmaps $lf -remote "query $id nmaps" | $PAGER
 	cmd vmaps $lf -remote "query $id vmaps" | $PAGER
@@ -279,8 +279,8 @@ The following commands/keybindings are provided by default:
 	map e $%EDITOR% %f%
 	map i !%PAGER% %f%
 	map w $%SHELL%
-	cmd doc !%lf% -doc | %PAGER%
-	map <f-1> doc
+	cmd help !%lf% -doc | %PAGER%
+	map <f-1> help
 	cmd maps !%lf% -remote "query %id% maps" | %PAGER%
 	cmd nmaps !%lf% -remote "query %id% nmaps" | %PAGER%
 	cmd vmaps !%lf% -remote "query %id% vmaps" | %PAGER%
