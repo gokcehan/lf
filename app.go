@@ -352,7 +352,7 @@ func (app *app) loop() {
 			}
 		case n := <-app.nav.copyTotalChan:
 			app.nav.copyTotal += n
-			if n < 0 {
+			if n <= 0 {
 				app.nav.copyBytes += n
 				app.nav.copyJobs -= 1
 			}
