@@ -1233,10 +1233,13 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 	total, err := copySize(srcs)
 	if err != nil {
 		sendErr("%v", err)
+		nav.copyTotalChan <- 0
 		return
 	}
 
-	nav.copyTotalChan <- total
+	if total > 0 {
+		nav.copyTotalChan <- total
+	}
 
 	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
@@ -1324,7 +1327,9 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 					continue
 				}
 
-				nav.copyTotalChan <- total
+				if total > 0 {
+					nav.copyTotalChan <- total
+				}
 
 				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"})
 
@@ -1342,7 +1347,9 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 					}
 				}
 
-				nav.copyTotalChan <- -total
+				if total > 0 {
+					nav.copyTotalChan <- -total
+				}
 
 				if errCount == oldCount {
 					if err := os.RemoveAll(src); err != nil {
