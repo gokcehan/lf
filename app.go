@@ -340,8 +340,8 @@ func (app *app) loop() {
 			log.Print("bye!")
 
 			return
-		case <-app.nav.copyJobsChan:
-			app.nav.copyJobs += 1
+		case n := <-app.nav.copyJobsChan:
+			app.nav.copyJobs += n
 			app.ui.draw(app.nav)
 		case n := <-app.nav.copyBytesChan:
 			app.nav.copyBytes += n

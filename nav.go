@@ -446,7 +446,7 @@ type nav struct {
 	deleteCount     int
 	deleteTotal     int
 	deleteUpdate    int
-	copyJobsChan    chan struct{}
+	copyJobsChan    chan int
 	copyBytesChan   chan int64
 	copyTotalChan   chan int64
 	moveCountChan   chan int
@@ -582,7 +582,7 @@ func (nav *nav) getDirs(wd string) {
 
 func newNav(height int) *nav {
 	nav := &nav{
-		copyJobsChan:    make(chan struct{}, 1024),
+		copyJobsChan:    make(chan int, 1024),
 		copyBytesChan:   make(chan int64, 1024),
 		copyTotalChan:   make(chan int64, 1024),
 		moveCountChan:   make(chan int, 1024),
@@ -1224,15 +1224,15 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 		return
 	}
 
-	// indicate that a copy operation is in progress
-	// using the total bytes to determine this instead will mean that it is
-	// possible for copySize to take a while, but not be reflected in the UI
-	// until it has finished
-	nav.copyJobsChan <- struct{}{}
+	// Indicate that a copy operation is in progress. Using the total bytes to
+	// determine this instead will mean that it is possible for copySize to take
+	// a while, but not be reflected in the UI until it has finished.
+	nav.copyJobsChan <- 1
 
 	total, err := copySize(srcs)
 	if err != nil {
 		sendErr("%v", err)
+		nav.copyJobsChan <- -1
 		return
 	}
 
@@ -1253,6 +1253,7 @@ loop:
 		}
 	}
 
+	nav.copyJobsChan <- -1
 	nav.copyTotalChan <- -total
 
 	if gSingleMode {
@@ -1318,9 +1319,12 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 		if err := os.Rename(src, dst); err != nil {
 			if errCrossDevice(err) {
+				nav.copyJobsChan <- 1
+
 				total, err := copySize([]string{src})
 				if err != nil {
 					sendErr("%v", err)
+					nav.copyJobsChan <- -1
 					continue
 				}
 
@@ -1342,6 +1346,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 					}
 				}
 
+				nav.copyJobsChan <- -1
 				nav.copyTotalChan <- -total
 
 				if errCount == oldCount {
