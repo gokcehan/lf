@@ -276,7 +276,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 				break
 			}
 
-			st = win.print(screen, 2, i, st, l)
+			st = win.print(screen, 0, i, st, l)
 		}
 	}
 
