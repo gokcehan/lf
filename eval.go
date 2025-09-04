@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -376,6 +377,9 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "shell":
 		gOpts.shell = e.val
+		if runtime.GOOS == "windows" {
+			setDefaults()
+		}
 	case "shellflag":
 		gOpts.shellflag = e.val
 	case "shellopts":

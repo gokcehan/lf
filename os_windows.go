@@ -152,6 +152,15 @@ func shellKill(cmd *exec.Cmd) error {
 }
 
 func setDefaults() {
+	switch strings.ToLower(gOpts.shell) {
+	case "cmd", "":
+		setDefaultsCmd()
+	default:
+		setDefaultsPwsh()
+	}
+}
+
+func setDefaultsCmd() {
 	gOpts.cmds["open"] = &execExpr{"&", "%OPENER% %f%"}
 	gOpts.nkeys["e"] = &execExpr{"$", "%EDITOR% %f%"}
 	gOpts.vkeys["e"] = &execExpr{"$", "%EDITOR% %f%"}
@@ -169,6 +178,26 @@ func setDefaults() {
 	gOpts.cmds["vmaps"] = &execExpr{"!", `%lf% -remote "query %id% vmaps" | %PAGER%`}
 	gOpts.cmds["cmaps"] = &execExpr{"!", `%lf% -remote "query %id% cmaps" | %PAGER%`}
 	gOpts.cmds["cmds"] = &execExpr{"!", `%lf% -remote "query %id% cmds" | %PAGER%`}
+}
+
+func setDefaultsPwsh() {
+	gOpts.cmds["open"] = &execExpr{"&", "&$Env:OPENER $Env:f"}
+	gOpts.nkeys["e"] = &execExpr{"$", "&$Env:EDITOR $Env:f"}
+	gOpts.vkeys["e"] = &execExpr{"$", "&$Env:EDITOR $Env:f"}
+	gOpts.nkeys["i"] = &execExpr{"!", "&$Env:PAGER $Env:f"}
+	gOpts.vkeys["i"] = &execExpr{"!", "&$Env:PAGER $Env:f"}
+	gOpts.nkeys["w"] = &execExpr{"$", "&$Env:SHELL"}
+	gOpts.vkeys["w"] = &execExpr{"$", "&$Env:SHELL"}
+
+	gOpts.cmds["help"] = &execExpr{"!", "&$Env:lf -doc | &$Env:PAGER"}
+	gOpts.nkeys["<f-1>"] = &callExpr{"help", nil, 1}
+	gOpts.vkeys["<f-1>"] = &callExpr{"help", nil, 1}
+
+	gOpts.cmds["maps"] = &execExpr{"!", `&$Env:lf -remote "query $Env:id maps" | &$Env:PAGER`}
+	gOpts.cmds["nmaps"] = &execExpr{"!", `&$Env:lf -remote "query $Env:id nmaps" | &$Env:PAGER`}
+	gOpts.cmds["vmaps"] = &execExpr{"!", `&$Env:lf -remote "query $Env:id vmaps" | &$Env:PAGER`}
+	gOpts.cmds["cmaps"] = &execExpr{"!", `&$Env:lf -remote "query $Env:id cmaps" | &$Env:PAGER`}
+	gOpts.cmds["cmds"] = &execExpr{"!", `&$Env:lf -remote "query $Env:id cmds" | &$Env:PAGER`}
 }
 
 func setUserUmask() {}
