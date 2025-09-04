@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `dircache` option has now been removed (#2110). This was previously used as a workaround to disable the directory cache since at the time changes to files were not detected reliably, but this is no longer the case.
 - The experimental `locale` option has been removed in favor of the recommendation to use `addcustominfo`/`set sortby custom` for custom sorting (#2111).
 - The existing `doc` command has been renamed to `help` so that it is more natural for users (#2125).
+- Text previews are no longer displayed with a padding of two spaces by default (#2131). A custom padding can be added in the `previewer` script, for example by piping to `sed 's/^/  /'`.
 
 ### Added
 
