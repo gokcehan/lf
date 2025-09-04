@@ -1224,7 +1224,7 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 		return
 	}
 
-	// Indicate that a copy operation is in progress. using the total bytes to
+	// Indicate that a copy operation is in progress. Using the total bytes to
 	// determine this instead will mean that it is possible for copySize to take
 	// a while, but not be reflected in the UI until it has finished.
 	nav.copyJobsChan <- 1
