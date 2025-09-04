@@ -265,7 +265,9 @@ The following commands/keybindings are provided by default:
     cmd cmaps $lf -remote "query $id cmaps" | $PAGER
     cmd cmds $lf -remote "query $id cmds" | $PAGER
 
-    Windows
+On Windows, they depend on the configured shell:
+
+    Windows (cmd)
     cmd open &%OPENER% %f%
     map e $%EDITOR% %f%
     map i !%PAGER% %f%
@@ -277,6 +279,19 @@ The following commands/keybindings are provided by default:
     cmd vmaps !%lf% -remote "query %id% vmaps" | %PAGER%
     cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
     cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
+
+    Windows (powershell)
+    cmd open &&$Env:OPENER $Env:f
+    map e $&$Env:EDITOR $Env:f
+    map i !&$Env:PAGER $Env:f
+    map w $&$Env:SHELL
+    cmd help !&$Env:lf -doc | &$Env:PAGER
+    map <f-1> help
+    cmd maps !&$Env:lf -remote "query $Env:id maps" | &$Env:PAGER
+    cmd nmaps !&$Env:lf -remote "query $Env:id nmaps" | &$Env:PAGER
+    cmd vmaps !&$Env:lf -remote "query $Env:id vmaps" | &$Env:PAGER
+    cmd cmaps !&$Env:lf -remote "query $Env:id cmaps" | &$Env:PAGER
+    cmd cmds !&$Env:lf -remote "query $Env:id cmds" | &$Env:PAGER
 
 The following additional keybindings are provided by default:
 
