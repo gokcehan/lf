@@ -287,6 +287,10 @@ The following commands/keybindings are provided by default:
 	cmd cmaps !%lf% -remote "query %id% cmaps" | %PAGER%
 	cmd cmds !%lf% -remote "query %id% cmds" | %PAGER%
 
+The defaults for Windows are using `cmd` syntax.
+A `PowerShell` compatible configuration file can be found at
+https://github.com/gokcehan/lf/blob/master/etc/lfrc.ps1.example
+
 The following additional keybindings are provided by default:
 
 	map zh set hidden!
