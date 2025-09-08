@@ -673,6 +673,7 @@ func splitKeys(s string) (keys []string) {
 
 func update(app *app) {
 	app.ui.menu = ""
+	app.ui.menuSelect = nil
 	app.menuCompActive = false
 
 	switch {
@@ -756,9 +757,11 @@ func normal(app *app) {
 	resetIncCmd(app)
 
 	app.cmdHistoryInd = 0
-	app.menuCompActive = false
 
 	app.ui.menu = ""
+	app.ui.menuSelect = nil
+	app.menuCompActive = false
+
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
 	app.ui.cmdPrefix = ""
@@ -958,6 +961,7 @@ func insert(app *app, arg string) {
 		fallthrough
 	default:
 		app.ui.menu = ""
+		app.ui.menuSelect = nil
 		app.menuCompActive = false
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
@@ -1844,6 +1848,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.menuComplete(-1)
 	case "cmd-menu-accept":
 		app.ui.menu = ""
+		app.ui.menuSelect = nil
 		app.menuCompActive = false
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
@@ -1852,6 +1857,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 
 		app.ui.menu = ""
+		app.ui.menuSelect = nil
 		app.menuCompActive = false
 
 		app.ui.cmdAccLeft = nil
