@@ -856,7 +856,7 @@ File separator used in environment variables fs, fv and fx.
 filtermethod (string) (default text)
 
 How filter command patterns are treated. Currently supported methods are
-text (i.e. string literals), glob (i.e shell globs) and regex (i.e.
+text (i.e. string literals), glob (i.e. shell globs) and regex (i.e.
 regular expressions). See SEARCHING FILES for more details.
 
 findlen (int) (default 1)
