@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Error messages are now cleared after running interactive commands such as `invert`/`unselect`/`tag-toggle` (#2117).
 - The menu is now drawn over sixel images instead of being hidden behind it if they overlap (#2122).
 - A bug which prevents the user from quitting when copying files with a size of 0 has been fixed (#2130).
+- `lf -remote` should no longer busy wait and cause high CPU usage if its output is not being read (#2138).
 
 ## [r37](https://github.com/gokcehan/lf/releases/tag/r37)
 
