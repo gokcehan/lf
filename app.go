@@ -717,6 +717,10 @@ func (app *app) watchDir(dir *dir) {
 
 func (app *app) exportMode() {
 	getMode := func() string {
+		if app.menuCompActive {
+			return "compmenu"
+		}
+
 		if strings.HasPrefix(app.ui.cmdPrefix, "delete") {
 			return "delete"
 		}
