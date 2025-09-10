@@ -109,6 +109,7 @@ var (
 		"cmd-left",
 		"cmd-lowercase-word",
 		"cmd-menu-accept",
+		"cmd-menu-discard",
 		"cmd-menu-complete",
 		"cmd-menu-complete-back",
 		"cmd-right",

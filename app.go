@@ -9,6 +9,7 @@ import (
 	"os/exec"
 	"os/signal"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 	"time"
@@ -694,8 +695,9 @@ func (app *app) menuComplete(direction int) {
 			app.menuCompInd = len(app.menuComps) - 1
 		}
 
-		app.menuCompTmp[len(app.menuCompTmp)-1] = app.menuComps[app.menuCompInd].result
-		app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
+		toks := slices.Clone(app.menuCompTmp)
+		toks[len(toks)-1] = app.menuComps[app.menuCompInd].result
+		app.ui.cmdAccLeft = []rune(strings.Join(toks, " "))
 	}
 	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
 }
@@ -717,6 +719,10 @@ func (app *app) watchDir(dir *dir) {
 
 func (app *app) exportMode() {
 	getMode := func() string {
+		if app.menuCompActive {
+			return "compmenu"
+		}
+
 		if strings.HasPrefix(app.ui.cmdPrefix, "delete") {
 			return "delete"
 		}
