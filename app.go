@@ -613,7 +613,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		go func() {
 			if err = cmd.Start(); err != nil {
-				app.ui.echoerrf("running shell: %s", err)
+				log.Printf("running shell: %s", err)
 			}
 
 			reader := bufio.NewReader(stdout)
