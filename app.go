@@ -589,10 +589,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = os.Stderr
 
 		app.runCmdSync(cmd, prefix == "!")
-		return
-	}
-
-	switch prefix {
 	case "%":
 		if app.cmd != nil {
 			return
