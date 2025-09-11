@@ -611,10 +611,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = cmd.Stdout
 	}
 
-	if err = cmd.Start(); err != nil {
-		app.ui.echoerrf("running shell: %s", err)
-	}
-
 	switch prefix {
 	case "%":
 		normal(app)
@@ -624,6 +620,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.echo("")
 
 		go func() {
+			if err = cmd.Start(); err != nil {
+				app.ui.echoerrf("running shell: %s", err)
+			}
+
 			reader := bufio.NewReader(out)
 			for {
 				b, err := reader.ReadByte()
@@ -650,7 +650,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}()
 	case "&":
 		go func() {
-			if err := cmd.Wait(); err != nil {
+			if err := cmd.Run(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
