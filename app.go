@@ -578,6 +578,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	gState.mutex.Unlock()
 
 	cmd := shellCommand(s, args)
+	if prefix == "%" || prefix == "&" {
+		shellSetPG(cmd)
+	}
 
 	switch prefix {
 	case "$", "!":
@@ -588,8 +591,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.runCmdSync(cmd, prefix == "!")
 		return
 	}
-
-	shellSetPG(cmd)
 
 	switch prefix {
 	case "%":
