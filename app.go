@@ -591,6 +591,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		return
 	}
 
+	shellSetPG(cmd)
+
 	// We are running the command asynchronously
 	if prefix == "%" {
 		if app.ui.cmdPrefix == ">" {
@@ -609,7 +611,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		cmd.Stderr = cmd.Stdout
 	}
 
-	shellSetPG(cmd)
 	if err = cmd.Start(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
