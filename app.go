@@ -579,8 +579,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	cmd := shellCommand(s, args)
 
-	var out io.Reader
-	var err error
 	switch prefix {
 	case "$", "!":
 		cmd.Stdin = os.Stdin
@@ -593,11 +591,12 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	shellSetPG(cmd)
 
-	// We are running the command asynchronously
-	if prefix == "%" {
-		if app.ui.cmdPrefix == ">" {
+	switch prefix {
+	case "%":
+		if app.cmd != nil {
 			return
 		}
+
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
 			log.Printf("writing stdin: %s", err)
@@ -607,12 +606,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		if err != nil {
 			log.Printf("reading stdout: %s", err)
 		}
-		out = stdout
 		cmd.Stderr = cmd.Stdout
-	}
 
-	switch prefix {
-	case "%":
 		normal(app)
 		app.cmd = cmd
 		app.cmdOutBuf = nil
@@ -624,7 +619,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 				app.ui.echoerrf("running shell: %s", err)
 			}
 
-			reader := bufio.NewReader(out)
+			reader := bufio.NewReader(stdout)
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
@@ -644,6 +639,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
+
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
