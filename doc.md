@@ -10,7 +10,7 @@ lf - terminal file manager
 [**-cpuprofile** *path*]
 [**-doc**]
 [**-last-dir-path** *path*]
-[**-log path**]
+[**-log** *path*]
 [**-memprofile** *path*]
 [**-print-last-dir**]
 [**-print-selection**]
@@ -744,7 +744,7 @@ Preview cleaning is disabled when the value of this option is left empty.
 
 Format string of the indicator for files to be copied.
 
-## cursoractivefmt (string) (default `\033[7m`), cursorparentfmt string (default `\033[7m`), cursorpreviewfmt string (default `\033[4m`)
+## cursoractivefmt (string) (default `\033[7m`), cursorparentfmt (string) (default `\033[7m`), cursorpreviewfmt (string) (default `\033[4m`)
 
 Format strings for highlighting the cursor.
 `cursoractivefmt` applies in the current directory pane,
@@ -970,10 +970,10 @@ Minimum number of offset lines shown at all times at the top and bottom of the s
 The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines.
 A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
 
-## searchmethod (string) default `text`)
+## searchmethod (string) (default `text`)
 
 How search command patterns are treated.
-Currently supported methods are `text` (i.e. string literals), `glob` (i.e shell globs) and `regex` (i.e. regular expressions).
+Currently supported methods are `text` (i.e. string literals), `glob` (i.e. shell globs) and `regex` (i.e. regular expressions).
 See `SEARCHING FILES` for more details.
 
 ## selectfmt (string) (default `\033[7;35m`)
