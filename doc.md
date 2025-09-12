@@ -503,7 +503,7 @@ Read a shell command to execute piping its standard I/O to the bottom statline.
 
 ## shell-wait (modal) (default `!`)
 
-Read a shell command to execute and wait for a key press in the end.
+Read a shell command to execute and wait for a key press at the end.
 
 ## shell-async (modal) (default `&`)
 
@@ -967,7 +967,7 @@ The `|` character splits the format string into sections. Any section containing
 ## scrolloff (int) (default 0)
 
 Minimum number of offset lines shown at all times at the top and bottom of the screen when scrolling.
-The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines.
+The current line is kept in the middle when this option is set to a large value that is bigger than half the number of lines.
 A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
 
 ## searchmethod (string) (default `text`)
@@ -1285,7 +1285,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set hidden!        # boolean toggle
 	set scrolloff 10   # integer value
 	set sortby time    # string value w/o quotes
-	set sortby 'time'  # string value with single quotes (whitespaces)
+	set sortby 'time'  # string value with single quotes (whitespace)
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
@@ -1298,7 +1298,7 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar hidden false   # boolean disable
 	setlocal /foo/bar hidden!        # boolean toggle
 	setlocal /foo/bar sortby time    # string value w/o quotes
-	setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespaces)
+	setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespace)
 	setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
@@ -1389,7 +1389,7 @@ On these terminals, you can use the corresponding byte for the mapping:
 
 	map á down
 
-Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key when the Alt key is pressed.
+Newer terminals (e.g. gnome-terminal) may prefix the key with an escape character when the Alt key is pressed.
 lf uses the escape delaying mechanism to recognize Alt keys in these terminals (delay is 100ms).
 On these terminals, keys combined with the Alt key are prefixed with an `a` character:
 
@@ -1498,11 +1498,11 @@ This can cause flickering on the screen for short commands and similar distracti
 Instead of pausing the UI, piping shell commands connect stdin, stdout, and stderr of the command to the statline at the bottom of the UI.
 This can be useful for programs following the Unix philosophy to give no output in the success case, and brief error messages or prompts in other cases.
 
-For example, following rename command prompts for overwrite in the statline if there is an existing file with the given name:
+For example, the following rename command prompts for overwrite in the statline if there is an existing file with the given name:
 
 	cmd rename %mv -i $f $1
 
-You can also output error messages in the command and it will show up in the statline.
+You can also output error messages in the command and they will show up in the statline.
 For example, an alternative rename command may look like this:
 
 	cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
@@ -1618,7 +1618,7 @@ Only file modes and (some) timestamps can be preserved (see `preserve` option), 
 Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed.
 Moving is performed using the rename operation of the underlying OS.
 For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors.
-Operation errors are shown in the message line as well as the log file and they do not preemptively finish the corresponding file operation.
+Operation errors are shown in the message line as well as the log file and they do not prematurely terminate the corresponding file operation.
 
 File operations can be performed on the currently selected file or on multiple files by selecting them first.
 When you `copy` a file, lf doesn't actually copy the file on the disk, but only records its name to a file.
@@ -1673,7 +1673,7 @@ You can set the number of keys to match using `findlen` option.
 If you set this value to zero, then the keys are read until there is only a single match.
 The default values of these two options are set to jump to the first file with the given initial.
 
-Some options effect both searching and finding.
+Some options affect both searching and finding.
 You can disable `wrapscan` option to prevent searches from being wrapped around at the end of the file list.
 You can disable `ignorecase` option to match cases in the pattern and the file name.
 This option is already automatically overridden if the pattern contains uppercase characters.
@@ -1726,7 +1726,7 @@ Possible options are `libfile-mimeinfo-perl` (executable name is `mimeopen`), `r
 
 lf previews files on the preview pane by printing the file until the end or until the preview pane is filled.
 This output can be enhanced by providing a custom preview script for filtering.
-This can be used to highlight source codes, list contents of archive files or view PDF or image files to name a few.
+This can be used to highlight source code, list contents of archive files or view PDF or image files to name a few.
 For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
@@ -1998,12 +1998,12 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 
 Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
-Instead of colors, you should put a single characters as values of entries.
+Instead of colors, you should use single characters or symbols as values.
 The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
-Each line should contain 1-3 columns, first column is file type or file name pattern, second column is the icon, third column is an optional icon color. If there is only one column, means to disable rule for this file type or pattern.
+Each line should contain 1-3 columns: a file type or file name pattern, the icon, and an optional icon color. Using only one column disables all rules for that type or name.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
-Default values are as follows given with their matching order in lf:
+Default values are listed below in the order lf matches them:
 
 	ln  l
 	or  l
