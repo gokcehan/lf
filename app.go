@@ -537,6 +537,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	switch prefix {
 	case "$", "!":
+		if app.ui.suspended {
+			return
+		}
+
 		app.nav.previewChan <- ""
 		app.ui.suspend()
 
