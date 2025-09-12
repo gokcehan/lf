@@ -519,22 +519,6 @@ func (app *app) loop() {
 	}
 }
 
-func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
-	app.nav.previewChan <- ""
-	app.ui.suspend()
-
-	go func() {
-		if err := cmd.Run(); err != nil {
-			app.ui.echoerrf("running shell: %s", err)
-		}
-		if pause_after {
-			anyKey()
-		}
-
-		app.ui.resumeChan <- struct{}{}
-	}()
-}
-
 // This function is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -551,23 +535,37 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	cmd := shellCommand(s, args)
 
-	var out io.Reader
-	var err error
 	switch prefix {
 	case "$", "!":
+		app.nav.previewChan <- ""
+		app.ui.suspend()
+
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
 
-		app.runCmdSync(cmd, prefix == "!")
-		return
-	}
+		go func() {
+			if err := cmd.Run(); err != nil {
+				msg := fmt.Sprintf("running shell: %s", err)
+				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+			}
+			if prefix == "!" {
+				anyKey()
+			}
 
-	// We are running the command asynchronously
-	if prefix == "%" {
+			app.ui.resumeChan <- struct{}{}
+		}()
+	case "%":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
+
+		normal(app)
+		app.cmd = cmd
+		app.cmdOutBuf = nil
+		app.ui.cmdPrefix = ">"
+		app.ui.echo("")
+
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
 			log.Printf("writing stdin: %s", err)
@@ -577,25 +575,15 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		if err != nil {
 			log.Printf("reading stdout: %s", err)
 		}
-		out = stdout
 		cmd.Stderr = cmd.Stdout
-	}
 
-	shellSetPG(cmd)
-	if err = cmd.Start(); err != nil {
-		app.ui.echoerrf("running shell: %s", err)
-	}
-
-	switch prefix {
-	case "%":
-		normal(app)
-		app.cmd = cmd
-		app.cmdOutBuf = nil
-		app.ui.cmdPrefix = ">"
-		app.ui.echo("")
+		shellSetPG(cmd)
+		if err = cmd.Start(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
+		}
 
 		go func() {
-			reader := bufio.NewReader(out)
+			reader := bufio.NewReader(stdout)
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
@@ -615,11 +603,17 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
+
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	case "&":
+		shellSetPG(cmd)
+		if err := cmd.Start(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
+		}
+
 		go func() {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
