@@ -24,6 +24,8 @@ type app struct {
 	nav            *nav
 	ticker         *time.Ticker
 	quitChan       chan struct{}
+	queryReqChan   chan string
+	queryRespChan  chan string
 	cmd            *exec.Cmd
 	cmdIn          io.WriteCloser
 	cmdOutBuf      []byte
@@ -40,11 +42,13 @@ type app struct {
 
 func newApp(ui *ui, nav *nav) *app {
 	app := &app{
-		ui:       ui,
-		nav:      nav,
-		ticker:   new(time.Ticker),
-		quitChan: make(chan struct{}, 1),
-		watch:    newWatch(nav.dirChan, nav.fileChan, nav.delChan),
+		ui:            ui,
+		nav:           nav,
+		ticker:        new(time.Ticker),
+		quitChan:      make(chan struct{}, 1),
+		queryReqChan:  make(chan string, 1),
+		queryRespChan: make(chan string, 1),
+		watch:         newWatch(nav.dirChan, nav.fileChan, nav.delChan),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -251,7 +255,7 @@ func (app *app) loop() {
 
 	var serverChan <-chan expr
 	if !gSingleMode {
-		serverChan = readExpr()
+		serverChan = readExpr(app.queryReqChan, app.queryRespChan)
 	}
 
 	app.ui.readExpr()
@@ -503,6 +507,8 @@ func (app *app) loop() {
 			app.nav.renew()
 			app.ui.loadFile(app, true)
 			app.ui.draw(app.nav)
+		case query := <-app.queryReqChan:
+			app.handleQuery(query)
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
@@ -542,26 +548,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	app.exportMode()
 	exportLfPath()
 	exportOpts()
-
-	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(map[string]map[string]expr{
-		"n": gOpts.nkeys,
-		"v": gOpts.vkeys,
-	})
-	gState.data["nmaps"] = listBinds(map[string]map[string]expr{
-		"n": gOpts.nkeys,
-	})
-	gState.data["vmaps"] = listBinds(map[string]map[string]expr{
-		"v": gOpts.vkeys,
-	})
-	gState.data["cmaps"] = listBinds(map[string]map[string]expr{
-		"c": gOpts.cmdkeys,
-	})
-	gState.data["cmds"] = listCmds(gOpts.cmds)
-	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
-	gState.data["history"] = listHistory(app.cmdHistory)
-	gState.data["files"] = listFilesInCurrDir(app.nav)
-	gState.mutex.Unlock()
 
 	cmd := shellCommand(s, args)
 
@@ -739,4 +725,36 @@ func (app *app) exportMode() {
 	}
 
 	os.Setenv("lf_mode", getMode())
+}
+
+func (app *app) handleQuery(query string) {
+	switch query {
+	case "maps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"n": gOpts.nkeys,
+			"v": gOpts.vkeys,
+		})
+	case "nmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"n": gOpts.nkeys,
+		})
+	case "vmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"v": gOpts.vkeys,
+		})
+	case "cmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"c": gOpts.cmdkeys,
+		})
+	case "cmds":
+		app.queryRespChan <- listCmds(gOpts.cmds)
+	case "jumps":
+		app.queryRespChan <- listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	case "history":
+		app.queryRespChan <- listHistory(app.cmdHistory)
+	case "files":
+		app.queryRespChan <- listFilesInCurrDir(app.nav)
+	default:
+		app.queryRespChan <- "\n"
+	}
 }
