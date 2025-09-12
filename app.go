@@ -36,7 +36,6 @@ type app struct {
 	menuCompInd    int
 	selectionOut   []string
 	watch          *watch
-	quitting       bool
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -66,14 +65,6 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
-	// Using synchronous shell commands for `on-quit` can cause this to be
-	// called again, so a guard variable is introduced here to prevent an
-	// infinite loop.
-	if app.quitting {
-		return
-	}
-	app.quitting = true
-
 	onQuit(app)
 
 	if gOpts.history {
