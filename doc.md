@@ -315,7 +315,7 @@ If the `mouse` option is enabled, mouse buttons have the following default effec
 	    Click on a file or directory to select it.
 
 	Right mouse button
-	    Enter a directory or open a file. Also works on the preview window.
+	    Enter a directory or open a file. Also works on the preview pane.
 
 	Scroll wheel
 	    Move up or down. If Ctrl is pressed, scroll up or down.
@@ -543,7 +543,7 @@ You can define a new tag-clearing command by combining `tag` with `tag-toggle` (
 
 ## tag-toggle (default `t`)
 
-Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
+Tag a file with `*` or a single-width character given in the argument if the file is untagged, otherwise remove the tag.
 
 ## echo
 
@@ -629,7 +629,7 @@ When the cursor is at the first character in `:` mode, pressing one of the keys 
 You can go back with `cmd-delete-back` (`<backspace>` by default).
 
 The command line commands should be mostly compatible with readline keybindings.
-A character refers to a Unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+A character refers to a Unicode code point, a word consists of letters and digits, and a Unix word consists of any non-blank characters.
 
 ## cmd-insert
 
@@ -689,7 +689,7 @@ Delete everything up to the beginning/end of the line.
 
 ## cmd-delete-unix-word (default `<c-w>`)
 
-Delete the previous unix word.
+Delete the previous Unix word.
 
 ## cmd-yank (default `<c-y>`)
 
@@ -933,7 +933,7 @@ Preview filtering is disabled and files are displayed as they are when the value
 ## promptfmt (string) (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
 Format string of the prompt shown in the top line.
-Special expansions are provided, `%u` as the user name, `%h` as the hostname, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right aligned on the screen.
+Special expansions are provided, `%u` as the user name, `%h` as the host name, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right-aligned on the screen.
 The home folder is shown as `~` in the working directory expansion.
 Directory names are automatically shortened to a single character starting from the leftmost parent when the prompt does not fit the screen.
 
@@ -1068,14 +1068,14 @@ The truncate character that is shown at the end when the file name does not fit 
 
 ## truncatepct (int) (default 100)
 
-When a filename is too long to be shown completely, the available space is
+When a file name is too long to be shown completely, the available space is
 partitioned into two pieces. truncatepct defines a fraction (in percent
 between 0 and 100) for the size of the first piece, which will show the
-beginning of the filename. The second piece will show the end of the filename
+beginning of the file name. The second piece will show the end of the file name
 and will use the rest of the available space. Both pieces are separated by the
 truncation character (truncatechar).
-A value of 100 will only show the beginning of the filename,
-while a value of 0 will only show the end of the filename, e.g.:
+A value of 100 will only show the beginning of the file name,
+while a value of 0 will only show the end of the file name, e.g.:
 
 - `set truncatepct 100` -> `very-long-filename-tr~` (default)
 
@@ -1151,7 +1151,7 @@ For example, with POSIX shells, you can use `[ -n "$LF_LEVEL" ] && PS1="$PS1""(l
 
 ## OPENER
 
-If this variable is set in the environment, use the same value. Otherwise, this is set to `start` in Windows, `open` in MacOS, `xdg-open` in others.
+If this variable is set in the environment, use the same value. Otherwise, this is set to `start` in Windows, `open` in macOS, `xdg-open` in others.
 
 ## EDITOR
 
@@ -1256,7 +1256,7 @@ This shell command can be defined to be executed before quitting.
 
 The following command prefixes are used by lf:
 
-	:  read (default)  builtin/custom command
+	:  read (default)  built-in/custom command
 	$  shell           shell command
 	%  shell-pipe      shell command running with the UI
 	!  shell-wait      shell command waiting for a key press
@@ -1303,9 +1303,9 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command `map` is used to bind a key in Normal and Visual mode to a command which can be a builtin command, custom command, or shell command:
+Command `map` is used to bind a key in Normal and Visual mode to a command which can be a built-in command, custom command, or shell command:
 
-	map gh cd ~        # builtin command
+	map gh cd ~        # built-in command
 	map D trash        # custom command
 	map i $less $f     # shell command
 	map U !du -csh *   # waiting shell command
@@ -1362,7 +1362,7 @@ Regular keys are assigned to a command with the usual syntax:
 
 	map a down
 
-Keys combined with the shift key simply use the uppercase letter:
+Keys combined with the Shift key simply use the uppercase letter:
 
 	map A down
 
@@ -1379,19 +1379,19 @@ Function keys are prefixed with `f` character:
 
 	map <f-1> down
 
-Keys combined with the control key are prefixed with a `c` character:
+Keys combined with the Ctrl key are prefixed with a `c` character:
 
 	map <c-a> down
 
-Keys combined with the alt key are assigned in two different ways depending on the behavior of your terminal.
-Older terminals (e.g. xterm) may set the 8th bit of a character when the alt key is pressed.
+Keys combined with the Alt key are assigned in two different ways depending on the behavior of your terminal.
+Older terminals (e.g. xterm) may set the 8th bit of a character when the Alt key is pressed.
 On these terminals, you can use the corresponding byte for the mapping:
 
 	map á down
 
-Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key when the alt key is pressed.
-lf uses the escape delaying mechanism to recognize alt keys in these terminals (delay is 100ms).
-On these terminals, keys combined with the alt key are prefixed with an `a` character:
+Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key when the Alt key is pressed.
+lf uses the escape delaying mechanism to recognize Alt keys in these terminals (delay is 100ms).
+On these terminals, keys combined with the Alt key are prefixed with an `a` character:
 
 	map <a-a> down
 
@@ -1491,7 +1491,7 @@ However, use of this option is highly recommended and it is assumed in the rest 
 # PIPING SHELL COMMANDS
 
 Regular shell commands have some limitations in some cases.
-When an output or error message is given and the command exits afterwards, the ui is immediately resumed and there is no way to see the message without dropping to shell again.
+When an output or error message is given and the command exits afterwards, the UI is immediately resumed and there is no way to see the message without dropping to shell again.
 Also, even when there is no output or error, the UI still needs to be paused while the command is running.
 This can cause flickering on the screen for short commands and similar distractions for longer commands.
 
@@ -1544,7 +1544,7 @@ You can optionally give it an ID number to send a command to a single client:
 
 	lf -remote 'send 1234 echo hello world'
 
-All clients have a unique id number but you may not be aware of the id number when you are writing a command.
+All clients have a unique ID number but you may not be aware of the ID number when you are writing a command.
 For this purpose, an `$id` variable is exported to the environment for shell commands.
 The value of this variable is set to the process ID of the client.
 You can use it to send a remote command from a client to the server which in return sends a command back to itself.
@@ -1565,7 +1565,7 @@ For example, you can configure the number of columns in the UI with respect to t
 	    fi
 	}}
 
-In addition, the `query` command can be used to obtain information about a specific lf instance by providing its id:
+In addition, the `query` command can be used to obtain information about a specific lf instance by providing its ID:
 
 	lf -remote "query $id maps"
 
@@ -1668,15 +1668,15 @@ For example, you can use the right arrow key to finish the search and open the s
 	cmap <right> :cmd-enter; open
 
 The finding mechanism is implemented with commands `find` (default `f`), `find-back` (default `F`), `find-next` (default `;`), `find-prev` (default `,`).
-You can disable `anchorfind` option to match a pattern at an arbitrary position in the filename instead of the beginning.
+You can disable `anchorfind` option to match a pattern at an arbitrary position in the file name instead of the beginning.
 You can set the number of keys to match using `findlen` option.
 If you set this value to zero, then the keys are read until there is only a single match.
 The default values of these two options are set to jump to the first file with the given initial.
 
 Some options effect both searching and finding.
 You can disable `wrapscan` option to prevent searches from being wrapped around at the end of the file list.
-You can disable `ignorecase` option to match cases in the pattern and the filename.
-This option is already automatically overridden if the pattern contains upper-case characters.
+You can disable `ignorecase` option to match cases in the pattern and the file name.
+This option is already automatically overridden if the pattern contains uppercase characters.
 You can disable `smartcase` option to disable this behavior.
 Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in Latin letters.
 
@@ -1692,7 +1692,7 @@ It is possible to use different command types:
 
 	cmd open &xdg-open $f
 
-You may want to use either file extensions or mime types from `file` command:
+You may want to use either file extensions or MIME types from `file` command:
 
 	cmd open ${{
 	    case $(file --mime-type -Lb $f) in
@@ -1743,7 +1743,7 @@ For `less` pager, you may instead utilize `LESSOPEN` mechanism so that useful in
 	map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
 
 Since this script is called for each file selection change it needs to be as efficient as possible and this responsibility is left to the user.
-You may use file extensions to determine the type of file more efficiently compared to obtaining mime types from `file` command.
+You may use file extensions to determine the type of file more efficiently compared to obtaining MIME types from `file` command.
 Extensions can then be used to match cleanly within a conditional:
 
 	#!/bin/sh
@@ -1877,7 +1877,7 @@ It starts with a default color scheme and updates colors using values of existin
 Colors are set in the following order:
 
  1. default
- 2. LSCOLORS (Mac/BSD ls)
+ 2. LSCOLORS (macOS/BSD ls)
  3. LS_COLORS (GNU ls)
  4. LF_COLORS (lf specific)
  5. colors file (lf specific)
@@ -2001,7 +2001,7 @@ The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should put a single characters as values of entries.
 The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
-Each line should contain 1-3 columns, first column is filetype or filename pattern, second column is the icon, third column is an optional icon color. If there is only one column, means to disable rule for this filetype or pattern.
+Each line should contain 1-3 columns, first column is file type or file name pattern, second column is the icon, third column is an optional icon color. If there is only one column, means to disable rule for this file type or pattern.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
 Default values are as follows given with their matching order in lf:
 
