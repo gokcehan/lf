@@ -647,7 +647,7 @@ type menuSelect struct {
 type ui struct {
 	screen      tcell.Screen
 	sxScreen    sixelScreen
-	polling     bool
+	suspended   bool
 	wins        []*win
 	promptWin   *win
 	msgWin      *win
@@ -659,6 +659,7 @@ type ui struct {
 	keyChan     chan string
 	tevChan     chan tcell.Event
 	evChan      chan tcell.Event
+	resumeChan  chan struct{}
 	menu        string
 	menuSelect  *menuSelect
 	cmdPrefix   string
@@ -678,7 +679,6 @@ func newUI(screen tcell.Screen) *ui {
 
 	ui := &ui{
 		screen:      screen,
-		polling:     true,
 		wins:        getWins(screen),
 		promptWin:   newWin(wtot, 1, 0, 0),
 		msgWin:      newWin(wtot, 1, 0, htot-1),
@@ -687,13 +687,14 @@ func newUI(screen tcell.Screen) *ui {
 		keyChan:     make(chan string, 1000),
 		tevChan:     make(chan tcell.Event, 1000),
 		evChan:      make(chan tcell.Event, 1000),
+		resumeChan:  make(chan struct{}, 1),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
 
-	go ui.pollEvents()
+	go screen.ChannelEvents(ui.tevChan, nil)
 
 	return ui
 }
@@ -706,18 +707,6 @@ func (ui *ui) winAt(x, y int) (int, *win) {
 		}
 	}
 	return -1, nil
-}
-
-func (ui *ui) pollEvents() {
-	var ev tcell.Event
-	for {
-		ev = ui.screen.PollEvent()
-		if ev == nil {
-			ui.polling = false
-			return
-		}
-		ui.tevChan <- ev
-	}
 }
 
 func (ui *ui) renew() {
@@ -1106,6 +1095,10 @@ func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 }
 
 func (ui *ui) draw(nav *nav) {
+	if ui.suspended {
+		return
+	}
+
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, clipboard: nav.clipboard, tags: nav.tags}
 
@@ -1646,18 +1639,23 @@ func (ui *ui) readExpr() {
 	}()
 }
 
-func (ui *ui) suspend() error {
+func (ui *ui) suspend() {
+	if err := ui.screen.Suspend(); err != nil {
+		log.Printf("suspend: %s", err)
+		return
+	}
+
 	ui.sxScreen.forceClear = true
-	return ui.screen.Suspend()
+	ui.suspended = true
 }
 
-func (ui *ui) resume() error {
-	err := ui.screen.Resume()
-	if !ui.polling {
-		go ui.pollEvents()
-		ui.polling = true
+func (ui *ui) resume() {
+	if err := ui.screen.Resume(); err != nil {
+		log.Printf("resume: %s", err)
+		return
 	}
-	return err
+
+	ui.suspended = false
 }
 
 func (ui *ui) exportSizes() {

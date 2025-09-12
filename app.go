@@ -40,13 +40,11 @@ type app struct {
 }
 
 func newApp(ui *ui, nav *nav) *app {
-	quitChan := make(chan struct{}, 1)
-
 	app := &app{
 		ui:       ui,
 		nav:      nav,
 		ticker:   new(time.Ticker),
-		quitChan: quitChan,
+		quitChan: make(chan struct{}, 1),
 		watch:    newWatch(nav.dirChan, nav.fileChan, nav.delChan),
 	}
 
@@ -509,6 +507,11 @@ func (app *app) loop() {
 		case e := <-serverChan:
 			e.eval(app, nil)
 			app.ui.draw(app.nav)
+		case <-app.ui.resumeChan:
+			app.ui.resume()
+			app.nav.renew()
+			app.ui.loadFile(app, true)
+			app.ui.draw(app.nav)
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
@@ -521,26 +524,18 @@ func (app *app) loop() {
 
 func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	app.nav.previewChan <- ""
+	app.ui.suspend()
 
-	if err := app.ui.suspend(); err != nil {
-		log.Printf("suspend: %s", err)
-	}
-	defer func() {
-		if err := app.ui.resume(); err != nil {
-			app.quit()
-			os.Exit(3)
+	go func() {
+		if err := cmd.Run(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
 		}
+		if pause_after {
+			anyKey()
+		}
+
+		app.ui.resumeChan <- struct{}{}
 	}()
-
-	if err := cmd.Run(); err != nil {
-		app.ui.echoerrf("running shell: %s", err)
-	}
-	if pause_after {
-		anyKey()
-	}
-
-	app.ui.loadFile(app, true)
-	app.nav.renew()
 }
 
 // This function is used to run a shell command. Modes are as follows:
