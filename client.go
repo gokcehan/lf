@@ -8,22 +8,10 @@ import (
 	"net"
 	"os"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v2"
 )
-
-type State struct {
-	mutex sync.Mutex
-	data  map[string]string
-}
-
-var gState State
-
-func init() {
-	gState.data = make(map[string]string)
-}
 
 func run() {
 	if gLogPath != "" {
@@ -114,7 +102,7 @@ func writeSelection(filename string, selection []string) {
 	}
 }
 
-func readExpr() <-chan expr {
+func readExpr(queryReqChan chan<- string, queryRespChan <-chan string) <-chan expr {
 	ch := make(chan expr)
 
 	go func() {
@@ -137,17 +125,9 @@ func readExpr() <-chan expr {
 		for s.Scan() {
 			log.Printf("recv: %s", s.Text())
 
-			// `query` has to be handled outside of the main thread, which is
-			// blocked when running a synchronous shell command ("$" or "!").
-			// This is important since `query` is often the result of the user
-			// running `$lf -remote "query $id <something>"`.
 			if word, rest := splitWord(s.Text()); word == "query" {
-				gState.mutex.Lock()
-				state, ok := gState.data[rest]
-				gState.mutex.Unlock()
-				if ok {
-					fmt.Fprint(c, state)
-				}
+				queryReqChan <- rest
+				fmt.Fprint(c, <-queryRespChan)
 				fmt.Fprintln(c, "")
 			} else {
 				p := newParser(strings.NewReader(s.Text()))

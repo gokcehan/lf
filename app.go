@@ -24,6 +24,8 @@ type app struct {
 	nav            *nav
 	ticker         *time.Ticker
 	quitChan       chan struct{}
+	queryReqChan   chan string
+	queryRespChan  chan string
 	cmd            *exec.Cmd
 	cmdIn          io.WriteCloser
 	cmdOutBuf      []byte
@@ -36,18 +38,17 @@ type app struct {
 	menuCompInd    int
 	selectionOut   []string
 	watch          *watch
-	quitting       bool
 }
 
 func newApp(ui *ui, nav *nav) *app {
-	quitChan := make(chan struct{}, 1)
-
 	app := &app{
-		ui:       ui,
-		nav:      nav,
-		ticker:   new(time.Ticker),
-		quitChan: quitChan,
-		watch:    newWatch(nav.dirChan, nav.fileChan, nav.delChan),
+		ui:            ui,
+		nav:           nav,
+		ticker:        new(time.Ticker),
+		quitChan:      make(chan struct{}, 1),
+		queryReqChan:  make(chan string, 1),
+		queryRespChan: make(chan string, 1),
+		watch:         newWatch(nav.dirChan, nav.fileChan, nav.delChan),
 	}
 
 	sigChan := make(chan os.Signal, 1)
@@ -68,14 +69,6 @@ func newApp(ui *ui, nav *nav) *app {
 }
 
 func (app *app) quit() {
-	// Using synchronous shell commands for `on-quit` can cause this to be
-	// called again, so a guard variable is introduced here to prevent an
-	// infinite loop.
-	if app.quitting {
-		return
-	}
-	app.quitting = true
-
 	onQuit(app)
 
 	if gOpts.history {
@@ -262,7 +255,7 @@ func (app *app) loop() {
 
 	var serverChan <-chan expr
 	if !gSingleMode {
-		serverChan = readExpr()
+		serverChan = readExpr(app.queryReqChan, app.queryRespChan)
 	}
 
 	app.ui.readExpr()
@@ -509,6 +502,13 @@ func (app *app) loop() {
 		case e := <-serverChan:
 			e.eval(app, nil)
 			app.ui.draw(app.nav)
+		case <-app.ui.resumeChan:
+			app.ui.resume()
+			app.nav.renew()
+			app.ui.loadFile(app, true)
+			app.ui.draw(app.nav)
+		case query := <-app.queryReqChan:
+			app.handleQuery(query)
 		case <-app.ticker.C:
 			app.nav.renew()
 			app.ui.loadFile(app, false)
@@ -517,30 +517,6 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		}
 	}
-}
-
-func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
-	app.nav.previewChan <- ""
-
-	if err := app.ui.suspend(); err != nil {
-		log.Printf("suspend: %s", err)
-	}
-	defer func() {
-		if err := app.ui.resume(); err != nil {
-			app.quit()
-			os.Exit(3)
-		}
-	}()
-
-	if err := cmd.Run(); err != nil {
-		app.ui.echoerrf("running shell: %s", err)
-	}
-	if pause_after {
-		anyKey()
-	}
-
-	app.ui.loadFile(app, true)
-	app.nav.renew()
 }
 
 // This function is used to run a shell command. Modes are as follows:
@@ -557,45 +533,43 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	exportLfPath()
 	exportOpts()
 
-	gState.mutex.Lock()
-	gState.data["maps"] = listBinds(map[string]map[string]expr{
-		"n": gOpts.nkeys,
-		"v": gOpts.vkeys,
-	})
-	gState.data["nmaps"] = listBinds(map[string]map[string]expr{
-		"n": gOpts.nkeys,
-	})
-	gState.data["vmaps"] = listBinds(map[string]map[string]expr{
-		"v": gOpts.vkeys,
-	})
-	gState.data["cmaps"] = listBinds(map[string]map[string]expr{
-		"c": gOpts.cmdkeys,
-	})
-	gState.data["cmds"] = listCmds(gOpts.cmds)
-	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
-	gState.data["history"] = listHistory(app.cmdHistory)
-	gState.data["files"] = listFilesInCurrDir(app.nav)
-	gState.mutex.Unlock()
-
 	cmd := shellCommand(s, args)
 
-	var out io.Reader
-	var err error
 	switch prefix {
 	case "$", "!":
+		if app.ui.suspended {
+			return
+		}
+
+		app.nav.previewChan <- ""
+		app.ui.suspend()
+
 		cmd.Stdin = os.Stdin
 		cmd.Stdout = os.Stderr
 		cmd.Stderr = os.Stderr
 
-		app.runCmdSync(cmd, prefix == "!")
-		return
-	}
+		go func() {
+			if err := cmd.Run(); err != nil {
+				msg := fmt.Sprintf("running shell: %s", err)
+				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+			}
+			if prefix == "!" {
+				anyKey()
+			}
 
-	// We are running the command asynchronously
-	if prefix == "%" {
+			app.ui.resumeChan <- struct{}{}
+		}()
+	case "%":
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
+
+		normal(app)
+		app.cmd = cmd
+		app.cmdOutBuf = nil
+		app.ui.cmdPrefix = ">"
+		app.ui.echo("")
+
 		stdin, err := cmd.StdinPipe()
 		if err != nil {
 			log.Printf("writing stdin: %s", err)
@@ -605,53 +579,45 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		if err != nil {
 			log.Printf("reading stdout: %s", err)
 		}
-		out = stdout
 		cmd.Stderr = cmd.Stdout
-	}
 
-	shellSetPG(cmd)
-	if err = cmd.Start(); err != nil {
-		app.ui.echoerrf("running shell: %s", err)
-	}
-
-	switch prefix {
-	case "%":
-		normal(app)
-		app.cmd = cmd
-		app.cmdOutBuf = nil
-		app.ui.cmdPrefix = ">"
-		app.ui.echo("")
+		shellSetPG(cmd)
+		if err = cmd.Start(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
+		}
 
 		go func() {
-			eol := false
-			reader := bufio.NewReader(out)
+			reader := bufio.NewReader(stdout)
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
 					break
 				}
-				if eol {
-					eol = false
+
+				app.cmdOutBuf = append(app.cmdOutBuf, b)
+				if reader.Buffered() == 0 {
+					app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
+				}
+
+				if b == '\n' || b == '\r' {
 					app.cmdOutBuf = nil
 				}
-				app.cmdOutBuf = append(app.cmdOutBuf, b)
-				if b == '\n' || b == '\r' {
-					eol = true
-				}
-				if reader.Buffered() > 0 {
-					continue
-				}
-				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
 			}
 
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
+
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()
 	case "&":
+		shellSetPG(cmd)
+		if err := cmd.Start(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
+		}
+
 		go func() {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
@@ -753,4 +719,36 @@ func (app *app) exportMode() {
 	}
 
 	os.Setenv("lf_mode", getMode())
+}
+
+func (app *app) handleQuery(query string) {
+	switch query {
+	case "maps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"n": gOpts.nkeys,
+			"v": gOpts.vkeys,
+		})
+	case "nmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"n": gOpts.nkeys,
+		})
+	case "vmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"v": gOpts.vkeys,
+		})
+	case "cmaps":
+		app.queryRespChan <- listBinds(map[string]map[string]expr{
+			"c": gOpts.cmdkeys,
+		})
+	case "cmds":
+		app.queryRespChan <- listCmds(gOpts.cmds)
+	case "jumps":
+		app.queryRespChan <- listJumps(app.nav.jumpList, app.nav.jumpListInd)
+	case "history":
+		app.queryRespChan <- listHistory(app.cmdHistory)
+	case "files":
+		app.queryRespChan <- listFilesInCurrDir(app.nav)
+	default:
+		app.queryRespChan <- "\n"
+	}
 }
