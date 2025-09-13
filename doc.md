@@ -959,7 +959,7 @@ Draw rounded outer corners when the `drawbox` option is enabled.
 ## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
-Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%v` as the number of visually selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%P` as the scroll percentage, and `%d` as the amount of free disk space remaining.
+Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%v` as the number of visually selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%H` as the number of files hidden in the current directory but blank if 0, `%P` as the position of the visible window in the directory listing (Top, Bot, All or 45%; same as Vim's `%P`), `%q` as the position of the cursor in the directory listing (45%; same as Vim's `%p`), and `%d` as the amount of free disk space remaining.
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
@@ -1037,7 +1037,7 @@ Meaning of each sort type:
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
-Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of five characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
+Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of five characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%f` as the file name, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
 
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 

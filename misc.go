@@ -20,7 +20,7 @@ import (
 
 var (
 	reModKey    = regexp.MustCompile(`<(c|s|a)-(.+)>`)
-	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
+	reRulerSub  = regexp.MustCompile(`%[apmcsvfithHPqd]|%\{[^}]+\}`)
 	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
 )
 

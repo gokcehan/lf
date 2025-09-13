@@ -902,6 +902,7 @@ func (ui *ui) drawStat(nav *nav) {
 		replace("%m", "")
 		replace("%M", "NORMAL")
 	}
+	replace("%f", curr.Name())
 	replace("%p", curr.Mode().String())
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
@@ -999,8 +1000,19 @@ func (ui *ui) drawRuler(nav *nav) {
 			result = strconv.Itoa(tot)
 		case "%h":
 			result = strconv.Itoa(hid)
+		case "%H":
+			result = strconv.Itoa(hid)
+			if result == "0" {
+				result = ""
+			}
 		case "%P":
 			result = percentage
+		case "%q":
+			if tot == 0 {
+				result = "0%"
+			} else {
+				result = fmt.Sprintf("%2d%%", ind*100/tot)
+			}
 		case "%d":
 			result = diskFree(dir.path)
 		default:
