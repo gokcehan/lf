@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -598,6 +600,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		}
 		out = stdout
 		cmd.Stderr = cmd.Stdout
+		cmd.WaitDelay = time.Second
 	}
 
 	shellSetPG(cmd)
@@ -617,7 +620,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			reader := bufio.NewReader(out)
 			for {
 				b, err := reader.ReadByte()
-				if err == io.EOF {
+				if err != nil {
+					if !errors.Is(err, io.EOF) && !errors.Is(err, fs.ErrClosed) {
+						log.Printf("reading command output: %s", err)
+					}
 					break
 				}
 
@@ -630,7 +636,9 @@ func (app *app) runShell(s string, args []string, prefix string) {
 					app.cmdOutBuf = nil
 				}
 			}
+		}()
 
+		go func() {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
