@@ -267,41 +267,41 @@ func main() {
 	remoteCmd := flag.String(
 		"remote",
 		"",
-		"send remote command to server")
+		"send remote `command` to server")
 
 	cpuprofile := flag.String(
 		"cpuprofile",
 		"",
-		"path to the file to write the CPU profile")
+		"`path` to the file to write the CPU profile")
 
 	memprofile := flag.String(
 		"memprofile",
 		"",
-		"path to the file to write the memory profile")
+		"`path` to the file to write the memory profile")
 
 	flag.StringVar(&gLastDirPath,
 		"last-dir-path",
 		"",
-		"path to the file to write the last dir on exit (to use for cd)")
+		"`path` to the file to write the last dir on exit (to use for cd)")
 
 	flag.StringVar(&gSelectionPath,
 		"selection-path",
 		"",
-		"path to the file to write selected files on open (to use as open file dialog)")
+		"`path` to the file to write selected files on open (to use as open file dialog)")
 
 	flag.StringVar(&gConfigPath,
 		"config",
 		"",
-		"path to the config file (instead of the usual paths)")
+		"`path` to the config file (instead of the usual paths)")
 
 	flag.Var(&gCommands,
 		"command",
-		"command to execute on client initialization")
+		"`command` to execute on client initialization")
 
 	flag.StringVar(&gLogPath,
 		"log",
 		"",
-		"path to the log file to write messages")
+		"`path` to the log file to write messages")
 
 	flag.Parse()
 
