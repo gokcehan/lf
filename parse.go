@@ -108,7 +108,7 @@ type callExpr struct {
 	count int
 }
 
-func (e *callExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
+func (e *callExpr) String() string { return fmt.Sprintf("%s %s", e.name, strings.Join(e.args, " ")) }
 
 type execExpr struct {
 	prefix string
