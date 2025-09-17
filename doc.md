@@ -1284,7 +1284,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set hidden false   # boolean disable
 	set hidden!        # boolean toggle
 	set scrolloff 10   # integer value
-	set sortby time    # string value w/o quotes
+	set sortby time    # string value without quotes
 	set sortby 'time'  # string value with single quotes (whitespace)
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
@@ -1297,7 +1297,7 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar nohidden       # boolean disable
 	setlocal /foo/bar hidden false   # boolean disable
 	setlocal /foo/bar hidden!        # boolean toggle
-	setlocal /foo/bar sortby time    # string value w/o quotes
+	setlocal /foo/bar sortby time    # string value without quotes
 	setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespace)
 	setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
