@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The menu is now drawn over sixel images instead of being hidden behind it if they overlap (#2122).
 - A bug which prevents the user from quitting when copying files with a size of 0 has been fixed (#2130).
 - `lf -remote` should no longer busy wait and cause high CPU usage if its output is not being read (#2138).
+- The parameter types for command line options shown by `lf -help` now match the synopsis in the documentation (#2153).
 
 ## [r37](https://github.com/gokcehan/lf/releases/tag/r37)
 
@@ -53,7 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The selection in Visual mode now follows wrapping when `wrapscan`/`wrapscroll` is enabled (#2056).
 - Input pasted from the terminal is now ignored while in Normal mode (#2059). This prevents pasted content from being treated as keybindings, which can result in dangerous unintended behavior.
 - The Command-line mode completion now supports keywords for the `selmode` and `sortby` options (#2061), as well as the `info` and `preserve` options (#2071).
-- Command line flags are now exported as environment variables in the form `lf_flag_{flag}` (#2079).
+- Command line options are now exported as environment variables in the form `lf_flag_{flag}` (#2079).
 - Support is added for terminal escape sequences that disable text styles (#2101).
 
 ### Fixed
