@@ -511,11 +511,11 @@ Read a shell command to execute asynchronously without standard I/O.
 
 ## find (modal) (default `f`), find-back (modal) (default `F`), find-next (default `;`), find-prev (default `,`)
 
-Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
+Read key(s) to find the appropriate filename match in the forward/backward direction and jump to the next/previous match.
 
 ## search (default `/`), search-back (default `?`), search-next (default `n`), search-prev (default `N`)
 
-Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
+Read a pattern to search for a filename match in the forward/backward direction and jump to the next/previous match.
 
 ## filter (modal), setfilter
 
@@ -722,7 +722,7 @@ Character `:` is used as the separator for list options `[]int` and `[]string`.
 
 ## anchorfind (bool) (default true)
 
-When this option is enabled, the find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
+When this option is enabled, the find command starts matching patterns from the beginning of filenames, otherwise, it can match at an arbitrary position.
 
 ## autoquit (bool) (default true)
 
@@ -737,7 +737,7 @@ Format string of the box drawing characters enabled by the `drawbox` option.
 Set the path of a cleaner file.
 The file should be executable.
 This file is called if previewing is enabled, the previewer is set, and the previously selected file has its preview cache disabled.
-The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next filename to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
 ## copyfmt (string) (default `\033[7;33m`)
@@ -789,8 +789,8 @@ Draw boxes around panes with box drawing characters.
 
 ## dupfilefmt (string) (default `%f.~%n~`)
 
-Format string of file name when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
-Special expansions are provided, `%f` as the file name, `%b` for the basename (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
+Format string of filename when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
+Special expansions are provided, `%f` as the file name, `%b` for the base name (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
 
 ## errorfmt (string) (default `\033[7;31;47m`)
 
@@ -924,7 +924,7 @@ Files containing the null character (U+0000) in the read portion are considered 
 
 Set the path of a previewer file to filter the content of regular files for previewing.
 The file should be executable.
-The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 SIGPIPE signal is sent when enough lines are read.
 If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled.
 This means that if the file is selected in the future, the previewer is called once again.
@@ -933,7 +933,7 @@ Preview filtering is disabled and files are displayed as they are when the value
 ## promptfmt (string) (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
 Format string of the prompt shown in the top line.
-Special expansions are provided, `%u` as the user name, `%h` as the host name, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right-aligned on the screen.
+Special expansions are provided, `%u` as the user name, `%h` as the hostname, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the filename, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right-aligned on the screen.
 The home folder is shown as `~` in the working directory expansion.
 Directory names are automatically shortened to a single character starting from the leftmost parent when the prompt does not fit the screen.
 
@@ -1064,18 +1064,18 @@ Format string of the file modification time shown in the bottom line.
 
 ## truncatechar (string) (default `~`)
 
-The truncate character that is shown at the end when the file name does not fit into the pane.
+The truncate character that is shown at the end when the filename does not fit into the pane.
 
 ## truncatepct (int) (default 100)
 
-When a file name is too long to be shown completely, the available space is
+When a filename is too long to be shown completely, the available space is
 partitioned into two pieces. truncatepct defines a fraction (in percent
 between 0 and 100) for the size of the first piece, which will show the
-beginning of the file name. The second piece will show the end of the file name
+beginning of the filename. The second piece will show the end of the filename
 and will use the rest of the available space. Both pieces are separated by the
 truncation character (truncatechar).
-A value of 100 will only show the beginning of the file name,
-while a value of 0 will only show the end of the file name, e.g.:
+A value of 100 will only show the beginning of the filename,
+while a value of 0 will only show the end of the filename, e.g.:
 
 - `set truncatepct 100` -> `very-long-filename-tr~` (default)
 
@@ -1668,14 +1668,14 @@ For example, you can use the right arrow key to finish the search and open the s
 	cmap <right> :cmd-enter; open
 
 The finding mechanism is implemented with commands `find` (default `f`), `find-back` (default `F`), `find-next` (default `;`), `find-prev` (default `,`).
-You can disable `anchorfind` option to match a pattern at an arbitrary position in the file name instead of the beginning.
+You can disable `anchorfind` option to match a pattern at an arbitrary position in the filename instead of the beginning.
 You can set the number of keys to match using `findlen` option.
 If you set this value to zero, then the keys are read until there is only a single match.
 The default values of these two options are set to jump to the first file with the given initial.
 
 Some options affect both searching and finding.
 You can disable `wrapscan` option to prevent searches from being wrapped around at the end of the file list.
-You can disable `ignorecase` option to match cases in the pattern and the file name.
+You can disable `ignorecase` option to match cases in the pattern and the filename.
 This option is already automatically overridden if the pattern contains uppercase characters.
 You can disable `smartcase` option to disable this behavior.
 Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in Latin letters.
@@ -1730,7 +1730,7 @@ This can be used to highlight source code, list contents of archive files or vie
 For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
-Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+Five arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 The output of the execution is printed in the preview pane.
 You may also want to use the same script in your pager mapping as well:
 
@@ -1986,7 +1986,7 @@ You may instead divide it into multiple lines in between double quotes by escapi
 	ex=01;32:\
 	"
 
-The `ln` entry supports the special value `target`, which will use the link target to select a style. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
+The `ln` entry supports the special value `target`, which will use the link target to select a style. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 Having such a long variable definition in a shell configuration file might be undesirable.
 You may instead use the colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) for configuration.
 A sample colors file can be found at
@@ -1999,7 +1999,7 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should use single characters or symbols as values.
-The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
+The `ln` entry supports the special value `target`, which will use the link target to select a icon. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
 Each line should contain 1-3 columns: a file type or file name pattern, the icon, and an optional icon color. Using only one column disables all rules for that type or name.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
