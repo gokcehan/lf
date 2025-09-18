@@ -10,7 +10,7 @@ lf - terminal file manager
 [**-cpuprofile** *path*]
 [**-doc**]
 [**-last-dir-path** *path*]
-[**-log path**]
+[**-log** *path*]
 [**-memprofile** *path*]
 [**-print-last-dir**]
 [**-print-selection**]
@@ -316,7 +316,7 @@ If the `mouse` option is enabled, mouse buttons have the following default effec
 	    Click on a file or directory to select it.
 
 	Right mouse button
-	    Enter a directory or open a file. Also works on the preview window.
+	    Enter a directory or open a file. Also works on the preview pane.
 
 	Scroll wheel
 	    Move up or down. If Ctrl is pressed, scroll up or down.
@@ -504,7 +504,7 @@ Read a shell command to execute piping its standard I/O to the bottom statline.
 
 ## shell-wait (modal) (default `!`)
 
-Read a shell command to execute and wait for a key press in the end.
+Read a shell command to execute and wait for a key press at the end.
 
 ## shell-async (modal) (default `&`)
 
@@ -512,11 +512,11 @@ Read a shell command to execute asynchronously without standard I/O.
 
 ## find (modal) (default `f`), find-back (modal) (default `F`), find-next (default `;`), find-prev (default `,`)
 
-Read key(s) to find the appropriate file name match in the forward/backward direction and jump to the next/previous match.
+Read key(s) to find the appropriate filename match in the forward/backward direction and jump to the next/previous match.
 
 ## search (default `/`), search-back (default `?`), search-next (default `n`), search-prev (default `N`)
 
-Read a pattern to search for a file name match in the forward/backward direction and jump to the next/previous match.
+Read a pattern to search for a filename match in the forward/backward direction and jump to the next/previous match.
 
 ## filter (modal), setfilter
 
@@ -544,7 +544,7 @@ You can define a new tag-clearing command by combining `tag` with `tag-toggle` (
 
 ## tag-toggle (default `t`)
 
-Tag a file with `*` or a single width character given in the argument if the file is untagged, otherwise remove the tag.
+Tag a file with `*` or a single-width character given in the argument if the file is untagged, otherwise remove the tag.
 
 ## echo
 
@@ -630,7 +630,7 @@ When the cursor is at the first character in `:` mode, pressing one of the keys 
 You can go back with `cmd-delete-back` (`<backspace>` by default).
 
 The command line commands should be mostly compatible with readline keybindings.
-A character refers to a Unicode code point, a word consists of letters and digits, and a unix word consists of any non-blank characters.
+A character refers to a Unicode code point, a word consists of letters and digits, and a Unix word consists of any non-blank characters.
 
 ## cmd-insert
 
@@ -694,7 +694,7 @@ Delete everything up to the beginning/end of the line.
 
 ## cmd-delete-unix-word (default `<c-w>`)
 
-Delete the previous unix word.
+Delete the previous Unix word.
 
 ## cmd-yank (default `<c-y>`)
 
@@ -727,7 +727,7 @@ Character `:` is used as the separator for list options `[]int` and `[]string`.
 
 ## anchorfind (bool) (default true)
 
-When this option is enabled, the find command starts matching patterns from the beginning of file names, otherwise, it can match at an arbitrary position.
+When this option is enabled, the find command starts matching patterns from the beginning of filenames, otherwise, it can match at an arbitrary position.
 
 ## autoquit (bool) (default true)
 
@@ -742,14 +742,14 @@ Format string of the box drawing characters enabled by the `drawbox` option.
 Set the path of a cleaner file.
 The file should be executable.
 This file is called if previewing is enabled, the previewer is set, and the previously selected file has its preview cache disabled.
-The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next file name to be previewed respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position of preview pane and (6) next filename to be previewed respectively.
 Preview cleaning is disabled when the value of this option is left empty.
 
 ## copyfmt (string) (default `\033[7;33m`)
 
 Format string of the indicator for files to be copied.
 
-## cursoractivefmt (string) (default `\033[7m`), cursorparentfmt string (default `\033[7m`), cursorpreviewfmt string (default `\033[4m`)
+## cursoractivefmt (string) (default `\033[7m`), cursorparentfmt (string) (default `\033[7m`), cursorpreviewfmt (string) (default `\033[4m`)
 
 Format strings for highlighting the cursor.
 `cursoractivefmt` applies in the current directory pane,
@@ -794,8 +794,8 @@ Draw boxes around panes with box drawing characters.
 
 ## dupfilefmt (string) (default `%f.~%n~`)
 
-Format string of file name when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
-Special expansions are provided, `%f` as the file name, `%b` for the basename (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
+Format string of filename when creating duplicate files. With the default format, copying a file `abc.txt` to the same directory will result in a duplicate file called `abc.txt.~1~`.
+Special expansions are provided, `%f` as the file name, `%b` for the base name (file name without extension), `%e` as the extension (including the dot) and `%n` as the number of duplicates.
 
 ## errorfmt (string) (default `\033[7;31;47m`)
 
@@ -868,8 +868,19 @@ Jump to the first match after each keystroke during searching.
 ## info ([]string)  (default ``)
 
 A list of information that is shown for directory items at the right side of the pane.
-Currently supported information types are `size`, `time`, `atime`, `btime`, `ctime`, `perm`, `user`, `group` and `custom`.
-The `custom` type is empty by default and can be updated using the `addcustominfo` command.
+
+The following information types are supported:
+
+	perm      file permission
+	user      user name
+	group     group name
+	size      file size
+	time      time of last data modification
+	atime     time of last access
+	btime     time of file birth
+	ctime     time of last status (inode) change
+	custom    property defined via `addcustominfo` (empty by default)
+
 Information is only shown when the pane width is more than twice the width of information.
 
 ## infotimefmtnew (string) (default `Jan _2 15:04`)
@@ -929,7 +940,7 @@ Files containing the null character (U+0000) in the read portion are considered 
 
 Set the path of a previewer file to filter the content of regular files for previewing.
 The file should be executable.
-The following arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 SIGPIPE signal is sent when enough lines are read.
 If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled.
 This means that if the file is selected in the future, the previewer is called once again.
@@ -938,7 +949,17 @@ Preview filtering is disabled and files are displayed as they are when the value
 ## promptfmt (string) (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
 Format string of the prompt shown in the top line.
-Special expansions are provided, `%u` as the user name, `%h` as the hostname, `%w` as the working directory, `%d` as the working directory with a trailing path separator, `%f` as the file name, and `%F` as the current filter. `%S` may be used once and will provide a spacer so that the following parts are right aligned on the screen.
+
+The following special expansions are supported:
+
+	%f        file name
+	%h        host name
+	%u        user name
+	%w        working directory
+	%d        working directory (with trailing path separator)
+	%F        current filter
+	%S        spacer to right-align the following parts (can be used once)
+
 The home folder is shown as `~` in the working directory expansion.
 Directory names are automatically shortened to a single character starting from the leftmost parent when the prompt does not fit the screen.
 
@@ -964,7 +985,22 @@ Draw rounded outer corners when the `drawbox` option is enabled.
 ## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
 
 Format string of the ruler shown in the bottom right corner.
-Special expansions are provided, `%a` as the pressed keys, `%p` as the progress of file operations, `%m` as the number of files to be cut (moved), `%c` as the number of files to be copied, `%s` as the number of selected files, `%v` as the number of visually selected files, `%f` as the filter, `%i` as the position of the cursor, `%t` as the number of files shown in the current directory, `%h` as the number of files hidden in the current directory, `%P` as the scroll percentage, and `%d` as the amount of free disk space remaining.
+
+The following special expansions are supported:
+
+	%a        pressed keys
+	%p        progress of file operations
+	%m        number of files to be cut (moved)
+	%c        number of files to be copied
+	%s        number of selected files
+	%v        number of visually selected files
+	%t        number of shown files in the current directory
+	%h        number of hidden files in the current directory
+	%f        current filter
+	%i        cursor position
+	%P        scroll percentage
+	%d        amount of free disk space
+
 Additional expansions are provided for environment variables exported by lf, in the form `%{lf_<name>}` (e.g. `%{lf_selmode}`). This is useful for displaying the current settings.
 Expansions are also provided for user-defined options, in the form `%{lf_user_<name>}` (e.g. `%{lf_user_foo}`).
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
@@ -972,13 +1008,13 @@ The `|` character splits the format string into sections. Any section containing
 ## scrolloff (int) (default 0)
 
 Minimum number of offset lines shown at all times at the top and bottom of the screen when scrolling.
-The current line is kept in the middle when this option is set to a large value that is bigger than the half of number of lines.
+The current line is kept in the middle when this option is set to a large value that is bigger than half the number of lines.
 A smaller offset can be used when the current file is close to the beginning or end of the list to show the maximum number of items.
 
-## searchmethod (string) default `text`)
+## searchmethod (string) (default `text`)
 
 How search command patterns are treated.
-Currently supported methods are `text` (i.e. string literals), `glob` (i.e shell globs) and `regex` (i.e. regular expressions).
+Currently supported methods are `text` (i.e. string literals), `glob` (i.e. shell globs) and `regex` (i.e. regular expressions).
 See `SEARCHING FILES` for more details.
 
 ## selectfmt (string) (default `\033[7;35m`)
@@ -1025,24 +1061,35 @@ This option has no effect when `ignoredia` is disabled.
 ## sortby (string) (default `natural`)
 
 Sort type for directories.
-Currently supported sort types are `natural`, `name`, `size`, `time`, `atime`, `btime`, `ctime`, `ext` and `custom`.
 
-Meaning of each sort type:
+The following sort types are supported:
 
 	natural   file name (track_2.flac comes before track_10.flac)
 	name      file name (track_10.flac comes before track_2.flac)
+	ext       file extension
 	size      file size
 	time      time of last data modification
 	atime     time of last access
 	btime     time of file birth
 	ctime     time of last status (inode) change
-	ext       file extension
-	custom    property defined via `addcustominfo`
+	custom    property defined via `addcustominfo` (empty by default)
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
-Special expansions are provided, `%p` as the file permissions, `%c` as the link count, `%u` as the user, `%g` as the group, `%s` as the file size, `%S` as the file size but with a fixed width of five characters (left-padded with spaces), `%t` as the last modified time, `%l` as the link target, `%m` as the current mode and `%M` as the current mode but also shown in Normal mode (displaying `NORMAL` instead of a blank string).
+
+The following special expansions are supported:
+
+	%p        file permission
+	%c        link count
+	%u        user name
+	%g        group name
+	%s        file size
+	%S        file size (left-padded with spaces to a fixed width of 5 characters)
+	%t        time of last data modification
+	%l        link target
+	%m        current mode
+	%M        current mode (displaying `NORMAL` instead of a blank string in Normal mode)
 
 The `|` character splits the format string into sections. Any section containing a failed expansion (result is a blank string) is discarded and not shown.
 
@@ -1069,7 +1116,7 @@ Format string of the file modification time shown in the bottom line.
 
 ## truncatechar (string) (default `~`)
 
-The truncate character that is shown at the end when the file name does not fit into the pane.
+The truncate character that is shown at the end when the filename does not fit into the pane.
 
 ## truncatepct (int) (default 100)
 
@@ -1156,7 +1203,7 @@ For example, with POSIX shells, you can use `[ -n "$LF_LEVEL" ] && PS1="$PS1""(l
 
 ## OPENER
 
-If this variable is set in the environment, use the same value. Otherwise, this is set to `start` in Windows, `open` in MacOS, `xdg-open` in others.
+If this variable is set in the environment, use the same value. Otherwise, this is set to `start` in Windows, `open` in macOS, `xdg-open` in others.
 
 ## EDITOR
 
@@ -1261,7 +1308,7 @@ This shell command can be defined to be executed before quitting.
 
 The following command prefixes are used by lf:
 
-	:  read (default)  builtin/custom command
+	:  read (default)  built-in/custom command
 	$  shell           shell command
 	%  shell-pipe      shell command running with the UI
 	!  shell-wait      shell command waiting for a key press
@@ -1289,8 +1336,8 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set hidden false   # boolean disable
 	set hidden!        # boolean toggle
 	set scrolloff 10   # integer value
-	set sortby time    # string value w/o quotes
-	set sortby 'time'  # string value with single quotes (whitespaces)
+	set sortby time    # string value without quotes
+	set sortby 'time'  # string value with single quotes (whitespace)
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
@@ -1302,15 +1349,15 @@ Adding a trailing path separator (i.e. `/` for Unix and `\` for Windows) sets th
 	setlocal /foo/bar nohidden       # boolean disable
 	setlocal /foo/bar hidden false   # boolean disable
 	setlocal /foo/bar hidden!        # boolean toggle
-	setlocal /foo/bar sortby time    # string value w/o quotes
-	setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespaces)
+	setlocal /foo/bar sortby time    # string value without quotes
+	setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespace)
 	setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
 	setlocal /foo/bar  hidden        # for only '/foo/bar' directory
 	setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
-Command `map` is used to bind a key in Normal and Visual mode to a command which can be a builtin command, custom command, or shell command:
+Command `map` is used to bind a key in Normal and Visual mode to a command which can be a built-in command, custom command, or shell command:
 
-	map gh cd ~        # builtin command
+	map gh cd ~        # built-in command
 	map D trash        # custom command
 	map i $less $f     # shell command
 	map U !du -csh *   # waiting shell command
@@ -1367,7 +1414,7 @@ Regular keys are assigned to a command with the usual syntax:
 
 	map a down
 
-Keys combined with the shift key simply use the uppercase letter:
+Keys combined with the Shift key simply use the uppercase letter:
 
 	map A down
 
@@ -1384,19 +1431,19 @@ Function keys are prefixed with `f` character:
 
 	map <f-1> down
 
-Keys combined with the control key are prefixed with a `c` character:
+Keys combined with the Ctrl key are prefixed with a `c` character:
 
 	map <c-a> down
 
-Keys combined with the alt key are assigned in two different ways depending on the behavior of your terminal.
-Older terminals (e.g. xterm) may set the 8th bit of a character when the alt key is pressed.
+Keys combined with the Alt key are assigned in two different ways depending on the behavior of your terminal.
+Older terminals (e.g. xterm) may set the 8th bit of a character when the Alt key is pressed.
 On these terminals, you can use the corresponding byte for the mapping:
 
 	map á down
 
-Newer terminals (e.g. gnome-terminal) may prefix the key with an escape key when the alt key is pressed.
-lf uses the escape delaying mechanism to recognize alt keys in these terminals (delay is 100ms).
-On these terminals, keys combined with the alt key are prefixed with an `a` character:
+Newer terminals (e.g. gnome-terminal) may prefix the key with an escape character when the Alt key is pressed.
+lf uses the escape delaying mechanism to recognize Alt keys in these terminals (delay is 100ms).
+On these terminals, keys combined with the Alt key are prefixed with an `a` character:
 
 	map <a-a> down
 
@@ -1496,18 +1543,18 @@ However, use of this option is highly recommended and it is assumed in the rest 
 # PIPING SHELL COMMANDS
 
 Regular shell commands have some limitations in some cases.
-When an output or error message is given and the command exits afterwards, the ui is immediately resumed and there is no way to see the message without dropping to shell again.
+When an output or error message is given and the command exits afterwards, the UI is immediately resumed and there is no way to see the message without dropping to shell again.
 Also, even when there is no output or error, the UI still needs to be paused while the command is running.
 This can cause flickering on the screen for short commands and similar distractions for longer commands.
 
 Instead of pausing the UI, piping shell commands connect stdin, stdout, and stderr of the command to the statline at the bottom of the UI.
 This can be useful for programs following the Unix philosophy to give no output in the success case, and brief error messages or prompts in other cases.
 
-For example, following rename command prompts for overwrite in the statline if there is an existing file with the given name:
+For example, the following rename command prompts for overwrite in the statline if there is an existing file with the given name:
 
 	cmd rename %mv -i $f $1
 
-You can also output error messages in the command and it will show up in the statline.
+You can also output error messages in the command and they will show up in the statline.
 For example, an alternative rename command may look like this:
 
 	cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
@@ -1549,7 +1596,7 @@ You can optionally give it an ID number to send a command to a single client:
 
 	lf -remote 'send 1234 echo hello world'
 
-All clients have a unique id number but you may not be aware of the id number when you are writing a command.
+All clients have a unique ID number but you may not be aware of the ID number when you are writing a command.
 For this purpose, an `$id` variable is exported to the environment for shell commands.
 The value of this variable is set to the process ID of the client.
 You can use it to send a remote command from a client to the server which in return sends a command back to itself.
@@ -1570,7 +1617,7 @@ For example, you can configure the number of columns in the UI with respect to t
 	    fi
 	}}
 
-In addition, the `query` command can be used to obtain information about a specific lf instance by providing its id:
+In addition, the `query` command can be used to obtain information about a specific lf instance by providing its ID:
 
 	lf -remote "query $id maps"
 
@@ -1623,7 +1670,7 @@ Only file modes and (some) timestamps can be preserved (see `preserve` option), 
 Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed.
 Moving is performed using the rename operation of the underlying OS.
 For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors.
-Operation errors are shown in the message line as well as the log file and they do not preemptively finish the corresponding file operation.
+Operation errors are shown in the message line as well as the log file and they do not prematurely terminate the corresponding file operation.
 
 File operations can be performed on the currently selected file or on multiple files by selecting them first.
 When you `copy` a file, lf doesn't actually copy the file on the disk, but only records its name to a file.
@@ -1678,10 +1725,10 @@ You can set the number of keys to match using `findlen` option.
 If you set this value to zero, then the keys are read until there is only a single match.
 The default values of these two options are set to jump to the first file with the given initial.
 
-Some options effect both searching and finding.
+Some options affect both searching and finding.
 You can disable `wrapscan` option to prevent searches from being wrapped around at the end of the file list.
 You can disable `ignorecase` option to match cases in the pattern and the filename.
-This option is already automatically overridden if the pattern contains upper-case characters.
+This option is already automatically overridden if the pattern contains uppercase characters.
 You can disable `smartcase` option to disable this behavior.
 Two similar options `ignoredia` and `smartdia` are provided to control matching diacritics in Latin letters.
 
@@ -1697,7 +1744,7 @@ It is possible to use different command types:
 
 	cmd open &xdg-open $f
 
-You may want to use either file extensions or mime types from `file` command:
+You may want to use either file extensions or MIME types from `file` command:
 
 	cmd open ${{
 	    case $(file --mime-type -Lb $f) in
@@ -1731,11 +1778,11 @@ Possible options are `libfile-mimeinfo-perl` (executable name is `mimeopen`), `r
 
 lf previews files on the preview pane by printing the file until the end or until the preview pane is filled.
 This output can be enhanced by providing a custom preview script for filtering.
-This can be used to highlight source codes, list contents of archive files or view PDF or image files to name a few.
+This can be used to highlight source code, list contents of archive files or view PDF or image files to name a few.
 For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
-Five arguments are passed to the file, (1) current file name, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+Five arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 The output of the execution is printed in the preview pane.
 You may also want to use the same script in your pager mapping as well:
 
@@ -1748,7 +1795,7 @@ For `less` pager, you may instead utilize `LESSOPEN` mechanism so that useful in
 	map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
 
 Since this script is called for each file selection change it needs to be as efficient as possible and this responsibility is left to the user.
-You may use file extensions to determine the type of file more efficiently compared to obtaining mime types from `file` command.
+You may use file extensions to determine the type of file more efficiently compared to obtaining MIME types from `file` command.
 Extensions can then be used to match cleanly within a conditional:
 
 	#!/bin/sh
@@ -1882,7 +1929,7 @@ It starts with a default color scheme and updates colors using values of existin
 Colors are set in the following order:
 
  1. default
- 2. LSCOLORS (Mac/BSD ls)
+ 2. LSCOLORS (macOS/BSD ls)
  3. LS_COLORS (GNU ls)
  4. LF_COLORS (lf specific)
  5. colors file (lf specific)
@@ -1991,7 +2038,7 @@ You may instead divide it into multiple lines in between double quotes by escapi
 	ex=01;32:\
 	"
 
-The `ln` entry supports the special value `target`, which will use the link target to select a style. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
+The `ln` entry supports the special value `target`, which will use the link target to select a style. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 Having such a long variable definition in a shell configuration file might be undesirable.
 You may instead use the colors file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) for configuration.
 A sample colors file can be found at
@@ -2003,12 +2050,12 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 
 Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
-Instead of colors, you should put a single characters as values of entries.
-The `ln` entry supports the special value `target`, which will use the link target to select a icon. File name rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
+Instead of colors, you should use single characters or symbols as values.
+The `ln` entry supports the special value `target`, which will use the link target to select a icon. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
-Each line should contain 1-3 columns, first column is filetype or filename pattern, second column is the icon, third column is an optional icon color. If there is only one column, means to disable rule for this filetype or pattern.
+Each line should contain 1-3 columns: a file type or file name pattern, the icon, and an optional icon color. Using only one column disables all rules for that type or name.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
-Default values are as follows given with their matching order in lf:
+Default values are listed below in the order lf matches them:
 
 	ln  l
 	or  l
