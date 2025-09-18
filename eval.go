@@ -2018,8 +2018,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
 		}
+		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
 		if app.cmdHistoryInput == nil {
-			input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
 			app.cmdHistoryInput = &input
 		}
 		for i := app.cmdHistoryInd - 1; i >= 0; i-- {
@@ -2030,7 +2030,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				break
 			}
 			cmd := app.cmdHistory[len(app.cmdHistory)-i]
-			if strings.HasPrefix(cmd, *app.cmdHistoryInput) {
+			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
 				exitCompMenu(app)
 				app.ui.cmdPrefix = cmd[:1]
 				app.ui.cmdAccLeft = []rune(cmd[1:])
@@ -2042,13 +2042,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
 		}
+		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
 		if app.cmdHistoryInput == nil {
-			input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
 			app.cmdHistoryInput = &input
 		}
 		for i := app.cmdHistoryInd + 1; i <= len(app.cmdHistory); i++ {
 			cmd := app.cmdHistory[len(app.cmdHistory)-i]
-			if strings.HasPrefix(cmd, *app.cmdHistoryInput) {
+			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
 				exitCompMenu(app)
 				app.ui.cmdPrefix = cmd[:1]
 				app.ui.cmdAccLeft = []rune(cmd[1:])
