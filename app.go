@@ -16,23 +16,24 @@ import (
 )
 
 type app struct {
-	ui             *ui
-	nav            *nav
-	ticker         *time.Ticker
-	quitChan       chan struct{}
-	cmd            *exec.Cmd
-	cmdIn          io.WriteCloser
-	cmdOutBuf      []byte
-	cmdHistory     []string
-	cmdHistoryBeg  int
-	cmdHistoryInd  int
-	menuCompActive bool
-	menuCompTmp    []string
-	menuComps      []compMatch
-	menuCompInd    int
-	selectionOut   []string
-	watch          *watch
-	quitting       bool
+	ui              *ui
+	nav             *nav
+	ticker          *time.Ticker
+	quitChan        chan struct{}
+	cmd             *exec.Cmd
+	cmdIn           io.WriteCloser
+	cmdOutBuf       []byte
+	cmdHistory      []string
+	cmdHistoryBeg   int
+	cmdHistoryInd   int
+	cmdHistoryInput *string
+	menuCompActive  bool
+	menuCompTmp     []string
+	menuComps       []compMatch
+	menuCompInd     int
+	selectionOut    []string
+	watch           *watch
+	quitting        bool
 }
 
 func newApp(ui *ui, nav *nav) *app {
