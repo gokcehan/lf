@@ -2020,33 +2020,35 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
 		}
-		if app.cmdHistoryInd > 0 {
-			app.cmdHistoryInd--
+		for i := app.cmdHistoryInd - 1; i >= 0; i-- {
+			if i == 0 {
+				normal(app)
+				app.ui.cmdPrefix = ":"
+				break
+			}
+			cmd := app.cmdHistory[len(app.cmdHistory)-i]
+			if true { // replace with actual condition
+				normal(app)
+				app.ui.cmdPrefix = cmd[:1]
+				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.cmdHistoryInd = i
+				break
+			}
 		}
-		if app.cmdHistoryInd == 0 {
-			normal(app)
-			app.ui.cmdPrefix = ":"
-			return
-		}
-		historyInd := app.cmdHistoryInd
-		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
-		normal(app)
-		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd[:1]
-		app.ui.cmdAccLeft = []rune(cmd[1:])
 	case "cmd-history-prev":
 		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
 		}
-		if app.cmdHistoryInd == len(app.cmdHistory) {
-			return
+		for i := app.cmdHistoryInd + 1; i <= len(app.cmdHistory); i++ {
+			cmd := app.cmdHistory[len(app.cmdHistory)-i]
+			if true { // replace with actual condition
+				normal(app)
+				app.ui.cmdPrefix = cmd[:1]
+				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.cmdHistoryInd = i
+				break
+			}
 		}
-		historyInd := app.cmdHistoryInd + 1
-		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
-		normal(app)
-		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd[:1]
-		app.ui.cmdAccLeft = []rune(cmd[1:])
 	case "cmd-left":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
