@@ -775,6 +775,10 @@ func (nav *nav) preview(path string, win *win) {
 			strconv.Itoa(win.x),
 			strconv.Itoa(win.y))
 
+		// This will report lines and columns correctly
+		// instead of being hardcoded to 24x80
+		cmd.Stdin = os.Stdin
+
 		out, err := cmd.StdoutPipe()
 		if err != nil {
 			log.Printf("previewing file: %s", err)
