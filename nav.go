@@ -769,15 +769,17 @@ func (nav *nav) preview(path string, win *win) {
 	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
+		columns := strconv.Itoa(win.w)
+		lines := strconv.Itoa(win.h)
 		cmd := exec.Command(gOpts.previewer, path,
-			strconv.Itoa(win.w),
-			strconv.Itoa(win.h),
+			columns,
+			lines,
 			strconv.Itoa(win.x),
 			strconv.Itoa(win.y))
 
 		// This will report lines and columns correctly
 		// instead of being hardcoded to 24x80
-		cmd.Stdin = os.Stdin
+		cmd.Env = append(os.Environ(), "LINES="+lines, "COLUMNS="+columns)
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
