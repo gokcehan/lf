@@ -1866,8 +1866,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{":", s})
 			p := newParser(strings.NewReader(s))
 			for p.parse() {
 				p.expr.eval(app, nil)
@@ -1877,25 +1877,25 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "$":
 			log.Printf("shell: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"$", s})
 			app.runShell(s, nil, "$")
 		case "%":
 			log.Printf("shell-pipe: %s", s)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.runShell(s, nil, "%")
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
 			log.Printf("shell-wait: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"!", s})
 			app.runShell(s, nil, "!")
 		case "&":
 			log.Printf("shell-async: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"&", s})
 			app.runShell(s, nil, "&")
 		case "/":
 			dir := app.nav.currDir()
@@ -2032,8 +2032,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
 		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd.prefix
-		app.ui.cmdAccLeft = []rune(cmd.value)
+		app.ui.cmdPrefix = cmd[:1]
+		app.ui.cmdAccLeft = []rune(cmd[1:])
 	case "cmd-history-prev":
 		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
@@ -2045,8 +2045,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
 		normal(app)
 		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd.prefix
-		app.ui.cmdAccLeft = []rune(cmd.value)
+		app.ui.cmdPrefix = cmd[:1]
+		app.ui.cmdAccLeft = []rune(cmd[1:])
 	case "cmd-left":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return

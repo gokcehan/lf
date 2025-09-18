@@ -1274,7 +1274,7 @@ func listJumps(jumps []string, ind int) string {
 	return b.String()
 }
 
-func listHistory(history []cmdItem) string {
+func listHistory(history []string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1283,7 +1283,7 @@ func listHistory(history []cmdItem) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "number\tcommand")
 	for i, cmd := range history {
-		fmt.Fprintf(t, "%*d\t%s%s\n", maxlength, i+1, cmd.prefix, cmd.value)
+		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
 	}
 	t.Flush()
 
