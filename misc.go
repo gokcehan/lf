@@ -347,6 +347,36 @@ func getFileExtension(file fs.FileInfo) string {
 	return filepath.Ext(file.Name())
 }
 
+// This function truncates a filename at a given position.
+// The position is specified as percentage indicating where the truncation
+// character will appear (0 means left, 50 means middle, 100 means right).
+// The file extension is not affected by truncation, however it will be clipped
+// if it exceeds the allowed width.
+func truncateFilename(file fs.FileInfo, maxWidth int, truncatePct int, truncateChar rune) string {
+	filename := file.Name()
+	if runeSliceWidth([]rune(filename)) <= maxWidth {
+		return filename
+	}
+
+	ext := getFileExtension(file)
+	avail := maxWidth - runewidth.RuneWidth(truncateChar) - runeSliceWidth([]rune(ext))
+	if avail < 0 {
+		result := append([]rune{truncateChar}, []rune(ext)...)
+		return string(runeSliceWidthRange(result, 0, maxWidth))
+	}
+
+	basename := []rune(strings.TrimSuffix(filename, ext))
+	left := runeSliceWidthRange(basename, 0, avail*truncatePct/100)
+	right := runeSliceWidthLastRange(basename, avail-runeSliceWidth(left))
+
+	var result []rune
+	result = append(result, left...)
+	result = append(result, truncateChar)
+	result = append(result, right...)
+	result = append(result, []rune(ext)...)
+	return string(result)
+}
+
 // This function deletes entries from a map if the key is either the given path
 // or a subpath of it.
 // This is useful for clearing cached data when a directory is moved or deleted.
