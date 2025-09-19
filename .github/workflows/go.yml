@@ -7,11 +7,24 @@ on:
     branches: [master]
 
 jobs:
+  formatting:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v5
+
+      - name: Setup Go
+        uses: actions/setup-go@v6
+        with:
+          go-version-file: go.mod
+
+      - name: Check formatting
+        run: go fmt && git diff --exit-code
+
   tests:
+    runs-on: ${{ matrix.os }}
     strategy:
       matrix:
         os: [ubuntu-latest, windows-latest]
-    runs-on: ${{ matrix.os }}
     steps:
       - uses: actions/checkout@v5
 
@@ -31,28 +44,62 @@ jobs:
           version: "2025.1.1"
           install-go: false
 
-  cross-compile:
+  build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { os: android, arch: arm64 }
+          - { os: darwin, arch: amd64 }
+          - { os: darwin, arch: arm64 }
+          - { os: dragonfly, arch: amd64 }
+          - { os: freebsd, arch: "386" }
+          - { os: freebsd, arch: amd64 }
+          - { os: freebsd, arch: arm }
+          - { os: illumos, arch: amd64 }
+          - { os: linux, arch: "386" }
+          - { os: linux, arch: amd64 }
+          - { os: linux, arch: arm }
+          - { os: linux, arch: arm64 }
+          - { os: linux, arch: ppc64 }
+          - { os: linux, arch: ppc64le }
+          - { os: linux, arch: mips }
+          - { os: linux, arch: mipsle }
+          - { os: linux, arch: mips64 }
+          - { os: linux, arch: mips64le }
+          - { os: linux, arch: s390x }
+          - { os: netbsd, arch: "386" }
+          - { os: netbsd, arch: amd64 }
+          - { os: netbsd, arch: arm }
+          - { os: openbsd, arch: "386" }
+          - { os: openbsd, arch: amd64 }
+          - { os: openbsd, arch: arm }
+          - { os: openbsd, arch: arm64 }
+          - { os: solaris, arch: amd64 }
+          - { os: windows, arch: "386" }
+          - { os: windows, arch: amd64 }
+          # Unsupported
+          # - { os: aix, arch: ppc64 }
+          # - { os: android, arch: "386" }
+          # - { os: android, arch: amd64 }
+          # - { os: android, arch: arm }
+          # - { os: js, arch: wasm }
+          # - { os: plan9, arch: "386" }
+          # - { os: plan9, arch: amd64 }
+          # - { os: plan9, arch: arm }
     steps:
       - uses: actions/checkout@v5
+        with:
+          fetch-depth: 0 # https://github.com/actions/checkout/issues/2199
+          fetch-tags: true
 
       - name: Setup Go
         uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
-      - name: Cross-compile on all supported platforms
-        run: gen/xbuild.sh
-
-  formatting:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v5
-
-      - name: Setup Go
-        uses: actions/setup-go@v6
-        with:
-          go-version-file: go.mod
-
-      - name: Test `go fmt` creates no diffs
-        run: go fmt && git diff --exit-code
+      - name: Build
+        run: gen/build.sh
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}

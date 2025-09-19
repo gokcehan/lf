@@ -8,6 +8,8 @@
 # compressed in an archive form (`.zip` for windows and `.tar.gz` for the rest)
 # within a folder named `dist`.
 
+set -o errexit -o nounset
+
 [ -z "${version:-}" ] && version=$(git describe --tags --abbrev=0)
 
 test -d dist && {
