@@ -8,6 +8,47 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        include:
+          - { os: android, arch: arm64 }
+          - { os: darwin, arch: amd64 }
+          - { os: darwin, arch: arm64 }
+          - { os: dragonfly, arch: amd64 }
+          - { os: freebsd, arch: "386" }
+          - { os: freebsd, arch: amd64 }
+          - { os: freebsd, arch: arm }
+          - { os: illumos, arch: amd64 }
+          - { os: linux, arch: "386" }
+          - { os: linux, arch: amd64 }
+          - { os: linux, arch: arm }
+          - { os: linux, arch: arm64 }
+          - { os: linux, arch: ppc64 }
+          - { os: linux, arch: ppc64le }
+          - { os: linux, arch: mips }
+          - { os: linux, arch: mipsle }
+          - { os: linux, arch: mips64 }
+          - { os: linux, arch: mips64le }
+          - { os: linux, arch: s390x }
+          - { os: netbsd, arch: "386" }
+          - { os: netbsd, arch: amd64 }
+          - { os: netbsd, arch: arm }
+          - { os: openbsd, arch: "386" }
+          - { os: openbsd, arch: amd64 }
+          - { os: openbsd, arch: arm }
+          - { os: openbsd, arch: arm64 }
+          - { os: solaris, arch: amd64 }
+          - { os: windows, arch: "386" }
+          - { os: windows, arch: amd64 }
+          # Unsupported
+          # - { os: aix, arch: ppc64 }
+          # - { os: android, arch: "386" }
+          # - { os: android, arch: amd64 }
+          # - { os: android, arch: arm }
+          # - { os: js, arch: wasm }
+          # - { os: plan9, arch: "386" }
+          # - { os: plan9, arch: amd64 }
+          # - { os: plan9, arch: arm }
     steps:
       - uses: actions/checkout@v5
 
@@ -17,7 +58,32 @@ jobs:
           go-version-file: go.mod
 
       - name: Build
-        run: gen/xbuild.sh
+        run: gen/build.sh
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+
+      - name: Package
+        run: gen/package.sh
+        env:
+          GOOS: ${{ matrix.os }}
+          GOARCH: ${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-${{ matrix.os }}-${{ matrix.arch }}
+          path: dist/*
+
+  release:
+    runs-on: ubuntu-latest
+    needs: build
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v5
+        with:
+          path: dist
+          merge-multiple: true
 
       - name: Release
         uses: softprops/action-gh-release@v2
