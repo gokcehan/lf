@@ -953,6 +953,8 @@ func insert(app *app, arg string) {
 		switch arg {
 		case "!", "$", "%", "&":
 			app.ui.cmdPrefix = arg
+			app.cmdHistoryInd = 0
+			app.cmdHistoryInput = nil
 			return
 		}
 		fallthrough
@@ -2094,6 +2096,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
+				app.cmdHistoryInd = 0
+				app.cmdHistoryInput = nil
 			case ">", "rename: ", "filter: ":
 				// Don't mess with programs waiting for input.
 				// Exiting on backspace is also inconvenient for 'rename' and 'filter',
