@@ -3,27 +3,26 @@ name: Release
 on:
   push:
     tags:
-      - '*'
+      - "*"
 
 jobs:
-
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v5
+      - uses: actions/checkout@v5
 
-    - name: Set up Go
-      uses: actions/setup-go@v6
-      with:
-        go-version: "1.24"
+      - name: Set up Go
+        uses: actions/setup-go@v6
+        with:
+          go-version: "1.24"
 
-    - name: Build
-      run: gen/xbuild.sh
+      - name: Build
+        run: gen/xbuild.sh
 
-    - name: Release
-      uses: softprops/action-gh-release@v2
-      with:
-        files: dist/*
+      - name: Release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
 
   winget:
     runs-on: ubuntu-latest
