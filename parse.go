@@ -57,7 +57,12 @@ type setExpr struct {
 	val string
 }
 
-func (e *setExpr) String() string { return fmt.Sprintf("set %s %s", e.opt, e.val) }
+func (e *setExpr) String() string {
+	if e.val == "" {
+		return fmt.Sprintf("set %s", e.opt)
+	}
+	return fmt.Sprintf("set %s %s", e.opt, e.val)
+}
 
 type setLocalExpr struct {
 	path string
@@ -65,42 +70,72 @@ type setLocalExpr struct {
 	val  string
 }
 
-func (e *setLocalExpr) String() string { return fmt.Sprintf("setlocal %s %s %s", e.path, e.opt, e.val) }
+func (e *setLocalExpr) String() string {
+	if e.val == "" {
+		return fmt.Sprintf("setlocal %s %s", e.path, e.opt)
+	}
+	return fmt.Sprintf("setlocal %s %s %s", e.path, e.opt, e.val)
+}
 
 type mapExpr struct {
 	keys string
 	expr expr
 }
 
-func (e *mapExpr) String() string { return fmt.Sprintf("map %s %s", e.keys, e.expr) }
+func (e *mapExpr) String() string {
+	if e.expr == nil {
+		return fmt.Sprintf("map %s", e.keys)
+	}
+	return fmt.Sprintf("map %s %s", e.keys, e.expr)
+}
 
 type nmapExpr struct {
 	keys string
 	expr expr
 }
 
-func (e *nmapExpr) String() string { return fmt.Sprintf("nmap %s %s", e.keys, e.expr) }
+func (e *nmapExpr) String() string {
+	if e.expr == nil {
+		return fmt.Sprintf("nmap %s", e.keys)
+	}
+	return fmt.Sprintf("nmap %s %s", e.keys, e.expr)
+}
 
 type vmapExpr struct {
 	keys string
 	expr expr
 }
 
-func (e *vmapExpr) String() string { return fmt.Sprintf("vmap %s %s", e.keys, e.expr) }
+func (e *vmapExpr) String() string {
+	if e.expr == nil {
+		return fmt.Sprintf("vmap %s", e.keys)
+	}
+	return fmt.Sprintf("vmap %s %s", e.keys, e.expr)
+}
 
 type cmapExpr struct {
 	key  string
 	expr expr
 }
 
-func (e *cmapExpr) String() string { return fmt.Sprintf("cmap %s %s", e.key, e.expr) }
+func (e *cmapExpr) String() string {
+	if e.expr == nil {
+		return fmt.Sprintf("cmap %s", e.key)
+	}
+	return fmt.Sprintf("cmap %s %s", e.key, e.expr)
+}
 
 type cmdExpr struct {
 	name string
 	expr expr
 }
 
-func (e *cmdExpr) String() string { return fmt.Sprintf("cmd %s %s", e.name, e.expr) }
+func (e *cmdExpr) String() string {
+	if e.expr == nil {
+		return fmt.Sprintf("cmd %s", e.name)
+	}
+	return fmt.Sprintf("cmd %s %s", e.name, e.expr)
+}
 
 type callExpr struct {
 	name  string
@@ -108,7 +143,9 @@ type callExpr struct {
 	count int
 }
 
-func (e *callExpr) String() string { return fmt.Sprintf("%s -- %s", e.name, e.args) }
+func (e *callExpr) String() string {
+	return strings.Join(append([]string{e.name}, e.args...), " ")
+}
 
 type execExpr struct {
 	prefix string

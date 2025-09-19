@@ -1850,6 +1850,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		app.ui.menu = ""
 		app.ui.menuSelect = nil
 		app.menuCompActive = false
+	case "cmd-menu-discard":
+		if app.menuCompActive {
+			app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
+		}
+		app.ui.menu = ""
+		app.ui.menuSelect = nil
+		app.menuCompActive = false
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 && app.ui.cmdPrefix != "filter: " && app.ui.cmdPrefix != ">" {
@@ -2270,6 +2277,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		"cmd-menu-complete",
 		"cmd-menu-complete-back",
 		"cmd-menu-accept",
+		"cmd-menu-discard",
 		"cmd-enter",
 		"cmd-interrupt",
 		"cmd-history-next",
