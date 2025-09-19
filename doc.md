@@ -120,6 +120,7 @@ The following Command-line mode commands are provided by lf:
 	cmd-menu-complete
 	cmd-menu-complete-back
 	cmd-menu-accept
+	cmd-menu-discard
 	cmd-enter                (default '<c-j>' and '<enter>')
 	cmd-interrupt            (default '<c-c>')
 	cmd-history-next         (default '<c-n>' and '<down>')
@@ -653,6 +654,10 @@ You can use the assigned keys to display the menu and then cycle through complet
 ## cmd-menu-accept
 
 Accept the currently selected match in menu completion and close the menu.
+
+## cmd-menu-discard
+
+Discard the currently selected match in menu completion and close the menu.
 
 ## cmd-enter (default `<c-j>` and `<enter>`)
 
@@ -1240,7 +1245,7 @@ Value of the count associated with the current command.
 
 Current mode that `lf` is operating in.
 This is useful for customizing keybindings depending on what the current mode is.
-Possible values are `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, `visual` and `unknown`.
+Possible values are `compmenu`, `delete`, `rename`, `filter`, `find`, `mark`, `search`, `command`, `shell`, `pipe` (when running a shell-pipe command), `normal`, `visual` and `unknown`.
 
 # SPECIAL COMMANDS
 

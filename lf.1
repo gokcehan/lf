@@ -123,6 +123,7 @@ cmd\-complete             (default \(aq<tab>\(aq)
 cmd\-menu\-complete
 cmd\-menu\-complete\-back
 cmd\-menu\-accept
+cmd\-menu\-discard
 cmd\-enter                (default \(aq<c\-j>\(aq and \(aq<enter>\(aq)
 cmd\-interrupt            (default \(aq<c\-c>\(aq)
 cmd\-history\-next         (default \(aq<c\-n>\(aq and \(aq<down>\(aq)
@@ -625,6 +626,9 @@ You can use the assigned keys to display the menu and then cycle through
 completion options.
 .SS cmd\-menu\-accept
 Accept the currently selected match in menu completion and close the
+menu.
+.SS cmd\-menu\-discard
+Discard the currently selected match in menu completion and close the
 menu.
 .SS cmd\-enter (default \f[CR]<c\-j>\f[R] and \f[CR]<enter>\f[R])
 Execute the current line.
@@ -1151,11 +1155,11 @@ Value of the count associated with the current command.
 Current mode that \f[CR]lf\f[R] is operating in.
 This is useful for customizing keybindings depending on what the current
 mode is.
-Possible values are \f[CR]delete\f[R], \f[CR]rename\f[R],
-\f[CR]filter\f[R], \f[CR]find\f[R], \f[CR]mark\f[R], \f[CR]search\f[R],
-\f[CR]command\f[R], \f[CR]shell\f[R], \f[CR]pipe\f[R] (when running a
-shell\-pipe command), \f[CR]normal\f[R], \f[CR]visual\f[R] and
-\f[CR]unknown\f[R].
+Possible values are \f[CR]compmenu\f[R], \f[CR]delete\f[R],
+\f[CR]rename\f[R], \f[CR]filter\f[R], \f[CR]find\f[R], \f[CR]mark\f[R],
+\f[CR]search\f[R], \f[CR]command\f[R], \f[CR]shell\f[R], \f[CR]pipe\f[R]
+(when running a shell\-pipe command), \f[CR]normal\f[R],
+\f[CR]visual\f[R] and \f[CR]unknown\f[R].
 .SH SPECIAL COMMANDS
 This section shows information about special shell commands.
 .SS open
