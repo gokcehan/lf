@@ -614,25 +614,21 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.echo("")
 
 		go func() {
-			eol := false
 			reader := bufio.NewReader(out)
 			for {
 				b, err := reader.ReadByte()
 				if err == io.EOF {
 					break
 				}
-				if eol {
-					eol = false
+
+				app.cmdOutBuf = append(app.cmdOutBuf, b)
+				if reader.Buffered() == 0 {
+					app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
+				}
+
+				if b == '\n' || b == '\r' {
 					app.cmdOutBuf = nil
 				}
-				app.cmdOutBuf = append(app.cmdOutBuf, b)
-				if b == '\n' || b == '\r' {
-					eol = true
-				}
-				if reader.Buffered() > 0 {
-					continue
-				}
-				app.ui.exprChan <- &callExpr{"echo", []string{string(app.cmdOutBuf)}, 1}
 			}
 
 			if err := cmd.Wait(); err != nil {
