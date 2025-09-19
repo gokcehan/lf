@@ -1120,20 +1120,19 @@ The truncate character that is shown at the end when the filename does not fit i
 
 ## truncatepct (int) (default 100)
 
-When a filename is too long to be shown completely, the available space is
-partitioned into two pieces. truncatepct defines a fraction (in percent
-between 0 and 100) for the size of the first piece, which will show the
-beginning of the filename. The second piece will show the end of the filename
-and will use the rest of the available space. Both pieces are separated by the
-truncation character (truncatechar).
-A value of 100 will only show the beginning of the filename,
-while a value of 0 will only show the end of the filename, e.g.:
+When a filename is too long to be shown completely, the available space will be partitioned into two parts.
+`truncatepct` is a percentage value between 0 and 100 that determines the size of the first part, which will be shown at the beginning of the filename.
+The second part uses the rest of the available space, and will be shown at the end of the filename.
+Both parts are separated by the truncation character (`truncatechar`).
+Truncation is not applied to the file extension.
 
-- `set truncatepct 100` -> `very-long-filename-tr~` (default)
+For example, with the filename `very_long_filename.txt`:
 
-- `set truncatepct 50`  -> `very-long-f~-truncated`
+- `set truncatepct 100` -> `very_long_filena~.txt` (default)
 
-- `set truncatepct 0`   -> `~ng-filename-truncated`
+- `set truncatepct 50`  -> `very_lon~filename.txt`
+
+- `set truncatepct 0`   -> `~ry_long_filename.txt`
 
 ## visualfmt (string) (default `\033[7;36m`)
 

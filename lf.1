@@ -1051,22 +1051,24 @@ The truncate character that is shown at the end when the filename does
 not fit into the pane.
 .SS truncatepct (int) (default 100)
 When a filename is too long to be shown completely, the available space
-is partitioned into two pieces.
-truncatepct defines a fraction (in percent between 0 and 100) for the
-size of the first piece, which will show the beginning of the filename.
-The second piece will show the end of the filename and will use the rest
-of the available space.
-Both pieces are separated by the truncation character (truncatechar).
-A value of 100 will only show the beginning of the filename, while a
-value of 0 will only show the end of the filename, e.g.:
+will be partitioned into two parts.
+\f[CR]truncatepct\f[R] is a percentage value between 0 and 100 that
+determines the size of the first part, which will be shown at the
+beginning of the filename.
+The second part uses the rest of the available space, and will be shown
+at the end of the filename.
+Both parts are separated by the truncation character
+(\f[CR]truncatechar\f[R]).
+Truncation is not applied to the file extension.
+.PP
+For example, with the filename \f[CR]very_long_filename.txt\f[R]:
 .IP \(bu 2
-\f[CR]set truncatepct 100\f[R] \->
-\f[CR]very\-long\-filename\-tr\(ti\f[R] (default)
+\f[CR]set truncatepct 100\f[R] \-> \f[CR]very_long_filena\(ti.txt\f[R]
+(default)
 .IP \(bu 2
-\f[CR]set truncatepct 50\f[R] \->
-\f[CR]very\-long\-f\(ti\-truncated\f[R]
+\f[CR]set truncatepct 50\f[R] \-> \f[CR]very_lon\(tifilename.txt\f[R]
 .IP \(bu 2
-\f[CR]set truncatepct 0\f[R] \-> \f[CR]\(ting\-filename\-truncated\f[R]
+\f[CR]set truncatepct 0\f[R] \-> \f[CR]\(tiry_long_filename.txt\f[R]
 .SS visualfmt (string) (default \f[CR]\(rs033[7;36m\f[R])
 Format string of the indicator for files that are visually selected.
 .SS waitmsg (string) (default \f[CR]Press any key to continue\f[R])

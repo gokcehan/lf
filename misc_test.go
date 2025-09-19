@@ -410,6 +410,61 @@ func TestGetFileExtension(t *testing.T) {
 	}
 }
 
+func TestTruncateFilename(t *testing.T) {
+	tests := []struct {
+		file        fakeFileInfo
+		maxWidth    int
+		truncatePct int
+		exp         string
+	}{
+		{fakeFileInfo{"foo", false}, 0, 0, ""},
+		{fakeFileInfo{"foo", false}, 0, 100, ""},
+		{fakeFileInfo{"foo", false}, 1, 0, "~"},
+		{fakeFileInfo{"foo", false}, 1, 100, "~"},
+		{fakeFileInfo{"foo", false}, 2, 0, "~o"},
+		{fakeFileInfo{"foo", false}, 2, 100, "f~"},
+		{fakeFileInfo{"foo", false}, 3, 0, "foo"},
+		{fakeFileInfo{"foo", false}, 3, 100, "foo"},
+		{fakeFileInfo{"foo", false}, 4, 0, "foo"},
+		{fakeFileInfo{"foo", false}, 4, 100, "foo"},
+		{fakeFileInfo{"foo.txt", false}, 0, 0, ""},
+		{fakeFileInfo{"foo.txt", false}, 0, 100, ""},
+		{fakeFileInfo{"foo.txt", false}, 1, 0, "~"},
+		{fakeFileInfo{"foo.txt", false}, 1, 100, "~"},
+		{fakeFileInfo{"foo.txt", false}, 2, 0, "~."},
+		{fakeFileInfo{"foo.txt", false}, 2, 100, "~."},
+		{fakeFileInfo{"foo.txt", false}, 3, 0, "~.t"},
+		{fakeFileInfo{"foo.txt", false}, 3, 100, "~.t"},
+		{fakeFileInfo{"foo.txt", false}, 4, 0, "~.tx"},
+		{fakeFileInfo{"foo.txt", false}, 4, 100, "~.tx"},
+		{fakeFileInfo{"foo.txt", false}, 5, 0, "~.txt"},
+		{fakeFileInfo{"foo.txt", false}, 5, 100, "~.txt"},
+		{fakeFileInfo{"foo.txt", false}, 6, 0, "~o.txt"},
+		{fakeFileInfo{"foo.txt", false}, 6, 100, "f~.txt"},
+		{fakeFileInfo{"foobarbaz", false}, 7, 0, "~barbaz"},
+		{fakeFileInfo{"foobarbaz", false}, 7, 50, "foo~baz"},
+		{fakeFileInfo{"foobarbaz", false}, 7, 100, "foobar~"},
+		{fakeFileInfo{"foobarbaz.txt", false}, 11, 0, "~barbaz.txt"},
+		{fakeFileInfo{"foobarbaz.txt", false}, 11, 50, "foo~baz.txt"},
+		{fakeFileInfo{"foobarbaz.txt", false}, 11, 100, "foobar~.txt"},
+		{fakeFileInfo{"foobarbaz.d", true}, 9, 0, "~barbaz.d"},
+		{fakeFileInfo{"foobarbaz.d", true}, 9, 50, "foob~az.d"},
+		{fakeFileInfo{"foobarbaz.d", true}, 9, 100, "foobarba~"},
+		{fakeFileInfo{"世界世界.txt", false}, 10, 0, "~世界.txt"},
+		{fakeFileInfo{"世界世界.txt", false}, 10, 50, "世~界.txt"},
+		{fakeFileInfo{"世界世界.txt", false}, 10, 100, "世界~.txt"},
+		{fakeFileInfo{"世界世界.txt", false}, 11, 0, "~界世界.txt"},
+		{fakeFileInfo{"世界世界.txt", false}, 11, 50, "世~世界.txt"},
+		{fakeFileInfo{"世界世界.txt", false}, 11, 100, "世界世~.txt"},
+	}
+
+	for _, test := range tests {
+		if got := truncateFilename(test.file, test.maxWidth, test.truncatePct, '~'); got != test.exp {
+			t.Errorf("at input (%v, %v, %v) expected '%s' but got '%s'", test.file, test.maxWidth, test.truncatePct, test.exp, got)
+		}
+	}
+}
+
 func TestOptionToFmtstr(t *testing.T) {
 	tests := []struct {
 		s   string

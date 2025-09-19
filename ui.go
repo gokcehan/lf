@@ -499,14 +499,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxFilenameWidth -= infolen
 		}
 
-		filename := []rune(f.Name())
-		if runeSliceWidth(filename) > maxFilenameWidth {
-			truncatePos := (maxFilenameWidth - 1) * gOpts.truncatepct / 100
-			lastPart := runeSliceWidthLastRange(filename, maxFilenameWidth-truncatePos-1)
-			filename = runeSliceWidthRange(filename, 0, truncatePos)
-			filename = append(filename, []rune(gOpts.truncatechar)...)
-			filename = append(filename, lastPart...)
-		}
+		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, []rune(gOpts.truncatechar)[0]))
 		for j := runeSliceWidth(filename); j < maxFilenameWidth; j++ {
 			filename = append(filename, ' ')
 		}
