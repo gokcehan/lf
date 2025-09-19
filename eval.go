@@ -2029,9 +2029,13 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		for i := app.cmdHistoryInd - 1; i >= 0; i-- {
 			if i == 0 {
-				exitCompMenu(app)
-				app.ui.cmdAccLeft = nil
-				app.cmdHistoryInd = 0
+				if *app.cmdHistoryInput == "" {
+					normal(app)
+				} else {
+					exitCompMenu(app)
+					app.ui.cmdAccLeft = nil
+					app.cmdHistoryInd = 0
+				}
 				break
 			}
 			cmd := app.cmdHistory[len(app.cmdHistory)-i]
