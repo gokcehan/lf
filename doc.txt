@@ -110,6 +110,7 @@ The following Command-line mode commands are provided by lf:
     cmd-menu-complete
     cmd-menu-complete-back
     cmd-menu-accept
+    cmd-menu-discard
     cmd-enter                (default '<c-j>' and '<enter>')
     cmd-interrupt            (default '<c-c>')
     cmd-history-next         (default '<c-n>' and '<down>')
@@ -680,6 +681,11 @@ cmd-menu-accept
 Accept the currently selected match in menu completion and close the
 menu.
 
+cmd-menu-discard
+
+Discard the currently selected match in menu completion and close the
+menu.
+
 cmd-enter (default <c-j> and <enter>)
 
 Execute the current line.
@@ -915,9 +921,20 @@ Jump to the first match after each keystroke during searching.
 info ([]string) (default ``)
 
 A list of information that is shown for directory items at the right
-side of the pane. Currently supported information types are size, time,
-atime, btime, ctime, perm, user, group and custom. The custom type is
-empty by default and can be updated using the addcustominfo command.
+side of the pane.
+
+The following information types are supported:
+
+    perm      file permission
+    user      user name
+    group     group name
+    size      file size
+    time      time of last data modification
+    atime     time of last access
+    btime     time of file birth
+    ctime     time of last status (inode) change
+    custom    property defined via `addcustominfo` (empty by default)
+
 Information is only shown when the pane width is more than twice the
 width of information.
 
@@ -997,15 +1014,22 @@ option is left empty.
 
 promptfmt (string) (default \033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m)
 
-Format string of the prompt shown in the top line. Special expansions
-are provided, %u as the user name, %h as the hostname, %w as the working
-directory, %d as the working directory with a trailing path separator,
-%f as the filename, and %F as the current filter. %S may be used once
-and will provide a spacer so that the following parts are right-aligned
-on the screen. The home folder is shown as ~ in the working directory
-expansion. Directory names are automatically shortened to a single
-character starting from the leftmost parent when the prompt does not fit
-the screen.
+Format string of the prompt shown in the top line.
+
+The following special expansions are supported:
+
+    %f        file name
+    %h        host name
+    %u        user name
+    %w        working directory
+    %d        working directory (with trailing path separator)
+    %F        current filter
+    %S        spacer to right-align the following parts (can be used once)
+
+The home folder is shown as ~ in the working directory expansion.
+Directory names are automatically shortened to a single character
+starting from the leftmost parent when the prompt does not fit the
+screen.
 
 ratios ([]int) (default 1:2:3)
 
@@ -1029,18 +1053,27 @@ Draw rounded outer corners when the drawbox option is enabled.
 
 rulerfmt (string) (default   %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t)
 
-Format string of the ruler shown in the bottom right corner. Special
-expansions are provided, %a as the pressed keys, %p as the progress of
-file operations, %m as the number of files to be cut (moved), %c as the
-number of files to be copied, %s as the number of selected files, %v as
-the number of visually selected files, %f as the filter, %i as the
-position of the cursor, %t as the number of files shown in the current
-directory, %h as the number of files hidden in the current directory, %P
-as the scroll percentage, and %d as the amount of free disk space
-remaining. Additional expansions are provided for environment variables
-exported by lf, in the form %{lf_<name>} (e.g. %{lf_selmode}). This is
-useful for displaying the current settings. Expansions are also provided
-for user-defined options, in the form %{lf_user_<name>} (e.g.
+Format string of the ruler shown in the bottom right corner.
+
+The following special expansions are supported:
+
+    %a        pressed keys
+    %p        progress of file operations
+    %m        number of files to be cut (moved)
+    %c        number of files to be copied
+    %s        number of selected files
+    %v        number of visually selected files
+    %t        number of shown files in the current directory
+    %h        number of hidden files in the current directory
+    %f        current filter
+    %i        cursor position
+    %P        scroll percentage
+    %d        amount of free disk space
+
+Additional expansions are provided for environment variables exported by
+lf, in the form %{lf_<name>} (e.g. %{lf_selmode}). This is useful for
+displaying the current settings. Expansions are also provided for
+user-defined options, in the form %{lf_user_<name>} (e.g.
 %{lf_user_foo}). The | character splits the format string into sections.
 Any section containing a failed expansion (result is a blank string) is
 discarded and not shown.
@@ -1104,30 +1137,36 @@ diacritic. This option has no effect when ignoredia is disabled.
 
 sortby (string) (default natural)
 
-Sort type for directories. Currently supported sort types are natural,
-name, size, time, atime, btime, ctime, ext and custom.
+Sort type for directories.
 
-Meaning of each sort type:
+The following sort types are supported:
 
     natural   file name (track_2.flac comes before track_10.flac)
     name      file name (track_10.flac comes before track_2.flac)
+    ext       file extension
     size      file size
     time      time of last data modification
     atime     time of last access
     btime     time of file birth
     ctime     time of last status (inode) change
-    ext       file extension
-    custom    property defined via `addcustominfo`
+    custom    property defined via `addcustominfo` (empty by default)
 
 statfmt (string) (default \033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l)
 
-Format string of the file info shown in the bottom left corner. Special
-expansions are provided, %p as the file permissions, %c as the link
-count, %u as the user, %g as the group, %s as the file size, %S as the
-file size but with a fixed width of five characters (left-padded with
-spaces), %t as the last modified time, %l as the link target, %m as the
-current mode and %M as the current mode but also shown in Normal mode
-(displaying NORMAL instead of a blank string).
+Format string of the file info shown in the bottom left corner.
+
+The following special expansions are supported:
+
+    %p        file permission
+    %c        link count
+    %u        user name
+    %g        group name
+    %s        file size
+    %S        file size (left-padded with spaces to a fixed width of 5 characters)
+    %t        time of last data modification
+    %l        link target
+    %m        current mode
+    %M        current mode (displaying `NORMAL` instead of a blank string in Normal mode)
 
 The | character splits the format string into sections. Any section
 containing a failed expansion (result is a blank string) is discarded
@@ -1166,19 +1205,20 @@ not fit into the pane.
 truncatepct (int) (default 100)
 
 When a filename is too long to be shown completely, the available space
-is partitioned into two pieces. truncatepct defines a fraction (in
-percent between 0 and 100) for the size of the first piece, which will
-show the beginning of the filename. The second piece will show the end
-of the filename and will use the rest of the available space. Both
-pieces are separated by the truncation character (truncatechar). A value
-of 100 will only show the beginning of the filename, while a value of 0
-will only show the end of the filename, e.g.:
+will be partitioned into two parts. truncatepct is a percentage value
+between 0 and 100 that determines the size of the first part, which will
+be shown at the beginning of the filename. The second part uses the rest
+of the available space, and will be shown at the end of the filename.
+Both parts are separated by the truncation character (truncatechar).
+Truncation is not applied to the file extension.
 
-- set truncatepct 100 -> very-long-filename-tr~ (default)
+For example, with the filename very_long_filename.txt:
 
-- set truncatepct 50 -> very-long-f~-truncated
+- set truncatepct 100 -> very_long_filena~.txt (default)
 
-- set truncatepct 0 -> ~ng-filename-truncated
+- set truncatepct 50 -> very_lon~filename.txt
+
+- set truncatepct 0 -> ~ry_long_filename.txt
 
 visualfmt (string) (default \033[7;36m)
 
@@ -1307,8 +1347,8 @@ lf_mode
 
 Current mode that lf is operating in. This is useful for customizing
 keybindings depending on what the current mode is. Possible values are
-delete, rename, filter, find, mark, search, command, shell, pipe (when
-running a shell-pipe command), normal, visual and unknown.
+compmenu, delete, rename, filter, find, mark, search, command, shell,
+pipe (when running a shell-pipe command), normal, visual and unknown.
 
 SPECIAL COMMANDS
 
