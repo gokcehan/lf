@@ -521,6 +521,47 @@ func TestParse(t *testing.T) {
 	}
 }
 
+func TestExprString(t *testing.T) {
+	tests := []struct {
+		e   expr
+		exp string
+	}{
+		{&setExpr{"hidden!", ""}, "set hidden!"},
+		{&setExpr{"hidden", "true"}, "set hidden true"},
+		{&setLocalExpr{"~", "hidden!", ""}, "setlocal ~ hidden!"},
+		{&setLocalExpr{"~", "hidden", "true"}, "setlocal ~ hidden true"},
+		{&mapExpr{"q", nil}, "map q"},
+		{&mapExpr{"q", &callExpr{"quit", nil, 1}}, "map q quit"},
+		{&nmapExpr{"q", nil}, "nmap q"},
+		{&nmapExpr{"q", &callExpr{"quit", nil, 1}}, "nmap q quit"},
+		{&vmapExpr{"q", nil}, "vmap q"},
+		{&vmapExpr{"q", &callExpr{"quit", nil, 1}}, "vmap q quit"},
+		{&cmapExpr{"q", nil}, "cmap q"},
+		{&cmapExpr{"q", &callExpr{"quit", nil, 1}}, "cmap q quit"},
+		{&cmdExpr{"foo", nil}, "cmd foo"},
+		{&cmdExpr{"foo", &callExpr{"quit", nil, 1}}, "cmd foo quit"},
+		{&callExpr{"quit", nil, 1}, "quit"},
+		{&callExpr{"cd", []string{"~"}, 1}, "cd ~"},
+		{&execExpr{"$", "du -h . | less"}, "${{ du -h . | less }}"},
+		{
+			&execExpr{"$", `
+				mkdir foo
+				cp $fs foo
+				tar -czvf foo.tar.gz foo
+				rm -rf foo
+			`},
+			"${{ mkdir foo ... }}",
+		},
+		{&listExpr{[]expr{&callExpr{"toggle", nil, 1}, &callExpr{"down", nil, 1}}, 1}, ":{{ toggle; down; }}"},
+	}
+
+	for _, test := range tests {
+		if got := test.e.String(); got != test.exp {
+			t.Errorf("at test '%#v' expected '%s' but got '%s'", test.e, test.exp, got)
+		}
+	}
+}
+
 func TestSplitKeys(t *testing.T) {
 	inps := []struct {
 		s    string
