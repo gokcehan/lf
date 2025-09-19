@@ -696,7 +696,9 @@ Interrupt the current shell-pipe command and return to the Normal mode.
 
 cmd-history-next (default <c-n> and <down>), cmd-history-prev (default <c-p> and <up>)
 
-Go to the next/previous item in the history.
+Go to the next/previous entry in the command history. If part of the
+command is already typed, then only matching entries will be considered,
+and consecutive duplicate entries are skipped.
 
 cmd-left (default <c-b> and <left>), cmd-right (default <c-f> and <right>)
 
