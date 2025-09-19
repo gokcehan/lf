@@ -17,7 +17,7 @@ jobs:
         with:
           go-version-file: go.mod
 
-      - name: Test `go fmt` creates no diffs
+      - name: Check formatting
         run: go fmt && git diff --exit-code
 
   tests:
