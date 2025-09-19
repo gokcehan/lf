@@ -14,13 +14,11 @@ jobs:
         os: [ubuntu-latest, windows-latest]
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
 
       - name: Build
         run: go build -v ./...
@@ -37,13 +35,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
 
       - name: Cross-compile on all supported platforms
         run: gen/xbuild.sh
@@ -52,13 +48,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v5
-        with:
-          fetch-depth: 1
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
 
       - name: Test `go fmt` creates no diffs
         run: go fmt && git diff --exit-code
