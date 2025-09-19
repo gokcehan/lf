@@ -11,10 +11,10 @@ jobs:
     steps:
       - uses: actions/checkout@v5
 
-      - name: Set up Go
+      - name: Setup Go
         uses: actions/setup-go@v6
         with:
-          go-version: "1.24"
+          go-version-file: go.mod
 
       - name: Build
         run: gen/xbuild.sh
