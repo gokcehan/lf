@@ -15,29 +15,25 @@ import (
 	"time"
 )
 
-type cmdItem struct {
-	prefix string
-	value  string
-}
-
 type app struct {
-	ui             *ui
-	nav            *nav
-	ticker         *time.Ticker
-	quitChan       chan struct{}
-	cmd            *exec.Cmd
-	cmdIn          io.WriteCloser
-	cmdOutBuf      []byte
-	cmdHistory     []cmdItem
-	cmdHistoryBeg  int
-	cmdHistoryInd  int
-	menuCompActive bool
-	menuCompTmp    []string
-	menuComps      []compMatch
-	menuCompInd    int
-	selectionOut   []string
-	watch          *watch
-	quitting       bool
+	ui              *ui
+	nav             *nav
+	ticker          *time.Ticker
+	quitChan        chan struct{}
+	cmd             *exec.Cmd
+	cmdIn           io.WriteCloser
+	cmdOutBuf       []byte
+	cmdHistory      []string
+	cmdHistoryBeg   int
+	cmdHistoryInd   int
+	cmdHistoryInput *string
+	menuCompActive  bool
+	menuCompTmp     []string
+	menuComps       []compMatch
+	menuCompInd     int
+	selectionOut    []string
+	watch           *watch
+	quitting        bool
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -196,14 +192,11 @@ func (app *app) readHistory() error {
 
 	scanner := bufio.NewScanner(f)
 	for scanner.Scan() {
-		toks := strings.SplitN(scanner.Text(), " ", 2)
-		if toks[0] != ":" && toks[0] != "$" && toks[0] != "%" && toks[0] != "!" && toks[0] != "&" {
+		cmd := scanner.Text()
+		if len(cmd) < 1 || !slices.Contains([]string{":", "$", "!", "%", "&"}, cmd[:1]) {
 			continue
 		}
-		if len(toks) < 2 {
-			continue
-		}
-		app.cmdHistory = append(app.cmdHistory, cmdItem{toks[0], toks[1]})
+		app.cmdHistory = append(app.cmdHistory, cmd)
 	}
 
 	app.cmdHistoryBeg = len(app.cmdHistory)
@@ -220,8 +213,7 @@ func (app *app) writeHistory() error {
 		return nil
 	}
 
-	local := make([]cmdItem, len(app.cmdHistory)-app.cmdHistoryBeg)
-	copy(local, app.cmdHistory[app.cmdHistoryBeg:])
+	local := slices.Clone(app.cmdHistory[app.cmdHistoryBeg:])
 	app.cmdHistory = nil
 
 	if err := app.readHistory(); err != nil {
@@ -229,6 +221,9 @@ func (app *app) writeHistory() error {
 	}
 
 	app.cmdHistory = append(app.cmdHistory, local...)
+	if len(app.cmdHistory) > 1000 {
+		app.cmdHistory = app.cmdHistory[len(app.cmdHistory)-1000:]
+	}
 
 	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
 		return fmt.Errorf("creating data directory: %s", err)
@@ -240,13 +235,8 @@ func (app *app) writeHistory() error {
 	}
 	defer f.Close()
 
-	if len(app.cmdHistory) > 1000 {
-		app.cmdHistory = app.cmdHistory[len(app.cmdHistory)-1000:]
-	}
-
 	for _, cmd := range app.cmdHistory {
-		_, err = fmt.Fprintf(f, "%s %s\n", cmd.prefix, cmd.value)
-		if err != nil {
+		if _, err = fmt.Fprintln(f, cmd); err != nil {
 			return fmt.Errorf("writing history file: %s", err)
 		}
 	}

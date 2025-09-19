@@ -672,9 +672,8 @@ func splitKeys(s string) (keys []string) {
 }
 
 func update(app *app) {
-	app.ui.menu = ""
-	app.ui.menuSelect = nil
-	app.menuCompActive = false
+	exitCompMenu(app)
+	app.cmdHistoryInput = nil
 
 	switch {
 	case gOpts.incsearch && app.ui.cmdPrefix == "/":
@@ -755,12 +754,10 @@ func resetIncCmd(app *app) {
 
 func normal(app *app) {
 	resetIncCmd(app)
+	exitCompMenu(app)
 
 	app.cmdHistoryInd = 0
-
-	app.ui.menu = ""
-	app.ui.menuSelect = nil
-	app.menuCompActive = false
+	app.cmdHistoryInput = nil
 
 	app.ui.cmdAccLeft = nil
 	app.ui.cmdAccRight = nil
@@ -956,15 +953,22 @@ func insert(app *app, arg string) {
 		switch arg {
 		case "!", "$", "%", "&":
 			app.ui.cmdPrefix = arg
+			app.cmdHistoryInd = 0
+			app.cmdHistoryInput = nil
 			return
 		}
 		fallthrough
 	default:
-		app.ui.menu = ""
-		app.ui.menuSelect = nil
-		app.menuCompActive = false
+		exitCompMenu(app)
+		app.cmdHistoryInput = nil
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
 	}
+}
+
+func exitCompMenu(app *app) {
+	app.ui.menu = ""
+	app.ui.menuSelect = nil
+	app.menuCompActive = false
 }
 
 func (e *callExpr) eval(app *app, args []string) {
@@ -1847,25 +1851,19 @@ func (e *callExpr) eval(app *app, args []string) {
 	case "cmd-menu-complete-back":
 		app.menuComplete(-1)
 	case "cmd-menu-accept":
-		app.ui.menu = ""
-		app.ui.menuSelect = nil
-		app.menuCompActive = false
+		exitCompMenu(app)
 	case "cmd-menu-discard":
 		if app.menuCompActive {
 			app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
 		}
-		app.ui.menu = ""
-		app.ui.menuSelect = nil
-		app.menuCompActive = false
+		exitCompMenu(app)
 	case "cmd-enter":
 		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
 		if len(s) == 0 && app.ui.cmdPrefix != "filter: " && app.ui.cmdPrefix != ">" {
 			return
 		}
 
-		app.ui.menu = ""
-		app.ui.menuSelect = nil
-		app.menuCompActive = false
+		exitCompMenu(app)
 
 		app.ui.cmdAccLeft = nil
 		app.ui.cmdAccRight = nil
@@ -1873,8 +1871,8 @@ func (e *callExpr) eval(app *app, args []string) {
 		switch app.ui.cmdPrefix {
 		case ":":
 			log.Printf("command: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{":", s})
 			p := newParser(strings.NewReader(s))
 			for p.parse() {
 				p.expr.eval(app, nil)
@@ -1884,25 +1882,25 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 		case "$":
 			log.Printf("shell: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"$", s})
 			app.runShell(s, nil, "$")
 		case "%":
 			log.Printf("shell-pipe: %s", s)
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"%", s})
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.runShell(s, nil, "%")
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
 			log.Printf("shell-wait: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"!", s})
 			app.runShell(s, nil, "!")
 		case "&":
 			log.Printf("shell-async: %s", s)
+			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
-			app.cmdHistory = append(app.cmdHistory, cmdItem{"&", s})
 			app.runShell(s, nil, "&")
 		case "/":
 			dir := app.nav.currDir()
@@ -2027,33 +2025,48 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
 		}
-		if app.cmdHistoryInd > 0 {
-			app.cmdHistoryInd--
+		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
+		if app.cmdHistoryInput == nil {
+			app.cmdHistoryInput = &input
 		}
-		if app.cmdHistoryInd == 0 {
-			normal(app)
-			app.ui.cmdPrefix = ":"
-			return
+		for i := app.cmdHistoryInd - 1; i >= 0; i-- {
+			if i == 0 {
+				if *app.cmdHistoryInput == "" {
+					normal(app)
+				} else {
+					exitCompMenu(app)
+					app.ui.cmdAccLeft = nil
+					app.cmdHistoryInd = 0
+				}
+				break
+			}
+			cmd := app.cmdHistory[len(app.cmdHistory)-i]
+			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
+				exitCompMenu(app)
+				app.ui.cmdPrefix = cmd[:1]
+				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.cmdHistoryInd = i
+				break
+			}
 		}
-		historyInd := app.cmdHistoryInd
-		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
-		normal(app)
-		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd.prefix
-		app.ui.cmdAccLeft = []rune(cmd.value)
 	case "cmd-history-prev":
 		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
 		}
-		if app.cmdHistoryInd == len(app.cmdHistory) {
-			return
+		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
+		if app.cmdHistoryInput == nil {
+			app.cmdHistoryInput = &input
 		}
-		historyInd := app.cmdHistoryInd + 1
-		cmd := app.cmdHistory[len(app.cmdHistory)-historyInd]
-		normal(app)
-		app.cmdHistoryInd = historyInd
-		app.ui.cmdPrefix = cmd.prefix
-		app.ui.cmdAccLeft = []rune(cmd.value)
+		for i := app.cmdHistoryInd + 1; i <= len(app.cmdHistory); i++ {
+			cmd := app.cmdHistory[len(app.cmdHistory)-i]
+			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
+				exitCompMenu(app)
+				app.ui.cmdPrefix = cmd[:1]
+				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.cmdHistoryInd = i
+				break
+			}
+		}
 	case "cmd-left":
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
@@ -2083,6 +2096,8 @@ func (e *callExpr) eval(app *app, args []string) {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
+				app.cmdHistoryInd = 0
+				app.cmdHistoryInput = nil
 			case ">", "rename: ", "filter: ":
 				// Don't mess with programs waiting for input.
 				// Exiting on backspace is also inconvenient for 'rename' and 'filter',
