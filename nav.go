@@ -328,11 +328,15 @@ func (dir *dir) sort() {
 	// when sorting by size while also showing dircounts, we always display files
 	// and directories separately to avoid mixing file sizes and file counts
 	if dir.dirfirst || (dir.sortby == sizeSort && dir.dircounts) {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if dir.files[i].IsDir() == dir.files[j].IsDir() {
-				return i < j
+		applySort(func(f1, f2 *file) int {
+			switch {
+			case f1.IsDir() && !f2.IsDir():
+				return -1
+			case !f1.IsDir() && f2.IsDir():
+				return 1
+			default:
+				return 0
 			}
-			return dir.files[i].IsDir()
 		})
 	}
 
