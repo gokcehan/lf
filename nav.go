@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -207,18 +208,6 @@ func newDir(path string) *dir {
 	}
 }
 
-func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
-	if ignorecase {
-		s1 = strings.ToLower(s1)
-		s2 = strings.ToLower(s2)
-	}
-	if ignoredia {
-		s1 = removeDiacritics(s1)
-		s2 = removeDiacritics(s2)
-	}
-	return s1, s2
-}
-
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dircounts = getDirCounts(dir.path)
@@ -238,12 +227,12 @@ func (dir *dir) sort() {
 	applyFilter := func(fn func(f *file) bool) {
 		slices.SortStableFunc(dir.files, func(i, j *file) int {
 			switch {
-			case fn(i) == fn(j):
-				return 0
 			case !fn(i) && fn(j):
 				return -1
-			default:
+			case fn(i) && !fn(j):
 				return 1
+			default:
+				return 0
 			}
 		})
 
@@ -266,26 +255,32 @@ func (dir *dir) sort() {
 		applyFilter(func(f *file) bool { return !isFiltered(f, dir.filter) })
 	}
 
-	// reverse order cannot be applied after stable sorting, otherwise the order
-	// of equivalent elements will be reversed
-	applySort := func(fn func(i, j int) bool) {
+	applySort := func(fn func(f1, f2 *file) int) {
 		if !dir.reverse {
-			sort.SliceStable(dir.files, fn)
+			slices.SortStableFunc(dir.files, fn)
 		} else {
-			sort.SliceStable(dir.files, func(i, j int) bool { return fn(j, i) })
+			slices.SortStableFunc(dir.files, func(f1, f2 *file) int { return fn(f2, f1) })
 		}
+	}
+
+	normalize := func(s string) string {
+		if dir.ignorecase {
+			s = strings.ToLower(s)
+		}
+		if dir.ignoredia {
+			s = removeDiacritics(s)
+		}
+		return s
 	}
 
 	switch dir.sortby {
 	case naturalSort:
-		applySort(func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return naturalLess(s1, s2)
+		applySort(func(f1, f2 *file) int {
+			return naturalCmp(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case nameSort:
-		applySort(func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return s1 < s2
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case sizeSort:
 		sizeVal := func(f *file) int64 {
@@ -294,47 +289,54 @@ func (dir *dir) sort() {
 			}
 			return f.TotalSize()
 		}
-		applySort(func(i, j int) bool {
-			s1, s2 := sizeVal(dir.files[i]), sizeVal(dir.files[j])
-			return s1 < s2
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(sizeVal(f1), sizeVal(f2))
 		})
 	case timeSort:
-		applySort(func(i, j int) bool {
-			return dir.files[i].ModTime().Before(dir.files[j].ModTime())
+		applySort(func(f1, f2 *file) int {
+			return f1.ModTime().Compare(f2.ModTime())
 		})
 	case atimeSort:
-		applySort(func(i, j int) bool {
-			return dir.files[i].accessTime.Before(dir.files[j].accessTime)
+		applySort(func(f1, f2 *file) int {
+			return f1.accessTime.Compare(f2.accessTime)
 		})
 	case btimeSort:
-		applySort(func(i, j int) bool {
-			return dir.files[i].birthTime.Before(dir.files[j].birthTime)
+		applySort(func(f1, f2 *file) int {
+			return f1.birthTime.Compare(f2.birthTime)
 		})
 	case ctimeSort:
-		applySort(func(i, j int) bool {
-			return dir.files[i].changeTime.Before(dir.files[j].changeTime)
+		applySort(func(f1, f2 *file) int {
+			return f1.changeTime.Compare(f2.changeTime)
 		})
 	case extSort:
-		applySort(func(i, j int) bool {
-			ext1, ext2 := normalize(dir.files[i].ext, dir.files[j].ext, dir.ignorecase, dir.ignoredia)
-			name1, name2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return ext1 < ext2 || ext1 == ext2 && name1 < name2
+		applySort(func(f1, f2 *file) int {
+			ext1 := normalize(f1.ext)
+			ext2 := normalize(f2.ext)
+			if ext1 != ext2 {
+				return cmp.Compare(ext1, ext2)
+			}
+			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case customSort:
-		applySort(func(i, j int) bool {
-			s1, s2 := normalize(stripAnsi(dir.files[i].customInfo), stripAnsi(dir.files[j].customInfo), dir.ignorecase, dir.ignoredia)
-			return naturalLess(s1, s2)
+		applySort(func(f1, f2 *file) int {
+			s1 := normalize(stripAnsi(f1.customInfo))
+			s2 := normalize(stripAnsi(f2.customInfo))
+			return naturalCmp(s1, s2)
 		})
 	}
 
 	// when sorting by size while also showing dircounts, we always display files
 	// and directories separately to avoid mixing file sizes and file counts
 	if dir.dirfirst || (dir.sortby == sizeSort && dir.dircounts) {
-		sort.SliceStable(dir.files, func(i, j int) bool {
-			if dir.files[i].IsDir() == dir.files[j].IsDir() {
-				return i < j
+		applySort(func(f1, f2 *file) int {
+			switch {
+			case f1.IsDir() && !f2.IsDir():
+				return -1
+			case !f1.IsDir() && f2.IsDir():
+				return 1
+			default:
+				return 0
 			}
-			return dir.files[i].IsDir()
 		})
 	}
 

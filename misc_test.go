@@ -346,29 +346,41 @@ func TestHumanize(t *testing.T) {
 	}
 }
 
-func TestNaturalLess(t *testing.T) {
+func TestNaturalCmp(t *testing.T) {
 	tests := []struct {
 		s1  string
 		s2  string
-		exp bool
+		exp int
 	}{
-		{"foo", "bar", false},
-		{"bar", "baz", true},
-		{"foo", "123", false},
-		{"foo1", "foobar", true},
-		{"foo1", "foo10", true},
-		{"foo2", "foo10", true},
-		{"foo1", "foo10bar", true},
-		{"foo2", "foo10bar", true},
-		{"foo1bar", "foo10bar", true},
-		{"foo2bar", "foo10bar", true},
-		{"foo1bar", "foo10", true},
-		{"foo2bar", "foo10", true},
+		{"", "", 0},
+		{"a", "a", 0},
+		{"", "a", -1},
+		{"a", "b", -1},
+		{"a", "ab", -1},
+		{"0", "0", 0},
+		{"0", "00", -1},
+		{"1", "1", 0},
+		{"1", "01", -1},
+		{"2", "10", -1},
+		{"123", "foo", -1},
+		{"foo", "foo1", -1},
+		{"foo1", "foobar", -1},
+		{"foo1", "foobar1", -1},
+		{"foo2", "foo10", -1},
+		{"foo2bar", "foo10bar", -1},
+		{"foo0", "foo00", -1},
+		{"foo0bar", "foo00bar", -1},
+		{"foo1", "foo01", -1},
+		{"foo1bar", "foo01bar", -1},
 	}
 
 	for _, test := range tests {
-		if got := naturalLess(test.s1, test.s2); got != test.exp {
-			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
+		if got := naturalCmp(test.s1, test.s2); got != test.exp {
+			t.Errorf("at input '%s' and '%s' expected '%d' but got '%d'", test.s1, test.s2, test.exp, got)
+		}
+
+		if got := naturalCmp(test.s2, test.s1); got != -test.exp {
+			t.Errorf("at input '%s' and '%s' expected '%d' but got '%d'", test.s2, test.s1, -test.exp, got)
 		}
 	}
 }

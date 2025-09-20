@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"fmt"
 	"io"
 	"io/fs"
@@ -291,45 +292,54 @@ func humanize(size uint64) string {
 }
 
 // This function compares two strings for natural sorting which takes into
-// account values of numbers in strings. For example, '2' is less than '10',
-// and similarly 'foo2bar' is less than 'foo10bar', but 'bar2bar' is greater
-// than 'foo10bar'.
-func naturalLess(s1, s2 string) bool {
-	lo1, lo2, hi1, hi2 := 0, 0, 0, 0
+// account the values of numbers in strings. For example, '2' is ordered before
+// '10', and similarly 'foo2bar' ordered before 'foo10bar'. When comparing
+// numbers, if they have the same value then the length of the string is also
+// compared, so '0' is ordered before '00'.
+func naturalCmp(s1, s2 string) int {
 	s1len := len(s1)
 	s2len := len(s2)
+
+	var lo1, lo2, hi1, hi2 int
 	for {
-		if hi1 >= s1len {
-			return hi2 != s2len
+		switch {
+		case hi1 >= s1len && hi2 >= s2len:
+			return 0
+		case hi1 >= s1len && hi2 < s2len:
+			return -1
+		case hi1 < s1len && hi2 >= s2len:
+			return 1
 		}
 
-		if hi2 >= s2len {
-			return false
-		}
-
+		lo1 = hi1
 		isDigit1 := isDigit(s1[hi1])
+		for hi1 < s1len && isDigit(s1[hi1]) == isDigit1 {
+			hi1++
+		}
+		tok1 := s1[lo1:hi1]
+
+		lo2 = hi2
 		isDigit2 := isDigit(s2[hi2])
-
-		for lo1 = hi1; hi1 < s1len && isDigit(s1[hi1]) == isDigit1; hi1++ {
+		for hi2 < s2len && isDigit(s2[hi2]) == isDigit2 {
+			hi2++
 		}
-
-		for lo2 = hi2; hi2 < s2len && isDigit(s2[hi2]) == isDigit2; hi2++ {
-		}
-
-		if s1[lo1:hi1] == s2[lo2:hi2] {
-			continue
-		}
+		tok2 := s2[lo2:hi2]
 
 		if isDigit1 && isDigit2 {
-			num1, err1 := strconv.Atoi(s1[lo1:hi1])
-			num2, err2 := strconv.Atoi(s2[lo2:hi2])
-
+			num1, err1 := strconv.Atoi(tok1)
+			num2, err2 := strconv.Atoi(tok2)
 			if err1 == nil && err2 == nil {
-				return num1 < num2
+				if num1 != num2 {
+					return cmp.Compare(num1, num2)
+				} else if len(tok1) != len(tok2) {
+					return cmp.Compare(len(tok1), len(tok2))
+				}
 			}
 		}
 
-		return s1[lo1:hi1] < s2[lo2:hi2]
+		if tok1 != tok2 {
+			return cmp.Compare(tok1, tok2)
+		}
 	}
 }
 
