@@ -295,7 +295,7 @@ func humanize(size uint64) string {
 // account the values of numbers in strings. For example, '2' is ordered before
 // '10', and similarly 'foo2bar' ordered before 'foo10bar'. When comparing
 // numbers, if they have the same value then the length of the string is
-// compared, so '0' is ordered before '00'.
+// also compared, so '0' is ordered before '00'.
 func naturalCmp(s1, s2 string) int {
 	s1len := len(s1)
 	s2len := len(s2)
