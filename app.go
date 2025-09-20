@@ -583,23 +583,24 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	// We are running the command asynchronously
-	var inReader, outReader, outWriter *os.File
-	var err error
+	var inReader, inWriter, outReader, outWriter *os.File
 	if prefix == "%" {
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
-		// Hook up stdin and stdout.
-		// We don't use Cmd.StdoutPipe and friends because its docs say
-		// "It is … incorrect to call Wait before all reads from the pipe have completed."
-		// (see also https://github.com/golang/go/issues/60908).
-		// But we are going to be calling Wait concurrently with reading from the stdout pipe.
-		inReader, app.cmdIn, err = os.Pipe()
+
+		// Cmd.StdoutPipe cannot be used as it requires the output to be fully
+		// read before calling Cmd.Wait, however in this case Cmd.Wait should
+		// only wait for the command to finish executing regardless of whether
+		// the output has been fully read or not.
+		inReader, inWriter, err := os.Pipe()
 		if err != nil {
 			log.Printf("creating input pipe: %s", err)
 			return
 		}
 		cmd.Stdin = inReader
+		app.cmdIn = inWriter
+
 		outReader, outWriter, err = os.Pipe()
 		if err != nil {
 			log.Printf("creating output pipe: %s", err)
@@ -610,7 +611,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	shellSetPG(cmd)
-	if err = cmd.Start(); err != nil {
+	if err := cmd.Start(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
 
@@ -648,10 +649,11 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
-			outWriter.Close()
-			outReader.Close()
-			app.cmdIn.Close()
 			inReader.Close()
+			inWriter.Close()
+			outReader.Close()
+			outWriter.Close()
+
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
