@@ -2,8 +2,10 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"io"
+	"io/fs"
 	"log"
 	"os"
 	"os/exec"
@@ -570,8 +572,6 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 	cmd := shellCommand(s, args)
 
-	var out io.Reader
-	var err error
 	switch prefix {
 	case "$", "!":
 		cmd.Stdin = os.Stdin
@@ -583,21 +583,30 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	}
 
 	// We are running the command asynchronously
+	var inReader, outReader, outWriter *os.File
+	var err error
 	if prefix == "%" {
 		if app.ui.cmdPrefix == ">" {
 			return
 		}
-		stdin, err := cmd.StdinPipe()
+		// Hook up stdin and stdout.
+		// We don't use Cmd.StdoutPipe and friends because its docs say
+		// "It is … incorrect to call Wait before all reads from the pipe have completed."
+		// (see also https://github.com/golang/go/issues/60908).
+		// But we are going to be calling Wait concurrently with reading from the stdout pipe.
+		inReader, app.cmdIn, err = os.Pipe()
 		if err != nil {
-			log.Printf("writing stdin: %s", err)
+			log.Printf("creating input pipe: %s", err)
+			return
 		}
-		app.cmdIn = stdin
-		stdout, err := cmd.StdoutPipe()
+		cmd.Stdin = inReader
+		outReader, outWriter, err = os.Pipe()
 		if err != nil {
-			log.Printf("reading stdout: %s", err)
+			log.Printf("creating output pipe: %s", err)
+			return
 		}
-		out = stdout
-		cmd.Stderr = cmd.Stdout
+		cmd.Stdout = outWriter
+		cmd.Stderr = outWriter
 	}
 
 	shellSetPG(cmd)
@@ -614,10 +623,13 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		app.ui.echo("")
 
 		go func() {
-			reader := bufio.NewReader(out)
+			reader := bufio.NewReader(outReader)
 			for {
 				b, err := reader.ReadByte()
-				if err == io.EOF {
+				if err != nil {
+					if !errors.Is(err, io.EOF) && !errors.Is(err, fs.ErrClosed) {
+						log.Printf("reading command output: %s", err)
+					}
 					break
 				}
 
@@ -630,10 +642,16 @@ func (app *app) runShell(s string, args []string, prefix string) {
 					app.cmdOutBuf = nil
 				}
 			}
+		}()
 
+		go func() {
 			if err := cmd.Wait(); err != nil {
 				log.Printf("running shell: %s", err)
 			}
+			outWriter.Close()
+			outReader.Close()
+			app.cmdIn.Close()
+			inReader.Close()
 			app.cmd = nil
 			app.ui.cmdPrefix = ""
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
