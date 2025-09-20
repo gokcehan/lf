@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"bytes"
+	"cmp"
 	"fmt"
 	"io"
 	"io/fs"
@@ -330,6 +331,58 @@ func naturalLess(s1, s2 string) bool {
 		}
 
 		return s1[lo1:hi1] < s2[lo2:hi2]
+	}
+}
+
+// This function compares two strings for natural sorting which takes into
+// account the values of numbers in strings. For example, '2' is ordered before
+// '10', and similarly 'foo2bar' ordered before 'foo10bar'. When comparing
+// numbers, if they have the same value then the length of the string is
+// compared, so '0' is ordered before '00'.
+func naturalCmp(s1, s2 string) int {
+	s1len := len(s1)
+	s2len := len(s2)
+
+	var lo1, lo2, hi1, hi2 int
+	for {
+		switch {
+		case hi1 >= s1len && hi2 >= s2len:
+			return 0
+		case hi1 >= s1len && hi2 < s2len:
+			return -1
+		case hi1 < s1len && hi2 >= s2len:
+			return 1
+		}
+
+		lo1 = hi1
+		isDigit1 := isDigit(s1[hi1])
+		for hi1 < s1len && isDigit(s1[hi1]) == isDigit1 {
+			hi1++
+		}
+		tok1 := s1[lo1:hi1]
+
+		lo2 = hi2
+		isDigit2 := isDigit(s2[hi2])
+		for hi2 < s2len && isDigit(s2[hi2]) == isDigit2 {
+			hi2++
+		}
+		tok2 := s2[lo2:hi2]
+
+		if isDigit1 && isDigit2 {
+			num1, err1 := strconv.Atoi(tok1)
+			num2, err2 := strconv.Atoi(tok2)
+			if err1 == nil && err2 == nil {
+				if num1 != num2 {
+					return cmp.Compare(num1, num2)
+				} else if len(tok1) != len(tok2) {
+					return cmp.Compare(len(tok1), len(tok2))
+				}
+			}
+		}
+
+		if tok1 != tok2 {
+			return cmp.Compare(tok1, tok2)
+		}
 	}
 }
 

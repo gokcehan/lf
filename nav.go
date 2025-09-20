@@ -219,6 +219,16 @@ func normalize(s1, s2 string, ignorecase, ignoredia bool) (string, string) {
 	return s1, s2
 }
 
+func normalize2(s string, ignorecase, ignoredia bool) string {
+	if ignorecase {
+		s = strings.ToLower(s)
+	}
+	if ignoredia {
+		s = removeDiacritics(s)
+	}
+	return s
+}
+
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dircounts = getDirCounts(dir.path)
@@ -276,11 +286,20 @@ func (dir *dir) sort() {
 		}
 	}
 
+	applySort2 := func(fn func(f1, f2 *file) int) {
+		if !dir.reverse {
+			slices.SortStableFunc(dir.files, fn)
+		} else {
+			slices.SortStableFunc(dir.files, func(f1, f2 *file) int { return fn(f2, f1) })
+		}
+	}
+
 	switch dir.sortby {
 	case naturalSort:
-		applySort(func(i, j int) bool {
-			s1, s2 := normalize(dir.files[i].Name(), dir.files[j].Name(), dir.ignorecase, dir.ignoredia)
-			return naturalLess(s1, s2)
+		applySort2(func(f1, f2 *file) int {
+			s1 := normalize2(f1.Name(), dir.ignorecase, dir.ignoredia)
+			s2 := normalize2(f2.Name(), dir.ignorecase, dir.ignoredia)
+			return naturalCmp(s1, s2)
 		})
 	case nameSort:
 		applySort(func(i, j int) bool {
