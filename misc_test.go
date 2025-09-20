@@ -346,33 +346,6 @@ func TestHumanize(t *testing.T) {
 	}
 }
 
-func TestNaturalLess(t *testing.T) {
-	tests := []struct {
-		s1  string
-		s2  string
-		exp bool
-	}{
-		{"foo", "bar", false},
-		{"bar", "baz", true},
-		{"foo", "123", false},
-		{"foo1", "foobar", true},
-		{"foo1", "foo10", true},
-		{"foo2", "foo10", true},
-		{"foo1", "foo10bar", true},
-		{"foo2", "foo10bar", true},
-		{"foo1bar", "foo10bar", true},
-		{"foo2bar", "foo10bar", true},
-		{"foo1bar", "foo10", true},
-		{"foo2bar", "foo10", true},
-	}
-
-	for _, test := range tests {
-		if got := naturalLess(test.s1, test.s2); got != test.exp {
-			t.Errorf("at input '%s' and '%s' expected '%t' but got '%t'", test.s1, test.s2, test.exp, got)
-		}
-	}
-}
-
 func TestNaturalCmp(t *testing.T) {
 	tests := []struct {
 		s1  string

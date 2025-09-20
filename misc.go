@@ -292,49 +292,6 @@ func humanize(size uint64) string {
 }
 
 // This function compares two strings for natural sorting which takes into
-// account values of numbers in strings. For example, '2' is less than '10',
-// and similarly 'foo2bar' is less than 'foo10bar', but 'bar2bar' is greater
-// than 'foo10bar'.
-func naturalLess(s1, s2 string) bool {
-	lo1, lo2, hi1, hi2 := 0, 0, 0, 0
-	s1len := len(s1)
-	s2len := len(s2)
-	for {
-		if hi1 >= s1len {
-			return hi2 != s2len
-		}
-
-		if hi2 >= s2len {
-			return false
-		}
-
-		isDigit1 := isDigit(s1[hi1])
-		isDigit2 := isDigit(s2[hi2])
-
-		for lo1 = hi1; hi1 < s1len && isDigit(s1[hi1]) == isDigit1; hi1++ {
-		}
-
-		for lo2 = hi2; hi2 < s2len && isDigit(s2[hi2]) == isDigit2; hi2++ {
-		}
-
-		if s1[lo1:hi1] == s2[lo2:hi2] {
-			continue
-		}
-
-		if isDigit1 && isDigit2 {
-			num1, err1 := strconv.Atoi(s1[lo1:hi1])
-			num2, err2 := strconv.Atoi(s2[lo2:hi2])
-
-			if err1 == nil && err2 == nil {
-				return num1 < num2
-			}
-		}
-
-		return s1[lo1:hi1] < s2[lo2:hi2]
-	}
-}
-
-// This function compares two strings for natural sorting which takes into
 // account the values of numbers in strings. For example, '2' is ordered before
 // '10', and similarly 'foo2bar' ordered before 'foo10bar'. When comparing
 // numbers, if they have the same value then the length of the string is
