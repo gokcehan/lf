@@ -248,12 +248,12 @@ func (dir *dir) sort() {
 	applyFilter := func(fn func(f *file) bool) {
 		slices.SortStableFunc(dir.files, func(i, j *file) int {
 			switch {
-			case fn(i) == fn(j):
-				return 0
 			case !fn(i) && fn(j):
 				return -1
-			default:
+			case fn(i) && !fn(j):
 				return 1
+			default:
+				return 0
 			}
 		})
 
