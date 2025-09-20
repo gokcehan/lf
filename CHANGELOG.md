@@ -22,6 +22,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new command `cmd-menu-discard` is added to allow exiting the completion menu with completions discarded (#2146).
 - The `lf_mode` environment variable will now be set to `compmenu` if the completion menu is active (#2146).
 
+### Fixed
+
+- `shell-pipe` commands no longer wait for output if kept open after the command has finished running (#2155).
+
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
 ### Changed
