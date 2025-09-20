@@ -2292,7 +2292,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		"on-focus-lost",
 		"on-init",
 	}
-	if !slices.Contains(keepMsgCmds, e.name) {
+	if !slices.Contains(keepMsgCmds, e.name) && app.ui.cmdPrefix != ">" {
 		app.ui.echo("")
 	}
 }
