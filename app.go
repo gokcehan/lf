@@ -347,7 +347,6 @@ func (app *app) loop() {
 			app.nav.copyTotal += n
 			if n < 0 {
 				app.nav.copyBytes += n
-				app.nav.copyJobs -= 1
 			}
 			if app.nav.copyTotal == 0 {
 				app.nav.copyUpdate = 0
