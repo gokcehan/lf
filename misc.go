@@ -456,13 +456,12 @@ func stripAnsi(s string) string {
 // Lines are split on `\n` characters, and `\r` characters are discarded.
 // Sixel images are also detected and stored as separate lines.
 // The presence of a null byte outside a sixel image indicates a binary file.
-func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
+func readLines(reader *bufio.Reader, maxLines int) (lines []string, binary bool, sixel bool) {
 	var buf bytes.Buffer
-	var last byte
 	inSixel := false
 
 	for {
-		b, err := reader.ReadByte()
+		r, _, err := reader.ReadRune()
 		if err != nil {
 			if buf.Len() > 0 {
 				lines = append(lines, buf.String())
@@ -471,9 +470,10 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		}
 
 		if inSixel {
-			buf.WriteByte(b)
-			if b == '\\' && last == '\033' {
-				lines = append(lines, buf.String())
+			buf.WriteRune(r)
+			s := buf.String()
+			if strings.HasSuffix(s, "\033\\") {
+				lines = append(lines, s)
 				buf.Reset()
 				if len(lines) >= maxLines {
 					return
@@ -482,40 +482,47 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 			}
 		} else {
 			switch {
-			case b == 0:
+			case r == 0:
 				return nil, true, false
-			case b == '\033':
-				// withhold as it could be the start of a sixel image
-			case b == 'P' && last == '\033':
-				if buf.Len() > 0 {
-					lines = append(lines, buf.String())
-					buf.Reset()
-					if len(lines) >= maxLines {
-						return
-					}
-				}
-				buf.WriteByte(last)
-				buf.WriteByte(b)
-				inSixel = true
-				sixel = true
-			case last == '\033':
-				// not a sixel image
-				buf.WriteByte(last)
-				buf.WriteByte(b)
-			case b == '\r':
-			case b == '\n':
+			case r == '\n':
 				lines = append(lines, buf.String())
 				buf.Reset()
 				if len(lines) >= maxLines {
 					return
 				}
+			case r == '\r':
+				// ignore
+			case r == '\033':
+				s := buf.String()
+				if strings.HasSuffix(s, "\033") {
+					// escape sequence
+					buf.WriteRune(r)
+				} else {
+					// could be the start of a sixel image
+					if buf.Len() > 0 {
+						lines = append(lines, buf.String())
+						buf.Reset()
+						if len(lines) >= maxLines {
+							return
+						}
+					}
+					buf.WriteRune(r)
+				}
+			case r == 'P':
+				s := buf.String()
+				if s == "\033" {
+					buf.WriteRune(r)
+					inSixel = true
+					sixel = true
+				} else {
+					buf.WriteRune(r)
+				}
 			default:
-				buf.WriteByte(b)
+				buf.WriteRune(r)
 			}
 		}
-
-		last = b
 	}
+	return
 }
 
 // We don't need no generic code

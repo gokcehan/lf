@@ -804,14 +804,14 @@ func (nav *nav) preview(path string, win *win) {
 		defer out.Close()
 		reader = bufio.NewReader(out)
 	} else {
-		f, err := os.Open(path)
+		r, err := newReader(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
 			return
 		}
 
-		defer f.Close()
-		reader = bufio.NewReader(f)
+		defer r.Close()
+		reader = bufio.NewReader(r)
 	}
 
 	lines, binary, sixel := readLines(reader, win.h)
