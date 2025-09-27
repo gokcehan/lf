@@ -6,7 +6,7 @@ require (
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gdamore/tcell/v2 v2.9.0
-	github.com/mattn/go-runewidth v0.0.16
+	github.com/mattn/go-runewidth v0.0.17
 	golang.org/x/sys v0.36.0
 	golang.org/x/term v0.35.0
 )
