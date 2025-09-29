@@ -90,6 +90,7 @@ var gOpts struct {
 	relativenumber   bool
 	reverse          bool
 	roundbox         bool
+	rulerfile        bool
 	rulerfmt         string
 	scrolloff        int
 	searchmethod     searchMethod
@@ -250,6 +251,7 @@ func init() {
 	gOpts.relativenumber = false
 	gOpts.reverse = false
 	gOpts.roundbox = false
+	gOpts.rulerfile = false
 	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
 	gOpts.scrolloff = 0
 	gOpts.searchmethod = textSearch

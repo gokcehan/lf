@@ -6,11 +6,13 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"reflect"
 	"slices"
 	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
+	"text/template"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -662,6 +664,7 @@ type ui struct {
 	keyCount    []rune
 	styles      styleMap
 	icons       iconMap
+	ruler       *template.Template
 	currentFile string
 	pasteEvent  bool
 }
@@ -682,6 +685,7 @@ func newUI(screen tcell.Screen) *ui {
 		evChan:      make(chan tcell.Event, 1000),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
+		ruler:       parseRuler(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
@@ -1016,6 +1020,126 @@ func (ui *ui) drawRuler(nav *nav) {
 	ui.msgWin.printRight(ui.screen, 0, st, ruler.String())
 }
 
+func (ui *ui) drawRulerFile(nav *nav) {
+	if ui.ruler == nil {
+		return
+	}
+
+	var stat *statData
+	curr, err := nav.currFile()
+	if err == nil {
+		if curr.err == nil {
+			stat = &statData{
+				Path:        curr.path,
+				Name:        curr.Name(),
+				Size:        uint64(curr.Size()),
+				Permissions: curr.Mode().String(),
+				ModTime:     curr.ModTime().Format(gOpts.timefmt),
+				LinkCount:   linkCount(curr),
+				User:        userName(curr),
+				Group:       groupName(curr),
+				Target:      curr.linkTarget,
+			}
+		} else {
+			ui.echoerrf("stat: %s", curr.err)
+		}
+	}
+
+	dir := nav.currDir()
+	tot := len(dir.files)
+	ind := min(dir.ind+1, tot)
+	hid := len(dir.allFiles) - tot
+
+	var percentage string
+	beg := max(dir.ind-dir.pos, 0)
+	switch {
+	case tot <= nav.height:
+		percentage = "All"
+	case beg == 0:
+		percentage = "Top"
+	case beg == tot-nav.height:
+		percentage = "Bot"
+	default:
+		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
+	}
+
+	var copy []string
+	var cut []string
+	if nav.clipboard.mode == clipboardCopy {
+		copy = nav.clipboard.paths
+	} else {
+		cut = nav.clipboard.paths
+	}
+
+	currSelections := nav.currSelections()
+	currVSelections := nav.currDir().visualSelections()
+
+	progress := []string{}
+
+	if nav.copyJobs > 0 {
+		if nav.copyTotal == 0 {
+			progress = append(progress, fmt.Sprintf("[0%%]"))
+		} else {
+			progress = append(progress, fmt.Sprintf("[%d%%]", nav.copyBytes*100/nav.copyTotal))
+		}
+	}
+
+	if nav.moveTotal > 0 {
+		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.moveCount, nav.moveTotal))
+	}
+
+	if nav.deleteTotal > 0 {
+		progress = append(progress, fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal))
+	}
+
+	mode := "NORMAL"
+	if nav.isVisualMode() {
+		mode = "VISUAL"
+	}
+
+	options := make(map[string]string)
+	v := reflect.ValueOf(gOpts)
+	t := v.Type()
+	for i := range v.NumField() {
+		name := t.Field(i).Name
+		switch name {
+		case "nkeys", "vkeys", "cmdkeys", "cmds", "user":
+			continue
+		default:
+			options[name] = fieldToString(v.Field(i))
+		}
+	}
+
+	data := rulerData{
+		SPACER:      "\x1f",
+		Message:     ui.msg,
+		Keys:        string(ui.keyCount) + string(ui.keyAcc),
+		Progress:    progress,
+		Copy:        copy,
+		Cut:         cut,
+		Select:      currSelections,
+		Visual:      currVSelections,
+		Index:       ind,
+		Total:       tot,
+		Hidden:      hid,
+		Percentage:  percentage,
+		Filter:      dir.filter,
+		Mode:        mode,
+		Options:     options,
+		UserOptions: gOpts.user,
+		Stat:        stat,
+	}
+
+	left, right, err := renderRuler(ui.ruler, data)
+	if err != nil {
+		log.Printf("rendering ruler: %s", err)
+		return
+	}
+
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, left)
+	ui.msgWin.printRight(ui.screen, 0, tcell.StyleDefault, right)
+}
+
 func (ui *ui) drawBox() {
 	st := parseEscapeSequence(gOpts.borderfmt)
 
@@ -1123,8 +1247,12 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		ui.drawStat(nav)
-		ui.drawRuler(nav)
+		if gOpts.rulerfile {
+			ui.drawRulerFile(nav)
+		} else {
+			ui.drawStat(nav)
+			ui.drawRuler(nav)
+		}
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end

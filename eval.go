@@ -157,6 +157,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "roundbox", "noroundbox", "roundbox!":
 		err = applyBoolOpt(&gOpts.roundbox, e)
+	case "rulerfile", "norulerfile", "rulerfile!":
+		err = applyBoolOpt(&gOpts.rulerfile, e)
 	case "showbinds", "noshowbinds", "showbinds!":
 		err = applyBoolOpt(&gOpts.showbinds, e)
 	// DEPRECATED: remove after r38 is released
