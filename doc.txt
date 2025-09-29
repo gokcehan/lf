@@ -183,7 +183,7 @@ The following options can be used to customize the behavior of lf:
     relativenumber    bool      (default false)
     reverse           bool      (default false)
     roundbox          bool      (default false)
-    rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
+    rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
     scrolloff         int       (default 0)
     searchmethod      string    (default 'text')
     selectfmt         string    (default "\033[7;35m")
