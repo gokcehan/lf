@@ -1053,17 +1053,24 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
 
-	var percentage string
+	var linePercentage string
+	if tot == 0 {
+		linePercentage = "100%"
+	} else {
+		linePercentage = fmt.Sprintf("%d%%", ind*100/tot)
+	}
+
+	var scrollPercentage string
 	beg := max(dir.ind-dir.pos, 0)
 	switch {
 	case tot <= nav.height:
-		percentage = "All"
+		scrollPercentage = "All"
 	case beg == 0:
-		percentage = "Top"
+		scrollPercentage = "Top"
 	case beg == tot-nav.height:
-		percentage = "Bot"
+		scrollPercentage = "Bot"
 	default:
-		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
+		scrollPercentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
 	}
 
 	var copy []string
@@ -1114,23 +1121,24 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	}
 
 	data := rulerData{
-		SPACER:      "\x1f",
-		Message:     ui.msg,
-		Keys:        string(ui.keyCount) + string(ui.keyAcc),
-		Progress:    progress,
-		Copy:        copy,
-		Cut:         cut,
-		Select:      currSelections,
-		Visual:      currVSelections,
-		Index:       ind,
-		Total:       tot,
-		Hidden:      hid,
-		Percentage:  percentage,
-		Filter:      dir.filter,
-		Mode:        mode,
-		Options:     options,
-		UserOptions: gOpts.user,
-		Stat:        stat,
+		SPACER:           "\x1f",
+		Message:          ui.msg,
+		Keys:             string(ui.keyCount) + string(ui.keyAcc),
+		Progress:         progress,
+		Copy:             copy,
+		Cut:              cut,
+		Select:           currSelections,
+		Visual:           currVSelections,
+		Index:            ind,
+		Total:            tot,
+		Hidden:           hid,
+		LinePercentage:   linePercentage,
+		ScrollPercentage: scrollPercentage,
+		Filter:           dir.filter,
+		Mode:             mode,
+		Options:          options,
+		UserOptions:      gOpts.user,
+		Stat:             stat,
 	}
 
 	ruler, err := renderRuler(ui.ruler, data, ui.msgWin.w)

@@ -26,23 +26,24 @@ type statData struct {
 }
 
 type rulerData struct {
-	SPACER      string
-	Message     string
-	Keys        string
-	Progress    []string
-	Copy        []string
-	Cut         []string
-	Select      []string
-	Visual      []string
-	Index       int
-	Total       int
-	Hidden      int
-	Percentage  string
-	Filter      []string
-	Mode        string
-	Options     map[string]string
-	UserOptions map[string]string
-	Stat        *statData
+	SPACER           string
+	Message          string
+	Keys             string
+	Progress         []string
+	Copy             []string
+	Cut              []string
+	Select           []string
+	Visual           []string
+	Index            int
+	Total            int
+	Hidden           int
+	LinePercentage   string
+	ScrollPercentage string
+	Filter           []string
+	Mode             string
+	Options          map[string]string
+	UserOptions      map[string]string
+	Stat             *statData
 }
 
 func parseRuler() (*template.Template, error) {

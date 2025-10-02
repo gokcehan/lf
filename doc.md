@@ -2108,7 +2108,8 @@ The following data fields are exported:
 	.Index            int                 Index of the cursor
 	.Total            int                 Number of visible files in the current directory
 	.Hidden           int                 Number of hidden files in the current directory
-	.Percentage       string              Scroll percentage
+	.LinePercentage   string              Line percentage (analagous to `%p` for the `statusline` option in Vim)
+	.ScrollPercentage string              Scroll percentage (analagous to `%P` for the `statusline` option in Vim)
 	.Filter           []string            Filter currently being applied
 	.Mode             string              Current mode ("NORMAL" for Normal mode, and "VISUAL" for Visual mode)
 	.Options          map[string]string   The value of options (e.g. `{{.Options.hidden}}`)
