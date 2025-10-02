@@ -1132,7 +1132,8 @@ func (ui *ui) drawRulerFile(nav *nav) {
 
 	left, right, err := renderRuler(ui.ruler, data)
 	if err != nil {
-		log.Printf("rendering ruler: %s", err)
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("rendering ruler: %w", err))
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
 
