@@ -45,7 +45,7 @@ type rulerData struct {
 	Stat        *statData
 }
 
-func parseRuler() *template.Template {
+func parseRuler() (*template.Template, error) {
 	funcs := template.FuncMap{
 		"df":       func() string { return diskFree(".") },
 		"env":      os.Getenv,
@@ -54,8 +54,6 @@ func parseRuler() *template.Template {
 		"substr":   func(s string, start, length int) string { return string([]rune(s)[start : start+length]) },
 	}
 
-	var ruler *template.Template
-
 	for i := len(gRulerPaths) - 1; i >= 0; i-- {
 		path := gRulerPaths[i]
 		if _, err := os.Stat(path); os.IsNotExist(err) {
@@ -63,22 +61,10 @@ func parseRuler() *template.Template {
 		}
 
 		log.Printf("reading file: %s", path)
-
-		tmpl, err := template.New("ruler").Funcs(funcs).ParseFiles(path)
-		if err != nil {
-			log.Printf("parsing ruler file: %s", err)
-			continue
-		}
-
-		ruler = tmpl
-		break
+		return template.New("ruler").Funcs(funcs).ParseFiles(path)
 	}
 
-	if ruler == nil {
-		ruler, _ = template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
-	}
-
-	return ruler
+	return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 }
 
 func renderRuler(ruler *template.Template, data rulerData, width int) (string, error) {

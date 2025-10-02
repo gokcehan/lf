@@ -665,6 +665,7 @@ type ui struct {
 	styles      styleMap
 	icons       iconMap
 	ruler       *template.Template
+	rulerErr    error
 	currentFile string
 	pasteEvent  bool
 }
@@ -685,10 +686,10 @@ func newUI(screen tcell.Screen) *ui {
 		evChan:      make(chan tcell.Event, 1000),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
-		ruler:       parseRuler(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
+	ui.ruler, ui.rulerErr = parseRuler()
 
 	go ui.pollEvents()
 
@@ -1021,7 +1022,9 @@ func (ui *ui) drawRuler(nav *nav) {
 }
 
 func (ui *ui) drawRulerFile(nav *nav) {
-	if ui.ruler == nil {
+	if ui.rulerErr != nil {
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("parsing ruler: %w", ui.rulerErr))
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
 
