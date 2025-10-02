@@ -2376,8 +2376,8 @@ The following functions are exported:
     join     func([]string, string) string   Join a string array by a separator
     substr   func(string, int, int) string   Get a substring based on starting index and length
 
-The special identifier {{.SPACER}} can be used once to separate the
-ruler into left and right components.
+The special identifier {{.SPACER}} can be used to divide the ruler into
+sections that are spaced evenly from each other.
 
 The default ruler file can be found at
 https://github.com/gokcehan/lf/blob/master/etc/ruler.default

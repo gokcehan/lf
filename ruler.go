@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"os"
 	"strings"
@@ -80,19 +81,39 @@ func parseRuler() *template.Template {
 	return ruler
 }
 
-func renderRuler(ruler *template.Template, data rulerData) (string, string, error) {
+func renderRuler(ruler *template.Template, data rulerData, width int) (string, error) {
 	var b strings.Builder
 	if err := ruler.Execute(&b, data); err != nil {
-		return "", "", err
+		return "", err
 	}
 
 	s := strings.TrimSuffix(b.String(), "\n")
 	s = strings.ReplaceAll(s, "\n", "\033[0;7m\\n\033[0m")
+	sections := strings.Split(s, "\x1f")
 
-	left, right, found := strings.Cut(s, "\x1f")
-	if !found {
-		return s, "", nil
+	if len(sections) == 1 {
+		return s, nil
 	}
 
-	return left, right, nil
+	wtot := 0
+	for _, section := range sections {
+		wtot += printLength(section)
+	}
+
+	wspacer := max(width-wtot, 0) / (len(sections) - 1)
+	wspacerLast := max(width-wtot-wspacer*(len(sections)-2), 0)
+
+	b.Reset()
+	for i, section := range sections {
+		switch i {
+		case 0:
+			b.WriteString(section)
+		case len(sections) - 1:
+			fmt.Fprintf(&b, "%*s%s", wspacerLast, "", section)
+		default:
+			fmt.Fprintf(&b, "%*s%s", wspacer, "", section)
+		}
+	}
+
+	return b.String(), nil
 }
