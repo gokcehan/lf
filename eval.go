@@ -2284,6 +2284,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		"load",
 		"push",
 		"redraw",
+		"source",
 		"sync",
 		"tty-write",
 		"cmd-enter",
