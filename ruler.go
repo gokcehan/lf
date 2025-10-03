@@ -70,10 +70,10 @@ func parseRuler() (*template.Template, error) {
 	return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 }
 
-func renderRuler(ruler *template.Template, data rulerData, width int) (string, error) {
+func renderRuler(ruler *template.Template, data rulerData, width int) (string, string, error) {
 	var b strings.Builder
 	if err := ruler.Execute(&b, data); err != nil {
-		return "", err
+		return "", "", err
 	}
 
 	s := strings.TrimSuffix(b.String(), "\n")
@@ -81,12 +81,16 @@ func renderRuler(ruler *template.Template, data rulerData, width int) (string, e
 	sections := strings.Split(s, "\x1f")
 
 	if len(sections) == 1 {
-		return s, nil
+		return s, "", nil
 	}
 
 	wtot := 0
 	for _, section := range sections {
 		wtot += printLength(section)
+	}
+
+	if wtot > width {
+		return sections[0], strings.Join(sections[1:], ""), nil
 	}
 
 	wspacer := max(width-wtot, 0) / (len(sections) - 1)
@@ -104,5 +108,5 @@ func renderRuler(ruler *template.Template, data rulerData, width int) (string, e
 		}
 	}
 
-	return b.String(), nil
+	return b.String(), "", nil
 }

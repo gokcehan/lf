@@ -1141,14 +1141,15 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		Stat:             stat,
 	}
 
-	ruler, err := renderRuler(ui.ruler, data, ui.msgWin.w)
+	left, right, err := renderRuler(ui.ruler, data, ui.msgWin.w)
 	if err != nil {
 		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("rendering ruler: %w", err))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
 
-	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ruler)
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, left)
+	ui.msgWin.printRight(ui.screen, 0, tcell.StyleDefault, right)
 }
 
 func (ui *ui) drawBox() {
