@@ -52,7 +52,9 @@ func parseRuler() (*template.Template, error) {
 		"env":      os.Getenv,
 		"humanize": humanize,
 		"join":     strings.Join,
+		"lower":    strings.ToLower,
 		"substr":   func(s string, start, length int) string { return string([]rune(s)[start : start+length]) },
+		"upper":    strings.ToUpper,
 	}
 
 	for i := len(gRulerPaths) - 1; i >= 0; i-- {
