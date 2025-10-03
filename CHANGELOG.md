@@ -27,7 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `shell-pipe` commands no longer wait for output if kept open after the command has finished running (#2155).
 - Natural sorting now compares string lengths when dealing with equivalent numbers (e.g. `0` is ordered before `00`) (#2177).
 - A bug where the copy progress indicator only displayed the first time a file was copied is now fixed (#2181).
-- A bug where the `source` command does not show errors upon failure is now fixed (#2189).
+- A bug where the `source` command does not show an error message upon failure is now fixed (#2189).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
