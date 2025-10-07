@@ -12,9 +12,9 @@
 {{.SPACER -}}
 {{with .Keys}}  {{.}}{{end -}}
 {{with .Progress}}  {{join . " "}}{{end -}}
-{{with .Copy}}  {{len . | printf "\033[7;33m %d \033[0m"}}{{end -}}
-{{with .Cut}}  {{len . | printf "\033[7;31m %d \033[0m"}}{{end -}}
-{{with .Select}}  {{len . | printf "\033[7;35m %d \033[0m"}}{{end -}}
-{{with .Visual}}  {{len . | printf "\033[7;36m %d \033[0m"}}{{end -}}
+{{with .Copy}}  {{len . | printf "%s %d \033[0m" $.Options.copyfmt}}{{end -}}
+{{with .Cut}}  {{len . | printf "%s %d \033[0m" $.Options.cutfmt}}{{end -}}
+{{with .Select}}  {{len . | printf "%s %d \033[0m" $.Options.selectfmt}}{{end -}}
+{{with .Visual}}  {{len . | printf "%s %d \033[0m" $.Options.visualfmt}}{{end -}}
 {{with .Filter}}  {{join . " " | printf "\033[7;34m %s \033[0m"}}{{end -}}
 {{printf "  %d/%d" .Index .Total}}
