@@ -242,7 +242,7 @@ func (sm styleMap) parseFile(path string) {
 
 // This function parses $LS_COLORS environment variable.
 func (sm *styleMap) parseGNU(env string) {
-	for _, entry := range strings.Split(env, ":") {
+	for entry := range strings.SplitSeq(env, ":") {
 		if entry == "" {
 			continue
 		}

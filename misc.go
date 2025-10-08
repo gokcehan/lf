@@ -173,7 +173,7 @@ func splitWord(s string) (word, rest string) {
 // or double quotes can be used to escape whitespaces. Hash characters can be
 // used to add a comment until the end of line. Leading and trailing space is
 // trimmed. Empty lines are skipped.
-func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
+func readArrays(r io.Reader, minCols, maxCols int) ([][]string, error) {
 	var arrays [][]string
 	s := bufio.NewScanner(r)
 	for s.Scan() {
@@ -209,11 +209,11 @@ func readArrays(r io.Reader, min_cols, max_cols int) ([][]string, error) {
 		})
 		arrlen := len(arr)
 
-		if arrlen < min_cols || arrlen > max_cols {
-			if min_cols == max_cols {
-				return nil, fmt.Errorf("expected %d columns but found: %s", min_cols, s.Text())
+		if arrlen < minCols || arrlen > maxCols {
+			if minCols == maxCols {
+				return nil, fmt.Errorf("expected %d columns but found: %s", minCols, s.Text())
 			}
-			return nil, fmt.Errorf("expected %d~%d columns but found: %s", min_cols, max_cols, s.Text())
+			return nil, fmt.Errorf("expected %d~%d columns but found: %s", minCols, maxCols, s.Text())
 		}
 
 		for i := range arrlen {

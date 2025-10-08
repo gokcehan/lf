@@ -797,8 +797,8 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	dir := nav.currDir()
 	pwd := dir.path
 
-	if strings.HasPrefix(pwd, gUser.HomeDir) {
-		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
+	if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
+		pwd = filepath.Join("~", after)
 	}
 
 	sep := string(filepath.Separator)
@@ -905,7 +905,7 @@ func (ui *ui) drawStat(nav *nav) {
 	replace("%l", curr.linkTarget)
 
 	var fileInfo strings.Builder
-	for _, section := range strings.Split(statfmt, "\x1f") {
+	for section := range strings.SplitSeq(statfmt, "\x1f") {
 		if !strings.Contains(section, "\x00") {
 			fileInfo.WriteString(section)
 		}
@@ -1008,7 +1008,7 @@ func (ui *ui) drawRuler(nav *nav) {
 		return result
 	})
 	var ruler strings.Builder
-	for _, section := range strings.Split(rulerfmt, "\x1f") {
+	for section := range strings.SplitSeq(rulerfmt, "\x1f") {
 		if !strings.Contains(section, "\x00") {
 			ruler.WriteString(section)
 		}
