@@ -435,7 +435,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		if len(f) == 2 {
 			matches, result = matchCmdFile(f[1], true)
 		}
-	case "select", "source":
+	case "addcustominfo", "select", "source":
 		if len(f) == 2 {
 			matches, result = matchCmdFile(f[1], false)
 		}
