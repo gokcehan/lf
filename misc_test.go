@@ -231,10 +231,10 @@ func TestSplitWord(t *testing.T) {
 
 func TestReadArrays(t *testing.T) {
 	tests := []struct {
-		s        string
-		min_cols int
-		max_cols int
-		exp      [][]string
+		s       string
+		minCols int
+		maxCols int
+		exp     [][]string
 	}{
 		{"foo bar", 2, 2, [][]string{{"foo", "bar"}}},
 		{"foo bar ", 2, 2, [][]string{{"foo", "bar"}}},
@@ -249,7 +249,7 @@ func TestReadArrays(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got, _ := readArrays(strings.NewReader(test.s), test.min_cols, test.max_cols); !reflect.DeepEqual(got, test.exp) {
+		if got, _ := readArrays(strings.NewReader(test.s), test.minCols, test.maxCols); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}

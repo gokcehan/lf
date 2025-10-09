@@ -174,8 +174,7 @@ func setDefaults() {
 func setUserUmask() {}
 
 func isExecutable(f os.FileInfo) bool {
-	exts := strings.Split(envPathExt, string(filepath.ListSeparator))
-	for _, e := range exts {
+	for e := range strings.SplitSeq(envPathExt, string(filepath.ListSeparator)) {
 		if strings.HasSuffix(strings.ToLower(f.Name()), strings.ToLower(e)) {
 			log.Print(f.Name(), e)
 			return true

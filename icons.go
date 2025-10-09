@@ -88,7 +88,7 @@ func (im *iconMap) parseFile(path string) {
 }
 
 func (im *iconMap) parseEnv(env string) {
-	for _, entry := range strings.Split(env, ":") {
+	for entry := range strings.SplitSeq(env, ":") {
 		if entry == "" {
 			continue
 		}

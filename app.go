@@ -511,7 +511,7 @@ func (app *app) loop() {
 	}
 }
 
-func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
+func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.previewChan <- ""
 
 	if err := app.ui.suspend(); err != nil {
@@ -527,7 +527,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pause_after bool) {
 	if err := cmd.Run(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
-	if pause_after {
+	if pauseAfter {
 		anyKey()
 	}
 

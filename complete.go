@@ -312,7 +312,7 @@ func matchShellFile(s string) (matches []compMatch, result string) {
 
 func matchExec(s string) (matches []compMatch, result string) {
 	var words []string
-	for _, p := range strings.Split(envPath, string(filepath.ListSeparator)) {
+	for p := range strings.SplitSeq(envPath, string(filepath.ListSeparator)) {
 		files, err := os.ReadDir(p)
 		if err != nil {
 			if !os.IsNotExist(err) {

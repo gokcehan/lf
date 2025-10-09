@@ -61,11 +61,11 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 	}
 	defer r.Close()
 
-	var dst_mode os.FileMode = 0o666
+	var dstMode os.FileMode = 0o666
 	if slices.Contains(preserve, "mode") {
-		dst_mode = info.Mode()
+		dstMode = info.Mode()
 	}
-	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dst_mode)
+	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 	if err != nil {
 		return err
 	}
@@ -132,11 +132,11 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				newPath := filepath.Join(dst, rel)
 				switch {
 				case info.IsDir():
-					var dst_mode = os.ModePerm
+					dstMode := os.ModePerm
 					if slices.Contains(preserve, "mode") {
-						dst_mode = info.Mode()
+						dstMode = info.Mode()
 					}
-					if err := os.MkdirAll(newPath, dst_mode); err != nil {
+					if err := os.MkdirAll(newPath, dstMode); err != nil {
 						errs <- fmt.Errorf("mkdir: %s", err)
 					}
 					if slices.Contains(preserve, "timestamps") {
