@@ -1657,8 +1657,12 @@ There is also a `quit` command to quit the server when there are no connected cl
 	lf -remote 'quit'
 	lf -remote 'quit!'
 
-Lastly, there is a `conn` command to connect the server to a client.
-This should not be needed for users.
+Lastly, the commands `conn` and `drop` connect or disconnect ID to/from the server:
+
+	lf -remote 'conn $id'
+	lf -remote 'drop $id'
+
+These are internal and generally not needed by users.
 
 # FILE OPERATIONS
 
