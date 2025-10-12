@@ -9,6 +9,7 @@ lf - terminal file manager
 [**-config** *path*]
 [**-cpuprofile** *path*]
 [**-doc**]
+[**-help**]
 [**-last-dir-path** *path*]
 [**-log** *path*]
 [**-memprofile** *path*]
@@ -19,7 +20,6 @@ lf - terminal file manager
 [**-server**]
 [**-single**]
 [**-version**]
-[**-help**]
 [*cd-or-select-path*]
 
 # DESCRIPTION
