@@ -53,7 +53,7 @@ A man page with the same content is also available in the repository at https://
 ## STARTUP & CONFIGURATION
 
 **-command** *command*  
-: Execute *command* during client initialization (i.e. after reading configuration, before `on-init`). Multiple commands can be provided at once by chaining them with ";".
+: Execute *command* during client initialization (i.e. after reading configuration, before `on-init`). To execute more than one command, you can either use the **-command** flag multiple times or pass multiple commands at once by chaining them with ";".
 
 **-config** *path*  
 : Use the config file at *path* instead of the normal search locations. This only affects which `lfrc` is read at startup.
@@ -67,7 +67,7 @@ A man page with the same content is also available in the repository at https://
 : Same as **-print-last-dir**, but write the directory to *path* instead of stdout.
 
 **-print-selection**  
-: Print selected files to stdout when opening a file in lf. This can be used to use lf as an "open file" dialog. First, select the files you want to pass to another program. Then, confirm the selection by opening a file. This causes lf to quit and print out the selection.
+: Print selected files to stdout when opening a file in lf. This can be used to use lf as an "open file" dialog. First, select the files you want to pass to another program. Then, confirm the selection by opening a file. This causes lf to quit and print out the selection. Quitting lf prematurely discards the selection.
 
 **-selection-path** *path*  
 : Same as **-print-selection**, but write the newline-separated list to *path* instead of stdout.
@@ -96,22 +96,25 @@ A man page with the same content is also available in the repository at https://
 
 # EXAMPLES
 
-Use lf to select images (assumes `filtermethod` is `glob`)  
-: lf -command 'push :setfilter<space>*jpg<enter>' -print-selection
+Use lf to select files (while hiding certain file types)  
+: lf -command 'set nohidden' -command 'set hiddenfiles "*mp4:*pdf:*txt"' -print-selection
+
+Another sophisticated "open file" dialog focussing on design  
+: lf -command 'set nopreview; set ratios 1; set drawbox; set promptfmt "Select files [%w] %S q: cancel, l: confirm"' -print-selection
 
 Open Downloads and set `sortby` and `info` to creation date  
-: lf -command 'set info btime; set sortby btime' ~/Downloads
+: lf -command 'set sortby btime; set info btime' ~/Downloads
 
-Start a private session  
-: lf -command 'set nohistory' -single
+Temporarily prevent lf from modifying the command history  
+: lf -command 'set nohistory'
 
 Use default settings and log current session  
 : lf -config /dev/null -log /tmp/lf.log
 
-Force-quit the sever  
+Force-quit the server  
 : lf -remote 'quit!'
 
-Inherite lf's working directory in your shell  
+Inherit lf's working directory in your shell  
 : cd "$(lf -print-last-dir)"
 
 # QUICK REFERENCE
