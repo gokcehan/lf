@@ -28,7 +28,7 @@ generate_man_page() {
         --volume "$PWD:/data" \
         "$@" "$PANDOC_IMAGE" \
         --standalone \
-        --from gfm --to man \
+        --from gfm+definition_lists --to man \
         --metadata=title:"LF" \
         --metadata=section:"1" \
         --metadata=date:"$date" \
