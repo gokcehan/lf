@@ -32,7 +32,87 @@ This documentation can either be read from the terminal using `lf -doc` or onlin
 You can also use the `help` command (default `<f-1>`) inside lf to view the documentation in a pager.
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
-You can run `lf -help` to see descriptions of command line options.
+# OPTIONS
+
+## POSITIONAL ARGUMENTS
+
+**cd-or-select-path**  
+: Set the starting location. If *path* is a directory, start in there. If it's a file, start in the file's parent directory and select the file. When no *path* is supplied, lf uses the current directory. Only accepts one argument.
+
+## META OPTIONS
+
+**-doc**  
+: Show lf's documentation (same content as this file) and exit.
+
+**-help**  
+: Show command-line usage and exit.
+
+**-version**  
+: Show version information and exit.
+
+## STARTUP & CONFIGURATION
+
+**-command** *command*  
+: Execute *command* during client initialization (i.e. after reading configuration, before `on-init`). Multiple commands can be provided at once by chaining them with ";".
+
+**-config** *path*  
+: Use the config file at *path* instead of the normal search locations. This only affects which `lfrc` is read at startup.
+
+## SHELL INTEGRATION
+
+**-print-last-dir**  
+: Print the last directory to stdout when lf exits. This can be used to let lf change your shells working directory. See `CHANGING DIRECTORY` for more details.
+
+**-last-dir-path** *path*  
+: Same as **-print-last-dir**, but write the directory to *path* instead of stdout.
+
+**-print-selection**  
+: Print selected files to stdout when opening a file in lf. This can be used to use lf as an "open file" dialog. First, select the files you want to pass to another program. Then, confirm the selection by opening a file. This causes lf to quit and print out the selection.
+
+**-selection-path** *path*  
+: Same as **-print-selection**, but write the newline-separated list to *path* instead of stdout.
+
+## SERVER
+
+**-remote** *command*  
+: Send *command* to the running server (e.g. `send`, `query` or `quit`). See `REMOTE COMMANDS` for more details.
+
+**-server**  
+: Start the (headless) server process explicitly. Runs in the foreground and writes server logs to stderr (or the file set with **-log**). Clients auto-start a server if none is running unless **-single** is used.
+
+**-single**  
+: Start a stand-alone client without a server. Disables remote control.
+
+## DIAGNOSTICS
+
+**-log** *path*  
+: Append runtime log messages to *path*.
+
+**-cpuprofile** *path*  
+: Write a CPU profile to *path*. The profile can be used by `go tool pprof`.
+
+**-memprofile** *path*  
+: Write a memory profile to *path*. The profile can be used by `go tool pprof`.
+
+# EXAMPLES
+
+Use lf to select images (assumes `filtermethod` is `glob`)  
+: lf -command 'push :setfilter<space>*jpg<enter>' -print-selection
+
+Open Downloads and set `sortby` and `info` to creation date  
+: lf -command 'set info btime; set sortby btime' ~/Downloads
+
+Start a private session  
+: lf -command 'set nohistory' -single
+
+Use default settings and log current session  
+: lf -config /dev/null -log /tmp/lf.log
+
+Force-quit the sever  
+: lf -remote 'quit!'
+
+Inherite lf's working directory in your shell  
+: cd "$(lf -print-last-dir)"
 
 # QUICK REFERENCE
 
