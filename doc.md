@@ -36,85 +36,85 @@ A man page with the same content is also available in the repository at https://
 
 ## POSITIONAL ARGUMENTS
 
-**cd-or-select-path**  
+**cd-or-select-path**
 : Set the starting location. If *path* is a directory, start in there. If it's a file, start in the file's parent directory and select the file. When no *path* is supplied, lf uses the current directory. Only accepts one argument.
 
 ## META OPTIONS
 
-**-doc**  
+**-doc**
 : Show lf's documentation (same content as this file) and exit.
 
-**-help**  
+**-help**
 : Show command-line usage and exit.
 
-**-version**  
+**-version**
 : Show version information and exit.
 
 ## STARTUP & CONFIGURATION
 
-**-command** *command*  
+**-command** *command*
 : Execute *command* during client initialization (i.e. after reading configuration, before `on-init`). To execute more than one command, you can either use the **-command** flag multiple times or pass multiple commands at once by chaining them with ";".
 
-**-config** *path*  
+**-config** *path*
 : Use the config file at *path* instead of the normal search locations. This only affects which `lfrc` is read at startup.
 
 ## SHELL INTEGRATION
 
-**-print-last-dir**  
+**-print-last-dir**
 : Print the last directory to stdout when lf exits. This can be used to let lf change your shells working directory. See `CHANGING DIRECTORY` for more details.
 
-**-last-dir-path** *path*  
+**-last-dir-path** *path*
 : Same as **-print-last-dir**, but write the directory to *path* instead of stdout.
 
-**-print-selection**  
+**-print-selection**
 : Print selected files to stdout when opening a file in lf. This can be used to use lf as an "open file" dialog. First, select the files you want to pass to another program. Then, confirm the selection by opening a file. This causes lf to quit and print out the selection. Quitting lf prematurely discards the selection.
 
-**-selection-path** *path*  
+**-selection-path** *path*
 : Same as **-print-selection**, but write the newline-separated list to *path* instead of stdout.
 
 ## SERVER
 
-**-remote** *command*  
+**-remote** *command*
 : Send *command* to the running server (e.g. `send`, `query` or `quit`). See `REMOTE COMMANDS` for more details.
 
-**-server**  
+**-server**
 : Start the (headless) server process explicitly. Runs in the foreground and writes server logs to stderr (or the file set with **-log**). Clients auto-start a server if none is running unless **-single** is used.
 
-**-single**  
+**-single**
 : Start a stand-alone client without a server. Disables remote control.
 
 ## DIAGNOSTICS
 
-**-log** *path*  
+**-log** *path*
 : Append runtime log messages to *path*.
 
-**-cpuprofile** *path*  
+**-cpuprofile** *path*
 : Write a CPU profile to *path*. The profile can be used by `go tool pprof`.
 
-**-memprofile** *path*  
+**-memprofile** *path*
 : Write a memory profile to *path*. The profile can be used by `go tool pprof`.
 
 # EXAMPLES
 
-Use lf to select files (while hiding certain file types)  
+Use lf to select files (while hiding certain file types)
 : lf -command 'set nohidden' -command 'set hiddenfiles "*mp4:*pdf:*txt"' -print-selection
 
-Another sophisticated "open file" dialog focussing on design  
+Another sophisticated "open file" dialog focussing on design
 : lf -command 'set nopreview; set ratios 1; set drawbox; set promptfmt "Select files [%w] %S q: cancel, l: confirm"' -print-selection
 
-Open Downloads and set `sortby` and `info` to creation date  
+Open Downloads and set `sortby` and `info` to creation date
 : lf -command 'set sortby btime; set info btime' ~/Downloads
 
-Temporarily prevent lf from modifying the command history  
+Temporarily prevent lf from modifying the command history
 : lf -command 'set nohistory'
 
-Use default settings and log current session  
+Use default settings and log current session
 : lf -config /dev/null -log /tmp/lf.log
 
-Force-quit the server  
+Force-quit the server
 : lf -remote 'quit!'
 
-Inherit lf's working directory in your shell  
+Inherit lf's working directory in your shell
 : cd "$(lf -print-last-dir)"
 
 # QUICK REFERENCE
