@@ -1285,6 +1285,12 @@ func (e *callExpr) eval(app *app, args []string) {
 		if app.nav.height != app.ui.wins[0].h {
 			app.nav.height = app.ui.wins[0].h
 			clear(app.nav.regCache)
+		} else {
+			for path, r := range app.nav.regCache {
+				if r.sixel {
+					delete(app.nav.regCache, path)
+				}
+			}
 		}
 		for _, dir := range app.nav.dirs {
 			dir.boundPos(app.nav.height)
