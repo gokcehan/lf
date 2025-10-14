@@ -43,7 +43,7 @@ generate_plain_text() {
         --volume "$PWD:/data" \
         "$@" "$PANDOC_IMAGE" \
         --standalone \
-        --from gfm --to plain \
+        --from gfm+definition_lists --to plain \
         doc.md -o doc.txt
 }
 
