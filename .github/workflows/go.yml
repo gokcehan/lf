@@ -39,10 +39,10 @@ jobs:
       - name: Test
         run: go test -v ./...
 
-      - uses: dominikh/staticcheck-action@v1.4.0
+      - name: golangci-lint
+        uses: golangci/golangci-lint-action@v8
         with:
-          version: "2025.1.1"
-          install-go: false
+          version: latest
 
   build:
     runs-on: ubuntu-latest

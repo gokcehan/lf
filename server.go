@@ -49,7 +49,7 @@ func listen(l net.Listener) {
 		if err != nil {
 			select {
 			case <-gQuitChan:
-				log.Printf("bye!")
+				log.Print("bye!")
 				return
 			default:
 				log.Printf("accepting connection: %s", err)

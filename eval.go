@@ -57,7 +57,7 @@ func applyLocalBoolOpt(localOpt map[string]bool, globalOpt bool, e *setLocalExpr
 	return nil
 }
 
-func (e *setExpr) eval(app *app, args []string) {
+func (e *setExpr) eval(app *app, _ []string) {
 	var err error
 	switch e.opt {
 	case "anchorfind", "noanchorfind", "anchorfind!":
@@ -463,7 +463,7 @@ func (e *setExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *setLocalExpr) eval(app *app, args []string) {
+func (e *setLocalExpr) eval(app *app, _ []string) {
 	e.path = replaceTilde(e.path)
 	if !filepath.IsAbs(e.path) {
 		app.ui.echoerr("setlocal: path should be absolute")
@@ -538,7 +538,7 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *mapExpr) eval(app *app, args []string) {
+func (e *mapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 		delete(gOpts.vkeys, e.keys)
@@ -549,7 +549,7 @@ func (e *mapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *nmapExpr) eval(app *app, args []string) {
+func (e *nmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 	} else {
@@ -558,7 +558,7 @@ func (e *nmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *vmapExpr) eval(app *app, args []string) {
+func (e *vmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.vkeys, e.keys)
 	} else {
@@ -567,7 +567,7 @@ func (e *vmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *cmapExpr) eval(app *app, args []string) {
+func (e *cmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
 	} else {
@@ -576,7 +576,7 @@ func (e *cmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *cmdExpr) eval(app *app, args []string) {
+func (e *cmdExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.cmds, e.name)
 	} else {
@@ -971,7 +971,7 @@ func exitCompMenu(app *app) {
 	app.menuCompActive = false
 }
 
-func (e *callExpr) eval(app *app, args []string) {
+func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
 	switch e.name {
@@ -1777,7 +1777,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		tty, ok := app.ui.screen.Tty()
 		if !ok {
-			log.Printf("tty-write: failed to get tty")
+			log.Print("tty-write: failed to get tty")
 			return
 		}
 
@@ -2317,7 +2317,7 @@ func (e *execExpr) eval(app *app, args []string) {
 	}
 }
 
-func (e *listExpr) eval(app *app, args []string) {
+func (e *listExpr) eval(app *app, _ []string) {
 	for range e.count {
 		for _, expr := range e.exprs {
 			expr.eval(app, nil)

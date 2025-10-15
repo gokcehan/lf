@@ -233,7 +233,8 @@ func matchList(s string, words []string) (matches []compMatch, result string) {
 }
 
 func matchCmd(s string) (matches []compMatch, result string) {
-	words := append(gCmdWords, slices.Collect(maps.Keys(gOpts.cmds))...)
+	words := slices.Clone(gCmdWords)
+	words = slices.AppendSeq(words, maps.Keys(gOpts.cmds))
 	slices.Sort(words)
 	matches, result = matchWord(s, slices.Compact(words))
 	return

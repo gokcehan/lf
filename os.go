@@ -217,13 +217,14 @@ func groupName(f os.FileInfo) string {
 
 func linkCount(f os.FileInfo) string {
 	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
-		return strconv.FormatUint(uint64(stat.Nlink), 10)
+		// The conversion is necessary on some platforms, hence silencing the linter.
+		return strconv.FormatUint(uint64(stat.Nlink), 10) //nolint:unconvert
 	}
 	return ""
 }
 
 func errCrossDevice(err error) bool {
-	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
+	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV //nolint:errorlint
 }
 
 func quoteString(s string) string {

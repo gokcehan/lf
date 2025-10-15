@@ -144,7 +144,7 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func shellSetPG(cmd *exec.Cmd) {
+func shellSetPG(_ *exec.Cmd) {
 }
 
 func shellKill(cmd *exec.Cmd) error {
@@ -220,7 +220,7 @@ func linkCount(_ os.FileInfo) string {
 }
 
 func errCrossDevice(err error) bool {
-	return err.(*os.LinkError).Err.(windows.Errno) == windows.ERROR_NOT_SAME_DEVICE
+	return err.(*os.LinkError).Err.(windows.Errno) == windows.ERROR_NOT_SAME_DEVICE //nolint:errorlint
 }
 
 func quoteString(s string) string {

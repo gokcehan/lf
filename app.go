@@ -122,7 +122,7 @@ func loadFiles() (clipboard clipboard, err error) {
 		return
 	}
 	if err != nil {
-		err = fmt.Errorf("opening file selections file: %s", err)
+		err = fmt.Errorf("opening file selections file: %w", err)
 		return
 	}
 	defer files.Close()
@@ -146,7 +146,7 @@ func loadFiles() (clipboard clipboard, err error) {
 	}
 
 	if s.Err() != nil {
-		err = fmt.Errorf("scanning file list: %s", s.Err())
+		err = fmt.Errorf("scanning file list: %w", s.Err())
 		return
 	}
 
@@ -157,12 +157,12 @@ func loadFiles() (clipboard clipboard, err error) {
 
 func saveFiles(clipboard clipboard) error {
 	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	files, err := os.Create(gFilesPath)
 	if err != nil {
-		return fmt.Errorf("opening file selections file: %s", err)
+		return fmt.Errorf("opening file selections file: %w", err)
 	}
 	defer files.Close()
 
@@ -188,7 +188,7 @@ func (app *app) readHistory() error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("opening history file: %s", err)
+		return fmt.Errorf("opening history file: %w", err)
 	}
 	defer f.Close()
 
@@ -204,7 +204,7 @@ func (app *app) readHistory() error {
 	app.cmdHistoryBeg = len(app.cmdHistory)
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("reading history file: %s", err)
+		return fmt.Errorf("reading history file: %w", err)
 	}
 
 	return nil
@@ -219,7 +219,7 @@ func (app *app) writeHistory() error {
 	app.cmdHistory = nil
 
 	if err := app.readHistory(); err != nil {
-		return fmt.Errorf("reading history file: %s", err)
+		return fmt.Errorf("reading history file: %w", err)
 	}
 
 	app.cmdHistory = append(app.cmdHistory, local...)
@@ -228,18 +228,18 @@ func (app *app) writeHistory() error {
 	}
 
 	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	f, err := os.Create(gHistoryPath)
 	if err != nil {
-		return fmt.Errorf("creating history file: %s", err)
+		return fmt.Errorf("creating history file: %w", err)
 	}
 	defer f.Close()
 
 	for _, cmd := range app.cmdHistory {
 		if _, err = fmt.Fprintln(f, cmd); err != nil {
-			return fmt.Errorf("writing history file: %s", err)
+			return fmt.Errorf("writing history file: %w", err)
 		}
 	}
 
@@ -291,7 +291,7 @@ func (app *app) loop() {
 		log.Printf("getting current directory: %s", err)
 	}
 
-	app.nav.getDirs(wd)
+	app.nav.updateDirs(wd)
 	app.nav.addJumpList()
 	app.nav.init = true
 
@@ -472,7 +472,7 @@ func (app *app) loop() {
 			currPath := app.nav.currDir().path
 			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
 				if wd, err := os.Getwd(); err == nil {
-					app.nav.getDirs(wd)
+					app.nav.updateDirs(wd)
 				}
 			}
 		case ev := <-app.ui.evChan:

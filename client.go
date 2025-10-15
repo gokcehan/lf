@@ -42,9 +42,9 @@ func run() {
 	var screen tcell.Screen
 	var err error
 	if screen, err = tcell.NewScreen(); err != nil {
-		log.Fatalf("creating screen: %s", err)
+		log.Fatalf("creating screen: %s", err) //nolint:gocritic
 	} else if err = screen.Init(); err != nil {
-		log.Fatalf("initializing screen: %s", err)
+		log.Fatalf("initializing screen: %s", err) //nolint:gocritic
 	}
 	if gOpts.mouse {
 		screen.EnableMouse()
@@ -166,7 +166,7 @@ func readExpr() <-chan expr {
 func remote(cmd string) error {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
-		return fmt.Errorf("dialing to send server: %s", err)
+		return fmt.Errorf("dialing to send server: %w", err)
 	}
 
 	fmt.Fprintln(c, cmd)
