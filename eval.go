@@ -136,6 +136,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "number", "nonumber", "number!":
 		err = applyBoolOpt(&gOpts.number, e)
+	case "preload", "nopreload", "preload!":
+		err = applyBoolOpt(&gOpts.preload, e)
 	case "preview", "nopreview", "preview!":
 		preview := gOpts.preview
 		err = applyBoolOpt(&preview, e)
@@ -303,6 +305,8 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
 		}
+	case "preloader":
+		gOpts.preloader = replaceTilde(e.val)
 	case "preserve":
 		if e.val == "" {
 			gOpts.preserve = nil
@@ -643,6 +647,7 @@ func onRedraw(app *app) {
 }
 
 func onSelect(app *app) {
+	app.nav.preload()
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
 	}

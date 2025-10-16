@@ -251,6 +251,7 @@ func (app *app) writeHistory() error {
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
 func (app *app) loop() {
+	go app.nav.preloadLoop(app.ui)
 	go app.nav.previewLoop(app.ui)
 
 	var serverChan <-chan expr
@@ -426,6 +427,10 @@ func (app *app) loop() {
 			}
 			onLoad(app, paths)
 
+			if d.path == app.nav.currDir().path {
+				app.nav.preload()
+			}
+
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
@@ -435,6 +440,9 @@ func (app *app) loop() {
 				if r.path == curr.path {
 					app.ui.regPrev = r
 					app.ui.sxScreen.forceClear = true
+					if gOpts.preload && r.volatile {
+						app.ui.loadFile(app, true)
+					}
 				}
 			}
 
@@ -457,6 +465,7 @@ func (app *app) loop() {
 				dir.sel(name, app.nav.height)
 			}
 
+			delete(app.nav.regCache, f.path)
 			app.ui.loadFile(app, false)
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)

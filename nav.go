@@ -455,6 +455,7 @@ type nav struct {
 	moveTotalChan   chan int
 	deleteCountChan chan int
 	deleteTotalChan chan int
+	preloadChan     chan string
 	previewChan     chan string
 	dirChan         chan *dir
 	regChan         chan *reg
@@ -592,6 +593,7 @@ func newNav(ui *ui) *nav {
 		moveTotalChan:   make(chan int, 1024),
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
+		preloadChan:     make(chan string, 1024),
 		previewChan:     make(chan string, 1024),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
@@ -684,7 +686,14 @@ func (nav *nav) resize(ui *ui) {
 		dir.boundPos(nav.height)
 	}
 
-	clear(nav.regCache)
+	for path, r := range nav.regCache {
+		// keep volatile previews to prevent unnecessary preloads
+		if !r.volatile {
+			delete(nav.regCache, path)
+		}
+	}
+
+	nav.preload()
 }
 
 func (nav *nav) position() {
@@ -733,6 +742,12 @@ func (nav *nav) exportFiles() {
 	}
 }
 
+func (nav *nav) preloadLoop(ui *ui) {
+	for path := range nav.preloadChan {
+		nav.preview(path, ui.wins[len(ui.wins)-1], true)
+	}
+}
+
 func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
@@ -760,7 +775,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.preview(path, win)
+			nav.preview(path, win, false)
 			prev = path
 		}
 	}
@@ -781,14 +796,56 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, win *win) {
+func (nav *nav) preload() {
+	if !gOpts.preview || !gOpts.preload {
+		return
+	}
+
+	dir := nav.currDir()
+	doPreload := func(i int) {
+		if i < 0 || i >= len(dir.files) {
+			return
+		}
+
+		file := dir.files[i]
+		if !(file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews)) {
+			return
+		}
+
+		if _, ok := nav.regCache[file.path]; ok {
+			return
+		}
+
+		nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
+		nav.preloadChan <- file.path
+	}
+
+	nav.startPreview()
+	for i := 0; i <= nav.height/2; i++ {
+		doPreload(dir.ind + i)
+	}
+	for i := 1; i <= nav.height/2; i++ {
+		doPreload(dir.ind - i)
+	}
+}
+
+func (nav *nav) preview(path string, win *win, preload bool) {
 	reg := &reg{loadTime: time.Now(), path: path}
-	defer func() { nav.regChan <- reg }()
+	defer func() {
+		if preload == gOpts.preload {
+			nav.regChan <- reg
+		}
+	}()
+
+	previewer := gOpts.previewer
+	if preload {
+		previewer = gOpts.preloader
+	}
 
 	var reader *bufio.Reader
 
-	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, path,
+	if len(previewer) != 0 {
+		cmd := exec.Command(previewer, path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
@@ -808,9 +865,10 @@ func (nav *nav) preview(path string, win *win) {
 
 		defer func() {
 			if err := cmd.Wait(); err != nil {
-				if e, ok := err.(*exec.ExitError); ok {
-					if e.ExitCode() != 0 {
-						reg.volatile = true
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) {
+					reg.volatile = true
+					if !preload {
 						nav.volatilePreview = true
 					}
 				} else {
@@ -841,16 +899,24 @@ func (nav *nav) preview(path string, win *win) {
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {
 	r, ok := nav.regCache[path]
-	if !ok || (volatile && r.volatile) {
-		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
+	if !ok {
+		r = &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
 		nav.startPreview()
-		nav.previewChan <- path
+		if gOpts.preload {
+			nav.preloadChan <- path
+		} else {
+			nav.previewChan <- path
+		}
 		return r
 	}
 
-	nav.checkReg(r)
+	if volatile && r.volatile {
+		nav.startPreview()
+		nav.previewChan <- path
+	}
 
+	nav.checkReg(r)
 	return r
 }
 
