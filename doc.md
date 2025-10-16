@@ -827,7 +827,7 @@ Delete the previous word in the backward direction.
 
 Capitalize/uppercase/lowercase the current word and jump to the next word.
 
-# OPTIONS
+# SETTINGS
 
 This section shows information about options to customize the behavior.
 Character `:` is used as the separator for list options `[]int` and `[]string`.
