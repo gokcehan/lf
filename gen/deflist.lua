@@ -1,5 +1,6 @@
 local stringify = pandoc.utils.stringify
 local List = pandoc.List
+local DefinitionList = pandoc.DefinitionList
 
 -- We use bold paragraphs for flags (e.g. **-help**)
 local function is_term(b)
@@ -33,7 +34,7 @@ function Blocks(blocks)
 				def:insert(blocks[i])
 				i = i + 1
 			end
-			out:insert(pandoc.DefinitionList({ { b.content, { def } } }))
+			out:insert(DefinitionList({ { b.content, { def } } }))
 		else
 			-- Pass through unchanged
 			out:insert(b)

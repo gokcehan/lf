@@ -29,7 +29,7 @@ generate_man_page() {
         "$@" "$PANDOC_IMAGE" \
         --standalone \
         --lua-filter /data/gen/deflist.lua \
-        --from gfm+definition_lists --to man \
+        --from gfm --to man \
         --metadata=title:"LF" \
         --metadata=section:"1" \
         --metadata=date:"$date" \
@@ -45,7 +45,7 @@ generate_plain_text() {
         "$@" "$PANDOC_IMAGE" \
         --standalone \
         --lua-filter /data/gen/deflist.lua \
-        --from gfm+definition_lists --to plain \
+        --from gfm --to plain \
         doc.md -o doc.txt
 }
 
