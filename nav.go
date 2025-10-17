@@ -592,7 +592,7 @@ func newNav(height int) *nav {
 		moveTotalChan:   make(chan int, 1024),
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
-		preloadChan:     make(chan string, 1_000_000),
+		preloadChan:     make(chan string, 1024),
 		previewChan:     make(chan string, 1024),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
@@ -773,28 +773,31 @@ func matchPattern(pattern, name, path string) bool {
 }
 
 func (nav *nav) preload() {
-	// preload all files in current directory, but prioritize the current file
-	paths := []string{}
-	for _, file := range nav.currDir().allFiles {
-		if file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews) {
-			if _, ok := nav.regCache[file.path]; !ok {
-				nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
-				paths = append(paths, file.path)
-			}
+	dir := nav.currDir()
+	doPreload := func(i int) {
+		if i < 0 || i >= len(dir.files) {
+			return
 		}
-	}
 
-	if curr, err := nav.currFile(); err == nil {
-		ind := slices.Index(paths, curr.path)
-		if ind != -1 {
-			paths = append(paths[:ind], paths[ind+1:]...)
-			paths = append([]string{curr.path}, paths...)
+		file := dir.files[i]
+		if !(file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews)) {
+			return
 		}
+
+		if _, ok := nav.regCache[file.path]; ok {
+			return
+		}
+
+		nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
+		nav.preloadChan <- file.path
 	}
 
 	nav.startPreview()
-	for _, path := range paths {
-		nav.preloadChan <- path
+	for i := 0; i <= nav.height/2; i++ {
+		doPreload(dir.ind + i)
+	}
+	for i := 1; i <= nav.height/2; i++ {
+		doPreload(dir.ind - i)
 	}
 }
 

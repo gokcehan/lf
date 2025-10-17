@@ -607,9 +607,6 @@ func preChdir(app *app) {
 
 func onChdir(app *app) {
 	app.nav.addJumpList()
-	if gOpts.preload {
-		app.nav.preload()
-	}
 	if cmd, ok := gOpts.cmds["on-cd"]; ok {
 		cmd.eval(app, nil)
 	}
@@ -646,6 +643,9 @@ func onRedraw(app *app) {
 }
 
 func onSelect(app *app) {
+	if gOpts.preload {
+		app.nav.preload()
+	}
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
 	}
