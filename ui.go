@@ -1580,7 +1580,17 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return &callExpr{"cd", []string{dir.path}, 1}
 		}
 	case *tcell.EventResize:
-		clear(nav.regCache)
+		ui.renew()
+		nav.height = ui.wins[0].h
+		for path, r := range nav.regCache {
+			// keep volatile previews as the new size is passed to the previewer
+			if !r.volatile {
+				delete(nav.regCache, path)
+			}
+		}
+		if gOpts.preload {
+			nav.preload()
+		}
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
