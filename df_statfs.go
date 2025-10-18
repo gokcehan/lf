@@ -17,5 +17,6 @@ func diskFree(wd string) string {
 	}
 
 	// Available blocks * size per block = available space in bytes
-	return "df: " + humanize(uint64(stat.Bavail)*uint64(stat.Bsize))
+	// The conversion is necessary on some platforms, hence silencing the linter.
+	return "df: " + humanize(uint64(stat.Bavail)*uint64(stat.Bsize)) //nolint:unconvert
 }

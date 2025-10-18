@@ -479,7 +479,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		maxWidth := win.w - lnwidth - 2
 		// make extra space to separate windows if drawbox is not enabled
 		if !gOpts.drawbox {
-			maxWidth -= 1
+			maxWidth--
 		}
 
 		tag := " "
@@ -529,7 +529,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			// print tag separately as it can contain color escape sequences
 			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, tag))
 
-			line := append(icon, filename...)
+			line := append(slices.Clone(icon), filename...)
 			line = append(line, ' ')
 			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
@@ -553,7 +553,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
 			}
 
-			line := append(filename, ' ')
+			line := append(slices.Clone(filename), ' ')
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
 
 			// print over the empty space we reserved for the custom info
@@ -943,12 +943,12 @@ func (ui *ui) drawRuler(nav *nav) {
 		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
 	}
 
-	copy := 0
-	move := 0
+	numClipCopy := 0
+	numClipMove := 0
 	if nav.clipboard.mode == clipboardCopy {
-		copy = len(nav.clipboard.paths)
+		numClipCopy = len(nav.clipboard.paths)
 	} else {
-		move = len(nav.clipboard.paths)
+		numClipMove = len(nav.clipboard.paths)
 	}
 
 	currSelections := nav.currSelections()
@@ -983,9 +983,9 @@ func (ui *ui) drawRuler(nav *nav) {
 		case "%p":
 			result = strings.Join(progress, " ")
 		case "%m":
-			result = fmt.Sprintf("%.d", move)
+			result = fmt.Sprintf("%.d", numClipMove)
 		case "%c":
-			result = fmt.Sprintf("%.d", copy)
+			result = fmt.Sprintf("%.d", numClipCopy)
 		case "%s":
 			result = fmt.Sprintf("%.d", len(currSelections))
 		case "%v":
@@ -1603,10 +1603,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 }
 
 func readCmdEvent(ev tcell.Event) expr {
-	switch tev := ev.(type) {
-	case *tcell.EventKey:
+	if tev, ok := ev.(*tcell.EventKey); ok {
 		if tev.Key() == tcell.KeyRune {
-			if tev.Modifiers() == tcell.ModMask(tcell.ModAlt) {
+			if tev.Modifiers() == tcell.ModAlt {
 				val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
 				if expr, ok := gOpts.cmdkeys[val]; ok {
 					return expr
