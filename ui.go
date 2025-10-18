@@ -336,6 +336,10 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 		case "group":
 			fmt.Fprintf(&info, " %-*s", groupWidth, groupName(f.FileInfo))
 		case "custom":
+			// Prevent useless spacers, as `custom` allows empty values
+			if customWidth < 1 {
+				continue
+			}
 			// To allow for the usage of escape sequences, store `custom`
 			// separately and print it later using the offset.
 			off = info.Len()
@@ -413,6 +417,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	var userWidth int
 	var groupWidth int
 	var customWidth int
+	var fetchedCustom bool
 
 	// Only fetch user/group/custom widths if configured to display them
 	for _, s := range getInfo(dir.path) {
@@ -423,9 +428,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			groupWidth = getGroupWidth(dir, beg, end)
 		case "custom":
 			customWidth = getCustomWidth(dir, beg, end)
+			fetchedCustom = true // Can have a length of 0
 		}
 
-		if userWidth > 0 && groupWidth > 0 && customWidth > 0 {
+		if userWidth > 0 && groupWidth > 0 && fetchedCustom {
 			break
 		}
 	}
