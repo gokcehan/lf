@@ -29,6 +29,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bug where the copy progress indicator only displayed the first time a file was copied is now fixed (#2181).
 - A bug where the `source` command does not show an error message upon failure is now fixed (#2189).
 - The `addcustominfo` command now supports file completions (#2198).
+- A bug where an empty `custom` info property would still take up space is now fixed (#2208).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
