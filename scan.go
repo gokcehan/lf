@@ -2,7 +2,6 @@ package main
 
 import (
 	"io"
-	"log"
 	"strconv"
 )
 
@@ -39,7 +38,7 @@ type scanner struct {
 func newScanner(r io.Reader) *scanner {
 	buf, err := io.ReadAll(r)
 	if err != nil {
-		log.Printf("scanning: %s", err)
+		errorf("scanning: %s", err)
 	}
 
 	var eof bool
@@ -244,7 +243,7 @@ scan:
 					}
 					n, err := strconv.ParseInt(string(oct), 8, 0)
 					if err != nil {
-						log.Printf("scanning: %s", err)
+						errorf("scanning: %s", err)
 					}
 					buf = append(buf, byte(n))
 					continue

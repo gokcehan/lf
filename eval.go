@@ -4,7 +4,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"os"
 	"path/filepath"
 	"slices"
@@ -903,7 +902,7 @@ func insert(app *app, arg string) {
 
 		wd, err := os.Getwd()
 		if err != nil {
-			log.Printf("getting current directory: %s", err)
+			errorf("getting current directory: %s", err)
 		}
 
 		path, ok := app.nav.marks[arg]
@@ -1535,7 +1534,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		log.Printf("filter: %s", e.args)
+		debugf("filter: %s", e.args)
 		if err := app.nav.setFilter(e.args); err != nil {
 			app.ui.echoerrf("filter: %s", err)
 		}
@@ -1624,7 +1623,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		wd, err := os.Getwd()
 		if err != nil {
-			log.Printf("getting current directory: %s", err)
+			errorf("getting current directory: %s", err)
 		}
 
 		path = replaceTilde(path)
@@ -1663,7 +1662,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		wd, err := os.Getwd()
 		if err != nil {
-			log.Printf("getting current directory: %s", err)
+			errorf("getting current directory: %s", err)
 		}
 
 		path := filepath.Dir(replaceTilde(e.args[0]))
@@ -1701,7 +1700,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			app.ui.echoerr("push: requires an argument")
 			return
 		}
-		log.Println("pushing keys", e.args[0])
+		debugf("pushing keys %s", e.args[0])
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.keyChan <- val
 		}
@@ -1777,7 +1776,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		tty, ok := app.ui.screen.Tty()
 		if !ok {
-			log.Printf("tty-write: failed to get tty")
+			errorf("tty-write: failed to get tty")
 			return
 		}
 
@@ -1870,7 +1869,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 		switch app.ui.cmdPrefix {
 		case ":":
-			log.Printf("command: %s", s)
+			debugf("command: %s", s)
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
 			p := newParser(strings.NewReader(s))
@@ -1881,24 +1880,24 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.echoerrf("%s", p.err)
 			}
 		case "$":
-			log.Printf("shell: %s", s)
+			debugf("shell: %s", s)
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
 			app.runShell(s, nil, "$")
 		case "%":
-			log.Printf("shell-pipe: %s", s)
+			debugf("shell-pipe: %s", s)
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.runShell(s, nil, "%")
 		case ">":
 			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
-			log.Printf("shell-wait: %s", s)
+			debugf("shell-wait: %s", s)
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
 			app.runShell(s, nil, "!")
 		case "&":
-			log.Printf("shell-async: %s", s)
+			debugf("shell-async: %s", s)
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.ui.cmdPrefix = ""
 			app.runShell(s, nil, "&")
@@ -1909,7 +1908,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				dir.ind = app.nav.searchInd
 				dir.pos = app.nav.searchPos
 			}
-			log.Printf("search: %s", s)
+			debugf("search: %s", s)
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if _, err := app.nav.searchNext(); err != nil {
@@ -1924,7 +1923,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				dir.ind = app.nav.searchInd
 				dir.pos = app.nav.searchPos
 			}
-			log.Printf("search-back: %s", s)
+			debugf("search-back: %s", s)
 			app.ui.cmdPrefix = ""
 			app.nav.search = s
 			if _, err := app.nav.searchPrev(); err != nil {
@@ -1933,7 +1932,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				app.ui.loadFile(app, true)
 			}
 		case "filter: ":
-			log.Printf("filter: %s", s)
+			debugf("filter: %s", s)
 			app.ui.cmdPrefix = ""
 			if err := app.nav.setFilter(strings.Split(s, " ")); err != nil {
 				app.ui.echoerrf("filter: %s", err)
@@ -1963,7 +1962,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			wd, err := os.Getwd()
 			if err != nil {
-				log.Printf("getting current directory: %s", err)
+				errorf("getting current directory: %s", err)
 				return
 			}
 
@@ -2009,7 +2008,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			app.ui.loadFile(app, true)
 		default:
-			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
+			warnf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
 	case "cmd-interrupt":
 		if app.cmd != nil {
@@ -2301,19 +2300,19 @@ func (e *callExpr) eval(app *app, args []string) {
 func (e *execExpr) eval(app *app, args []string) {
 	switch e.prefix {
 	case "$":
-		log.Printf("shell: %s -- %s", e, args)
+		debugf("shell: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	case "%":
-		log.Printf("shell-pipe: %s -- %s", e, args)
+		debugf("shell-pipe: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	case "!":
-		log.Printf("shell-wait: %s -- %s", e, args)
+		debugf("shell-wait: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	case "&":
-		log.Printf("shell-async: %s -- %s", e, args)
+		debugf("shell-async: %s -- %s", e, args)
 		app.runShell(e.value, args, e.prefix)
 	default:
-		log.Printf("evaluating unknown execution prefix: %q", e.prefix)
+		errorf("evaluating unknown execution prefix: %q", e.prefix)
 	}
 }
 
