@@ -403,6 +403,8 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			matches, result = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+		case "cleaner", "previewer":
+			matches, result = matchCmdFile(f[2], false)
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
 				matches, result = matchWord(f[2], []string{"false", "true"})
