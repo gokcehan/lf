@@ -16,6 +16,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The history file will no longer contain a space between the prefix and the actual command (e.g. `:quit` instead of `: quit`) for each line (#2161). The command `sed -i -E 's/^(.) /\1/' ~/.local/share/lf/history` can be run to make an existing history file compatible with the new format.
 - The `cmd-history-next` and `cmd-history-prev` commands will now select only matching entries if part of the command is typed beforehand (#2161). Consecutive duplicate entries will also be skipped for convenience.
 - The string representation of commands shown when displaying keybindings is simplified (e.g. `cd ~` instead of `cd -- [~]`) (#2165).
+- `yes-no-prompts` now use the same design everywhere (#2212).
 
 ### Added
 
