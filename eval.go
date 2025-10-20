@@ -90,7 +90,10 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.drawbox, e)
 		if err == nil {
 			app.ui.renew()
-			clear(app.nav.regCache)
+			if app.nav.height != app.ui.wins[0].h {
+				app.nav.height = app.ui.wins[0].h
+				clear(app.nav.regCache)
+			}
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
