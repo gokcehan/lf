@@ -17,7 +17,7 @@ var (
 
 func serve() {
 	if gLogPath != "" {
-		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
+		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o600)
 		if err != nil {
 			log.Fatalf("failed to open log file: %s", err)
 		}
