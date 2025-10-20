@@ -338,6 +338,10 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 		case "group":
 			fmt.Fprintf(&info, " %-*s", groupWidth, groupName(f.FileInfo))
 		case "custom":
+			// Prevent useless spacers, as `custom` allows empty values
+			if customWidth < 1 {
+				continue
+			}
 			// To allow for the usage of escape sequences, store `custom`
 			// separately and print it later using the offset.
 			off = info.Len()
@@ -415,6 +419,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	var userWidth int
 	var groupWidth int
 	var customWidth int
+	var fetchedCustom bool
 
 	// Only fetch user/group/custom widths if configured to display them
 	for _, s := range getInfo(dir.path) {
@@ -425,9 +430,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			groupWidth = getGroupWidth(dir, beg, end)
 		case "custom":
 			customWidth = getCustomWidth(dir, beg, end)
+			fetchedCustom = true // Can have a length of 0
 		}
 
-		if userWidth > 0 && groupWidth > 0 && customWidth > 0 {
+		if userWidth > 0 && groupWidth > 0 && fetchedCustom {
 			break
 		}
 	}
@@ -802,8 +808,8 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	dir := nav.currDir()
 	pwd := dir.path
 
-	if strings.HasPrefix(pwd, gUser.HomeDir) {
-		pwd = filepath.Join("~", strings.TrimPrefix(pwd, gUser.HomeDir))
+	if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
+		pwd = filepath.Join("~", after)
 	}
 
 	sep := string(filepath.Separator)
@@ -910,7 +916,7 @@ func (ui *ui) drawStat(nav *nav) {
 	replace("%l", curr.linkTarget)
 
 	var fileInfo strings.Builder
-	for _, section := range strings.Split(statfmt, "\x1f") {
+	for section := range strings.SplitSeq(statfmt, "\x1f") {
 		if !strings.Contains(section, "\x00") {
 			fileInfo.WriteString(section)
 		}
@@ -1013,7 +1019,7 @@ func (ui *ui) drawRuler(nav *nav) {
 		return result
 	})
 	var ruler strings.Builder
-	for _, section := range strings.Split(rulerfmt, "\x1f") {
+	for section := range strings.SplitSeq(rulerfmt, "\x1f") {
 		if !strings.Contains(section, "\x00") {
 			ruler.WriteString(section)
 		}

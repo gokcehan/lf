@@ -1337,7 +1337,7 @@ func (e *callExpr) eval(app *app, args []string) {
 			}
 			normal(app)
 			if len(list) == 1 {
-				app.ui.cmdPrefix = "delete '" + list[0] + "' ? [y/N] "
+				app.ui.cmdPrefix = "delete '" + list[0] + "'? [y/N] "
 			} else {
 				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
 			}
@@ -1982,7 +1982,7 @@ func (e *callExpr) eval(app *app, args []string) {
 
 			newDir := filepath.Dir(newPath)
 			if _, err := os.Stat(newDir); os.IsNotExist(err) {
-				app.ui.cmdPrefix = "create '" + newDir + "' ? [y/N] "
+				app.ui.cmdPrefix = "create '" + newDir + "'? [y/N] "
 				return
 			}
 
@@ -1992,7 +1992,7 @@ func (e *callExpr) eval(app *app, args []string) {
 				return
 			}
 			if newStat, err := os.Lstat(newPath); !os.IsNotExist(err) && !os.SameFile(oldStat, newStat) {
-				app.ui.cmdPrefix = "replace '" + newPath + "' ? [y/N] "
+				app.ui.cmdPrefix = "replace '" + newPath + "'? [y/N] "
 				return
 			}
 

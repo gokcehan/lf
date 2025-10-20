@@ -239,6 +239,11 @@ func main() {
 		false,
 		"show documentation")
 
+	showHelp := flag.Bool(
+		"help",
+		false,
+		"show help")
+
 	showVersion := flag.Bool(
 		"version",
 		false,
@@ -330,6 +335,8 @@ func main() {
 	switch {
 	case *showDoc:
 		fmt.Print(genDocString)
+	case *showHelp:
+		flag.Usage()
 	case *showVersion:
 		printVersion()
 	case *remoteCmd != "":

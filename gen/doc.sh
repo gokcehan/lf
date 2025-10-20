@@ -28,6 +28,7 @@ generate_man_page() {
         --volume "$PWD:/data" \
         "$@" "$PANDOC_IMAGE" \
         --standalone \
+        --lua-filter /data/gen/deflist.lua \
         --from gfm --to man \
         --metadata=title:"LF" \
         --metadata=section:"1" \
@@ -43,6 +44,7 @@ generate_plain_text() {
         --volume "$PWD:/data" \
         "$@" "$PANDOC_IMAGE" \
         --standalone \
+        --lua-filter /data/gen/deflist.lua \
         --from gfm --to plain \
         doc.md -o doc.txt
 }

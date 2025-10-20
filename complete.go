@@ -312,7 +312,7 @@ func matchShellFile(s string) (matches []compMatch, result string) {
 
 func matchExec(s string) (matches []compMatch, result string) {
 	var words []string
-	for _, p := range strings.Split(envPath, string(filepath.ListSeparator)) {
+	for p := range strings.SplitSeq(envPath, string(filepath.ListSeparator)) {
 		files, err := os.ReadDir(p)
 		if err != nil {
 			if !os.IsNotExist(err) {
@@ -403,6 +403,8 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			matches, result = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+		case "cleaner", "previewer":
+			matches, result = matchCmdFile(f[2], false)
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
 				matches, result = matchWord(f[2], []string{"false", "true"})
@@ -435,7 +437,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		if len(f) == 2 {
 			matches, result = matchCmdFile(f[1], true)
 		}
-	case "select", "source":
+	case "addcustominfo", "select", "source":
 		if len(f) == 2 {
 			matches, result = matchCmdFile(f[1], false)
 		}
