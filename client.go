@@ -37,7 +37,7 @@ func run() {
 		log.SetOutput(io.Discard)
 	}
 
-	log.Print("hi!")
+	log.Printf("*************** starting client, PID: %d ***************", os.Getpid())
 
 	var screen tcell.Screen
 	var err error

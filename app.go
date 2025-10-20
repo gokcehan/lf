@@ -150,7 +150,7 @@ func loadFiles() (clipboard clipboard, err error) {
 		return
 	}
 
-	log.Printf("loading files: %v", clipboard.paths)
+	log.Printf("loading clipboard: %v", clipboard.paths)
 
 	return
 }
@@ -330,7 +330,7 @@ func (app *app) loop() {
 
 			app.nav.previewChan <- ""
 
-			log.Print("bye!")
+			log.Printf("*************** closing client, PID: %d ***************", os.Getpid())
 
 			return
 		case n := <-app.nav.copyJobsChan:
