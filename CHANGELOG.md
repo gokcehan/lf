@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bug where the `source` command does not show an error message upon failure is now fixed (#2189).
 - The `addcustominfo` command as well as the `cleaner` and `previewer` options now support file completions (#2198) (#2211).
 - A bug where an empty `custom` info property would still take up space is now fixed (#2208).
+- A bug where setting `drawbox` could lead to scrolling outside the view is now fixed (#2210).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
