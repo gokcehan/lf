@@ -25,7 +25,7 @@ func serve() {
 		log.SetOutput(f)
 	}
 
-	log.Printf("*************** starting server ***************")
+	log.Print("*************** starting server ***************")
 
 	if gSocketProt == "unix" {
 		setUserUmask()
@@ -49,7 +49,7 @@ func listen(l net.Listener) {
 		if err != nil {
 			select {
 			case <-gQuitChan:
-				log.Printf("*************** closing server ***************")
+				log.Print("*************** closing server ***************")
 				return
 			default:
 				log.Printf("accepting connection: %s", err)
