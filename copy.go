@@ -41,7 +41,7 @@ func copySize(srcs []string) (int64, error) {
 
 		err = filepath.Walk(src, func(_ string, info os.FileInfo, err error) error {
 			if err != nil {
-				return fmt.Errorf("walk: %s", err)
+				return fmt.Errorf("walk: %w", err)
 			}
 			total += info.Size()
 			return nil
@@ -121,12 +121,12 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 
 			filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
-					errs <- fmt.Errorf("walk: %s", err)
+					errs <- fmt.Errorf("walk: %w", err)
 					return nil
 				}
 				rel, err := filepath.Rel(src, path)
 				if err != nil {
-					errs <- fmt.Errorf("relative: %s", err)
+					errs <- fmt.Errorf("relative: %w", err)
 					return nil
 				}
 				newPath := filepath.Join(dst, rel)
@@ -137,7 +137,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 						dstMode = info.Mode()
 					}
 					if err := os.MkdirAll(newPath, dstMode); err != nil {
-						errs <- fmt.Errorf("mkdir: %s", err)
+						errs <- fmt.Errorf("mkdir: %w", err)
 					}
 					if slices.Contains(preserve, "timestamps") {
 						dirInfos[newPath] = info
@@ -145,16 +145,16 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					nums <- info.Size()
 				case info.Mode()&os.ModeSymlink != 0:
 					if rlink, err := os.Readlink(path); err != nil {
-						errs <- fmt.Errorf("symlink: %s", err)
+						errs <- fmt.Errorf("symlink: %w", err)
 					} else {
 						if err := os.Symlink(rlink, newPath); err != nil {
-							errs <- fmt.Errorf("symlink: %s", err)
+							errs <- fmt.Errorf("symlink: %w", err)
 						}
 					}
 					nums <- info.Size()
 				default:
 					if err := copyFile(path, newPath, preserve, info, nums); err != nil {
-						errs <- fmt.Errorf("copy: %s", err)
+						errs <- fmt.Errorf("copy: %w", err)
 					}
 				}
 				return nil
@@ -165,7 +165,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			atime := times.Get(info).AccessTime()
 			mtime := info.ModTime()
 			if err := os.Chtimes(path, atime, mtime); err != nil {
-				errs <- fmt.Errorf("chtimes: %s", err)
+				errs <- fmt.Errorf("chtimes: %w", err)
 			}
 		}
 
