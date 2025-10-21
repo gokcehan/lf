@@ -90,10 +90,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		err = applyBoolOpt(&gOpts.drawbox, e)
 		if err == nil {
 			app.ui.renew()
-			if app.nav.height != app.ui.wins[0].h {
-				app.nav.height = app.ui.wins[0].h
-				clear(app.nav.regCache)
-			}
+			app.nav.resize(app.ui)
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
@@ -346,7 +343,7 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 		gOpts.ratios = rats
 		app.ui.wins = getWins(app.ui.screen)
-		clear(app.nav.regCache)
+		app.nav.resize(app.ui)
 		app.ui.loadFile(app, true)
 	case "rulerfmt":
 		gOpts.rulerfmt = e.val
@@ -1285,15 +1282,9 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		app.ui.renew()
 		app.ui.screen.Sync()
-		if app.nav.height != app.ui.wins[0].h {
-			app.nav.height = app.ui.wins[0].h
-			clear(app.nav.regCache)
-		}
-		for _, dir := range app.nav.dirs {
-			dir.boundPos(app.nav.height)
-		}
+		app.ui.renew()
+		app.nav.resize(app.ui)
 		app.ui.sxScreen.forceClear = true
 		app.ui.loadFile(app, true)
 		onRedraw(app)

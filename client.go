@@ -52,7 +52,7 @@ func run() {
 	screen.EnablePaste()
 
 	ui := newUI(screen)
-	nav := newNav(ui.wins[0].h)
+	nav := newNav(ui)
 	app := newApp(ui, nav)
 
 	if err := nav.sync(); err != nil {
