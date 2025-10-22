@@ -832,6 +832,10 @@ func (nav *nav) preload() {
 func (nav *nav) preview(path string, win *win, preload bool) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() {
+		if (gOpts.preload && !preload) || (!gOpts.preload && reg.volatile) {
+			nav.volatilePreview = true
+		}
+
 		if preload == gOpts.preload {
 			nav.regChan <- reg
 		}
@@ -868,9 +872,6 @@ func (nav *nav) preview(path string, win *win, preload bool) {
 				var exitErr *exec.ExitError
 				if errors.As(err, &exitErr) {
 					reg.volatile = true
-					if !preload {
-						nav.volatilePreview = true
-					}
 				} else {
 					log.Printf("loading file: %s", err)
 				}
