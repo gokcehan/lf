@@ -14,6 +14,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 
 ![icons-and-border](https://github.com/user-attachments/assets/d5623462-05ab-4921-aeb3-d377d4732f9e)
 ![image-preview](https://github.com/user-attachments/assets/9ff42a21-19dd-42fa-8407-5d055aa9d561)
+![new-features](https://github.com/user-attachments/assets/2a9a32aa-a764-438f-a810-e687e979dcee)
 
 ## Features
 
