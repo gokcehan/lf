@@ -469,6 +469,7 @@ type nav struct {
 	tags            map[string]string
 	selectionInd    int
 	height          int
+	previewWidth    int
 	find            string
 	findBack        bool
 	search          string
@@ -581,7 +582,7 @@ func (nav *nav) getDirs(wd string) {
 	nav.dirs = dirs
 }
 
-func newNav(height int) *nav {
+func newNav(ui *ui) *nav {
 	nav := &nav{
 		copyJobsChan:    make(chan int, 1024),
 		copyBytesChan:   make(chan int64, 1024),
@@ -601,12 +602,12 @@ func newNav(height int) *nav {
 		selections:      make(map[string]int),
 		tags:            make(map[string]string),
 		selectionInd:    0,
-		height:          height,
 		previewTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
 
+	nav.resize(ui)
 	return nav
 }
 
@@ -667,6 +668,22 @@ func (nav *nav) reload() error {
 	}
 
 	return nil
+}
+
+func (nav *nav) resize(ui *ui) {
+	previewWin := ui.wins[len(ui.wins)-1]
+	if previewWin.h == nav.height && previewWin.w == nav.previewWidth {
+		return
+	}
+
+	nav.height = previewWin.h
+	nav.previewWidth = previewWin.w
+
+	for _, dir := range nav.dirs {
+		dir.boundPos(nav.height)
+	}
+
+	clear(nav.regCache)
 }
 
 func (nav *nav) position() {

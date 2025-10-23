@@ -149,7 +149,7 @@ func loadFiles() (clipboard clipboard, err error) {
 		return
 	}
 
-	infof("loading files: %v", clipboard.paths)
+	infof("loading clipboard: %v", clipboard.paths)
 
 	return
 }
@@ -165,7 +165,7 @@ func saveFiles(clipboard clipboard) error {
 	}
 	defer files.Close()
 
-	infof("saving files: %v", clipboard.paths)
+	infof("saving clipboard: %v", clipboard.paths)
 
 	if clipboard.mode == clipboardCopy {
 		fmt.Fprintln(files, "copy")
@@ -329,8 +329,7 @@ func (app *app) loop() {
 
 			app.nav.previewChan <- ""
 
-			pid := os.Getpid()
-			infof("*************** closing client, PID: %d ***************", pid)
+			infof("*************** closing client, PID: %d ***************", os.Getpid())
 
 			return
 		case n := <-app.nav.copyJobsChan:

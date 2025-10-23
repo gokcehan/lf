@@ -27,7 +27,7 @@ func init() {
 
 func run() {
 	if gLogPath != "" {
-		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
+		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o600)
 		if err != nil {
 			log.Fatalf("failed to open log file: %s", err)
 		}
@@ -53,7 +53,7 @@ func run() {
 	screen.EnablePaste()
 
 	ui := newUI(screen)
-	nav := newNav(ui.wins[0].h)
+	nav := newNav(ui)
 	app := newApp(ui, nav)
 
 	if err := nav.sync(); err != nil {
