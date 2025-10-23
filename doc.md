@@ -291,8 +291,6 @@ The following options can be used to customize the behavior of lf:
 	number            bool      (default false)
 	numberfmt         string    (default "\033[33m")
 	period            int       (default 0)
-	preload           bool      (default false)
-	preloader         string    (default '')
 	preserve          []string  (default "mode")
 	preview           bool      (default true)
 	previewer         string    (default '')
@@ -1039,18 +1037,6 @@ This works by periodically calling the `load` command.
 Note that directories are already updated automatically in many cases.
 This option can be useful when there is an external process changing the displayed directory and you are not doing anything in lf.
 Periodic checks are disabled when the value of this option is set to zero.
-
-## preload (bool) (default false)
-
-Allow previews to be generated in advance using the `preloader` script as the user navigates through the filesystem.
-
-## preloader (string) (default ``) (not filtered if empty)
-
-Set the path of a preloader file to preload file previews.
-The file should be executable.
-This is called in the same way as the `previewer` file (see the `previewer` option for more details).
-If the exit code is zero, the output will be cached and displayed by lf without calling the `previewer`.
-Otherwise, the preview will be managed using the `previewer` and `cleaner`.
 
 ## preserve ([]string) (default `mode`)
 
@@ -1920,8 +1906,19 @@ For coloring lf recognizes ANSI escape codes.
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
 Five arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
 The output of the execution is printed in the preview pane.
+You may also want to use the same script in your pager mapping as well:
 
-Different types of files can be handled by matching by extension (or MIME type from the `file` command):
+	set previewer ~/.config/lf/pv.sh
+	map i $~/.config/lf/pv.sh $f | less -R
+
+For `less` pager, you may instead utilize `LESSOPEN` mechanism so that useful information about the file such as the full path of the file can still be displayed in the statusline below:
+
+	set previewer ~/.config/lf/pv.sh
+	map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
+
+Since this script is called for each file selection change it needs to be as efficient as possible and this responsibility is left to the user.
+You may use file extensions to determine the type of file more efficiently compared to obtaining MIME types from `file` command.
+Extensions can then be used to match cleanly within a conditional:
 
 	#!/bin/sh
 
@@ -1934,28 +1931,21 @@ Different types of files can be handled by matching by extension (or MIME type f
 	    *) highlight -O ansi "$1";;
 	esac
 
-Because files can be large, lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read.
-Note that some programs may not respond well to SIGPIPE and will exit with a non-zero return code, which avoids caching.
+Another important consideration for efficiency is the use of programs with short startup times for preview.
+For this reason, `highlight` is recommended over `pygmentize` for syntax highlighting.
+Besides, it is also important that the application processes the file on the fly rather than first reading it to the memory and then doing the processing afterwards.
+This is especially relevant for big files.
+lf automatically closes the previewer script output pipe with a SIGPIPE when enough lines are read.
+When everything else fails, you can make use of the height argument to only feed the first portion of the file to a program for preview.
+Note that some programs may not respond well to SIGPIPE to exit with a non-zero return code and avoid caching.
 You may add a trailing `|| true` command to avoid such errors:
 
 	highlight -O ansi "$1" || true
 
-You may also want to use the same script in your pager mapping as well:
-
-	set previewer ~/.config/lf/pv.sh
-	map i $~/.config/lf/pv.sh $f | less -R
-
-For `less` pager, you may instead utilize `LESSOPEN` mechanism so that useful information about the file such as the full path of the file can still be displayed in the statusline below:
-
-	set previewer ~/.config/lf/pv.sh
-	map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
-
-Since the preview script is called for each file selection change, it may not generate previews fast enough if the user scrolls through files quickly.
-In this case the `preload` and `preloader` options can be set to enable file previews to be preloaded in advance.
-If enabled, the preload script will be run on files in advance as the user navigates through them.
-The preload script receives the same arguments as the preview script.
-If the exit code of the preload script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
-If the exit code of the preload script is not zero, then it will fallback to using the preview script instead (useful for previews managed by an external program).
+You may also use an existing preview filter as you like.
+Your system may already come with a preview filter named `lesspipe`.
+These filters may have a mechanism to add user customizations as well.
+See the related documentation for more information.
 
 # CHANGING DIRECTORY
 
