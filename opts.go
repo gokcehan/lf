@@ -83,7 +83,6 @@ var gOpts struct {
 	numberfmt        string
 	period           int
 	preload          bool
-	preloader        string
 	preserve         []string
 	preview          bool
 	previewer        string
@@ -246,7 +245,6 @@ func init() {
 	gOpts.numberfmt = "\033[33m"
 	gOpts.period = 0
 	gOpts.preload = false
-	gOpts.preloader = ""
 	gOpts.preserve = []string{"mode"}
 	gOpts.preview = true
 	gOpts.previewer = ""

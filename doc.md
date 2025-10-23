@@ -292,7 +292,6 @@ The following options can be used to customize the behavior of lf:
 	numberfmt         string    (default "\033[33m")
 	period            int       (default 0)
 	preload           bool      (default false)
-	preloader         string    (default '')
 	preserve          []string  (default "mode")
 	preview           bool      (default true)
 	previewer         string    (default '')
@@ -1042,15 +1041,7 @@ Periodic checks are disabled when the value of this option is set to zero.
 
 ## preload (bool) (default false)
 
-Allow previews to be generated in advance using the `preloader` script as the user navigates through the filesystem.
-
-## preloader (string) (default ``) (not filtered if empty)
-
-Set the path of a preloader file to preload file previews.
-The file should be executable.
-This is called in the same way as the `previewer` file (see the `previewer` option for more details).
-If the exit code is zero, the output will be cached and displayed by lf without calling the `previewer`.
-Otherwise, the preview will be managed using the `previewer` and `cleaner`.
+Allow previews to be generated in advance using the `previewer` script as the user navigates through the filesystem.
 
 ## preserve ([]string) (default `mode`)
 
@@ -1068,11 +1059,13 @@ Files containing the null character (U+0000) in the read portion are considered 
 
 Set the path of a previewer file to filter the content of regular files for previewing.
 The file should be executable.
-The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position, and (6) mode ("preview" or "preload").
 SIGPIPE signal is sent when enough lines are read.
 If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled.
 This means that if the file is selected in the future, the previewer is called once again.
 Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
+If the `preload` option is enabled, then this will be called with `preload` as the mode when preloading file previews.
+Refer to the [PREVIEWING FILES section](https://github.com/gokcehan/lf/blob/master/doc.md#previewing-files) for more information about how to configure custom previews.
 
 ## promptfmt (string) (default `\033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m`)
 
@@ -1918,7 +1911,7 @@ This can be used to highlight source code, list contents of archive files or vie
 For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
-Five arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position of preview pane respectively.
+The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position, and (6) mode ("preview" or "preload").
 The output of the execution is printed in the preview pane.
 
 Different types of files can be handled by matching by extension (or MIME type from the `file` command):
@@ -1951,11 +1944,10 @@ For `less` pager, you may instead utilize `LESSOPEN` mechanism so that useful in
 	map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
 
 Since the preview script is called for each file selection change, it may not generate previews fast enough if the user scrolls through files quickly.
-In this case the `preload` and `preloader` options can be set to enable file previews to be preloaded in advance.
-If enabled, the preload script will be run on files in advance as the user navigates through them.
-The preload script receives the same arguments as the preview script.
-If the exit code of the preload script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
-If the exit code of the preload script is not zero, then it will fallback to using the preview script instead (useful for previews managed by an external program).
+To deal with this, the `preload` option can be set to enable file previews to be preloaded in advance.
+If enabled, the preview script will be run on files in advance as the user navigates through them.
+In this case, if the exit code of the preview script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
+Otherwise, it will fallback to calling the preview script again when the file is actually selected (useful for previews managed by an external program).
 
 # CHANGING DIRECTORY
 

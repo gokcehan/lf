@@ -391,7 +391,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			break
 		}
 		switch f[1] {
-		case "cleaner", "preloader", "previewer":
+		case "cleaner", "previewer":
 			matches, result = matchCmdFile(f[2], false)
 		case "filtermethod", "searchmethod":
 			matches, result = matchWord(f[2], []string{"glob", "regex", "text"})

@@ -305,8 +305,6 @@ func (e *setExpr) eval(app *app, args []string) {
 			app.ticker.Stop()
 			app.ticker = time.NewTicker(time.Duration(gOpts.period) * time.Second)
 		}
-	case "preloader":
-		gOpts.preloader = replaceTilde(e.val)
 	case "preserve":
 		if e.val == "" {
 			gOpts.preserve = nil

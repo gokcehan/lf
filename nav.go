@@ -744,7 +744,7 @@ func (nav *nav) exportFiles() {
 
 func (nav *nav) preloadLoop(ui *ui) {
 	for path := range nav.preloadChan {
-		nav.preview(path, ui.wins[len(ui.wins)-1], true)
+		nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
 	}
 }
 
@@ -775,7 +775,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.preview(path, win, false)
+			nav.preview(path, win, "preview")
 			prev = path
 		}
 	}
@@ -829,31 +829,30 @@ func (nav *nav) preload() {
 	}
 }
 
-func (nav *nav) preview(path string, win *win, preload bool) {
+func (nav *nav) preview(path string, win *win, mode string) {
 	reg := &reg{loadTime: time.Now(), path: path}
 	defer func() {
-		if (gOpts.preload && !preload) || (!gOpts.preload && reg.volatile) {
+		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true
 		}
 
-		if preload == gOpts.preload {
+		if gOpts.preload == (mode == "preload") {
 			nav.regChan <- reg
 		}
 	}()
 
-	previewer := gOpts.previewer
-	if preload {
-		previewer = gOpts.preloader
-	}
-
 	var reader *bufio.Reader
 
-	if len(previewer) != 0 {
-		cmd := exec.Command(previewer, path,
+	if len(gOpts.previewer) != 0 {
+		cmd := exec.Command(
+			gOpts.previewer,
+			path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
-			strconv.Itoa(win.y))
+			strconv.Itoa(win.y),
+			mode,
+		)
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
