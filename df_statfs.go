@@ -3,8 +3,6 @@
 package main
 
 import (
-	"log"
-
 	"golang.org/x/sys/unix"
 )
 
@@ -12,7 +10,7 @@ func diskFree(wd string) string {
 	var stat unix.Statfs_t
 
 	if err := unix.Statfs(wd, &stat); err != nil {
-		log.Printf("diskfree: %s", err)
+		errorf("diskfree: %s", err)
 		return ""
 	}
 
