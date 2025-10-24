@@ -150,7 +150,7 @@ func shellCommand(s string, args []string) *exec.Cmd {
 	return exec.Command(gOpts.shell, args...)
 }
 
-func shellSetPG(cmd *exec.Cmd) {
+func shellSetPG(_ *exec.Cmd) {
 }
 
 func shellKill(cmd *exec.Cmd) error {

@@ -166,7 +166,7 @@ func readExpr() <-chan expr {
 func remote(cmd string) error {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
-		return fmt.Errorf("dialing to send server: %s", err)
+		return fmt.Errorf("dialing to send server: %w", err)
 	}
 
 	fmt.Fprintln(c, cmd)
