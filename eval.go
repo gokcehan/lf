@@ -136,6 +136,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "number", "nonumber", "number!":
 		err = applyBoolOpt(&gOpts.number, e)
+	case "preload", "nopreload", "preload!":
+		err = applyBoolOpt(&gOpts.preload, e)
 	case "preview", "nopreview", "preview!":
 		preview := gOpts.preview
 		err = applyBoolOpt(&preview, e)
@@ -643,6 +645,7 @@ func onRedraw(app *app) {
 }
 
 func onSelect(app *app) {
+	app.nav.preload()
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
 	}
