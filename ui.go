@@ -1329,6 +1329,7 @@ func listBinds(binds map[string]map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
+	// merge keys by command across modes
 	m := make(map[string]map[string]string)
 	for mode, keys := range binds {
 		for key, expr := range keys {
@@ -1343,6 +1344,7 @@ func listBinds(binds map[string]map[string]expr) string {
 		mode, key, cmd string
 	}
 
+	// collect normalized entries
 	var entries []entry
 	for key, cmds := range m {
 		for cmd, modes := range cmds {
@@ -1360,9 +1362,18 @@ func listBinds(binds map[string]map[string]expr) string {
 	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintln(t, "mode\tkeys\tcommand")
-	for _, e := range entries {
-		fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+
+	if len(binds) == 1 {
+		fmt.Fprintln(t, "keys\tcommand")
+		for _, e := range entries {
+			fmt.Fprintf(t, "%s\t%s\n", e.key, e.cmd)
+		}
+	} else {
+		// include mode field when listing combined maps
+		fmt.Fprintln(t, "mode\tkeys\tcommand")
+		for _, e := range entries {
+			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+		}
 	}
 	t.Flush()
 
