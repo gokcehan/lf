@@ -542,8 +542,15 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *mapExpr) eval(app *app, args []string) {
-	if e.expr == nil {
+func (e *mapExpr) eval(app *app, _ []string) {
+	if e.keys == "" {
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["maps"]; ok {
+			cmd.eval(app, nil)
+		}
+	} else if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 		delete(gOpts.vkeys, e.keys)
 	} else {
@@ -553,8 +560,15 @@ func (e *mapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *nmapExpr) eval(app *app, args []string) {
-	if e.expr == nil {
+func (e *nmapExpr) eval(app *app, _ []string) {
+	if e.keys == "" {
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["nmaps"]; ok {
+			cmd.eval(app, nil)
+		}
+	} else if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 	} else {
 		gOpts.nkeys[e.keys] = e.expr
@@ -562,8 +576,15 @@ func (e *nmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *vmapExpr) eval(app *app, args []string) {
-	if e.expr == nil {
+func (e *vmapExpr) eval(app *app, _ []string) {
+	if e.keys == "" {
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["vmaps"]; ok {
+			cmd.eval(app, nil)
+		}
+	} else if e.expr == nil {
 		delete(gOpts.vkeys, e.keys)
 	} else {
 		gOpts.vkeys[e.keys] = e.expr
@@ -571,8 +592,15 @@ func (e *vmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *cmapExpr) eval(app *app, args []string) {
-	if e.expr == nil {
+func (e *cmapExpr) eval(app *app, _ []string) {
+	if e.key == "" {
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["cmaps"]; ok {
+			cmd.eval(app, nil)
+		}
+	} else if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
 	} else {
 		gOpts.cmdkeys[e.key] = e.expr
@@ -580,8 +608,15 @@ func (e *cmapExpr) eval(app *app, args []string) {
 	app.ui.echo("")
 }
 
-func (e *cmdExpr) eval(app *app, args []string) {
-	if e.expr == nil {
+func (e *cmdExpr) eval(app *app, _ []string) {
+	if e.name == "" {
+		if !app.nav.init {
+			return
+		}
+		if cmd, ok := gOpts.cmds["cmds"]; ok {
+			cmd.eval(app, nil)
+		}
+	} else if e.expr == nil {
 		delete(gOpts.cmds, e.name)
 	} else {
 		gOpts.cmds[e.name] = e.expr
