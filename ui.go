@@ -630,9 +630,9 @@ func getWins(screen tcell.Screen) []*win {
 	for i := range wlen {
 		if gOpts.drawbox {
 			wacc++
-			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
+			wins = append(wins, newWin(widths[i], max(htot-4, 0), wacc, 2))
 		} else {
-			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
+			wins = append(wins, newWin(widths[i], max(htot-2, 0), wacc, 1))
 		}
 		wacc += widths[i]
 	}
