@@ -1817,7 +1817,7 @@ func (ui *ui) exportSizes() {
 
 func anyKey() {
 	fmt.Fprint(os.Stderr, gOpts.waitmsg)
-	defer fmt.Fprint(os.Stderr, "\n")
+	defer fmt.Fprintln(os.Stderr)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)
