@@ -806,7 +806,7 @@ func (nav *nav) preload() {
 		}
 
 		file := dir.files[i]
-		if !(file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews)) { //nolint:staticcheck
+		if !(file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews)) {
 			return
 		}
 
