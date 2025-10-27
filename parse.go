@@ -275,7 +275,9 @@ func (p *parser) parseExpr() expr {
 			keys := s.tok
 
 			s.scan()
-			if s.typ != tokenSemicolon {
+			if keys == "\n" {
+				keys = ""
+			} else if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
@@ -289,7 +291,9 @@ func (p *parser) parseExpr() expr {
 			keys := s.tok
 
 			s.scan()
-			if s.typ != tokenSemicolon {
+			if keys == "\n" {
+				keys = ""
+			} else if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
@@ -303,7 +307,9 @@ func (p *parser) parseExpr() expr {
 			keys := s.tok
 
 			s.scan()
-			if s.typ != tokenSemicolon {
+			if keys == "\n" {
+				keys = ""
+			} else if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
@@ -317,7 +323,9 @@ func (p *parser) parseExpr() expr {
 			key := s.tok
 
 			s.scan()
-			if s.typ != tokenSemicolon {
+			if key == "\n" {
+				key = ""
+			} else if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
@@ -331,7 +339,9 @@ func (p *parser) parseExpr() expr {
 			name := s.tok
 
 			s.scan()
-			if s.typ != tokenSemicolon {
+			if name == "\n" {
+				name = ""
+			} else if s.typ != tokenSemicolon {
 				expr = p.parseExpr()
 			} else {
 				s.scan()
