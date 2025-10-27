@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bug where an empty `custom` info property would still take up space is now fixed (#2208).
 - A bug where setting `drawbox` could lead to scrolling outside the view is now fixed (#2210) (#2218).
 - The preview cache is now not cleared when setting `ratios` to its current value (#2218).
+- Filtering is fixed when using special characters in the search pattern if the `filtermethod` is `text` (#2231).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 

@@ -958,14 +958,18 @@ func (nav *nav) sort() {
 func (nav *nav) setFilter(filter []string) error {
 	newfilter := []string{}
 	for _, tok := range filter {
-		_, err := filepath.Match(tok, "a")
-		if err != nil {
+		if tok == "" {
+			continue
+		}
+
+		// check if filter is valid by applying it to a dummy string
+		if _, err := searchMatch("a", strings.TrimPrefix(tok, "!"), gOpts.filtermethod); err != nil {
 			return err
 		}
-		if tok != "" {
-			newfilter = append(newfilter, tok)
-		}
+
+		newfilter = append(newfilter, tok)
 	}
+
 	dir := nav.currDir()
 	dir.filter = newfilter
 
