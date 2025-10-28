@@ -827,7 +827,10 @@ func (nav *nav) preload() {
 		}
 
 		nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
-		nav.preloadChan <- file.path
+		select {
+		case nav.preloadChan <- file.path:
+		default:
+		}
 	}
 
 	nav.startPreview()
@@ -914,7 +917,10 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 		nav.regCache[path] = r
 		nav.startPreview()
 		if gOpts.preload {
-			nav.preloadChan <- path
+			select {
+			case nav.preloadChan <- path:
+			default:
+			}
 		} else {
 			nav.previewChan <- path
 		}
