@@ -797,7 +797,7 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		return
 	}
 
-	if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
+	if curr.isPreviewable() {
 		ui.regPrev = app.nav.loadReg(curr.path, volatile)
 	} else if curr.IsDir() {
 		ui.dirPrev = app.nav.loadDir(curr.path)
@@ -1294,7 +1294,7 @@ func (ui *ui) draw(nav *nav) {
 		preview := ui.wins[len(ui.wins)-1]
 		ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
 		if gOpts.preview {
-			if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
+			if curr.isPreviewable() {
 				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			} else if curr.IsDir() {
 				ui.sxScreen.lastFile = ""
