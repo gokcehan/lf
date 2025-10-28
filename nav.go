@@ -142,6 +142,18 @@ func (file *file) TotalSize() int64 {
 	return file.Size()
 }
 
+func (file *file) isPreviewable() bool {
+	if file.Mode().IsRegular() {
+		return true
+	}
+
+	if file.IsDir() && gOpts.dirpreviews {
+		return true
+	}
+
+	return false
+}
+
 type fakeStat struct {
 	name string
 }
@@ -806,7 +818,7 @@ func (nav *nav) preload() {
 		}
 
 		file := dir.files[i]
-		if !(file.Mode().IsRegular() || (file.IsDir() && gOpts.dirpreviews)) {
+		if !file.isPreviewable() {
 			return
 		}
 
