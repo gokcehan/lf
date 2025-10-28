@@ -807,7 +807,7 @@ func matchPattern(pattern, name, path string) bool {
 }
 
 func (nav *nav) preload() {
-	if !gOpts.preview || !gOpts.preload {
+	if !nav.init || !gOpts.preview || !gOpts.preload {
 		return
 	}
 
