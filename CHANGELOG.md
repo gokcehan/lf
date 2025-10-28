@@ -25,7 +25,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new command `cmd-menu-discard` is added to allow exiting the completion menu with completions discarded (#2146).
 - The `lf_mode` environment variable will now be set to `compmenu` if the completion menu is active (#2146).
 - A `ruler` config file is added as an alternate method for customizing the ruler (#2186). This is intended to eventually replace the existing `rulerfmt`/`statfmt` options and must be enabled using the new `rulerfile` option. **This feature is currently experimental.**
-- A new option `preload` is added to enable calling the `previewer` to generate previews in advance (#2206).
+- A new option `preload` is added to enable calling the `previewer` to generate previews in advance (#2206). **This feature is currently experimental.**
 
 ### Fixed
 
@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bug where an empty `custom` info property would still take up space is now fixed (#2208).
 - A bug where setting `drawbox` could lead to scrolling outside the view is now fixed (#2210) (#2218).
 - The preview cache is now not cleared when setting `ratios` to its current value (#2218).
+- Filtering is fixed when using special characters in the search pattern if the `filtermethod` is `text` (#2231).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
