@@ -494,6 +494,7 @@ type nav struct {
 	volatilePreview bool
 	previewTimer    *time.Timer
 	previewLoading  bool
+	preloadTimer    *time.Timer
 	jumpList        []string
 	jumpListInd     int
 }
@@ -618,6 +619,7 @@ func newNav(ui *ui) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		previewTimer:    time.NewTimer(0),
+		preloadTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -703,7 +705,7 @@ func (nav *nav) resize(ui *ui) {
 		}
 	}
 
-	nav.preload()
+	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
 func (nav *nav) position() {
