@@ -646,14 +646,18 @@ func (nav *nav) addJumpList() {
 func (nav *nav) cdJumpListPrev() {
 	if nav.jumpListInd > 0 {
 		nav.jumpListInd--
-		nav.cd(nav.jumpList[nav.jumpListInd])
+		if err := nav.cd(nav.jumpList[nav.jumpListInd]); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
 func (nav *nav) cdJumpListNext() {
 	if nav.jumpListInd < len(nav.jumpList)-1 {
 		nav.jumpListInd++
-		nav.cd(nav.jumpList[nav.jumpListInd])
+		if err := nav.cd(nav.jumpList[nav.jumpListInd]); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
@@ -736,15 +740,15 @@ func (nav *nav) exportFiles() {
 	}
 	currVSelections := strings.Join(vSelections, gOpts.filesep)
 
-	os.Setenv("f", currFile)
-	os.Setenv("fs", currSelections)
-	os.Setenv("fv", currVSelections)
-	os.Setenv("PWD", quoteString(nav.currDir().path))
+	setenv("f", currFile)
+	setenv("fs", currSelections)
+	setenv("fv", currVSelections)
+	setenv("PWD", quoteString(nav.currDir().path))
 
 	if len(selections) == 0 {
-		os.Setenv("fx", currFile)
+		setenv("fx", currFile)
 	} else {
-		os.Setenv("fx", currSelections)
+		setenv("fx", currSelections)
 	}
 }
 
