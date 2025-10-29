@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -71,22 +72,22 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 	}
 
 	if _, err := io.Copy(NewProgressWriter(w, nums), r); err != nil {
-		w.Close()
-		os.Remove(dst)
-		return err
+		err2 := w.Close()
+		err3 := os.Remove(dst)
+		return errors.Join(err, err2, err3)
 	}
 
 	if err := w.Close(); err != nil {
-		os.Remove(dst)
-		return err
+		err2 := os.Remove(dst)
+		return errors.Join(err, err2)
 	}
 
 	if slices.Contains(preserve, "timestamps") {
 		atime := times.Get(info).AccessTime()
 		mtime := info.ModTime()
 		if err := os.Chtimes(dst, atime, mtime); err != nil {
-			os.Remove(dst)
-			return err
+			err2 := os.Remove(dst)
+			return errors.Join(err, err2)
 		}
 	}
 
@@ -119,7 +120,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				dst = newPath
 			}
 
-			filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
+			err := filepath.Walk(src, func(path string, info os.FileInfo, err error) error {
 				if err != nil {
 					errs <- fmt.Errorf("walk: %w", err)
 					return nil
@@ -159,6 +160,9 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				}
 				return nil
 			})
+			if err != nil {
+				errs <- fmt.Errorf("walk: %w", err)
+			}
 		}
 
 		for path, info := range dirInfos {

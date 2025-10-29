@@ -1,7 +1,13 @@
 version: "2"
 linters:
-  disable:
-    - errcheck
+  settings:
+    errcheck:
+      exclude-functions:
+        - (*os.File).Close
+        - (io.ReadCloser).Close
+        - (net.Conn).Close
+        - (net.Listener).Close
+        - syscall.Close
 issues:
   max-issues-per-linter: 0  # no limit
   max-same-issues: 0        # no limit

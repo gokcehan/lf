@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"math/big"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -234,7 +236,7 @@ func readArrays(r io.Reader, minCols, maxCols int) ([][]string, error) {
 		arrays = append(arrays, arr)
 	}
 
-	return arrays, nil
+	return arrays, s.Err()
 }
 
 func readPairs(r io.Reader) ([][]string, error) {
@@ -472,6 +474,12 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		}
 
 		last = b
+	}
+}
+
+func setenv(key, value string) {
+	if err := os.Setenv(key, value); err != nil {
+		log.Printf("setenv %s=%s: %s", key, value, err)
 	}
 }
 

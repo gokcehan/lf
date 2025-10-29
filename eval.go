@@ -453,7 +453,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 			// Export user defined options immediately, so that the current values
 			// are available for some external previewer, which is started in a
 			// different thread and thus cannot export (as `setenv` is not thread-safe).
-			os.Setenv("lf_"+e.opt, e.val)
+			err = os.Setenv("lf_"+e.opt, e.val)
 		} else {
 			err = fmt.Errorf("unknown option: %s", e.opt)
 		}
@@ -747,8 +747,9 @@ func resetIncCmd(app *app) {
 	} else if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
 		dir := app.nav.currDir()
 		old := dir.ind
-		app.nav.setFilter(app.nav.prevFilter)
-		if old != dir.ind {
+		if err := app.nav.setFilter(app.nav.prevFilter); err != nil {
+			log.Printf("reset filter: %s", err)
+		} else if old != dir.ind {
 			app.ui.loadFile(app, true)
 		}
 	}
@@ -974,7 +975,7 @@ func exitCompMenu(app *app) {
 }
 
 func (e *callExpr) eval(app *app, _ []string) {
-	os.Setenv("lf_count", strconv.Itoa(e.count))
+	setenv("lf_count", strconv.Itoa(e.count))
 
 	silentCmds := []string{
 		"addcustominfo",
@@ -1793,7 +1794,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 
-		tty.Write([]byte(e.args[0]))
+		_, _ = tty.Write([]byte(e.args[0]))
 	case "visual":
 		if !app.nav.init {
 			return
@@ -1902,7 +1903,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.runShell(s, nil, "%")
 		case ">":
-			io.WriteString(app.cmdIn, s+"\n")
+			_, _ = io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
 			log.Printf("shell-wait: %s", s)
