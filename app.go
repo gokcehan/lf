@@ -516,6 +516,8 @@ func (app *app) loop() {
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
+		case <-app.nav.preloadTimer.C:
+			app.nav.preload()
 		}
 	}
 }
