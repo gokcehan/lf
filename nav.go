@@ -698,13 +698,7 @@ func (nav *nav) resize(ui *ui) {
 		dir.boundPos(nav.height)
 	}
 
-	for path, r := range nav.regCache {
-		// keep volatile previews to prevent unnecessary preloads
-		if !r.volatile {
-			delete(nav.regCache, path)
-		}
-	}
-
+	clear(nav.regCache)
 	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
