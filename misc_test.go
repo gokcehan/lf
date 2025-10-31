@@ -506,7 +506,7 @@ func TestReadTermSequence(t *testing.T) {
 		{"\x1b[K", "\x1b[K"},         // CSI EL
 		{"\x1b[1;31m", "\x1b[1;31m"}, // CSI SGR (multiple params)
 		{"\x1b[31", ""},              // CSI incomplete (no terminator)
-		{"foo\x1b[31m", ""},          // doesn't with ESC
+		{"foo\x1b[31m", ""},          // doesn't start with ESC
 
 		{"\x1b]8;;https://example.com\x1b\\", "\x1b]8;;https://example.com\x1b\\"}, // OSC 8 (ST terminator)
 		{"\x1b]8;;https://example.com\x07", "\x1b]8;;https://example.com\x07"},     // OSC 8 (BEL terminator)
