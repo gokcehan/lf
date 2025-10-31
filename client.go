@@ -183,10 +183,11 @@ func remote(cmd string) error {
 	// safe as long as we do not use other types of connections. We need
 	// CloseWrite to notify the server that this is not a persistent connection
 	// and it should be closed after the response.
-	if v, ok := c.(interface {
-		CloseWrite() error
-	}); ok {
-		_ = v.CloseWrite()
+	switch c := c.(type) {
+	case *net.TCPConn:
+		c.CloseWrite()
+	case *net.UnixConn:
+		c.CloseWrite()
 	}
 
 	// The most straightforward way to write the response to stdout would be

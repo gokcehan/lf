@@ -58,7 +58,7 @@ func (watch *watch) stop() {
 	}
 
 	watch.quit <- struct{}{}
-	_ = watch.watcher.Close()
+	watch.watcher.Close()
 
 	watch.watcher = nil
 	watch.events = nil
