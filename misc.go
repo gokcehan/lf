@@ -424,7 +424,7 @@ func parseEscapeSequence(s string) tcell.Style {
 // a given string.
 //
 // *Note*: this function is based entirely on `printLength()` and strips only
-// style-related escape sequences and the `erase in line` sequence. Other codes
+// style-related sequences, `erase in line` and `OSC 8` sequences. Other codes
 // (e.g., cursor moves), as well as broken escape sequences, aren't removed.
 // This prevents mismatches between the two functions and avoids misalignment
 // when rendering the UI.
@@ -432,23 +432,104 @@ func stripAnsi(s string) string {
 	var b strings.Builder
 	slen := len(s)
 	for i := 0; i < slen; i++ {
-		r, w := utf8.DecodeRuneInString(s[i:])
-
-		if r == gEscapeCode && i+1 < slen && s[i+1] == '[' {
-			j := strings.IndexAny(s[i:min(slen, i+64)], "mK")
-			if j == -1 {
-				continue
-			}
-
-			i += j
+		seq := readTermSequence(s[i:])
+		if seq != "" {
+			i += len(seq) - 1 // skip known sequence
 			continue
 		}
 
+		r, w := utf8.DecodeRuneInString(s[i:])
 		i += w - 1
 		b.WriteRune(r)
 	}
 
 	return b.String()
+}
+
+// This function is used to extract and return a terminal sequence from a given
+// string. If no supported sequence could be found, an empty string is returned.
+//
+// CSI (Control Sequence Introducer):
+//   - SGR (Select Graphic Rendition) `m`, used for text styling
+//   - EL (Erase in Line) `K`, returned only so we can skip it
+//
+// OSC (Operating System Command):
+//   - OSC 8, hyperlinks
+func readTermSequence(s string) string {
+	slen := len(s)
+	if slen < 2 || s[0] != byte(gEscapeCode) {
+		return ""
+	}
+
+	switch s[1] {
+	case '[': // CSI
+		i := strings.IndexAny(s[:min(slen, 64)], "mK")
+		if i == -1 {
+			return ""
+		}
+		return s[:i+1]
+	case ']': // OSC
+		if slen < 4 || s[2] != '8' || s[3] != ';' {
+			return ""
+		}
+		// find string terminator
+		for i := 4; i < slen; i++ {
+			b := s[i]
+			// BEL (XTerm)
+			if b == 0x07 {
+				return s[:i+1]
+			}
+			// ESC\ (ECMA-48)
+			if b == byte(gEscapeCode) && i+1 < slen && s[i+1] == '\\' {
+				return s[:i+2]
+			}
+		}
+		// TODO: C1 forms?
+		return ""
+	default:
+		return ""
+	}
+}
+
+func applyTermSequence(s string, st tcell.Style) tcell.Style {
+	// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+	applyOSC := func(body string, st tcell.Style) tcell.Style {
+		toks := strings.SplitN(body, ";", 3)
+		if len(toks) == 0 {
+			return st
+		}
+		switch toks[0] {
+		case "8":
+			if len(toks) < 3 {
+				return st
+			}
+			return st.Url(toks[2])
+		default:
+			return st
+		}
+	}
+
+	slen := len(s)
+	if slen < 2 || s[0] != byte(gEscapeCode) {
+		return st
+	}
+	switch s[1] {
+	case '[':
+		if s[slen-1] == 'm' {
+			return applyAnsiCodes(s[2:slen-1], st)
+		}
+		return st
+	case ']':
+		// trim terminator (BEL or ESC\), then parse body
+		if s[slen-1] == 0x07 {
+			return applyOSC(s[2:slen-1], st)
+		} else if slen >= 2 && s[slen-2] == byte(gEscapeCode) && s[slen-1] == '\\' {
+			return applyOSC(s[2:slen-2], st)
+		}
+		return st
+	default:
+		return st
+	}
 }
 
 // This function reads lines from a file to be displayed as a preview.
