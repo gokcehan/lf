@@ -487,13 +487,24 @@ func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 	applyOSC := func(body string, st tcell.Style) tcell.Style {
 		toks := strings.SplitN(body, ";", 3)
-		if len(toks) == 0 {
+		if len(toks) < 2 {
 			return st
 		}
 		switch toks[0] {
 		case "8":
 			if len(toks) < 3 {
 				return st
+			}
+			// handle optional parameters
+			if toks[1] != "" {
+				for seg := range strings.SplitSeq(toks[1], ":") {
+					if seg == "" {
+						continue
+					}
+					if k, v, ok := strings.Cut(seg, "="); ok && k == "id" {
+						st = st.UrlId(v) // grouped hyperlinks
+					}
+				}
 			}
 			return st.Url(toks[2])
 		default:
