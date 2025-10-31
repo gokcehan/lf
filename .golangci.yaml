@@ -3,8 +3,11 @@ linters:
   settings:
     errcheck:
       exclude-functions:
+        - (*github.com/fsnotify/fsnotify.Watcher).Close
+        - (*net.TCPConn).CloseWrite
+        - (*net.UnixConn).CloseWrite
         - (*os.File).Close
-        - (io.ReadCloser).Close
+        - (io.Closer).Close
         - (net.Conn).Close
         - (net.Listener).Close
         - syscall.Close
