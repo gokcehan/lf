@@ -493,7 +493,7 @@ func TestOptionToFmtstr(t *testing.T) {
 	}
 }
 
-func TestParseEscapeSequence(t *testing.T) {
+func TestApplyTermSequence(t *testing.T) {
 	tests := []struct {
 		s   string
 		exp tcell.Style
@@ -503,7 +503,7 @@ func TestParseEscapeSequence(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := parseEscapeSequence(test.s); got != test.exp {
+		if got := applyTermSequence(test.s, tcell.StyleDefault); got != test.exp {
 			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}

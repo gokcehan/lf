@@ -410,16 +410,6 @@ func optionToFmtstr(optstr string) string {
 	}
 }
 
-// This function takes an escape sequence option (e.g. `\033[1m`) and converts
-// it to a `tcell.Style` object.
-func parseEscapeSequence(s string) tcell.Style {
-	s = strings.TrimPrefix(s, "\033[")
-	if i := strings.IndexByte(s, 'm'); i >= 0 {
-		s = s[:i]
-	}
-	return applySGR(s, tcell.StyleDefault)
-}
-
 // This function is used to remove style-related ANSI escape sequences from
 // a given string.
 //
@@ -491,6 +481,8 @@ func readTermSequence(s string) string {
 	}
 }
 
+// This function takes an escape sequence option (e.g. `\033[1m`) and applies
+// it to the given `tcell.Style` object.
 func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 	applyOSC := func(body string, st tcell.Style) tcell.Style {
