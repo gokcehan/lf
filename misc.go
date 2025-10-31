@@ -417,7 +417,7 @@ func parseEscapeSequence(s string) tcell.Style {
 	if i := strings.IndexByte(s, 'm'); i >= 0 {
 		s = s[:i]
 	}
-	return applyAnsiCodes(s, tcell.StyleDefault)
+	return applySGR(s, tcell.StyleDefault)
 }
 
 // This function is used to remove style-related ANSI escape sequences from
@@ -428,7 +428,7 @@ func parseEscapeSequence(s string) tcell.Style {
 // (e.g., cursor moves), as well as broken escape sequences, aren't removed.
 // This prevents mismatches between the two functions and avoids misalignment
 // when rendering the UI.
-func stripAnsi(s string) string {
+func stripTermSequence(s string) string {
 	var b strings.Builder
 	slen := len(s)
 	for i := 0; i < slen; i++ {
@@ -516,7 +516,7 @@ func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	switch s[1] {
 	case '[':
 		if s[slen-1] == 'm' {
-			return applyAnsiCodes(s[2:slen-1], st)
+			return applySGR(s[2:slen-1], st)
 		}
 		return st
 	case ']':

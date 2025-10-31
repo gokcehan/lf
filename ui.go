@@ -527,7 +527,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
-				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripAnsi(custom)))
+				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
 			}
 		} else {
 			if tag == " " {

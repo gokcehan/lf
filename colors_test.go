@@ -120,7 +120,7 @@ func TestApplyAnsiCodes(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if stGot := applyAnsiCodes(test.s, test.st); stGot != test.stExp {
+		if stGot := applySGR(test.s, test.st); stGot != test.stExp {
 			t.Errorf("at input '%s' with '%v' expected '%v' but got '%v'",
 				test.s, test.st, test.stExp, stGot)
 		}

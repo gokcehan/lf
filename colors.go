@@ -124,7 +124,7 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 	return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 }
 
-func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
+func applySGR(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
 	// ECMA-48 details the standard
@@ -271,7 +271,7 @@ func (sm *styleMap) parsePair(pair []string) {
 		sm.useLinkTarget = true
 	}
 
-	sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
+	sm.styles[key] = applySGR(val, tcell.StyleDefault)
 }
 
 // This function parses $LSCOLORS environment variable.

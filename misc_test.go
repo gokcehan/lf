@@ -509,7 +509,7 @@ func TestParseEscapeSequence(t *testing.T) {
 	}
 }
 
-func TestStripAnsi(t *testing.T) {
+func TestStripTermSequence(t *testing.T) {
 	tests := []struct {
 		s   string
 		exp string
@@ -524,19 +524,19 @@ func TestStripAnsi(t *testing.T) {
 			"fooBoldRedGreenbar",
 		}, // multiple attributes
 		{
-			"misc.go:func \x1b[01;31m\x1b[KstripAnsi\x1b[m\x1b[K(s string) string {",
-			"misc.go:func stripAnsi(s string) string {",
+			"misc.go:func \x1b[01;31m\x1b[KstripTermSequence\x1b[m\x1b[K(s string) string {",
+			"misc.go:func stripTermSequence(s string) string {",
 		}, // `grep` output containing `erase in line` sequence
 	}
 
 	for _, test := range tests {
-		if got := stripAnsi(test.s); got != test.exp {
+		if got := stripTermSequence(test.s); got != test.exp {
 			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
 		}
 		// we rely on both functions extracting the same runes
 		// to avoid misalignment
-		if printLength(test.s) != len(stripAnsi(test.s)) {
-			t.Errorf("at input %q expected '%d' but got '%d'", test.s, printLength(test.s), len(stripAnsi(test.s)))
+		if printLength(test.s) != len(stripTermSequence(test.s)) {
+			t.Errorf("at input %q expected '%d' but got '%d'", test.s, printLength(test.s), len(stripTermSequence(test.s)))
 		}
 	}
 }
