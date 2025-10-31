@@ -493,13 +493,44 @@ func TestOptionToFmtstr(t *testing.T) {
 	}
 }
 
+func TestReadTermSequence(t *testing.T) {
+	tests := []struct {
+		s, exp string
+	}{
+		{"", ""},      // empty
+		{"foo", ""},   // plain text
+		{"\x1b", ""},  // lone ESC
+		{"\x1bX", ""}, // unknown ESC sequence
+
+		{"\x1b[31m", "\x1b[31m"},     // CSI SGR
+		{"\x1b[K", "\x1b[K"},         // CSI EL
+		{"\x1b[1;31m", "\x1b[1;31m"}, // CSI SGR (multiple params)
+		{"\x1b[31", ""},              // CSI incomplete (no terminator)
+		{"foo\x1b[31m", ""},          // doesn't with ESC
+
+		{"\x1b]8;;https://example.com\x1b\\", "\x1b]8;;https://example.com\x1b\\"}, // OSC 8 (ST terminator)
+		{"\x1b]8;;https://example.com\x07", "\x1b]8;;https://example.com\x07"},     // OSC 8 (BEL terminator)
+		{"\x1b]0;title\x07", ""}, // non-OSC8 OSC (ignored)
+	}
+
+	for _, tc := range tests {
+		if got := readTermSequence(tc.s); got != tc.exp {
+			t.Errorf("input %q: got %q, want %q", tc.s, got, tc.exp)
+		}
+	}
+}
+
 func TestApplyTermSequence(t *testing.T) {
 	tests := []struct {
 		s   string
 		exp tcell.Style
 	}{
-		{"\033[1m", tcell.StyleDefault.Bold(true)},
-		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+		{"", tcell.StyleDefault},
+		{"\x1b[1m", tcell.StyleDefault.Bold(true)},
+		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+		{"\x1b]8;;https://example.com\x1b\\", tcell.StyleDefault.Url("https://example.com")},
+		{"\x1b]8;;https://example.com\x07", tcell.StyleDefault.Url("https://example.com")},
+		{"\x1b]8;id=42;https://example.com\x1b\\", tcell.StyleDefault.Url("https://example.com")},
 	}
 
 	for _, test := range tests {
@@ -527,6 +558,24 @@ func TestStripTermSequence(t *testing.T) {
 			"misc.go:func \x1b[01;31m\x1b[KstripTermSequence\x1b[m\x1b[K(s string) string {",
 			"misc.go:func stripTermSequence(s string) string {",
 		}, // `grep` output containing `erase in line` sequence
+
+		// OSC 8 hyperlinks
+		{
+			"\x1b]8;;https://example.com\x1b\\example.com\x1b]8;;\x1b\\",
+			"example.com",
+		}, // open/close with ST (ESC\)
+		{
+			"\x1b]8;;https://example.com\x07example.com\x1b]8;;\x07",
+			"example.com",
+		}, // open/close with BEL
+		{
+			"\x1b]8;id=42;https://example.com\x1b\\label\x1b]8;;\x1b\\",
+			"label",
+		}, // params present
+		{
+			"\x1b]8;;https://example.com\x1b\\example.com",
+			"example.com",
+		}, // open without close
 	}
 
 	for _, test := range tests {
