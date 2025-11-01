@@ -466,7 +466,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			}
 		}
 		if fmtStr != "" {
-			win.print(ui.screen, lnwidth, i, applyTermSequence(fmtStr, tcell.StyleDefault), " ")
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(fmtStr), " ")
 		}
 
 		// make space for select marker, and leave another space at the end
@@ -1149,7 +1149,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 }
 
 func (ui *ui) drawBox() {
-	st := applyTermSequence(gOpts.borderfmt, tcell.StyleDefault)
+	st := parseEscapeSequence(gOpts.borderfmt)
 
 	w, h := ui.screen.Size()
 
@@ -1204,16 +1204,16 @@ func (ui *ui) drawMenu() {
 	for i, line := range lines {
 		var st tcell.Style
 		if i == 0 {
-			st = applyTermSequence(gOpts.menuheaderfmt, tcell.StyleDefault)
+			st = parseEscapeSequence(gOpts.menuheaderfmt)
 		} else {
-			st = applyTermSequence(gOpts.menufmt, tcell.StyleDefault)
+			st = parseEscapeSequence(gOpts.menufmt)
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
 	}
 
 	if ui.menuSelect != nil {
-		st := applyTermSequence(gOpts.menuselectfmt, tcell.StyleDefault)
+		st := parseEscapeSequence(gOpts.menuselectfmt)
 		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, st, ui.menuSelect.s)
 	}
 }

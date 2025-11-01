@@ -493,6 +493,22 @@ func TestOptionToFmtstr(t *testing.T) {
 	}
 }
 
+func TestParseEscapeSequence(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp tcell.Style
+	}{
+		{"\033[1m", tcell.StyleDefault.Bold(true)},
+		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+	}
+
+	for _, test := range tests {
+		if got := parseEscapeSequence(test.s); got != test.exp {
+			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
+		}
+	}
+}
+
 func TestReadTermSequence(t *testing.T) {
 	tests := []struct {
 		s, exp string
@@ -516,35 +532,6 @@ func TestReadTermSequence(t *testing.T) {
 	for _, tc := range tests {
 		if got := readTermSequence(tc.s); got != tc.exp {
 			t.Errorf("input %q: got %q, want %q", tc.s, got, tc.exp)
-		}
-	}
-}
-
-func TestApplyTermSequence(t *testing.T) {
-	tests := []struct {
-		s   string
-		exp tcell.Style
-	}{
-		{"", tcell.StyleDefault},
-		{"\x1b[1m", tcell.StyleDefault.Bold(true)},
-		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
-		{
-			"\x1b]8;;https://example.com\x1b\\",
-			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
-		}, // OSC 8 (ST terminator), no `id` provided
-		{
-			"\x1b]8;;https://example.com\x07",
-			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
-		}, // OSC 8 (BEL terminator), no `id` provided
-		{
-			"\x1b]8;id=42;https://example.com\x1b\\",
-			tcell.StyleDefault.UrlId("42").Url("https://example.com"),
-		}, // OSC 8, `id` provided
-	}
-
-	for _, test := range tests {
-		if got := applyTermSequence(test.s, tcell.StyleDefault); got != test.exp {
-			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }

@@ -35,7 +35,7 @@ func TestParseColor(t *testing.T) {
 	}
 }
 
-func TestApplyAnsiCodes(t *testing.T) {
+func TestApplySGR(t *testing.T) {
 	none := tcell.StyleDefault
 
 	tests := []struct {
