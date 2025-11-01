@@ -26,6 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `lf_mode` environment variable will now be set to `compmenu` if the completion menu is active (#2146).
 - A `ruler` config file is added as an alternate method for customizing the ruler (#2186). This is intended to eventually replace the existing `rulerfmt`/`statfmt` options and must be enabled using the new `rulerfile` option. **This feature is currently experimental.**
 - A new option `preload` is added to enable calling the `previewer` to generate previews in advance (#2206). **This feature is currently experimental.**
+- `OSC 8` escape codes to render clickable hyperlinks are now supported (#2243).
 
 ### Fixed
 

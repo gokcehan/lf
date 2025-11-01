@@ -123,7 +123,7 @@ func (im *iconMap) parseArray(arr []string) {
 		}
 	case 3:
 		icon, color := arr[1], arr[2]
-		im.icons[key] = iconWithStyle(icon, applyAnsiCodes(color, tcell.StyleDefault))
+		im.icons[key] = iconWithStyle(icon, applySGR(color, tcell.StyleDefault))
 	}
 }
 

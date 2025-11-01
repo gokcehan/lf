@@ -124,101 +124,6 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 	return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 }
 
-func applyAnsiCodes(s string, st tcell.Style) tcell.Style {
-	toks := strings.Split(s, ";")
-
-	// ECMA-48 details the standard
-	tokslen := len(toks)
-
-loop:
-	for i := 0; i < tokslen; i++ {
-		switch strings.TrimLeft(toks[i], "0") {
-		case "":
-			st = tcell.StyleDefault
-		case "1":
-			st = st.Bold(true)
-		case "2":
-			st = st.Dim(true)
-		case "3":
-			st = st.Italic(true)
-		case "4:0":
-			st = st.Underline(false)
-		case "4", "4:1":
-			st = st.Underline(true)
-		case "4:2":
-			st = st.Underline(tcell.UnderlineStyleDouble)
-		case "4:3":
-			st = st.Underline(tcell.UnderlineStyleCurly)
-		case "4:4":
-			st = st.Underline(tcell.UnderlineStyleDotted)
-		case "4:5":
-			st = st.Underline(tcell.UnderlineStyleDashed)
-		case "5", "6":
-			st = st.Blink(true)
-		case "7":
-			st = st.Reverse(true)
-		case "8":
-			// TODO: tcell PR for proper conceal
-			_, bg, _ := st.Decompose()
-			st = st.Foreground(bg)
-		case "9":
-			st = st.StrikeThrough(true)
-		case "22":
-			st = st.Bold(false).Dim(false)
-		case "23":
-			st = st.Italic(false)
-		case "24":
-			st = st.Underline(false)
-		case "25":
-			st = st.Blink(false)
-		case "27":
-			st = st.Reverse(false)
-		case "29":
-			st = st.StrikeThrough(false)
-		case "30", "31", "32", "33", "34", "35", "36", "37":
-			n, _ := strconv.Atoi(toks[i])
-			st = st.Foreground(tcell.PaletteColor(n - 30))
-		case "90", "91", "92", "93", "94", "95", "96", "97":
-			n, _ := strconv.Atoi(toks[i])
-			st = st.Foreground(tcell.PaletteColor(n - 82))
-		case "38":
-			color, offset, err := parseColor(toks[i+1:])
-			if err != nil {
-				log.Printf("error processing ansi code 38: %s", err)
-				break loop
-			}
-			st = st.Foreground(color)
-			i += offset
-		case "40", "41", "42", "43", "44", "45", "46", "47":
-			n, _ := strconv.Atoi(toks[i])
-			st = st.Background(tcell.PaletteColor(n - 40))
-		case "100", "101", "102", "103", "104", "105", "106", "107":
-			n, _ := strconv.Atoi(toks[i])
-			st = st.Background(tcell.PaletteColor(n - 92))
-		case "48":
-			color, offset, err := parseColor(toks[i+1:])
-			if err != nil {
-				log.Printf("error processing ansi code 48: %s", err)
-				break loop
-			}
-			st = st.Background(color)
-			i += offset
-		case "58":
-			color, offset, err := parseColor(toks[i+1:])
-			if err != nil {
-				log.Printf("error processing ansi code 58: %s", err)
-				break loop
-			}
-			st = st.Underline(color)
-			i += offset
-		default:
-			log.Printf("unknown ansi code: %s", toks[i])
-		}
-	}
-
-	return st
-}
-
 func (sm styleMap) parseFile(path string) {
 	log.Printf("reading file: %s", path)
 
@@ -271,7 +176,7 @@ func (sm *styleMap) parsePair(pair []string) {
 		sm.useLinkTarget = true
 	}
 
-	sm.styles[key] = applyAnsiCodes(val, tcell.StyleDefault)
+	sm.styles[key] = applySGR(val, tcell.StyleDefault)
 }
 
 // This function parses $LSCOLORS environment variable.

@@ -171,18 +171,13 @@ func printLength(s string) int {
 	off := 0
 	slen := len(s)
 	for i := 0; i < slen; i++ {
-		r, w := utf8.DecodeRuneInString(s[i:])
-
-		if r == gEscapeCode && i+1 < slen && s[i+1] == '[' {
-			j := strings.IndexAny(s[i:min(slen, i+64)], "mK")
-			if j == -1 {
-				continue
-			}
-
-			i += j
+		seq := readTermSequence(s[i:])
+		if seq != "" {
+			i += len(seq) - 1
 			continue
 		}
 
+		r, w := utf8.DecodeRuneInString(s[i:])
 		i += w - 1
 
 		if r == '\t' {
@@ -200,21 +195,14 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 	var comb []rune
 	slen := len(s)
 	for i := 0; i < slen; i++ {
-		r, w := utf8.DecodeRuneInString(s[i:])
-
-		if r == gEscapeCode && i+1 < slen && s[i+1] == '[' {
-			j := strings.IndexAny(s[i:min(slen, i+64)], "mK")
-			if j == -1 {
-				continue
-			}
-			if s[i+j] == 'm' {
-				st = applyAnsiCodes(s[i+2:i+j], st)
-			}
-
-			i += j
+		seq := readTermSequence(s[i:])
+		if seq != "" {
+			st = applyTermSequence(seq, st)
+			i += len(seq) - 1
 			continue
 		}
 
+		r, w := utf8.DecodeRuneInString(s[i:])
 		for {
 			rc, wc := utf8.DecodeRuneInString(s[i+w:])
 			if !unicode.Is(unicode.Mn, rc) {
@@ -539,7 +527,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
-				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripAnsi(custom)))
+				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
 			}
 		} else {
 			if tag == " " {
