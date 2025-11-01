@@ -531,11 +531,11 @@ func TestApplyTermSequence(t *testing.T) {
 		{
 			"\x1b]8;;https://example.com\x1b\\",
 			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
-		}, // OSC 8 terminated with ST (ESC\), no `id` provided
+		}, // OSC 8 (ST terminator), no `id` provided
 		{
 			"\x1b]8;;https://example.com\x07",
 			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
-		}, // OSC 8 terminated with BEL, no `id` provided
+		}, // OSC 8 (BEL terminator), no `id` provided
 		{
 			"\x1b]8;id=42;https://example.com\x1b\\",
 			tcell.StyleDefault.UrlId("42").Url("https://example.com"),
