@@ -1,7 +1,6 @@
 package main
 
 import (
-	"errors"
 	"fmt"
 	"io"
 	"os"
@@ -55,10 +54,11 @@ func copySize(srcs []string) (int64, error) {
 	return total, nil
 }
 
-func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan int64) error {
+func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- int64, errs chan<- error) {
 	r, err := os.Open(src)
 	if err != nil {
-		return err
+		errs <- err
+		return
 	}
 	defer r.Close()
 
@@ -68,30 +68,38 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan in
 	}
 	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 	if err != nil {
-		return err
+		errs <- err
+		return
 	}
 
 	if _, err := io.Copy(NewProgressWriter(w, nums), r); err != nil {
-		err2 := w.Close()
-		err3 := os.Remove(dst)
-		return errors.Join(err, err2, err3)
+		errs <- err
+		w.Close()
+		if err = os.Remove(dst); err != nil {
+			errs <- err
+		}
+		return
 	}
 
 	if err := w.Close(); err != nil {
-		err2 := os.Remove(dst)
-		return errors.Join(err, err2)
+		errs <- err
+		if err = os.Remove(dst); err != nil {
+			errs <- err
+		}
+		return
 	}
 
 	if slices.Contains(preserve, "timestamps") {
 		atime := times.Get(info).AccessTime()
 		mtime := info.ModTime()
 		if err := os.Chtimes(dst, atime, mtime); err != nil {
-			err2 := os.Remove(dst)
-			return errors.Join(err, err2)
+			errs <- err
+			if err = os.Remove(dst); err != nil {
+				errs <- err
+			}
+			return
 		}
 	}
-
-	return nil
 }
 
 func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
@@ -154,9 +162,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					}
 					nums <- info.Size()
 				default:
-					if err := copyFile(path, newPath, preserve, info, nums); err != nil {
-						errs <- fmt.Errorf("copy: %w", err)
-					}
+					copyFile(path, newPath, preserve, info, nums, errs)
 				}
 				return nil
 			})
