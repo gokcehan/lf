@@ -1366,17 +1366,17 @@ func listBinds(binds map[string]map[string]expr, showMode bool) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 
 	if showMode {
-		_, _ = fmt.Fprintln(t, "mode\tkeys\tcommand")
+		fmt.Fprintln(t, "mode\tkeys\tcommand")
 		for _, e := range entries {
-			_, _ = fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
 		}
 	} else {
-		_, _ = fmt.Fprintln(t, "keys\tcommand")
+		fmt.Fprintln(t, "keys\tcommand")
 		for _, e := range entries {
-			_, _ = fmt.Fprintf(t, "%s\t%s\n", e.key, e.cmd)
+			fmt.Fprintf(t, "%s\t%s\n", e.key, e.cmd)
 		}
 	}
-	_ = t.Flush()
+	t.Flush()
 
 	return b.String()
 }
@@ -1392,11 +1392,11 @@ func listCmds(cmds map[string]expr) string {
 	sort.Strings(keys)
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	_, _ = fmt.Fprintln(t, "name\tcommand")
+	fmt.Fprintln(t, "name\tcommand")
 	for _, k := range keys {
-		_, _ = fmt.Fprintf(t, "%s\t%v\n", k, cmds[k])
+		fmt.Fprintf(t, "%s\t%v\n", k, cmds[k])
 	}
-	_ = t.Flush()
+	t.Flush()
 
 	return b.String()
 }
@@ -1408,19 +1408,19 @@ func listJumps(jumps []string, ind int) string {
 	maxlength := len(strconv.Itoa(max(ind, len(jumps)-1-ind)))
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	_, _ = fmt.Fprintln(t, "  jump\tpath")
+	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
 	for i := len(jumps) - 1; i >= 0; i-- {
 		switch {
 		case i < ind:
-			_, _ = fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
 		case i > ind:
-			_, _ = fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
 		default:
-			_, _ = fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
 		}
 	}
-	_ = t.Flush()
+	t.Flush()
 
 	return b.String()
 }
@@ -1432,11 +1432,11 @@ func listHistory(history []string) string {
 	maxlength := len(strconv.Itoa(len(history)))
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	_, _ = fmt.Fprintln(t, "number\tcommand")
+	fmt.Fprintln(t, "number\tcommand")
 	for i, cmd := range history {
-		_, _ = fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
+		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
 	}
-	_ = t.Flush()
+	t.Flush()
 
 	return b.String()
 }
@@ -1452,11 +1452,11 @@ func listMarks(marks map[string]string) string {
 	sort.Strings(keys)
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	_, _ = fmt.Fprintln(t, "mark\tpath")
+	fmt.Fprintln(t, "mark\tpath")
 	for _, k := range keys {
-		_, _ = fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
+		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
 	}
-	_ = t.Flush()
+	t.Flush()
 
 	return b.String()
 }
@@ -1811,8 +1811,8 @@ func (ui *ui) resume() error {
 
 func (ui *ui) exportSizes() {
 	w, h := ui.screen.Size()
-	setenv("lf_width", strconv.Itoa(w))
-	setenv("lf_height", strconv.Itoa(h))
+	os.Setenv("lf_width", strconv.Itoa(w))
+	os.Setenv("lf_height", strconv.Itoa(h))
 }
 
 func anyKey() {

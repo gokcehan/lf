@@ -740,15 +740,15 @@ func (nav *nav) exportFiles() {
 	}
 	currVSelections := strings.Join(vSelections, gOpts.filesep)
 
-	setenv("f", currFile)
-	setenv("fs", currSelections)
-	setenv("fv", currVSelections)
-	setenv("PWD", quoteString(nav.currDir().path))
+	os.Setenv("f", currFile)
+	os.Setenv("fs", currSelections)
+	os.Setenv("fv", currVSelections)
+	os.Setenv("PWD", quoteString(nav.currDir().path))
 
 	if len(selections) == 0 {
-		setenv("fx", currFile)
+		os.Setenv("fx", currFile)
 	} else {
-		setenv("fx", currSelections)
+		os.Setenv("fx", currSelections)
 	}
 }
 

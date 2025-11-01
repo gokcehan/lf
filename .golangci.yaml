@@ -7,9 +7,16 @@ linters:
         - (*net.TCPConn).CloseWrite
         - (*net.UnixConn).CloseWrite
         - (*os.File).Close
+        - (*os.File).Write
+        - (*text/tabwriter.Writer).Flush
         - (io.Closer).Close
+        - (io.Writer).Write
         - (net.Conn).Close
         - (net.Listener).Close
+        - fmt.Fprintf
+        - fmt.Fprintln
+        - io.WriteString
+        - os.Setenv
         - syscall.Close
 issues:
   max-issues-per-linter: 0  # no limit

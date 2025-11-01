@@ -66,18 +66,18 @@ func init() {
 }
 
 func exportEnvVars() {
-	setenv("id", strconv.Itoa(gClientID))
+	os.Setenv("id", strconv.Itoa(gClientID))
 
-	setenv("OPENER", envOpener)
-	setenv("EDITOR", envEditor)
-	setenv("PAGER", envPager)
-	setenv("SHELL", envShell)
+	os.Setenv("OPENER", envOpener)
+	os.Setenv("EDITOR", envEditor)
+	os.Setenv("PAGER", envPager)
+	os.Setenv("SHELL", envShell)
 
 	dir, err := os.Getwd()
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
 	}
-	setenv("OLDPWD", dir)
+	os.Setenv("OLDPWD", dir)
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {
@@ -86,17 +86,17 @@ func exportEnvVars() {
 
 	level++
 
-	setenv("LF_LEVEL", strconv.Itoa(level))
+	os.Setenv("LF_LEVEL", strconv.Itoa(level))
 }
 
 func exportFlags() {
-	setenv("lf_flag_config", gConfigPath)
-	setenv("lf_flag_last_dir_path", gLastDirPath)
-	setenv("lf_flag_log", gLogPath)
-	setenv("lf_flag_print_last_dir", strconv.FormatBool(gPrintLastDir))
-	setenv("lf_flag_print_selection", strconv.FormatBool(gPrintSelection))
-	setenv("lf_flag_selection_path", gSelectionPath)
-	setenv("lf_flag_single", strconv.FormatBool(gSingleMode))
+	os.Setenv("lf_flag_config", gConfigPath)
+	os.Setenv("lf_flag_last_dir_path", gLastDirPath)
+	os.Setenv("lf_flag_log", gLogPath)
+	os.Setenv("lf_flag_print_last_dir", strconv.FormatBool(gPrintLastDir))
+	os.Setenv("lf_flag_print_selection", strconv.FormatBool(gPrintSelection))
+	os.Setenv("lf_flag_selection_path", gSelectionPath)
+	os.Setenv("lf_flag_single", strconv.FormatBool(gSingleMode))
 }
 
 // used by exportOpts below
@@ -159,12 +159,12 @@ func exportLfPath() {
 		log.Printf("getting path to lf binary: %s", err)
 		lfPath = "lf"
 	}
-	setenv("lf", quoteString(lfPath))
+	os.Setenv("lf", quoteString(lfPath))
 }
 
 func exportOpts() {
 	for key, value := range getOptsMap() {
-		setenv(key, value)
+		os.Setenv(key, value)
 	}
 }
 
@@ -226,13 +226,13 @@ func printVersion() {
 func main() {
 	flag.Usage = func() {
 		f := flag.CommandLine.Output()
-		_, _ = fmt.Fprintln(f, "lf - Terminal file manager")
-		_, _ = fmt.Fprintln(f, "")
-		_, _ = fmt.Fprintf(f, "Usage:  %s [options] [cd-or-select-path]\n\n", os.Args[0])
-		_, _ = fmt.Fprintln(f, "  cd-or-select-path")
-		_, _ = fmt.Fprintln(f, "        set the initial dir or file selection to the given argument")
-		_, _ = fmt.Fprintln(f, "")
-		_, _ = fmt.Fprintln(f, "Options:")
+		fmt.Fprintln(f, "lf - Terminal file manager")
+		fmt.Fprintln(f, "")
+		fmt.Fprintf(f, "Usage:  %s [options] [cd-or-select-path]\n\n", os.Args[0])
+		fmt.Fprintln(f, "  cd-or-select-path")
+		fmt.Fprintln(f, "        set the initial dir or file selection to the given argument")
+		fmt.Fprintln(f, "")
+		fmt.Fprintln(f, "Options:")
 		flag.PrintDefaults()
 	}
 

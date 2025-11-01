@@ -60,7 +60,7 @@ func listen(l net.Listener) {
 }
 
 func echoerr(c net.Conn, msg string) {
-	_, _ = fmt.Fprintln(c, msg)
+	fmt.Fprintln(c, msg)
 	log.Print(msg)
 }
 
@@ -164,7 +164,7 @@ Loop:
 		case "quit!":
 			gQuitChan <- struct{}{}
 			for _, c := range gConnList {
-				_, _ = fmt.Fprintln(c, "echo server is quitting...")
+				fmt.Fprintln(c, "echo server is quitting...")
 				c.Close()
 			}
 			gListener.Close()

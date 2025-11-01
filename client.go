@@ -200,7 +200,7 @@ func remote(cmd string) error {
 		return fmt.Errorf("reading response from server: %w", err)
 	}
 	c.Close()
-	_, _ = os.Stdout.Write(response)
+	os.Stdout.Write(response)
 
 	return nil
 }
