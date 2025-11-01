@@ -70,7 +70,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
 
       - name: Upload artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: lf-${{ matrix.os }}-${{ matrix.arch }}
           path: dist/*
@@ -80,7 +80,7 @@ jobs:
     needs: build
     steps:
       - name: Download artifacts
-        uses: actions/download-artifact@v5
+        uses: actions/download-artifact@v6
         with:
           path: dist
           merge-multiple: true

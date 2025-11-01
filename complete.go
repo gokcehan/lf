@@ -232,7 +232,7 @@ func matchList(s string, words []string) (matches []compMatch, result string) {
 }
 
 func matchCmd(s string) (matches []compMatch, result string) {
-	words := append(gCmdWords, slices.Collect(maps.Keys(gOpts.cmds))...)
+	words := slices.Concat(gCmdWords, slices.Collect(maps.Keys(gOpts.cmds)))
 	slices.Sort(words)
 	matches, result = matchWord(s, slices.Compact(words))
 	return
@@ -390,6 +390,8 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			break
 		}
 		switch f[1] {
+		case "cleaner", "previewer":
+			matches, result = matchCmdFile(f[2], false)
 		case "filtermethod", "searchmethod":
 			matches, result = matchWord(f[2], []string{"glob", "regex", "text"})
 		case "info":
@@ -402,8 +404,6 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			matches, result = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
-		case "cleaner", "previewer":
-			matches, result = matchCmdFile(f[2], false)
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
 				matches, result = matchWord(f[2], []string{"false", "true"})

@@ -141,6 +141,18 @@ func (file *file) TotalSize() int64 {
 	return file.Size()
 }
 
+func (file *file) isPreviewable() bool {
+	if file.Mode().IsRegular() {
+		return true
+	}
+
+	if file.IsDir() && gOpts.dirpreviews {
+		return true
+	}
+
+	return false
+}
+
 type fakeStat struct {
 	name string
 }
@@ -454,6 +466,7 @@ type nav struct {
 	moveTotalChan   chan int
 	deleteCountChan chan int
 	deleteTotalChan chan int
+	preloadChan     chan string
 	previewChan     chan string
 	dirChan         chan *dir
 	regChan         chan *reg
@@ -480,6 +493,7 @@ type nav struct {
 	volatilePreview bool
 	previewTimer    *time.Timer
 	previewLoading  bool
+	preloadTimer    *time.Timer
 	jumpList        []string
 	jumpListInd     int
 }
@@ -562,7 +576,7 @@ func (nav *nav) checkDir(dir *dir) {
 	}
 }
 
-func (nav *nav) getDirs(wd string) {
+func (nav *nav) updateDirs(wd string) {
 	var dirs []*dir
 
 	wd = filepath.Clean(wd)
@@ -591,6 +605,7 @@ func newNav(ui *ui) *nav {
 		moveTotalChan:   make(chan int, 1024),
 		deleteCountChan: make(chan int, 1024),
 		deleteTotalChan: make(chan int, 1024),
+		preloadChan:     make(chan string, 1024),
 		previewChan:     make(chan string, 1024),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
@@ -603,6 +618,7 @@ func newNav(ui *ui) *nav {
 		tags:            make(map[string]string),
 		selectionInd:    0,
 		previewTimer:    time.NewTimer(0),
+		preloadTimer:    time.NewTimer(0),
 		jumpList:        make([]string, 0),
 		jumpListInd:     -1,
 	}
@@ -628,14 +644,14 @@ func (nav *nav) addJumpList() {
 
 func (nav *nav) cdJumpListPrev() {
 	if nav.jumpListInd > 0 {
-		nav.jumpListInd -= 1
+		nav.jumpListInd--
 		nav.cd(nav.jumpList[nav.jumpListInd])
 	}
 }
 
 func (nav *nav) cdJumpListNext() {
 	if nav.jumpListInd < len(nav.jumpList)-1 {
-		nav.jumpListInd += 1
+		nav.jumpListInd++
 		nav.cd(nav.jumpList[nav.jumpListInd])
 	}
 }
@@ -656,18 +672,16 @@ func (nav *nav) renew() {
 	}
 }
 
-func (nav *nav) reload() error {
+func (nav *nav) reload() {
 	clear(nav.dirCache)
 	clear(nav.regCache)
 
 	curr, err := nav.currFile()
-	nav.getDirs(nav.currDir().path)
+	nav.updateDirs(nav.currDir().path)
 	if err == nil {
 		last := nav.dirs[len(nav.dirs)-1]
 		last.files = append(last.files, curr)
 	}
-
-	return nil
 }
 
 func (nav *nav) resize(ui *ui) {
@@ -684,6 +698,7 @@ func (nav *nav) resize(ui *ui) {
 	}
 
 	clear(nav.regCache)
+	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
 func (nav *nav) position() {
@@ -732,21 +747,45 @@ func (nav *nav) exportFiles() {
 	}
 }
 
+func (nav *nav) preloadLoop(ui *ui) {
+	processed := make(map[string]struct{})
+	process := func(path string) {
+		if _, ok := processed[path]; !ok {
+			nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
+			processed[path] = struct{}{}
+		}
+	}
+
+	for path := range nav.preloadChan {
+		clear(processed)
+		process(path)
+	loop:
+		for {
+			select {
+			case path = <-nav.preloadChan:
+				process(path)
+			default:
+				break loop
+			}
+		}
+	}
+}
+
 func (nav *nav) previewLoop(ui *ui) {
 	var prev string
 	for path := range nav.previewChan {
-		clear := len(path) == 0
+		isClear := len(path) == 0
 	loop:
 		for {
 			select {
 			case path = <-nav.previewChan:
-				clear = clear || len(path) == 0
+				isClear = isClear || len(path) == 0
 			default:
 				break loop
 			}
 		}
 		win := ui.wins[len(ui.wins)-1]
-		if clear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+		if isClear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
 			cmd := exec.Command(gOpts.cleaner, prev,
 				strconv.Itoa(win.w),
 				strconv.Itoa(win.h),
@@ -759,7 +798,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.preview(path, win)
+			nav.preview(path, win, "preview")
 			prev = path
 		}
 	}
@@ -780,18 +819,66 @@ func matchPattern(pattern, name, path string) bool {
 	return matched
 }
 
-func (nav *nav) preview(path string, win *win) {
+func (nav *nav) preload() {
+	if !nav.init || !gOpts.preview || !gOpts.preload {
+		return
+	}
+
+	dir := nav.currDir()
+	doPreload := func(i int) {
+		if i < 0 || i >= len(dir.files) {
+			return
+		}
+
+		file := dir.files[i]
+		if !file.isPreviewable() {
+			return
+		}
+
+		if _, ok := nav.regCache[file.path]; ok {
+			return
+		}
+
+		nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
+		select {
+		case nav.preloadChan <- file.path:
+		default:
+		}
+	}
+
+	nav.startPreview()
+	for i := 0; i <= nav.height/2; i++ {
+		doPreload(dir.ind + i)
+	}
+	for i := 1; i <= nav.height/2; i++ {
+		doPreload(dir.ind - i)
+	}
+}
+
+func (nav *nav) preview(path string, win *win, mode string) {
 	reg := &reg{loadTime: time.Now(), path: path}
-	defer func() { nav.regChan <- reg }()
+	defer func() {
+		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
+			nav.volatilePreview = true
+		}
+
+		if gOpts.preload == (mode == "preload") {
+			nav.regChan <- reg
+		}
+	}()
 
 	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(gOpts.previewer, path,
+		cmd := exec.Command(
+			gOpts.previewer,
+			path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
-			strconv.Itoa(win.y))
+			strconv.Itoa(win.y),
+			mode,
+		)
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -807,11 +894,9 @@ func (nav *nav) preview(path string, win *win) {
 
 		defer func() {
 			if err := cmd.Wait(); err != nil {
-				if e, ok := err.(*exec.ExitError); ok {
-					if e.ExitCode() != 0 {
-						reg.volatile = true
-						nav.volatilePreview = true
-					}
+				var exitErr *exec.ExitError
+				if errors.As(err, &exitErr) {
+					reg.volatile = true
 				} else {
 					errorf("loading file: %s", err)
 				}
@@ -840,16 +925,27 @@ func (nav *nav) preview(path string, win *win) {
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {
 	r, ok := nav.regCache[path]
-	if !ok || (volatile && r.volatile) {
-		r := &reg{loading: true, loadTime: time.Now(), path: path, volatile: true}
+	if !ok {
+		r = &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
 		nav.startPreview()
-		nav.previewChan <- path
+		if gOpts.preload {
+			select {
+			case nav.preloadChan <- path:
+			default:
+			}
+		} else {
+			nav.previewChan <- path
+		}
 		return r
 	}
 
-	nav.checkReg(r)
+	if volatile && r.volatile {
+		nav.startPreview()
+		nav.previewChan <- path
+	}
 
+	nav.checkReg(r)
 	return r
 }
 
@@ -891,14 +987,18 @@ func (nav *nav) sort() {
 func (nav *nav) setFilter(filter []string) error {
 	newfilter := []string{}
 	for _, tok := range filter {
-		_, err := filepath.Match(tok, "a")
-		if err != nil {
+		if tok == "" {
+			continue
+		}
+
+		// check if filter is valid by applying it to a dummy string
+		if _, err := searchMatch("a", strings.TrimPrefix(tok, "!"), gOpts.filtermethod); err != nil {
 			return err
 		}
-		if tok != "" {
-			newfilter = append(newfilter, tok)
-		}
+
+		newfilter = append(newfilter, tok)
 	}
+
 	dir := nav.currDir()
 	dir.filter = newfilter
 
@@ -917,7 +1017,7 @@ func (nav *nav) up(dist int) bool {
 	if dir.ind == 0 {
 		if gOpts.wrapscroll {
 			nav.bottom()
-			dir.visualWrap -= 1
+			dir.visualWrap--
 		}
 		return old != dir.ind
 	}
@@ -941,7 +1041,7 @@ func (nav *nav) down(dist int) bool {
 	if dir.ind >= maxind {
 		if gOpts.wrapscroll {
 			nav.top()
-			dir.visualWrap += 1
+			dir.visualWrap++
 		}
 		return old != dir.ind
 	}
@@ -974,7 +1074,7 @@ func (nav *nav) scrollUp(dist int) bool {
 	delta := min(0, edge-minedge-1)
 	dir.pos = min(dir.pos, nav.height-minedge-1)
 	// update dir.ind accordingly
-	dir.ind = dir.ind + delta
+	dir.ind += delta
 
 	dir.ind = min(dir.ind, dir.ind-(dir.pos-nav.height+1))
 
@@ -1003,7 +1103,7 @@ func (nav *nav) scrollDown(dist int) bool {
 	delta := min(0, dir.pos-minedge)
 	dir.pos = max(dir.pos, minedge)
 	// update dir.ind accordingly
-	dir.ind = dir.ind - delta
+	dir.ind -= delta
 	dir.ind = max(dir.ind, dir.ind-(dir.pos-minedge))
 
 	dir.ind = min(maxind, dir.ind)
@@ -1023,7 +1123,7 @@ func (nav *nav) updir() error {
 	nav.dirs = nav.dirs[:len(nav.dirs)-1]
 
 	if err := os.Chdir(filepath.Dir(dir.path)); err != nil {
-		return fmt.Errorf("updir: %s", err)
+		return fmt.Errorf("updir: %w", err)
 	}
 
 	return nil
@@ -1032,7 +1132,7 @@ func (nav *nav) updir() error {
 func (nav *nav) open() error {
 	curr, err := nav.currFile()
 	if err != nil {
-		return fmt.Errorf("open: %s", err)
+		return fmt.Errorf("open: %w", err)
 	}
 
 	path := curr.path
@@ -1042,7 +1142,7 @@ func (nav *nav) open() error {
 	nav.dirs = append(nav.dirs, dir)
 
 	if err := os.Chdir(path); err != nil {
-		return fmt.Errorf("open: %s", err)
+		return fmt.Errorf("open: %w", err)
 	}
 
 	return nil
@@ -1526,10 +1626,10 @@ func (nav *nav) cd(wd string) error {
 	}
 
 	if err := os.Chdir(wd); err != nil {
-		return fmt.Errorf("cd: %s", err)
+		return fmt.Errorf("cd: %w", err)
 	}
 
-	nav.getDirs(wd)
+	nav.updateDirs(wd)
 	nav.addJumpList()
 	return nil
 }
@@ -1540,13 +1640,13 @@ func (nav *nav) sel(path string) error {
 
 	lstat, err := os.Lstat(path)
 	if err != nil {
-		return fmt.Errorf("select: %s", err)
+		return fmt.Errorf("select: %w", err)
 	}
 
 	dir := filepath.Dir(path)
 
 	if err := nav.cd(dir); err != nil {
-		return fmt.Errorf("select: %s", err)
+		return fmt.Errorf("select: %w", err)
 	}
 
 	base := filepath.Base(path)
@@ -1574,7 +1674,7 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 	for i := range dir.files {
 		matched, err := filepath.Match(pattern, dir.files[i].Name())
 		if err != nil {
-			return fmt.Errorf("glob-select: %s", err)
+			return fmt.Errorf("glob-select: %w", err)
 		}
 		if matched {
 			anyMatched = true
@@ -1646,7 +1746,7 @@ func (nav *nav) findNext() (bool, bool) {
 	if gOpts.wrapscan {
 		for i := range dir.ind {
 			if findMatch(dir.files[i].Name(), nav.find) {
-				dir.visualWrap += 1
+				dir.visualWrap++
 				return nav.up(dir.ind - i), true
 			}
 		}
@@ -1664,7 +1764,7 @@ func (nav *nav) findPrev() (bool, bool) {
 	if gOpts.wrapscan {
 		for i := len(dir.files) - 1; i > dir.ind; i-- {
 			if findMatch(dir.files[i].Name(), nav.find) {
-				dir.visualWrap -= 1
+				dir.visualWrap--
 				return nav.down(i - dir.ind), true
 			}
 		}
@@ -1695,7 +1795,7 @@ func searchMatch(name, pattern string, method searchMethod) (matched bool, err e
 	case regexSearch:
 		return regexp.MatchString(pattern, name)
 	default:
-		return false, fmt.Errorf("searchMatch: invalid searchMethod")
+		return false, errors.New("searchMatch: invalid searchMethod")
 	}
 }
 
@@ -1713,7 +1813,7 @@ func (nav *nav) searchNext() (bool, error) {
 			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 				return false, err
 			} else if matched {
-				dir.visualWrap += 1
+				dir.visualWrap++
 				return nav.up(dir.ind - i), nil
 			}
 		}
@@ -1735,7 +1835,7 @@ func (nav *nav) searchPrev() (bool, error) {
 			if matched, err := searchMatch(dir.files[i].Name(), nav.search, gOpts.searchmethod); err != nil {
 				return false, err
 			} else if matched {
-				dir.visualWrap -= 1
+				dir.visualWrap--
 				return nav.down(i - dir.ind), nil
 			}
 		}
@@ -1764,7 +1864,7 @@ func (nav *nav) removeMark(mark string) error {
 		delete(nav.marks, mark)
 		return nil
 	}
-	return fmt.Errorf("no such mark")
+	return errors.New("no such mark")
 }
 
 func (nav *nav) readMarks() error {
@@ -1774,7 +1874,7 @@ func (nav *nav) readMarks() error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("opening marks file: %s", err)
+		return fmt.Errorf("opening marks file: %w", err)
 	}
 	defer f.Close()
 
@@ -1790,7 +1890,7 @@ func (nav *nav) readMarks() error {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("reading marks file: %s", err)
+		return fmt.Errorf("reading marks file: %w", err)
 	}
 
 	return nil
@@ -1798,12 +1898,12 @@ func (nav *nav) readMarks() error {
 
 func (nav *nav) writeMarks() error {
 	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	f, err := os.Create(gMarksPath)
 	if err != nil {
-		return fmt.Errorf("creating marks file: %s", err)
+		return fmt.Errorf("creating marks file: %w", err)
 	}
 	defer f.Close()
 
@@ -1818,7 +1918,7 @@ func (nav *nav) writeMarks() error {
 	for _, k := range keys {
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.marks[k])
 		if err != nil {
-			return fmt.Errorf("writing marks file: %s", err)
+			return fmt.Errorf("writing marks file: %w", err)
 		}
 	}
 
@@ -1832,7 +1932,7 @@ func (nav *nav) readTags() error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("opening tags file: %s", err)
+		return fmt.Errorf("opening tags file: %w", err)
 	}
 	defer f.Close()
 
@@ -1853,7 +1953,7 @@ func (nav *nav) readTags() error {
 	}
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("reading tags file: %s", err)
+		return fmt.Errorf("reading tags file: %w", err)
 	}
 
 	return nil
@@ -1861,12 +1961,12 @@ func (nav *nav) readTags() error {
 
 func (nav *nav) writeTags() error {
 	if err := os.MkdirAll(filepath.Dir(gTagsPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	f, err := os.Create(gTagsPath)
 	if err != nil {
-		return fmt.Errorf("creating tags file: %s", err)
+		return fmt.Errorf("creating tags file: %w", err)
 	}
 	defer f.Close()
 
@@ -1879,7 +1979,7 @@ func (nav *nav) writeTags() error {
 	for _, k := range keys {
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.tags[k])
 		if err != nil {
-			return fmt.Errorf("writing tags file: %s", err)
+			return fmt.Errorf("writing tags file: %w", err)
 		}
 	}
 
@@ -1894,7 +1994,7 @@ func (nav *nav) currFile() (*file, error) {
 	dir := nav.dirs[len(nav.dirs)-1]
 
 	if len(dir.files) == 0 {
-		return nil, fmt.Errorf("empty directory")
+		return nil, errors.New("empty directory")
 	}
 
 	return dir.files[dir.ind], nil

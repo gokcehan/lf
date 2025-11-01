@@ -1,0 +1,7 @@
+version: "2"
+linters:
+  disable:
+    - errcheck
+issues:
+  max-issues-per-linter: 0  # no limit
+  max-same-issues: 0        # no limit

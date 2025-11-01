@@ -56,7 +56,7 @@ func applyLocalBoolOpt(localOpt map[string]bool, globalOpt bool, e *setLocalExpr
 	return nil
 }
 
-func (e *setExpr) eval(app *app, args []string) {
+func (e *setExpr) eval(app *app, _ []string) {
 	var err error
 	switch e.opt {
 	case "anchorfind", "noanchorfind", "anchorfind!":
@@ -135,6 +135,8 @@ func (e *setExpr) eval(app *app, args []string) {
 		}
 	case "number", "nonumber", "number!":
 		err = applyBoolOpt(&gOpts.number, e)
+	case "preload", "nopreload", "preload!":
+		err = applyBoolOpt(&gOpts.preload, e)
 	case "preview", "nopreview", "preview!":
 		preview := gOpts.preview
 		err = applyBoolOpt(&preview, e)
@@ -458,13 +460,10 @@ func (e *setExpr) eval(app *app, args []string) {
 
 	if err != nil {
 		app.ui.echoerr(err.Error())
-		return
 	}
-
-	app.ui.echo("")
 }
 
-func (e *setLocalExpr) eval(app *app, args []string) {
+func (e *setLocalExpr) eval(app *app, _ []string) {
 	e.path = replaceTilde(e.path)
 	if !filepath.IsAbs(e.path) {
 		app.ui.echoerr("setlocal: path should be absolute")
@@ -533,13 +532,10 @@ func (e *setLocalExpr) eval(app *app, args []string) {
 
 	if err != nil {
 		app.ui.echoerr(err.Error())
-		return
 	}
-
-	app.ui.echo("")
 }
 
-func (e *mapExpr) eval(app *app, args []string) {
+func (e *mapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 		delete(gOpts.vkeys, e.keys)
@@ -547,37 +543,33 @@ func (e *mapExpr) eval(app *app, args []string) {
 		gOpts.nkeys[e.keys] = e.expr
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
-func (e *nmapExpr) eval(app *app, args []string) {
+func (e *nmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.nkeys, e.keys)
 	} else {
 		gOpts.nkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
-func (e *vmapExpr) eval(app *app, args []string) {
+func (e *vmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.vkeys, e.keys)
 	} else {
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
-func (e *cmapExpr) eval(app *app, args []string) {
+func (e *cmapExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.cmdkeys, e.key)
 	} else {
 		gOpts.cmdkeys[e.key] = e.expr
 	}
-	app.ui.echo("")
 }
 
-func (e *cmdExpr) eval(app *app, args []string) {
+func (e *cmdExpr) eval(app *app, _ []string) {
 	if e.expr == nil {
 		delete(gOpts.cmds, e.name)
 	} else {
@@ -594,8 +586,6 @@ func (e *cmdExpr) eval(app *app, args []string) {
 			app.ui.screen.DisableFocus()
 		}
 	}
-
-	app.ui.echo("")
 }
 
 func preChdir(app *app) {
@@ -642,6 +632,7 @@ func onRedraw(app *app) {
 }
 
 func onSelect(app *app) {
+	app.nav.preload()
 	if cmd, ok := gOpts.cmds["on-select"]; ok {
 		cmd.eval(app, nil)
 	}
@@ -972,8 +963,26 @@ func exitCompMenu(app *app) {
 	app.menuCompActive = false
 }
 
-func (e *callExpr) eval(app *app, args []string) {
+func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
+
+	silentCmds := []string{
+		"addcustominfo",
+		"clearmaps",
+		"draw",
+		"load",
+		"push",
+		"redraw",
+		"source",
+		"sync",
+		"tty-write",
+		"on-focus-gained",
+		"on-focus-lost",
+		"on-init",
+	}
+	if !slices.Contains(silentCmds, e.name) && app.ui.cmdPrefix != ">" {
+		app.ui.echo("")
+	}
 
 	switch e.name {
 	case "quit":
@@ -1297,9 +1306,7 @@ func (e *callExpr) eval(app *app, args []string) {
 		if !app.nav.init {
 			return
 		}
-		if err := app.nav.reload(); err != nil {
-			app.ui.echoerrf("reload: %s", err)
-		}
+		app.nav.reload()
 		app.ui.loadFile(app, true)
 	case "delete":
 		if !app.nav.init {
@@ -2268,29 +2275,6 @@ func (e *callExpr) eval(app *app, args []string) {
 		}
 		cmd.eval(app, e.args)
 	}
-
-	// commands that run silently or write messages shouldn't clear existing messages
-	keepMsgCmds := []string{
-		"addcustominfo",
-		"draw",
-		"echo",
-		"echoerr",
-		"echomsg",
-		"load",
-		"push",
-		"redraw",
-		"source",
-		"sync",
-		"tty-write",
-		"cmd-enter",
-		"cmd-interrupt",
-		"on-focus-gained",
-		"on-focus-lost",
-		"on-init",
-	}
-	if !slices.Contains(keepMsgCmds, e.name) && app.ui.cmdPrefix != ">" {
-		app.ui.echo("")
-	}
 }
 
 func (e *execExpr) eval(app *app, args []string) {
@@ -2312,7 +2296,7 @@ func (e *execExpr) eval(app *app, args []string) {
 	}
 }
 
-func (e *listExpr) eval(app *app, args []string) {
+func (e *listExpr) eval(app *app, _ []string) {
 	for range e.count {
 		for _, expr := range e.exprs {
 			expr.eval(app, nil)

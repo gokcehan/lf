@@ -50,7 +50,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 			screen.LockRegion(win.x, y, printLength(line), 1, true)
 			fmt.Fprintf(&b, "\033[%d;%dH", y+1, win.x+1)
 			b.WriteString(line)
-			y += 1
+			y++
 			continue
 		}
 
@@ -103,7 +103,7 @@ func cellSize(screen tcell.Screen) (int, int, error) {
 
 	ws, err := tty.WindowSize()
 	if err != nil {
-		return -1, -1, fmt.Errorf("failed to get window size: %s", err)
+		return -1, -1, fmt.Errorf("failed to get window size: %w", err)
 	}
 
 	cw, ch := ws.CellDimensions()

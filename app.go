@@ -121,7 +121,7 @@ func loadFiles() (clipboard clipboard, err error) {
 		return
 	}
 	if err != nil {
-		err = fmt.Errorf("opening file selections file: %s", err)
+		err = fmt.Errorf("opening file selections file: %w", err)
 		return
 	}
 	defer files.Close()
@@ -145,7 +145,7 @@ func loadFiles() (clipboard clipboard, err error) {
 	}
 
 	if s.Err() != nil {
-		err = fmt.Errorf("scanning file list: %s", s.Err())
+		err = fmt.Errorf("scanning file list: %w", s.Err())
 		return
 	}
 
@@ -156,12 +156,12 @@ func loadFiles() (clipboard clipboard, err error) {
 
 func saveFiles(clipboard clipboard) error {
 	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	files, err := os.Create(gFilesPath)
 	if err != nil {
-		return fmt.Errorf("opening file selections file: %s", err)
+		return fmt.Errorf("opening file selections file: %w", err)
 	}
 	defer files.Close()
 
@@ -187,7 +187,7 @@ func (app *app) readHistory() error {
 		return nil
 	}
 	if err != nil {
-		return fmt.Errorf("opening history file: %s", err)
+		return fmt.Errorf("opening history file: %w", err)
 	}
 	defer f.Close()
 
@@ -203,7 +203,7 @@ func (app *app) readHistory() error {
 	app.cmdHistoryBeg = len(app.cmdHistory)
 
 	if err := scanner.Err(); err != nil {
-		return fmt.Errorf("reading history file: %s", err)
+		return fmt.Errorf("reading history file: %w", err)
 	}
 
 	return nil
@@ -218,7 +218,7 @@ func (app *app) writeHistory() error {
 	app.cmdHistory = nil
 
 	if err := app.readHistory(); err != nil {
-		return fmt.Errorf("reading history file: %s", err)
+		return fmt.Errorf("reading history file: %w", err)
 	}
 
 	app.cmdHistory = append(app.cmdHistory, local...)
@@ -227,18 +227,18 @@ func (app *app) writeHistory() error {
 	}
 
 	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
-		return fmt.Errorf("creating data directory: %s", err)
+		return fmt.Errorf("creating data directory: %w", err)
 	}
 
 	f, err := os.Create(gHistoryPath)
 	if err != nil {
-		return fmt.Errorf("creating history file: %s", err)
+		return fmt.Errorf("creating history file: %w", err)
 	}
 	defer f.Close()
 
 	for _, cmd := range app.cmdHistory {
 		if _, err = fmt.Fprintln(f, cmd); err != nil {
-			return fmt.Errorf("writing history file: %s", err)
+			return fmt.Errorf("writing history file: %w", err)
 		}
 	}
 
@@ -250,6 +250,7 @@ func (app *app) writeHistory() error {
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
 func (app *app) loop() {
+	go app.nav.preloadLoop(app.ui)
 	go app.nav.previewLoop(app.ui)
 
 	var serverChan <-chan expr
@@ -290,7 +291,7 @@ func (app *app) loop() {
 		errorf("getting current directory: %s", err)
 	}
 
-	app.nav.getDirs(wd)
+	app.nav.updateDirs(wd)
 	app.nav.addJumpList()
 	app.nav.init = true
 
@@ -425,6 +426,10 @@ func (app *app) loop() {
 			}
 			onLoad(app, paths)
 
+			if d.path == app.nav.currDir().path {
+				app.nav.preload()
+			}
+
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
@@ -434,6 +439,9 @@ func (app *app) loop() {
 				if r.path == curr.path {
 					app.ui.regPrev = r
 					app.ui.sxScreen.forceClear = true
+					if gOpts.preload && r.volatile {
+						app.ui.loadFile(app, true)
+					}
 				}
 			}
 
@@ -456,6 +464,7 @@ func (app *app) loop() {
 				dir.sel(name, app.nav.height)
 			}
 
+			delete(app.nav.regCache, f.path)
 			app.ui.loadFile(app, false)
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
@@ -471,7 +480,7 @@ func (app *app) loop() {
 			currPath := app.nav.currDir().path
 			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
 				if wd, err := os.Getwd(); err == nil {
-					app.nav.getDirs(wd)
+					app.nav.updateDirs(wd)
 				}
 			}
 		case ev := <-app.ui.evChan:
@@ -506,6 +515,8 @@ func (app *app) loop() {
 		case <-app.nav.previewTimer.C:
 			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
+		case <-app.nav.preloadTimer.C:
+			app.nav.preload()
 		}
 	}
 }
@@ -552,16 +563,16 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	gState.data["maps"] = listBinds(map[string]map[string]expr{
 		"n": gOpts.nkeys,
 		"v": gOpts.vkeys,
-	})
+	}, true)
 	gState.data["nmaps"] = listBinds(map[string]map[string]expr{
 		"n": gOpts.nkeys,
-	})
+	}, true)
 	gState.data["vmaps"] = listBinds(map[string]map[string]expr{
 		"v": gOpts.vkeys,
-	})
+	}, true)
 	gState.data["cmaps"] = listBinds(map[string]map[string]expr{
 		"c": gOpts.cmdkeys,
-	})
+	}, true)
 	gState.data["cmds"] = listCmds(gOpts.cmds)
 	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
 	gState.data["history"] = listHistory(app.cmdHistory)

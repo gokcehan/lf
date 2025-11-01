@@ -444,7 +444,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		if lnwidth > 0 {
 			var ln string
 
-			if gOpts.number && (!gOpts.relativenumber) {
+			if gOpts.number && !gOpts.relativenumber {
 				ln = fmt.Sprintf("%*d", lnwidth, i+1+beg)
 			} else if gOpts.relativenumber {
 				switch {
@@ -464,23 +464,27 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
+		var fmtStr string
 		if slices.Contains(visualSelections, path) {
-			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.visualfmt), " ")
+			fmtStr = gOpts.visualfmt
 		} else if _, ok := context.selections[path]; ok {
-			win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.selectfmt), " ")
+			fmtStr = gOpts.selectfmt
 		} else if slices.Contains(context.clipboard.paths, path) {
 			if context.clipboard.mode == clipboardCopy {
-				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.copyfmt), " ")
+				fmtStr = gOpts.copyfmt
 			} else {
-				win.print(ui.screen, lnwidth, i, parseEscapeSequence(gOpts.cutfmt), " ")
+				fmtStr = gOpts.cutfmt
 			}
+		}
+		if fmtStr != "" {
+			win.print(ui.screen, lnwidth, i, parseEscapeSequence(fmtStr), " ")
 		}
 
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
 		// make extra space to separate windows if drawbox is not enabled
 		if !gOpts.drawbox {
-			maxWidth -= 1
+			maxWidth--
 		}
 
 		tag := " "
@@ -492,8 +496,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		var iconDef iconDef
 		if gOpts.icons {
 			iconDef = dirStyle.icons.get(f)
-			icon = append(icon, []rune(iconDef.icon)...)
-			icon = append(icon, ' ')
+			icon = slices.Concat([]rune(iconDef.icon), []rune{' '})
 		}
 
 		// subtract space for tag and icon
@@ -530,8 +533,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			// print tag separately as it can contain color escape sequences
 			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, tag))
 
-			line := append(icon, filename...)
-			line = append(line, ' ')
+			line := slices.Concat(icon, filename, []rune{' '})
 			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
 			// print over the empty space we reserved for the custom info
@@ -554,7 +556,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
 			}
 
-			line := append(filename, ' ')
+			line := slices.Concat(filename, []rune{' '})
 			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
 
 			// print over the empty space we reserved for the custom info
@@ -629,9 +631,9 @@ func getWins(screen tcell.Screen) []*win {
 	for i := range wlen {
 		if gOpts.drawbox {
 			wacc++
-			wins = append(wins, newWin(widths[i], htot-4, wacc, 2))
+			wins = append(wins, newWin(widths[i], max(htot-4, 0), wacc, 2))
 		} else {
-			wins = append(wins, newWin(widths[i], htot-2, wacc, 1))
+			wins = append(wins, newWin(widths[i], max(htot-2, 0), wacc, 1))
 		}
 		wacc += widths[i]
 	}
@@ -794,7 +796,7 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 		return
 	}
 
-	if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
+	if curr.isPreviewable() {
 		ui.regPrev = app.nav.loadReg(curr.path, volatile)
 	} else if curr.IsDir() {
 		ui.dirPrev = app.nav.loadDir(curr.path)
@@ -947,12 +949,12 @@ func (ui *ui) drawRuler(nav *nav) {
 		percentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
 	}
 
-	copy := 0
-	move := 0
+	numClipCopy := 0
+	numClipMove := 0
 	if nav.clipboard.mode == clipboardCopy {
-		copy = len(nav.clipboard.paths)
+		numClipCopy = len(nav.clipboard.paths)
 	} else {
-		move = len(nav.clipboard.paths)
+		numClipMove = len(nav.clipboard.paths)
 	}
 
 	currSelections := nav.currSelections()
@@ -987,9 +989,9 @@ func (ui *ui) drawRuler(nav *nav) {
 		case "%p":
 			result = strings.Join(progress, " ")
 		case "%m":
-			result = fmt.Sprintf("%.d", move)
+			result = fmt.Sprintf("%.d", numClipMove)
 		case "%c":
-			result = fmt.Sprintf("%.d", copy)
+			result = fmt.Sprintf("%.d", numClipCopy)
 		case "%s":
 			result = fmt.Sprintf("%.d", len(currSelections))
 		case "%v":
@@ -1078,12 +1080,12 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		scrollPercentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
 	}
 
-	var copy []string
-	var cut []string
+	var copiedPaths []string
+	var cutPaths []string
 	if nav.clipboard.mode == clipboardCopy {
-		copy = nav.clipboard.paths
+		copiedPaths = nav.clipboard.paths
 	} else {
-		cut = nav.clipboard.paths
+		cutPaths = nav.clipboard.paths
 	}
 
 	currSelections := nav.currSelections()
@@ -1130,8 +1132,8 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		Message:          ui.msg,
 		Keys:             string(ui.keyCount) + string(ui.keyAcc),
 		Progress:         progress,
-		Copy:             copy,
-		Cut:              cut,
+		Copy:             copiedPaths,
+		Cut:              cutPaths,
 		Select:           currSelections,
 		Visual:           currVSelections,
 		Index:            ind,
@@ -1291,7 +1293,7 @@ func (ui *ui) draw(nav *nav) {
 		preview := ui.wins[len(ui.wins)-1]
 		ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
 		if gOpts.preview {
-			if curr.Mode().IsRegular() || (curr.IsDir() && gOpts.dirpreviews) {
+			if curr.isPreviewable() {
 				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
 			} else if curr.IsDir() {
 				ui.sxScreen.lastFile = ""
@@ -1324,10 +1326,11 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listBinds(binds map[string]map[string]expr) string {
+func listBinds(binds map[string]map[string]expr, showMode bool) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
+	// merge keys by command across modes
 	m := make(map[string]map[string]string)
 	for mode, keys := range binds {
 		for key, expr := range keys {
@@ -1342,6 +1345,7 @@ func listBinds(binds map[string]map[string]expr) string {
 		mode, key, cmd string
 	}
 
+	// collect normalized entries
 	var entries []entry
 	for key, cmds := range m {
 		for cmd, modes := range cmds {
@@ -1359,9 +1363,17 @@ func listBinds(binds map[string]map[string]expr) string {
 	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
-	fmt.Fprintln(t, "mode\tkeys\tcommand")
-	for _, e := range entries {
-		fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+
+	if showMode {
+		fmt.Fprintln(t, "mode\tkeys\tcommand")
+		for _, e := range entries {
+			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+		}
+	} else {
+		fmt.Fprintln(t, "keys\tcommand")
+		for _, e := range entries {
+			fmt.Fprintf(t, "%s\t%s\n", e.key, e.cmd)
+		}
 	}
 	t.Flush()
 
@@ -1620,7 +1632,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if gOpts.showbinds {
 				ui.menu = listBinds(map[string]map[string]expr{
 					mode: binds,
-				})
+				}, false) // mode is obvious here; no need to clutter the menu
 			}
 			return draw
 		}
@@ -1741,10 +1753,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 }
 
 func readCmdEvent(ev tcell.Event) expr {
-	switch tev := ev.(type) {
-	case *tcell.EventKey:
+	if tev, ok := ev.(*tcell.EventKey); ok {
 		if tev.Key() == tcell.KeyRune {
-			if tev.Modifiers() == tcell.ModMask(tcell.ModAlt) {
+			if tev.Modifiers() == tcell.ModAlt {
 				val := string([]rune{'<', 'a', '-', tev.Rune(), '>'})
 				if expr, ok := gOpts.cmdkeys[val]; ok {
 					return expr
@@ -1805,7 +1816,7 @@ func (ui *ui) exportSizes() {
 
 func anyKey() {
 	fmt.Fprint(os.Stderr, gOpts.waitmsg)
-	defer fmt.Fprint(os.Stderr, "\n")
+	defer fmt.Fprintln(os.Stderr)
 	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
 	if err != nil {
 		panic(err)

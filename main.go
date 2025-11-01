@@ -374,7 +374,7 @@ func main() {
 		case 1:
 			gSelect = flag.Arg(0)
 		default:
-			fmt.Fprintf(os.Stderr, "only single file or directory is allowed\n")
+			fmt.Fprintln(os.Stderr, "only single file or directory is allowed")
 			os.Exit(2)
 		}
 

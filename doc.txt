@@ -303,6 +303,7 @@ The following options can be used to customize the behavior of lf:
     number            bool      (default false)
     numberfmt         string    (default "\033[33m")
     period            int       (default 0)
+    preload           bool      (default false)
     preserve          []string  (default "mode")
     preview           bool      (default true)
     previewer         string    (default '')
@@ -1121,6 +1122,11 @@ can be useful when there is an external process changing the displayed
 directory and you are not doing anything in lf. Periodic checks are
 disabled when the value of this option is set to zero.
 
+preload (bool) (default false)
+
+Allow previews to be generated in advance using the previewer script as
+the user navigates through the filesystem.
+
 preserve ([]string) (default mode)
 
 List of attributes that are preserved when copying files. Currently
@@ -1141,13 +1147,16 @@ previewer (string) (default ``) (not filtered if empty)
 Set the path of a previewer file to filter the content of regular files
 for previewing. The file should be executable. The following arguments
 are passed to the file, (1) current filename, (2) width, (3) height, (4)
-horizontal position, and (5) vertical position of preview pane
-respectively. SIGPIPE signal is sent when enough lines are read. If the
+horizontal position, (5) vertical position, and (6) mode ("preview" or
+"preload"). SIGPIPE signal is sent when enough lines are read. If the
 previewer returns a non-zero exit code, then the preview cache for the
 given file is disabled. This means that if the file is selected in the
 future, the previewer is called once again. Preview filtering is
 disabled and files are displayed as they are when the value of this
-option is left empty.
+option is left empty. If the preload option is enabled, then this will
+be called with preload as the mode when preloading file previews. Refer
+to the PREVIEWING FILES section for more information about how to
+configure custom previews.
 
 promptfmt (string) (default \033[32;1m%u@%h\033[0m:\033[34;1m%d\033[0m\033[1m%f\033[0m)
 
@@ -2120,27 +2129,13 @@ highlight source code, list contents of archive files or view PDF or
 image files to name a few. For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of previewer option to
-the path of an executable file. Five arguments are passed to the file,
-(1) current filename, (2) width, (3) height, (4) horizontal position,
-and (5) vertical position of preview pane respectively. The output of
-the execution is printed in the preview pane. You may also want to use
-the same script in your pager mapping as well:
+the path of an executable file. The following arguments are passed to
+the file, (1) current filename, (2) width, (3) height, (4) horizontal
+position, (5) vertical position, and (6) mode ("preview" or "preload").
+The output of the execution is printed in the preview pane.
 
-    set previewer ~/.config/lf/pv.sh
-    map i $~/.config/lf/pv.sh $f | less -R
-
-For less pager, you may instead utilize LESSOPEN mechanism so that
-useful information about the file such as the full path of the file can
-still be displayed in the statusline below:
-
-    set previewer ~/.config/lf/pv.sh
-    map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
-
-Since this script is called for each file selection change it needs to
-be as efficient as possible and this responsibility is left to the user.
-You may use file extensions to determine the type of file more
-efficiently compared to obtaining MIME types from file command.
-Extensions can then be used to match cleanly within a conditional:
+Different types of files can be handled by matching by extension (or
+MIME type from the file command):
 
     #!/bin/sh
 
@@ -2153,25 +2148,36 @@ Extensions can then be used to match cleanly within a conditional:
         *) highlight -O ansi "$1";;
     esac
 
-Another important consideration for efficiency is the use of programs
-with short startup times for preview. For this reason, highlight is
-recommended over pygmentize for syntax highlighting. Besides, it is also
-important that the application processes the file on the fly rather than
-first reading it to the memory and then doing the processing afterwards.
-This is especially relevant for big files. lf automatically closes the
-previewer script output pipe with a SIGPIPE when enough lines are read.
-When everything else fails, you can make use of the height argument to
-only feed the first portion of the file to a program for preview. Note
-that some programs may not respond well to SIGPIPE to exit with a
-non-zero return code and avoid caching. You may add a trailing || true
+Because files can be large, lf automatically closes the previewer script
+output pipe with a SIGPIPE when enough lines are read. Note that some
+programs may not respond well to SIGPIPE and will exit with a non-zero
+return code, which avoids caching. You may add a trailing || true
 command to avoid such errors:
 
     highlight -O ansi "$1" || true
 
-You may also use an existing preview filter as you like. Your system may
-already come with a preview filter named lesspipe. These filters may
-have a mechanism to add user customizations as well. See the related
-documentation for more information.
+You may also want to use the same script in your pager mapping as well:
+
+    set previewer ~/.config/lf/pv.sh
+    map i $~/.config/lf/pv.sh $f | less -R
+
+For less pager, you may instead utilize LESSOPEN mechanism so that
+useful information about the file such as the full path of the file can
+still be displayed in the statusline below:
+
+    set previewer ~/.config/lf/pv.sh
+    map i $LESSOPEN='| ~/.config/lf/pv.sh %s' less -R $f
+
+Since the preview script is called for each file selection change, it
+may not generate previews fast enough if the user scrolls through files
+quickly. To deal with this, the preload option can be set to enable file
+previews to be preloaded in advance. If enabled, the preview script will
+be run on files in advance as the user navigates through them. In this
+case, if the exit code of the preview script is zero, then the output
+will be cached in memory and displayed by lf (useful for text or sixel
+previews). Otherwise, it will fallback to calling the preview script
+again when the file is actually selected (useful for previews managed by
+an external program).
 
 CHANGING DIRECTORY
 
