@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"log"
 	"strconv"
 	"strings"
@@ -204,6 +205,18 @@ loop:
 
 // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 func applyOSC(body string, st tcell.Style) tcell.Style {
+	extractID := func(params string) string {
+		for seg := range strings.SplitSeq(params, ":") {
+			if seg == "" {
+				continue
+			}
+			if k, v, ok := strings.Cut(seg, "="); ok && k == "id" {
+				return v
+			}
+		}
+		return ""
+	}
+
 	toks := strings.SplitN(body, ";", 3)
 	if len(toks) < 2 {
 		return st
@@ -213,23 +226,14 @@ func applyOSC(body string, st tcell.Style) tcell.Style {
 		if len(toks) < 3 {
 			return st
 		}
-		// Property used to identify grouped hyperlinks.
-		// Assign URL by default to ensure a "unique" id.
-		if toks[2] != "" {
-			st = st.UrlId(toks[2])
+		url := toks[2]
+		// Optional property used to identify grouped hyperlinks.
+		// Use URL as a fallback to ensure a "unique" id.
+		id := cmp.Or(extractID(toks[1]), url)
+		if id != "" {
+			st = st.UrlId(id)
 		}
-		// handle optional parameters
-		if toks[1] != "" {
-			for seg := range strings.SplitSeq(toks[1], ":") {
-				if seg == "" {
-					continue
-				}
-				if k, v, ok := strings.Cut(seg, "="); ok && k == "id" && v != "" {
-					st = st.UrlId(v) // override fallback
-				}
-			}
-		}
-		return st.Url(toks[2])
+		return st.Url(url)
 	default:
 		return st
 	}
