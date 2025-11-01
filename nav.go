@@ -749,8 +749,26 @@ func (nav *nav) exportFiles() {
 }
 
 func (nav *nav) preloadLoop(ui *ui) {
+	processed := make(map[string]struct{})
+	process := func(path string) {
+		if _, ok := processed[path]; !ok {
+			nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
+			processed[path] = struct{}{}
+		}
+	}
+
 	for path := range nav.preloadChan {
-		nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
+		clear(processed)
+		process(path)
+	loop:
+		for {
+			select {
+			case path = <-nav.preloadChan:
+				process(path)
+			default:
+				break loop
+			}
+		}
 	}
 }
 
