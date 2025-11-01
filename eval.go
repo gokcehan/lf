@@ -979,6 +979,23 @@ func exitCompMenu(app *app) {
 func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
+	silentCmds := []string{
+		"addcustominfo",
+		"draw",
+		"load",
+		"push",
+		"redraw",
+		"source",
+		"sync",
+		"tty-write",
+		"on-focus-gained",
+		"on-focus-lost",
+		"on-init",
+	}
+	if !slices.Contains(silentCmds, e.name) && app.ui.cmdPrefix != ">" {
+		app.ui.echo("")
+	}
+
 	switch e.name {
 	case "quit":
 		app.quitChan <- struct{}{}
@@ -2269,29 +2286,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		cmd.eval(app, e.args)
-	}
-
-	// commands that run silently or write messages shouldn't clear existing messages
-	keepMsgCmds := []string{
-		"addcustominfo",
-		"draw",
-		"echo",
-		"echoerr",
-		"echomsg",
-		"load",
-		"push",
-		"redraw",
-		"source",
-		"sync",
-		"tty-write",
-		"cmd-enter",
-		"cmd-interrupt",
-		"on-focus-gained",
-		"on-focus-lost",
-		"on-init",
-	}
-	if !slices.Contains(keepMsgCmds, e.name) && app.ui.cmdPrefix != ">" {
-		app.ui.echo("")
 	}
 }
 
