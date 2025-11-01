@@ -528,9 +528,18 @@ func TestApplyTermSequence(t *testing.T) {
 		{"", tcell.StyleDefault},
 		{"\x1b[1m", tcell.StyleDefault.Bold(true)},
 		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
-		{"\x1b]8;;https://example.com\x1b\\", tcell.StyleDefault.Url("https://example.com")},
-		{"\x1b]8;;https://example.com\x07", tcell.StyleDefault.Url("https://example.com")},
-		{"\x1b]8;id=42;https://example.com\x1b\\", tcell.StyleDefault.UrlId("42").Url("https://example.com")},
+		{
+			"\x1b]8;;https://example.com\x1b\\",
+			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
+		}, // OSC 8 terminated with ST (ESC\), no `id` provided
+		{
+			"\x1b]8;;https://example.com\x07",
+			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
+		}, // OSC 8 terminated with BEL, no `id` provided
+		{
+			"\x1b]8;id=42;https://example.com\x1b\\",
+			tcell.StyleDefault.UrlId("42").Url("https://example.com"),
+		}, // OSC 8, `id` provided
 	}
 
 	for _, test := range tests {

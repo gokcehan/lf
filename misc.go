@@ -495,14 +495,19 @@ func applyTermSequence(s string, st tcell.Style) tcell.Style {
 			if len(toks) < 3 {
 				return st
 			}
+			// Property used to identify grouped hyperlinks.
+			// Assign URL by default to ensure a "unique" id.
+			if toks[2] != "" {
+				st = st.UrlId(toks[2])
+			}
 			// handle optional parameters
 			if toks[1] != "" {
 				for seg := range strings.SplitSeq(toks[1], ":") {
 					if seg == "" {
 						continue
 					}
-					if k, v, ok := strings.Cut(seg, "="); ok && k == "id" {
-						st = st.UrlId(v) // grouped hyperlinks
+					if k, v, ok := strings.Cut(seg, "="); ok && k == "id" && v != "" {
+						st = st.UrlId(v) // override fallback
 					}
 				}
 			}
