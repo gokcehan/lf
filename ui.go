@@ -1822,10 +1822,14 @@ func anyKey() {
 	if err != nil {
 		panic(err)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	defer func() {
+		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
+			panic(err)
+		}
+	}()
 
 	b := make([]byte, 8)
-	os.Stdin.Read(b)
+	_, _ = os.Stdin.Read(b)
 }
 
 func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (string, *menuSelect) {

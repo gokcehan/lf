@@ -71,7 +71,9 @@ func (watch *watch) add(path string) {
 
 	// ignore /dev since write updates to /dev/tty causes high cpu usage
 	if path != "/dev" {
-		watch.watcher.Add(path)
+		if err := watch.watcher.Add(path); err != nil {
+			log.Printf("watch path %s: %s", path, err)
+		}
 	}
 }
 
