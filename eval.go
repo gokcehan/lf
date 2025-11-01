@@ -461,10 +461,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 
 	if err != nil {
 		app.ui.echoerr(err.Error())
-		return
 	}
-
-	app.ui.echo("")
 }
 
 func (e *setLocalExpr) eval(app *app, _ []string) {
@@ -536,10 +533,7 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 
 	if err != nil {
 		app.ui.echoerr(err.Error())
-		return
 	}
-
-	app.ui.echo("")
 }
 
 func (e *mapExpr) eval(app *app, _ []string) {
@@ -550,7 +544,6 @@ func (e *mapExpr) eval(app *app, _ []string) {
 		gOpts.nkeys[e.keys] = e.expr
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
 func (e *nmapExpr) eval(app *app, _ []string) {
@@ -559,7 +552,6 @@ func (e *nmapExpr) eval(app *app, _ []string) {
 	} else {
 		gOpts.nkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
 func (e *vmapExpr) eval(app *app, _ []string) {
@@ -568,7 +560,6 @@ func (e *vmapExpr) eval(app *app, _ []string) {
 	} else {
 		gOpts.vkeys[e.keys] = e.expr
 	}
-	app.ui.echo("")
 }
 
 func (e *cmapExpr) eval(app *app, _ []string) {
@@ -577,7 +568,6 @@ func (e *cmapExpr) eval(app *app, _ []string) {
 	} else {
 		gOpts.cmdkeys[e.key] = e.expr
 	}
-	app.ui.echo("")
 }
 
 func (e *cmdExpr) eval(app *app, _ []string) {
@@ -597,8 +587,6 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 			app.ui.screen.DisableFocus()
 		}
 	}
-
-	app.ui.echo("")
 }
 
 func preChdir(app *app) {
