@@ -447,6 +447,7 @@ func stripTermSequence(s string) string {
 //   - OSC 8, hyperlinks
 func readTermSequence(s string) string {
 	slen := len(s)
+	// must start with ESC
 	if slen < 2 || s[0] != byte(gEscapeCode) {
 		return ""
 	}
@@ -481,8 +482,8 @@ func readTermSequence(s string) string {
 	}
 }
 
-// This function takes an escape sequence option (e.g. `\033[1m`) and applies
-// it to the given `tcell.Style` object.
+// This function takes an escape sequence (e.g. `\033[1m`) and applies it
+// to the given `tcell.Style` object.
 func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 	applyOSC := func(body string, st tcell.Style) tcell.Style {
