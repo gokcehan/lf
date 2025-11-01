@@ -1,7 +1,8 @@
 package main
 
 import (
-	"cmp"
+	"crypto/sha256"
+	"encoding/hex"
 	"log"
 	"strconv"
 	"strings"
@@ -205,6 +206,10 @@ loop:
 
 // https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
 func applyOSC(body string, st tcell.Style) tcell.Style {
+	genAutoID := func(url string) string {
+		sum := sha256.Sum256([]byte(url))
+		return "lf_hyperlink_" + hex.EncodeToString(sum[:8])
+	}
 	extractID := func(params string) string {
 		for seg := range strings.SplitSeq(params, ":") {
 			if seg == "" {
@@ -227,11 +232,15 @@ func applyOSC(body string, st tcell.Style) tcell.Style {
 			return st
 		}
 		url := toks[2]
+		if url == "" {
+			return st
+		}
 		// Optional property used to identify grouped hyperlinks.
-		// Use URL as a fallback to ensure a "unique" id.
-		id := cmp.Or(extractID(toks[1]), url)
-		if id != "" {
+		// Use hash as a fallback to ensure a "unique" id.
+		if id := extractID(toks[1]); id != "" {
 			st = st.UrlId(id)
+		} else {
+			st = st.UrlId(genAutoID(url))
 		}
 		return st.Url(url)
 	default:

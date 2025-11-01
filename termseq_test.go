@@ -93,11 +93,11 @@ func TestApplyTermSequence(t *testing.T) {
 		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
 		{
 			"\x1b]8;;https://example.com\x1b\\",
-			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
+			tcell.StyleDefault.UrlId("lf_hyperlink_100680ad546ce6a5").Url("https://example.com"),
 		}, // OSC 8 terminated with ST (ESC\), no `id` provided
 		{
 			"\x1b]8;;https://example.com\x07",
-			tcell.StyleDefault.UrlId("https://example.com").Url("https://example.com"),
+			tcell.StyleDefault.UrlId("lf_hyperlink_100680ad546ce6a5").Url("https://example.com"),
 		}, // OSC 8 terminated with BEL, no `id` provided
 		{
 			"\x1b]8;id=42;https://example.com\x1b\\",
