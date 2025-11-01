@@ -969,6 +969,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 
 	silentCmds := []string{
 		"addcustominfo",
+		"clearmaps",
 		"draw",
 		"load",
 		"push",
