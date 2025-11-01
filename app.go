@@ -783,5 +783,5 @@ func (app *app) exportMode() {
 		}
 	}
 
-	setenv("lf_mode", getMode())
+	os.Setenv("lf_mode", getMode())
 }

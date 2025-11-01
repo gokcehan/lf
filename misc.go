@@ -7,9 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"math/big"
-	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -474,12 +472,6 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		}
 
 		last = b
-	}
-}
-
-func setenv(key, value string) {
-	if err := os.Setenv(key, value); err != nil {
-		log.Printf("setenv %s=%s: %s", key, value, err)
 	}
 }
 

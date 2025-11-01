@@ -453,7 +453,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 			// Export user defined options immediately, so that the current values
 			// are available for some external previewer, which is started in a
 			// different thread and thus cannot export (as `setenv` is not thread-safe).
-			err = os.Setenv("lf_"+e.opt, e.val)
+			os.Setenv("lf_"+e.opt, e.val)
 		} else {
 			err = fmt.Errorf("unknown option: %s", e.opt)
 		}
@@ -975,7 +975,7 @@ func exitCompMenu(app *app) {
 }
 
 func (e *callExpr) eval(app *app, _ []string) {
-	setenv("lf_count", strconv.Itoa(e.count))
+	os.Setenv("lf_count", strconv.Itoa(e.count))
 
 	silentCmds := []string{
 		"addcustominfo",
@@ -1794,7 +1794,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 
-		_, _ = tty.Write([]byte(e.args[0]))
+		tty.Write([]byte(e.args[0]))
 	case "visual":
 		if !app.nav.init {
 			return
@@ -1903,7 +1903,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.cmdHistory = append(app.cmdHistory, app.ui.cmdPrefix+s)
 			app.runShell(s, nil, "%")
 		case ">":
-			_, _ = io.WriteString(app.cmdIn, s+"\n")
+			io.WriteString(app.cmdIn, s+"\n")
 			app.cmdOutBuf = nil
 		case "!":
 			log.Printf("shell-wait: %s", s)
