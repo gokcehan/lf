@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -184,7 +183,7 @@ loop:
 		case "38":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 38: %s", err)
+				errorf("error processing ansi code 38: %s", err)
 				break loop
 			}
 			st = st.Foreground(color)
@@ -198,7 +197,7 @@ loop:
 		case "48":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 48: %s", err)
+				errorf("error processing ansi code 48: %s", err)
 				break loop
 			}
 			st = st.Background(color)
@@ -206,13 +205,13 @@ loop:
 		case "58":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 58: %s", err)
+				errorf("error processing ansi code 58: %s", err)
 				break loop
 			}
 			st = st.Underline(color)
 			i += offset
 		default:
-			log.Printf("unknown ansi code: %s", toks[i])
+			errorf("unknown ansi code: %s", toks[i])
 		}
 	}
 
@@ -220,18 +219,18 @@ loop:
 }
 
 func (sm styleMap) parseFile(path string) {
-	log.Printf("reading file: %s", path)
+	infof("reading file: %s", path)
 
 	f, err := os.Open(path)
 	if err != nil {
-		log.Printf("opening colors file: %s", err)
+		errorf("opening colors file: %s", err)
 		return
 	}
 	defer f.Close()
 
 	pairs, err := readPairs(f)
 	if err != nil {
-		log.Printf("reading colors file: %s", err)
+		errorf("reading colors file: %s", err)
 		return
 	}
 
@@ -250,7 +249,7 @@ func (sm *styleMap) parseGNU(env string) {
 		pair := strings.Split(entry, "=")
 
 		if len(pair) != 2 {
-			log.Printf("invalid $LS_COLORS entry: %s", entry)
+			errorf("invalid $LS_COLORS entry: %s", entry)
 			return
 		}
 
@@ -277,7 +276,7 @@ func (sm *styleMap) parsePair(pair []string) {
 // This function parses $LSCOLORS environment variable.
 func (sm styleMap) parseBSD(env string) {
 	if len(env) != 22 {
-		log.Printf("invalid $LSCOLORS variable: %s", env)
+		errorf("invalid $LSCOLORS variable: %s", env)
 		return
 	}
 
@@ -294,7 +293,7 @@ func (sm styleMap) parseBSD(env string) {
 		case 'a' <= r1 && r1 <= 'h':
 			st = st.Foreground(tcell.PaletteColor(int(r1 - 'a')))
 		default:
-			log.Printf("invalid $LSCOLORS entry: %c", r1)
+			errorf("invalid $LSCOLORS entry: %c", r1)
 			return tcell.StyleDefault
 		}
 
@@ -304,7 +303,7 @@ func (sm styleMap) parseBSD(env string) {
 		case 'a' <= r2 && r2 <= 'h':
 			st = st.Background(tcell.PaletteColor(int(r2 - 'a')))
 		default:
-			log.Printf("invalid $LSCOLORS entry: %c", r2)
+			errorf("invalid $LSCOLORS entry: %c", r2)
 			return tcell.StyleDefault
 		}
 

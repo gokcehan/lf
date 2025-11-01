@@ -38,6 +38,7 @@ var (
 	gSocketProt     string
 	gSocketPath     string
 	gLogPath        string
+	gLogLevel       Level
 	gSelect         string
 	gConfigPath     string
 	gCommands       arrayFlag
@@ -54,6 +55,8 @@ func (a *arrayFlag) String() string {
 }
 
 func init() {
+	gLogLevel = LevelInfo
+
 	h, err := os.Hostname()
 	if err != nil {
 		log.Printf("hostname: %s", err)
@@ -81,7 +84,7 @@ func exportEnvVars() {
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {
-		log.Printf("reading lf level: %s", err)
+		errorf("reading lf level: %s", err)
 	}
 
 	level++
@@ -156,7 +159,7 @@ func getOptsMap() map[string]string {
 func exportLfPath() {
 	lfPath, err := os.Executable()
 	if err != nil {
-		log.Printf("getting path to lf binary: %s", err)
+		errorf("getting path to lf binary: %s", err)
 		lfPath = "lf"
 	}
 	os.Setenv("lf", quoteString(lfPath))
@@ -171,7 +174,7 @@ func exportOpts() {
 func startServer() {
 	cmd := detachedCommand(os.Args[0], "-server")
 	if err := cmd.Start(); err != nil {
-		log.Printf("starting server: %s", err)
+		errorf("starting server: %s", err)
 	}
 }
 
@@ -307,6 +310,10 @@ func main() {
 		"log",
 		"",
 		"`path` to the log file to write messages")
+
+	flag.Var(&gLogLevel,
+		"log-level",
+		"set the log `level` of -log (DEBUG,INFO,WARN,ERROR) (default INFO)")
 
 	flag.Parse()
 

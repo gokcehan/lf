@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"maps"
 	"os"
 	"path/filepath"
@@ -248,7 +247,7 @@ func matchFile(s string, dirOnly bool, escape func(string) string, unescape func
 	}
 	files, err := os.ReadDir(d)
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		errorf("reading directory: %s", err)
 		result = s
 		return
 	}
@@ -316,7 +315,7 @@ func matchExec(s string) (matches []compMatch, result string) {
 		files, err := os.ReadDir(p)
 		if err != nil {
 			if !os.IsNotExist(err) {
-				log.Printf("reading path: %s", err)
+				errorf("reading path: %s", err)
 			}
 			continue
 		}
@@ -328,7 +327,7 @@ func matchExec(s string) (matches []compMatch, result string) {
 
 			finfo, err := f.Info()
 			if err != nil {
-				log.Printf("getting file information: %s", err)
+				errorf("getting file information: %s", err)
 				continue
 			}
 
@@ -346,7 +345,7 @@ func matchExec(s string) (matches []compMatch, result string) {
 func matchSearch(s string) (matches []compMatch, result string) {
 	files, err := os.ReadDir(".")
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		errorf("reading directory: %s", err)
 		result = s
 		return
 	}
