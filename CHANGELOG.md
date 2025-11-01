@@ -38,6 +38,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A bug where setting `drawbox` could lead to scrolling outside the view is now fixed (#2210) (#2218).
 - The preview cache is now not cleared when setting `ratios` to its current value (#2218).
 - Filtering is fixed when using special characters in the search pattern if the `filtermethod` is `text` (#2231).
+- Custom commands that output messages (e.g. `cmd greet echo 'hello world'`) now display properly (#2245).
 
 ## [r38](https://github.com/gokcehan/lf/releases/tag/r38)
 
