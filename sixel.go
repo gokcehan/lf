@@ -3,7 +3,6 @@ package main
 import (
 	"errors"
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -35,7 +34,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 
 	cw, ch, err := cellSize(screen)
 	if err != nil {
-		log.Printf("sixel: %s", err)
+		errorf("sixel: %s", err)
 		return
 	}
 
@@ -57,7 +56,7 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 
 		matches := reSixelSize.FindStringSubmatch(line)
 		if matches == nil {
-			log.Print("sixel: failed to get image size")
+			errorf("sixel: failed to get image size")
 			continue
 		}
 

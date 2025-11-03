@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
-	"log"
 	"os"
 	"os/exec"
 	"os/signal"
@@ -79,23 +78,23 @@ func (app *app) quit() {
 
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
-			log.Printf("writing history file: %s", err)
+			errorf("writing history file: %s", err)
 		}
 	}
 	if !gSingleMode {
 		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
-			log.Printf("dropping connection: %s", err)
+			errorf("dropping connection: %s", err)
 		}
 		if gOpts.autoquit {
 			if err := remote("quit"); err != nil {
-				log.Printf("auto quitting server: %s", err)
+				errorf("auto quitting server: %s", err)
 			}
 		}
 	}
 }
 
 func (app *app) readFile(path string) {
-	log.Printf("reading file: %s", path)
+	infof("reading file: %s", path)
 
 	f, err := os.Open(path)
 	if err != nil {
@@ -150,7 +149,7 @@ func loadFiles() (clipboard clipboard, err error) {
 		return
 	}
 
-	log.Printf("loading clipboard: %v", clipboard.paths)
+	infof("loading clipboard: %v", clipboard.paths)
 
 	return
 }
@@ -166,7 +165,7 @@ func saveFiles(clipboard clipboard) error {
 	}
 	defer files.Close()
 
-	log.Printf("saving files: %v", clipboard.paths)
+	infof("saving clipboard: %v", clipboard.paths)
 
 	if clipboard.mode == clipboardCopy {
 		fmt.Fprintln(files, "copy")
@@ -265,7 +264,7 @@ func (app *app) loop() {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
 			app.readFile(gConfigPath)
 		} else {
-			log.Printf("config file does not exist: %s", err)
+			errorf("config file does not exist: %s", err)
 		}
 	} else {
 		for _, path := range gConfigPaths {
@@ -289,7 +288,7 @@ func (app *app) loop() {
 
 	wd, err := os.Getwd()
 	if err != nil {
-		log.Printf("getting current directory: %s", err)
+		errorf("getting current directory: %s", err)
 	}
 
 	app.nav.updateDirs(wd)
@@ -331,7 +330,7 @@ func (app *app) loop() {
 
 			app.nav.previewChan <- ""
 
-			log.Printf("*************** closing client, PID: %d ***************", os.Getpid())
+			infof("*************** closing client, PID: %d ***************", os.Getpid())
 
 			return
 		case n := <-app.nav.copyJobsChan:
@@ -526,7 +525,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.previewChan <- ""
 
 	if err := app.ui.suspend(); err != nil {
-		log.Printf("suspend: %s", err)
+		errorf("suspend: %s", err)
 	}
 	defer func() {
 		if err := app.ui.resume(); err != nil {
@@ -605,7 +604,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		// the output has been fully read or not.
 		inReader, inWriter, err := os.Pipe()
 		if err != nil {
-			log.Printf("creating input pipe: %s", err)
+			errorf("creating input pipe: %s", err)
 			return
 		}
 		cmd.Stdin = inReader
@@ -613,7 +612,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		outReader, outWriter, err = os.Pipe()
 		if err != nil {
-			log.Printf("creating output pipe: %s", err)
+			errorf("creating output pipe: %s", err)
 			return
 		}
 		cmd.Stdout = outWriter
@@ -639,7 +638,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 				b, err := reader.ReadByte()
 				if err != nil {
 					if !errors.Is(err, io.EOF) && !errors.Is(err, fs.ErrClosed) {
-						log.Printf("reading command output: %s", err)
+						errorf("reading command output: %s", err)
 					}
 					break
 				}
@@ -657,7 +656,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 
 		go func() {
 			if err := cmd.Wait(); err != nil {
-				log.Printf("running shell: %s", err)
+				errorf("running shell: %s", err)
 			}
 			inReader.Close()
 			inWriter.Close()
@@ -671,7 +670,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	case "&":
 		go func() {
 			if err := cmd.Wait(); err != nil {
-				log.Printf("running shell: %s", err)
+				errorf("running shell: %s", err)
 			}
 			app.ui.exprChan <- &callExpr{"load", nil, 1}
 		}()

@@ -3,7 +3,6 @@ package main
 import (
 	"bytes"
 	"fmt"
-	"log"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -348,7 +347,7 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 			fmt.Fprintf(&info, " %*s", customWidth, "")
 			custom = fmt.Sprintf(" %s%*s", f.customInfo, customWidth-printLength(f.customInfo), "")
 		default:
-			log.Printf("unknown info type: %s", s)
+			errorf("unknown info type: %s", s)
 		}
 	}
 
@@ -750,12 +749,12 @@ func (ui *ui) echo(msg string) {
 
 func (ui *ui) echomsg(msg string) {
 	ui.echo(msg)
-	log.Print(msg)
+	infop(msg)
 }
 
 func (ui *ui) echoerr(msg string) {
 	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
-	log.Printf("error: %s", msg)
+	errorp(msg)
 }
 
 func (ui *ui) echoerrf(format string, a ...any) {
@@ -1467,7 +1466,7 @@ func listFilesInCurrDir(nav *nav) string {
 	}
 	dir := nav.currDir()
 	if dir.loading {
-		log.Printf("listFilesInCurrDir(): %s is still loading, `files` isn't ready for remote query", dir.path)
+		warnf("listFilesInCurrDir(): %s is still loading, `files` isn't ready for remote query", dir.path)
 		return ""
 	}
 
@@ -1600,7 +1599,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 		switch len(binds) {
 		case 0:
-			ui.echoerrf("unknown mapping: %s", string(ui.keyAcc))
+			errorf("unknown mapping: %s", string(ui.keyAcc))
 			ui.keyAcc = nil
 			ui.keyCount = nil
 			ui.menu = ""
@@ -1610,7 +1609,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				if len(ui.keyCount) > 0 {
 					c, err := strconv.Atoi(string(ui.keyCount))
 					if err != nil {
-						log.Printf("converting command count: %s", err)
+						errorf("converting command count: %s", err)
 					}
 					count = c
 				}
@@ -1734,9 +1733,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
-		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
+		debugf("Got EventError: '%s' at %s", tev.Error(), tev.When())
 	case *tcell.EventInterrupt:
-		log.Printf("Got EventInterrupt: at %s", tev.When())
+		debugf("Got EventInterrupt: at %s", tev.When())
 	case *tcell.EventFocus:
 		if tev.Focused {
 			return &callExpr{"on-focus-gained", nil, 1}

@@ -37,7 +37,8 @@ func run() {
 		log.SetOutput(io.Discard)
 	}
 
-	log.Printf("*************** starting client, PID: %d ***************", os.Getpid())
+	io.WriteString(log.Writer(), "\n")
+	infof("*************** starting client, PID: %d ***************", os.Getpid())
 
 	var screen tcell.Screen
 	var err error
@@ -89,28 +90,28 @@ func run() {
 func writeLastDir(filename string, lastDir string) {
 	f, err := os.Create(filename)
 	if err != nil {
-		log.Printf("opening last dir file: %s", err)
+		errorf("opening last dir file: %s", err)
 		return
 	}
 	defer f.Close()
 
 	_, err = f.WriteString(lastDir)
 	if err != nil {
-		log.Printf("writing last dir file: %s", err)
+		errorf("writing last dir file: %s", err)
 	}
 }
 
 func writeSelection(filename string, selection []string) {
 	f, err := os.Create(filename)
 	if err != nil {
-		log.Printf("opening selection file: %s", err)
+		errorf("opening selection file: %s", err)
 		return
 	}
 	defer f.Close()
 
 	_, err = f.WriteString(strings.Join(selection, "\n"))
 	if err != nil {
-		log.Printf("writing selection file: %s", err)
+		errorf("writing selection file: %s", err)
 	}
 }
 
@@ -122,7 +123,7 @@ func readExpr() <-chan expr {
 
 		c, err := net.Dial(gSocketProt, gSocketPath)
 		for err != nil {
-			log.Printf("connecting server: %s", err)
+			errorf("connecting server: %s", err)
 			time.Sleep(duration)
 			duration *= 2
 			c, err = net.Dial(gSocketProt, gSocketPath)
@@ -135,7 +136,7 @@ func readExpr() <-chan expr {
 
 		s := bufio.NewScanner(c)
 		for s.Scan() {
-			log.Printf("recv: %s", s.Text())
+			debugf("recv: %s", s.Text())
 
 			// `query` has to be handled outside of the main thread, which is
 			// blocked when running a synchronous shell command ("$" or "!").

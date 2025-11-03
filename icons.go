@@ -1,7 +1,6 @@
 package main
 
 import (
-	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -67,18 +66,18 @@ func parseIcons() iconMap {
 }
 
 func (im *iconMap) parseFile(path string) {
-	log.Printf("reading file: %s", path)
+	infof("reading file: %s", path)
 
 	f, err := os.Open(path)
 	if err != nil {
-		log.Printf("opening icons file: %s", err)
+		errorf("opening icons file: %s", err)
 		return
 	}
 	defer f.Close()
 
 	arrs, err := readArrays(f, 1, 3)
 	if err != nil {
-		log.Printf("reading icons file: %s", err)
+		errorf("reading icons file: %s", err)
 		return
 	}
 
@@ -96,7 +95,7 @@ func (im *iconMap) parseEnv(env string) {
 		pair := strings.Split(entry, "=")
 
 		if len(pair) != 2 {
-			log.Printf("invalid $LF_ICONS entry: %s", entry)
+			errorf("invalid $LF_ICONS entry: %s", entry)
 			return
 		}
 

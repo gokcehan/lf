@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"log"
 	"maps"
 	"os"
 	"os/exec"
@@ -48,7 +47,7 @@ type file struct {
 func newFile(path string) *file {
 	lstat, err := os.Lstat(path)
 	if err != nil {
-		log.Printf("getting file information: %s", err)
+		errorf("getting file information: %s", err)
 		return &file{
 			FileInfo:   &fakeStat{name: filepath.Base(path)},
 			linkState:  notLink,
@@ -78,7 +77,7 @@ func newFile(path string) *file {
 		}
 		linkTarget, err = os.Readlink(path)
 		if err != nil {
-			log.Printf("reading link target: %s", err)
+			errorf("reading link target: %s", err)
 		}
 	}
 
@@ -207,7 +206,7 @@ type dir struct {
 func newDir(path string) *dir {
 	files, err := readdir(path)
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		errorf("reading directory: %s", err)
 	}
 
 	return &dir{
@@ -535,7 +534,7 @@ func (nav *nav) checkDir(dir *dir) {
 
 	s, err := os.Stat(dir.path)
 	if err != nil {
-		log.Printf("getting directory info: %s", err)
+		errorf("getting directory info: %s", err)
 		return
 	}
 
@@ -794,7 +793,7 @@ func (nav *nav) previewLoop(ui *ui) {
 				strconv.Itoa(win.y),
 				path)
 			if err := cmd.Run(); err != nil {
-				log.Printf("cleaning preview: %s", err)
+				errorf("cleaning preview: %s", err)
 			}
 			nav.volatilePreview = false
 		}
@@ -883,12 +882,12 @@ func (nav *nav) preview(path string, win *win, mode string) {
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
-			log.Printf("previewing file: %s", err)
+			errorf("previewing file: %s", err)
 			return
 		}
 
 		if err := cmd.Start(); err != nil {
-			log.Printf("previewing file: %s", err)
+			errorf("previewing file: %s", err)
 			out.Close()
 			return
 		}
@@ -899,7 +898,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				if errors.As(err, &exitErr) {
 					reg.volatile = true
 				} else {
-					log.Printf("loading file: %s", err)
+					errorf("loading file: %s", err)
 				}
 			}
 		}()
@@ -908,7 +907,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	} else {
 		f, err := os.Open(path)
 		if err != nil {
-			log.Printf("opening file: %s", err)
+			errorf("opening file: %s", err)
 			return
 		}
 
@@ -1848,7 +1847,7 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 	for _, pattern := range filter {
 		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"), gOpts.filtermethod)
 		if err != nil {
-			log.Printf("Filter Error: %s", err)
+			errorf("Filter Error: %s", err)
 			return false
 		}
 		if strings.HasPrefix(pattern, "!") && matched {
