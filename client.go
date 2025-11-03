@@ -182,7 +182,7 @@ func remote(cmd string) error {
 		v.CloseWrite()
 	}
 
-	// The most straightforward way to write the reponse to stdout would be
+	// The most straightforward way to write the response to stdout would be
 	// to do "io.Copy(os.Stdout, c)". However, on Linux, if stdout is connected to
 	// something like a pager that isn't immediately reading everything,
 	// this runs into Go bug https://github.com/golang/go/issues/75304 and

@@ -13,9 +13,7 @@ import (
 	"strconv"
 	"strings"
 	"unicode"
-	"unicode/utf8"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -408,47 +406,6 @@ func optionToFmtstr(optstr string) string {
 	} else {
 		return optstr
 	}
-}
-
-// This function takes an escape sequence option (e.g. `\033[1m`) and converts
-// it to a `tcell.Style` object.
-func parseEscapeSequence(s string) tcell.Style {
-	s = strings.TrimPrefix(s, "\033[")
-	if i := strings.IndexByte(s, 'm'); i >= 0 {
-		s = s[:i]
-	}
-	return applyAnsiCodes(s, tcell.StyleDefault)
-}
-
-// This function is used to remove style-related ANSI escape sequences from
-// a given string.
-//
-// *Note*: this function is based entirely on `printLength()` and strips only
-// style-related escape sequences and the `erase in line` sequence. Other codes
-// (e.g., cursor moves), as well as broken escape sequences, aren't removed.
-// This prevents mismatches between the two functions and avoids misalignment
-// when rendering the UI.
-func stripAnsi(s string) string {
-	var b strings.Builder
-	slen := len(s)
-	for i := 0; i < slen; i++ {
-		r, w := utf8.DecodeRuneInString(s[i:])
-
-		if r == gEscapeCode && i+1 < slen && s[i+1] == '[' {
-			j := strings.IndexAny(s[i:min(slen, i+64)], "mK")
-			if j == -1 {
-				continue
-			}
-
-			i += j
-			continue
-		}
-
-		i += w - 1
-		b.WriteRune(r)
-	}
-
-	return b.String()
 }
 
 // This function reads lines from a file to be displayed as a preview.
