@@ -331,8 +331,8 @@ func (dir *dir) sort() {
 		})
 	case customSort:
 		applySort(func(f1, f2 *file) int {
-			s1 := normalize(stripAnsi(f1.customInfo))
-			s2 := normalize(stripAnsi(f2.customInfo))
+			s1 := normalize(stripTermSequence(f1.customInfo))
+			s2 := normalize(stripTermSequence(f2.customInfo))
 			return naturalCmp(s1, s2)
 		})
 	}
