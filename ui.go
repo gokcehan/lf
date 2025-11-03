@@ -1327,7 +1327,7 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listBinds(binds map[string]map[string]expr, showMode bool) string {
+func listBinds(binds map[string]map[string]expr, compact bool) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1365,12 +1365,7 @@ func listBinds(binds map[string]map[string]expr, showMode bool) string {
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 
-	if showMode {
-		fmt.Fprintln(t, "mode\tkey\tcommand")
-		for _, e := range entries {
-			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
-		}
-	} else {
+	if compact {
 		fmt.Fprintln(t, "key\tcommand")
 		for _, e := range entries {
 			k := e.key
@@ -1380,6 +1375,11 @@ func listBinds(binds map[string]map[string]expr, showMode bool) string {
 				k = k[1:]
 			}
 			fmt.Fprintf(t, " %s\t%s\n", k, e.cmd)
+		}
+	} else {
+		fmt.Fprintln(t, "mode\tkey\tcommand")
+		for _, e := range entries {
+			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
 		}
 	}
 	t.Flush()
@@ -1639,7 +1639,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			if gOpts.showbinds {
 				ui.menu = listBinds(map[string]map[string]expr{
 					mode: binds,
-				}, false) // mode is obvious here; no need to clutter the menu
+				}, true) // mode and already typed keys are obvious here; no need to clutter the menu
 			}
 			return draw
 		}
