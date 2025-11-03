@@ -83,6 +83,22 @@ func TestReadTermSequence(t *testing.T) {
 	}
 }
 
+func TestParseEscapeSequence(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp tcell.Style
+	}{
+		{"\033[1m", tcell.StyleDefault.Bold(true)},
+		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+	}
+
+	for _, test := range tests {
+		if got := parseEscapeSequence(test.s); got != test.exp {
+			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
+		}
+	}
+}
+
 func TestApplyTermSequence(t *testing.T) {
 	tests := []struct {
 		s   string

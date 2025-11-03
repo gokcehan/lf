@@ -14,7 +14,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/gdamore/tcell/v2"
 	"github.com/mattn/go-runewidth"
 )
 
@@ -407,16 +406,6 @@ func optionToFmtstr(optstr string) string {
 	} else {
 		return optstr
 	}
-}
-
-// This function takes an escape sequence option (e.g. `\033[1m`) and converts
-// it to a `tcell.Style` object.
-func parseEscapeSequence(s string) tcell.Style {
-	s = strings.TrimPrefix(s, "\033[")
-	if i := strings.IndexByte(s, 'm'); i >= 0 {
-		s = s[:i]
-	}
-	return applySGR(s, tcell.StyleDefault)
 }
 
 // This function reads lines from a file to be displayed as a preview.

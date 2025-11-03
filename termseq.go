@@ -83,8 +83,20 @@ func readTermSequence(s string) string {
 	}
 }
 
+// This function takes an escape sequence option (e.g. `\033[1m`) and converts
+// it to a `tcell.Style` object.
+// Legacy function that only accepts SGR. Kept for convenience.
+func parseEscapeSequence(s string) tcell.Style {
+	s = strings.TrimPrefix(s, "\033[")
+	if i := strings.IndexByte(s, 'm'); i >= 0 {
+		s = s[:i]
+	}
+	return applySGR(s, tcell.StyleDefault)
+}
+
 // This function takes an escape sequence (e.g. `\033[1m`) and applies it
 // to the given `tcell.Style` object.
+// Accepts SGR and OSC sequences.
 func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	slen := len(s)
 	if slen < 2 || s[0] != byte(gEscapeCode) {
