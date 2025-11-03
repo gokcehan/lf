@@ -1366,14 +1366,20 @@ func listBinds(binds map[string]map[string]expr, showMode bool) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 
 	if showMode {
-		fmt.Fprintln(t, "mode\tkeys\tcommand")
+		fmt.Fprintln(t, "mode\tkey\tcommand")
 		for _, e := range entries {
 			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
 		}
 	} else {
-		fmt.Fprintln(t, "keys\tcommand")
+		fmt.Fprintln(t, "key\tcommand")
 		for _, e := range entries {
-			fmt.Fprintf(t, "%s\t%s\n", e.key, e.cmd)
+			k := e.key
+			if k[0] == '<' {
+				_, k, _ = strings.Cut(k, ">")
+			} else {
+				k = k[1:]
+			}
+			fmt.Fprintf(t, " %s\t%s\n", k, e.cmd)
 		}
 	}
 	t.Flush()
