@@ -578,6 +578,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	gState.data["jumps"] = listJumps(app.nav.jumpList, app.nav.jumpListInd)
 	gState.data["history"] = listHistory(app.cmdHistory)
 	gState.data["files"] = listFilesInCurrDir(app.nav)
+	gState.data["news"] = genChangeLogString
 	gState.mutex.Unlock()
 
 	cmd := shellCommand(s, args)

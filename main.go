@@ -8,6 +8,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"regexp"
 	"runtime"
 	"runtime/debug"
 	"runtime/pprof"
@@ -17,13 +18,19 @@ import (
 	_ "embed"
 )
 
-//go:embed doc.txt
-var genDocString string
+var (
+	//go:embed doc.txt
+	genDocString string
+	//go:embed CHANGELOG.md
+	genChangeLogString string
+)
 
 var (
 	envPath  = os.Getenv("PATH")
 	envLevel = os.Getenv("LF_LEVEL")
 )
+
+var reVersion = regexp.MustCompile(`(?m)^##.*(r[0-9]+)(\s+\(Unreleased\))?`)
 
 type arrayFlag []string
 
@@ -196,6 +203,11 @@ func printVersion() {
 		return
 	}
 
+	version := versionFromChangelog(genChangeLogString)
+	if version != "" {
+		fmt.Println(version)
+	}
+
 	buildInfo, ok := debug.ReadBuildInfo()
 	if !ok {
 		return
@@ -219,6 +231,14 @@ func printVersion() {
 		fmt.Printf("Built at commit: %s%s %s\n", vcsRevision, vcsModified, vcsTime)
 	}
 	fmt.Printf("Go version: %s\n", buildInfo.GoVersion)
+}
+
+func versionFromChangelog(s string) string {
+	m := reVersion.FindStringSubmatch(s)
+	if m == nil {
+		return ""
+	}
+	return m[1] + m[2]
 }
 
 func main() {
