@@ -1482,7 +1482,7 @@ func listFilesInCurrDir(nav *nav) string {
 
 func listChanges() string {
 	b := new(strings.Builder)
-	for line := range strings.Lines(genChangeLogString) {
+	for line := range strings.Lines(genNewsString) {
 		if strings.TrimSpace(line) == "" {
 			// `query` uses blank line as terminator
 			b.WriteString(" \n")

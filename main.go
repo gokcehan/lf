@@ -21,8 +21,8 @@ import (
 var (
 	//go:embed doc.txt
 	genDocString string
-	//go:embed CHANGELOG.md
-	genChangeLogString string
+	//go:embed news.txt
+	genNewsString string
 )
 
 var (
@@ -30,7 +30,7 @@ var (
 	envLevel = os.Getenv("LF_LEVEL")
 )
 
-var reVersion = regexp.MustCompile(`(?m)^##.*(r[0-9]+)(\s+\(Unreleased\))?`)
+var reVersion = regexp.MustCompile(`^r[0-9].*`)
 
 type arrayFlag []string
 
@@ -203,7 +203,7 @@ func printVersion() {
 		return
 	}
 
-	version := versionFromChangelog(genChangeLogString)
+	version := versionFromChangelog(genNewsString)
 	if version != "" {
 		fmt.Println(version)
 	}
@@ -234,11 +234,12 @@ func printVersion() {
 }
 
 func versionFromChangelog(s string) string {
-	m := reVersion.FindStringSubmatch(s)
-	if m == nil {
-		return ""
+	for line := range strings.SplitSeq(s, "\n") {
+		if reVersion.MatchString(line) {
+			return line
+		}
 	}
-	return m[1] + m[2]
+	return ""
 }
 
 func main() {
