@@ -1375,7 +1375,7 @@ func listMatchingBinds(binds map[string]expr, prefix string) string {
 	fmt.Fprintln(t, "key\tcommand")
 	for _, k := range keys {
 		remain, _ := strings.CutPrefix(k, prefix)
-		fmt.Fprintf(t, " %s\t%v\n", remain, binds[k])
+		fmt.Fprintf(t, "%s\t%v\n", remain, binds[k])
 	}
 	t.Flush()
 
