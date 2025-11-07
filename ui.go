@@ -1361,7 +1361,7 @@ func listBinds(binds map[string]map[string]expr) string {
 	return b.String()
 }
 
-func listMatchingBinds(binds map[string]expr, currKeys string) string {
+func listMatchingBinds(binds map[string]expr, prefix string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1374,7 +1374,7 @@ func listMatchingBinds(binds map[string]expr, currKeys string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "key\tcommand")
 	for _, k := range keys {
-		remain, _ := strings.CutPrefix(k, currKeys)
+		remain, _ := strings.CutPrefix(k, prefix)
 		fmt.Fprintf(t, " %s\t%v\n", remain, binds[k])
 	}
 	t.Flush()
