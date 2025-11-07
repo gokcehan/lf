@@ -10,6 +10,10 @@
 # text file `doc.txt` is embedded in the binary to be displayed on request with
 # the `-doc` command line flag. Thus the same documentation is used for online
 # and terminal display.
+#
+# It also converts `CHANGELOG.md` to `news.txt`, which can be accessed through
+# `-remote query` commands. `lf` also uses `news.txt` to extract the current
+# program version.
 
 set -o errexit -o nounset
 
@@ -39,6 +43,10 @@ generate_man_page() {
 }
 
 generate_plain_text() {
+    input=$1
+    output=$2
+    shift 2
+
     "${OCI_PROGRAM?}" run \
         --rm \
         --volume "$PWD:/data" \
@@ -46,7 +54,7 @@ generate_plain_text() {
         --standalone \
         --lua-filter /data/gen/deflist.lua \
         --from gfm --to plain \
-        doc.md -o doc.txt
+        "$input" -o "$output"
 }
 
 is_rootless() {
@@ -69,14 +77,12 @@ fi
 
 if is_rootless; then
     generate_man_page
+    generate_plain_text doc.md doc.txt
+    generate_plain_text CHANGELOG.md news.txt
 else
     generate_man_page --user "$(id -u):$(id -g)"
-fi
-
-if is_rootless; then
-    generate_plain_text
-else
-    generate_plain_text --user "$(id -u):$(id -g)"
+    generate_plain_text doc.md doc.txt --user "$(id -u):$(id -g)"
+    generate_plain_text CHANGELOG.md news.txt --user "$(id -u):$(id -g)"
 fi
 
 # vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80
