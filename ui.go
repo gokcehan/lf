@@ -1315,7 +1315,7 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 	return
 }
 
-func listBinds(binds map[string]map[string]expr, compact bool) string {
+func listBinds(binds map[string]map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
@@ -1352,23 +1352,30 @@ func listBinds(binds map[string]map[string]expr, compact bool) string {
 	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "mode\tkey\tcommand")
+	for _, e := range entries {
+		fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
+	}
+	t.Flush()
 
-	if compact {
-		fmt.Fprintln(t, "key\tcommand")
-		for _, e := range entries {
-			k := e.key
-			if k[0] == '<' {
-				_, k, _ = strings.Cut(k, ">")
-			} else {
-				k = k[1:]
-			}
-			fmt.Fprintf(t, " %s\t%s\n", k, e.cmd)
-		}
-	} else {
-		fmt.Fprintln(t, "mode\tkey\tcommand")
-		for _, e := range entries {
-			fmt.Fprintf(t, "%s\t%s\t%s\n", e.mode, e.key, e.cmd)
-		}
+	return b.String()
+}
+
+func listMatchingBinds(binds map[string]expr, currKeys string) string {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	keys := make([]string, 0, len(binds))
+	for k := range binds {
+		keys = append(keys, k)
+	}
+	sort.Strings(keys)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "key\tcommand")
+	for _, k := range keys {
+		remain, _ := strings.CutPrefix(k, currKeys)
+		fmt.Fprintf(t, " %s\t%v\n", remain, binds[k])
 	}
 	t.Flush()
 
@@ -1546,10 +1553,8 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	count := 0
 
 	keys := gOpts.nkeys
-	mode := "n"
 	if nav.isVisualMode() {
 		keys = gOpts.vkeys
-		mode = "v"
 	}
 
 	switch tev := ev.(type) {
@@ -1625,9 +1630,8 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				return expr
 			}
 			if gOpts.showbinds {
-				ui.menu = listBinds(map[string]map[string]expr{
-					mode: binds,
-				}, true) // mode and already typed keys are obvious here; no need to clutter the menu
+				// mode and already typed keys are obvious here; no need to clutter the menu
+				ui.menu = listMatchingBinds(binds, string(ui.keyAcc))
 			}
 			return draw
 		}
