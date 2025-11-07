@@ -1480,6 +1480,20 @@ func listFilesInCurrDir(nav *nav) string {
 	return b.String()
 }
 
+func listChanges() string {
+	b := new(strings.Builder)
+	for line := range strings.Lines(genChangeLogString) {
+		if strings.TrimSpace(line) == "" {
+			// `query` uses blank line as terminator
+			b.WriteString(" \n")
+		} else {
+			b.WriteString(line)
+		}
+	}
+
+	return b.String()
+}
+
 func (ui *ui) pollEvent() tcell.Event {
 	select {
 	case val := <-ui.keyChan:
