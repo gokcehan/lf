@@ -35,7 +35,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Natural sorting now compares string lengths when dealing with equivalent numbers (e.g. `0` is ordered before `00`) (#2177).
 - A bug where the copy progress indicator only displayed the first time a file was copied is now fixed (#2181).
 - A bug where the `source` command does not show an error message upon failure is now fixed (#2189).
-- The `addcustominfo` command as well as the `cleaner` and `previewer` options now support file completions (#2198) (#2211).
+- The `addcustominfo` and `setlocal` commands as well as the `cleaner` and `previewer` options now support file completions (#2198) (#2254) (#2211).
 - A bug where an empty `custom` info property would still take up space is now fixed (#2208).
 - A bug where setting `drawbox` could lead to scrolling outside the view is now fixed (#2210) (#2218).
 - The preview cache is now not cleared when setting `ratios` to its current value (#2218).

@@ -310,6 +310,65 @@ func matchShellFile(s string) (matches []compMatch, result string) {
 	return
 }
 
+func matchSetlocalDir(s string) (matches []compMatch, result string) {
+	dir, file := filepath.Split(cmdUnescape(replaceTilde(s)))
+
+	d := dir
+	if dir == "" {
+		d = "."
+	}
+	files, err := os.ReadDir(d)
+	if err != nil {
+		log.Printf("reading directory: %s", err)
+		result = s
+		return
+	}
+
+	var commonName string
+
+	for _, f := range files {
+		isDir := false
+		if f.IsDir() {
+			isDir = true
+		} else if f.Type()&os.ModeSymlink != 0 {
+			if stat, err := os.Stat(filepath.Join(d, f.Name())); err == nil && stat.IsDir() {
+				isDir = true
+			}
+		}
+
+		if !isDir {
+			continue
+		}
+
+		if !strings.HasPrefix(strings.ToLower(f.Name()), strings.ToLower(file)) {
+			continue
+		}
+
+		name := f.Name()
+		base := dir + name
+		sep := string(filepath.Separator)
+
+		matches = append(matches,
+			compMatch{name, cmdEscape(base)},
+			compMatch{name + sep, cmdEscape(base + sep)},
+		)
+
+		if len(matches) == 2 {
+			commonName = name
+		} else {
+			commonName = commonPrefix(strings.ToLower(commonName), strings.ToLower(name))
+		}
+	}
+
+	switch len(matches) {
+	case 0:
+		result = s
+	default:
+		result = cmdEscape(dir + commonName)
+	}
+	return
+}
+
 func matchExec(s string) (matches []compMatch, result string) {
 	var words []string
 	for p := range strings.SplitSeq(envPath, string(filepath.ListSeparator)) {
@@ -411,6 +470,10 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 			}
 		}
 	case "setlocal":
+		if len(f) == 2 {
+			matches, result = matchSetlocalDir(f[1])
+			break
+		}
 		if len(f) == 3 {
 			matches, result = matchWord(f[2], gLocalOptWords)
 			break
