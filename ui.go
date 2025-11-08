@@ -1827,7 +1827,9 @@ func anyKey() {
 	}()
 
 	b := make([]byte, 8)
-	_, _ = os.Stdin.Read(b)
+	if _, err := os.Stdin.Read(b); err != nil {
+		log.Printf("Failed to read key press: %s", err)
+	}
 }
 
 func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (string, *menuSelect) {
