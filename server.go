@@ -149,7 +149,7 @@ Loop:
 			s2 := bufio.NewScanner(c2)
 			for s2.Scan() && s2.Text() != "" {
 				if _, err := fmt.Fprintln(c, s2.Text()); err != nil {
-					fmt.Printf("failed to forward query response from client %v: %s", id, err)
+					log.Printf("failed to forward query response from client %v: %s", id, err)
 				}
 			}
 			if s2.Err() != nil {
