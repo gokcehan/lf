@@ -128,7 +128,9 @@ func readExpr() <-chan expr {
 			c, err = net.Dial(gSocketProt, gSocketPath)
 		}
 
-		fmt.Fprintf(c, "conn %d\n", gClientID)
+		if _, err := fmt.Fprintf(c, "conn %d\n", gClientID); err != nil {
+			log.Fatalf("registering with server: %s", err)
+		}
 
 		ch <- &callExpr{"sync", nil, 1}
 		ch <- &callExpr{"on-init", nil, 1}
@@ -143,18 +145,21 @@ func readExpr() <-chan expr {
 			// running `$lf -remote "query $id <something>"`.
 			if word, rest := splitWord(s.Text()); word == "query" {
 				gState.mutex.Lock()
-				state, ok := gState.data[rest]
+				state := gState.data[rest]
 				gState.mutex.Unlock()
-				if ok {
-					fmt.Fprint(c, state)
+				if _, err := fmt.Fprintln(c, state); err != nil {
+					log.Fatalf("sending response to server: %s", err)
 				}
-				fmt.Fprintln(c, "")
 			} else {
 				p := newParser(strings.NewReader(s.Text()))
 				if p.parse() {
 					ch <- p.expr
 				}
 			}
+		}
+
+		if err := s.Err(); err != nil {
+			log.Printf("reading from server: %s", err)
 		}
 
 		c.Close()
@@ -169,17 +174,20 @@ func remote(cmd string) error {
 		return fmt.Errorf("dialing to send server: %w", err)
 	}
 
-	fmt.Fprintln(c, cmd)
+	if _, err := fmt.Fprintln(c, cmd); err != nil {
+		return fmt.Errorf("sending command to server: %w", err)
+	}
 
 	// XXX: Standard net.Conn interface does not include a CloseWrite method
 	// but net.UnixConn and net.TCPConn implement it so the following should be
 	// safe as long as we do not use other types of connections. We need
 	// CloseWrite to notify the server that this is not a persistent connection
 	// and it should be closed after the response.
-	if v, ok := c.(interface {
-		CloseWrite() error
-	}); ok {
-		v.CloseWrite()
+	switch c := c.(type) {
+	case *net.TCPConn:
+		c.CloseWrite()
+	case *net.UnixConn:
+		c.CloseWrite()
 	}
 
 	// The most straightforward way to write the response to stdout would be

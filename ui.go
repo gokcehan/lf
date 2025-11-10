@@ -1820,10 +1820,16 @@ func anyKey() {
 	if err != nil {
 		panic(err)
 	}
-	defer term.Restore(int(os.Stdin.Fd()), oldState)
+	defer func() {
+		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
+			panic(err)
+		}
+	}()
 
 	b := make([]byte, 8)
-	os.Stdin.Read(b)
+	if _, err := os.Stdin.Read(b); err != nil {
+		log.Printf("Failed to read key press: %s", err)
+	}
 }
 
 func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (string, *menuSelect) {

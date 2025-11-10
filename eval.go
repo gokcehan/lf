@@ -747,8 +747,9 @@ func resetIncCmd(app *app) {
 	} else if gOpts.incfilter && app.ui.cmdPrefix == "filter: " {
 		dir := app.nav.currDir()
 		old := dir.ind
-		app.nav.setFilter(app.nav.prevFilter)
-		if old != dir.ind {
+		if err := app.nav.setFilter(app.nav.prevFilter); err != nil {
+			log.Printf("reset filter: %s", err)
+		} else if old != dir.ind {
 			app.ui.loadFile(app, true)
 		}
 	}

@@ -180,7 +180,9 @@ func checkServer() {
 		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
 			startServer()
 		} else if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
-			os.Remove(gSocketPath)
+			if err := os.Remove(gSocketPath); err != nil {
+				log.Print(err)
+			}
 			startServer()
 		}
 	} else {
@@ -344,7 +346,9 @@ func main() {
 			log.Fatalf("remote command: %s", err)
 		}
 	case *serverMode:
-		os.Chdir(gUser.HomeDir)
+		if err := os.Chdir(gUser.HomeDir); err != nil {
+			log.Print(err)
+		}
 		serve()
 	default:
 		gSingleMode = *singleMode

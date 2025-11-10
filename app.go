@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"cmp"
 	"errors"
 	"fmt"
 	"io"
@@ -129,7 +130,10 @@ func loadFiles() (clipboard clipboard, err error) {
 
 	s := bufio.NewScanner(files)
 
-	s.Scan()
+	if !s.Scan() {
+		err = fmt.Errorf("scanning file list: %w", cmp.Or(s.Err(), io.EOF))
+		return
+	}
 
 	switch s.Text() {
 	case "copy":
@@ -168,18 +172,23 @@ func saveFiles(clipboard clipboard) error {
 
 	log.Printf("saving files: %v", clipboard.paths)
 
+	var clipboardModeStr string
 	if clipboard.mode == clipboardCopy {
-		fmt.Fprintln(files, "copy")
+		clipboardModeStr = "copy"
 	} else {
-		fmt.Fprintln(files, "move")
+		clipboardModeStr = "move"
+	}
+	if _, err := fmt.Fprintln(files, clipboardModeStr); err != nil {
+		return fmt.Errorf("write clipboard mode to file: %w", err)
 	}
 
 	for _, path := range clipboard.paths {
-		fmt.Fprintln(files, path)
+		if _, err := fmt.Fprintln(files, path); err != nil {
+			return fmt.Errorf("write path to file: %w", err)
+		}
 	}
 
-	files.Sync()
-	return nil
+	return files.Sync()
 }
 
 func (app *app) readHistory() error {

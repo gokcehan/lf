@@ -111,12 +111,16 @@ Loop:
 				word2, rest2 := splitWord(rest)
 				id, err := strconv.Atoi(word2)
 				if err != nil {
-					for _, c := range gConnList {
-						fmt.Fprintln(c, rest)
+					for id, c2 := range gConnList {
+						if _, err := fmt.Fprintln(c2, rest); err != nil {
+							echoerrf(c, "failed to send command to client %v: %s", id, err)
+						}
 					}
 				} else {
 					if c2, ok := gConnList[id]; ok {
-						fmt.Fprintln(c2, rest2)
+						if _, err := fmt.Fprintln(c2, rest2); err != nil {
+							echoerrf(c, "failed to send command to client %v: %s", id, err)
+						}
 					} else {
 						echoerr(c, "listen: send: no such client id is connected")
 					}
@@ -138,10 +142,18 @@ Loop:
 				echoerr(c, "listen: query: no such client id is connected")
 				break
 			}
-			fmt.Fprintln(c2, "query "+rest2)
+			if _, err := fmt.Fprintln(c2, "query "+rest2); err != nil {
+				echoerrf(c, "failed to send query to client %v: %s", id, err)
+				break
+			}
 			s2 := bufio.NewScanner(c2)
 			for s2.Scan() && s2.Text() != "" {
-				fmt.Fprintln(c, s2.Text())
+				if _, err := fmt.Fprintln(c, s2.Text()); err != nil {
+					log.Printf("failed to forward query response from client %v: %s", id, err)
+				}
+			}
+			if s2.Err() != nil {
+				echoerrf(c, "failed to read query response from client %v: %s", id, s2.Err())
 			}
 		case "quit":
 			if len(gConnList) == 0 {

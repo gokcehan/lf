@@ -234,7 +234,7 @@ func readArrays(r io.Reader, minCols, maxCols int) ([][]string, error) {
 		arrays = append(arrays, arr)
 	}
 
-	return arrays, nil
+	return arrays, s.Err()
 }
 
 func readPairs(r io.Reader) ([][]string, error) {

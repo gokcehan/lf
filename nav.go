@@ -646,14 +646,18 @@ func (nav *nav) addJumpList() {
 func (nav *nav) cdJumpListPrev() {
 	if nav.jumpListInd > 0 {
 		nav.jumpListInd--
-		nav.cd(nav.jumpList[nav.jumpListInd])
+		if err := nav.cd(nav.jumpList[nav.jumpListInd]); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
 func (nav *nav) cdJumpListNext() {
 	if nav.jumpListInd < len(nav.jumpList)-1 {
 		nav.jumpListInd++
-		nav.cd(nav.jumpList[nav.jumpListInd])
+		if err := nav.cd(nav.jumpList[nav.jumpListInd]); err != nil {
+			log.Print(err)
+		}
 	}
 }
 
