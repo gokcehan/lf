@@ -320,16 +320,20 @@ func matchSetlocalDir(s string) (matches []compMatch, result string) {
 		return strings.TrimSuffix(path, string(filepath.Separator))
 	}
 
+	trimSepEsc := func(path string) string {
+		return cmdEscape(trimSep(cmdUnescape(path)))
+	}
+
 	// add separate matches for path and recursive path
 	tmp := make([]compMatch, 0, len(matches)*2)
 	for _, match := range matches {
-		trimmedMatch := compMatch{trimSep(match.name), trimSep(match.result)}
+		trimmedMatch := compMatch{trimSep(match.name), trimSepEsc(match.result)}
 		tmp = append(tmp, trimmedMatch, match)
 	}
 	matches = tmp
 
 	if result != s {
-		result = trimSep(result)
+		result = trimSepEsc(result)
 	}
 	return
 }
