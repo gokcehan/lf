@@ -311,60 +311,29 @@ func matchShellFile(s string) (matches []compMatch, result string) {
 }
 
 func matchSetlocalDir(s string) (matches []compMatch, result string) {
-	dir, file := filepath.Split(cmdUnescape(replaceTilde(s)))
-
-	d := dir
-	if dir == "" {
-		d = "."
-	}
-	files, err := os.ReadDir(d)
-	if err != nil {
-		log.Printf("reading directory: %s", err)
-		result = s
+	matches, result = matchFile(s, true, cmdEscape, cmdUnescape)
+	if len(matches) == 0 {
 		return
 	}
 
-	var commonName string
-
-	for _, f := range files {
-		isDir := false
-		if f.IsDir() {
-			isDir = true
-		} else if f.Type()&os.ModeSymlink != 0 {
-			if stat, err := os.Stat(filepath.Join(d, f.Name())); err == nil && stat.IsDir() {
-				isDir = true
-			}
-		}
-
-		if !isDir {
-			continue
-		}
-
-		if !strings.HasPrefix(strings.ToLower(f.Name()), strings.ToLower(file)) {
-			continue
-		}
-
-		name := f.Name()
-		base := dir + name
-		sep := string(filepath.Separator)
-
-		matches = append(matches,
-			compMatch{name, cmdEscape(base)},
-			compMatch{name + sep, cmdEscape(base + sep)},
-		)
-
-		if len(matches) == 2 {
-			commonName = name
-		} else {
-			commonName = commonPrefix(strings.ToLower(commonName), strings.ToLower(name))
-		}
+	trimSep := func(path string) string {
+		return strings.TrimSuffix(path, string(filepath.Separator))
 	}
 
-	switch len(matches) {
-	case 0:
-		result = s
-	default:
-		result = cmdEscape(dir + commonName)
+	trimSepEsc := func(path string) string {
+		return cmdEscape(trimSep(cmdUnescape(path)))
+	}
+
+	// add separate matches for path and recursive path
+	tmp := make([]compMatch, 0, len(matches)*2)
+	for _, match := range matches {
+		trimmedMatch := compMatch{trimSep(match.name), trimSepEsc(match.result)}
+		tmp = append(tmp, trimmedMatch, match)
+	}
+	matches = tmp
+
+	if result != s {
+		result = trimSepEsc(result)
 	}
 	return
 }
