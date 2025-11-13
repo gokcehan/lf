@@ -163,9 +163,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.rulerfile, e)
 	case "showbinds", "noshowbinds", "showbinds!":
 		err = applyBoolOpt(&gOpts.showbinds, e)
-	// DEPRECATED: remove after r38 is released
-	case "sixel", "nosixel", "sixel!":
-		app.ui.echoerr("option 'sixel' has been removed as it is now enabled by default")
 	case "smartcase", "nosmartcase", "smartcase!":
 		err = applyBoolOpt(&gOpts.smartcase, e)
 		if err == nil {
