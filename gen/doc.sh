@@ -75,14 +75,27 @@ if [ -z "${OCI_PROGRAM:-}" ]; then
     fi
 fi
 
+doc=0
+news=0
+
+printf 'generate lf.1 and doc.txt from doc.md? [y/N] '
+read ans
+[ "$ans" = "y" ] && doc=1
+
+printf 'generate news.txt from CHANGELOG.md? [y/N] '
+read ans
+[ "$ans" = "y" ] && news=1
+
+[ "$doc" -eq 0 ] && [ "$news" -eq 0 ] && exit 0
+
 if is_rootless; then
-    generate_man_page
-    generate_plain_text doc.md doc.txt
-    generate_plain_text CHANGELOG.md news.txt
+    [ "$doc"  -eq 1 ] && generate_man_page
+    [ "$doc"  -eq 1 ] && generate_plain_text doc.md doc.txt
+    [ "$news" -eq 1 ] && generate_plain_text CHANGELOG.md news.txt
 else
-    generate_man_page --user "$(id -u):$(id -g)"
-    generate_plain_text doc.md doc.txt --user "$(id -u):$(id -g)"
-    generate_plain_text CHANGELOG.md news.txt --user "$(id -u):$(id -g)"
+    [ "$doc"  -eq 1 ] && generate_man_page --user "$(id -u):$(id -g)"
+    [ "$doc"  -eq 1 ] && generate_plain_text doc.md doc.txt --user "$(id -u):$(id -g)"
+    [ "$news" -eq 1 ] && generate_plain_text CHANGELOG.md news.txt --user "$(id -u):$(id -g)"
 fi
 
 # vim: tabstop=4 shiftwidth=4 textwidth=80 colorcolumn=80
