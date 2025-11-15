@@ -1,6 +1,6 @@
 # LF
 
-| [Doc](doc.md)
+[Doc](doc.md)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
 | [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
 
