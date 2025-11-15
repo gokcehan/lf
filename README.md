@@ -1,9 +1,7 @@
 # LF
 
-[Google Groups](https://groups.google.com/forum/#!forum/lf-fm)
 | [Doc](doc.md)
 | [Wiki](https://github.com/gokcehan/lf/wiki)
-| [#lf](https://web.libera.chat/#lf) (on Libera.Chat)
 | [#lf:matrix.org](https://matrix.to/#/#lf:matrix.org) (with IRC bridge)
 
 [![Go Build](https://github.com/gokcehan/lf/actions/workflows/go.yml/badge.svg)](https://github.com/gokcehan/lf/actions/workflows/go.yml)
