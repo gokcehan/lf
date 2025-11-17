@@ -340,7 +340,7 @@ func (dir *dir) sort() {
 	// when sorting by size while also showing dircounts, we always display files
 	// and directories separately to avoid mixing file sizes and file counts
 	if dir.dirfirst || (dir.sortby == sizeSort && dir.dircounts) {
-		applySort(func(f1, f2 *file) int {
+		slices.SortStableFunc(dir.files, func(f1, f2 *file) int {
 			switch {
 			case f1.IsDir() && !f2.IsDir():
 				return -1
