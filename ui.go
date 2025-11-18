@@ -320,7 +320,7 @@ func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (
 		case "ctime":
 			fmt.Fprintf(&info, " %*s", max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.changeTime))
 		case "perm":
-			info.WriteString(" " + f.FileInfo.Mode().String())
+			info.WriteString(" " + permString(f.Mode()))
 		case "user":
 			fmt.Fprintf(&info, " %-*s", userWidth, userName(f.FileInfo))
 		case "group":
@@ -896,7 +896,7 @@ func (ui *ui) drawStat(nav *nav) {
 		replace("%m", "")
 		replace("%M", "NORMAL")
 	}
-	replace("%p", curr.Mode().String())
+	replace("%p", permString(curr.Mode()))
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
@@ -1032,7 +1032,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 				Path:        curr.path,
 				Name:        curr.Name(),
 				Size:        uint64(curr.Size()),
-				Permissions: curr.Mode().String(),
+				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
 				LinkCount:   linkCount(curr),
 				User:        userName(curr),
