@@ -8,6 +8,7 @@ import (
 	"io"
 	"io/fs"
 	"math/big"
+	"os"
 	"path/filepath"
 	"regexp"
 	"strconv"
@@ -287,6 +288,53 @@ func humanize(size uint64) string {
 	}
 
 	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])
+}
+
+// This function returns an ls(1)-style string representation of the given file
+// mode, to avoid using Go's implementation, which slightly differs.
+func permString(m os.FileMode) string {
+	// re-use Perm()'s "-rwxrwxrwx" output and write type into b[0]
+	b := []byte(m.Perm().String())
+	switch {
+	case m&os.ModeSymlink != 0:
+		b[0] = 'l'
+	case m&os.ModeDir != 0:
+		b[0] = 'd'
+	case m&os.ModeNamedPipe != 0:
+		b[0] = 'p'
+	case m&os.ModeSocket != 0:
+		b[0] = 's'
+	case m&os.ModeCharDevice != 0:
+		b[0] = 'c'
+	case m&os.ModeDevice != 0:
+		b[0] = 'b'
+	default:
+		b[0] = '-'
+	}
+	// patch exec slots with suid/sgid/sticky flags
+	if m&os.ModeSetuid != 0 {
+		if b[3] == 'x' {
+			b[3] = 's'
+		} else {
+			b[3] = 'S'
+		}
+	}
+	if m&os.ModeSetgid != 0 {
+		if b[6] == 'x' {
+			b[6] = 's'
+		} else {
+			b[6] = 'S'
+		}
+	}
+	if m&os.ModeSticky != 0 {
+		if b[9] == 'x' {
+			b[9] = 't'
+		} else {
+			b[9] = 'T'
+		}
+	}
+
+	return string(b)
 }
 
 // This function compares two strings for natural sorting which takes into
