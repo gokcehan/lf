@@ -1939,6 +1939,7 @@ The following types of information are supported:
     jumps    contents of the jump list, showing previously visited locations
     history  list of previously executed commands on the command line
     files    list of files in the currently open directory as displayed by lf, empty if dir is still loading
+    news     contents of the changelog, starting with the most recent changes
 
 When listing mappings the characters in the first column are:
 
