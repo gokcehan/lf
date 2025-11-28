@@ -5,7 +5,7 @@ go 1.24.0
 require (
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.9.0
-	github.com/gdamore/tcell/v2 v2.12.1
+	github.com/gdamore/tcell/v2 v2.12.2
 	github.com/mattn/go-runewidth v0.0.19
 	golang.org/x/sys v0.38.0
 	golang.org/x/term v0.37.0
