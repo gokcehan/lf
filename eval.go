@@ -2231,7 +2231,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		ind := 0
-		for ; ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]); ind++ {
+		for ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]) {
+			ind++
 		}
 		if ind >= len(app.ui.cmdAccRight) {
 			return
