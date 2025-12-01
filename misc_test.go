@@ -344,6 +344,39 @@ func TestHumanize(t *testing.T) {
 	}
 }
 
+func TestPermString(t *testing.T) {
+	tests := []struct {
+		name string
+		m    os.FileMode
+		exp  string
+	}{
+		{"none", 0, "----------"},
+		{"regular file", 0o644, "-rw-r--r--"},
+		{"executable", 0o755, "-rwxr-xr-x"},
+		{"directory", 0o755 | os.ModeDir, "drwxr-xr-x"},
+		{"symbolic link", 0o777 | os.ModeSymlink, "lrwxrwxrwx"},
+		{"named pipe", 0o644 | os.ModeNamedPipe, "prw-r--r--"},
+		{"socket", 0o777 | os.ModeSocket, "srwxrwxrwx"},
+		{"character device", 0o660 | os.ModeCharDevice, "crw-rw----"},
+		{"block device", 0o660 | os.ModeDevice, "brw-rw----"},
+		{"setuid", 0o644 | os.ModeSetuid, "-rwSr--r--"},
+		{"setuid executable", 0o755 | os.ModeSetuid, "-rwsr-xr-x"},
+		{"setgid", 0o644 | os.ModeSetgid, "-rw-r-Sr--"},
+		{"setgid executable", 0o755 | os.ModeSetgid, "-rwxr-sr-x"},
+		{"sticky", 0o644 | os.ModeSticky, "-rw-r--r-T"},
+		{"sticky executable", 0o755 | os.ModeSticky, "-rwxr-xr-t"},
+		{"sticky directory", 0o777 | os.ModeDir | os.ModeSticky, "drwxrwxrwt"},
+	}
+
+	for _, test := range tests {
+		t.Run(test.name, func(t *testing.T) {
+			if got := permString(test.m); got != test.exp {
+				t.Errorf("at input '%#o' expected '%s' but got '%s'", test.m, test.exp, got)
+			}
+		})
+	}
+}
+
 func TestNaturalCmp(t *testing.T) {
 	tests := []struct {
 		s1  string
