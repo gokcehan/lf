@@ -22,8 +22,6 @@ import (
 	"golang.org/x/term"
 )
 
-const gEscapeCode = 27
-
 var gKeyVal = map[tcell.Key]string{
 	tcell.KeyEnter:          "<enter>",
 	tcell.KeyBackspace:      "<backspace>",
