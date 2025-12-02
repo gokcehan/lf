@@ -268,7 +268,7 @@ func (app *app) loop() {
 		serverChan = readExpr()
 	}
 
-	app.ui.readExpr()
+	go app.ui.readEvents()
 
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {

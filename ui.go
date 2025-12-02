@@ -22,135 +22,6 @@ import (
 	"golang.org/x/term"
 )
 
-var gKeyVal = map[tcell.Key]string{
-	tcell.KeyEnter:     "<enter>",
-	tcell.KeyBackspace: "<backspace>",
-	tcell.KeyTab:       "<tab>",
-	tcell.KeyBacktab:   "<backtab>",
-	tcell.KeyEsc:       "<esc>",
-	tcell.KeyDelete:    "<delete>",
-	tcell.KeyInsert:    "<insert>",
-	tcell.KeyUp:        "<up>",
-	tcell.KeyDown:      "<down>",
-	tcell.KeyLeft:      "<left>",
-	tcell.KeyRight:     "<right>",
-	tcell.KeyHome:      "<home>",
-	tcell.KeyEnd:       "<end>",
-	tcell.KeyUpLeft:    "<upleft>",
-	tcell.KeyUpRight:   "<upright>",
-	tcell.KeyDownLeft:  "<downleft>",
-	tcell.KeyDownRight: "<downright>",
-	tcell.KeyCenter:    "<center>",
-	tcell.KeyPgDn:      "<pgdn>",
-	tcell.KeyPgUp:      "<pgup>",
-	tcell.KeyClear:     "<clear>",
-	tcell.KeyExit:      "<exit>",
-	tcell.KeyCancel:    "<cancel>",
-	tcell.KeyPause:     "<pause>",
-	tcell.KeyPrint:     "<print>",
-	tcell.KeyF1:        "<f-1>",
-	tcell.KeyF2:        "<f-2>",
-	tcell.KeyF3:        "<f-3>",
-	tcell.KeyF4:        "<f-4>",
-	tcell.KeyF5:        "<f-5>",
-	tcell.KeyF6:        "<f-6>",
-	tcell.KeyF7:        "<f-7>",
-	tcell.KeyF8:        "<f-8>",
-	tcell.KeyF9:        "<f-9>",
-	tcell.KeyF10:       "<f-10>",
-	tcell.KeyF11:       "<f-11>",
-	tcell.KeyF12:       "<f-12>",
-	tcell.KeyF13:       "<f-13>",
-	tcell.KeyF14:       "<f-14>",
-	tcell.KeyF15:       "<f-15>",
-	tcell.KeyF16:       "<f-16>",
-	tcell.KeyF17:       "<f-17>",
-	tcell.KeyF18:       "<f-18>",
-	tcell.KeyF19:       "<f-19>",
-	tcell.KeyF20:       "<f-20>",
-	tcell.KeyF21:       "<f-21>",
-	tcell.KeyF22:       "<f-22>",
-	tcell.KeyF23:       "<f-23>",
-	tcell.KeyF24:       "<f-24>",
-	tcell.KeyF25:       "<f-25>",
-	tcell.KeyF26:       "<f-26>",
-	tcell.KeyF27:       "<f-27>",
-	tcell.KeyF28:       "<f-28>",
-	tcell.KeyF29:       "<f-29>",
-	tcell.KeyF30:       "<f-30>",
-	tcell.KeyF31:       "<f-31>",
-	tcell.KeyF32:       "<f-32>",
-	tcell.KeyF33:       "<f-33>",
-	tcell.KeyF34:       "<f-34>",
-	tcell.KeyF35:       "<f-35>",
-	tcell.KeyF36:       "<f-36>",
-	tcell.KeyF37:       "<f-37>",
-	tcell.KeyF38:       "<f-38>",
-	tcell.KeyF39:       "<f-39>",
-	tcell.KeyF40:       "<f-40>",
-	tcell.KeyF41:       "<f-41>",
-	tcell.KeyF42:       "<f-42>",
-	tcell.KeyF43:       "<f-43>",
-	tcell.KeyF44:       "<f-44>",
-	tcell.KeyF45:       "<f-45>",
-	tcell.KeyF46:       "<f-46>",
-	tcell.KeyF47:       "<f-47>",
-	tcell.KeyF48:       "<f-48>",
-	tcell.KeyF49:       "<f-49>",
-	tcell.KeyF50:       "<f-50>",
-	tcell.KeyF51:       "<f-51>",
-	tcell.KeyF52:       "<f-52>",
-	tcell.KeyF53:       "<f-53>",
-	tcell.KeyF54:       "<f-54>",
-	tcell.KeyF55:       "<f-55>",
-	tcell.KeyF56:       "<f-56>",
-	tcell.KeyF57:       "<f-57>",
-	tcell.KeyF58:       "<f-58>",
-	tcell.KeyF59:       "<f-59>",
-	tcell.KeyF60:       "<f-60>",
-	tcell.KeyF61:       "<f-61>",
-	tcell.KeyF62:       "<f-62>",
-	tcell.KeyF63:       "<f-63>",
-	tcell.KeyF64:       "<f-64>",
-	tcell.KeyCtrlA:     "<c-a>",
-	tcell.KeyCtrlB:     "<c-b>",
-	tcell.KeyCtrlC:     "<c-c>",
-	tcell.KeyCtrlD:     "<c-d>",
-	tcell.KeyCtrlE:     "<c-e>",
-	tcell.KeyCtrlF:     "<c-f>",
-	tcell.KeyCtrlG:     "<c-g>",
-	tcell.KeyCtrlJ:     "<c-j>",
-	tcell.KeyCtrlK:     "<c-k>",
-	tcell.KeyCtrlL:     "<c-l>",
-	tcell.KeyCtrlN:     "<c-n>",
-	tcell.KeyCtrlO:     "<c-o>",
-	tcell.KeyCtrlP:     "<c-p>",
-	tcell.KeyCtrlQ:     "<c-q>",
-	tcell.KeyCtrlR:     "<c-r>",
-	tcell.KeyCtrlS:     "<c-s>",
-	tcell.KeyCtrlT:     "<c-t>",
-	tcell.KeyCtrlU:     "<c-u>",
-	tcell.KeyCtrlV:     "<c-v>",
-	tcell.KeyCtrlW:     "<c-w>",
-	tcell.KeyCtrlX:     "<c-x>",
-	tcell.KeyCtrlY:     "<c-y>",
-	tcell.KeyCtrlZ:     "<c-z>",
-	// tcell.KeyCtrlSpace:      "<c-space>",
-	// tcell.KeyCtrlUnderscore: "<c-_>",
-	// tcell.KeyCtrlRightSq:    "<c-]>",
-	// tcell.KeyCtrlBackslash:  "<c-\\>",
-	// tcell.KeyCtrlCarat:      "<c-^>",
-}
-
-var gValKey map[string]tcell.Key
-
-func init() {
-	gValKey = make(map[string]tcell.Key, len(gKeyVal))
-	for k, v := range gKeyVal {
-		gValKey[v] = k
-	}
-}
-
 type win struct {
 	w, h, x, y int
 }
@@ -643,7 +514,6 @@ type ui struct {
 	regPrev     *reg
 	dirPrev     *dir
 	exprChan    chan expr
-	keyChan     chan string
 	evChan      chan tcell.Event
 	menu        string
 	menuSelect  *menuSelect
@@ -671,7 +541,6 @@ func newUI(screen tcell.Screen) *ui {
 		msgWin:      newWin(wtot, 1, 0, htot-1),
 		menuWin:     newWin(wtot, 1, 0, htot-2),
 		exprChan:    make(chan expr, 1000),
-		keyChan:     make(chan string, 1000),
 		evChan:      make(chan tcell.Event, 1000),
 		styles:      parseStyles(),
 		icons:       parseIcons(),
@@ -1459,71 +1328,6 @@ func listFilesInCurrDir(nav *nav) string {
 	return b.String()
 }
 
-func (ui *ui) pollEvent() tcell.Event {
-	select {
-	case val := <-ui.keyChan:
-		var s string
-		var mod tcell.ModMask
-		k := tcell.KeyRune
-
-		if key, ok := gValKey[val]; ok {
-			return tcell.NewEventKey(key, s, mod)
-		}
-
-		switch {
-		case utf8.RuneCountInString(val) == 1:
-			s = val
-		case val == "<lt>":
-			s = "<"
-		case val == "<gt>":
-			s = ">"
-		case val == "<space>":
-			s = " "
-		case reModKey.MatchString(val):
-			matches := reModKey.FindStringSubmatch(val)
-			switch matches[1] {
-			case "c":
-				mod = tcell.ModCtrl
-			case "s":
-				mod = tcell.ModShift
-			case "a":
-				mod = tcell.ModAlt
-			}
-			val = matches[2]
-			if utf8.RuneCountInString(val) == 1 {
-				s = val
-				break
-			} else if key, ok := gValKey["<"+val+">"]; ok {
-				k = key
-				break
-			}
-			fallthrough
-		default:
-			k = tcell.KeyESC
-			ui.echoerrf("unknown key: %s", val)
-		}
-
-		return tcell.NewEventKey(k, s, mod)
-	case ev := <-ui.screen.EventQ():
-		return ev
-	}
-}
-
-func addSpecialKeyModifier(val string, mod tcell.ModMask) string {
-	switch {
-	case !strings.HasPrefix(val, "<"):
-		return val
-	case mod == tcell.ModCtrl && !strings.HasPrefix(val, "<c-"):
-		return "<c-" + val[1:]
-	case mod == tcell.ModShift:
-		return "<s-" + val[1:]
-	case mod == tcell.ModAlt:
-		return "<a-" + val[1:]
-	default:
-		return val
-	}
-}
-
 // This function is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
@@ -1542,40 +1346,26 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return nil
 		}
 
-		isDigit := func(s string) bool {
+		isDigitKey := func(*tcell.EventKey) bool {
+			if tev.Key() != tcell.KeyRune || tev.Modifiers() != tcell.ModNone {
+				return false
+			}
+
+			s := tev.Str()
 			return len(s) == 1 && s[0] >= '0' && s[0] <= '9'
 		}
 
-		// KeyRune is a regular character
-		if tev.Key() == tcell.KeyRune {
-			switch {
-			case tev.Str() == "<":
-				ui.keyAcc += "<lt>"
-			case tev.Str() == ">":
-				ui.keyAcc += "<gt>"
-			case tev.Str() == " ":
-				ui.keyAcc += "<space>"
-			case tev.Modifiers() == tcell.ModAlt:
-				ui.keyAcc += fmt.Sprintf("<a-%s>", tev.Str())
-			case isDigit(tev.Str()) && ui.keyAcc == "":
-				ui.keyCount += tev.Str()
-			default:
-				ui.keyAcc += tev.Str()
-			}
-		} else {
-			val := gKeyVal[tev.Key()]
-			val = addSpecialKeyModifier(val, tev.Modifiers())
-			if val == "<esc>" && ui.keyAcc != "" {
-				ui.keyAcc = ""
-				ui.keyCount = ""
-				ui.menu = ""
-				return draw
-			}
-			ui.keyAcc += val
-		}
-
-		if ui.keyAcc == "" {
+		switch {
+		case tev.Key() == tcell.KeyEsc && ui.keyAcc != "":
+			ui.keyAcc = ""
+			ui.keyCount = ""
+			ui.menu = ""
 			return draw
+		case isDigitKey(tev) && ui.keyAcc == "":
+			ui.keyCount += tev.Str()
+			return draw
+		default:
+			ui.keyAcc += readKey(tev)
 		}
 
 		binds, ok := findBinds(keys, ui.keyAcc)
@@ -1736,20 +1526,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 func readCmdEvent(ev tcell.Event) expr {
 	if tev, ok := ev.(*tcell.EventKey); ok {
-		if tev.Key() == tcell.KeyRune {
-			if tev.Modifiers() == tcell.ModAlt {
-				if expr, ok := gOpts.cmdkeys[fmt.Sprintf("<a-%s>", tev.Str())]; ok {
-					return expr
-				}
-			} else {
-				return &callExpr{"cmd-insert", []string{tev.Str()}, 1}
-			}
-		} else {
-			val := gKeyVal[tev.Key()]
-			val = addSpecialKeyModifier(val, tev.Modifiers())
-			if expr, ok := gOpts.cmdkeys[val]; ok {
-				return expr
-			}
+		if tev.Key() == tcell.KeyRune && tev.Modifiers()&tcell.ModAlt == 0 {
+			return &callExpr{"cmd-insert", []string{tev.Str()}, 1}
+		}
+
+		if expr, ok := gOpts.cmdkeys[readKey(tev)]; ok {
+			return expr
 		}
 	}
 	return nil
@@ -1767,12 +1549,10 @@ func (ui *ui) readEvent(ev tcell.Event, nav *nav) expr {
 	return ui.readNormalEvent(ev, nav)
 }
 
-func (ui *ui) readExpr() {
-	go func() {
-		for {
-			ui.evChan <- ui.pollEvent()
-		}
-	}()
+func (ui *ui) readEvents() {
+	for ev := range ui.screen.EventQ() {
+		ui.evChan <- ev
+	}
 }
 
 func (ui *ui) suspend() error {
