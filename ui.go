@@ -28,7 +28,6 @@ var gKeyVal = map[tcell.Key]string{
 	tcell.KeyTab:            "<tab>",
 	tcell.KeyBacktab:        "<backtab>",
 	tcell.KeyEsc:            "<esc>",
-	tcell.KeyBackspace2:     "<backspace2>",
 	tcell.KeyDelete:         "<delete>",
 	tcell.KeyInsert:         "<insert>",
 	tcell.KeyUp:             "<up>",

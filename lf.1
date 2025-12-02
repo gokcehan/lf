@@ -257,7 +257,7 @@ cmd\-right                (default \(aq<c\-f>\(aq and \(aq<right>\(aq)
 cmd\-home                 (default \(aq<c\-a>\(aq and \(aq<home>\(aq)
 cmd\-end                  (default \(aq<c\-e>\(aq and \(aq<end>\(aq)
 cmd\-delete               (default \(aq<c\-d>\(aq and \(aq<delete>\(aq)
-cmd\-delete\-back          (default \(aq<backspace>\(aq and \(aq<backspace2>\(aq)
+cmd\-delete\-back          (default \(aq<backspace>\(aq)
 cmd\-delete\-home          (default \(aq<c\-u>\(aq)
 cmd\-delete\-end           (default \(aq<c\-k>\(aq)
 cmd\-delete\-unix\-word     (default \(aq<c\-w>\(aq)
@@ -267,7 +267,7 @@ cmd\-transpose\-word       (default \(aq<a\-t>\(aq)
 cmd\-word                 (default \(aq<a\-f>\(aq)
 cmd\-word\-back            (default \(aq<a\-b>\(aq)
 cmd\-delete\-word          (default \(aq<a\-d>\(aq)
-cmd\-delete\-word\-back     (default \(aq<a\-backspace>\(aq and \(aq<a\-backspace2>\(aq)
+cmd\-delete\-word\-back     (default \(aq<a\-backspace>\(aq)
 cmd\-capitalize\-word      (default \(aq<a\-c>\(aq)
 cmd\-uppercase\-word       (default \(aq<a\-u>\(aq)
 cmd\-lowercase\-word       (default \(aq<a\-l>\(aq)
@@ -778,7 +778,7 @@ Move the cursor to the left/right.
 Move the cursor to the beginning/end of the line.
 .SS cmd\-delete (default \f[CR]<c\-d>\f[R] and \f[CR]<delete>\f[R])
 Delete the next character.
-.SS cmd\-delete\-back (default \f[CR]<backspace>\f[R] and \f[CR]<backspace2>\f[R])
+.SS cmd\-delete\-back (default \f[CR]<backspace>\f[R])
 Delete the previous character.
 When at the beginning of a prompt, returns either to Normal mode or to
 \f[CR]:\f[R] mode.
@@ -794,7 +794,7 @@ Transpose the positions of the last two characters/words.
 Move the cursor by one word in the forward/backward direction.
 .SS cmd\-delete\-word (default \f[CR]<a\-d>\f[R])
 Delete the next word in the forward direction.
-.SS cmd\-delete\-word\-back (default \f[CR]<a\-backspace>\f[R] and \f[CR]<a\-backspace2>\f[R])
+.SS cmd\-delete\-word\-back (default \f[CR]<a\-backspace>\f[R])
 Delete the previous word in the backward direction.
 .SS cmd\-capitalize\-word (default \f[CR]<a\-c>\f[R]), cmd\-uppercase\-word (default \f[CR]<a\-u>\f[R]), cmd\-lowercase\-word (default \f[CR]<a\-l>\f[R])
 Capitalize/uppercase/lowercase the current word and jump to the next
