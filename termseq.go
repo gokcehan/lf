@@ -11,6 +11,8 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+const gEscapeCode byte = '\x1b'
+
 // This function is used to remove style-related ANSI escape sequences from
 // a given string.
 //
@@ -49,7 +51,7 @@ func stripTermSequence(s string) string {
 func readTermSequence(s string) string {
 	slen := len(s)
 	// must start with ESC
-	if slen < 2 || s[0] != byte(gEscapeCode) {
+	if slen < 2 || s[0] != gEscapeCode {
 		return ""
 	}
 
@@ -72,7 +74,7 @@ func readTermSequence(s string) string {
 				return s[:i+1]
 			}
 			// ESC\ (ECMA-48)
-			if b == byte(gEscapeCode) && i+1 < slen && s[i+1] == '\\' {
+			if b == gEscapeCode && i+1 < slen && s[i+1] == '\\' {
 				return s[:i+2]
 			}
 		}
@@ -99,7 +101,7 @@ func parseEscapeSequence(s string) tcell.Style {
 // Accepts SGR and OSC sequences.
 func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	slen := len(s)
-	if slen < 2 || s[0] != byte(gEscapeCode) {
+	if slen < 2 || s[0] != gEscapeCode {
 		return st
 	}
 	switch s[1] {
@@ -112,7 +114,7 @@ func applyTermSequence(s string, st tcell.Style) tcell.Style {
 		// trim terminator (BEL or ESC\), then parse body
 		if s[slen-1] == 0x07 {
 			return applyOSC(s[2:slen-1], st)
-		} else if slen >= 2 && s[slen-2] == byte(gEscapeCode) && s[slen-1] == '\\' {
+		} else if slen >= 2 && s[slen-2] == gEscapeCode && s[slen-1] == '\\' {
 			return applyOSC(s[2:slen-2], st)
 		}
 		return st
