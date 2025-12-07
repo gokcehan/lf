@@ -156,6 +156,9 @@ loop:
 			st = st.Blink(true)
 		case "7":
 			st = st.Reverse(true)
+		case "8":
+			// TODO: tcell PR for proper conceal
+			st = st.Foreground(st.GetBackground())
 		case "9":
 			st = st.StrikeThrough(true)
 		case "22":
