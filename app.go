@@ -84,11 +84,11 @@ func (app *app) quit() {
 		}
 	}
 	if !gSingleMode {
-		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
+		if _, err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
 			log.Printf("dropping connection: %s", err)
 		}
 		if gOpts.autoquit {
-			if err := remote("quit"); err != nil {
+			if _, err := remote("quit"); err != nil {
 				log.Printf("auto quitting server: %s", err)
 			}
 		}
