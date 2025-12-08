@@ -14,7 +14,6 @@ import (
 	"text/tabwriter"
 	"text/template"
 	"time"
-	"unicode"
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
@@ -59,45 +58,41 @@ func printLength(s string) int {
 }
 
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
-	off := x
-	var comb []rune
-	slen := len(s)
-	for i := 0; i < slen; i++ {
-		seq := readTermSequence(s[i:])
-		if seq != "" {
-			st = applyTermSequence(seq, st)
-			i += len(seq) - 1
-			continue
-		}
-
-		r, w := utf8.DecodeRuneInString(s[i:])
-		for {
-			rc, wc := utf8.DecodeRuneInString(s[i+w:])
-			if !unicode.Is(unicode.Mn, rc) {
-				break
-			}
-			comb = append(comb, rc)
-			i += wc
-		}
-
-		if x < win.w {
-			screen.SetContent(win.x+x, win.y+y, r, comb, st)
-			comb = nil
-		}
-
-		i += w - 1
-
-		if r == '\t' {
-			ind := gOpts.tabstop - (x-off)%gOpts.tabstop
-			for i := 0; i < ind && x+i < win.w; i++ {
-				screen.SetContent(win.x+x+i, win.y+y, ' ', nil, st)
-			}
-			x += ind
-		} else {
-			x += runewidth.RuneWidth(r)
+	buf := make([]rune, 0, len(s))
+	off := 0
+	put := func() {
+		if len(buf) > 0 {
+			screen.PutStrStyled(win.x+x+off, win.y+y, string(buf), st)
+			off += printLength(string(buf))
+			buf = buf[:0]
 		}
 	}
 
+	i := 0
+	slen := len(s)
+	for i < slen {
+		seq := readTermSequence(s[i:])
+		if seq != "" {
+			put()
+			st = applyTermSequence(seq, st)
+			i += len(seq)
+			continue
+		}
+
+		r, n := utf8.DecodeRuneInString(s[i:])
+		if r == '\t' {
+			w := gOpts.tabstop - (x+off+printLength(string(buf)))%gOpts.tabstop
+			for i := 0; i < w; i++ {
+				buf = append(buf, ' ')
+			}
+		} else {
+			buf = append(buf, r)
+		}
+
+		i += n
+	}
+
+	put()
 	return st
 }
 
@@ -1002,35 +997,35 @@ func (ui *ui) drawBox() {
 	w, h := ui.screen.Size()
 
 	for i := 1; i < w-1; i++ {
-		ui.screen.SetContent(i, 1, tcell.RuneHLine, nil, st)
-		ui.screen.SetContent(i, h-2, tcell.RuneHLine, nil, st)
+		ui.screen.PutStrStyled(i, 1, string(tcell.RuneHLine), st)
+		ui.screen.PutStrStyled(i, h-2, string(tcell.RuneHLine), st)
 	}
 
 	for i := 2; i < h-2; i++ {
-		ui.screen.SetContent(0, i, tcell.RuneVLine, nil, st)
-		ui.screen.SetContent(w-1, i, tcell.RuneVLine, nil, st)
+		ui.screen.PutStrStyled(0, i, string(tcell.RuneVLine), st)
+		ui.screen.PutStrStyled(w-1, i, string(tcell.RuneVLine), st)
 	}
 
 	if gOpts.roundbox {
-		ui.screen.SetContent(0, 1, '╭', nil, st)
-		ui.screen.SetContent(w-1, 1, '╮', nil, st)
-		ui.screen.SetContent(0, h-2, '╰', nil, st)
-		ui.screen.SetContent(w-1, h-2, '╯', nil, st)
+		ui.screen.PutStrStyled(0, 1, "╭", st)
+		ui.screen.PutStrStyled(w-1, 1, "╮", st)
+		ui.screen.PutStrStyled(0, h-2, "╰", st)
+		ui.screen.PutStrStyled(w-1, h-2, "╯", st)
 	} else {
-		ui.screen.SetContent(0, 1, tcell.RuneULCorner, nil, st)
-		ui.screen.SetContent(w-1, 1, tcell.RuneURCorner, nil, st)
-		ui.screen.SetContent(0, h-2, tcell.RuneLLCorner, nil, st)
-		ui.screen.SetContent(w-1, h-2, tcell.RuneLRCorner, nil, st)
+		ui.screen.PutStrStyled(0, 1, string(tcell.RuneULCorner), st)
+		ui.screen.PutStrStyled(w-1, 1, string(tcell.RuneURCorner), st)
+		ui.screen.PutStrStyled(0, h-2, string(tcell.RuneLLCorner), st)
+		ui.screen.PutStrStyled(w-1, h-2, string(tcell.RuneLRCorner), st)
 	}
 
 	wacc := 0
 	for wind := range len(ui.wins) - 1 {
 		wacc += ui.wins[wind].w + 1
-		ui.screen.SetContent(wacc, 1, tcell.RuneTTee, nil, st)
+		ui.screen.PutStrStyled(wacc, 1, string(tcell.RuneTTee), st)
 		for i := 2; i < h-2; i++ {
-			ui.screen.SetContent(wacc, i, tcell.RuneVLine, nil, st)
+			ui.screen.PutStrStyled(wacc, i, string(tcell.RuneVLine), st)
 		}
-		ui.screen.SetContent(wacc, h-2, tcell.RuneBTee, nil, st)
+		ui.screen.PutStrStyled(wacc, h-2, string(tcell.RuneBTee), st)
 	}
 }
 
