@@ -342,9 +342,12 @@ func main() {
 	case *showVersion:
 		printVersion()
 	case *remoteCmd != "":
-		if err := remote(*remoteCmd); err != nil {
+		resp, err := remote(*remoteCmd)
+		if err != nil {
 			log.Fatalf("remote command: %s", err)
+			return
 		}
+		fmt.Print(resp)
 	case *serverMode:
 		if err := os.Chdir(gUser.HomeDir); err != nil {
 			log.Print(err)

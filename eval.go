@@ -849,7 +849,7 @@ func insert(app *app, arg string) {
 				app.nav.renew()
 				app.ui.loadFile(app, true)
 			} else {
-				if err := remote("send load"); err != nil {
+				if _, err := remote("send load"); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
@@ -872,7 +872,7 @@ func insert(app *app, arg string) {
 				app.nav.renew()
 				app.ui.loadFile(app, true)
 			} else {
-				if err := remote("send load"); err != nil {
+				if _, err := remote("send load"); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
@@ -893,7 +893,7 @@ func insert(app *app, arg string) {
 				return
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-save: %s", err)
 				return
 			}
@@ -944,7 +944,7 @@ func insert(app *app, arg string) {
 				return
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("mark-remove: %s", err)
 				return
 			}
@@ -1232,7 +1232,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				return
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("copy: %s", err)
 				return
 			}
@@ -1253,7 +1253,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				return
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("cut: %s", err)
 				return
 			}
@@ -1284,7 +1284,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				return
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("clear: %s", err)
 				return
 			}
@@ -1328,7 +1328,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.nav.renew()
 				app.ui.loadFile(app, true)
 			} else {
-				if err := remote("send load"); err != nil {
+				if _, err := remote("send load"); err != nil {
 					app.ui.echoerrf("delete: %s", err)
 					return
 				}
@@ -1360,7 +1360,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.nav.renew()
 				app.ui.loadFile(app, true)
 			} else {
-				if err := remote("send load"); err != nil {
+				if _, err := remote("send load"); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
@@ -1591,7 +1591,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.ui.echoerrf("tag: %s", err)
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("tag: %s", err)
 			}
 		}
@@ -1616,7 +1616,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.ui.echoerrf("tag-toggle: %s", err)
 			}
 		} else {
-			if err := remote("send sync"); err != nil {
+			if _, err := remote("send sync"); err != nil {
 				app.ui.echoerrf("tag-toggle: %s", err)
 			}
 		}
@@ -2012,7 +2012,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			if gSingleMode {
 				app.nav.renew()
 			} else {
-				if err := remote("send load"); err != nil {
+				if _, err := remote("send load"); err != nil {
 					app.ui.echoerrf("rename: %s", err)
 					return
 				}
