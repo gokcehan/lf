@@ -8,7 +8,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
-## r40 (Unreleased)
+## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
 
 ### Fixed
 
