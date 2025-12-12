@@ -987,6 +987,14 @@ func (nav *nav) sort() {
 		d.sort()
 		d.sel(name, nav.height)
 	}
+
+	if curr, err := nav.currFile(); err == nil {
+		if d, ok := nav.dirCache[curr.path]; ok {
+			name := d.name()
+			d.sort()
+			d.sel(name, nav.height)
+		}
+	}
 }
 
 func (nav *nav) setFilter(filter []string) error {

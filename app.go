@@ -423,9 +423,6 @@ func (app *app) loop() {
 				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
 				}
-				if d.path == curr.path {
-					app.ui.dirPrev = d
-				}
 			}
 
 			app.watchDir(d)
@@ -447,7 +444,6 @@ func (app *app) loop() {
 			curr, err := app.nav.currFile()
 			if err == nil {
 				if r.path == curr.path {
-					app.ui.regPrev = r
 					app.ui.sxScreen.forceClear = true
 					if gOpts.preload && r.volatile {
 						app.ui.loadFile(app, true)
