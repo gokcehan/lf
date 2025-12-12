@@ -74,14 +74,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.dirfirst, e)
 		if err == nil {
 			app.nav.sort()
-			app.ui.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
 		err = applyBoolOpt(&gOpts.dironly, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "dirpreviews", "nodirpreviews", "dirpreviews!":
@@ -98,7 +96,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "history", "nohistory", "history!":
@@ -110,7 +107,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "ignoredia", "noignoredia", "ignoredia!":
@@ -118,7 +114,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "incfilter", "noincfilter", "incfilter!":
@@ -155,7 +150,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.reverse, e)
 		if err == nil {
 			app.nav.sort()
-			app.ui.sort()
 		}
 	case "roundbox", "noroundbox", "roundbox!":
 		err = applyBoolOpt(&gOpts.roundbox, e)
@@ -168,7 +162,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "smartdia", "nosmartdia", "smartdia!":
@@ -176,7 +169,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "watch", "nowatch", "watch!":
@@ -225,7 +217,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 		app.nav.sort()
 		app.nav.position()
-		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "findlen":
 		n, err := strconv.Atoi(e.val)
@@ -254,7 +245,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.hiddenfiles = toks
 		app.nav.sort()
 		app.nav.position()
-		app.ui.sort()
 		app.ui.loadFile(app, true)
 	case "ifs":
 		gOpts.ifs = e.val
@@ -401,7 +391,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 		gOpts.sortby = method
 		app.nav.sort()
-		app.ui.sort()
 	case "statfmt":
 		gOpts.statfmt = e.val
 	case "tabstop":
@@ -485,14 +474,12 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
 		if err == nil {
 			app.nav.sort()
-			app.ui.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
 		err = applyLocalBoolOpt(gLocalOpts.dironly, gOpts.dironly, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
@@ -500,14 +487,12 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
-			app.ui.sort()
 			app.ui.loadFile(app, true)
 		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
 		if err == nil {
 			app.nav.sort()
-			app.ui.sort()
 		}
 	case "info":
 		if e.val == "" {
@@ -532,7 +517,6 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		}
 		gLocalOpts.sortby[e.path] = method
 		app.nav.sort()
-		app.ui.sort()
 	default:
 		err = fmt.Errorf("unknown option: %s", e.opt)
 	}
@@ -1772,7 +1756,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		app.nav.sort()
-		app.ui.sort()
 	case "clearmaps":
 		// leave `:` and cmaps bound so the user can still exit using `:quit`
 		clear(gOpts.nkeys)
