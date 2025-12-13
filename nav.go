@@ -982,6 +982,10 @@ func (nav *nav) startPreview() {
 }
 
 func (nav *nav) sort() {
+	if !nav.init {
+		return
+	}
+
 	for _, d := range nav.dirs {
 		name := d.name()
 		d.sort()
