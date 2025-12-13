@@ -8,6 +8,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
+## r41 (Unreleased)
+
+### Fixed
+
+- A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
+
 ## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
 
 ### Fixed
