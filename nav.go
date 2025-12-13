@@ -753,24 +753,29 @@ func (nav *nav) exportFiles() {
 }
 
 func (nav *nav) preloadLoop(ui *ui) {
-	processed := make(map[string]struct{})
-	process := func(path string) {
-		if _, ok := processed[path]; !ok {
-			nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
-			processed[path] = struct{}{}
-		}
+	stack := []string{}
+
+	push := func(path string) {
+		stack = slices.DeleteFunc(stack, func(s string) bool { return s == path })
+		stack = append(stack, path)
 	}
 
-	for path := range nav.preloadChan {
-		clear(processed)
-		process(path)
-	loop:
-		for {
+	pop := func() string {
+		path := stack[len(stack)-1]
+		stack = stack[:len(stack)-1]
+		return path
+	}
+
+	for {
+		if len(stack) == 0 {
+			push(<-nav.preloadChan)
+		} else {
 			select {
-			case path = <-nav.preloadChan:
-				process(path)
+			case path := <-nav.preloadChan:
+				push(path)
 			default:
-				break loop
+				path := pop()
+				nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
 			}
 		}
 	}
@@ -852,12 +857,11 @@ func (nav *nav) preload() {
 	}
 
 	nav.startPreview()
-	for i := 0; i <= nav.height/2; i++ {
+	for i := nav.height / 2; i >= 1; i-- {
+		doPreload(dir.ind - i)
 		doPreload(dir.ind + i)
 	}
-	for i := 1; i <= nav.height/2; i++ {
-		doPreload(dir.ind - i)
-	}
+	doPreload(dir.ind)
 }
 
 func (nav *nav) preview(path string, win *win, mode string) {
