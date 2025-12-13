@@ -244,15 +244,15 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 }
 
 func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
-	if reg.loading {
+	switch {
+	case reg.loading:
 		if previewLoading {
 			st := tcell.StyleDefault.Reverse(true)
 			win.print(screen, 2, 0, st, "loading...")
 		}
-		return
-	}
-
-	if !reg.sixel {
+	case reg.sixel:
+		sxs.printSixel(win, screen, reg)
+	default:
 		st := tcell.StyleDefault
 		for i, l := range reg.lines {
 			if i > win.h-1 {
@@ -263,7 +263,9 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		}
 	}
 
-	sxs.printSixel(win, screen, reg)
+	if !reg.sixel {
+		sxs.lastFile = ""
+	}
 }
 
 var gThisYear = time.Now().Year()
