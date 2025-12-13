@@ -244,21 +244,16 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 }
 
 func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
-	if reg == nil {
-		return
-	}
-
-	st := tcell.StyleDefault
-
-	if reg.loading {
+	switch {
+	case reg.loading:
 		if previewLoading {
-			st = st.Reverse(true)
+			st := tcell.StyleDefault.Reverse(true)
 			win.print(screen, 2, 0, st, "loading...")
 		}
-		return
-	}
-
-	if !reg.sixel {
+	case reg.sixel:
+		sxs.printSixel(win, screen, reg)
+	default:
+		st := tcell.StyleDefault
 		for i, l := range reg.lines {
 			if i > win.h-1 {
 				break
@@ -268,7 +263,9 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs
 		}
 	}
 
-	sxs.printSixel(win, screen, reg)
+	if !reg.sixel {
+		sxs.lastFile = ""
+	}
 }
 
 var gThisYear = time.Now().Year()
@@ -642,8 +639,6 @@ type ui struct {
 	msgWin      *win
 	menuWin     *win
 	msg         string
-	regPrev     *reg
-	dirPrev     *dir
 	exprChan    chan expr
 	keyChan     chan string
 	tevChan     chan tcell.Event
@@ -721,15 +716,6 @@ func (ui *ui) renew() {
 	ui.menuWin.renew(wtot, 1, 0, htot-2)
 }
 
-func (ui *ui) sort() {
-	if ui.dirPrev == nil {
-		return
-	}
-	name := ui.dirPrev.name()
-	ui.dirPrev.sort()
-	ui.dirPrev.sel(name, ui.wins[0].h)
-}
-
 func (ui *ui) echo(msg string) {
 	ui.msg = msg
 }
@@ -784,9 +770,9 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 	}
 
 	if curr.isPreviewable() {
-		ui.regPrev = app.nav.loadReg(curr.path, volatile)
+		app.nav.loadReg(curr.path, volatile)
 	} else if curr.IsDir() {
-		ui.dirPrev = app.nav.loadDir(curr.path)
+		app.nav.loadDir(curr.path)
 	}
 }
 
@@ -1146,6 +1132,30 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	ui.msgWin.printRight(ui.screen, 0, tcell.StyleDefault, right)
 }
 
+func (ui *ui) drawPreview(nav *nav, context *dirContext) {
+	curr, err := nav.currFile()
+	if err != nil {
+		return
+	}
+
+	win := ui.wins[len(ui.wins)-1]
+	ui.sxScreen.clearSixel(win, ui.screen, curr.path)
+
+	if gOpts.preview {
+		if curr.isPreviewable() {
+			if reg, ok := nav.regCache[curr.path]; ok {
+				win.printReg(ui.screen, reg, nav.previewLoading, &ui.sxScreen)
+			}
+		} else if curr.IsDir() {
+			ui.sxScreen.lastFile = ""
+			if dir, ok := nav.dirCache[curr.path]; ok {
+				dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
+				win.printDir(ui, dir, context, dirStyle)
+			}
+		}
+	}
+}
+
 func (ui *ui) drawBox() {
 	st := parseEscapeSequence(gOpts.borderfmt)
 
@@ -1275,20 +1285,7 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
 	}
 
-	curr, err := nav.currFile()
-	if err == nil {
-		preview := ui.wins[len(ui.wins)-1]
-		ui.sxScreen.clearSixel(preview, ui.screen, curr.path)
-		if gOpts.preview {
-			if curr.isPreviewable() {
-				preview.printReg(ui.screen, ui.regPrev, nav.previewLoading, &ui.sxScreen)
-			} else if curr.IsDir() {
-				ui.sxScreen.lastFile = ""
-				preview.printDir(ui, ui.dirPrev, &context,
-					&dirStyle{colors: ui.styles, icons: ui.icons, role: Preview})
-			}
-		}
-	}
+	ui.drawPreview(nav, &context)
 
 	if gOpts.drawbox {
 		ui.drawBox()
@@ -1699,7 +1696,12 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				}
 				return &callExpr{"open", nil, 1}
 			}
-			dir = ui.dirPrev
+
+			var ok bool
+			dir, ok = nav.dirCache[curr.path]
+			if !ok {
+				return nil
+			}
 		} else {
 			dir = ui.dirOfWin(nav, wind)
 			if dir == nil {

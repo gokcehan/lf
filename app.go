@@ -84,11 +84,11 @@ func (app *app) quit() {
 		}
 	}
 	if !gSingleMode {
-		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
+		if _, err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
 			log.Printf("dropping connection: %s", err)
 		}
 		if gOpts.autoquit {
-			if err := remote("quit"); err != nil {
+			if _, err := remote("quit"); err != nil {
 				log.Printf("auto quitting server: %s", err)
 			}
 		}
@@ -423,9 +423,6 @@ func (app *app) loop() {
 				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
 				}
-				if d.path == curr.path {
-					app.ui.dirPrev = d
-				}
 			}
 
 			app.watchDir(d)
@@ -447,7 +444,6 @@ func (app *app) loop() {
 			curr, err := app.nav.currFile()
 			if err == nil {
 				if r.path == curr.path {
-					app.ui.regPrev = r
 					app.ui.sxScreen.forceClear = true
 					if gOpts.preload && r.volatile {
 						app.ui.loadFile(app, true)

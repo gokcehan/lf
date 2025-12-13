@@ -28,11 +28,6 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		return
 	}
 
-	if !reg.sixel {
-		sxs.lastFile = ""
-		return
-	}
-
 	cw, ch, err := cellSize(screen)
 	if err != nil {
 		log.Printf("sixel: %s", err)

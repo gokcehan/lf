@@ -8,6 +8,19 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
+## r41 (Unreleased)
+
+### Fixed
+
+- A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
+
+## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
+
+### Fixed
+
+- Error messages from the server are no longer written to the terminal which causes the UI to break (#2290).
+- A bug where file previews fail to load properly when scrolling quickly is now fixed (#2292).
+
 ## [r39](https://github.com/gokcehan/lf/releases/tag/r39)
 
 ### Changed

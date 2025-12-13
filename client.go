@@ -168,14 +168,15 @@ func readExpr() <-chan expr {
 	return ch
 }
 
-func remote(cmd string) error {
+func remote(req string) (string, error) {
 	c, err := net.Dial(gSocketProt, gSocketPath)
 	if err != nil {
-		return fmt.Errorf("dialing to send server: %w", err)
+		return "", fmt.Errorf("connecting to server: %w", err)
 	}
+	defer c.Close()
 
-	if _, err := fmt.Fprintln(c, cmd); err != nil {
-		return fmt.Errorf("sending command to server: %w", err)
+	if _, err := fmt.Fprintln(c, req); err != nil {
+		return "", fmt.Errorf("sending command to server: %w", err)
 	}
 
 	// XXX: Standard net.Conn interface does not include a CloseWrite method
@@ -190,17 +191,10 @@ func remote(cmd string) error {
 		c.CloseWrite()
 	}
 
-	// The most straightforward way to write the response to stdout would be
-	// to do "io.Copy(os.Stdout, c)". However, on Linux, if stdout is connected to
-	// something like a pager that isn't immediately reading everything,
-	// this runs into Go bug https://github.com/golang/go/issues/75304 and
-	// busy-loops, eating a whole CPU.
-	response, err := io.ReadAll(c)
+	resp, err := io.ReadAll(c)
 	if err != nil {
-		return fmt.Errorf("reading response from server: %w", err)
+		return "", fmt.Errorf("reading response from server: %w", err)
 	}
-	c.Close()
-	os.Stdout.Write(response)
 
-	return nil
+	return string(resp), nil
 }
