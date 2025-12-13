@@ -1,9 +1,10 @@
 package main
 
 import (
+	"reflect"
 	"testing"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 func TestStripTermSequence(t *testing.T) {
@@ -122,7 +123,7 @@ func TestApplyTermSequence(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := applyTermSequence(test.s, tcell.StyleDefault); got != test.exp {
+		if got := applyTermSequence(test.s, tcell.StyleDefault); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input %q expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
