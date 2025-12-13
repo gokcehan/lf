@@ -859,10 +859,9 @@ func (nav *nav) preload() {
 	nav.startPreview()
 	for i := nav.height / 2; i >= 1; i-- {
 		doPreload(dir.ind - i)
-	}
-	for i := nav.height / 2; i >= 0; i-- {
 		doPreload(dir.ind + i)
 	}
+	doPreload(dir.ind)
 }
 
 func (nav *nav) preview(path string, win *win, mode string) {
