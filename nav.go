@@ -875,15 +875,16 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(
-			gOpts.previewer,
+		previewerArgs := []string{
 			path,
 			strconv.Itoa(win.w),
 			strconv.Itoa(win.h),
 			strconv.Itoa(win.x),
-			strconv.Itoa(win.y),
-			mode,
-		)
+			strconv.Itoa(win.y)}
+		if gOpts.preload {
+			previewerArgs = append(previewerArgs, mode)
+		}
+		cmd := exec.Command(gOpts.previewer, previewerArgs...)
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
