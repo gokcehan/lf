@@ -1042,6 +1042,8 @@ Periodic checks are disabled when the value of this option is set to zero.
 ## preload (bool) (default false)
 
 Allow previews to be generated in advance using the `previewer` script as the user navigates through the filesystem.
+Warning: This option currently breaks compatibility with ctpv and possibly other previewers.
+Refer to the [PREVIEWING FILES section](https://github.com/gokcehan/lf/blob/master/doc.md#previewing-files) for more information.
 
 ## preserve ([]string) (default `mode`)
 
@@ -1948,6 +1950,9 @@ To deal with this, the `preload` option can be set to enable file previews to be
 If enabled, the preview script will be run on files in advance as the user navigates through them.
 In this case, if the exit code of the preview script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
 Otherwise, it will fallback to calling the preview script again when the file is actually selected (useful for previews managed by an external program).
+
+Warning: the `preload` option currently breaks compatibility with ctpv and possibly other previewers when enabled. For details, see
+https://github.com/gokcehan/lf/issues/2304
 
 # CHANGING DIRECTORY
 
