@@ -1913,7 +1913,10 @@ This can be used to highlight source code, list contents of archive files or vie
 For coloring lf recognizes ANSI escape codes.
 
 To use this feature, you need to set the value of `previewer` option to the path of an executable file.
-The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position, and (6) mode ("preview" or "preload").
+The following arguments are passed to the file:
+- When the `preload` option is disabled (default): (1) current filename, (2) width, (3) height, (4) horizontal position, and (5) vertical position.
+- When the `preload` option is enabled: (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position, and (6) mode ("preview" or "preload").
+
 The output of the execution is printed in the preview pane.
 
 Different types of files can be handled by matching by extension (or MIME type from the `file` command):
@@ -1951,7 +1954,9 @@ If enabled, the preview script will be run on files in advance as the user navig
 In this case, if the exit code of the preview script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
 Otherwise, it will fallback to calling the preview script again when the file is actually selected (useful for previews managed by an external program).
 
-Warning: the `preload` option currently breaks compatibility with ctpv and possibly other previewers when enabled. For details, see
+Warning: When `preload` is enabled, the additional `mode` argument passed to the preview script breaks compatibility some previewers (i.e ctpv).
+You may need to write your own previewer script to handle this argument.
+For details, see
 https://github.com/gokcehan/lf/issues/2304
 
 # CHANGING DIRECTORY
