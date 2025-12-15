@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## r41 (Unreleased)
 
+### Added
+
+- A new command line flag `-c` has been added to execute a command after client initialization (#2309).
+
 ### Fixed
 
 - A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
