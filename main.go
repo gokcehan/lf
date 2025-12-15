@@ -41,6 +41,7 @@ var (
 	gSelect         string
 	gConfigPath     string
 	gCommands       arrayFlag
+	gPostCommands   arrayFlag
 	gVersion        string
 )
 
@@ -304,6 +305,10 @@ func main() {
 	flag.Var(&gCommands,
 		"command",
 		"`command` to execute on client initialization")
+
+	flag.Var(&gPostCommands,
+		"c",
+		"`command` to execute after client initialization")
 
 	flag.StringVar(&gLogPath,
 		"log",

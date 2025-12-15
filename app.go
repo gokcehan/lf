@@ -318,6 +318,18 @@ func (app *app) loop() {
 		}()
 	}
 
+	for _, cmd := range gPostCommands {
+		p := newParser(strings.NewReader(cmd))
+
+		for p.parse() {
+			p.expr.eval(app, nil)
+		}
+
+		if p.err != nil {
+			app.ui.echoerrf("%s", p.err)
+		}
+	}
+
 	for {
 		select {
 		case <-app.quitChan:
