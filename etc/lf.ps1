@@ -9,6 +9,7 @@ using namespace System.Management.Automation
 Register-ArgumentCompleter -Native -CommandName 'lf' -ScriptBlock {
     param($wordToComplete)
     $completions = @(
+        [CompletionResult]::new('-c ', '-c', [CompletionResultType]::ParameterName, 'command to execute after client initialization')
         [CompletionResult]::new('-command ', '-command', [CompletionResultType]::ParameterName, 'command to execute on client initialization')
         [CompletionResult]::new('-config ', '-config', [CompletionResultType]::ParameterName, 'path to the config file (instead of the usual paths)')
         [CompletionResult]::new('-cpuprofile ', '-cpuprofile', [CompletionResultType]::ParameterName, 'path to the file to write the CPU profile')

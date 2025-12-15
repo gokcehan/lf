@@ -13,6 +13,7 @@
 local arguments
 
 arguments=(
+    '-c[command to execute after client initialization]'
     '-command[command to execute on client initialization]'
     '-config[path to the config file (instead of the usual paths)]'
     '-cpuprofile[path to the file to write the CPU profile]'

@@ -8,6 +8,7 @@
 
 _lf () {
     local -a opts=(
+        -c
         -command
         -config
         -cpuprofile

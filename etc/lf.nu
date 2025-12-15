@@ -13,6 +13,7 @@
 #     source ~/.config/nushell/completions/lf.nu
 
 export extern "lf" [
+  --c                         # command to execute after client initialization
   --command                   # command to execute on client initialization
   --config: string            # path to the config file (instead of the usual paths)
   --cpuprofile: string        # path to the file to write the CPU profile

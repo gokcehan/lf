@@ -6,6 +6,7 @@
 #     ln -s "/path/to/lf.fish" ~/.config/fish/completions
 #
 
+complete -c lf -o c -r -d 'command to execute after client initialization'
 complete -c lf -o command -r -d 'command to execute on client initialization'
 complete -c lf -o config -r -d 'path to the config file (instead of the usual paths)'
 complete -c lf -o cpuprofile -r -d 'path to the file to write the CPU profile'
