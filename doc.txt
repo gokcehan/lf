@@ -4,10 +4,10 @@ lf - terminal file manager
 
 SYNOPSIS
 
-lf [-command command] [-config path] [-cpuprofile path] [-doc] [-help]
-[-last-dir-path path] [-log path] [-memprofile path] [-print-last-dir]
-[-print-selection] [-remote command] [-selection-path path] [-server]
-[-single] [-version] [cd-or-select-path]
+lf [-c command] [-command command] [-config path] [-cpuprofile path]
+[-doc] [-help] [-last-dir-path path] [-log path] [-memprofile path]
+[-print-last-dir] [-print-selection] [-remote command] [-selection-path
+path] [-server] [-single] [-version] [cd-or-select-path]
 
 DESCRIPTION
 
@@ -49,12 +49,16 @@ META OPTIONS
 
 STARTUP & CONFIGURATION
 
+-c command
+
+    Execute command after client initialization. To execute more than
+    one command, you can either use the -c flag multiple times or pass
+    multiple commands at once by chaining them with ";".
+
 -command command
 
-    Execute command during client initialization (i.e. after reading
-    configuration, before on-init). To execute more than one command,
-    you can either use the -command flag multiple times or pass multiple
-    commands at once by chaining them with ";".
+    Like -c, but execute command during client initialization (i.e.
+    after reading configuration, before on-init).
 
 -config path
 

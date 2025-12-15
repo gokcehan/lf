@@ -5,6 +5,7 @@ lf - terminal file manager
 # SYNOPSIS
 
 **lf**
+[**-c** *command*]
 [**-command** *command*]
 [**-config** *path*]
 [**-cpuprofile** *path*]
@@ -56,9 +57,13 @@ Show version information and exit.
 
 ## STARTUP & CONFIGURATION
 
+**-c** *command*
+
+Execute *command* after client initialization. To execute more than one command, you can either use the **-c** flag multiple times or pass multiple commands at once by chaining them with ";".
+
 **-command** *command*
 
-Execute *command* during client initialization (i.e. after reading configuration, before `on-init`). To execute more than one command, you can either use the **-command** flag multiple times or pass multiple commands at once by chaining them with ";".
+Like **-c**, but execute *command* during client initialization (i.e. after reading configuration, before `on-init`).
 
 **-config** *path*
 
