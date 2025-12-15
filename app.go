@@ -284,7 +284,7 @@ func (app *app) loop() {
 		}
 	}
 
-	for _, cmd := range gCommands {
+	for _, cmd := range gInitCmds {
 		p := newParser(strings.NewReader(cmd))
 
 		for p.parse() {
@@ -318,7 +318,7 @@ func (app *app) loop() {
 		}()
 	}
 
-	for _, cmd := range gPostCommands {
+	for _, cmd := range gPostInitCmds {
 		p := newParser(strings.NewReader(cmd))
 
 		for p.parse() {

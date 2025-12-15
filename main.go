@@ -40,8 +40,8 @@ var (
 	gLogPath        string
 	gSelect         string
 	gConfigPath     string
-	gCommands       arrayFlag
-	gPostCommands   arrayFlag
+	gInitCmds       arrayFlag
+	gPostInitCmds   arrayFlag
 	gVersion        string
 )
 
@@ -302,11 +302,11 @@ func main() {
 		"",
 		"`path` to the config file (instead of the usual paths)")
 
-	flag.Var(&gCommands,
+	flag.Var(&gInitCmds,
 		"command",
 		"`command` to execute on client initialization")
 
-	flag.Var(&gPostCommands,
+	flag.Var(&gPostInitCmds,
 		"c",
 		"`command` to execute after client initialization")
 
