@@ -747,12 +747,8 @@ type reg struct {
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
-	if !app.nav.init {
-		return
-	}
-
-	curr, err := app.nav.currFile()
-	if err != nil {
+	curr := app.nav.currFile()
+	if curr == nil {
 		return
 	}
 
@@ -772,7 +768,8 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 	if curr.isPreviewable() {
 		app.nav.loadReg(curr.path, volatile)
 	} else if curr.IsDir() {
-		app.nav.loadDir(curr.path)
+		dir := app.nav.getDir(curr.path)
+		app.nav.checkDir(dir)
 	}
 }
 
@@ -789,8 +786,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	sep := string(filepath.Separator)
 
 	var fname string
-	curr, err := nav.currFile()
-	if err == nil {
+	if curr := nav.currFile(); curr != nil {
 		fname = filepath.Base(curr.path)
 	}
 
@@ -855,8 +851,8 @@ func (ui *ui) drawStat(nav *nav) {
 		return
 	}
 
-	curr, err := nav.currFile()
-	if err != nil {
+	curr := nav.currFile()
+	if curr == nil {
 		return
 	}
 
@@ -1009,8 +1005,8 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	}
 
 	var stat *statData
-	curr, err := nav.currFile()
-	if err == nil {
+	curr := nav.currFile()
+	if curr != nil {
 		if curr.err == nil {
 			stat = &statData{
 				Path:        curr.path,
@@ -1133,8 +1129,8 @@ func (ui *ui) drawRulerFile(nav *nav) {
 }
 
 func (ui *ui) drawPreview(nav *nav, context *dirContext) {
-	curr, err := nav.currFile()
-	if err != nil {
+	curr := nav.currFile()
+	if curr == nil {
 		return
 	}
 
@@ -1231,11 +1227,11 @@ func (ui *ui) dirOfWin(nav *nav, wind int) *dir {
 	if gOpts.preview {
 		wins--
 	}
-	ind := len(nav.dirs) - wins + wind
+	ind := len(nav.dirPaths) - wins + wind
 	if ind < 0 {
 		return nil
 	}
-	return nav.dirs[ind]
+	return nav.getDir(nav.dirPaths[ind])
 }
 
 func (ui *ui) draw(nav *nav) {
@@ -1458,9 +1454,6 @@ func listMarks(marks map[string]string) string {
 }
 
 func listFilesInCurrDir(nav *nav) string {
-	if !nav.init {
-		return ""
-	}
 	dir := nav.currDir()
 	if dir.loading {
 		log.Printf("listFilesInCurrDir(): %s is still loading, `files` isn't ready for remote query", dir.path)
@@ -1687,8 +1680,8 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 
 		var dir *dir
 		if gOpts.preview && wind == len(ui.wins)-1 {
-			curr, err := nav.currFile()
-			if err != nil {
+			curr := nav.currFile()
+			if curr == nil {
 				return nil
 			} else if !curr.IsDir() || gOpts.dirpreviews {
 				if tev.Buttons() != tcell.Button2 {
