@@ -590,10 +590,7 @@ func (nav *nav) updateDirs(wd string) {
 		dirs = append(dirs, dir)
 	}
 
-	for i, j := 0, len(dirs)-1; i < j; i, j = i+1, j-1 {
-		dirs[i], dirs[j] = dirs[j], dirs[i]
-	}
-
+	slices.Reverse(dirs)
 	nav.dirs = dirs
 }
 
