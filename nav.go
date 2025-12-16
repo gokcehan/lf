@@ -175,7 +175,10 @@ func readdir(path string) ([]*file, error) {
 
 	files := make([]*file, 0, len(names))
 	for _, fname := range names {
-		files = append(files, newFile(filepath.Join(path, fname)))
+		file := newFile(filepath.Join(path, fname))
+		if !os.IsNotExist(file.err) {
+			files = append(files, file)
+		}
 	}
 
 	return files, err
