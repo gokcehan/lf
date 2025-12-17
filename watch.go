@@ -9,66 +9,27 @@ import (
 	"github.com/fsnotify/fsnotify"
 )
 
-type watchThrottle struct {
-	callback   func(string)
-	duration   time.Duration
-	updates    map[string]struct{}
-	timer      *time.Timer
-	throttling bool
-}
-
-func newWatchThrottle(callback func(string), duration time.Duration) *watchThrottle {
-	return &watchThrottle{
-		callback: callback,
-		duration: duration,
-		updates:  make(map[string]struct{}),
-		timer:    time.NewTimer(0),
-	}
-}
-
-func (throttle *watchThrottle) addUpdate(path string) {
-	if throttle.throttling {
-		throttle.updates[path] = struct{}{}
-	} else {
-		throttle.callback(path)
-		throttle.timer.Reset(throttle.duration)
-		throttle.throttling = true
-	}
-}
-
-func (throttle *watchThrottle) onTimeout() {
-	if len(throttle.updates) > 0 {
-		for path := range throttle.updates {
-			throttle.callback(path)
-		}
-		clear(throttle.updates)
-		throttle.timer.Reset(throttle.duration)
-	} else {
-		throttle.throttling = false
-	}
-}
-
 type watch struct {
-	watcher      *fsnotify.Watcher
-	events       <-chan fsnotify.Event
-	quit         chan struct{}
-	dirThrottle  *watchThrottle
-	fileThrottle *watchThrottle
-	dirChan      chan<- *dir
-	fileChan     chan<- *file
-	delChan      chan<- string
+	watcher  *fsnotify.Watcher
+	events   <-chan fsnotify.Event
+	quit     chan struct{}
+	pending  map[watchUpdate]bool
+	timeout  chan watchUpdate
+	dirChan  chan<- *dir
+	fileChan chan<- *file
+	delChan  chan<- string
 }
 
 func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
 	watch := &watch{
 		quit:     make(chan struct{}),
+		pending:  make(map[watchUpdate]bool),
+		timeout:  make(chan watchUpdate, 1024),
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
 	}
 
-	watch.dirThrottle = newWatchThrottle(watch.processDir, 500*time.Millisecond)
-	watch.fileThrottle = newWatchThrottle(watch.processFile, 500*time.Millisecond)
 	return watch
 }
 
@@ -120,8 +81,8 @@ func (watch *watch) loop() {
 		case ev := <-watch.events:
 			if ev.Has(fsnotify.Create) {
 				for _, path := range watch.getSameDirs(filepath.Dir(ev.Name)) {
-					watch.dirThrottle.addUpdate(path)
-					watch.fileThrottle.addUpdate(path)
+					watch.addUpdate(watchUpdate{"dir", path})
+					watch.addUpdate(watchUpdate{"file", path})
 				}
 			}
 
@@ -129,8 +90,8 @@ func (watch *watch) loop() {
 				dir, file := filepath.Split(ev.Name)
 				for _, path := range watch.getSameDirs(dir) {
 					watch.delChan <- filepath.Join(path, file)
-					watch.dirThrottle.addUpdate(path)
-					watch.fileThrottle.addUpdate(path)
+					watch.addUpdate(watchUpdate{"dir", path})
+					watch.addUpdate(watchUpdate{"file", path})
 				}
 			}
 
@@ -145,30 +106,52 @@ func (watch *watch) loop() {
 
 				dir, file := filepath.Split(ev.Name)
 				for _, path := range watch.getSameDirs(dir) {
-					watch.fileThrottle.addUpdate(filepath.Join(path, file))
+					watch.addUpdate(watchUpdate{"file", filepath.Join(path, file)})
 				}
 			}
-		case <-watch.dirThrottle.timer.C:
-			watch.dirThrottle.onTimeout()
-		case <-watch.fileThrottle.timer.C:
-			watch.fileThrottle.onTimeout()
+		case update := <-watch.timeout:
+			if watch.pending[update] {
+				watch.processUpdate(update)
+				time.AfterFunc(100*time.Millisecond, func() { watch.timeout <- update })
+				watch.pending[update] = false
+			} else {
+				delete(watch.pending, update)
+			}
 		case <-watch.quit:
 			return
 		}
 	}
 }
 
-func (watch *watch) processDir(path string) {
-	if _, err := os.Lstat(path); err == nil {
-		dir := newDir(path)
-		dir.sort()
-		watch.dirChan <- dir
+type watchUpdate struct {
+	kind string
+	path string
+}
+
+func (watch *watch) addUpdate(update watchUpdate) {
+	// process an update immediately if is the first time, otherwise store it
+	// and process only after a timeout to reduce the number of actual loads
+	if _, ok := watch.pending[update]; !ok {
+		watch.processUpdate(update)
+		time.AfterFunc(100*time.Millisecond, func() { watch.timeout <- update })
+		watch.pending[update] = false
+	} else {
+		watch.pending[update] = true
 	}
 }
 
-func (watch *watch) processFile(path string) {
-	if _, err := os.Lstat(path); err == nil {
-		watch.fileChan <- newFile(path)
+func (watch *watch) processUpdate(update watchUpdate) {
+	switch update.kind {
+	case "dir":
+		if _, err := os.Lstat(update.path); err == nil {
+			dir := newDir(update.path)
+			dir.sort()
+			watch.dirChan <- dir
+		}
+	case "file":
+		if _, err := os.Lstat(update.path); err == nil {
+			watch.fileChan <- newFile(update.path)
+		}
 	}
 }
 
