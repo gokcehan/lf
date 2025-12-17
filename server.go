@@ -6,6 +6,7 @@ import (
 	"log"
 	"net"
 	"os"
+	"sort"
 	"strconv"
 )
 
@@ -169,6 +170,15 @@ Loop:
 			}
 			gListener.Close()
 			break Loop
+		case "clients":
+			ids := make([]int, 0, len(gConnList))
+			for id := range gConnList {
+				ids = append(ids, id)
+			}
+			sort.Ints(ids)
+			for _, id := range ids {
+				fmt.Fprintln(c, id)
+			}
 		default:
 			echoerrf(c, "listen: unexpected command: %s", word)
 		}

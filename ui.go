@@ -1397,6 +1397,27 @@ func listCmds(cmds map[string]expr) string {
 	return b.String()
 }
 
+func listClients(clients []string, ind int) string {
+	t := new(tabwriter.Writer)
+	b := new(bytes.Buffer)
+
+	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
+	fmt.Fprintln(t, "  PID")
+	for i, id := range clients {
+		if id == "" {
+			continue
+		}
+		prefix := "  "
+		if i == ind {
+			prefix = "> "
+		}
+		fmt.Fprintf(t, "%s%s\n", prefix, id)
+	}
+	t.Flush()
+
+	return b.String()
+}
+
 func listJumps(jumps []string, ind int) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
