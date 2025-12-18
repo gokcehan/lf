@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
 
+### Added
+
+- A new builtin command `clients` is added to list all client IDs currently connected to the server. (#2314).
+
 ## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
 
 ### Fixed
