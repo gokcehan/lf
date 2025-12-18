@@ -208,6 +208,7 @@ The following commands are provided by lf:
 	addcustominfo
 	calcdirsize
 	clearmaps
+	clients
 	tty-write
 	visual                   (default 'V')
 
@@ -705,6 +706,11 @@ If the total size of a directory is not calculated, it will be shown as `-`.
 Remove all keybindings associated with the `map`, `nmap` and `vmap` command.
 This command can be used in the config file to remove the default keybindings.
 For safety purposes, `:` is left mapped to the `read` command, and `cmap` keybindings are retained so that it is still possible to exit `lf` using `:quit`.
+
+## clients
+
+List all client IDs currently connected to the server.
+See `REMOTE COMMANDS` for more details.
 
 ## tty-write
 
