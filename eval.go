@@ -1762,34 +1762,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 		clear(gOpts.vkeys)
 		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
 		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
-	case "clients":
-		if app.ui.cmdPrefix == ">" {
-			return
-		}
-		normal(app)
-
-		resp, err := remote("clients")
-		if err != nil {
-			app.ui.echoerrf("clients: %s", err)
-			return
-		}
-
-		var clients []string
-		ind := -1
-		curr := strconv.Itoa(gClientID)
-
-		for line := range strings.SplitSeq(resp, "\n") {
-			line = strings.TrimSpace(line)
-			if line == "" {
-				continue
-			}
-			if line == curr {
-				ind = len(clients)
-			}
-			clients = append(clients, line)
-		}
-
-		app.ui.menu = listClients(clients, ind)
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")

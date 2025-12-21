@@ -26,7 +26,6 @@ var (
 		"cd",
 		"clear",
 		"clearmaps",
-		"clients",
 		"copy",
 		"cut",
 		"down",
