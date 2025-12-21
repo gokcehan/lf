@@ -88,8 +88,9 @@ list to \f[I]path\f[R] instead of stdout.
 .SS SERVER
 .TP
 \f[B]\-remote\f[R] \f[I]command\f[R]
-Send \f[I]command\f[R] to the running server (e.g.
-\f[CR]send\f[R], \f[CR]query\f[R] or \f[CR]quit\f[R]).
+Send \f[I]command\f[R] to the running server (i.e.
+\f[CR]send\f[R], \f[CR]query\f[R], \f[CR]list\f[R], \f[CR]quit\f[R], or
+\f[CR]quit!\f[R]).
 See \f[CR]REMOTE COMMANDS\f[R] for more details.
 .TP
 \f[B]\-server\f[R]
@@ -1849,6 +1850,13 @@ map <a\-h> ${{
 }}
 .EE
 .PP
+The \f[CR]list\f[R] command prints the IDs of all currently connected
+clients:
+.IP
+.EX
+lf \-remote \(aqlist\(aq
+.EE
+.PP
 There is also a \f[CR]quit\f[R] command to quit the server when there
 are no connected clients left, and a \f[CR]quit!\f[R] command to force
 quit the server by closing client connections first:
@@ -1856,13 +1864,6 @@ quit the server by closing client connections first:
 .EX
 lf \-remote \(aqquit\(aq
 lf \-remote \(aqquit!\(aq
-.EE
-.PP
-The \f[CR]list\f[R] command prints the IDs of all currently connected
-clients:
-.IP
-.EX
-lf \-remote \(aqlist\(aq
 .EE
 .PP
 Lastly, the commands \f[CR]conn\f[R] and \f[CR]drop\f[R] connect or
