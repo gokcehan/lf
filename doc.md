@@ -1782,6 +1782,10 @@ There is also a `quit` command to quit the server when there are no connected cl
 	lf -remote 'quit'
 	lf -remote 'quit!'
 
+The `list` command prints the IDs of all currently connected clients:
+
+	lf -remote 'list'
+
 Lastly, the commands `conn` and `drop` connect or disconnect ID to/from the server:
 
 	lf -remote 'conn $id'
