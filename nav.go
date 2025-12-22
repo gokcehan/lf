@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"bytes"
 	"cmp"
 	"errors"
 	"fmt"
@@ -802,8 +803,18 @@ func (nav *nav) previewLoop(ui *ui) {
 				strconv.Itoa(win.x),
 				strconv.Itoa(win.y),
 				path)
+			var stderr bytes.Buffer
+			cmd.Stderr = &stderr
+
 			if err := cmd.Run(); err != nil {
-				log.Printf("cleaning preview: %s", err)
+				var exitErr *exec.ExitError
+				if !errors.As(err, &exitErr) {
+					log.Printf("cleaning preview: %s", err)
+				}
+			}
+			if s := strings.TrimSpace(stderr.String()); s != "" {
+				s = strings.Join(strings.Fields(s), " ")
+				log.Printf("cleaning preview (stderr): %s", s)
 			}
 			nav.volatilePreview = false
 		}
@@ -888,6 +899,8 @@ func (nav *nav) preview(path string, win *win, mode string) {
 			strconv.Itoa(win.y),
 			mode,
 		)
+		var stderr bytes.Buffer
+		cmd.Stderr = &stderr
 
 		out, err := cmd.StdoutPipe()
 		if err != nil {
@@ -909,6 +922,10 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				} else {
 					log.Printf("loading file: %s", err)
 				}
+			}
+			if s := strings.TrimSpace(stderr.String()); s != "" {
+				s = strings.Join(strings.Fields(s), " ")
+				log.Printf("loading file (stderr): %s", s)
 			}
 		}()
 		defer out.Close()
