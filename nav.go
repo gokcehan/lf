@@ -797,12 +797,15 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		win := ui.wins[len(ui.wins)-1]
 		if isClear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			cmd := exec.Command(gOpts.cleaner, prev,
+			cmd := exec.Command(
+				gOpts.cleaner,
+				prev,
 				strconv.Itoa(win.w),
 				strconv.Itoa(win.h),
 				strconv.Itoa(win.x),
 				strconv.Itoa(win.y),
-				path)
+				path,
+			)
 			var stderr bytes.Buffer
 			cmd.Stderr = &stderr
 
