@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - A new server command `list` is added to print the IDs of all currently connected clients (#2314).
+- The `previewer` and `cleaner` scripts now have their `stderr` output logged (#2316).
 
 ### Fixed
 
