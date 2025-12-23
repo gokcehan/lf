@@ -1144,10 +1144,9 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 			}
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""
-			if dir, ok := nav.dirCache[curr.path]; ok {
-				dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
-				win.printDir(ui, dir, context, dirStyle)
-			}
+			dir := nav.getDir(curr.path)
+			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
+			win.printDir(ui, dir, context, dirStyle)
 		}
 	}
 }
@@ -1690,11 +1689,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 				return &callExpr{"open", nil, 1}
 			}
 
-			var ok bool
-			dir, ok = nav.dirCache[curr.path]
-			if !ok {
-				return nil
-			}
+			dir = nav.getDir(curr.path)
 		} else {
 			dir = ui.dirOfWin(nav, wind)
 			if dir == nil {
