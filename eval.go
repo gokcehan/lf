@@ -1544,6 +1544,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			dir.files = append(dir.files, &file{FileInfo: lstat})
 		} else {
 			app.nav.currDir().sel(filepath.Base(path), app.nav.height)
+			app.ui.loadFile(app, true)
 		}
 	case "source":
 		if len(e.args) != 1 {
