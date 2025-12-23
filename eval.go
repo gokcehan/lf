@@ -1567,7 +1567,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		case 1:
 			k, v = e.args[0], ""
 		case 2:
-			k, v = e.args[0], e.args[1]
+			k, v = e.args[0], strings.TrimSpace(e.args[1])
 		default:
 			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
 			return
@@ -1579,12 +1579,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 
-		dir := filepath.Dir(path)
-		d, ok := app.nav.dirCache[dir]
-		if !ok {
-			app.ui.echoerrf("addcustominfo: dir not loaded: %s", dir)
-			return
-		}
+		d := app.nav.getDir(filepath.Dir(path))
 
 		var f *file
 		for _, file := range d.allFiles {
@@ -1598,13 +1593,10 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 
-		if len(strings.Trim(v, " ")) == 0 {
-			v = ""
-		}
 		if f.customInfo != v {
 			f.customInfo = v
 			// only sort when order changes
-			if getSortBy(dir) == customSort {
+			if getSortBy(d.path) == customSort {
 				d.sort()
 			}
 		}
