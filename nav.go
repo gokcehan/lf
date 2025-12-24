@@ -1099,57 +1099,29 @@ func (nav *nav) down(dist int) bool {
 func (nav *nav) scrollUp(dist int) bool {
 	dir := nav.currDir()
 
-	// when reached top do nothing
-	if istop := dir.ind == dir.pos; istop {
-		return false
-	}
-
 	old := dir.ind
 
-	minedge := min(nav.height/2, gOpts.scrolloff)
-
+	oldPos := dir.pos
 	dir.pos += dist
+	dir.boundPos(nav.height)
 
-	// jump to ensure minedge when edge < minedge
-	edge := nav.height - dir.pos
-	delta := min(0, edge-minedge-1)
-	dir.pos = min(dir.pos, nav.height-minedge-1)
-	// update dir.ind accordingly
-	dir.ind += delta
-
-	dir.ind = min(dir.ind, dir.ind-(dir.pos-nav.height+1))
-
-	// prevent cursor disappearing downwards
-	dir.pos = min(dir.pos, nav.height-1)
+	dir.ind -= dist - (dir.pos - oldPos)
+	dir.ind = max(dir.ind, dir.pos)
 
 	return old != dir.ind
 }
 
 func (nav *nav) scrollDown(dist int) bool {
 	dir := nav.currDir()
-	maxind := len(dir.files) - 1
-
-	// reached bottom
-	if dir.ind-dir.pos > maxind-nav.height {
-		return false
-	}
 
 	old := dir.ind
 
-	minedge := min(nav.height/2, gOpts.scrolloff)
-
+	oldPos := dir.pos
 	dir.pos -= dist
+	dir.boundPos(nav.height)
 
-	// jump to ensure minedge when edge < minedge
-	delta := min(0, dir.pos-minedge)
-	dir.pos = max(dir.pos, minedge)
-	// update dir.ind accordingly
-	dir.ind -= delta
-	dir.ind = max(dir.ind, dir.ind-(dir.pos-minedge))
-
-	dir.ind = min(maxind, dir.ind)
-	// prevent disappearing
-	dir.pos = max(dir.pos, 0)
+	dir.ind += dist - (oldPos - dir.pos)
+	dir.ind = min(dir.ind, dir.pos+max(len(dir.files)-nav.height, 0))
 
 	return old != dir.ind
 }
