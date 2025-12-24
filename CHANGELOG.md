@@ -19,6 +19,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
 - Newline characters are now ignored when drawing the ruler with the `ruler` file configured (#2319).
+- A potential crash when using the `scroll-up`/`scroll-down` commands is now fixed (#2320).
 
 ## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
 
