@@ -1271,7 +1271,7 @@ func (nav *nav) toggle() {
 	nav.toggleSelection(curr.path)
 }
 
-func (nav *nav) tagToggleSelection(path string, tag string) {
+func (nav *nav) tagToggleSelection(path, tag string) {
 	if _, ok := nav.tags[path]; ok {
 		delete(nav.tags, path)
 	} else {

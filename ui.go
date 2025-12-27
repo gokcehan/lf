@@ -277,7 +277,7 @@ func infotimefmt(t time.Time) string {
 	return t.Format(gOpts.infotimefmtold)
 }
 
-func fileInfo(f *file, d *dir, userWidth int, groupWidth int, customWidth int) (string, string, int) {
+func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, string, int) {
 	var info strings.Builder
 	var custom string
 	var off int
@@ -549,7 +549,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	}
 }
 
-func getUserWidth(dir *dir, beg int, end int) int {
+func getUserWidth(dir *dir, beg, end int) int {
 	maxw := 0
 
 	for _, f := range dir.files[beg:end] {
@@ -559,7 +559,7 @@ func getUserWidth(dir *dir, beg int, end int) int {
 	return maxw
 }
 
-func getGroupWidth(dir *dir, beg int, end int) int {
+func getGroupWidth(dir *dir, beg, end int) int {
 	maxw := 0
 
 	for _, f := range dir.files[beg:end] {
@@ -569,7 +569,7 @@ func getGroupWidth(dir *dir, beg int, end int) int {
 	return maxw
 }
 
-func getCustomWidth(dir *dir, beg int, end int) int {
+func getCustomWidth(dir *dir, beg, end int) int {
 	maxw := 0
 
 	for _, f := range dir.files[beg:end] {
@@ -835,7 +835,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
-func formatRulerOpt(name string, val string) string {
+func formatRulerOpt(name, val string) string {
 	// handle escape character so it doesn't mess up the ruler
 	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
 
@@ -865,7 +865,7 @@ func (ui *ui) drawStat(nav *nav) {
 	}
 
 	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-	replace := func(s string, val string) {
+	replace := func(s, val string) {
 		if val == "" {
 			val = "\x00"
 		}

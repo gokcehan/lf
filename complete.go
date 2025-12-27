@@ -239,7 +239,7 @@ func matchCmd(s string) (matches []compMatch, result string) {
 	return
 }
 
-func matchFile(s string, dirOnly bool, escape func(string) string, unescape func(string) string) (matches []compMatch, result string) {
+func matchFile(s string, dirOnly bool, escape, unescape func(string) string) (matches []compMatch, result string) {
 	dir, file := filepath.Split(unescape(replaceTilde(s)))
 
 	d := dir

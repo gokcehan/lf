@@ -408,7 +408,7 @@ func getFileExtension(file fs.FileInfo) string {
 // character will appear (0 means left, 50 means middle, 100 means right).
 // The file extension is not affected by truncation, however it will be clipped
 // if it exceeds the allowed width.
-func truncateFilename(file fs.FileInfo, maxWidth int, truncatePct int, truncateChar rune) string {
+func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar rune) string {
 	filename := file.Name()
 	if runeSliceWidth([]rune(filename)) <= maxWidth {
 		return filename

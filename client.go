@@ -86,7 +86,7 @@ func run() {
 	}
 }
 
-func writeLastDir(filename string, lastDir string) {
+func writeLastDir(filename, lastDir string) {
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Printf("opening last dir file: %s", err)
