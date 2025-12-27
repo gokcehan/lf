@@ -446,16 +446,6 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 	}
 }
 
-// This function takes an escape sequence option (e.g. `\033[1m`) and outputs a
-// complete format string (e.g. `\033[1m%s\033[0m`).
-func optionToFmtstr(optstr string) string {
-	if !strings.Contains(optstr, "%s") {
-		return optstr + "%s\033[0m"
-	} else {
-		return optstr
-	}
-}
-
 // This function reads lines from a file to be displayed as a preview.
 // The number of lines to read is capped since files can be very large.
 // Lines are split on `\n` characters, and `\r` characters are discarded.
