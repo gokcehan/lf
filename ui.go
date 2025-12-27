@@ -399,9 +399,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
-	var userWidth int
-	var groupWidth int
-	var customWidth int
+	var userWidth, groupWidth, customWidth int
 	var fetchedCustom bool
 
 	// Only fetch user/group/custom widths if configured to display them
