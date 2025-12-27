@@ -83,6 +83,22 @@ func TestReadTermSequence(t *testing.T) {
 	}
 }
 
+func TestOptionToFmtstr(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp string
+	}{
+		{"\033[1m", "\033[1m%s\033[0m"},
+		{"\033[1;7;31;42m", "\033[1;7;31;42m%s\033[0m"},
+	}
+
+	for _, test := range tests {
+		if got := optionToFmtstr(test.s); got != test.exp {
+			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
+		}
+	}
+}
+
 func TestParseEscapeSequence(t *testing.T) {
 	tests := []struct {
 		s   string
