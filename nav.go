@@ -144,15 +144,7 @@ func (file *file) TotalSize() int64 {
 }
 
 func (file *file) isPreviewable() bool {
-	if file.Mode().IsRegular() {
-		return true
-	}
-
-	if file.IsDir() && gOpts.dirpreviews {
-		return true
-	}
-
-	return false
+	return !file.IsDir() || gOpts.dirpreviews
 }
 
 type fakeStat struct {
@@ -934,6 +926,16 @@ func (nav *nav) preview(path string, win *win, mode string) {
 		defer out.Close()
 		reader = bufio.NewReader(out)
 	} else {
+		lstat, err := os.Lstat(path)
+		if err != nil {
+			log.Printf("lstat: %s", err)
+			return
+		}
+
+		if !lstat.Mode().IsRegular() {
+			return
+		}
+
 		f, err := os.Open(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
