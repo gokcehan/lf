@@ -209,10 +209,10 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.filesep = e.val
 	case "filtermethod":
 		switch e.val {
-		case "text", "glob", "regex":
+		case "text", "glob", "glob-full", "regex", "regex-full":
 			gOpts.filtermethod = searchMethod(e.val)
 		default:
-			app.ui.echoerr("filtermethod: value should either be 'text', 'glob' or 'regex")
+			app.ui.echoerr("filtermethod: value should either be 'text', 'glob', 'glob-full', 'regex' or 'regex-full'")
 			return
 		}
 		app.nav.sort()
@@ -349,10 +349,10 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.scrolloff = n
 	case "searchmethod":
 		switch e.val {
-		case "text", "glob", "regex":
+		case "text", "glob", "glob-full", "regex", "regex-full":
 			gOpts.searchmethod = searchMethod(e.val)
 		default:
-			app.ui.echoerr("searchmethod: value should either be 'text', 'glob' or 'regex'")
+			app.ui.echoerr("searchmethod: value should either be 'text', 'glob', 'glob-full', 'regex' or 'regex-full'")
 			return
 		}
 	case "selectfmt":
