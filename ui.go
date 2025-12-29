@@ -1028,13 +1028,20 @@ func (ui *ui) drawRulerFile(nav *nav) {
 			stat = &statData{
 				Path:        curr.path,
 				Name:        curr.Name(),
+				Extension:   curr.ext,
 				Size:        uint64(curr.Size()),
+				DirCount:    curr.dirCount,
+				TotalSize:   uint64(curr.TotalSize()),
 				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
+				AccessTime:  curr.accessTime.Format(gOpts.timefmt),
+				BirthTime:   curr.birthTime.Format(gOpts.timefmt),
+				ChangeTime:  curr.changeTime.Format(gOpts.timefmt),
 				LinkCount:   linkCount(curr),
 				User:        userName(curr),
 				Group:       groupName(curr),
 				Target:      curr.linkTarget,
+				CustomInfo:  curr.customInfo,
 			}
 		} else {
 			ui.echoerrf("stat: %s", curr.err)
