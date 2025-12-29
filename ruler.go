@@ -47,6 +47,9 @@ type rulerData struct {
 	LinePercentage   string
 	ScrollPercentage string
 	Filter           []string
+	Directory        string
+	User             string
+	Host             string
 	Mode             string
 	Options          map[string]string
 	UserOptions      map[string]string
