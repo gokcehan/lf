@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## r41 (Unreleased)
 
+### Changed
+
+- The `previewer` script no longer skips non-regular files (#2327).
+
 ### Added
 
 - A new server command `list` is added to print the IDs of all currently connected clients (#2314).
