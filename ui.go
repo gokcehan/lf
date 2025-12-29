@@ -306,6 +306,8 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 				sz = humanize(uint64(f.TotalSize()))
 			}
 			fmt.Fprintf(&info, " %5s", sz)
+		case "rsize":
+			fmt.Fprintf(&info, " %5s", humanize(uint64(f.Size())))
 		case "time":
 			fmt.Fprintf(&info, " %*s", max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
@@ -320,6 +322,12 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 			fmt.Fprintf(&info, " %-*s", userWidth, userName(f.FileInfo))
 		case "group":
 			fmt.Fprintf(&info, " %-*s", groupWidth, groupName(f.FileInfo))
+		case "lcount":
+			fmt.Fprintf(&info, " %3s", linkCount(f))
+		case "target":
+			if f.linkTarget != "" {
+				fmt.Fprintf(&info, " -> %s", f.linkTarget)
+			}
 		case "custom":
 			// Prevent useless spacers, as `custom` allows empty values
 			if customWidth < 1 {
