@@ -878,14 +878,28 @@ func (ui *ui) drawStat(nav *nav) {
 		replace("%m", "")
 		replace("%M", "NORMAL")
 	}
+	replace("%f", curr.Name())
+	replace("%F", curr.path)
+	replace("%e", curr.ext)
 	replace("%p", permString(curr.Mode()))
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
 	replace("%s", humanize(uint64(curr.Size())))
 	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
+	replace("%z", humanize(uint64(curr.TotalSize())))
+	replace("%Z", fmt.Sprintf("%5s", humanize(uint64(curr.TotalSize()))))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
+	replace("%A", curr.accessTime.Format(gOpts.timefmt))
+	replace("%B", curr.birthTime.Format(gOpts.timefmt))
+	replace("%C", curr.changeTime.Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
+	replace("%i", curr.customInfo)
+	if curr.dirCount >= 0 {
+		replace("%d", strconv.Itoa(curr.dirCount))
+	} else {
+		replace("%d", "")
+	}
 
 	var fileInfo strings.Builder
 	for section := range strings.SplitSeq(statfmt, "\x1f") {
