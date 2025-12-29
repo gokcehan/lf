@@ -10,30 +10,42 @@ import (
 type sortMethod string
 
 const (
-	naturalSort sortMethod = "natural"
-	nameSort    sortMethod = "name"
-	sizeSort    sortMethod = "size"
-	timeSort    sortMethod = "time"
-	atimeSort   sortMethod = "atime"
-	btimeSort   sortMethod = "btime"
-	ctimeSort   sortMethod = "ctime"
-	extSort     sortMethod = "ext"
-	customSort  sortMethod = "custom"
+	naturalSort       sortMethod = "natural"
+	nameSort          sortMethod = "name"
+	sizeSort          sortMethod = "size"
+	rsizeSort         sortMethod = "rsize"
+	timeSort          sortMethod = "time"
+	atimeSort         sortMethod = "atime"
+	btimeSort         sortMethod = "btime"
+	ctimeSort         sortMethod = "ctime"
+	extSort           sortMethod = "ext"
+	userSort          sortMethod = "user"
+	groupSort         sortMethod = "group"
+	lCountSort        sortMethod = "lcount"
+	targetNaturalSort sortMethod = "target-natural"
+	targetSort        sortMethod = "target"
+	customSort        sortMethod = "custom"
 )
 
 func isValidSortMethod(method sortMethod) bool {
 	return method == naturalSort ||
 		method == nameSort ||
 		method == sizeSort ||
+		method == rsizeSort ||
 		method == timeSort ||
 		method == atimeSort ||
 		method == btimeSort ||
 		method == ctimeSort ||
 		method == extSort ||
+		method == userSort ||
+		method == groupSort ||
+		method == lCountSort ||
+		method == targetNaturalSort ||
+		method == targetSort ||
 		method == customSort
 }
 
-const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'rsize', 'time', 'atime', 'btime', 'ctime', 'ext', 'user', 'group', 'lcount', 'target', 'target-natural' or 'custom'`
 
 type searchMethod string
 

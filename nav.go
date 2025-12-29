@@ -300,6 +300,10 @@ func (dir *dir) sort() {
 		applySort(func(f1, f2 *file) int {
 			return cmp.Compare(sizeVal(f1), sizeVal(f2))
 		})
+	case rsizeSort:
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(f1.Size(), f2.Size())
+		})
 	case timeSort:
 		applySort(func(f1, f2 *file) int {
 			return f1.ModTime().Compare(f2.ModTime())
@@ -324,6 +328,42 @@ func (dir *dir) sort() {
 				return cmp.Compare(ext1, ext2)
 			}
 			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
+		})
+	case userSort:
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(userName(f1), userName(f2))
+		})
+	case groupSort:
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(groupName(f1), groupName(f2))
+		})
+	case lCountSort:
+		applySort(func(f1, f2 *file) int {
+			return cmp.Compare(linkCount(f1), linkCount(f2))
+		})
+	case targetNaturalSort:
+		applySort(func(f1, f2 *file) int {
+			if f1.linkTarget == "" && f2.linkTarget == "" {
+				return 0
+			} else if f1.linkTarget == "" && f2.linkTarget != "" {
+				return 1
+			} else if f1.linkTarget != "" && f2.linkTarget == "" {
+				return -1
+			} else {
+				return naturalCmp(normalize(f1.linkTarget), normalize(f2.linkTarget))
+			}
+		})
+	case targetSort:
+		applySort(func(f1, f2 *file) int {
+			if f1.linkTarget == "" && f2.linkTarget == "" {
+				return 0
+			} else if f1.linkTarget == "" && f2.linkTarget != "" {
+				return 1
+			} else if f1.linkTarget != "" && f2.linkTarget == "" {
+				return -1
+			} else {
+				return cmp.Compare(normalize(f1.linkTarget), normalize(f2.linkTarget))
+			}
 		})
 	case customSort:
 		applySort(func(f1, f2 *file) int {
