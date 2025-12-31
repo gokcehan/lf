@@ -958,6 +958,13 @@ func exitCompMenu(app *app) {
 func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
+	noOverride := []string{
+		"open",
+		"paste",
+		"delete",
+		"rename",
+	}
+
 	if e.name == "builtin" {
 		if len(e.args) == 0 {
 			app.ui.echoerr("builtin: requires at least 1 argument")
@@ -967,7 +974,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		e.name, e.args = e.args[0], e.args[1:]
-	} else if cmd, ok := gOpts.cmds[e.name]; ok {
+	} else if cmd, ok := gOpts.cmds[e.name]; ok && !slices.Contains(noOverride, e.name) {
 		cmd.eval(app, e.args)
 		return
 	}
