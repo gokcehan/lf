@@ -419,6 +419,12 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 	}
 
+	indOff, tagOff, nameOff := lnwidth, lnwidth, lnwidth+1
+	if !gOpts.mergeindicators {
+		tagOff++
+		nameOff++
+	}
+
 	visualSelections := dir.visualSelections()
 	for i, f := range dir.files[beg:end] {
 		st := dirStyle.colors.get(f)
@@ -458,8 +464,18 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				fmtStr = gOpts.cutfmt
 			}
 		}
+
+		tag := " "
+		if val, ok := context.tags[path]; ok && len(val) > 0 {
+			tag = val
+		}
+
 		if fmtStr != "" {
-			win.print(ui.screen, lnwidth, i, parseEscapeSequence(fmtStr), " ")
+			ind := " "
+			if gOpts.mergeindicators {
+				ind = tag
+			}
+			win.print(ui.screen, indOff, i, parseEscapeSequence(fmtStr), ind)
 		}
 
 		// make space for select marker, and leave another space at the end
@@ -469,11 +485,6 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxWidth--
 		}
 
-		tag := " "
-		if val, ok := context.tags[path]; ok && len(val) > 0 {
-			tag = val
-		}
-
 		var icon []rune
 		var iconDef iconDef
 		if gOpts.icons {
@@ -481,10 +492,14 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			icon = slices.Concat([]rune(iconDef.icon), []rune{' '})
 		}
 
-		// subtract space for tag and icon
-		maxFilenameWidth := maxWidth - 1 - runeSliceWidth(icon)
+		// subtract space for icon
+		maxFilenameWidth := maxWidth - runeSliceWidth(icon)
+		// subtract space for tag if not merged  with selection marker
+		if !gOpts.mergeindicators {
+			maxFilenameWidth--
+		}
 
-		info, custom, off := fileInfo(f, dir, userWidth, groupWidth, customWidth)
+		info, custom, customOff := fileInfo(f, dir, userWidth, groupWidth, customWidth)
 		infolen := len(info)
 		showInfo := infolen > 0 && 2*infolen < maxWidth
 		if showInfo {
@@ -498,7 +513,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		if showInfo {
 			filename = append(filename, []rune(info)...)
-			off += lnwidth + 2 + runeSliceWidth(icon) + maxFilenameWidth
+			customOff += nameOff + runeSliceWidth(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -513,21 +528,25 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			}
 
 			// print tag separately as it can contain color escape sequences
-			win.print(ui.screen, lnwidth+1, i, st, fmt.Sprintf(cursorFmt, tag))
+			if !gOpts.mergeindicators || fmtStr == "" {
+				win.print(ui.screen, tagOff, i, st, fmt.Sprintf(cursorFmt, tag))
+			}
 
 			line := slices.Concat(icon, filename, []rune{' '})
-			win.print(ui.screen, lnwidth+2, i, st, fmt.Sprintf(cursorFmt, string(line)))
+			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, string(line)))
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
-				win.print(ui.screen, off, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
+				win.print(ui.screen, customOff, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
 			}
 		} else {
-			if tag == " " {
-				win.print(ui.screen, lnwidth+1, i, st, " ")
-			} else {
-				tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag)
-				win.print(ui.screen, lnwidth+1, i, tcell.StyleDefault, tagStr)
+			if !gOpts.mergeindicators || fmtStr == "" {
+				if tag == " " {
+					win.print(ui.screen, tagOff, i, st, " ")
+				} else {
+					tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag)
+					win.print(ui.screen, tagOff, i, tcell.StyleDefault, tagStr)
+				}
 			}
 
 			if len(icon) > 0 {
@@ -535,15 +554,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				if iconDef.hasStyle {
 					iconStyle = iconDef.style
 				}
-				win.print(ui.screen, lnwidth+2, i, iconStyle, string(icon))
+				win.print(ui.screen, nameOff, i, iconStyle, string(icon))
 			}
 
 			line := slices.Concat(filename, []rune{' '})
-			win.print(ui.screen, lnwidth+2+runeSliceWidth(icon), i, st, string(line))
+			win.print(ui.screen, nameOff+runeSliceWidth(icon), i, st, string(line))
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
-				win.print(ui.screen, off, i, st, custom)
+				win.print(ui.screen, customOff, i, st, custom)
 			}
 		}
 	}

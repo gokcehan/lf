@@ -78,6 +78,7 @@ var gOpts struct {
 	menufmt          string
 	menuheaderfmt    string
 	menuselectfmt    string
+	mergeindicators  bool
 	mouse            bool
 	number           bool
 	numberfmt        string
@@ -240,6 +241,7 @@ func init() {
 	gOpts.menufmt = "\033[0m"
 	gOpts.menuheaderfmt = "\033[1m"
 	gOpts.menuselectfmt = "\033[7m"
+	gOpts.mergeindicators = false
 	gOpts.mouse = false
 	gOpts.number = false
 	gOpts.numberfmt = "\033[33m"
