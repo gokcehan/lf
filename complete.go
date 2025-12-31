@@ -22,6 +22,7 @@ var (
 		"cmd",
 		"addcustominfo",
 		"bottom",
+		"builtin",
 		"calcdirsize",
 		"cd",
 		"clear",
@@ -472,6 +473,10 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 	case "addcustominfo", "select", "source":
 		if len(f) == 2 {
 			matches, result = matchCmdFile(f[1], false)
+		}
+	case "builtin":
+		if len(f) == 2 {
+			matches, result = matchCmd(f[1])
 		}
 	case "toggle":
 		matches, result = matchCmdFile(f[len(f)-1], false)
