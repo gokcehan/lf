@@ -1567,7 +1567,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		case 1:
 			k, v = e.args[0], ""
 		case 2:
-			k, v = e.args[0], strings.TrimSpace(e.args[1])
+			k, v = e.args[0], e.args[1]
 		default:
 			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
 			return
