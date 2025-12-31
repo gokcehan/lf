@@ -120,6 +120,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
+	case "mergeindicators", "nomergeindicators", "mergeindicators!":
+		err = applyBoolOpt(&gOpts.mergeindicators, e)
 	case "mouse", "nomouse", "mouse!":
 		err = applyBoolOpt(&gOpts.mouse, e)
 		if err == nil {

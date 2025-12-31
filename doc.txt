@@ -299,6 +299,7 @@ The following options can be used to customize the behavior of lf:
     menufmt           string    (default "\033[0m")
     menuheaderfmt     string    (default "\033[1m")
     menuselectfmt     string    (default "\033[7m")
+    mergeindicators   bool      (default false)
     mouse             bool      (default false)
     number            bool      (default false)
     numberfmt         string    (default "\033[33m")
@@ -1097,6 +1098,13 @@ Format string of the header row in the menu.
 menuselectfmt (string) (default \033[7m)
 
 Format string of the currently selected item in the menu.
+
+mergeindicators (bool) (default false)
+
+When mergeindicators is enabled, tag and selection indicators are drawn
+in a single column to reduce the gap before filenames. If a file is both
+tagged and selected, the tag uses the selection format (e.g. copyfmt)
+instead of tagfmt.
 
 mouse (bool) (default false)
 
