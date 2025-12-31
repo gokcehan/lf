@@ -481,7 +481,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
 		// make extra space to separate windows if drawbox is not enabled
-		if !gOpts.drawbox {
+		if !gOpts.drawbox && win != ui.wins[len(ui.wins)-1] {
 			maxWidth--
 		}
 
