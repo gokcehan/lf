@@ -494,7 +494,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		// subtract space for icon
 		maxFilenameWidth := maxWidth - runeSliceWidth(icon)
-		// subtract space for tag if not merged  with selection marker
+		// subtract space for tag if not merged with selection marker
 		if !gOpts.mergeindicators {
 			maxFilenameWidth--
 		}
