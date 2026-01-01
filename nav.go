@@ -1806,8 +1806,19 @@ func searchMatch(name, pattern string, method searchMethod) (matched bool, err e
 	case textSearch:
 		return strings.Contains(name, pattern), nil
 	case globSearch:
+		if !strings.HasPrefix(pattern, "*") {
+			pattern = "*" + pattern
+		}
+		if !strings.HasSuffix(pattern, "*") {
+			pattern = pattern + "*"
+		}
+		return filepath.Match(pattern, name)
+	case globFullSearch:
 		return filepath.Match(pattern, name)
 	case regexSearch:
+		return regexp.MatchString(pattern, name)
+	case regexFullSearch:
+		pattern = "^(" + pattern + ")$"
 		return regexp.MatchString(pattern, name)
 	default:
 		return false, errors.New("searchMatch: invalid searchMethod")

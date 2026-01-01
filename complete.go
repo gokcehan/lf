@@ -422,7 +422,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		case "cleaner", "previewer":
 			matches, result = matchCmdFile(f[2], false)
 		case "filtermethod", "searchmethod":
-			matches, result = matchWord(f[2], []string{"glob", "regex", "text"})
+			matches, result = matchWord(f[2], []string{"glob", "glob-full", "regex", "regex-full", "text"})
 		case "info":
 			matches, result = matchList(f[2], []string{"atime", "btime", "ctime", "custom", "group", "perm", "size", "time", "user"})
 		case "preserve":
