@@ -138,7 +138,11 @@ func shellCommand(s string, args []string) *exec.Cmd {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)
 	}
 
-	args = append([]string{gOpts.shellflag, s, "--"}, args...)
+	if gOpts.shelldash {
+		args = append([]string{gOpts.shellflag, s, "--"}, args...)
+	} else {
+		args = append([]string{gOpts.shellflag, s}, args...)
+	}
 
 	args = append(gOpts.shellopts, args...)
 
