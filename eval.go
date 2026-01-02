@@ -377,6 +377,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.shellopts = strings.Split(e.val, ":")
+	case "shelldash", "noshelldash", "shelldash!":
+		err = applyBoolOpt(&gOpts.shelldash, e)
 	case "sizeunits":
 		switch e.val {
 		case "binary", "decimal":
