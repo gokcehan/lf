@@ -960,6 +960,27 @@ func exitCompMenu(app *app) {
 func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
+	noOverride := []string{
+		"open",
+		"paste",
+		"delete",
+		"rename",
+	}
+
+	if e.name == "builtin" {
+		if len(e.args) == 0 {
+			app.ui.echoerr("builtin: requires at least 1 argument")
+			return
+		} else if e.args[0] == "builtin" {
+			app.ui.echoerr("builtin: recursive call")
+			return
+		}
+		e.name, e.args = e.args[0], e.args[1:]
+	} else if cmd, ok := gOpts.cmds[e.name]; ok && !slices.Contains(noOverride, e.name) {
+		cmd.eval(app, e.args)
+		return
+	}
+
 	silentCmds := []string{
 		"addcustominfo",
 		"clearmaps",
@@ -2262,12 +2283,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 	case "on-init":
 		onInit(app)
 	default:
-		cmd, ok := gOpts.cmds[e.name]
-		if !ok {
-			app.ui.echoerrf("command not found: %s", e.name)
-			return
-		}
-		cmd.eval(app, e.args)
+		app.ui.echoerrf("command not found: %s", e.name)
 	}
 }
 
