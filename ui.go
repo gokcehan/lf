@@ -598,33 +598,10 @@ func getCustomWidth(dir *dir, beg, end int) int {
 	return maxw
 }
 
-func getWidths(wtot int) []int {
-	rsum := 0
-	for _, r := range gOpts.ratios {
-		rsum += r
-	}
-
-	wlen := len(gOpts.ratios)
-	widths := make([]int, wlen)
-
-	if gOpts.drawbox {
-		wtot -= (wlen + 1)
-	}
-
-	wsum := 0
-	for i := range wlen - 1 {
-		widths[i] = gOpts.ratios[i] * wtot / rsum
-		wsum += widths[i]
-	}
-	widths[wlen-1] = wtot - wsum
-
-	return widths
-}
-
 func getWins(screen tcell.Screen) []*win {
 	wtot, htot := screen.Size()
 
-	widths := getWidths(wtot)
+	widths := getWidths(wtot, gOpts.ratios, gOpts.drawbox)
 
 	wacc := 0
 	wlen := len(widths)
