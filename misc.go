@@ -513,6 +513,29 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 	}
 }
 
+func getWidths(wtot int, ratios []int, drawBox bool) []int {
+	rsum := 0
+	for _, r := range ratios {
+		rsum += r
+	}
+
+	wlen := len(ratios)
+	widths := make([]int, wlen)
+
+	if drawBox {
+		wtot -= (wlen + 1)
+	}
+
+	wsum := 0
+	for i := range wlen - 1 {
+		widths[i] = ratios[i] * wtot / rsum
+		wsum += widths[i]
+	}
+	widths[wlen-1] = wtot - wsum
+
+	return widths
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
