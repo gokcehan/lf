@@ -296,14 +296,8 @@ func (app *app) loop() {
 		}
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-	}
-
-	app.nav.updateDirs(wd)
+	app.nav.loadDirs()
 	app.nav.addJumpList()
-	app.nav.init = true
 
 	if gSelect != "" {
 		go func() {
@@ -393,6 +387,11 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
+			var oldCurrPath string
+			if curr := app.nav.currFile(); curr != nil {
+				oldCurrPath = curr.path
+			}
+
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
 				d.ind = prev.ind
@@ -405,21 +404,9 @@ func (app *app) loop() {
 			}
 			app.nav.dirCache[d.path] = d
 
-			var oldCurrPath string
-			if curr, err := app.nav.currFile(); err == nil {
-				oldCurrPath = curr.path
-			}
-
-			for i := range app.nav.dirs {
-				if app.nav.dirs[i].path == d.path {
-					app.nav.dirs[i] = d
-				}
-			}
-
 			app.nav.position()
 
-			curr, err := app.nav.currFile()
-			if err == nil {
+			if curr := app.nav.currFile(); curr != nil {
 				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
 				}
@@ -441,8 +428,7 @@ func (app *app) loop() {
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
 
-			curr, err := app.nav.currFile()
-			if err == nil {
+			if curr := app.nav.currFile(); curr != nil {
 				if r.path == curr.path {
 					app.ui.sxScreen.forceClear = true
 					if gOpts.preload && r.volatile {
@@ -485,9 +471,7 @@ func (app *app) loop() {
 			deletePathRecursive(app.nav.dirCache, path)
 			currPath := app.nav.currDir().path
 			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
-				if wd, err := os.Getwd(); err == nil {
-					app.nav.updateDirs(wd)
-				}
+				app.nav.loadDirs()
 			}
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
