@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Changed
 
 - The `previewer` script no longer skips non-regular files (#2327).
+- Line numbers now take up less space when both `number` and `relativenumber` are enabled (#2331).
 
 ### Added
 

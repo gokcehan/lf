@@ -391,11 +391,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	if dirStyle.role == Active && (gOpts.number || gOpts.relativenumber) {
 		lnwidth = 1
-		if gOpts.number && gOpts.relativenumber {
-			lnwidth++
-		}
 		for j := 10; j <= fileslen; j *= 10 {
 			lnwidth++
+		}
+		if gOpts.number && gOpts.relativenumber {
+			lnwidth = max(lnwidth, 2)
 		}
 	}
 
@@ -441,7 +441,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				case i > dir.pos:
 					ln = fmt.Sprintf("%*d", lnwidth, i-dir.pos)
 				case gOpts.number:
-					ln = fmt.Sprintf("%*d ", lnwidth-1, i+1+beg)
+					ln = fmt.Sprintf("%-*d", lnwidth, i+1+beg)
 				default:
 					ln = fmt.Sprintf("%*d", lnwidth, 0)
 				}

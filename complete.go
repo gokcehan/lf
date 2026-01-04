@@ -282,7 +282,9 @@ func matchFile(s string, dirOnly bool, escape, unescape func(string) string) (ma
 		if len(matches) == 1 {
 			commonName = name
 		} else {
-			commonName = commonPrefix(strings.ToLower(commonName), strings.ToLower(name))
+			// Match case-insensitively without changing the prefix's case.
+			p := commonPrefix(strings.ToLower(commonName), strings.ToLower(name))
+			commonName = string([]rune(commonName)[:len([]rune(p))])
 		}
 	}
 
@@ -388,7 +390,8 @@ func matchSearch(s string) (matches []compMatch, result string) {
 		if len(matches) == 1 {
 			result = f.Name()
 		} else {
-			result = commonPrefix(strings.ToLower(result), strings.ToLower(f.Name()))
+			p := commonPrefix(strings.ToLower(result), strings.ToLower(f.Name()))
+			result = string([]rune(result)[:len([]rune(p))])
 		}
 	}
 
