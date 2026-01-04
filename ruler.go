@@ -16,13 +16,20 @@ var gDefaultRuler string
 type statData struct {
 	Path        string
 	Name        string
+	Extension   string
 	Size        uint64
+	DirCount    int
+	TotalSize   uint64
 	Permissions string
 	ModTime     string
+	AccessTime  string
+	BirthTime   string
+	ChangeTime  string
 	LinkCount   string
 	User        string
 	Group       string
 	Target      string
+	CustomInfo  string
 }
 
 type rulerData struct {
@@ -40,6 +47,9 @@ type rulerData struct {
 	LinePercentage   string
 	ScrollPercentage string
 	Filter           []string
+	Directory        string
+	User             string
+	Host             string
 	Mode             string
 	Options          map[string]string
 	UserOptions      map[string]string

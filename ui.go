@@ -306,6 +306,8 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 				sz = humanize(uint64(f.TotalSize()))
 			}
 			fmt.Fprintf(&info, " %5s", sz)
+		case "rsize":
+			fmt.Fprintf(&info, " %5s", humanize(uint64(f.Size())))
 		case "time":
 			fmt.Fprintf(&info, " %*s", max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
@@ -320,6 +322,12 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 			fmt.Fprintf(&info, " %-*s", userWidth, userName(f.FileInfo))
 		case "group":
 			fmt.Fprintf(&info, " %-*s", groupWidth, groupName(f.FileInfo))
+		case "lcount":
+			fmt.Fprintf(&info, " %3s", linkCount(f))
+		case "target":
+			if f.linkTarget != "" {
+				fmt.Fprintf(&info, " -> %s", f.linkTarget)
+			}
 		case "custom":
 			// Prevent useless spacers, as `custom` allows empty values
 			if customWidth < 1 {
@@ -897,14 +905,28 @@ func (ui *ui) drawStat(nav *nav) {
 		replace("%m", "")
 		replace("%M", "NORMAL")
 	}
+	replace("%f", curr.Name())
+	replace("%F", curr.path)
+	replace("%e", curr.ext)
 	replace("%p", permString(curr.Mode()))
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
 	replace("%s", humanize(uint64(curr.Size())))
 	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
+	replace("%z", humanize(uint64(curr.TotalSize())))
+	replace("%Z", fmt.Sprintf("%5s", humanize(uint64(curr.TotalSize()))))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
+	replace("%A", curr.accessTime.Format(gOpts.timefmt))
+	replace("%B", curr.birthTime.Format(gOpts.timefmt))
+	replace("%C", curr.changeTime.Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
+	replace("%i", curr.customInfo)
+	if curr.dirCount >= 0 {
+		replace("%d", strconv.Itoa(curr.dirCount))
+	} else {
+		replace("%d", "")
+	}
 
 	var fileInfo strings.Builder
 	for section := range strings.SplitSeq(statfmt, "\x1f") {
@@ -1032,13 +1054,20 @@ func (ui *ui) drawRulerFile(nav *nav) {
 			stat = &statData{
 				Path:        curr.path,
 				Name:        curr.Name(),
+				Extension:   curr.ext,
 				Size:        uint64(curr.Size()),
+				DirCount:    curr.dirCount,
+				TotalSize:   uint64(curr.TotalSize()),
 				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
+				AccessTime:  curr.accessTime.Format(gOpts.timefmt),
+				BirthTime:   curr.birthTime.Format(gOpts.timefmt),
+				ChangeTime:  curr.changeTime.Format(gOpts.timefmt),
 				LinkCount:   linkCount(curr),
 				User:        userName(curr),
 				Group:       groupName(curr),
 				Target:      curr.linkTarget,
+				CustomInfo:  curr.customInfo,
 			}
 		} else {
 			ui.echoerrf("stat: %s", curr.err)
@@ -1132,6 +1161,9 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		LinePercentage:   linePercentage,
 		ScrollPercentage: scrollPercentage,
 		Filter:           dir.filter,
+		Directory:        dir.path,
+		User:             gUser.Username,
+		Host:             gHostname,
 		Mode:             mode,
 		Options:          options,
 		UserOptions:      gOpts.user,
