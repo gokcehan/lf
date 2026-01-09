@@ -155,8 +155,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 	case "roundbox", "noroundbox", "roundbox!":
 		err = applyBoolOpt(&gOpts.roundbox, e)
-	case "rulerfile", "norulerfile", "rulerfile!":
-		err = applyBoolOpt(&gOpts.rulerfile, e)
 	case "showbinds", "noshowbinds", "showbinds!":
 		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "smartcase", "nosmartcase", "smartcase!":
@@ -336,6 +334,9 @@ func (e *setExpr) eval(app *app, _ []string) {
 		app.ui.wins = getWins(app.ui.screen)
 		app.nav.resize(app.ui)
 		app.ui.loadFile(app, true)
+	case "rulerfile", "norulerfile", "rulerfile!":
+		gOpts.rulerfile = replaceTilde(e.val)
+		app.ui.ruler, app.ui.rulerErr = parseRuler(gOpts.rulerfile)
 	case "rulerfmt":
 		gOpts.rulerfmt = e.val
 	case "scrolloff":
