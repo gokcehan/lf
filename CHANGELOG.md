@@ -14,6 +14,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - The `previewer` script no longer skips non-regular files (#2327).
 - Line numbers now take up less space when both `number` and `relativenumber` are enabled (#2331).
+- Changes have been made to ruler configuration (#2338):
+  - The ruler file is no longer experimental.
+  - The ruler file will be used by default unless `rulerfmt` (now a blank string by default) is specified.
+  - The ruler file is no longer read from fixed locations like `~/.config/lf/ruler`, and instead the `rulerfile` option has been repurposed to specify the path of the ruler file.
 
 ### Added
 
