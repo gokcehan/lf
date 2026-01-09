@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -60,7 +61,7 @@ func parseRuler(path string) (*template.Template, error) {
 		return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 	}
 
-	return template.New("ruler").Funcs(funcs).ParseFiles(path)
+	return template.New(filepath.Base(path)).Funcs(funcs).ParseFiles(path)
 }
 
 func renderRuler(ruler *template.Template, data rulerData, width int) (string, string, error) {
