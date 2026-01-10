@@ -9,6 +9,7 @@ import (
 	"io"
 	"log"
 	"maps"
+	"math/rand"
 	"os"
 	"os/exec"
 	"path/filepath"
@@ -331,6 +332,12 @@ func (dir *dir) sort() {
 			s2 := normalize(stripTermSequence(f2.customInfo))
 			return naturalCmp(s1, s2)
 		})
+	case randomSort:
+		if len(dir.files) > 1 {
+			rand.Shuffle(len(dir.files), func(i, j int) {
+				dir.files[i], dir.files[j] = dir.files[j], dir.files[i]
+			})
+		}
 	}
 
 	// when sorting by size while also showing dircounts, we always display files

@@ -435,7 +435,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		case "sizeunits":
 			matches, result = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
-			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+			matches, result = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "random", "size", "time"})
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
 				matches, result = matchWord(f[2], []string{"false", "true"})
@@ -457,7 +457,7 @@ func completeCmd(acc []rune) (matches []compMatch, result string) {
 		case "info":
 			matches, result = matchList(f[3], []string{"atime", "btime", "ctime", "custom", "group", "perm", "size", "time", "user"})
 		case "sortby":
-			matches, result = matchWord(f[3], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+			matches, result = matchWord(f[3], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "random", "size", "time"})
 		default:
 			if slices.Contains(gLocalOptWords, f[2]+"!") {
 				matches, result = matchWord(f[3], []string{"false", "true"})

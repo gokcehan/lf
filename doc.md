@@ -1205,6 +1205,7 @@ The following sort types are supported:
 	btime     time of file birth
 	ctime     time of last status (inode) change
 	custom    property defined via `addcustominfo` (empty by default)
+	random    random order (shuffled)
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 

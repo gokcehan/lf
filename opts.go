@@ -19,6 +19,7 @@ const (
 	ctimeSort   sortMethod = "ctime"
 	extSort     sortMethod = "ext"
 	customSort  sortMethod = "custom"
+	randomSort  sortMethod = "random"
 )
 
 func isValidSortMethod(method sortMethod) bool {
@@ -30,10 +31,11 @@ func isValidSortMethod(method sortMethod) bool {
 		method == btimeSort ||
 		method == ctimeSort ||
 		method == extSort ||
-		method == customSort
+		method == customSort ||
+		method == randomSort
 }
 
-const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
+const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext', 'custom' or 'random'`
 
 type searchMethod string
 
