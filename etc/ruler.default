@@ -1,0 +1,20 @@
+{{with .Message -}}
+    {{. -}}
+{{else with .Stat -}}
+    {{.Permissions | printf "\033[36m%s\033[0m" -}}
+    {{with .LinkCount}} {{.}}{{end -}}
+    {{with .User}} {{.}}{{end -}}
+    {{with .Group}} {{.}}{{end -}}
+    {{.Size | humanize | printf " %5s" -}}
+    {{.ModTime | printf " %s" -}}
+    {{with .Target}} -> {{.}}{{end -}}
+{{end -}}
+{{.SPACER -}}
+{{with .Keys}}  {{.}}{{end -}}
+{{with .Progress}}  {{join . " "}}{{end -}}
+{{with .Copy}}  {{len . | printf "%s %d \033[0m" $.Options.copyfmt}}{{end -}}
+{{with .Cut}}  {{len . | printf "%s %d \033[0m" $.Options.cutfmt}}{{end -}}
+{{with .Select}}  {{len . | printf "%s %d \033[0m" $.Options.selectfmt}}{{end -}}
+{{with .Visual}}  {{len . | printf "%s %d \033[0m" $.Options.visualfmt}}{{end -}}
+{{with .Filter}}  {{join . " " | printf "\033[7;34m %s \033[0m"}}{{end -}}
+{{printf "  %d/%d" .Index .Total}}

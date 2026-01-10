@@ -1,0 +1,29 @@
+# interpreter for shell commands
+set shell pwsh
+
+# allow the usage of $args inside shell commands
+set shellflag "-cwa"
+
+# speed up Powershell by skipping the profile
+set shellopts "-nop"
+
+# Shell commands with multiline definitions and/or positional arguments and/or
+# quotes only partly work in Windows. For anything but the simplest shell commands,
+# it is recommended to create separate script files and simply call them here
+# in commands or mappings.
+#
+# Also, the default commands and keybindings are defined using cmd syntax (i.e. '%EDITOR%')
+# which does not work with Powershell. Therefore, you need to override these
+# with explicit choices accordingly.
+
+# change the default commands and keybindings to work in Powershell
+cmd open &&$Env:OPENER.Trim('"', ' ') "$Env:f"
+map e $&$Env:EDITOR "$Env:f"
+map i !&$Env:PAGER "$Env:f"
+map w $&$Env:SHELL
+cmd help !&$Env:lf -doc | &$Env:PAGER
+cmd maps !&$Env:lf -remote "query $Env:id maps" | &$Env:PAGER
+cmd nmaps !&$Env:lf -remote "query $Env:id nmaps" | &$Env:PAGER
+cmd vmaps !&$Env:lf -remote "query $Env:id vmaps" | &$Env:PAGER
+cmd cmaps !&$Env:lf -remote "query $Env:id cmaps" | &$Env:PAGER
+cmd cmds !&$Env:lf -remote "query $Env:id cmds" | &$Env:PAGER
