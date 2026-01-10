@@ -101,7 +101,7 @@ func newFile(path string) *file {
 	}
 
 	dirCount := -1
-	if lstat.IsDir() {
+	if lstat.IsDir() && getDirCounts(filepath.Dir(path)) {
 		d, err := os.Open(path)
 		if err != nil {
 			dirCount = -2

@@ -1030,8 +1030,6 @@ func (ui *ui) drawRulerFile(nav *nav) {
 				Name:        curr.Name(),
 				Extension:   curr.ext,
 				Size:        uint64(curr.Size()),
-				DirCount:    curr.dirCount,
-				TotalSize:   uint64(curr.TotalSize()),
 				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
 				AccessTime:  curr.accessTime.Format(gOpts.timefmt),
