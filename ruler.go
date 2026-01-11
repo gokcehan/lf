@@ -17,7 +17,7 @@ type statData struct {
 	Path        string
 	Name        string
 	Extension   string
-	Size        uint64
+	Size        int64
 	Permissions string
 	ModTime     string
 	AccessTime  string
@@ -53,13 +53,19 @@ type rulerData struct {
 
 func parseRuler(path string) (*template.Template, error) {
 	funcs := template.FuncMap{
-		"df":       func() string { return diskFree(".") },
-		"env":      os.Getenv,
-		"humanize": humanize,
-		"join":     strings.Join,
-		"lower":    strings.ToLower,
-		"substr":   func(s string, start, length int) string { return string([]rune(s)[start : start+length]) },
-		"upper":    strings.ToUpper,
+		"df":  func() string { return diskFree(".") },
+		"env": os.Getenv,
+		"humanize": func(s int64) string {
+			if s < 0 {
+				return "-"
+			} else {
+				return humanize(uint64(s))
+			}
+		},
+		"join":   strings.Join,
+		"lower":  strings.ToLower,
+		"substr": func(s string, start, length int) string { return string([]rune(s)[start : start+length]) },
+		"upper":  strings.ToUpper,
 	}
 
 	if path == "" {

@@ -999,11 +999,17 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	curr := nav.currFile()
 	if curr != nil {
 		if curr.err == nil {
+			var size int64
+			if curr.IsDir() {
+				size = curr.dirSize
+			} else {
+				size = curr.Size()
+			}
 			stat = &statData{
 				Path:        curr.path,
 				Name:        curr.Name(),
 				Extension:   curr.ext,
-				Size:        uint64(curr.Size()),
+				Size:        size,
 				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
 				AccessTime:  curr.accessTime.Format(gOpts.timefmt),
