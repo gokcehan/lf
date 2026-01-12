@@ -301,8 +301,8 @@ The following options can be used to customize the behavior of lf:
 	relativenumber    bool      (default false)
 	reverse           bool      (default false)
 	roundbox          bool      (default false)
-	rulerfile         bool      (default false)
-	rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
+	rulerfile         string    (default "")
+	rulerfmt          string    (default "")
 	scrolloff         int       (default 0)
 	searchmethod      string    (default 'text')
 	selectfmt         string    (default "\033[7;35m")
@@ -449,12 +449,6 @@ The icons file should be located at:
 	OS       system-wide               user-specific
 	Unix     /etc/lf/icons             ~/.config/lf/icons
 	Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Roaming\lf\icons
-
-The ruler file should be located at:
-
-	OS       system-wide               user-specific
-	Unix     /etc/lf/ruler             ~/.config/lf/ruler
-	Windows  C:\ProgramData\lf\ruler   C:\Users\<user>\AppData\Roaming\lf\ruler
 
 The selection file should be located at:
 
@@ -1109,14 +1103,17 @@ Reverse the direction of sort.
 
 Draw rounded outer corners when the `drawbox` option is enabled.
 
-## rulerfile (bool) (default false)
+## rulerfile (string) (default ``)
 
-Use the ruler file instead of the `rulerfmt` and `statfmt` options when drawing the ruler at the bottom.
+Set the path of the ruler file.
+If not set, then a default template will be used for the ruler.
 Refer to the [RULER section](https://github.com/gokcehan/lf/blob/master/doc.md#ruler) for more information about how the ruler file works.
 
-## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
+## rulerfmt (string) (default ``)
 
 Format string of the ruler shown in the bottom right corner.
+When set, it will be used along with `statfmt` to draw the ruler, and `rulerfile` will be ignored.
+However, using `rulerfile` is preferred and this option is provided for backwards compatibility.
 
 The following special expansions are supported:
 
@@ -1209,6 +1206,8 @@ The following sort types are supported:
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
+This option has no effect unless `rulerfmt` is also set.
+Using `rulerfile` is preferred and this option is provided for backwards compatibility.
 
 The following special expansions are supported:
 
@@ -2214,9 +2213,8 @@ https://github.com/gokcehan/lf/blob/master/etc/icons_colored.example
 
 # RULER
 
-The ruler can be configured using a ruler file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
+The ruler can be configured using the `rulerfile` option (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The contents of the ruler file should be a Go template which is then rendered to create the actual output (refer to https://pkg.go.dev/text/template for more details on the syntax).
-This feature is currently experimental and must be enabled via the `rulerfile` option.
 
 The following data fields are exported:
 

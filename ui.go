@@ -695,7 +695,7 @@ func newUI(screen tcell.Screen) *ui {
 		currentFile: "",
 		sxScreen:    sixelScreen{},
 	}
-	ui.ruler, ui.rulerErr = parseRuler()
+	ui.ruler, ui.rulerErr = parseRuler(gOpts.rulerfile)
 
 	go ui.pollEvents()
 
@@ -1280,7 +1280,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		if gOpts.rulerfile {
+		if gOpts.rulerfmt == "" {
 			ui.drawRulerFile(nav)
 		} else {
 			ui.drawStat(nav)

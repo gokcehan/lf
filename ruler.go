@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -51,7 +51,7 @@ type rulerData struct {
 	Stat             *statData
 }
 
-func parseRuler() (*template.Template, error) {
+func parseRuler(path string) (*template.Template, error) {
 	funcs := template.FuncMap{
 		"df":       func() string { return diskFree(".") },
 		"env":      os.Getenv,
@@ -62,17 +62,11 @@ func parseRuler() (*template.Template, error) {
 		"upper":    strings.ToUpper,
 	}
 
-	for i := len(gRulerPaths) - 1; i >= 0; i-- {
-		path := gRulerPaths[i]
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			continue
-		}
-
-		log.Printf("reading file: %s", path)
-		return template.New("ruler").Funcs(funcs).ParseFiles(path)
+	if path == "" {
+		return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 	}
 
-	return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
+	return template.New(filepath.Base(path)).Funcs(funcs).ParseFiles(path)
 }
 
 func renderRuler(ruler *template.Template, data rulerData, width int) (string, string, error) {
