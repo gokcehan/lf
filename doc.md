@@ -1206,6 +1206,8 @@ The following sort types are supported:
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
+This option has no effect unless `rulerfmt` is also set.
+Using `rulerfile` is preferred and this option is provided for backwards compatibility.
 
 The following special expansions are supported:
 
