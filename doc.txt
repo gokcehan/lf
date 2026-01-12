@@ -719,9 +719,10 @@ Simulate key pushes given in the argument.
 
 addcustominfo
 
-Update the custom info field of the given file with the given string.
-The info string may contain ANSI escape codes to further customize its
-appearance. If no info is provided, clear the file's info instead.
+Update the custom info and .Stat.CustomInfo field of the given file with
+the given string. The info string may contain ANSI escape codes to
+further customize its appearance. If no info is provided, clear the
+file's info instead.
 
 calcdirsize
 
@@ -2507,13 +2508,18 @@ The following data fields are exported:
     .UserOptions      map[string]string   The value of user-defined options (e.g. `{{.UserOptions.foo}}`)
     .Stat.Path        string              Path of the current file
     .Stat.Name        string              Name of the current file
+    .Stat.Extension   string              Extension of the current file
     .Stat.Size        uint64              Size of the current file
     .Stat.Permissions string              Permissions of the current file
     .Stat.ModTime     string              Last modified time of the current file (formatted based on the `timefmt` option)
+    .Stat.AccessTime  string              Last access time of the current file (formatted based on the `timefmt` option)
+    .Stat.BirthTime   string              Birth time of the current file (formatted based on the `timefmt` option)
+    .Stat.ChangeTime  string              Last status (inode) change time of the current file (formatted based on the `timefmt` option)
     .Stat.LinkCount   string              Number of hard links for the current file
     .Stat.User        string              User of the current file
     .Stat.Group       string              Group of the current file
     .Stat.Target      string              Target if the current file is a symbolic link, otherwise a blank string
+    .Stat.CustomInfo  string              Custom property if defined via `addcustominfo`, otherwise a blank string
 
 The following functions are exported:
 

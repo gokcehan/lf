@@ -16,13 +16,18 @@ var gDefaultRuler string
 type statData struct {
 	Path        string
 	Name        string
+	Extension   string
 	Size        uint64
 	Permissions string
 	ModTime     string
+	AccessTime  string
+	BirthTime   string
+	ChangeTime  string
 	LinkCount   string
 	User        string
 	Group       string
 	Target      string
+	CustomInfo  string
 }
 
 type rulerData struct {
