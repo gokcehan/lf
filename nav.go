@@ -178,10 +178,10 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading      bool       // directory is loading from disk
+	loading      bool       // whether directory is loading from disk
 	loadTime     time.Time  // last load time
-	ind          int        // index of current entry in files
-	pos          int        // position of current entry in ui
+	ind          int        // 0-based index of current entry in dir.files
+	pos          int        // 0-based cursor row in directory window
 	path         string     // full path of directory
 	files        []*file    // displayed files in directory including or excluding hidden ones
 	allFiles     []*file    // all files in directory including hidden ones (same array as files)
@@ -192,7 +192,7 @@ type dir struct {
 	hidden       bool       // hidden value from last sort
 	reverse      bool       // reverse value from last sort
 	visualAnchor int        // index where Visual mode was initiated
-	visualWrap   int        // wrap direction in Visual mode
+	visualWrap   int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
 	hiddenfiles  []string   // hiddenfiles value from last sort
 	filter       []string   // last filter for this directory
 	ignorecase   bool       // ignorecase value from last sort
