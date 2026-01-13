@@ -32,18 +32,18 @@ const (
 )
 
 type file struct {
-	os.FileInfo
-	linkState  linkState
-	linkTarget string
-	path       string
-	dirCount   int
-	dirSize    int64
-	accessTime time.Time
-	birthTime  time.Time
-	changeTime time.Time
-	customInfo string
-	ext        string
-	err        error
+	os.FileInfo           // stat information
+	linkState   linkState // symlink state
+	linkTarget  string    // path a symlink points to
+	path        string    // full path including the name
+	dirCount    int       // number of items inside the directory (-2: error, -1: unknown)
+	dirSize     int64     // total directory size (needs to be calculated via `calcdirsize`)
+	accessTime  time.Time // time of last access
+	birthTime   time.Time // time of file birth
+	changeTime  time.Time // time of last status (inode) change
+	customInfo  string    // property defined via `addcustominfo`
+	ext         string    // file extension (including the dot)
+	err         error     // potential error returned by `os.Lstat`
 }
 
 func newFile(path string) *file {
