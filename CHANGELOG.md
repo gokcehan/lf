@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Newline characters are now ignored when drawing the ruler with the `ruler` file configured (#2319).
 - A potential crash when using the `scroll-up`/`scroll-down` commands is now fixed (#2320).
 - Case-insensitive command-line completions no longer cause user input to be displayed in lowercase (#2336).
+- Calculation of window widths for the `ratios` option is now more accurate (#2347).
 
 ## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
 
