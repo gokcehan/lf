@@ -559,3 +559,29 @@ func TestReadLines(t *testing.T) {
 		}
 	}
 }
+
+func TestGetWidths(t *testing.T) {
+	tests := []struct {
+		wtot    int
+		ratios  []int
+		drawbox bool
+		exp     []int
+	}{
+		{0, []int{1}, false, []int{0}},
+		{0, []int{1}, true, []int{0}},
+		{0, []int{1, 3, 2}, false, []int{0, 0, 0}},
+		{0, []int{1, 3, 2}, true, []int{0, 0, 0}},
+		{14, []int{1, 3, 2}, false, []int{2, 6, 4}},
+		{16, []int{1, 3, 2}, true, []int{2, 6, 4}},
+		{14, []int{1, 1, 1}, false, []int{4, 4, 4}}, // windows ends at 4.00, 8.00 and 12.00 respectively
+		{15, []int{1, 1, 1}, false, []int{4, 4, 5}}, // windows ends at 4.33, 8.66 and 13.00 respectively
+		{16, []int{1, 1, 1}, false, []int{4, 5, 5}}, // windows ends at 4.66, 9.33 and 14.00 respectively
+	}
+
+	for _, test := range tests {
+		widths := getWidths(test.wtot, test.ratios, test.drawbox)
+		if !reflect.DeepEqual(widths, test.exp) {
+			t.Errorf("at input (%v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.drawbox, test.exp, widths)
+		}
+	}
+}
