@@ -19,24 +19,24 @@ import (
 )
 
 type app struct {
-	ui              *ui
-	nav             *nav
-	ticker          *time.Ticker
-	quitChan        chan struct{}
-	cmd             *exec.Cmd
-	cmdIn           io.WriteCloser
-	cmdOutBuf       []byte
-	cmdHistory      []string
-	cmdHistoryBeg   int
-	cmdHistoryInd   int
-	cmdHistoryInput *string
-	menuCompActive  bool
-	menuCompTmp     []string
-	menuComps       []compMatch
-	menuCompInd     int
-	selectionOut    []string
-	watch           *watch
-	quitting        bool
+	ui              *ui            // ui state (screen, windows, input)
+	nav             *nav           // navigation state (dirs, cursor, selections, preview, caches)
+	ticker          *time.Ticker   // refresh ticker if `period` > 0
+	quitChan        chan struct{}  // signals main loop to exit
+	cmd             *exec.Cmd      // currently running % (shell-pipe) command
+	cmdIn           io.WriteCloser // stdin writer for running % command
+	cmdOutBuf       []byte         // output of running % command
+	cmdHistory      []string       // command history entries
+	cmdHistoryBeg   int            // index where commands from this session start in cmdHistory
+	cmdHistoryInd   int            // history navigation offset from most recent
+	cmdHistoryInput *string        // initial input used as prefix filter while browsing history
+	menuCompActive  bool           // whether completion cycling is active
+	menuCompTmp     []string       // token snapshot taken when completion cycling starts, used for `cmd-menu-discard`
+	menuComps       []compMatch    // completion candidates for active prompt
+	menuCompInd     int            // index of selected completion candidate (-1: none selected)
+	selectionOut    []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
+	watch           *watch         // fs watcher if `watch` is enabled
+	quitting        bool           // guard to prevent re-entering quit logic
 }
 
 func newApp(ui *ui, nav *nav) *app {
