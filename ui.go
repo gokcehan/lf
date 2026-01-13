@@ -751,7 +751,7 @@ func (ui *ui) echoerrf(format string, a ...any) {
 	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
-// This represents the preview for a regular file.
+// This represents the preview for a file.
 // This can also be used to represent the preview of a directory if
 // `dirpreviews` is enabled.
 type reg struct {

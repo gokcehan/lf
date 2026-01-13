@@ -32,18 +32,18 @@ const (
 )
 
 type file struct {
-	os.FileInfo
-	linkState  linkState
-	linkTarget string
-	path       string
-	dirCount   int
-	dirSize    int64
-	accessTime time.Time
-	birthTime  time.Time
-	changeTime time.Time
-	customInfo string
-	ext        string
-	err        error
+	os.FileInfo           // stat information
+	linkState   linkState // symlink state
+	linkTarget  string    // path a symlink points to
+	path        string    // full path including the name
+	dirCount    int       // number of items inside the directory (-2: error, -1: unknown)
+	dirSize     int64     // total directory size (needs to be calculated via `calcdirsize`)
+	accessTime  time.Time // time of last access
+	birthTime   time.Time // time of file birth
+	changeTime  time.Time // time of last status (inode) change
+	customInfo  string    // property defined via `addcustominfo`
+	ext         string    // file extension (including the dot)
+	err         error     // potential error returned by `os.Lstat`
 }
 
 func newFile(path string) *file {
@@ -178,10 +178,10 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading      bool       // directory is loading from disk
+	loading      bool       // whether directory is loading from disk
 	loadTime     time.Time  // last load time
-	ind          int        // index of current entry in files
-	pos          int        // position of current entry in ui
+	ind          int        // 0-based index of current entry in dir.files
+	pos          int        // 0-based cursor row in directory window
 	path         string     // full path of directory
 	files        []*file    // displayed files in directory including or excluding hidden ones
 	allFiles     []*file    // all files in directory including hidden ones (same array as files)
@@ -192,7 +192,7 @@ type dir struct {
 	hidden       bool       // hidden value from last sort
 	reverse      bool       // reverse value from last sort
 	visualAnchor int        // index where Visual mode was initiated
-	visualWrap   int        // wrap direction in Visual mode
+	visualWrap   int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
 	hiddenfiles  []string   // hiddenfiles value from last sort
 	filter       []string   // last filter for this directory
 	ignorecase   bool       // ignorecase value from last sort
