@@ -974,6 +974,7 @@ func exitCompMenu(app *app) {
 func (e *callExpr) eval(app *app, _ []string) {
 	os.Setenv("lf_count", strconv.Itoa(e.count))
 
+	// commands that shouldn't clear the message line
 	silentCmds := []string{
 		"addcustominfo",
 		"clearmaps",
@@ -1570,7 +1571,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		case 1:
 			k, v = e.args[0], ""
 		case 2:
-			k, v = e.args[0], e.args[1]
+			k, v = e.args[0], e.args[1] // don't trim to allow for custom alignment
 		default:
 			app.ui.echoerr("addcustominfo: requires either 1 or 2 arguments")
 			return
