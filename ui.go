@@ -480,10 +480,6 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
-		// make extra space to separate windows if drawbox is not enabled
-		if !gOpts.drawbox {
-			maxWidth--
-		}
 
 		var icon []rune
 		var iconDef iconDef
@@ -598,45 +594,23 @@ func getCustomWidth(dir *dir, beg, end int) int {
 	return maxw
 }
 
-func getWidths(wtot int) []int {
-	rsum := 0
-	for _, r := range gOpts.ratios {
-		rsum += r
-	}
-
-	wlen := len(gOpts.ratios)
-	widths := make([]int, wlen)
-
-	if gOpts.drawbox {
-		wtot -= (wlen + 1)
-	}
-
-	wsum := 0
-	for i := range wlen - 1 {
-		widths[i] = gOpts.ratios[i] * wtot / rsum
-		wsum += widths[i]
-	}
-	widths[wlen-1] = wtot - wsum
-
-	return widths
-}
-
 func getWins(screen tcell.Screen) []*win {
 	wtot, htot := screen.Size()
 
-	widths := getWidths(wtot)
+	h := max(htot-2, 0)
+	x := 0
+	y := 1
+	if gOpts.drawbox {
+		h = max(htot-4, 0)
+		x = 1
+		y = 2
+	}
 
-	wacc := 0
-	wlen := len(widths)
-	wins := make([]*win, 0, wlen)
-	for i := range wlen {
-		if gOpts.drawbox {
-			wacc++
-			wins = append(wins, newWin(widths[i], max(htot-4, 0), wacc, 2))
-		} else {
-			wins = append(wins, newWin(widths[i], max(htot-2, 0), wacc, 1))
-		}
-		wacc += widths[i]
+	widths := getWidths(wtot, gOpts.ratios, gOpts.drawbox)
+	wins := make([]*win, 0, len(widths))
+	for _, w := range widths {
+		wins = append(wins, newWin(w, h, x, y))
+		x += w + 1
 	}
 
 	return wins

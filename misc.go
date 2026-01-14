@@ -513,6 +513,39 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 	}
 }
 
+// This function calculates the widths of windows as the result of applying the
+// `ratios` option to the screen width. One column is allocated for each divider
+// between windows. The `drawbox` option requires an additional two columns to
+// draw the left and right borders.
+func getWidths(wtot int, ratios []int, drawbox bool) []int {
+	rlen := len(ratios)
+	wtot -= rlen - 1
+	if drawbox {
+		wtot -= 2
+	}
+	wtot = max(wtot, 0)
+
+	rtot := 0
+	for _, r := range ratios {
+		rtot += r
+	}
+
+	divround := func(x, y int) int {
+		return (x + y/2) / y
+	}
+
+	widths := make([]int, rlen)
+	rsum := 0
+	wsum := 0
+	for i, r := range ratios {
+		rsum += r
+		widths[i] = divround(wtot*rsum, rtot) - wsum
+		wsum += widths[i]
+	}
+
+	return widths
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
