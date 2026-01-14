@@ -530,12 +530,16 @@ func getWidths(wtot int, ratios []int, drawbox bool) []int {
 		rtot += r
 	}
 
+	divround := func(x, y int) int {
+		return (x + y/2) / y
+	}
+
 	widths := make([]int, rlen)
 	rsum := 0
 	wsum := 0
 	for i, r := range ratios {
 		rsum += r
-		widths[i] = wtot*rsum/rtot - wsum
+		widths[i] = divround(wtot*rsum, rtot) - wsum
 		wsum += widths[i]
 	}
 
