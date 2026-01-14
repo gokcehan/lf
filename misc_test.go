@@ -573,10 +573,10 @@ func TestGetWidths(t *testing.T) {
 		{0, []int{1, 3, 2}, true, []int{0, 0, 0}},
 		{14, []int{1, 3, 2}, false, []int{2, 6, 4}},
 		{16, []int{1, 3, 2}, true, []int{2, 6, 4}},
-		{23, []int{1, 3, 2, 4}, false, []int{2, 6, 4, 8}}, // windows ends at 2.0, 8.0, 12.0, 20.0 respectively
-		{24, []int{1, 3, 2, 4}, false, []int{2, 6, 5, 8}}, // windows ends at 2.1, 8.4, 12.6, 21.0 respectively
-		{25, []int{1, 3, 2, 4}, false, []int{2, 7, 4, 9}}, // windows ends at 2.2, 8.8, 13.2, 22.0 respectively
-		{26, []int{1, 3, 2, 4}, false, []int{2, 7, 5, 9}}, // windows ends at 2.3, 9.2, 13.8, 23.0 respectively
+		{23, []int{1, 3, 2, 4}, false, []int{2, 6, 4, 8}}, // windows end at 2.0, 8.0, 12.0, 20.0 respectively
+		{24, []int{1, 3, 2, 4}, false, []int{2, 6, 5, 8}}, // windows end at 2.1, 8.4, 12.6, 21.0 respectively
+		{25, []int{1, 3, 2, 4}, false, []int{2, 7, 4, 9}}, // windows end at 2.2, 8.8, 13.2, 22.0 respectively
+		{26, []int{1, 3, 2, 4}, false, []int{2, 7, 5, 9}}, // windows end at 2.3, 9.2, 13.8, 23.0 respectively
 	}
 
 	for _, test := range tests {
