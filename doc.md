@@ -2238,6 +2238,8 @@ The following data fields are exported:
 	.Stat.Name        string              Name of the current file
 	.Stat.Extension   string              Extension of the current file
 	.Stat.Size        uint64              Size of the current file
+	.Stat.DirSize     *uint64             Total Size of the current directory if calculated via `calcdirsize`
+	.Stat.DirCount    *uint64             Number of items in the current directory if `dircounts` option is enabled
 	.Stat.Permissions string              Permissions of the current file
 	.Stat.ModTime     string              Last modified time of the current file (formatted based on the `timefmt` option)
 	.Stat.AccessTime  string              Last access time of the current file (formatted based on the `timefmt` option)
