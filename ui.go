@@ -287,12 +287,10 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 		case "size":
 			if f.IsDir() && getDirCounts(d.path) {
 				switch {
-				case f.dirCount < -1:
-					info.WriteString("     !")
-				case f.dirCount < 0:
+				case f.dirCount == nil:
 					info.WriteString("     ?")
-				case f.dirCount < 10000:
-					fmt.Fprintf(&info, " %5d", f.dirCount)
+				case *f.dirCount < 10000:
+					fmt.Fprintf(&info, " %5d", *f.dirCount)
 				default:
 					info.WriteString(" 9999+")
 				}
@@ -300,7 +298,7 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 			}
 
 			var sz string
-			if f.IsDir() && f.dirSize < 0 {
+			if f.IsDir() && f.dirSize == nil {
 				sz = "-"
 			} else {
 				sz = humanize(uint64(f.TotalSize()))
@@ -999,23 +997,13 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	curr := nav.currFile()
 	if curr != nil {
 		if curr.err == nil {
-			var dirsize *uint64 = nil
-			var dircount *uint64 = nil
-			if curr.dirSize >= 0 {
-				v := uint64(curr.dirSize)
-				dirsize = &v
-			}
-			if curr.dirCount >= 0 {
-				v := uint64(curr.dirCount)
-				dircount = &v
-			}
 			stat = &statData{
 				Path:        curr.path,
 				Name:        curr.Name(),
 				Extension:   curr.ext,
 				Size:        uint64(curr.Size()),
-				DirSize:     dirsize,
-				DirCount:    dircount,
+				DirSize:     curr.dirSize,
+				DirCount:    curr.dirCount,
 				Permissions: permString(curr.Mode()),
 				ModTime:     curr.ModTime().Format(gOpts.timefmt),
 				AccessTime:  curr.accessTime.Format(gOpts.timefmt),

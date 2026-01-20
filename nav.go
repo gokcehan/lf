@@ -36,8 +36,8 @@ type file struct {
 	linkState   linkState // symlink state
 	linkTarget  string    // path a symlink points to
 	path        string    // full path including the name
-	dirCount    int       // number of items inside the directory (-2: error, -1: unknown)
-	dirSize     int64     // total directory size (needs to be calculated via `calcdirsize`)
+	dirCount    *uint64   // number of items inside the directory
+	dirSize     *uint64   // total directory size (needs to be calculated via `calcdirsize`)
 	accessTime  time.Time // time of last access
 	birthTime   time.Time // time of file birth
 	changeTime  time.Time // time of last status (inode) change
@@ -53,15 +53,10 @@ func newFile(path string) *file {
 		return &file{
 			FileInfo:   &fakeStat{name: filepath.Base(path)},
 			linkState:  notLink,
-			linkTarget: "",
 			path:       path,
-			dirCount:   -1,
-			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
 			birthTime:  time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
-			customInfo: "",
-			ext:        "",
 			err:        err,
 		}
 	}
@@ -100,19 +95,20 @@ func newFile(path string) *file {
 		ct = ts.ChangeTime()
 	}
 
-	dirCount := -1
+	var dirCount *uint64
 	if lstat.IsDir() && getDirCounts(filepath.Dir(path)) {
 		d, err := os.Open(path)
 		if err != nil {
-			dirCount = -2
+			log.Printf("opening file: %s", err)
 		} else {
 			names, err := d.Readdirnames(10000)
 			d.Close()
 
 			if names == nil && err != io.EOF {
-				dirCount = -2
+				log.Printf("reading directory: %s", err)
 			} else {
-				dirCount = len(names)
+				v := uint64(len(names))
+				dirCount = &v
 			}
 		}
 	}
@@ -123,24 +119,21 @@ func newFile(path string) *file {
 		linkTarget: linkTarget,
 		path:       path,
 		dirCount:   dirCount,
-		dirSize:    -1,
 		accessTime: at,
 		birthTime:  bt,
 		changeTime: ct,
-		customInfo: "",
 		ext:        getFileExtension(lstat),
-		err:        nil,
 	}
 }
 
-func (file *file) TotalSize() int64 {
+func (file *file) TotalSize() uint64 {
 	if file.IsDir() {
-		if file.dirSize >= 0 {
-			return file.dirSize
+		if file.dirSize != nil {
+			return *file.dirSize
 		}
 		return 0
 	}
-	return file.Size()
+	return uint64(file.Size())
 }
 
 func (file *file) isPreviewable() bool {
@@ -291,9 +284,12 @@ func (dir *dir) sort() {
 			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case sizeSort:
-		sizeVal := func(f *file) int64 {
+		sizeVal := func(f *file) uint64 {
 			if f.IsDir() && dir.dircounts {
-				return int64(f.dirCount)
+				if f.dirCount == nil {
+					return 0
+				}
+				return *f.dirCount
 			}
 			return f.TotalSize()
 		}
@@ -2020,7 +2016,8 @@ func (nav *nav) calcDirSize() error {
 			if err != nil {
 				return err
 			}
-			f.dirSize = total
+			v := uint64(total)
+			f.dirSize = &v
 		}
 		return nil
 	}
