@@ -23,8 +23,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 - A new server command `list` is added to print the IDs of all currently connected clients (#2314).
 - The `previewer` and `cleaner` scripts now have their `stderr` output logged (#2316).
-- A new option `mergeindicators` is added to reduce the gap before filenames, by merging tag and selection indicators into a single column (#2330).
 - The `ruler` file now supports `.Stat.Extension`, `.Stat.AccessTime`, `.Stat.BirthTime`, `.Stat.ChangeTime` and `.Stat.CustomInfo` (#2329), as well as `.Stat.DirSize` and `.Stat.DirCount` (#2343).
+- A new option `mergeindicators` is added to reduce the gap before filenames, by merging tag and selection indicators into a single column (#2330).
 
 ### Fixed
 
