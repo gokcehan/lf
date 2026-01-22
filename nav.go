@@ -126,16 +126,6 @@ func newFile(path string) *file {
 	}
 }
 
-func (file *file) TotalSize() uint64 {
-	if file.IsDir() {
-		if file.dirSize != nil {
-			return *file.dirSize
-		}
-		return 0
-	}
-	return uint64(file.Size())
-}
-
 func (file *file) isPreviewable() bool {
 	return !file.IsDir() || gOpts.dirpreviews
 }
@@ -284,17 +274,29 @@ func (dir *dir) sort() {
 			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case sizeSort:
-		sizeVal := func(f *file) uint64 {
+		sizeVal := func(f *file) *uint64 {
 			if f.IsDir() && dir.dircounts {
-				if f.dirCount == nil {
-					return 0
-				}
-				return *f.dirCount
+				return f.dirCount
 			}
-			return f.TotalSize()
+			if f.dirSize != nil {
+				return f.dirSize
+			}
+			v := uint64(f.Size())
+			return &v
 		}
 		applySort(func(f1, f2 *file) int {
-			return cmp.Compare(sizeVal(f1), sizeVal(f2))
+			s1 := sizeVal(f1)
+			s2 := sizeVal(f2)
+			switch {
+			case s1 == nil && s2 == nil:
+				return 0
+			case s1 == nil && s2 != nil:
+				return -1
+			case s1 != nil && s2 == nil:
+				return 1
+			default:
+				return cmp.Compare(*s1, *s2)
+			}
 		})
 	case timeSort:
 		applySort(func(f1, f2 *file) int {

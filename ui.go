@@ -294,16 +294,16 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 				default:
 					info.WriteString(" 9999+")
 				}
-				continue
-			}
-
-			var sz string
-			if f.IsDir() && f.dirSize == nil {
-				sz = "-"
 			} else {
-				sz = humanize(uint64(f.TotalSize()))
+				switch {
+				case f.dirSize != nil:
+					fmt.Fprintf(&info, " %5s", humanize(*f.dirSize))
+				case f.IsDir():
+					info.WriteString("     -")
+				default:
+					fmt.Fprintf(&info, " %5s", humanize(uint64(f.Size())))
+				}
 			}
-			fmt.Fprintf(&info, " %5s", sz)
 		case "time":
 			fmt.Fprintf(&info, " %*s", max(len(gOpts.infotimefmtnew), len(gOpts.infotimefmtold)), infotimefmt(f.ModTime()))
 		case "atime":
