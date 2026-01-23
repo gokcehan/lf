@@ -668,18 +668,18 @@ func (app *app) runShell(s string, args []string, prefix string) {
 }
 
 func (app *app) doComplete() (matches []compMatch) {
-	var result string
+	var longest string
 
 	switch app.ui.cmdPrefix {
 	case ":":
-		matches, result = completeCmd(app.ui.cmdAccLeft)
+		matches, longest = completeCmd(app.ui.cmdAccLeft)
 	case "$", "%", "!", "&":
-		matches, result = completeShell(app.ui.cmdAccLeft)
+		matches, longest = completeShell(app.ui.cmdAccLeft)
 	case "/", "?":
-		matches, result = completeSearch(app.ui.cmdAccLeft)
+		matches, longest = completeSearch(app.ui.cmdAccLeft)
 	}
 
-	app.ui.cmdAccLeft = []rune(result)
+	app.ui.cmdAccLeft = []rune(longest)
 	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, matches, -1)
 	return
 }

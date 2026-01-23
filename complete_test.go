@@ -43,7 +43,7 @@ func TestGetLocalOptWords(t *testing.T) {
 	}
 }
 
-func TestCommonPrefix(t *testing.T) {
+func TestGetLongest(t *testing.T) {
 	tests := []struct {
 		s1  string
 		s2  string
@@ -60,7 +60,7 @@ func TestCommonPrefix(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := commonPrefix(test.s1, test.s2); got != test.exp {
+		if got := getLongest(test.s1, test.s2); got != test.exp {
 			t.Errorf("at input '%s' and '%s' expected '%s' but got '%s'", test.s1, test.s2, test.exp, got)
 		}
 	}
@@ -71,24 +71,26 @@ func TestMatchWord(t *testing.T) {
 		s       string
 		words   []string
 		matches []compMatch
-		result  string
+		longest string
 	}{
 		{"", nil, nil, ""},
 		{"", []string{"foo", "bar", "baz"}, []compMatch{{"foo", "foo"}, {"bar", "bar"}, {"baz", "baz"}}, ""},
+		{"f", []string{"foo", "bar", "baz"}, []compMatch{{"foo", "foo"}}, "foo "},
+		{"b", []string{"foo", "bar", "baz"}, []compMatch{{"bar", "bar"}, {"baz", "baz"}}, "ba"},
 		{"fo", []string{"foo", "bar", "baz"}, []compMatch{{"foo", "foo"}}, "foo "},
 		{"ba", []string{"foo", "bar", "baz"}, []compMatch{{"bar", "bar"}, {"baz", "baz"}}, "ba"},
 		{"fo", []string{"bar", "baz"}, nil, "fo"},
 	}
 
 	for _, test := range tests {
-		matches, result := matchWord(test.s, test.words)
+		matches, longest := matchWord(test.s, test.words)
 
 		if !reflect.DeepEqual(matches, test.matches) {
 			t.Errorf("at input '%s' with '%s' expected '%v' but got '%v'", test.s, test.words, test.matches, matches)
 		}
 
-		if result != test.result {
-			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.result, result)
+		if longest != test.longest {
+			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.longest, longest)
 		}
 	}
 }
@@ -98,7 +100,7 @@ func TestMatchList(t *testing.T) {
 		s       string
 		words   []string
 		matches []compMatch
-		result  string
+		longest string
 	}{
 		{"", nil, nil, ""},
 		{"", []string{"foo", "bar", "baz"}, []compMatch{{"foo", "foo"}, {"bar", "bar"}, {"baz", "baz"}}, ""},
@@ -117,14 +119,14 @@ func TestMatchList(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		matches, result := matchList(test.s, test.words)
+		matches, longest := matchList(test.s, test.words)
 
 		if !reflect.DeepEqual(matches, test.matches) {
 			t.Errorf("at input '%s' with '%s' expected '%v' but got '%v'", test.s, test.words, test.matches, matches)
 		}
 
-		if result != test.result {
-			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.result, result)
+		if longest != test.longest {
+			t.Errorf("at input '%s' with '%s' expected '%s' but got '%s'", test.s, test.words, test.longest, longest)
 		}
 	}
 }
