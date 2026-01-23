@@ -236,7 +236,7 @@ The following Command-line mode commands are provided by lf:
 	cmd-home                 (default '<c-a>' and '<home>')
 	cmd-end                  (default '<c-e>' and '<end>')
 	cmd-delete               (default '<c-d>' and '<delete>')
-	cmd-delete-back          (default '<backspace>' and '<backspace2>')
+	cmd-delete-back          (default '<backspace>')
 	cmd-delete-home          (default '<c-u>')
 	cmd-delete-end           (default '<c-k>')
 	cmd-delete-unix-word     (default '<c-w>')
@@ -246,7 +246,7 @@ The following Command-line mode commands are provided by lf:
 	cmd-word                 (default '<a-f>')
 	cmd-word-back            (default '<a-b>')
 	cmd-delete-word          (default '<a-d>')
-	cmd-delete-word-back     (default '<a-backspace>' and '<a-backspace2>')
+	cmd-delete-word-back     (default '<a-backspace>')
 	cmd-capitalize-word      (default '<a-c>')
 	cmd-uppercase-word       (default '<a-u>')
 	cmd-lowercase-word       (default '<a-l>')
@@ -793,7 +793,7 @@ Move the cursor to the beginning/end of the line.
 
 Delete the next character.
 
-## cmd-delete-back (default `<backspace>` and `<backspace2>`)
+## cmd-delete-back (default `<backspace>`)
 
 Delete the previous character.
 When at the beginning of a prompt, returns either to Normal mode or to `:` mode.
@@ -822,7 +822,7 @@ Move the cursor by one word in the forward/backward direction.
 
 Delete the next word in the forward direction.
 
-## cmd-delete-word-back (default `<a-backspace>` and `<a-backspace2>`)
+## cmd-delete-word-back (default `<a-backspace>`)
 
 Delete the previous word in the backward direction.
 

@@ -14,7 +14,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -1563,7 +1563,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		}
 		log.Println("pushing keys", e.args[0])
 		for _, val := range splitKeys(e.args[0]) {
-			app.ui.keyChan <- val
+			app.ui.evChan <- parseKey(val)
 		}
 	case "addcustominfo":
 		var k, v string

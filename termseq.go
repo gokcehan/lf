@@ -8,7 +8,7 @@ import (
 	"strings"
 	"unicode/utf8"
 
-	"github.com/gdamore/tcell/v2"
+	"github.com/gdamore/tcell/v3"
 )
 
 const gEscapeCode byte = '\x1b'
@@ -168,8 +168,7 @@ loop:
 			st = st.Reverse(true)
 		case "8":
 			// TODO: tcell PR for proper conceal
-			_, bg, _ := st.Decompose()
-			st = st.Foreground(bg)
+			st = st.Foreground(st.GetBackground())
 		case "9":
 			st = st.StrikeThrough(true)
 		case "22":
