@@ -11,16 +11,17 @@ import (
 	"github.com/gdamore/tcell/v2"
 )
 
+// gEscapeCode is the byte that starts ANSI control sequences.
 const gEscapeCode byte = '\x1b'
 
-// This function is used to remove style-related ANSI escape sequences from
+// stripTermSequence is used to remove style-related ANSI escape sequences from
 // a given string.
 //
-// *Note*: this function is based entirely on `printLength()` and strips only
-// style-related sequences, `erase in line` and `OSC 8` sequences. Other codes
-// (e.g., cursor moves), as well as broken escape sequences, aren't removed.
-// This prevents mismatches between the two functions and avoids misalignment
-// when rendering the UI.
+// Note: this function is based on [printLength] and only strips style-related
+// sequences, `erase in line`, and `OSC 8` sequences. Other codes (e.g. cursor
+// moves), as well as broken escape sequences, are not removed. This prevents
+// mismatches between the two functions and avoids misalignment when rendering
+// the UI.
 func stripTermSequence(s string) string {
 	var b strings.Builder
 	slen := len(s)
@@ -39,8 +40,9 @@ func stripTermSequence(s string) string {
 	return b.String()
 }
 
-// This function is used to extract and return a terminal sequence from a given
-// string. If no supported sequence could be found, an empty string is returned.
+// readTermSequence is used to extract and return a terminal sequence from a
+// given string. If no supported sequence could be found, an empty string is
+// returned.
 //
 // CSI (Control Sequence Introducer):
 //   - SGR (Select Graphic Rendition) `m`, used for text styling
@@ -85,8 +87,8 @@ func readTermSequence(s string) string {
 	}
 }
 
-// This function takes an escape sequence option (e.g. `\033[1m`) and outputs a
-// complete format string (e.g. `\033[1m%s\033[0m`).
+// optionToFmtstr takes an escape sequence option (e.g. `\033[1m`) and outputs
+// a complete format string (e.g. `\033[1m%s\033[0m`).
 func optionToFmtstr(optstr string) string {
 	if !strings.Contains(optstr, "%s") {
 		return optstr + "%s\033[0m"
@@ -95,8 +97,8 @@ func optionToFmtstr(optstr string) string {
 	}
 }
 
-// This function takes an escape sequence option (e.g. `\033[1m`) and converts
-// it to a `tcell.Style` object.
+// parseEscapeSequence takes an escape sequence option (e.g. `\033[1m`) and
+// converts it to a [tcell.Style] object.
 // Legacy function that only accepts SGR. Kept for convenience.
 func parseEscapeSequence(s string) tcell.Style {
 	s = strings.TrimPrefix(s, "\033[")
@@ -106,8 +108,8 @@ func parseEscapeSequence(s string) tcell.Style {
 	return applySGR(s, tcell.StyleDefault)
 }
 
-// This function takes an escape sequence (e.g. `\033[1m`) and applies it
-// to the given `tcell.Style` object.
+// applyTermSequence takes an escape sequence (e.g. `\033[1m`) and applies it
+// to the given [tcell.Style] object.
 // Accepts SGR and OSC sequences.
 func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	slen := len(s)
@@ -133,6 +135,8 @@ func applyTermSequence(s string, st tcell.Style) tcell.Style {
 	}
 }
 
+// applySGR takes an SGR sequence and applies it to the given [tcell.Style]
+// object.
 func applySGR(s string, st tcell.Style) tcell.Style {
 	toks := strings.Split(s, ";")
 
@@ -228,7 +232,10 @@ loop:
 	return st
 }
 
-// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda
+// applyOSC takes an OSC sequence and applies it to the given [tcell.Style]
+// object.
+// It currently supports OSC 8 hyperlinks only, implemented as specified by
+// https://gist.github.com/egmontkob/eb114294efbcd5adb1944c9f3cb5feda.
 func applyOSC(body string, st tcell.Style) tcell.Style {
 	genAutoID := func(url string) string {
 		sum := sha256.Sum256([]byte(url))

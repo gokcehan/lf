@@ -164,6 +164,10 @@ func (win *win) renew(w, h, x, y int) {
 	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
+// printLength returns the display width of s in terminal cells.
+//
+// It ignores supported terminal control sequences (see [readTermSequence])
+// and accounts for tab expansions using the `tabstop` option.
 func printLength(s string) int {
 	ind := 0
 	off := 0
@@ -342,12 +346,13 @@ type dirContext struct {
 	tags       map[string]string
 }
 
+// dirRole describes what kind of directory pane is being drawn.
 type dirRole byte
 
 const (
-	Active dirRole = iota
-	Parent
-	Preview
+	Active  dirRole = iota // Current directory pane.
+	Parent                 // Parent or ancestor directory pane.
+	Preview                // Preview pane when it shows a directory listing.
 )
 
 type dirStyle struct {
@@ -723,9 +728,12 @@ func (ui *ui) echoerrf(format string, a ...any) {
 	ui.echoerr(fmt.Sprintf(format, a...))
 }
 
-// This represents the preview for a file.
+// reg represents the preview for a file.
 // This can also be used to represent the preview of a directory if
 // `dirpreviews` is enabled.
+//
+// Note: the name `reg` is historical. It originally meant "regular"
+// file preview, but `previewer` now also supports non-regular files.
 type reg struct {
 	loading  bool
 	volatile bool
@@ -1528,7 +1536,7 @@ func addSpecialKeyModifier(val string, mod tcell.ModMask) string {
 	}
 }
 
-// This function is used to read a normal event on the client side. For keys,
+// readNormalEvent is used to read a normal event on the client side. For keys,
 // digits are interpreted as command counts but this is only done for digits
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {

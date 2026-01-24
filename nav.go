@@ -23,12 +23,13 @@ import (
 	"github.com/djherbis/times"
 )
 
+// A linkState describes whether a file is a symlink and whether its target exists.
 type linkState byte
 
 const (
-	notLink linkState = iota
-	working
-	broken
+	notLink linkState = iota // Not a symbolic link.
+	working                  // Symbolic link with an existing target.
+	broken                   // Symbolic link with a missing target.
 )
 
 type file struct {
@@ -43,7 +44,7 @@ type file struct {
 	changeTime  time.Time // time of last status (inode) change
 	customInfo  string    // property defined via `addcustominfo`
 	ext         string    // file extension (including the dot)
-	err         error     // potential error returned by `os.Lstat`
+	err         error     // potential error returned by [os.Lstat]
 }
 
 func newFile(path string) *file {
@@ -80,7 +81,7 @@ func newFile(path string) *file {
 
 	ts := times.Get(lstat)
 	at := ts.AccessTime()
-	// from times docs:
+	// from [times.Timespec] docs:
 	// ChangeTime() panics unless HasChangeTime() is true and
 	// BirthTime() panics unless HasBirthTime() is true.
 
@@ -429,11 +430,12 @@ func (dir *dir) boundPos(height int) {
 	dir.pos = max(dir.pos, height-(len(dir.files)-dir.ind))
 }
 
+// clipboardMode controls the clipboard's behavior when pasting.
 type clipboardMode byte
 
 const (
-	clipboardCopy = iota
-	clipboardCut
+	clipboardCopy clipboardMode = iota // Copy on paste.
+	clipboardCut                       // Move on paste.
 )
 
 type clipboard struct {

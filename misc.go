@@ -70,7 +70,8 @@ func runeSliceWidthRange(rs []rune, beg, end int) []rune {
 	return rs[b:]
 }
 
-// Returns the last runes of `rs` that take up at most `maxWidth` space.
+// runeSliceWidthLastRange returns the last runes of `rs` that take up
+// at most `maxWidth` space.
 func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 	lastWidth := 0
 	for i := len(rs) - 1; i >= 0; i-- {
@@ -83,7 +84,7 @@ func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 	return rs
 }
 
-// This function is used to escape whitespaces and special characters with
+// cmdEscape is used to escape whitespace and special characters with
 // backslashes in a given string.
 func cmdEscape(s string) string {
 	buf := make([]rune, 0, len(s))
@@ -96,8 +97,8 @@ func cmdEscape(s string) string {
 	return string(buf)
 }
 
-// This function is used to remove backslashes that are used to escape
-// whitespaces and special characters in a given string.
+// cmdUnescape is used to remove backslashes that are used to escape
+// whitespace and special characters in a given string.
 func cmdUnescape(s string) string {
 	esc := false
 	buf := make([]rune, 0, len(s))
@@ -123,8 +124,8 @@ func cmdUnescape(s string) string {
 	return string(buf)
 }
 
-// This function splits the given string by whitespaces. It is aware of escaped
-// and quoted whitespaces so that they are not split unintentionally.
+// tokenize splits the given string by whitespace. It is aware of escaped
+// and quoted whitespace so that they are not split unintentionally.
 func tokenize(s string) []string {
 	esc := false
 	quote := false
@@ -151,7 +152,7 @@ func tokenize(s string) []string {
 	return append(toks, string(buf))
 }
 
-// This function splits the first word of a string delimited by whitespace from
+// splitWord splits the first word of a string delimited by whitespace from
 // the rest. This is used to tokenize a string one by one without touching the
 // rest. Whitespace on the left side of both the word and the rest are trimmed.
 func splitWord(s string) (word, rest string) {
@@ -168,8 +169,8 @@ func splitWord(s string) (word, rest string) {
 	return
 }
 
-// This function reads whitespace separated string arrays at each line. Single
-// or double quotes can be used to escape whitespaces. Hash characters can be
+// readArrays reads whitespace-separated string arrays on each line. Single
+// or double quotes can be used to escape whitespace. Hash characters can be
 // used to add a comment until the end of line. Leading and trailing space is
 // trimmed. Empty lines are skipped.
 func readArrays(r io.Reader, minCols, maxCols int) ([][]string, error) {
@@ -242,7 +243,7 @@ func readPairs(r io.Reader) ([][]string, error) {
 	return readArrays(r, 2, 2)
 }
 
-// This function converts a size in bytes to a human readable form using
+// humanize converts a size in bytes to a human-readable form using
 // prefixes for either binary (1 KiB = 1024 B) or decimal (1 KB = 1000 B)
 // multiples. The output should be no more than 5 characters long.
 func humanize(size uint64) string {
@@ -255,9 +256,8 @@ func humanize(size uint64) string {
 		return fmt.Sprintf("%dB", size)
 	}
 
-	// *Note*: due to [`FileSize.Size()`](https://pkg.go.dev/io/fs#FileInfo)
-	// being `int64`, the maximum possible representable value would be 8 EiB or
-	// 9.2 EB.
+	// Note: due to [fs.FileInfo.Size] being `int64`, the maximum
+	// possible representable value would be 8 EiB or 9.2 EB.
 	prefixes := []string{
 		"K", // kibi (2^10) or kilo (10^3)
 		"M", // mebi (2^20) or mega (10^6)
@@ -290,8 +290,8 @@ func humanize(size uint64) string {
 	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])
 }
 
-// This function returns an ls(1)-style string representation of the given file
-// mode, to avoid using Go's implementation, which slightly differs.
+// permString returns an ls(1)-style string representation of the given file
+// mode, to avoid using [fs.FileMode.String], which differs slightly.
 func permString(m os.FileMode) string {
 	// re-use Perm()'s "-rwxrwxrwx" output and write type into b[0]
 	b := []byte(m.Perm().String())
@@ -337,7 +337,7 @@ func permString(m os.FileMode) string {
 	return string(b)
 }
 
-// This function compares two strings for natural sorting which takes into
+// naturalCmp compares two strings for natural sorting which takes into
 // account the values of numbers in strings. For example, '2' is ordered before
 // '10', and similarly 'foo2bar' ordered before 'foo10bar'. When comparing
 // numbers, if they have the same value then the length of the string is also
@@ -389,8 +389,8 @@ func naturalCmp(s1, s2 string) int {
 	}
 }
 
-// This function returns the extension of a file with a leading dot
-// it returns an empty string if extension could not be determined
+// getFileExtension returns the extension of a file with a leading dot.
+// It returns an empty string if extension could not be determined
 // i.e. directories, filenames without extensions
 func getFileExtension(file fs.FileInfo) string {
 	if file.IsDir() {
@@ -403,7 +403,7 @@ func getFileExtension(file fs.FileInfo) string {
 	return filepath.Ext(file.Name())
 }
 
-// This function truncates a filename at a given position.
+// truncateFilename truncates a filename at a given position.
 // The position is specified as percentage indicating where the truncation
 // character will appear (0 means left, 50 means middle, 100 means right).
 // The file extension is not affected by truncation, however it will be clipped
@@ -433,8 +433,8 @@ func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar 
 	return string(result)
 }
 
-// This function deletes entries from a map if the key is either the given path
-// or a subpath of it.
+// deletePathRecursive deletes entries from a map if the key is either the given
+// path or a subpath of it.
 // This is useful for clearing cached data when a directory is moved or deleted.
 func deletePathRecursive[T any](m map[string]T, path string) {
 	delete(m, path)
@@ -446,7 +446,7 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 	}
 }
 
-// This function reads lines from a file to be displayed as a preview.
+// readLines reads lines from a file to be displayed as a preview.
 // The number of lines to read is capped since files can be very large.
 // Lines are split on `\n` characters, and `\r` characters are discarded.
 // Sixel images are also detected and stored as separate lines.
@@ -513,7 +513,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 	}
 }
 
-// This function calculates the widths of windows as the result of applying the
+// getWidths calculates the widths of windows as the result of applying the
 // `ratios` option to the screen width. One column is allocated for each divider
 // between windows. The `drawbox` option requires an additional two columns to
 // draw the left and right borders.
