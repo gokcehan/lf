@@ -145,7 +145,7 @@ func (sm styleMap) parseFile(path string) {
 	}
 }
 
-// This function parses $LS_COLORS environment variable.
+// parseGNU parses the $LS_COLORS environment variable.
 func (sm *styleMap) parseGNU(env string) {
 	for entry := range strings.SplitSeq(env, ":") {
 		if entry == "" {
@@ -179,7 +179,7 @@ func (sm *styleMap) parsePair(pair []string) {
 	sm.styles[key] = applySGR(val, tcell.StyleDefault)
 }
 
-// This function parses $LSCOLORS environment variable.
+// parseBSD parses the $LSCOLORS environment variable.
 func (sm styleMap) parseBSD(env string) {
 	if len(env) != 22 {
 		log.Printf("invalid $LSCOLORS variable: %s", env)

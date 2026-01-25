@@ -255,7 +255,7 @@ func (app *app) writeHistory() error {
 	return nil
 }
 
-// This is the main event loop of the application. Expressions are read from
+// loop is the main event loop of the application. Expressions are read from
 // the client and the server on separate goroutines and sent here over channels
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
@@ -535,7 +535,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.renew()
 }
 
-// This function is used to run a shell command. Modes are as follows:
+// runShell is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
 //	$       No    No     Yes    Yes     Yes     Pause and then resume
@@ -588,10 +588,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			return
 		}
 
-		// Cmd.StdoutPipe cannot be used as it requires the output to be fully
-		// read before calling Cmd.Wait, however in this case Cmd.Wait should
-		// only wait for the command to finish executing regardless of whether
-		// the output has been fully read or not.
+		// [exec.Cmd.StdoutPipe] cannot be used as it requires the output to be fully
+		// read before calling [exec.Cmd.Wait], however in this case Cmd.Wait should
+		// only wait for the command to finish executing regardless of whether the
+		// output has been fully read or not.
 		inReader, inWriter, err := os.Pipe()
 		if err != nil {
 			log.Printf("creating input pipe: %s", err)
