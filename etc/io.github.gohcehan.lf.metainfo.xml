@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!-- Copyright gokcehan metadata -->
+<component type="desktop-application">
+  <id>io.github.gokcehan.lf</id>
+  <launchable type="desktop-id">lf.desktop</launchable>
+  <name>lf</name>
+  <developer_name>gokcehan</developer_name>
+  <summary>A terminal file manager written in Go</summary>
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+  <url type="homepage">https://github.com/gokcehan/lf</url>
+  <url type="bugtracker">https://github.com/gokcehan/lf/issues</url>
+  <url type="help">https://github.com/gokcehan/lf/wiki</url>
+  <url type="contribute">https://github.com/gokcehan/lf/blob/master/CONTRIBUTING.md</url>
+  <description>
+    <p>lf (as in "list files") is a terminal file manager written in Go. It is heavily inspired by ranger with some missing and extra features. Some of the missing features are deliberately omitted since they are better handled by external tools.</p>
+    <p>Features include cross-platform support, single binary without runtime dependencies, fast startup, asynchronous I/O, server/client architecture, and customizable keybindings (vi and readline defaults).</p>
+  </description>
+  <screenshots>
+    <screenshot type="default">
+      <image type="source" xml:space="preserve">https://github.com/user-attachments/assets/d5623462-05ab-4921-aeb3-d377d4732f9e</image>
+      <caption>lf with icons and border</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source" xml:space="preserve">https://github.com/user-attachments/assets/9ff42a21-19dd-42fa-8407-5d055aa9d561</image>
+      <caption>lf image preview</caption>
+    </screenshot>
+    <screenshot>
+      <image type="source" xml:space="preserve">https://github.com/user-attachments/assets/2a9a32aa-a764-438f-a810-e687e979dcee</image>
+      <caption>lf interface</caption>
+    </screenshot>
+  </screenshots>
+  <update_contact>https://github.com/gokcehan/lf/issues</update_contact>
+</component>
