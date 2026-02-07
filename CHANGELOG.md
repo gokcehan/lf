@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Fixed
 
 - Previews are now cleaned when changing to an empty directory (#2369).
+- Previews are now correctly updated on `visual-change` (#2373).
 - The `dircounts` indicator for errors is changed back to `!` instead of `?` (#2372).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
