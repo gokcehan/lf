@@ -744,6 +744,10 @@ type reg struct {
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
+	if volatile {
+		app.nav.previewChan <- ""
+	}
+
 	curr := app.nav.currFile()
 	if curr == nil {
 		return
@@ -752,10 +756,6 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 	if curr.path != ui.currentFile {
 		ui.currentFile = curr.path
 		onSelect(app)
-	}
-
-	if volatile {
-		app.nav.previewChan <- ""
 	}
 
 	if !gOpts.preview {

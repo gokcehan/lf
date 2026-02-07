@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Fixed
+
+- Previews are now cleaned when changing to an empty directory (#2369).
+
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
 ### Changed
