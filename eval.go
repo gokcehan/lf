@@ -1665,11 +1665,15 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		dir := app.nav.currDir()
+		old := dir.ind
 		beg := max(dir.ind-dir.pos, 0)
 		dir.ind, dir.visualAnchor = dir.visualAnchor, dir.ind
 		dir.pos = dir.ind - beg
 		dir.visualWrap = -dir.visualWrap
 		dir.boundPos(app.nav.height)
+		if old != dir.ind {
+			app.ui.loadFile(app, true)
+		}
 	case "cmd-insert":
 		if len(e.args) == 0 {
 			return
