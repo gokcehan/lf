@@ -52,7 +52,7 @@ set CGO_ENABLED=0
 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On Windows `powershell`:
+On Windows `PowerShell`:
 
 ```powershell
 $env:CGO_ENABLED = '0'

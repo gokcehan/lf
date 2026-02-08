@@ -567,7 +567,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- A longstanding issue regarding UI suspend/resume for shell commands in MacOS is now fixed in Tcell.
+- A longstanding issue regarding UI suspend/resume for shell commands in macOS is now fixed in Tcell.
 - Renaming a symlink to its target or a symlink to another with the same target should now be handled properly (#581).
 - Autocompletion in a directory containing a broken symlink should now work as intended (#581).
 - Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.
