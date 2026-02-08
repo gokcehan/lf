@@ -1032,6 +1032,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	tot := len(dir.files)
 	ind := min(dir.ind+1, tot)
 	hid := len(dir.allFiles) - tot
+	all := len(dir.allFiles)
 
 	var linePercentage string
 	if tot == 0 {
@@ -1112,6 +1113,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		Index:            ind,
 		Total:            tot,
 		Hidden:           hid,
+		All:              all,
 		LinePercentage:   linePercentage,
 		ScrollPercentage: scrollPercentage,
 		Filter:           dir.filter,
