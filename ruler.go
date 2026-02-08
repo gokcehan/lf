@@ -44,6 +44,7 @@ type rulerData struct {
 	Index            int
 	Total            int
 	Hidden           int
+	All              int
 	LinePercentage   string
 	ScrollPercentage string
 	Filter           []string

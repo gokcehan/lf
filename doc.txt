@@ -2500,8 +2500,9 @@ The following data fields are exported:
     .Select           []string            Selection list
     .Visual           []string            Visual selection
     .Index            int                 Index of the cursor
-    .Total            int                 Number of visible files in the current directory
-    .Hidden           int                 Number of hidden files in the current directory
+    .Total            int                 Number of visible files in the current working directory
+    .Hidden           int                 Number of hidden files in the current working directory
+    .All              int                 Number of all files in the current working directory
     .LinePercentage   string              Line percentage (analogous to `%p` for the `statusline` option in Vim)
     .ScrollPercentage string              Scroll percentage (analogous to `%P` for the `statusline` option in Vim)
     .Filter           []string            Filter currently being applied
