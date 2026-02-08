@@ -1544,12 +1544,12 @@ func (e *callExpr) eval(app *app, _ []string) {
 		}
 
 		dir := app.nav.currDir()
+		app.nav.checkDir(dir)
 		if dir.loading {
 			dir.files = append(dir.files, &file{FileInfo: lstat})
-		} else {
-			app.nav.currDir().sel(filepath.Base(path), app.nav.height)
-			app.ui.loadFile(app, true)
 		}
+		dir.sel(filepath.Base(path), app.nav.height)
+		app.ui.loadFile(app, true)
 	case "source":
 		if len(e.args) != 1 {
 			app.ui.echoerr("source: requires an argument")
