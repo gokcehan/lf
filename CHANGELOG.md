@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Previews are now correctly updated on `visual-change` (#2373).
 - The `dircounts` indicator for errors is changed back to `!` instead of `?` (#2372).
 - The `select` command can now select files immediately after creation as part of a script (#2377).
+- The `on-load` hook command now ignores `.git` directories by default to avoid flicker and repeated `on-load` triggers.
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
