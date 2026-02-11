@@ -45,7 +45,7 @@ Adding a new command usually requires the following steps:
 - Run `gen/doc.sh` to update the documentation (optional as it requires `docker`/`podman`, but appreciated)
 - Commit your changes and send a pull request
 
-Commands should be defined in alphabetical order, but not that commands are first organized roughly into the following sections in `eval.go` for clarity:
+Commands should be defined in alphabetical order, but note that commands are first organized roughly into the following sections in `eval.go` for clarity:
 
 - Navigation
 - Selection
