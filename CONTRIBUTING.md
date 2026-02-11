@@ -11,8 +11,8 @@ For bug fixes, you can simply send a pull request.
 In addition to `gofmt` and friends (e.g. [go vet](https://pkg.go.dev/cmd/vet), [staticcheck](https://staticcheck.dev/), [golangci-lint](https://golangci-lint.run/)), we have a few conventions:
 
 - Global variables are best avoided except when they are not.
-Global variable names are prefixed with `g` as in `gFooBar`.
-Exceptions are variables holding values of environmental variables which are prefixed with `env` as in `envFooBar` and regular expressions which are prefixed with `re` as in `reFooBar` when they are global.
+  Global variable names are prefixed with `g` as in `gFooBar`.
+  Exceptions are variables holding values of environmental variables which are prefixed with `env` as in `envFooBar` and regular expressions which are prefixed with `re` as in `reFooBar` when they are global.
 - Type and function names are small case as in `fooBar` since we don't use exporting.
 - For file name variables, `name`, `fname`, or `filename` should refer to the base name of the file as in `baz.txt`, and `path`, `fpath`, or `filepath` should refer to the full path of the file as in `/foo/bar/baz.txt`.
 - Run `go fmt` to ensure that files are formatted correctly.
@@ -31,6 +31,8 @@ Adding a new option usually requires the following steps:
 - Run `gen/doc.sh` to update the documentation (optional as it requires `docker`/`podman`, but appreciated)
 - Commit your changes and send a pull request
 
+Options should be defined in alphabetical order, but note that boolean options are defined first in `eval.go` as they require special handling.
+
 ## Adding a new builtin command
 
 Adding a new command usually requires the following steps:
@@ -42,6 +44,22 @@ Adding a new command usually requires the following steps:
 - Add command name to `Quick Reference` and `Commands` sections in `doc.md`
 - Run `gen/doc.sh` to update the documentation (optional as it requires `docker`/`podman`, but appreciated)
 - Commit your changes and send a pull request
+
+Commands should be defined in alphabetical order, but not that commands are first organized roughly into the following sections in `eval.go` for clarity:
+
+- Navigation
+- Selection
+- File-related operations
+- Shell commands
+- Finding and searching
+- Filtering
+- Marks
+- Tags
+- Echoing
+- Miscellaneous commands
+- Visual mode
+- Command-line mode commands
+- Hook commands
 
 ## Platform specific code
 
