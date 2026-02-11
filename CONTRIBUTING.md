@@ -16,6 +16,7 @@ In addition to `gofmt` and friends (e.g. [go vet](https://pkg.go.dev/cmd/vet), [
 - Type and function names are small case as in `fooBar` since we don't use exporting.
 - For file name variables, `name`, `fname`, or `filename` should refer to the base name of the file as in `baz.txt`, and `path`, `fpath`, or `filepath` should refer to the full path of the file as in `/foo/bar/baz.txt`.
 - Run `go fmt` to ensure that files are formatted correctly.
+- Consider using [conventional](https://www.conventionalcommits.org/) commit messages.
 
 Use the surrounding code as reference when in doubt as usual.
 
