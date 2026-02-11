@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"reflect"
 	"strings"
 	"text/template"
 
@@ -56,6 +57,12 @@ type rulerData struct {
 
 func parseRuler(path string) (*template.Template, error) {
 	funcs := template.FuncMap{
+		"deref": func(v any) any {
+			if rv := reflect.ValueOf(v); rv.Kind() == reflect.Pointer && !rv.IsNil() {
+				return rv.Elem().Interface()
+			}
+			return v
+		},
 		"df":       func() string { return diskFree(".") },
 		"env":      os.Getenv,
 		"humanize": humanize,

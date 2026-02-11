@@ -2254,6 +2254,7 @@ The following data fields are exported:
 
 The following functions are exported:
 
+	deref    func[T any](*T) T               Dereference a pointer if it is not nil
 	df       func() string                   Get an indicator representing the amount of free disk space available
 	env      func(string) string             Get the value of an environment variable
 	humanize func(uint64) string             Express a file size in a human-readable format
