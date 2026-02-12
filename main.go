@@ -135,17 +135,16 @@ func getOptsMap() map[string]string {
 		// Get field name and prefix it with lf_
 		name := "lf_" + t.Field(i).Name
 
-		// Skip maps
-		if name == "lf_nkeys" || name == "lf_vkeys" || name == "lf_cmdkeys" || name == "lf_cmds" {
+		switch name {
+		case "lf_nkeys", "lf_vkeys", "lf_cmdkeys", "lf_cmds":
+			// Skip maps
 			continue
-		}
-
-		if name == "lf_user" {
+		case "lf_user":
 			// set each user option
 			for key, value := range gOpts.user {
 				opts[name+"_"+key] = value
 			}
-		} else {
+		default:
 			opts[name] = fieldToString(v.Field(i))
 		}
 	}
