@@ -334,7 +334,7 @@ func (app *app) loop() {
 
 			app.nav.previewChan <- ""
 
-			log.Printf("*************** closing client, PID: %d ***************", os.Getpid())
+			log.Printf("*************** closing client, PID: %d ***************", gClientID)
 
 			return
 		case n := <-app.nav.copyJobsChan:
