@@ -22,15 +22,11 @@ const (
 )
 
 func isValidSortMethod(method sortMethod) bool {
-	return method == naturalSort ||
-		method == nameSort ||
-		method == sizeSort ||
-		method == timeSort ||
-		method == atimeSort ||
-		method == btimeSort ||
-		method == ctimeSort ||
-		method == extSort ||
-		method == customSort
+	switch method {
+	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
+		return true
+	}
+	return false
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
