@@ -97,6 +97,7 @@ var gOpts struct {
 	shell            string
 	shellflag        string
 	shellopts        []string
+	shelldash        bool
 	showbinds        bool
 	sizeunits        string
 	smartcase        bool
@@ -260,6 +261,7 @@ func init() {
 	gOpts.shell = gDefaultShell
 	gOpts.shellflag = gDefaultShellFlag
 	gOpts.shellopts = nil
+	gOpts.shelldash = true
 	gOpts.showbinds = true
 	gOpts.sizeunits = "binary"
 	gOpts.smartcase = true
