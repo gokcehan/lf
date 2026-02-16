@@ -77,6 +77,7 @@ var gOpts struct {
 	mergeindicators  bool
 	mouse            bool
 	number           bool
+	numbercursorfmt  string
 	numberfmt        string
 	period           int
 	preload          bool
@@ -240,6 +241,7 @@ func init() {
 	gOpts.mergeindicators = false
 	gOpts.mouse = false
 	gOpts.number = false
+	gOpts.numbercursorfmt = ""
 	gOpts.numberfmt = "\033[33m"
 	gOpts.period = 0
 	gOpts.preload = false

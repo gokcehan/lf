@@ -450,7 +450,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				}
 			}
 
-			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
+			fmtStr := optionToFmtstr(gOpts.numberfmt)
+			if i == dir.pos && gOpts.numbercursorfmt != "" {
+				fmtStr = optionToFmtstr(gOpts.numbercursorfmt)
+			}
+			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(fmtStr, ln))
 		}
 
 		path := filepath.Join(dir.path, f.Name())

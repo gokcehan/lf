@@ -273,6 +273,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.menuheaderfmt = e.val
 	case "menuselectfmt":
 		gOpts.menuselectfmt = e.val
+	case "numbercursorfmt":
+		gOpts.numbercursorfmt = e.val
 	case "numberfmt":
 		gOpts.numberfmt = e.val
 	case "period":
