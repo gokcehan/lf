@@ -2238,9 +2238,9 @@ The following data fields are exported:
 	.Stat.Path        string              Path of the current file
 	.Stat.Name        string              Name of the current file
 	.Stat.Extension   string              Extension of the current file
-	.Stat.Size        uint64              Size of the current file
-	.Stat.DirSize     *uint64             Total size of the current directory if calculated via `calcdirsize`
-	.Stat.DirCount    *uint64             Number of items in the current directory if the `dircounts` option is enabled
+	.Stat.Size        int64               Size of the current file
+	.Stat.DirSize     int64               Total size of the current directory if calculated via `calcdirsize` (`-1` if not calculated)
+	.Stat.DirCount    int                 Number of items in the current directory if the `dircounts` option is enabled (`-1` if the directory cannot be read)
 	.Stat.Permissions string              Permissions of the current file
 	.Stat.ModTime     string              Last modified time of the current file (formatted based on the `timefmt` option)
 	.Stat.AccessTime  string              Last access time of the current file (formatted based on the `timefmt` option)
@@ -2256,7 +2256,7 @@ The following functions are exported:
 
 	df       func() string                   Get an indicator representing the amount of free disk space available
 	env      func(string) string             Get the value of an environment variable
-	humanize func(uint64) string             Express a file size in a human-readable format
+	humanize func(int64) string              Express a file size in a human-readable format
 	join     func([]string, string) string   Join a string array by a separator
 	lower    func(string) string             Convert a string to lowercase
 	substr   func(string, int, int) string   Get a substring based on starting index and length

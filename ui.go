@@ -291,21 +291,21 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 		case "size":
 			if f.IsDir() && getDirCounts(d.path) {
 				switch {
-				case f.dirCount == nil:
+				case f.dirCount < 0:
 					info.WriteString("     !")
-				case *f.dirCount < 10000:
-					fmt.Fprintf(&info, " %5d", *f.dirCount)
+				case f.dirCount < 10000:
+					fmt.Fprintf(&info, " %5d", f.dirCount)
 				default:
 					info.WriteString(" 9999+")
 				}
 			} else {
 				switch {
-				case f.dirSize != nil:
-					fmt.Fprintf(&info, " %5s", humanize(*f.dirSize))
+				case f.dirSize >= 0:
+					fmt.Fprintf(&info, " %5s", humanize(f.dirSize))
 				case f.IsDir():
 					info.WriteString("     -")
 				default:
-					fmt.Fprintf(&info, " %5s", humanize(uint64(f.Size())))
+					fmt.Fprintf(&info, " %5s", humanize(f.Size()))
 				}
 			}
 		case "time":
@@ -877,8 +877,8 @@ func (ui *ui) drawStat(nav *nav) {
 	replace("%c", linkCount(curr))
 	replace("%u", userName(curr))
 	replace("%g", groupName(curr))
-	replace("%s", humanize(uint64(curr.Size())))
-	replace("%S", fmt.Sprintf("%5s", humanize(uint64(curr.Size()))))
+	replace("%s", humanize(curr.Size()))
+	replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
 	replace("%l", curr.linkTarget)
 
@@ -1009,7 +1009,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 				Path:        curr.path,
 				Name:        curr.Name(),
 				Extension:   curr.ext,
-				Size:        uint64(curr.Size()),
+				Size:        curr.Size(),
 				DirSize:     curr.dirSize,
 				DirCount:    curr.dirCount,
 				Permissions: permString(curr.Mode()),
