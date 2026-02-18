@@ -290,6 +290,7 @@ The following options can be used to customize the behavior of lf:
 	mergeindicators   bool      (default false)
 	mouse             bool      (default false)
 	number            bool      (default false)
+	numbercursorfmt   string    (default '')
 	numberfmt         string    (default "\033[33m")
 	period            int       (default 0)
 	preload           bool      (default false)
@@ -1027,9 +1028,11 @@ Send mouse events as input.
 Show the position number for directory items on the left side of the pane.
 When the `relativenumber` option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
 
-## numberfmt (string) (default `\033[33m`)
+## numberfmt (string) (default `\033[33m`), numbercursorfmt (string) (default ``)
 
-Format string of the position number for each line.
+Format strings for highlighting line numbers.
+`numberfmt` applies to all lines.
+`numbercursorfmt` applies to the cursor line and falls back to `numberfmt` when left empty.
 
 ## period (int) (default 0)
 
