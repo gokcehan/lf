@@ -17,9 +17,9 @@ type statData struct {
 	Path        string
 	Name        string
 	Extension   string
-	Size        uint64
-	DirSize     *uint64
-	DirCount    *uint64
+	Size        int64
+	DirSize     int64
+	DirCount    int
 	Permissions string
 	ModTime     string
 	AccessTime  string

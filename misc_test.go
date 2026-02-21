@@ -255,7 +255,7 @@ func TestReadArrays(t *testing.T) {
 
 func TestHumanize(t *testing.T) {
 	tests := []struct {
-		size     uint64
+		size     int64
 		expected string
 	}{
 		{0, "0B"},
@@ -298,7 +298,7 @@ func TestHumanize(t *testing.T) {
 	}
 
 	tests = []struct {
-		size     uint64
+		size     int64
 		expected string
 	}{
 		{0, "0B"},
