@@ -624,37 +624,37 @@ func getWins(screen tcell.Screen) []*win {
 }
 
 type menuSelect struct {
-	x, y int
-	s    string
+	x, y int    // selection position in menuWin (cells)
+	s    string // selected entry text to draw with `menuselectfmt`
 }
 
 type ui struct {
-	screen      tcell.Screen
-	sxScreen    sixelScreen
-	polling     bool
-	wins        []*win
-	promptWin   *win
-	msgWin      *win
-	menuWin     *win
-	msg         string
-	exprChan    chan expr
-	keyChan     chan string
-	tevChan     chan tcell.Event
-	evChan      chan tcell.Event
-	menu        string
-	menuSelect  *menuSelect
-	cmdPrefix   string
-	cmdAccLeft  []rune
-	cmdAccRight []rune
-	cmdYankBuf  []rune
-	keyAcc      []rune
-	keyCount    []rune
-	styles      styleMap
-	icons       iconMap
-	ruler       *template.Template
-	rulerErr    error
-	currentFile string
-	pasteEvent  bool
+	screen      tcell.Screen       // primary screen used for drawing and event polling
+	sxScreen    sixelScreen        // sixel preview state
+	polling     bool               // whether event polling is running
+	wins        []*win             // pane windows from `ratios` (last is `preview` when enabled)
+	promptWin   *win               // prompt line window
+	msgWin      *win               // status line window
+	menuWin     *win               // menu window
+	msg         string             // message/output shown in msgWin
+	exprChan    chan expr          // expr queue
+	keyChan     chan string        // key queue (send via `push`)
+	tevChan     chan tcell.Event   // terminal events from screen.PollEvent
+	evChan      chan tcell.Event   // merged event queue (keyChan + tevChan)
+	menu        string             // rendered (multiline) menu text (i.e. completions, binds, marks)
+	menuSelect  *menuSelect        // selected menu entry (completion menu only)
+	cmdPrefix   string             // command prefix/prompt (empty: Normal mode)
+	cmdAccLeft  []rune             // command buffer left of cursor
+	cmdAccRight []rune             // command buffer right of cursor
+	cmdYankBuf  []rune             // yank buffer for command line editing
+	keyAcc      []rune             // keys typed so far for mapping lookup
+	keyCount    []rune             // count prefix for next command
+	styles      styleMap           // parsed styles
+	icons       iconMap            // parsed icons
+	ruler       *template.Template // compiled `rulerfile`
+	rulerErr    error              // `rulerfile` parse error (if any)
+	currentFile string             // last path passed to `on-select`
+	pasteEvent  bool               // whether paste event is active (to ignore pasted input in Normal mode)
 }
 
 func newUI(screen tcell.Screen) *ui {
