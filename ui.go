@@ -247,12 +247,20 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
+func (win *win) printMsg(screen tcell.Screen, s string) {
+	pad := 1
+	if gOpts.mergeindicators {
+		pad--
+	}
+	st := tcell.StyleDefault.Reverse(true)
+	win.print(screen, pad, 0, st, s)
+}
+
 func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
 	switch {
 	case reg.loading:
 		if previewLoading {
-			st := tcell.StyleDefault.Reverse(true)
-			win.print(screen, 2, 0, st, "loading...")
+			win.printMsg(screen, "loading...")
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -366,20 +374,17 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		return
 	}
 
-	messageStyle := tcell.StyleDefault.Reverse(true)
-
-	if dir.noPerm {
-		win.print(ui.screen, 2, 0, messageStyle, "permission denied")
-		return
-	}
 	fileslen := len(dir.files)
-	if dir.loading && fileslen == 0 {
-		win.print(ui.screen, 2, 0, messageStyle, "loading...")
-		return
-	}
 
-	if fileslen == 0 {
-		win.print(ui.screen, 2, 0, messageStyle, "empty")
+	switch {
+	case dir.noPerm:
+		win.printMsg(ui.screen, "permission denied")
+		return
+	case dir.loading && fileslen == 0:
+		win.printMsg(ui.screen, "loading...")
+		return
+	case fileslen == 0:
+		win.printMsg(ui.screen, "empty")
 		return
 	}
 
