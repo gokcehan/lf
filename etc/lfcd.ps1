@@ -1,4 +1,4 @@
-# Change working dir in powershell to last dir in lf on exit.
+# Change working dir in PowerShell to last dir in lf on exit.
 #
 # You need to put this file to a folder in $ENV:PATH variable.
 #

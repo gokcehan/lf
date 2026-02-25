@@ -52,7 +52,7 @@ set CGO_ENABLED=0
 go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 ```
 
-On Windows `powershell`:
+On Windows `PowerShell`:
 
 ```powershell
 $env:CGO_ENABLED = '0'
@@ -63,7 +63,7 @@ go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 
 After the installation `lf` command should start the application in the current directory.
 
-Run `lf -help` to see command line options.
+Run `lf -help` to see [command line options](doc.md#options).
 
 Run `lf -doc` to see the [documentation](doc.md).
 

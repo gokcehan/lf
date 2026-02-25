@@ -255,7 +255,7 @@ func TestReadArrays(t *testing.T) {
 
 func TestHumanize(t *testing.T) {
 	tests := []struct {
-		size     uint64
+		size     int64
 		expected string
 	}{
 		{0, "0B"},
@@ -298,7 +298,7 @@ func TestHumanize(t *testing.T) {
 	}
 
 	tests = []struct {
-		size     uint64
+		size     int64
 		expected string
 	}{
 		{0, "0B"},
@@ -508,22 +508,6 @@ func TestTruncateFilename(t *testing.T) {
 	}
 }
 
-func TestOptionToFmtstr(t *testing.T) {
-	tests := []struct {
-		s   string
-		exp string
-	}{
-		{"\033[1m", "\033[1m%s\033[0m"},
-		{"\033[1;7;31;42m", "\033[1;7;31;42m%s\033[0m"},
-	}
-
-	for _, test := range tests {
-		if got := optionToFmtstr(test.s); got != test.exp {
-			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
-		}
-	}
-}
-
 func TestReadLines(t *testing.T) {
 	tests := []struct {
 		s        string
@@ -572,6 +556,33 @@ func TestReadLines(t *testing.T) {
 				test.lines, test.binary, test.sixel,
 				lines, binary, sixel,
 			)
+		}
+	}
+}
+
+func TestGetWidths(t *testing.T) {
+	tests := []struct {
+		wtot    int
+		ratios  []int
+		drawbox bool
+		exp     []int
+	}{
+		{0, []int{1}, false, []int{0}},
+		{0, []int{1}, true, []int{0}},
+		{0, []int{1, 3, 2}, false, []int{0, 0, 0}},
+		{0, []int{1, 3, 2}, true, []int{0, 0, 0}},
+		{14, []int{1, 3, 2}, false, []int{2, 6, 4}},
+		{16, []int{1, 3, 2}, true, []int{2, 6, 4}},
+		{23, []int{1, 3, 2, 4}, false, []int{2, 6, 4, 8}}, // windows end at 2.0, 8.0, 12.0, 20.0 respectively
+		{24, []int{1, 3, 2, 4}, false, []int{2, 6, 5, 8}}, // windows end at 2.1, 8.4, 12.6, 21.0 respectively
+		{25, []int{1, 3, 2, 4}, false, []int{2, 7, 4, 9}}, // windows end at 2.2, 8.8, 13.2, 22.0 respectively
+		{26, []int{1, 3, 2, 4}, false, []int{2, 7, 5, 9}}, // windows end at 2.3, 9.2, 13.8, 23.0 respectively
+	}
+
+	for _, test := range tests {
+		widths := getWidths(test.wtot, test.ratios, test.drawbox)
+		if !reflect.DeepEqual(widths, test.exp) {
+			t.Errorf("at input (%v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.drawbox, test.exp, widths)
 		}
 	}
 }

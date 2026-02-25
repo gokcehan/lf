@@ -2,8 +2,8 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"os"
+	"path/filepath"
 	"strings"
 	"text/template"
 
@@ -16,13 +16,20 @@ var gDefaultRuler string
 type statData struct {
 	Path        string
 	Name        string
-	Size        uint64
+	Extension   string
+	Size        int64
+	DirSize     int64
+	DirCount    int
 	Permissions string
 	ModTime     string
+	AccessTime  string
+	BirthTime   string
+	ChangeTime  string
 	LinkCount   string
 	User        string
 	Group       string
 	Target      string
+	CustomInfo  string
 }
 
 type rulerData struct {
@@ -37,6 +44,7 @@ type rulerData struct {
 	Index            int
 	Total            int
 	Hidden           int
+	All              int
 	LinePercentage   string
 	ScrollPercentage string
 	Filter           []string
@@ -46,7 +54,7 @@ type rulerData struct {
 	Stat             *statData
 }
 
-func parseRuler() (*template.Template, error) {
+func parseRuler(path string) (*template.Template, error) {
 	funcs := template.FuncMap{
 		"df":       func() string { return diskFree(".") },
 		"env":      os.Getenv,
@@ -57,17 +65,11 @@ func parseRuler() (*template.Template, error) {
 		"upper":    strings.ToUpper,
 	}
 
-	for i := len(gRulerPaths) - 1; i >= 0; i-- {
-		path := gRulerPaths[i]
-		if _, err := os.Stat(path); os.IsNotExist(err) {
-			continue
-		}
-
-		log.Printf("reading file: %s", path)
-		return template.New("ruler").Funcs(funcs).ParseFiles(path)
+	if path == "" {
+		return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
 	}
 
-	return template.New("ruler").Funcs(funcs).Parse(gDefaultRuler)
+	return template.New(filepath.Base(path)).Funcs(funcs).ParseFiles(path)
 }
 
 func renderRuler(ruler *template.Template, data rulerData, width int) (string, string, error) {
@@ -76,8 +78,7 @@ func renderRuler(ruler *template.Template, data rulerData, width int) (string, s
 		return "", "", err
 	}
 
-	s := strings.TrimSuffix(b.String(), "\n")
-	s = strings.ReplaceAll(s, "\n", "\033[0;7m\\n\033[0m")
+	s := strings.ReplaceAll(b.String(), "\n", "")
 	sections := strings.Split(s, "\x1f")
 
 	if len(sections) == 1 {

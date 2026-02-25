@@ -1,4 +1,4 @@
-# Autocompletion for powershell.
+# Autocompletion for PowerShell.
 #
 # You need to either copy the content of this file to $PROFILE or call this
 # script directly.

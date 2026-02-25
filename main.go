@@ -135,17 +135,16 @@ func getOptsMap() map[string]string {
 		// Get field name and prefix it with lf_
 		name := "lf_" + t.Field(i).Name
 
-		// Skip maps
-		if name == "lf_nkeys" || name == "lf_vkeys" || name == "lf_cmdkeys" || name == "lf_cmds" {
+		switch name {
+		case "lf_nkeys", "lf_vkeys", "lf_cmdkeys", "lf_cmds":
+			// Skip maps
 			continue
-		}
-
-		if name == "lf_user" {
+		case "lf_user":
 			// set each user option
 			for key, value := range gOpts.user {
 				opts[name+"_"+key] = value
 			}
-		} else {
+		default:
 			opts[name] = fieldToString(v.Field(i))
 		}
 	}
@@ -226,13 +225,15 @@ func printVersion() {
 func main() {
 	flag.Usage = func() {
 		f := flag.CommandLine.Output()
-		fmt.Fprintln(f, "lf - Terminal file manager")
-		fmt.Fprintln(f, "")
-		fmt.Fprintf(f, "Usage:  %s [options] [cd-or-select-path]\n\n", os.Args[0])
-		fmt.Fprintln(f, "  cd-or-select-path")
-		fmt.Fprintln(f, "        set the initial dir or file selection to the given argument")
-		fmt.Fprintln(f, "")
-		fmt.Fprintln(f, "Options:")
+		fmt.Fprintf(f, `lf - Terminal file manager
+
+Usage:  %s [options] [cd-or-select-path]
+
+  cd-or-select-path
+        set the initial dir or file selection to the given argument
+
+Options:
+`, os.Args[0])
 		flag.PrintDefaults()
 	}
 
@@ -342,9 +343,12 @@ func main() {
 	case *showVersion:
 		printVersion()
 	case *remoteCmd != "":
-		if err := remote(*remoteCmd); err != nil {
+		resp, err := remote(*remoteCmd)
+		if err != nil {
 			log.Fatalf("remote command: %s", err)
+			return
 		}
+		fmt.Print(resp)
 	case *serverMode:
 		if err := os.Chdir(gUser.HomeDir); err != nil {
 			log.Print(err)

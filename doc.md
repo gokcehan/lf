@@ -86,7 +86,7 @@ Same as **-print-selection**, but write the newline-separated list to *path* ins
 
 **-remote** *command*
 
-Send *command* to the running server (e.g. `send`, `query` or `quit`). See `REMOTE COMMANDS` for more details.
+Send *command* to the running server (i.e. `send`, `query`, `list`, `quit`, or `quit!`). See `REMOTE COMMANDS` for more details.
 
 **-server**
 
@@ -287,8 +287,10 @@ The following options can be used to customize the behavior of lf:
 	menufmt           string    (default "\033[0m")
 	menuheaderfmt     string    (default "\033[1m")
 	menuselectfmt     string    (default "\033[7m")
+	mergeindicators   bool      (default false)
 	mouse             bool      (default false)
 	number            bool      (default false)
+	numbercursorfmt   string    (default '')
 	numberfmt         string    (default "\033[33m")
 	period            int       (default 0)
 	preload           bool      (default false)
@@ -300,8 +302,8 @@ The following options can be used to customize the behavior of lf:
 	relativenumber    bool      (default false)
 	reverse           bool      (default false)
 	roundbox          bool      (default false)
-	rulerfile         bool      (default false)
-	rulerfmt          string    (default "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t")
+	rulerfile         string    (default "")
+	rulerfmt          string    (default "")
 	scrolloff         int       (default 0)
 	searchmethod      string    (default 'text')
 	selectfmt         string    (default "\033[7;35m")
@@ -448,12 +450,6 @@ The icons file should be located at:
 	OS       system-wide               user-specific
 	Unix     /etc/lf/icons             ~/.config/lf/icons
 	Windows  C:\ProgramData\lf\icons   C:\Users\<user>\AppData\Roaming\lf\icons
-
-The ruler file should be located at:
-
-	OS       system-wide               user-specific
-	Unix     /etc/lf/ruler             ~/.config/lf/ruler
-	Windows  C:\ProgramData\lf\ruler   C:\Users\<user>\AppData\Roaming\lf\ruler
 
 The selection file should be located at:
 
@@ -690,7 +686,7 @@ Simulate key pushes given in the argument.
 
 ## addcustominfo
 
-Update the `custom` info field of the given file with the given string.
+Update the `custom` info and `.Stat.CustomInfo` field of the given file with the given string.
 The info string may contain ANSI escape codes to further customize its appearance.
 If no info is provided, clear the file's info instead.
 
@@ -1018,6 +1014,11 @@ Format string of the header row in the menu.
 
 Format string of the currently selected item in the menu.
 
+## mergeindicators (bool) (default false)
+
+When `mergeindicators` is enabled, tag and selection indicators are drawn in a single column to reduce the gap before filenames.
+If a file is both tagged and selected, the tag uses the selection format (e.g. `copyfmt`) instead of `tagfmt`.
+
 ## mouse (bool) (default false)
 
 Send mouse events as input.
@@ -1027,9 +1028,11 @@ Send mouse events as input.
 Show the position number for directory items on the left side of the pane.
 When the `relativenumber` option is enabled, only the current line shows the absolute position and relative positions are shown for the rest.
 
-## numberfmt (string) (default `\033[33m`)
+## numberfmt (string) (default `\033[33m`), numbercursorfmt (string) (default ``)
 
-Format string of the position number for each line.
+Format strings for highlighting line numbers.
+`numberfmt` applies to all lines.
+`numbercursorfmt` applies to the cursor line and falls back to `numberfmt` when left empty.
 
 ## period (int) (default 0)
 
@@ -1103,14 +1106,17 @@ Reverse the direction of sort.
 
 Draw rounded outer corners when the `drawbox` option is enabled.
 
-## rulerfile (bool) (default false)
+## rulerfile (string) (default ``)
 
-Use the ruler file instead of the `rulerfmt` and `statfmt` options when drawing the ruler at the bottom.
+Set the path of the ruler file.
+If not set, then a default template will be used for the ruler.
 Refer to the [RULER section](https://github.com/gokcehan/lf/blob/master/doc.md#ruler) for more information about how the ruler file works.
 
-## rulerfmt (string) (default `  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t`)
+## rulerfmt (string) (default ``)
 
 Format string of the ruler shown in the bottom right corner.
+When set, it will be used along with `statfmt` to draw the ruler, and `rulerfile` will be ignored.
+However, using `rulerfile` is preferred and this option is provided for backwards compatibility.
 
 The following special expansions are supported:
 
@@ -1203,6 +1209,8 @@ The following sort types are supported:
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
 Format string of the file info shown in the bottom left corner.
+This option has no effect unless `rulerfmt` is also set.
+Using `rulerfile` is preferred and this option is provided for backwards compatibility.
 
 The following special expansions are supported:
 
@@ -1777,6 +1785,10 @@ For example, to select a previous command using fzf and execute it:
 	    lf -remote "send $id $cmd"
 	}}
 
+The `list` command prints the IDs of all currently connected clients:
+
+	lf -remote 'list'
+
 There is also a `quit` command to quit the server when there are no connected clients left, and a `quit!` command to force quit the server by closing client connections first:
 
 	lf -remote 'quit'
@@ -2204,9 +2216,8 @@ https://github.com/gokcehan/lf/blob/master/etc/icons_colored.example
 
 # RULER
 
-The ruler can be configured using a ruler file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
+The ruler can be configured using the `rulerfile` option (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The contents of the ruler file should be a Go template which is then rendered to create the actual output (refer to https://pkg.go.dev/text/template for more details on the syntax).
-This feature is currently experimental and must be enabled via the `rulerfile` option.
 
 The following data fields are exported:
 
@@ -2218,8 +2229,9 @@ The following data fields are exported:
 	.Select           []string            Selection list
 	.Visual           []string            Visual selection
 	.Index            int                 Index of the cursor
-	.Total            int                 Number of visible files in the current directory
-	.Hidden           int                 Number of hidden files in the current directory
+	.Total            int                 Number of visible files in the current working directory
+	.Hidden           int                 Number of hidden files in the current working directory
+	.All              int                 Number of all files in the current working directory
 	.LinePercentage   string              Line percentage (analogous to `%p` for the `statusline` option in Vim)
 	.ScrollPercentage string              Scroll percentage (analogous to `%P` for the `statusline` option in Vim)
 	.Filter           []string            Filter currently being applied
@@ -2228,19 +2240,26 @@ The following data fields are exported:
 	.UserOptions      map[string]string   The value of user-defined options (e.g. `{{.UserOptions.foo}}`)
 	.Stat.Path        string              Path of the current file
 	.Stat.Name        string              Name of the current file
-	.Stat.Size        uint64              Size of the current file
+	.Stat.Extension   string              Extension of the current file
+	.Stat.Size        int64               Size of the current file
+	.Stat.DirSize     int64               Total size of the current directory if calculated via `calcdirsize` (`-1` if not calculated)
+	.Stat.DirCount    int                 Number of items in the current directory if the `dircounts` option is enabled (`-1` if the directory cannot be read)
 	.Stat.Permissions string              Permissions of the current file
 	.Stat.ModTime     string              Last modified time of the current file (formatted based on the `timefmt` option)
+	.Stat.AccessTime  string              Last access time of the current file (formatted based on the `timefmt` option)
+	.Stat.BirthTime   string              Birth time of the current file (formatted based on the `timefmt` option)
+	.Stat.ChangeTime  string              Last status (inode) change time of the current file (formatted based on the `timefmt` option)
 	.Stat.LinkCount   string              Number of hard links for the current file
 	.Stat.User        string              User of the current file
 	.Stat.Group       string              Group of the current file
 	.Stat.Target      string              Target if the current file is a symbolic link, otherwise a blank string
+	.Stat.CustomInfo  string              Custom property if defined via `addcustominfo`, otherwise a blank string
 
 The following functions are exported:
 
 	df       func() string                   Get an indicator representing the amount of free disk space available
 	env      func(string) string             Get the value of an environment variable
-	humanize func(uint64) string             Express a file size in a human-readable format
+	humanize func(int64) string              Express a file size in a human-readable format
 	join     func([]string, string) string   Join a string array by a separator
 	lower    func(string) string             Convert a string to lowercase
 	substr   func(string, int, int) string   Get a substring based on starting index and length

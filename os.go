@@ -38,7 +38,6 @@ var (
 	gConfigPaths []string
 	gColorsPaths []string
 	gIconsPaths  []string
-	gRulerPaths  []string
 	gFilesPath   string
 	gMarksPath   string
 	gTagsPath    string
@@ -104,11 +103,6 @@ func init() {
 	gIconsPaths = []string{
 		filepath.Join("/etc", "lf", "icons"),
 		filepath.Join(config, "lf", "icons"),
-	}
-
-	gRulerPaths = []string{
-		filepath.Join("/etc", "lf", "ruler"),
-		filepath.Join(config, "lf", "ruler"),
 	}
 
 	data := cmp.Or(

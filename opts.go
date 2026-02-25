@@ -22,15 +22,11 @@ const (
 )
 
 func isValidSortMethod(method sortMethod) bool {
-	return method == naturalSort ||
-		method == nameSort ||
-		method == sizeSort ||
-		method == timeSort ||
-		method == atimeSort ||
-		method == btimeSort ||
-		method == ctimeSort ||
-		method == extSort ||
-		method == customSort
+	switch method {
+	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
+		return true
+	}
+	return false
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
@@ -78,8 +74,10 @@ var gOpts struct {
 	menufmt          string
 	menuheaderfmt    string
 	menuselectfmt    string
+	mergeindicators  bool
 	mouse            bool
 	number           bool
+	numbercursorfmt  string
 	numberfmt        string
 	period           int
 	preload          bool
@@ -91,7 +89,7 @@ var gOpts struct {
 	relativenumber   bool
 	reverse          bool
 	roundbox         bool
-	rulerfile        bool
+	rulerfile        string
 	rulerfmt         string
 	scrolloff        int
 	searchmethod     searchMethod
@@ -240,8 +238,10 @@ func init() {
 	gOpts.menufmt = "\033[0m"
 	gOpts.menuheaderfmt = "\033[1m"
 	gOpts.menuselectfmt = "\033[7m"
+	gOpts.mergeindicators = false
 	gOpts.mouse = false
 	gOpts.number = false
+	gOpts.numbercursorfmt = ""
 	gOpts.numberfmt = "\033[33m"
 	gOpts.period = 0
 	gOpts.preload = false
@@ -253,8 +253,8 @@ func init() {
 	gOpts.relativenumber = false
 	gOpts.reverse = false
 	gOpts.roundbox = false
-	gOpts.rulerfile = false
-	gOpts.rulerfmt = "  %a|  %p|  \033[7;31m %m \033[0m|  \033[7;33m %c \033[0m|  \033[7;35m %s \033[0m|  \033[7;36m %v \033[0m|  \033[7;34m %f \033[0m|  %i/%t"
+	gOpts.rulerfile = ""
+	gOpts.rulerfmt = ""
 	gOpts.scrolloff = 0
 	gOpts.searchmethod = textSearch
 	gOpts.selectfmt = "\033[7;35m"

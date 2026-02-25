@@ -8,6 +8,59 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `Added`
 - `Fixed`
 
+## Unreleased
+
+### Changed
+
+- `.Stat.DirSize` and `.Stat.DirCount` in the ruler file no longer have a pointer type, and will be set to `-1` instead of `nil` if the corresponding value cannot be determined (#2397).
+
+### Added
+
+- A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
+- A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
+
+### Fixed
+
+- Previews are now cleaned when changing to an empty directory (#2369).
+- Previews are now correctly updated on `visual-change` (#2373).
+- The `dircounts` indicator for errors is changed back to `!` instead of `?` (#2372).
+- The `select` command can now select files immediately after creation as part of a script (#2377).
+- The `on-load` hook command now ignores `.git` directories to reduce flicker and repeated `on-load` triggers (#2382).
+- Preview messages like `empty` or `loading...` have their alignment improved (#2400).
+
+## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
+
+### Changed
+
+- The `previewer` script no longer skips non-regular files (#2327).
+- Line numbers now take up less space when both `number` and `relativenumber` are enabled (#2331).
+- Changes have been made to ruler configuration (#2338):
+  - The ruler file is no longer experimental.
+  - The ruler file will be used by default unless `rulerfmt` (now a blank string by default) is specified.
+  - The ruler file is no longer read from fixed locations like `~/.config/lf/ruler`, and instead the `rulerfile` option has been repurposed to specify the path of the ruler file.
+
+### Added
+
+- A new server command `list` is added to print the IDs of all currently connected clients (#2314).
+- The `previewer` and `cleaner` scripts now have their `stderr` output logged (#2316).
+- The `ruler` file now supports `.Stat.Extension`, `.Stat.AccessTime`, `.Stat.BirthTime`, `.Stat.ChangeTime` and `.Stat.CustomInfo` (#2329), as well as `.Stat.DirSize` and `.Stat.DirCount` (#2343).
+- A new option `mergeindicators` is added to reduce the gap before filenames, by merging tag and selection indicators into a single column (#2330).
+
+### Fixed
+
+- A bug where sixel images fail to display when scrolling back and forth is now fixed (#2301).
+- Newline characters are now ignored when drawing the ruler with the `ruler` file configured (#2319).
+- A potential crash when using the `scroll-up`/`scroll-down` commands is now fixed (#2320).
+- Case-insensitive command-line completions no longer cause user input to be displayed in lowercase (#2336).
+- Calculation of window widths for the `ratios` option is now more accurate (#2347).
+
+## [r40](https://github.com/gokcehan/lf/releases/tag/r40)
+
+### Fixed
+
+- Error messages from the server are no longer written to the terminal which causes the UI to break (#2290).
+- A bug where file previews fail to load properly when scrolling quickly is now fixed (#2292).
+
 ## [r39](https://github.com/gokcehan/lf/releases/tag/r39)
 
 ### Changed
@@ -521,7 +574,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
-- A longstanding issue regarding UI suspend/resume for shell commands in MacOS is now fixed in Tcell.
+- A longstanding issue regarding UI suspend/resume for shell commands in macOS is now fixed in Tcell.
 - Renaming a symlink to its target or a symlink to another with the same target should now be handled properly (#581).
 - Autocompletion in a directory containing a broken symlink should now work as intended (#581).
 - Setting `shellopts` to empty in the configuration file should not pass an extra empty argument to shell commands anymore.

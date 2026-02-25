@@ -30,7 +30,7 @@ func TestRemoveDiacritics(t *testing.T) {
 	checkRemoveDiacritics(testStr, expStr, t)
 }
 
-func checkRemoveDiacritics(testStr string, expStr string, t *testing.T) {
+func checkRemoveDiacritics(testStr, expStr string, t *testing.T) {
 	resultStr := removeDiacritics(testStr)
 	if resultStr != expStr {
 		t.Errorf("at input '%v' expected '%v' but got '%v'", testStr, expStr, resultStr)

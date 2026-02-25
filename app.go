@@ -19,24 +19,24 @@ import (
 )
 
 type app struct {
-	ui              *ui
-	nav             *nav
-	ticker          *time.Ticker
-	quitChan        chan struct{}
-	cmd             *exec.Cmd
-	cmdIn           io.WriteCloser
-	cmdOutBuf       []byte
-	cmdHistory      []string
-	cmdHistoryBeg   int
-	cmdHistoryInd   int
-	cmdHistoryInput *string
-	menuCompActive  bool
-	menuCompTmp     []string
-	menuComps       []compMatch
-	menuCompInd     int
-	selectionOut    []string
-	watch           *watch
-	quitting        bool
+	ui              *ui            // ui state (screen, windows, input)
+	nav             *nav           // navigation state (dirs, cursor, selections, preview, caches)
+	ticker          *time.Ticker   // refresh ticker if `period` > 0
+	quitChan        chan struct{}  // signals main loop to exit
+	cmd             *exec.Cmd      // currently running % (shell-pipe) command
+	cmdIn           io.WriteCloser // stdin writer for running % command
+	cmdOutBuf       []byte         // output of running % command
+	cmdHistory      []string       // command history entries
+	cmdHistoryBeg   int            // index where commands from this session start in cmdHistory
+	cmdHistoryInd   int            // history navigation offset from most recent
+	cmdHistoryInput *string        // initial input used as prefix filter while browsing history
+	menuCompActive  bool           // whether completion cycling is active
+	menuCompTmp     []string       // token snapshot taken when completion cycling starts, used for `cmd-menu-discard`
+	menuComps       []compMatch    // completion candidates for active prompt
+	menuCompInd     int            // index of selected completion candidate (-1: none selected)
+	selectionOut    []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
+	watch           *watch         // fs watcher if `watch` is enabled
+	quitting        bool           // guard to prevent re-entering quit logic
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -84,11 +84,11 @@ func (app *app) quit() {
 		}
 	}
 	if !gSingleMode {
-		if err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
+		if _, err := remote(fmt.Sprintf("drop %d", gClientID)); err != nil {
 			log.Printf("dropping connection: %s", err)
 		}
 		if gOpts.autoquit {
-			if err := remote("quit"); err != nil {
+			if _, err := remote("quit"); err != nil {
 				log.Printf("auto quitting server: %s", err)
 			}
 		}
@@ -255,7 +255,7 @@ func (app *app) writeHistory() error {
 	return nil
 }
 
-// This is the main event loop of the application. Expressions are read from
+// loop is the main event loop of the application. Expressions are read from
 // the client and the server on separate goroutines and sent here over channels
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
@@ -296,14 +296,8 @@ func (app *app) loop() {
 		}
 	}
 
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-	}
-
-	app.nav.updateDirs(wd)
+	app.nav.loadDirs()
 	app.nav.addJumpList()
-	app.nav.init = true
 
 	if gSelect != "" {
 		go func() {
@@ -340,7 +334,7 @@ func (app *app) loop() {
 
 			app.nav.previewChan <- ""
 
-			log.Printf("*************** closing client, PID: %d ***************", os.Getpid())
+			log.Printf("*************** closing client, PID: %d ***************", gClientID)
 
 			return
 		case n := <-app.nav.copyJobsChan:
@@ -393,6 +387,11 @@ func (app *app) loop() {
 			}
 			app.ui.draw(app.nav)
 		case d := <-app.nav.dirChan:
+			var oldCurrPath string
+			if curr := app.nav.currFile(); curr != nil {
+				oldCurrPath = curr.path
+			}
+
 			prev, ok := app.nav.dirCache[d.path]
 			if ok {
 				d.ind = prev.ind
@@ -405,36 +404,27 @@ func (app *app) loop() {
 			}
 			app.nav.dirCache[d.path] = d
 
-			var oldCurrPath string
-			if curr, err := app.nav.currFile(); err == nil {
-				oldCurrPath = curr.path
-			}
-
-			for i := range app.nav.dirs {
-				if app.nav.dirs[i].path == d.path {
-					app.nav.dirs[i] = d
-				}
-			}
-
 			app.nav.position()
 
-			curr, err := app.nav.currFile()
-			if err == nil {
+			if curr := app.nav.currFile(); curr != nil {
 				if curr.path != oldCurrPath {
 					app.ui.loadFile(app, true)
-				}
-				if d.path == curr.path {
-					app.ui.dirPrev = d
 				}
 			}
 
 			app.watchDir(d)
 
-			paths := []string{}
-			for _, file := range d.allFiles {
-				paths = append(paths, file.path)
+			// Avoid flickering UI and multiple, unnecessary `on-load` calls
+			// triggered by Git commands executed inside the users `on-load`
+			// command (often used to add git symbols using `addcustominfo`).
+			// TODO: Should `watch` also ignore `.git` directories?
+			if filepath.Base(d.path) != ".git" {
+				paths := make([]string, len(d.allFiles))
+				for i, file := range d.allFiles {
+					paths[i] = file.path
+				}
+				onLoad(app, paths)
 			}
-			onLoad(app, paths)
 
 			if d.path == app.nav.currDir().path {
 				app.nav.preload()
@@ -444,10 +434,8 @@ func (app *app) loop() {
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
 
-			curr, err := app.nav.currFile()
-			if err == nil {
+			if curr := app.nav.currFile(); curr != nil {
 				if r.path == curr.path {
-					app.ui.regPrev = r
 					app.ui.sxScreen.forceClear = true
 					if gOpts.preload && r.volatile {
 						app.ui.loadFile(app, true)
@@ -489,9 +477,7 @@ func (app *app) loop() {
 			deletePathRecursive(app.nav.dirCache, path)
 			currPath := app.nav.currDir().path
 			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
-				if wd, err := os.Getwd(); err == nil {
-					app.nav.updateDirs(wd)
-				}
+				app.nav.loadDirs()
 			}
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
@@ -555,7 +541,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.renew()
 }
 
-// This function is used to run a shell command. Modes are as follows:
+// runShell is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
 //	$       No    No     Yes    Yes     Yes     Pause and then resume
@@ -608,10 +594,10 @@ func (app *app) runShell(s string, args []string, prefix string) {
 			return
 		}
 
-		// Cmd.StdoutPipe cannot be used as it requires the output to be fully
-		// read before calling Cmd.Wait, however in this case Cmd.Wait should
-		// only wait for the command to finish executing regardless of whether
-		// the output has been fully read or not.
+		// [exec.Cmd.StdoutPipe] cannot be used as it requires the output to be fully
+		// read before calling [exec.Cmd.Wait], however in this case Cmd.Wait should
+		// only wait for the command to finish executing regardless of whether the
+		// output has been fully read or not.
 		inReader, inWriter, err := os.Pipe()
 		if err != nil {
 			log.Printf("creating input pipe: %s", err)
@@ -688,18 +674,18 @@ func (app *app) runShell(s string, args []string, prefix string) {
 }
 
 func (app *app) doComplete() (matches []compMatch) {
-	var result string
+	var longest string
 
 	switch app.ui.cmdPrefix {
 	case ":":
-		matches, result = completeCmd(app.ui.cmdAccLeft)
+		matches, longest = completeCmd(app.ui.cmdAccLeft)
 	case "$", "%", "!", "&":
-		matches, result = completeShell(app.ui.cmdAccLeft)
+		matches, longest = completeShell(app.ui.cmdAccLeft)
 	case "/", "?":
-		matches, result = completeSearch(app.ui.cmdAccLeft)
+		matches, longest = completeSearch(app.ui.cmdAccLeft)
 	}
 
-	app.ui.cmdAccLeft = []rune(result)
+	app.ui.cmdAccLeft = []rune(longest)
 	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, matches, -1)
 	return
 }
