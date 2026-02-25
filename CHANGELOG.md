@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Changed
+
+- `.Stat.DirSize` and `.Stat.DirCount` in the ruler file no longer have a pointer type, and will be set to `-1` instead of `nil` if the corresponding value cannot be determined (#2397).
+
 ### Added
 
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
