@@ -246,8 +246,8 @@ func readPairs(r io.Reader) ([][]string, error) {
 // humanize converts a size in bytes to a human-readable form using
 // prefixes for either binary (1 KiB = 1024 B) or decimal (1 KB = 1000 B)
 // multiples. The output should be no more than 5 characters long.
-func humanize(size uint64) string {
-	var base uint64 = 1024
+func humanize(size int64) string {
+	var base int64 = 1024
 	if gOpts.sizeunits == "decimal" {
 		base = 1000
 	}
@@ -271,7 +271,7 @@ func humanize(size uint64) string {
 		"Q", // quebi (2^100) or quetta (10^30)
 	}
 
-	curr := big.NewRat(int64(size), int64(base))
+	curr := big.NewRat(size, base)
 
 	for _, prefix := range prefixes {
 		// if curr < 99.95 then round to 1 decimal place
@@ -280,11 +280,11 @@ func humanize(size uint64) string {
 		}
 
 		// if curr < base-0.5 then round to the nearest integer
-		if curr.Cmp(new(big.Rat).Sub(big.NewRat(int64(base), 1), big.NewRat(1, 2))) < 0 {
+		if curr.Cmp(new(big.Rat).Sub(big.NewRat(base, 1), big.NewRat(1, 2))) < 0 {
 			return fmt.Sprintf("%s%s", curr.FloatString(0), prefix)
 		}
 
-		curr.Quo(curr, big.NewRat(int64(base), 1))
+		curr.Quo(curr, big.NewRat(base, 1))
 	}
 
 	return fmt.Sprintf("+999%s", prefixes[len(prefixes)-1])

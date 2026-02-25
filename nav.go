@@ -37,8 +37,8 @@ type file struct {
 	linkState   linkState // symlink state
 	linkTarget  string    // path a symlink points to
 	path        string    // full path including the name
-	dirCount    *uint64   // number of items inside the directory
-	dirSize     *uint64   // total directory size (needs to be calculated via `calcdirsize`)
+	dirCount    int       // number of items inside the directory
+	dirSize     int64     // total directory size (needs to be calculated via `calcdirsize`)
 	accessTime  time.Time // time of last access
 	birthTime   time.Time // time of file birth
 	changeTime  time.Time // time of last status (inode) change
@@ -55,6 +55,8 @@ func newFile(path string) *file {
 			FileInfo:   &fakeStat{name: filepath.Base(path)},
 			linkState:  notLink,
 			path:       path,
+			dirCount:   -1,
+			dirSize:    -1,
 			accessTime: time.Unix(0, 0),
 			birthTime:  time.Unix(0, 0),
 			changeTime: time.Unix(0, 0),
@@ -96,7 +98,7 @@ func newFile(path string) *file {
 		ct = ts.ChangeTime()
 	}
 
-	var dirCount *uint64
+	dirCount := -1
 	if lstat.IsDir() && getDirCounts(filepath.Dir(path)) {
 		d, err := os.Open(path)
 		if err != nil {
@@ -108,8 +110,7 @@ func newFile(path string) *file {
 			if names == nil && err != io.EOF {
 				log.Printf("reading directory: %s", err)
 			} else {
-				v := uint64(len(names))
-				dirCount = &v
+				dirCount = len(names)
 			}
 		}
 	}
@@ -120,6 +121,7 @@ func newFile(path string) *file {
 		linkTarget: linkTarget,
 		path:       path,
 		dirCount:   dirCount,
+		dirSize:    -1,
 		accessTime: at,
 		birthTime:  bt,
 		changeTime: ct,
@@ -275,29 +277,17 @@ func (dir *dir) sort() {
 			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
 		})
 	case sizeSort:
-		sizeVal := func(f *file) *uint64 {
+		sizeVal := func(f *file) int64 {
 			if f.IsDir() && dir.dircounts {
-				return f.dirCount
+				return int64(f.dirCount)
 			}
-			if f.dirSize != nil {
+			if f.dirSize >= 0 {
 				return f.dirSize
 			}
-			v := uint64(f.Size())
-			return &v
+			return f.Size()
 		}
 		applySort(func(f1, f2 *file) int {
-			s1 := sizeVal(f1)
-			s2 := sizeVal(f2)
-			switch {
-			case s1 == nil && s2 == nil:
-				return 0
-			case s1 == nil && s2 != nil:
-				return -1
-			case s1 != nil && s2 == nil:
-				return 1
-			default:
-				return cmp.Compare(*s1, *s2)
-			}
+			return cmp.Compare(sizeVal(f1), sizeVal(f2))
 		})
 	case timeSort:
 		applySort(func(f1, f2 *file) int {
@@ -2020,8 +2010,7 @@ func (nav *nav) calcDirSize() error {
 			if err != nil {
 				return err
 			}
-			v := uint64(total)
-			f.dirSize = &v
+			f.dirSize = total
 		}
 		return nil
 	}
