@@ -63,7 +63,7 @@ go install -ldflags="-s -w" github.com/gokcehan/lf@latest
 
 After the installation `lf` command should start the application in the current directory.
 
-Run `lf -help` to see command line options.
+Run `lf -help` to see [command line options](doc.md#options).
 
 Run `lf -doc` to see the [documentation](doc.md).
 

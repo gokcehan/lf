@@ -247,12 +247,20 @@ func (win *win) printRight(screen tcell.Screen, y int, st tcell.Style, s string)
 	win.print(screen, win.w-printLength(s), y, st, s)
 }
 
+func (win *win) printMsg(screen tcell.Screen, s string) {
+	pad := 1
+	if gOpts.mergeindicators {
+		pad--
+	}
+	st := tcell.StyleDefault.Reverse(true)
+	win.print(screen, pad, 0, st, s)
+}
+
 func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
 	switch {
 	case reg.loading:
 		if previewLoading {
-			st := tcell.StyleDefault.Reverse(true)
-			win.print(screen, 2, 0, st, "loading...")
+			win.printMsg(screen, "loading...")
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -366,20 +374,17 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		return
 	}
 
-	messageStyle := tcell.StyleDefault.Reverse(true)
-
-	if dir.noPerm {
-		win.print(ui.screen, 2, 0, messageStyle, "permission denied")
-		return
-	}
 	fileslen := len(dir.files)
-	if dir.loading && fileslen == 0 {
-		win.print(ui.screen, 2, 0, messageStyle, "loading...")
-		return
-	}
 
-	if fileslen == 0 {
-		win.print(ui.screen, 2, 0, messageStyle, "empty")
+	switch {
+	case dir.noPerm:
+		win.printMsg(ui.screen, "permission denied")
+		return
+	case dir.loading && fileslen == 0:
+		win.printMsg(ui.screen, "loading...")
+		return
+	case fileslen == 0:
+		win.printMsg(ui.screen, "empty")
 		return
 	}
 
@@ -450,7 +455,11 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				}
 			}
 
-			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(optionToFmtstr(gOpts.numberfmt), ln))
+			fmtStr := optionToFmtstr(gOpts.numberfmt)
+			if i == dir.pos && gOpts.numbercursorfmt != "" {
+				fmtStr = optionToFmtstr(gOpts.numbercursorfmt)
+			}
+			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(fmtStr, ln))
 		}
 
 		path := filepath.Join(dir.path, f.Name())
@@ -620,37 +629,37 @@ func getWins(screen tcell.Screen) []*win {
 }
 
 type menuSelect struct {
-	x, y int
-	s    string
+	x, y int    // selection position in menuWin (cells)
+	s    string // selected entry text to draw with `menuselectfmt`
 }
 
 type ui struct {
-	screen      tcell.Screen
-	sxScreen    sixelScreen
-	polling     bool
-	wins        []*win
-	promptWin   *win
-	msgWin      *win
-	menuWin     *win
-	msg         string
-	exprChan    chan expr
-	keyChan     chan string
-	tevChan     chan tcell.Event
-	evChan      chan tcell.Event
-	menu        string
-	menuSelect  *menuSelect
-	cmdPrefix   string
-	cmdAccLeft  []rune
-	cmdAccRight []rune
-	cmdYankBuf  []rune
-	keyAcc      []rune
-	keyCount    []rune
-	styles      styleMap
-	icons       iconMap
-	ruler       *template.Template
-	rulerErr    error
-	currentFile string
-	pasteEvent  bool
+	screen      tcell.Screen       // primary screen used for drawing and event polling
+	sxScreen    sixelScreen        // sixel preview state
+	polling     bool               // whether event polling is running
+	wins        []*win             // pane windows from `ratios` (last is `preview` when enabled)
+	promptWin   *win               // prompt line window
+	msgWin      *win               // status line window
+	menuWin     *win               // menu window
+	msg         string             // message/output shown in msgWin
+	exprChan    chan expr          // expr queue
+	keyChan     chan string        // key queue (send via `push`)
+	tevChan     chan tcell.Event   // terminal events from screen.PollEvent
+	evChan      chan tcell.Event   // merged event queue (keyChan + tevChan)
+	menu        string             // rendered (multiline) menu text (i.e. completions, binds, marks)
+	menuSelect  *menuSelect        // selected menu entry (completion menu only)
+	cmdPrefix   string             // command prefix/prompt (empty: Normal mode)
+	cmdAccLeft  []rune             // command buffer left of cursor
+	cmdAccRight []rune             // command buffer right of cursor
+	cmdYankBuf  []rune             // yank buffer for command line editing
+	keyAcc      []rune             // keys typed so far for mapping lookup
+	keyCount    []rune             // count prefix for next command
+	styles      styleMap           // parsed styles
+	icons       iconMap            // parsed icons
+	ruler       *template.Template // compiled `rulerfile`
+	rulerErr    error              // `rulerfile` parse error (if any)
+	currentFile string             // last path passed to `on-select`
+	pasteEvent  bool               // whether paste event is active (to ignore pasted input in Normal mode)
 }
 
 func newUI(screen tcell.Screen) *ui {
