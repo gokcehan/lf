@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
 )
 
 func TestStripTermSequence(t *testing.T) {
@@ -106,7 +107,7 @@ func TestParseEscapeSequence(t *testing.T) {
 		exp tcell.Style
 	}{
 		{"\033[1m", tcell.StyleDefault.Bold(true)},
-		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.XTerm1).Background(color.XTerm2)},
 	}
 
 	for _, test := range tests {
@@ -123,7 +124,7 @@ func TestApplyTermSequence(t *testing.T) {
 	}{
 		{"", tcell.StyleDefault},
 		{"\x1b[1m", tcell.StyleDefault.Bold(true)},
-		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(tcell.ColorMaroon).Background(tcell.ColorGreen)},
+		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.XTerm1).Background(color.XTerm2)},
 		{
 			"\x1b]8;;https://example.com\x1b\\",
 			tcell.StyleDefault.UrlId("lf_hyperlink_100680ad546ce6a5").Url("https://example.com"),
@@ -154,25 +155,25 @@ func TestApplySGR(t *testing.T) {
 		stExp tcell.Style
 	}{
 		{"", none, none},
-		{"", none.Foreground(tcell.ColorMaroon).Background(tcell.ColorMaroon), none},
+		{"", none.Foreground(color.XTerm1).Background(color.XTerm1), none},
 		{"", none.Bold(true), none},
-		{"", none.Foreground(tcell.ColorMaroon).Bold(true), none},
+		{"", none.Foreground(color.XTerm1).Bold(true), none},
 
 		{"0", none, none},
-		{"0", none.Foreground(tcell.ColorMaroon).Background(tcell.ColorMaroon), none},
+		{"0", none.Foreground(color.XTerm1).Background(color.XTerm1), none},
 		{"0", none.Bold(true), none},
-		{"0", none.Foreground(tcell.ColorMaroon).Bold(true), none},
+		{"0", none.Foreground(color.XTerm1).Bold(true), none},
 
 		{"1", none, none.Bold(true)},
 		{"4", none, none.Underline(true)},
 		{"7", none, none.Reverse(true)},
 
-		{"1", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Bold(true)},
-		{"4", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Underline(true)},
-		{"7", none.Foreground(tcell.ColorMaroon), none.Foreground(tcell.ColorMaroon).Reverse(true)},
+		{"1", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Bold(true)},
+		{"4", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Underline(true)},
+		{"7", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Reverse(true)},
 
 		{"4", none.Bold(true), none.Bold(true).Underline(true)},
-		{"4", none.Foreground(tcell.ColorMaroon).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true).Underline(true)},
+		{"4", none.Foreground(color.XTerm1).Bold(true), none.Foreground(color.XTerm1).Bold(true).Underline(true)},
 
 		{"4:0", none, none},
 		{"4:0", none.Underline(true), none},
@@ -189,44 +190,44 @@ func TestApplySGR(t *testing.T) {
 		{"27", none.Bold(true).Reverse(true), none.Bold(true)},
 		{"29", none.Bold(true).StrikeThrough(true), none.Bold(true)},
 
-		{"31", none, none.Foreground(tcell.ColorMaroon)},
-		{"31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon)},
-		{"31", none.Foreground(tcell.ColorGreen).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"31", none, none.Foreground(color.XTerm1)},
+		{"31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1)},
+		{"31", none.Foreground(color.XTerm2).Bold(true), none.Foreground(color.XTerm1).Bold(true)},
 
-		{"41", none, none.Background(tcell.ColorMaroon)},
-		{"41", none.Background(tcell.ColorGreen), none.Background(tcell.ColorMaroon)},
+		{"41", none, none.Background(color.XTerm1)},
+		{"41", none.Background(color.XTerm2), none.Background(color.XTerm1)},
 
-		{"1;31", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
-		{"1;31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"1;31", none, none.Foreground(color.XTerm1).Bold(true)},
+		{"1;31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
 
-		{"01;31", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
-		{"01;31", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"01;31", none, none.Foreground(color.XTerm1).Bold(true)},
+		{"01;31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
 
-		{"38;5;0", none, none.Foreground(tcell.ColorBlack)},
-		{"38;5;1", none, none.Foreground(tcell.ColorMaroon)},
-		{"38;5;8", none, none.Foreground(tcell.ColorGray)},
-		{"38;5;16", none, none.Foreground(tcell.Color16)},
-		{"38;5;232", none, none.Foreground(tcell.Color232)},
+		{"38;5;0", none, none.Foreground(color.XTerm0)},
+		{"38;5;1", none, none.Foreground(color.XTerm1)},
+		{"38;5;8", none, none.Foreground(color.XTerm8)},
+		{"38;5;16", none, none.Foreground(color.XTerm16)},
+		{"38;5;232", none, none.Foreground(color.XTerm232)},
 
-		{"38;5;1", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon)},
-		{"38;5;1", none.Foreground(tcell.ColorGreen).Bold(true), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"38;5;1", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1)},
+		{"38;5;1", none.Foreground(color.XTerm2).Bold(true), none.Foreground(color.XTerm1).Bold(true)},
 
-		{"48;5;0", none, none.Background(tcell.ColorBlack)},
-		{"48;5;1", none, none.Background(tcell.ColorMaroon)},
-		{"48;5;8", none, none.Background(tcell.ColorGray)},
-		{"48;5;16", none, none.Background(tcell.Color16)},
-		{"48;5;232", none, none.Background(tcell.Color232)},
+		{"48;5;0", none, none.Background(color.XTerm0)},
+		{"48;5;1", none, none.Background(color.XTerm1)},
+		{"48;5;8", none, none.Background(color.XTerm8)},
+		{"48;5;16", none, none.Background(color.XTerm16)},
+		{"48;5;232", none, none.Background(color.XTerm232)},
 
-		{"48;5;1", none.Background(tcell.ColorGreen), none.Background(tcell.ColorMaroon)},
+		{"48;5;1", none.Background(color.XTerm2), none.Background(color.XTerm1)},
 
-		{"1;38;5;1", none, none.Foreground(tcell.ColorMaroon).Bold(true)},
-		{"1;38;5;1", none.Foreground(tcell.ColorGreen), none.Foreground(tcell.ColorMaroon).Bold(true)},
+		{"1;38;5;1", none, none.Foreground(color.XTerm1).Bold(true)},
+		{"1;38;5;1", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
 
 		{"38;2;5;102;8", none, none.Foreground(tcell.NewRGBColor(5, 102, 8))},
 		{"48;2;0;48;143", none, none.Background(tcell.NewRGBColor(0, 48, 143))},
 
 		// Fixes color construction issue: https://github.com/gokcehan/lf/pull/439#issuecomment-674409446
-		{"38;5;34;1", none, none.Foreground(tcell.Color34).Bold(true)},
+		{"38;5;34;1", none, none.Foreground(color.XTerm34).Bold(true)},
 	}
 
 	for _, test := range tests {
