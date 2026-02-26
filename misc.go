@@ -16,7 +16,6 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/mattn/go-runewidth"
 	"github.com/rivo/uniseg"
 )
 
@@ -38,51 +37,6 @@ func replaceTilde(s string) string {
 		return gUser.HomeDir + s[1:]
 	}
 	return s
-}
-
-func runeSliceWidth(rs []rune) int {
-	w := 0
-	for _, r := range rs {
-		w += runewidth.RuneWidth(r)
-	}
-	return w
-}
-
-func runeSliceWidthRange(rs []rune, beg, end int) []rune {
-	if beg == end {
-		return []rune{}
-	}
-
-	curr := 0
-	b := 0
-	foundb := false
-	for i, r := range rs {
-		w := runewidth.RuneWidth(r)
-		if curr >= beg && !foundb {
-			b = i
-			foundb = true
-		}
-		if curr == end || curr+w > end {
-			return rs[b:i]
-		}
-		curr += w
-	}
-
-	return rs[b:]
-}
-
-// runeSliceWidthLastRange returns the last runes of `rs` that take up
-// at most `maxWidth` space.
-func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
-	lastWidth := 0
-	for i := len(rs) - 1; i >= 0; i-- {
-		w := runewidth.RuneWidth(rs[i])
-		if lastWidth+w > maxWidth {
-			return rs[i+1:]
-		}
-		lastWidth += w
-	}
-	return rs
 }
 
 // firstGraphemeCluster returns the runes forming the first grapheme cluster of
