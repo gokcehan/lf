@@ -162,6 +162,59 @@ func TestLastGraphemeCluster(t *testing.T) {
 	}
 }
 
+func TestTruncateRight(t *testing.T) {
+	tests := []struct {
+		s        string
+		maxWidth int
+		exp      string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 0, ""},
+		{"a", 1, "a"},
+		{"ab", 1, "a"},
+		{"世", 0, ""},
+		{"世", 1, ""},
+		{"世界", 2, "世"},
+		{"世界", 3, "世"},
+		{"a🏳️b", 2, "a"},
+		{"a🏳️b", 3, "a🏳️"},
+		{"a🏳️b", 4, "a🏳️b"},
+	}
+
+	for _, test := range tests {
+		if got := truncateRight(test.s, test.maxWidth); got != test.exp {
+			t.Errorf("at input ('%v', %v) expected '%v' but got '%v'", test.s, test.maxWidth, test.exp, got)
+		}
+	}
+}
+func TestTruncateLeft(t *testing.T) {
+	tests := []struct {
+		s        string
+		maxWidth int
+		exp      string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 0, ""},
+		{"a", 1, "a"},
+		{"ab", 1, "b"},
+		{"世", 0, ""},
+		{"世", 1, ""},
+		{"世界", 2, "界"},
+		{"世界", 3, "界"},
+		{"a🏳️b", 2, "b"},
+		{"a🏳️b", 3, "🏳️b"},
+		{"a🏳️b", 4, "a🏳️b"},
+	}
+
+	for _, test := range tests {
+		if got := truncateLeft(test.s, test.maxWidth); got != test.exp {
+			t.Errorf("at input ('%v', %v) expected '%v' but got '%v'", test.s, test.maxWidth, test.exp, got)
+		}
+	}
+}
+
 func TestCmdEscape(t *testing.T) {
 	tests := []struct {
 		s   string

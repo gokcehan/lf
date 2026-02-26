@@ -11,6 +11,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
@@ -101,6 +102,54 @@ func lastGraphemeCluster(rs []rune) []rune {
 		last = gr.Runes()
 	}
 	return last
+}
+
+// truncateRight truncates a string from the right based on Unicode widths,
+// taking into account grapheme clusters.
+func truncateRight(s string, maxWidth int) string {
+	buf := make([]byte, 0, len(s))
+	width := 0
+
+	gr := uniseg.NewGraphemes(s)
+	for gr.Next() {
+		width += gr.Width()
+		if width > maxWidth {
+			break
+		}
+
+		buf = append(buf, gr.Bytes()...)
+	}
+
+	return string(buf)
+}
+
+// truncateLeft truncates a string from the left based on Unicode widths,
+// taking into account grapheme clusters.
+func truncateLeft(s string, maxWidth int) string {
+	type cluster struct {
+		bytes []byte
+		width int
+	}
+
+	var clusters []cluster
+	totalWidth := 0
+	gr := uniseg.NewGraphemes(s)
+	for gr.Next() {
+		clusters = append(clusters, cluster{slices.Clone(gr.Bytes()), gr.Width()})
+		totalWidth += gr.Width()
+	}
+
+	buf := make([]byte, 0, len(s))
+	width := 0
+	for _, cluster := range clusters {
+		if totalWidth-width <= maxWidth {
+			buf = append(buf, cluster.bytes...)
+		}
+
+		width += cluster.width
+	}
+
+	return string(buf)
 }
 
 // cmdEscape is used to escape whitespace and special characters with
