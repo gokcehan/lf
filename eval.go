@@ -15,7 +15,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
-	"github.com/rivo/uniseg"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -1914,20 +1913,14 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
 		}
-		gr := uniseg.NewGraphemes(string(app.ui.cmdAccLeft))
-		var last []rune
-		for gr.Next() {
-			last = gr.Runes()
-		}
+		last := lastGraphemeCluster(app.ui.cmdAccLeft)
 		app.ui.cmdAccRight = append(slices.Clone(app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-len(last):]), app.ui.cmdAccRight...)
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
 	case "cmd-right":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		gr := uniseg.NewGraphemes(string(app.ui.cmdAccRight))
-		gr.Next()
-		first := gr.Runes()
+		first := firstGraphemeCluster(app.ui.cmdAccRight)
 		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:len(first)]...)
 		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
 	case "cmd-home":
@@ -1940,9 +1933,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		gr := uniseg.NewGraphemes(string(app.ui.cmdAccRight))
-		gr.Next()
-		first := gr.Runes()
+		first := firstGraphemeCluster(app.ui.cmdAccRight)
 		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
 		update(app)
 	case "cmd-delete-back":
@@ -1961,11 +1952,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			return
 		}
-		gr := uniseg.NewGraphemes(string(app.ui.cmdAccLeft))
-		var last []rune
-		for gr.Next() {
-			last = gr.Runes()
-		}
+		last := lastGraphemeCluster(app.ui.cmdAccLeft)
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
 		update(app)
 	case "cmd-delete-home":
