@@ -1135,17 +1135,17 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
-		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix)-printLength(ui.msg))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+ui.msg)
-		ui.msgWin.print(ui.screen, runeSliceWidth(prefix)+printLength(ui.msg), 0, st, string(left)+string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+printLength(ui.msg)+runeSliceWidth(left), ui.msgWin.y)
+		prefix := truncateRight(ui.cmdPrefix, maxWidth)
+		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
+		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
-		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+string(left)+string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+uniseg.StringWidth(string(left)), ui.msgWin.y)
+		prefix := truncateRight(ui.cmdPrefix, maxWidth)
+		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
 	}
 
 	ui.drawPreview(nav, &context)
