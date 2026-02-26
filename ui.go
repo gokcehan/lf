@@ -18,6 +18,7 @@ import (
 
 	"github.com/gdamore/tcell/v3"
 	"github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 	"golang.org/x/term"
 )
 
@@ -1137,7 +1138,7 @@ func (ui *ui) draw(nav *nav) {
 		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
 		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+string(left)+string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+runeSliceWidth(left), ui.msgWin.y)
+		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+uniseg.StringWidth(string(left)), ui.msgWin.y)
 	}
 
 	ui.drawPreview(nav, &context)

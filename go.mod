@@ -7,6 +7,7 @@ require (
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gdamore/tcell/v3 v3.1.2
 	github.com/mattn/go-runewidth v0.0.20
+	github.com/rivo/uniseg v0.4.7
 	golang.org/x/sys v0.41.0
 	golang.org/x/term v0.40.0
 )
@@ -15,6 +16,5 @@ require (
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.3.0 // indirect
-	github.com/rivo/uniseg v0.4.7 // indirect
 	golang.org/x/text v0.34.0 // indirect
 )
