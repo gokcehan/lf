@@ -591,7 +591,7 @@ func TestTruncateFilename(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := truncateFilename(test.file, test.maxWidth, test.truncatePct, '~'); got != test.exp {
+		if got := truncateFilename(test.file, test.maxWidth, test.truncatePct, "~"); got != test.exp {
 			t.Errorf("at input (%v, %v, %v) expected '%s' but got '%s'", test.file, test.maxWidth, test.truncatePct, test.exp, got)
 		}
 	}

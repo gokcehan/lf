@@ -387,7 +387,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxFilenameWidth -= infolen
 		}
 
-		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, []rune(gOpts.truncatechar)[0]))
+		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar))
 		for j := uniseg.StringWidth(string(filename)); j < maxFilenameWidth; j++ {
 			filename = append(filename, ' ')
 		}

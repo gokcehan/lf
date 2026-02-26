@@ -476,29 +476,22 @@ func getFileExtension(file fs.FileInfo) string {
 // character will appear (0 means left, 50 means middle, 100 means right).
 // The file extension is not affected by truncation, however it will be clipped
 // if it exceeds the allowed width.
-func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar rune) string {
+func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar string) string {
 	filename := file.Name()
-	if runeSliceWidth([]rune(filename)) <= maxWidth {
+	if uniseg.StringWidth(filename) <= maxWidth {
 		return filename
 	}
 
 	ext := getFileExtension(file)
-	avail := maxWidth - runewidth.RuneWidth(truncateChar) - runeSliceWidth([]rune(ext))
+	avail := maxWidth - uniseg.StringWidth(truncateChar) - uniseg.StringWidth(ext)
 	if avail < 0 {
-		result := append([]rune{truncateChar}, []rune(ext)...)
-		return string(runeSliceWidthRange(result, 0, maxWidth))
+		return truncateRight(truncateChar+ext, maxWidth)
 	}
 
-	basename := []rune(strings.TrimSuffix(filename, ext))
-	left := runeSliceWidthRange(basename, 0, avail*truncatePct/100)
-	right := runeSliceWidthLastRange(basename, avail-runeSliceWidth(left))
-
-	var result []rune
-	result = append(result, left...)
-	result = append(result, truncateChar)
-	result = append(result, right...)
-	result = append(result, []rune(ext)...)
-	return string(result)
+	basename := strings.TrimSuffix(filename, ext)
+	left := truncateRight(basename, avail*truncatePct/100)
+	right := truncateLeft(basename, avail-uniseg.StringWidth(left))
+	return left + truncateChar + right + ext
 }
 
 // deletePathRecursive deletes entries from a map if the key is either the given
