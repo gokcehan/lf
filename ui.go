@@ -366,15 +366,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
 
-		var icon []rune
+		var icon string
 		var iconDef iconDef
 		if gOpts.icons {
 			iconDef = dirStyle.icons.get(f)
-			icon = slices.Concat([]rune(iconDef.icon), []rune{' '})
+			icon = iconDef.icon + " "
 		}
 
 		// subtract space for icon
-		maxFilenameWidth := maxWidth - runeSliceWidth(icon)
+		maxFilenameWidth := maxWidth - uniseg.StringWidth(icon)
 		// subtract space for tag if not merged with selection marker
 		if !gOpts.mergeindicators {
 			maxFilenameWidth--
@@ -387,14 +387,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxFilenameWidth -= infolen
 		}
 
-		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar))
-		for j := uniseg.StringWidth(string(filename)); j < maxFilenameWidth; j++ {
-			filename = append(filename, ' ')
+		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
+		spacing := maxFilenameWidth - uniseg.StringWidth(filename)
+		if spacing > 0 {
+			filename += strings.Repeat(" ", spacing)
 		}
 
 		if showInfo {
-			filename = append(filename, []rune(info)...)
-			customOff += nameOff + runeSliceWidth(icon) + maxFilenameWidth
+			filename += info
+			customOff += nameOff + uniseg.StringWidth(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -413,8 +414,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, tagOff, i, st, fmt.Sprintf(cursorFmt, tag))
 			}
 
-			line := slices.Concat(icon, filename, []rune{' '})
-			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, string(line)))
+			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, icon+filename+" "))
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
@@ -435,11 +435,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				if iconDef.hasStyle {
 					iconStyle = iconDef.style
 				}
-				win.print(ui.screen, nameOff, i, iconStyle, string(icon))
+				win.print(ui.screen, nameOff, i, iconStyle, icon)
 			}
 
-			line := slices.Concat(filename, []rune{' '})
-			win.print(ui.screen, nameOff+runeSliceWidth(icon), i, st, string(line))
+			win.print(ui.screen, nameOff+uniseg.StringWidth(icon), i, st, filename+" ")
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
