@@ -1914,7 +1914,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		last := lastGraphemeCluster(app.ui.cmdAccLeft)
-		app.ui.cmdAccRight = append(slices.Clone(app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-len(last):]), app.ui.cmdAccRight...)
+		app.ui.cmdAccRight = slices.Concat(app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-len(last):], app.ui.cmdAccRight)
 		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
 	case "cmd-right":
 		if len(app.ui.cmdAccRight) == 0 {
