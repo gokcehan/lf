@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
+	"github.com/rivo/uniseg"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -1913,14 +1914,22 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if len(app.ui.cmdAccLeft) == 0 {
 			return
 		}
-		app.ui.cmdAccRight = append([]rune{app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]}, app.ui.cmdAccRight...)
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
+		gr := uniseg.NewGraphemes(string(app.ui.cmdAccLeft))
+		var last []rune
+		for gr.Next() {
+			last = gr.Runes()
+		}
+		app.ui.cmdAccRight = append(slices.Clone(app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-len(last):]), app.ui.cmdAccRight...)
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
 	case "cmd-right":
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[0])
-		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
+		gr := uniseg.NewGraphemes(string(app.ui.cmdAccRight))
+		gr.Next()
+		first := gr.Runes()
+		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:len(first)]...)
+		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
 	case "cmd-home":
 		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
 		app.ui.cmdAccLeft = nil
@@ -1931,7 +1940,10 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if len(app.ui.cmdAccRight) == 0 {
 			return
 		}
-		app.ui.cmdAccRight = app.ui.cmdAccRight[1:]
+		gr := uniseg.NewGraphemes(string(app.ui.cmdAccRight))
+		gr.Next()
+		first := gr.Runes()
+		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
 		update(app)
 	case "cmd-delete-back":
 		if len(app.ui.cmdAccLeft) == 0 {
@@ -1949,7 +1961,12 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			return
 		}
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-1]
+		gr := uniseg.NewGraphemes(string(app.ui.cmdAccLeft))
+		var last []rune
+		for gr.Next() {
+			last = gr.Runes()
+		}
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
 		update(app)
 	case "cmd-delete-home":
 		if len(app.ui.cmdAccLeft) == 0 {
