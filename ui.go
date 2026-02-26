@@ -17,7 +17,6 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
-	"github.com/mattn/go-runewidth"
 	"github.com/rivo/uniseg"
 	"golang.org/x/term"
 )
@@ -39,27 +38,28 @@ func (win *win) renew(w, h, x, y int) {
 // It ignores supported terminal control sequences (see [readTermSequence])
 // and accounts for tab expansions using the `tabstop` option.
 func printLength(s string) int {
-	ind := 0
-	off := 0
+	length := 0
+
+	i := 0
 	slen := len(s)
-	for i := 0; i < slen; i++ {
+	for i < slen {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
-			i += len(seq) - 1
+			i += len(seq)
 			continue
 		}
 
-		r, w := utf8.DecodeRuneInString(s[i:])
-		i += w - 1
+		gc, _, w, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		i += len(gc)
 
-		if r == '\t' {
-			ind += gOpts.tabstop - (ind-off)%gOpts.tabstop
+		if gc == "\t" {
+			length += gOpts.tabstop - length%gOpts.tabstop
 		} else {
-			ind += runewidth.RuneWidth(r)
+			length += w
 		}
 	}
 
-	return ind
+	return length
 }
 
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
@@ -84,17 +84,17 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 			continue
 		}
 
-		r, n := utf8.DecodeRuneInString(s[i:])
-		if r == '\t' {
+		gc, _, _, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		if gc == "\t" {
 			w := gOpts.tabstop - (x+off+printLength(string(buf)))%gOpts.tabstop
 			for i := 0; i < w; i++ {
 				buf = append(buf, ' ')
 			}
-		} else if r != '\r' {
-			buf = append(buf, r)
+		} else if gc != "\r" {
+			buf = append(buf, []rune(gc)...)
 		}
 
-		i += n
+		i += len(gc)
 	}
 
 	put()
@@ -381,7 +381,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, []rune(gOpts.truncatechar)[0]))
-		for j := runeSliceWidth(filename); j < maxFilenameWidth; j++ {
+		for j := uniseg.StringWidth(string(filename)); j < maxFilenameWidth; j++ {
 			filename = append(filename, ' ')
 		}
 
