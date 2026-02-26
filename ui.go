@@ -90,7 +90,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 			for i := 0; i < w; i++ {
 				buf = append(buf, ' ')
 			}
-		} else {
+		} else if r != '\r' {
 			buf = append(buf, r)
 		}
 
