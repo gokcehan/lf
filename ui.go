@@ -63,13 +63,14 @@ func printLength(s string) int {
 }
 
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
-	buf := make([]rune, 0, len(s))
+	var b strings.Builder
 	off := 0
 	put := func() {
-		if len(buf) > 0 {
-			screen.PutStrStyled(win.x+x+off, win.y+y, string(buf), st)
-			off += printLength(string(buf))
-			buf = buf[:0]
+		if b.Len() > 0 {
+			s := b.String()
+			screen.PutStrStyled(win.x+x+off, win.y+y, s, st)
+			off += printLength(s)
+			b.Reset()
 		}
 	}
 
@@ -86,12 +87,10 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 
 		gc, _, _, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
 		if gc == "\t" {
-			w := gOpts.tabstop - (x+off+printLength(string(buf)))%gOpts.tabstop
-			for i := 0; i < w; i++ {
-				buf = append(buf, ' ')
-			}
+			w := gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
+			b.WriteString(strings.Repeat(" ", w))
 		} else if gc != "\r" {
-			buf = append(buf, []rune(gc)...)
+			b.WriteString(gc)
 		}
 
 		i += len(gc)
