@@ -132,7 +132,9 @@ var gLocalOpts struct {
 	sortby    map[string]sortMethod
 }
 
-func localOptPaths(path string) []string {
+type localOptPaths []string
+
+func getLocalOptPaths(path string) localOptPaths {
 	list := []string{path}
 	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
 		list = append(list, curr+string(filepath.Separator))
@@ -140,8 +142,8 @@ func localOptPaths(path string) []string {
 	return list
 }
 
-func getDirCounts(path string) bool {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getDirCounts() bool {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.dircounts[key]; ok {
 			return val
 		}
@@ -149,8 +151,8 @@ func getDirCounts(path string) bool {
 	return gOpts.dircounts
 }
 
-func getDirFirst(path string) bool {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getDirFirst() bool {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.dirfirst[key]; ok {
 			return val
 		}
@@ -158,8 +160,8 @@ func getDirFirst(path string) bool {
 	return gOpts.dirfirst
 }
 
-func getDirOnly(path string) bool {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getDirOnly() bool {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.dironly[key]; ok {
 			return val
 		}
@@ -167,8 +169,8 @@ func getDirOnly(path string) bool {
 	return gOpts.dironly
 }
 
-func getHidden(path string) bool {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getHidden() bool {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.hidden[key]; ok {
 			return val
 		}
@@ -176,8 +178,8 @@ func getHidden(path string) bool {
 	return gOpts.hidden
 }
 
-func getInfo(path string) []string {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getInfo() []string {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.info[key]; ok {
 			return val
 		}
@@ -185,8 +187,8 @@ func getInfo(path string) []string {
 	return gOpts.info
 }
 
-func getReverse(path string) bool {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getReverse() bool {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.reverse[key]; ok {
 			return val
 		}
@@ -194,8 +196,8 @@ func getReverse(path string) bool {
 	return gOpts.reverse
 }
 
-func getSortBy(path string) sortMethod {
-	for _, key := range localOptPaths(path) {
+func (paths localOptPaths) getSortBy() sortMethod {
+	for _, key := range paths {
 		if val, ok := gLocalOpts.sortby[key]; ok {
 			return val
 		}

@@ -293,11 +293,12 @@ func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, 
 	var info strings.Builder
 	var custom string
 	var off int
+	optPaths := getLocalOptPaths(d.path)
 
-	for _, s := range getInfo(d.path) {
+	for _, s := range optPaths.getInfo() {
 		switch s {
 		case "size":
-			if f.IsDir() && getDirCounts(d.path) {
+			if f.IsDir() && optPaths.getDirCounts() {
 				switch {
 				case f.dirCount < 0:
 					info.WriteString("     !")
@@ -411,7 +412,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	var fetchedCustom bool
 
 	// Only fetch user/group/custom widths if configured to display them
-	for _, s := range getInfo(dir.path) {
+	for _, s := range getLocalOptPaths(dir.path).getInfo() {
 		switch s {
 		case "user":
 			userWidth = getUserWidth(dir, beg, end)

@@ -99,7 +99,7 @@ func newFile(path string) *file {
 	}
 
 	dirCount := -1
-	if lstat.IsDir() && getDirCounts(filepath.Dir(path)) {
+	if lstat.IsDir() && getLocalOptPaths(filepath.Dir(path)).getDirCounts() {
 		d, err := os.Open(path)
 		if err != nil {
 			log.Printf("opening file: %s", err)
@@ -203,12 +203,13 @@ func newDir(path string) *dir {
 }
 
 func (dir *dir) sort() {
-	dir.sortby = getSortBy(dir.path)
-	dir.dircounts = getDirCounts(dir.path)
-	dir.dirfirst = getDirFirst(dir.path)
-	dir.dironly = getDirOnly(dir.path)
-	dir.hidden = getHidden(dir.path)
-	dir.reverse = getReverse(dir.path)
+	optPaths := getLocalOptPaths(dir.path)
+	dir.sortby = optPaths.getSortBy()
+	dir.dircounts = optPaths.getDirCounts()
+	dir.dirfirst = optPaths.getDirFirst()
+	dir.dironly = optPaths.getDirOnly()
+	dir.hidden = optPaths.getHidden()
+	dir.reverse = optPaths.getReverse()
 	dir.hiddenfiles = gOpts.hiddenfiles
 	dir.ignorecase = gOpts.ignorecase
 	dir.ignoredia = gOpts.ignoredia
@@ -493,15 +494,16 @@ func (nav *nav) getDir(path string) *dir {
 		nav.dirChan <- newDir(path)
 	}()
 
+	optPaths := getLocalOptPaths(path)
 	d := &dir{
 		loading:      true,
 		path:         path,
-		sortby:       getSortBy(path),
-		dircounts:    getDirCounts(path),
-		dirfirst:     getDirFirst(path),
-		dironly:      getDirOnly(path),
-		hidden:       getHidden(path),
-		reverse:      getReverse(path),
+		sortby:       optPaths.getSortBy(),
+		dircounts:    optPaths.getDirCounts(),
+		dirfirst:     optPaths.getDirFirst(),
+		dironly:      optPaths.getDirOnly(),
+		hidden:       optPaths.getHidden(),
+		reverse:      optPaths.getReverse(),
 		visualAnchor: -1,
 		hiddenfiles:  gOpts.hiddenfiles,
 		ignorecase:   gOpts.ignorecase,
@@ -522,8 +524,7 @@ func (nav *nav) checkDir(dir *dir) {
 		return
 	}
 
-	switch {
-	case s.ModTime().After(dir.loadTime):
+	if s.ModTime().After(dir.loadTime) {
 		// XXX: Linux builtin exFAT drivers are able to predict modifications in the future
 		// https://bugs.launchpad.net/ubuntu/+source/ubuntu-meta/+bug/1872504
 		if s.ModTime().After(time.Now()) {
@@ -534,7 +535,14 @@ func (nav *nav) checkDir(dir *dir) {
 		go func() {
 			nav.dirChan <- newDir(dir.path)
 		}()
-	case dir.dircounts != getDirCounts(dir.path):
+
+		return
+	}
+
+	optPaths := getLocalOptPaths(dir.path)
+
+	switch {
+	case dir.dircounts != optPaths.getDirCounts():
 		dir.loading = true
 		go func() {
 			nav.dirChan <- newDir(dir.path)
@@ -542,11 +550,11 @@ func (nav *nav) checkDir(dir *dir) {
 	// Although toggling dircounts can affect sorting, it is already handled by
 	// reloading the directory which should sort the files anyway, so it is not
 	// checked below.
-	case dir.sortby != getSortBy(dir.path) ||
-		dir.dirfirst != getDirFirst(dir.path) ||
-		dir.dironly != getDirOnly(dir.path) ||
-		dir.hidden != getHidden(dir.path) ||
-		dir.reverse != getReverse(dir.path) ||
+	case dir.sortby != optPaths.getSortBy() ||
+		dir.dirfirst != optPaths.getDirFirst() ||
+		dir.dironly != optPaths.getDirOnly() ||
+		dir.hidden != optPaths.getHidden() ||
+		dir.reverse != optPaths.getReverse() ||
 		!reflect.DeepEqual(dir.hiddenfiles, gOpts.hiddenfiles) ||
 		dir.ignorecase != gOpts.ignorecase ||
 		dir.ignoredia != gOpts.ignoredia:

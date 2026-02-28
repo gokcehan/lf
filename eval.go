@@ -1602,7 +1602,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if f.customInfo != v {
 			f.customInfo = v
 			// only sort when order changes
-			if getSortBy(d.path) == customSort {
+			if getLocalOptPaths(d.path).getSortBy() == customSort {
 				d.sort()
 			}
 		}
