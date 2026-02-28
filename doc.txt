@@ -1740,6 +1740,8 @@ It is possible to combine special keys with modifiers:
 
     map <a-enter> down
 
+Combining multiple modifiers (e.g. Ctrl+Shift+Space) is not supported.
+
 WARNING: Some key combinations will likely be intercepted by your OS,
 window manager, or terminal. Other key combinations cannot be recognized
 by lf due to the way terminals work (e.g. Ctrl+h combination sends a
