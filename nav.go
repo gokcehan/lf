@@ -494,6 +494,7 @@ func (nav *nav) getDir(path string) *dir {
 
 	d := &dir{
 		loading:      true,
+		loadTime:     time.Now(),
 		path:         path,
 		sortby:       getSortBy(path),
 		dircounts:    getDirCounts(path),

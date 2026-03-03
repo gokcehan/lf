@@ -371,7 +371,7 @@ type dirStyle struct {
 	role   dirRole
 }
 
-func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle) {
+func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle, previewTimer *time.Timer) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -379,11 +379,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	fileslen := len(dir.files)
 
 	switch {
+	case dir.loading && fileslen == 0:
+		if time.Since(dir.loadTime) > 100*time.Millisecond {
+			win.printMsg(ui.screen, "loading...")
+		} else {
+			previewTimer.Reset(100 * time.Millisecond)
+		}
+		return
 	case dir.noPerm:
 		win.printMsg(ui.screen, "permission denied")
-		return
-	case dir.loading && fileslen == 0:
-		win.printMsg(ui.screen, "loading...")
 		return
 	case fileslen == 0:
 		win.printMsg(ui.screen, "empty")
@@ -1163,7 +1167,7 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 			ui.sxScreen.lastFile = ""
 			dir := nav.getDir(curr.path)
 			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
-			win.printDir(ui, dir, context, dirStyle)
+			win.printDir(ui, dir, context, dirStyle, nav.previewTimer)
 		}
 	}
 }
@@ -1268,8 +1272,8 @@ func (ui *ui) draw(nav *nav) {
 			role = Active
 		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
-			ui.wins[i].printDir(ui, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, role: role})
+			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: role}
+			ui.wins[i].printDir(ui, dir, &context, dirStyle, nav.previewTimer)
 		}
 	}
 
