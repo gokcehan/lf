@@ -132,6 +132,8 @@ var gLocalOpts struct {
 	sortby    map[string]sortMethod
 }
 
+// localOptPaths should not be created directly, use getLocalOptPaths
+// It's added for performance reasons, to allow each method on it to reuse the same slice
 type localOptPaths []string
 
 func getLocalOptPaths(path string) localOptPaths {
