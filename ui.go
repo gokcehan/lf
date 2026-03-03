@@ -262,7 +262,7 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previe
 		if time.Since(reg.loadTime) > 100*time.Millisecond {
 			win.printMsg(screen, "loading...")
 		} else {
-			previewTimer.Reset(10 * time.Millisecond)
+			previewTimer.Reset(100 * time.Millisecond)
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -383,7 +383,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		if time.Since(dir.loadTime) > 100*time.Millisecond {
 			win.printMsg(ui.screen, "loading...")
 		} else {
-			previewTimer.Reset(10 * time.Millisecond)
+			previewTimer.Reset(100 * time.Millisecond)
 		}
 		return
 	case dir.noPerm:
