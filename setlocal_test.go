@@ -43,7 +43,7 @@ func TestSetLocalRuleUpdate(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if test.rules.update(test.pattern, 10, updater); !reflect.DeepEqual(test.rules, test.exp) {
+		if _ = test.rules.update(test.pattern, 10, updater); !reflect.DeepEqual(test.rules, test.exp) {
 			t.Errorf("at test '%v' expected '%v' but got '%v'", test, test.exp, test.rules)
 		}
 	}

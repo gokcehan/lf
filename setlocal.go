@@ -12,7 +12,7 @@ type setLocalRule[T any] struct {
 type setLocalRules[T any] []setLocalRule[T]
 
 func (rules *setLocalRules[T]) set(pattern string, val T) {
-	rules.update(pattern, val, func(v *T) error {
+	_ = rules.update(pattern, val, func(v *T) error {
 		*v = val
 		return nil
 	})
