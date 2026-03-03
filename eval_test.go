@@ -624,38 +624,38 @@ func TestApplyBoolOpt(t *testing.T) {
 
 func TestApplyLocalBoolOpt(t *testing.T) {
 	tests := []struct {
-		localOpt  map[string]bool
+		localOpt  setLocalRules[bool]
 		globalOpt bool
 		e         setLocalExpr
 		exp       bool
 	}{
-		{map[string]bool{}, false, setLocalExpr{"/", "feature", ""}, true},
-		{map[string]bool{}, false, setLocalExpr{"/", "feature", "true"}, true},
-		{map[string]bool{}, false, setLocalExpr{"/", "feature", "false"}, false},
-		{map[string]bool{}, false, setLocalExpr{"/", "nofeature", ""}, false},
-		{map[string]bool{}, true, setLocalExpr{"/", "feature!", ""}, false},
-		{map[string]bool{}, false, setLocalExpr{"/", "feature!", ""}, true},
-		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", ""}, true},
-		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", "true"}, true},
-		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature", "false"}, false},
-		{map[string]bool{"/": true}, false, setLocalExpr{"/", "nofeature", ""}, false},
-		{map[string]bool{"/": true}, true, setLocalExpr{"/", "feature!", ""}, false},
-		{map[string]bool{"/": true}, false, setLocalExpr{"/", "feature!", ""}, false},
-		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", ""}, true},
-		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", "true"}, true},
-		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature", "false"}, false},
-		{map[string]bool{"/": false}, false, setLocalExpr{"/", "nofeature", ""}, false},
-		{map[string]bool{"/": false}, true, setLocalExpr{"/", "feature!", ""}, true},
-		{map[string]bool{"/": false}, false, setLocalExpr{"/", "feature!", ""}, true},
+		{setLocalRules[bool]{}, false, setLocalExpr{"/", "feature", ""}, true},
+		{setLocalRules[bool]{}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{setLocalRules[bool]{}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{setLocalRules[bool]{}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{setLocalRules[bool]{}, true, setLocalExpr{"/", "feature!", ""}, false},
+		{setLocalRules[bool]{}, false, setLocalExpr{"/", "feature!", ""}, true},
+		{setLocalRules[bool]{{"/", true}}, false, setLocalExpr{"/", "feature", ""}, true},
+		{setLocalRules[bool]{{"/", true}}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{setLocalRules[bool]{{"/", true}}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{setLocalRules[bool]{{"/", true}}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{setLocalRules[bool]{{"/", true}}, true, setLocalExpr{"/", "feature!", ""}, false},
+		{setLocalRules[bool]{{"/", true}}, false, setLocalExpr{"/", "feature!", ""}, false},
+		{setLocalRules[bool]{{"/", false}}, false, setLocalExpr{"/", "feature", ""}, true},
+		{setLocalRules[bool]{{"/", false}}, false, setLocalExpr{"/", "feature", "true"}, true},
+		{setLocalRules[bool]{{"/", false}}, false, setLocalExpr{"/", "feature", "false"}, false},
+		{setLocalRules[bool]{{"/", false}}, false, setLocalExpr{"/", "nofeature", ""}, false},
+		{setLocalRules[bool]{{"/", false}}, true, setLocalExpr{"/", "feature!", ""}, true},
+		{setLocalRules[bool]{{"/", false}}, false, setLocalExpr{"/", "feature!", ""}, true},
 	}
 
 	for _, test := range tests {
 		testStr := fmt.Sprintf("%v", test)
-		if err := applyLocalBoolOpt(test.localOpt, test.globalOpt, &test.e); err != nil {
+		if err := applyLocalBoolOpt(&test.localOpt, test.globalOpt, &test.e); err != nil {
 			t.Errorf("at test '%s' expected '%t' but got an error '%s'", testStr, test.exp, err)
 			continue
 		}
-		result := test.localOpt[test.e.path]
+		result := test.localOpt.get("/", false)
 		if result != test.exp {
 			t.Errorf("at test '%s' expected '%t' but got '%t'", testStr, test.exp, result)
 		}
