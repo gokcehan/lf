@@ -2,7 +2,6 @@ package main
 
 import (
 	"maps"
-	"path/filepath"
 	"time"
 )
 
@@ -123,84 +122,41 @@ var gOpts struct {
 }
 
 var gLocalOpts struct {
-	dircounts map[string]bool
-	dirfirst  map[string]bool
-	dironly   map[string]bool
-	hidden    map[string]bool
-	info      map[string][]string
-	reverse   map[string]bool
-	sortby    map[string]sortMethod
-}
-
-func localOptPaths(path string) []string {
-	list := []string{path}
-	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
-		list = append(list, curr+string(filepath.Separator))
-	}
-	return list
+	dircounts setLocalRules[bool]
+	dirfirst  setLocalRules[bool]
+	dironly   setLocalRules[bool]
+	hidden    setLocalRules[bool]
+	info      setLocalRules[[]string]
+	reverse   setLocalRules[bool]
+	sortby    setLocalRules[sortMethod]
 }
 
 func getDirCounts(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dircounts[key]; ok {
-			return val
-		}
-	}
-	return gOpts.dircounts
+	return gLocalOpts.dircounts.get(path, gOpts.dircounts)
 }
 
 func getDirFirst(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dirfirst[key]; ok {
-			return val
-		}
-	}
-	return gOpts.dirfirst
+	return gLocalOpts.dirfirst.get(path, gOpts.dirfirst)
 }
 
 func getDirOnly(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dironly[key]; ok {
-			return val
-		}
-	}
-	return gOpts.dironly
+	return gLocalOpts.dironly.get(path, gOpts.dironly)
 }
 
 func getHidden(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.hidden[key]; ok {
-			return val
-		}
-	}
-	return gOpts.hidden
+	return gLocalOpts.hidden.get(path, gOpts.hidden)
 }
 
 func getInfo(path string) []string {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.info[key]; ok {
-			return val
-		}
-	}
-	return gOpts.info
+	return gLocalOpts.info.get(path, gOpts.info)
 }
 
 func getReverse(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.reverse[key]; ok {
-			return val
-		}
-	}
-	return gOpts.reverse
+	return gLocalOpts.reverse.get(path, gOpts.reverse)
 }
 
 func getSortBy(path string) sortMethod {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.sortby[key]; ok {
-			return val
-		}
-	}
-	return gOpts.sortby
+	return gLocalOpts.sortby.get(path, gOpts.sortby)
 }
 
 func init() {
@@ -411,14 +367,6 @@ func init() {
 
 	gOpts.cmds = make(map[string]expr)
 	gOpts.user = make(map[string]string)
-
-	gLocalOpts.dircounts = make(map[string]bool)
-	gLocalOpts.dirfirst = make(map[string]bool)
-	gLocalOpts.dironly = make(map[string]bool)
-	gLocalOpts.hidden = make(map[string]bool)
-	gLocalOpts.info = make(map[string][]string)
-	gLocalOpts.reverse = make(map[string]bool)
-	gLocalOpts.sortby = make(map[string]sortMethod)
 
 	setDefaults()
 }

@@ -15,7 +15,7 @@ package main
 //
 // SetExpr      = 'set' <opt> <val> ';'
 //
-// SetLocalExpr = 'setlocal' <dir> <opt> <val> ';'
+// SetLocalExpr = 'setlocal' <pattern> <opt> <val> ';'
 //
 // MapExpr      = 'map' <keys> Expr
 //
@@ -65,16 +65,16 @@ func (e *setExpr) String() string {
 }
 
 type setLocalExpr struct {
-	path string
-	opt  string
-	val  string
+	pattern string
+	opt     string
+	val     string
 }
 
 func (e *setLocalExpr) String() string {
 	if e.val == "" {
-		return fmt.Sprintf("setlocal %s %s", e.path, e.opt)
+		return fmt.Sprintf("setlocal %s %s", e.pattern, e.opt)
 	}
-	return fmt.Sprintf("setlocal %s %s %s", e.path, e.opt, e.val)
+	return fmt.Sprintf("setlocal %s %s %s", e.pattern, e.opt, e.val)
 }
 
 type mapExpr struct {

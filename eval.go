@@ -43,18 +43,10 @@ func applyBoolOpt(opt *bool, e *setExpr) error {
 	return nil
 }
 
-func applyLocalBoolOpt(localOpt map[string]bool, globalOpt bool, e *setLocalExpr) error {
-	opt, ok := localOpt[e.path]
-	if !ok {
-		opt = globalOpt
-	}
-
-	if err := applyBoolOpt(&opt, &setExpr{e.opt, e.val}); err != nil {
-		return err
-	}
-
-	localOpt[e.path] = opt
-	return nil
+func applyLocalBoolOpt(rules *setLocalRules[bool], globalOpt bool, e *setLocalExpr) error {
+	return rules.update(e.pattern, globalOpt, func(val *bool) error {
+		return applyBoolOpt(val, &setExpr{e.opt, e.val})
+	})
 }
 
 func (e *setExpr) eval(app *app, _ []string) {
@@ -456,52 +448,43 @@ func (e *setExpr) eval(app *app, _ []string) {
 }
 
 func (e *setLocalExpr) eval(app *app, _ []string) {
-	recursive := strings.HasSuffix(e.path, string(os.PathSeparator)) && e.path != string(os.PathSeparator)
-	if recursive {
-		e.path = strings.TrimSuffix(e.path, string(os.PathSeparator))
-	}
-
 	var err error
-	e.path, err = filepath.Abs(replaceTilde(e.path))
+	e.pattern, err = filepath.Abs(replaceTilde(e.pattern))
 	if err != nil {
 		app.ui.echoerrf("setlocal: %s", err)
 		return
 	}
 
-	if recursive && e.path != string(os.PathSeparator) {
-		e.path += string(os.PathSeparator)
-	}
-
 	switch e.opt {
 	case "dircounts", "nodircounts", "dircounts!":
-		err = applyLocalBoolOpt(gLocalOpts.dircounts, gOpts.dircounts, e)
+		err = applyLocalBoolOpt(&gLocalOpts.dircounts, gOpts.dircounts, e)
 	case "dirfirst", "nodirfirst", "dirfirst!":
-		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
+		err = applyLocalBoolOpt(&gLocalOpts.dirfirst, gOpts.dirfirst, e)
 		if err == nil {
 			app.nav.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
-		err = applyLocalBoolOpt(gLocalOpts.dironly, gOpts.dironly, e)
+		err = applyLocalBoolOpt(&gLocalOpts.dironly, gOpts.dironly, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
-		err = applyLocalBoolOpt(gLocalOpts.hidden, gOpts.hidden, e)
+		err = applyLocalBoolOpt(&gLocalOpts.hidden, gOpts.hidden, e)
 		if err == nil {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
 	case "reverse", "noreverse", "reverse!":
-		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
+		err = applyLocalBoolOpt(&gLocalOpts.reverse, gOpts.reverse, e)
 		if err == nil {
 			app.nav.sort()
 		}
 	case "info":
 		if e.val == "" {
-			gLocalOpts.info[e.path] = nil
+			gLocalOpts.info.set(e.pattern, nil)
 			return
 		}
 		toks := strings.Split(e.val, ":")
@@ -513,14 +496,14 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 				return
 			}
 		}
-		gLocalOpts.info[e.path] = toks
+		gLocalOpts.info.set(e.pattern, toks)
 	case "sortby":
 		method := sortMethod(e.val)
 		if !isValidSortMethod(method) {
 			app.ui.echoerr(invalidSortErrorMessage)
 			return
 		}
-		gLocalOpts.sortby[e.path] = method
+		gLocalOpts.sortby.set(e.pattern, method)
 		app.nav.sort()
 	default:
 		err = fmt.Errorf("unknown option: %s", e.opt)
