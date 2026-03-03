@@ -478,7 +478,6 @@ type nav struct {
 	prevFilter      []string
 	volatilePreview bool
 	previewTimer    *time.Timer
-	previewLoading  bool
 	preloadTimer    *time.Timer
 	jumpList        []string
 	jumpListInd     int
@@ -855,7 +854,6 @@ func (nav *nav) preload() {
 		}
 	}
 
-	nav.startPreview()
 	for i := nav.height / 2; i >= 1; i-- {
 		doPreload(dir.ind - i)
 		doPreload(dir.ind + i)
@@ -952,7 +950,6 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (!gOpts.preload && r.loading) {
 		r = &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
-		nav.startPreview()
 		if gOpts.preload {
 			select {
 			case nav.preloadChan <- path:
@@ -965,7 +962,10 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	}
 
 	if volatile && r.volatile {
-		nav.startPreview()
+		if !gOpts.preload {
+			r.loadTime = time.Now()
+			r.loading = true
+		}
 		nav.previewChan <- path
 	}
 
@@ -989,15 +989,8 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		nav.startPreview()
 		nav.previewChan <- reg.path
 	}
-}
-
-func (nav *nav) startPreview() {
-	nav.previewTimer.Stop()
-	nav.previewLoading = false
-	nav.previewTimer.Reset(100 * time.Millisecond)
 }
 
 func (nav *nav) sort() {

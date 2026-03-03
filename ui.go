@@ -256,11 +256,13 @@ func (win *win) printMsg(screen tcell.Screen, s string) {
 	win.print(screen, pad, 0, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previewTimer *time.Timer) {
 	switch {
 	case reg.loading:
-		if previewLoading {
+		if time.Since(reg.loadTime) > 100*time.Millisecond {
 			win.printMsg(screen, "loading...")
+		} else {
+			previewTimer.Reset(100 * time.Millisecond)
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -1155,7 +1157,7 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 	if gOpts.preview {
 		if curr.isPreviewable() {
 			if reg, ok := nav.regCache[curr.path]; ok {
-				win.printReg(ui.screen, reg, nav.previewLoading, &ui.sxScreen)
+				win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
 			}
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""

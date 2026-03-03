@@ -509,7 +509,6 @@ func (app *app) loop() {
 			app.nav.renew()
 			app.ui.loadFile(app, false)
 		case <-app.nav.previewTimer.C:
-			app.nav.previewLoading = true
 			app.ui.draw(app.nav)
 		case <-app.nav.preloadTimer.C:
 			app.nav.preload()
