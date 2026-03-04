@@ -518,9 +518,9 @@ type ui struct {
 	menu        string             // rendered (multiline) menu text (i.e. completions, binds, marks)
 	menuSelect  *menuSelect        // selected menu entry (completion menu only)
 	cmdPrefix   string             // command prefix/prompt (empty: Normal mode)
-	cmdAccLeft  []rune             // command buffer left of cursor
-	cmdAccRight []rune             // command buffer right of cursor
-	cmdYankBuf  []rune             // yank buffer for command line editing
+	cmdAccLeft  string             // command buffer left of cursor
+	cmdAccRight string             // command buffer right of cursor
+	cmdYankBuf  string             // yank buffer for command line editing
 	keyAcc      string             // keys typed so far for mapping lookup
 	keyCount    string             // count prefix for next command
 	styles      styleMap           // parsed styles
@@ -1135,15 +1135,15 @@ func (ui *ui) draw(nav *nav) {
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
 		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
-		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+string(ui.cmdAccRight))
+		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+ui.cmdAccRight)
 		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
 		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+string(ui.cmdAccRight))
+		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+ui.cmdAccRight)
 		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
 	}
 

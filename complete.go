@@ -401,8 +401,7 @@ func matchSearch(s string) (matches []compMatch, longest string) {
 	return
 }
 
-func completeCmd(acc []rune) (matches []compMatch, longest string) {
-	s := string(acc)
+func completeCmd(s string) (matches []compMatch, longest string) {
 	f := tokenize(s)
 
 	if len(f) == 1 {
@@ -489,8 +488,8 @@ func completeCmd(acc []rune) (matches []compMatch, longest string) {
 	return
 }
 
-func completeShell(acc []rune) (matches []compMatch, longest string) {
-	f := tokenize(string(acc))
+func completeShell(s string) (matches []compMatch, longest string) {
+	f := tokenize(s)
 
 	switch len(f) {
 	case 1:
@@ -504,7 +503,7 @@ func completeShell(acc []rune) (matches []compMatch, longest string) {
 	return
 }
 
-func completeSearch(acc []rune) (matches []compMatch, longest string) {
-	matches, longest = matchSearch(string(acc))
+func completeSearch(s string) (matches []compMatch, longest string) {
+	matches, longest = matchSearch(s)
 	return
 }
