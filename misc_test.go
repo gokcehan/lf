@@ -32,100 +32,6 @@ func TestIsRoot(t *testing.T) {
 	}
 }
 
-func TestRuneSliceWidth(t *testing.T) {
-	tests := []struct {
-		rs  []rune
-		exp int
-	}{
-		{[]rune{'a', 'b'}, 2},
-		{[]rune{'ı', 'ş'}, 2},
-		{[]rune{'世', '界'}, 4},
-		{[]rune{'世', 'a', '界', 'ı'}, 6},
-	}
-
-	for _, test := range tests {
-		if got := runeSliceWidth(test.rs); got != test.exp {
-			t.Errorf("at input '%v' expected '%d' but got '%d'", test.rs, test.exp, got)
-		}
-	}
-}
-
-func TestRuneSliceWidthRange(t *testing.T) {
-	tests := []struct {
-		rs  []rune
-		beg int
-		end int
-		exp []rune
-	}{
-		{[]rune{}, 0, 0, []rune{}},
-		{[]rune{'a', 'b', 'c', 'd'}, 1, 3, []rune{'b', 'c'}},
-		{[]rune{'a', 'ı', 'b', 'ş'}, 1, 3, []rune{'ı', 'b'}},
-		{[]rune{'世', '界', '世', '界'}, 2, 6, []rune{'界', '世'}},
-		{[]rune{'世', '界', '世', '界'}, 3, 6, []rune{'世'}},
-		{[]rune{'世', '界', '世', '界'}, 2, 5, []rune{'界'}},
-		{[]rune{'世', '界', '世', '界'}, 3, 5, []rune{}},
-		{[]rune{'世', '界', '世', '界'}, 4, 4, []rune{}},
-		{[]rune{'世', '界', '世', '界'}, 5, 5, []rune{}},
-		{[]rune{'世', '界', '世', '界'}, 4, 7, []rune{'世'}},
-		{[]rune{'世', '界', '世', '界'}, 4, 8, []rune{'世', '界'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 2, 5, []rune{'a', '界'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 2, 4, []rune{'a'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 3, 5, []rune{'界'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 3, 4, []rune{}},
-		{[]rune{'世', 'a', '界', 'ı'}, 3, 3, []rune{}},
-		{[]rune{'世', 'a', '界', 'ı'}, 4, 4, []rune{}},
-		{[]rune{'世', 'a', '界', 'ı'}, 4, 6, []rune{'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 5, 6, []rune{'ı'}},
-	}
-
-	for _, test := range tests {
-		if got := runeSliceWidthRange(test.rs, test.beg, test.end); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
-		}
-	}
-}
-
-func TestRuneSliceWidthLastRange(t *testing.T) {
-	tests := []struct {
-		rs       []rune
-		maxWidth int
-		exp      []rune
-	}{
-		{[]rune{}, 0, []rune{}},
-		{[]rune{}, 1, []rune{}},
-		{[]rune{'a', 'ı', 'b', ' '}, 0, []rune{}},
-		{[]rune{'a', 'ı', 'b', ' '}, 1, []rune{' '}},
-		{[]rune{'a', 'ı', 'b', ' '}, 2, []rune{'b', ' '}},
-		{[]rune{'a', 'ı', 'b', ' '}, 3, []rune{'ı', 'b', ' '}},
-		{[]rune{'a', 'ı', 'b', ' '}, 4, []rune{'a', 'ı', 'b', ' '}},
-		{[]rune{'a', 'ı', 'b', ' '}, 5, []rune{'a', 'ı', 'b', ' '}},
-		{[]rune{'世', '界', '世', '界'}, 0, []rune{}},
-		{[]rune{'世', '界', '世', '界'}, 1, []rune{}},
-		{[]rune{'世', '界', '世', '界'}, 2, []rune{'界'}},
-		{[]rune{'世', '界', '世', '界'}, 3, []rune{'界'}},
-		{[]rune{'世', '界', '世', '界'}, 4, []rune{'世', '界'}},
-		{[]rune{'世', '界', '世', '界'}, 5, []rune{'世', '界'}},
-		{[]rune{'世', '界', '世', '界'}, 6, []rune{'界', '世', '界'}},
-		{[]rune{'世', '界', '世', '界'}, 7, []rune{'界', '世', '界'}},
-		{[]rune{'世', '界', '世', '界'}, 8, []rune{'世', '界', '世', '界'}},
-		{[]rune{'世', '界', '世', '界'}, 9, []rune{'世', '界', '世', '界'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 0, []rune{}},
-		{[]rune{'世', 'a', '界', 'ı'}, 1, []rune{'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 2, []rune{'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 3, []rune{'界', 'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 4, []rune{'a', '界', 'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 5, []rune{'a', '界', 'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 6, []rune{'世', 'a', '界', 'ı'}},
-		{[]rune{'世', 'a', '界', 'ı'}, 7, []rune{'世', 'a', '界', 'ı'}},
-	}
-
-	for _, test := range tests {
-		if got := runeSliceWidthLastRange(test.rs, test.maxWidth); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
-		}
-	}
-}
-
 func TestFirstGraphemeCluster(t *testing.T) {
 	tests := []struct {
 		rs  []rune
@@ -158,6 +64,59 @@ func TestLastGraphemeCluster(t *testing.T) {
 	for _, test := range tests {
 		if got := lastGraphemeCluster(test.rs); !reflect.DeepEqual(got, test.exp) {
 			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		}
+	}
+}
+
+func TestTruncateRight(t *testing.T) {
+	tests := []struct {
+		s        string
+		maxWidth int
+		exp      string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 0, ""},
+		{"a", 1, "a"},
+		{"ab", 1, "a"},
+		{"世", 0, ""},
+		{"世", 1, ""},
+		{"世界", 2, "世"},
+		{"世界", 3, "世"},
+		{"a🏳️b", 2, "a"},
+		{"a🏳️b", 3, "a🏳️"},
+		{"a🏳️b", 4, "a🏳️b"},
+	}
+
+	for _, test := range tests {
+		if got := truncateRight(test.s, test.maxWidth); got != test.exp {
+			t.Errorf("at input ('%v', %v) expected '%v' but got '%v'", test.s, test.maxWidth, test.exp, got)
+		}
+	}
+}
+func TestTruncateLeft(t *testing.T) {
+	tests := []struct {
+		s        string
+		maxWidth int
+		exp      string
+	}{
+		{"", 0, ""},
+		{"", 1, ""},
+		{"a", 0, ""},
+		{"a", 1, "a"},
+		{"ab", 1, "b"},
+		{"世", 0, ""},
+		{"世", 1, ""},
+		{"世界", 2, "界"},
+		{"世界", 3, "界"},
+		{"a🏳️b", 2, "b"},
+		{"a🏳️b", 3, "🏳️b"},
+		{"a🏳️b", 4, "a🏳️b"},
+	}
+
+	for _, test := range tests {
+		if got := truncateLeft(test.s, test.maxWidth); got != test.exp {
+			t.Errorf("at input ('%v', %v) expected '%v' but got '%v'", test.s, test.maxWidth, test.exp, got)
 		}
 	}
 }
@@ -538,7 +497,7 @@ func TestTruncateFilename(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		if got := truncateFilename(test.file, test.maxWidth, test.truncatePct, '~'); got != test.exp {
+		if got := truncateFilename(test.file, test.maxWidth, test.truncatePct, "~"); got != test.exp {
 			t.Errorf("at input (%v, %v, %v) expected '%s' but got '%s'", test.file, test.maxWidth, test.truncatePct, test.exp, got)
 		}
 	}

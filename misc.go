@@ -11,11 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/mattn/go-runewidth"
 	"github.com/rivo/uniseg"
 )
 
@@ -39,51 +39,6 @@ func replaceTilde(s string) string {
 	return s
 }
 
-func runeSliceWidth(rs []rune) int {
-	w := 0
-	for _, r := range rs {
-		w += runewidth.RuneWidth(r)
-	}
-	return w
-}
-
-func runeSliceWidthRange(rs []rune, beg, end int) []rune {
-	if beg == end {
-		return []rune{}
-	}
-
-	curr := 0
-	b := 0
-	foundb := false
-	for i, r := range rs {
-		w := runewidth.RuneWidth(r)
-		if curr >= beg && !foundb {
-			b = i
-			foundb = true
-		}
-		if curr == end || curr+w > end {
-			return rs[b:i]
-		}
-		curr += w
-	}
-
-	return rs[b:]
-}
-
-// runeSliceWidthLastRange returns the last runes of `rs` that take up
-// at most `maxWidth` space.
-func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
-	lastWidth := 0
-	for i := len(rs) - 1; i >= 0; i-- {
-		w := runewidth.RuneWidth(rs[i])
-		if lastWidth+w > maxWidth {
-			return rs[i+1:]
-		}
-		lastWidth += w
-	}
-	return rs
-}
-
 // firstGraphemeCluster returns the runes forming the first grapheme cluster of
 // the input.
 func firstGraphemeCluster(rs []rune) []rune {
@@ -101,6 +56,54 @@ func lastGraphemeCluster(rs []rune) []rune {
 		last = gr.Runes()
 	}
 	return last
+}
+
+// truncateRight truncates a string from the right based on Unicode widths,
+// taking into account grapheme clusters.
+func truncateRight(s string, maxWidth int) string {
+	buf := make([]byte, 0, len(s))
+	width := 0
+
+	gr := uniseg.NewGraphemes(s)
+	for gr.Next() {
+		width += gr.Width()
+		if width > maxWidth {
+			break
+		}
+
+		buf = append(buf, gr.Bytes()...)
+	}
+
+	return string(buf)
+}
+
+// truncateLeft truncates a string from the left based on Unicode widths,
+// taking into account grapheme clusters.
+func truncateLeft(s string, maxWidth int) string {
+	type cluster struct {
+		bytes []byte
+		width int
+	}
+
+	var clusters []cluster
+	totalWidth := 0
+	gr := uniseg.NewGraphemes(s)
+	for gr.Next() {
+		clusters = append(clusters, cluster{slices.Clone(gr.Bytes()), gr.Width()})
+		totalWidth += gr.Width()
+	}
+
+	buf := make([]byte, 0, len(s))
+	width := 0
+	for _, cluster := range clusters {
+		if totalWidth-width <= maxWidth {
+			buf = append(buf, cluster.bytes...)
+		}
+
+		width += cluster.width
+	}
+
+	return string(buf)
 }
 
 // cmdEscape is used to escape whitespace and special characters with
@@ -427,29 +430,22 @@ func getFileExtension(file fs.FileInfo) string {
 // character will appear (0 means left, 50 means middle, 100 means right).
 // The file extension is not affected by truncation, however it will be clipped
 // if it exceeds the allowed width.
-func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar rune) string {
+func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar string) string {
 	filename := file.Name()
-	if runeSliceWidth([]rune(filename)) <= maxWidth {
+	if uniseg.StringWidth(filename) <= maxWidth {
 		return filename
 	}
 
 	ext := getFileExtension(file)
-	avail := maxWidth - runewidth.RuneWidth(truncateChar) - runeSliceWidth([]rune(ext))
+	avail := maxWidth - uniseg.StringWidth(truncateChar) - uniseg.StringWidth(ext)
 	if avail < 0 {
-		result := append([]rune{truncateChar}, []rune(ext)...)
-		return string(runeSliceWidthRange(result, 0, maxWidth))
+		return truncateRight(truncateChar+ext, maxWidth)
 	}
 
-	basename := []rune(strings.TrimSuffix(filename, ext))
-	left := runeSliceWidthRange(basename, 0, avail*truncatePct/100)
-	right := runeSliceWidthLastRange(basename, avail-runeSliceWidth(left))
-
-	var result []rune
-	result = append(result, left...)
-	result = append(result, truncateChar)
-	result = append(result, right...)
-	result = append(result, []rune(ext)...)
-	return string(result)
+	basename := strings.TrimSuffix(filename, ext)
+	left := truncateRight(basename, avail*truncatePct/100)
+	right := truncateLeft(basename, avail-uniseg.StringWidth(left))
+	return left + truncateChar + right + ext
 }
 
 // deletePathRecursive deletes entries from a map if the key is either the given

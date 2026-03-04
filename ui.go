@@ -366,15 +366,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		// make space for select marker, and leave another space at the end
 		maxWidth := win.w - lnwidth - 2
 
-		var icon []rune
+		var icon string
 		var iconDef iconDef
 		if gOpts.icons {
 			iconDef = dirStyle.icons.get(f)
-			icon = slices.Concat([]rune(iconDef.icon), []rune{' '})
+			icon = iconDef.icon + " "
 		}
 
 		// subtract space for icon
-		maxFilenameWidth := maxWidth - runeSliceWidth(icon)
+		maxFilenameWidth := maxWidth - uniseg.StringWidth(icon)
 		// subtract space for tag if not merged with selection marker
 		if !gOpts.mergeindicators {
 			maxFilenameWidth--
@@ -387,14 +387,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			maxFilenameWidth -= infolen
 		}
 
-		filename := []rune(truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, []rune(gOpts.truncatechar)[0]))
-		for j := uniseg.StringWidth(string(filename)); j < maxFilenameWidth; j++ {
-			filename = append(filename, ' ')
+		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
+		spacing := maxFilenameWidth - uniseg.StringWidth(filename)
+		if spacing > 0 {
+			filename += strings.Repeat(" ", spacing)
 		}
 
 		if showInfo {
-			filename = append(filename, []rune(info)...)
-			customOff += nameOff + runeSliceWidth(icon) + maxFilenameWidth
+			filename += info
+			customOff += nameOff + uniseg.StringWidth(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -413,8 +414,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, tagOff, i, st, fmt.Sprintf(cursorFmt, tag))
 			}
 
-			line := slices.Concat(icon, filename, []rune{' '})
-			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, string(line)))
+			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, icon+filename+" "))
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
@@ -435,11 +435,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				if iconDef.hasStyle {
 					iconStyle = iconDef.style
 				}
-				win.print(ui.screen, nameOff, i, iconStyle, string(icon))
+				win.print(ui.screen, nameOff, i, iconStyle, icon)
 			}
 
-			line := slices.Concat(filename, []rune{' '})
-			win.print(ui.screen, nameOff+runeSliceWidth(icon), i, st, string(line))
+			win.print(ui.screen, nameOff+uniseg.StringWidth(icon), i, st, filename+" ")
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
@@ -1135,17 +1134,17 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
-		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix)-printLength(ui.msg))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+ui.msg)
-		ui.msgWin.print(ui.screen, runeSliceWidth(prefix)+printLength(ui.msg), 0, st, string(left)+string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+printLength(ui.msg)+runeSliceWidth(left), ui.msgWin.y)
+		prefix := truncateRight(ui.cmdPrefix, maxWidth)
+		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
+		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := runeSliceWidthRange([]rune(ui.cmdPrefix), 0, maxWidth)
-		left := runeSliceWidthLastRange(ui.cmdAccLeft, maxWidth-runeSliceWidth(prefix))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, string(prefix)+string(left)+string(ui.cmdAccRight))
-		ui.screen.ShowCursor(ui.msgWin.x+runeSliceWidth(prefix)+uniseg.StringWidth(string(left)), ui.msgWin.y)
+		prefix := truncateRight(ui.cmdPrefix, maxWidth)
+		left := truncateLeft(string(ui.cmdAccLeft), maxWidth-uniseg.StringWidth(prefix))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+string(ui.cmdAccRight))
+		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
 	}
 
 	ui.drawPreview(nav, &context)
@@ -1605,7 +1604,7 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 	wtot, _ := screen.Size()
 	wcol := 0
 	for _, m := range matches {
-		wcol = max(wcol, runeSliceWidth([]rune(m.name)))
+		wcol = max(wcol, uniseg.StringWidth(m.name))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1617,7 +1616,7 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 		if i%ncol == 0 {
 			b.WriteByte('\n')
 		}
-		w := runeSliceWidth([]rune(match.name))
+		w := uniseg.StringWidth(match.name)
 		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
 	}
 
