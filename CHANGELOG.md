@@ -12,10 +12,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Changed
 
+- The key `<backspace2>` has been renamed to `<backspace>` for `map` keybindings (#2286).
 - `.Stat.DirSize` and `.Stat.DirCount` in the ruler file no longer have a pointer type, and will be set to `-1` instead of `nil` if the corresponding value cannot be determined (#2397).
 
 ### Added
 
+- Emoji sequences containing Zero Width Joiner characters are now displayed as a single combined glyph (#2286).
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
 

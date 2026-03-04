@@ -16,10 +16,10 @@ import (
 	"unicode"
 
 	"github.com/mattn/go-runewidth"
+	"github.com/rivo/uniseg"
 )
 
 var (
-	reModKey    = regexp.MustCompile(`<(c|s|a)-(.+)>`)
 	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
 	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
 )
@@ -82,6 +82,25 @@ func runeSliceWidthLastRange(rs []rune, maxWidth int) []rune {
 		lastWidth += w
 	}
 	return rs
+}
+
+// firstGraphemeCluster returns the runes forming the first grapheme cluster of
+// the input.
+func firstGraphemeCluster(rs []rune) []rune {
+	gr := uniseg.NewGraphemes(string(rs))
+	gr.Next()
+	return gr.Runes()
+}
+
+// lastGraphemeCluster returns the runes forming the last grapheme cluster of
+// the input.
+func lastGraphemeCluster(rs []rune) []rune {
+	gr := uniseg.NewGraphemes(string(rs))
+	var last []rune
+	for gr.Next() {
+		last = gr.Runes()
+	}
+	return last
 }
 
 // cmdEscape is used to escape whitespace and special characters with

@@ -126,6 +126,42 @@ func TestRuneSliceWidthLastRange(t *testing.T) {
 	}
 }
 
+func TestFirstGraphemeCluster(t *testing.T) {
+	tests := []struct {
+		rs  []rune
+		exp []rune
+	}{
+		{[]rune{}, nil},
+		{[]rune{'a'}, []rune{'a'}},
+		{[]rune{'世', '界'}, []rune{'世'}},
+		{[]rune{0x1f3f3, 0xfe0f, 'a'}, []rune{0x1f3f3, 0xfe0f}}, // white flag
+	}
+
+	for _, test := range tests {
+		if got := firstGraphemeCluster(test.rs); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		}
+	}
+}
+
+func TestLastGraphemeCluster(t *testing.T) {
+	tests := []struct {
+		rs  []rune
+		exp []rune
+	}{
+		{[]rune{}, nil},
+		{[]rune{'a'}, []rune{'a'}},
+		{[]rune{'世', '界'}, []rune{'界'}},
+		{[]rune{'a', 0x1f3f3, 0xfe0f}, []rune{0x1f3f3, 0xfe0f}}, // white flag
+	}
+
+	for _, test := range tests {
+		if got := lastGraphemeCluster(test.rs); !reflect.DeepEqual(got, test.exp) {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		}
+	}
+}
+
 func TestCmdEscape(t *testing.T) {
 	tests := []struct {
 		s   string
