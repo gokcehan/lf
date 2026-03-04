@@ -39,21 +39,21 @@ func replaceTilde(s string) string {
 	return s
 }
 
-// firstGraphemeCluster returns the runes forming the first grapheme cluster of
-// the input.
-func firstGraphemeCluster(rs []rune) []rune {
-	gr := uniseg.NewGraphemes(string(rs))
+// firstGraphemeCluster returns the string containing the first grapheme cluster
+// of the input.
+func firstGraphemeCluster(s string) string {
+	gr := uniseg.NewGraphemes(s)
 	gr.Next()
-	return gr.Runes()
+	return gr.Str()
 }
 
-// lastGraphemeCluster returns the runes forming the last grapheme cluster of
-// the input.
-func lastGraphemeCluster(rs []rune) []rune {
-	gr := uniseg.NewGraphemes(string(rs))
-	var last []rune
+// lastGraphemeCluster returns the string containing the last grapheme cluster
+// of the input.
+func lastGraphemeCluster(s string) string {
+	gr := uniseg.NewGraphemes(s)
+	var last string
 	for gr.Next() {
-		last = gr.Runes()
+		last = gr.Str()
 	}
 	return last
 }

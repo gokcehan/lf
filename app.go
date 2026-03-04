@@ -684,14 +684,14 @@ func (app *app) doComplete() (matches []compMatch) {
 		matches, longest = completeSearch(app.ui.cmdAccLeft)
 	}
 
-	app.ui.cmdAccLeft = []rune(longest)
+	app.ui.cmdAccLeft = longest
 	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, matches, -1)
 	return
 }
 
 func (app *app) menuComplete(direction int) {
 	if !app.menuCompActive {
-		app.menuCompTmp = tokenize(string(app.ui.cmdAccLeft))
+		app.menuCompTmp = tokenize(app.ui.cmdAccLeft)
 		app.menuComps = app.doComplete()
 		if len(app.menuComps) > 1 {
 			app.menuCompInd = -1
@@ -707,7 +707,7 @@ func (app *app) menuComplete(direction int) {
 
 		toks := slices.Clone(app.menuCompTmp)
 		toks[len(toks)-1] = app.menuComps[app.menuCompInd].result
-		app.ui.cmdAccLeft = []rune(strings.Join(toks, " "))
+		app.ui.cmdAccLeft = strings.Join(toks, " ")
 	}
 	app.ui.menu, app.ui.menuSelect = listMatches(app.ui.screen, app.menuComps, app.menuCompInd)
 }

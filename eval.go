@@ -665,7 +665,7 @@ func update(app *app) {
 
 	switch {
 	case gOpts.incsearch && app.ui.cmdPrefix == "/":
-		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		app.nav.search = app.ui.cmdAccLeft + app.ui.cmdAccRight
 		if app.nav.search == "" {
 			return
 		}
@@ -681,7 +681,7 @@ func update(app *app) {
 			app.ui.loadFile(app, true)
 		}
 	case gOpts.incsearch && app.ui.cmdPrefix == "?":
-		app.nav.search = string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		app.nav.search = app.ui.cmdAccLeft + app.ui.cmdAccRight
 		if app.nav.search == "" {
 			return
 		}
@@ -697,7 +697,7 @@ func update(app *app) {
 			app.ui.loadFile(app, true)
 		}
 	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
-		filter := string(app.ui.cmdAccLeft) + string(app.ui.cmdAccRight)
+		filter := app.ui.cmdAccLeft + app.ui.cmdAccRight
 		dir := app.nav.currDir()
 		old := dir.ind
 
@@ -748,21 +748,21 @@ func normal(app *app) {
 	app.cmdHistoryInd = 0
 	app.cmdHistoryInput = nil
 
-	app.ui.cmdAccLeft = nil
-	app.ui.cmdAccRight = nil
+	app.ui.cmdAccLeft = ""
+	app.ui.cmdAccRight = ""
 	app.ui.cmdPrefix = ""
 }
 
 func insert(app *app, arg string) {
 	switch {
 	case gOpts.incsearch && (app.ui.cmdPrefix == "/" || app.ui.cmdPrefix == "?"):
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		app.ui.cmdAccLeft += arg
 		update(app)
 	case gOpts.incfilter && app.ui.cmdPrefix == "filter: ":
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		app.ui.cmdAccLeft += arg
 		update(app)
 	case app.ui.cmdPrefix == "find: ":
-		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
+		app.nav.find = app.ui.cmdAccLeft + arg + app.ui.cmdAccRight
 
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
@@ -771,12 +771,12 @@ func insert(app *app, arg string) {
 			case 1:
 				app.ui.loadFile(app, true)
 			default:
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				app.ui.cmdAccLeft += arg
 				return
 			}
 		} else {
 			if len(app.nav.find) < gOpts.findlen {
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				app.ui.cmdAccLeft += arg
 				return
 			}
 
@@ -789,7 +789,7 @@ func insert(app *app, arg string) {
 
 		normal(app)
 	case app.ui.cmdPrefix == "find-back: ":
-		app.nav.find = string(app.ui.cmdAccLeft) + arg + string(app.ui.cmdAccRight)
+		app.nav.find = app.ui.cmdAccLeft + arg + app.ui.cmdAccRight
 
 		if gOpts.findlen == 0 {
 			switch app.nav.findSingle() {
@@ -798,12 +798,12 @@ func insert(app *app, arg string) {
 			case 1:
 				app.ui.loadFile(app, true)
 			default:
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				app.ui.cmdAccLeft += arg
 				return
 			}
 		} else {
 			if len(app.nav.find) < gOpts.findlen {
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+				app.ui.cmdAccLeft += arg
 				return
 			}
 
@@ -920,7 +920,7 @@ func insert(app *app, arg string) {
 				return
 			}
 		}
-	case app.ui.cmdPrefix == ":" && len(app.ui.cmdAccLeft) == 0:
+	case app.ui.cmdPrefix == ":" && app.ui.cmdAccLeft == "":
 		switch arg {
 		case "!", "$", "%", "&":
 			app.ui.cmdPrefix = arg
@@ -932,7 +932,7 @@ func insert(app *app, arg string) {
 	default:
 		exitCompMenu(app)
 		app.cmdHistoryInput = nil
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(arg)...)
+		app.ui.cmdAccLeft += arg
 	}
 }
 
@@ -1298,10 +1298,10 @@ func (e *callExpr) eval(app *app, _ []string) {
 			extension := getFileExtension(curr)
 			if len(extension) == 0 {
 				// no extension or .hidden or is directory
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name())...)
+				app.ui.cmdAccLeft = curr.Name()
 			} else {
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(curr.Name()[:len(curr.Name())-len(extension)])...)
-				app.ui.cmdAccRight = append(app.ui.cmdAccRight, []rune(extension)...)
+				app.ui.cmdAccLeft = strings.TrimSuffix(curr.Name(), extension)
+				app.ui.cmdAccRight = extension
 			}
 		}
 	case "read":
@@ -1435,9 +1435,9 @@ func (e *callExpr) eval(app *app, _ []string) {
 		dir := app.nav.currDir()
 		app.nav.prevFilter = dir.filter
 		if len(e.args) == 0 {
-			app.ui.cmdAccLeft = []rune(strings.Join(dir.filter, " "))
+			app.ui.cmdAccLeft = strings.Join(dir.filter, " ")
 		} else {
-			app.ui.cmdAccLeft = []rune(strings.Join(e.args, " "))
+			app.ui.cmdAccLeft = strings.Join(e.args, " ")
 		}
 	case "setfilter":
 		log.Printf("filter: %s", e.args)
@@ -1696,19 +1696,19 @@ func (e *callExpr) eval(app *app, _ []string) {
 		exitCompMenu(app)
 	case "cmd-menu-discard":
 		if app.menuCompActive {
-			app.ui.cmdAccLeft = []rune(strings.Join(app.menuCompTmp, " "))
+			app.ui.cmdAccLeft = strings.Join(app.menuCompTmp, " ")
 		}
 		exitCompMenu(app)
 	case "cmd-enter":
-		s := string(append(app.ui.cmdAccLeft, app.ui.cmdAccRight...))
+		s := app.ui.cmdAccLeft + app.ui.cmdAccRight
 		if len(s) == 0 && app.ui.cmdPrefix != "filter: " && app.ui.cmdPrefix != ">" {
 			return
 		}
 
 		exitCompMenu(app)
 
-		app.ui.cmdAccLeft = nil
-		app.ui.cmdAccRight = nil
+		app.ui.cmdAccLeft = ""
+		app.ui.cmdAccRight = ""
 
 		switch app.ui.cmdPrefix {
 		case ":":
@@ -1867,7 +1867,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&"}, app.ui.cmdPrefix) {
 			return
 		}
-		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
+		input := app.ui.cmdPrefix + app.ui.cmdAccLeft
 		if app.cmdHistoryInput == nil {
 			app.cmdHistoryInput = &input
 		}
@@ -1877,7 +1877,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 					normal(app)
 				} else {
 					exitCompMenu(app)
-					app.ui.cmdAccLeft = nil
+					app.ui.cmdAccLeft = ""
 					app.cmdHistoryInd = 0
 				}
 				break
@@ -1886,7 +1886,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
 				exitCompMenu(app)
 				app.ui.cmdPrefix = cmd[:1]
-				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.ui.cmdAccLeft = cmd[1:]
 				app.cmdHistoryInd = i
 				break
 			}
@@ -1895,7 +1895,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if !slices.Contains([]string{":", "$", "!", "%", "&", ""}, app.ui.cmdPrefix) {
 			return
 		}
-		input := app.ui.cmdPrefix + string(app.ui.cmdAccLeft)
+		input := app.ui.cmdPrefix + app.ui.cmdAccLeft
 		if app.cmdHistoryInput == nil {
 			app.cmdHistoryInput = &input
 		}
@@ -1904,40 +1904,40 @@ func (e *callExpr) eval(app *app, _ []string) {
 			if strings.HasPrefix(cmd, *app.cmdHistoryInput) && cmd != input {
 				exitCompMenu(app)
 				app.ui.cmdPrefix = cmd[:1]
-				app.ui.cmdAccLeft = []rune(cmd[1:])
+				app.ui.cmdAccLeft = cmd[1:]
 				app.cmdHistoryInd = i
 				break
 			}
 		}
 	case "cmd-left":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			return
 		}
 		last := lastGraphemeCluster(app.ui.cmdAccLeft)
-		app.ui.cmdAccRight = slices.Concat(app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-len(last):], app.ui.cmdAccRight)
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
+		app.ui.cmdAccLeft = strings.TrimSuffix(app.ui.cmdAccLeft, last)
+		app.ui.cmdAccRight = last + app.ui.cmdAccRight
 	case "cmd-right":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
 		first := firstGraphemeCluster(app.ui.cmdAccRight)
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight[:len(first)]...)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
+		app.ui.cmdAccLeft += first
+		app.ui.cmdAccRight = strings.TrimPrefix(app.ui.cmdAccRight, first)
 	case "cmd-home":
-		app.ui.cmdAccRight = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
-		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccRight = app.ui.cmdAccLeft + app.ui.cmdAccRight
+		app.ui.cmdAccLeft = ""
 	case "cmd-end":
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdAccRight...)
-		app.ui.cmdAccRight = nil
+		app.ui.cmdAccLeft += app.ui.cmdAccRight
+		app.ui.cmdAccRight = ""
 	case "cmd-delete":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
 		first := firstGraphemeCluster(app.ui.cmdAccRight)
-		app.ui.cmdAccRight = app.ui.cmdAccRight[len(first):]
+		app.ui.cmdAccRight = strings.TrimPrefix(app.ui.cmdAccRight, first)
 		update(app)
 	case "cmd-delete-back":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			switch app.ui.cmdPrefix {
 			case "!", "$", "%", "&":
 				app.ui.cmdPrefix = ":"
@@ -1953,158 +1953,159 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		last := lastGraphemeCluster(app.ui.cmdAccLeft)
-		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:len(app.ui.cmdAccLeft)-len(last)]
+		app.ui.cmdAccLeft = strings.TrimSuffix(app.ui.cmdAccLeft, last)
 		update(app)
 	case "cmd-delete-home":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			return
 		}
 		app.ui.cmdYankBuf = app.ui.cmdAccLeft
-		app.ui.cmdAccLeft = nil
+		app.ui.cmdAccLeft = ""
 		update(app)
 	case "cmd-delete-end":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
 		app.ui.cmdYankBuf = app.ui.cmdAccRight
-		app.ui.cmdAccRight = nil
+		app.ui.cmdAccRight = ""
 		update(app)
 	case "cmd-delete-unix-word":
-		ind := strings.LastIndex(strings.TrimRight(string(app.ui.cmdAccLeft), " "), " ") + 1
-		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
-		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
+		ind := strings.LastIndex(strings.TrimRight(app.ui.cmdAccLeft, " "), " ") + 1
+		app.ui.cmdYankBuf = app.ui.cmdAccLeft[ind:]
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 		update(app)
 	case "cmd-yank":
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, app.ui.cmdYankBuf...)
+		app.ui.cmdAccLeft += app.ui.cmdYankBuf
 		update(app)
 	case "cmd-transpose":
-		if len(app.ui.cmdAccLeft) < 2 {
+		r := []rune(app.ui.cmdAccLeft)
+		if len(r) < 2 {
 			return
 		}
-		app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2] = app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-2], app.ui.cmdAccLeft[len(app.ui.cmdAccLeft)-1]
+		r[len(r)-1], r[len(r)-2] = r[len(r)-2], r[len(r)-1]
+		app.ui.cmdAccLeft = string(r)
 		update(app)
 	case "cmd-transpose-word":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			return
 		}
 
-		locs := reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+		locs := reWord.FindAllStringIndex(app.ui.cmdAccLeft, -1)
 		if len(locs) < 2 {
 			return
 		}
 
-		if len(app.ui.cmdAccRight) > 0 {
-			loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		if app.ui.cmdAccRight != "" {
+			loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 			if loc != nil {
 				ind := loc[3]
-				app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
-				app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+				app.ui.cmdAccLeft += app.ui.cmdAccRight[:ind]
+				app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 			}
 		}
 
-		locs = reWord.FindAllStringIndex(string(app.ui.cmdAccLeft), -1)
+		locs = reWord.FindAllStringIndex(app.ui.cmdAccLeft, -1)
 
 		beg1, end1 := locs[len(locs)-2][0], locs[len(locs)-2][1]
 		beg2, end2 := locs[len(locs)-1][0], locs[len(locs)-1][1]
 
-		app.ui.cmdAccLeft = slices.Concat(
-			[]rune(string(app.ui.cmdAccLeft)[:beg1]),
-			[]rune(string(app.ui.cmdAccLeft)[beg2:end2]),
-			[]rune(string(app.ui.cmdAccLeft)[end1:beg2]),
-			[]rune(string(app.ui.cmdAccLeft)[beg1:end1]),
-			[]rune(string(app.ui.cmdAccLeft)[end2:]),
-		)
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:beg1] +
+			app.ui.cmdAccLeft[beg2:end2] +
+			app.ui.cmdAccLeft[end1:beg2] +
+			app.ui.cmdAccLeft[beg1:end1] +
+			app.ui.cmdAccLeft[end2:]
 		update(app)
 	case "cmd-word":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 		if loc == nil {
 			return
 		}
 		ind := loc[3]
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		app.ui.cmdAccLeft += app.ui.cmdAccRight[:ind]
+		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 	case "cmd-word-back":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			return
 		}
-		locs := reWordBeg.FindAllStringSubmatchIndex(string(app.ui.cmdAccLeft), -1)
+		locs := reWordBeg.FindAllStringSubmatchIndex(app.ui.cmdAccLeft, -1)
 		if locs == nil {
 			return
 		}
 		ind := locs[len(locs)-1][3]
-		old := app.ui.cmdAccRight
-		app.ui.cmdAccRight = append([]rune(string(app.ui.cmdAccLeft)[ind:]), old...)
-		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
+		app.ui.cmdAccRight = app.ui.cmdAccLeft[ind:] + app.ui.cmdAccRight
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 	case "cmd-delete-word":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 		if loc == nil {
 			return
 		}
 		ind := loc[3]
-		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccRight)[:ind])
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		app.ui.cmdYankBuf = app.ui.cmdAccRight[:ind]
+		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		update(app)
 	case "cmd-delete-word-back":
-		if len(app.ui.cmdAccLeft) == 0 {
+		if app.ui.cmdAccLeft == "" {
 			return
 		}
-		locs := reWordBeg.FindAllStringSubmatchIndex(string(app.ui.cmdAccLeft), -1)
+		locs := reWordBeg.FindAllStringSubmatchIndex(app.ui.cmdAccLeft, -1)
 		if locs == nil {
 			return
 		}
 		ind := locs[len(locs)-1][3]
-		app.ui.cmdYankBuf = []rune(string(app.ui.cmdAccLeft)[ind:])
-		app.ui.cmdAccLeft = []rune(string(app.ui.cmdAccLeft)[:ind])
+		app.ui.cmdYankBuf = app.ui.cmdAccLeft[ind:]
+		app.ui.cmdAccLeft = app.ui.cmdAccLeft[:ind]
 		update(app)
 	case "cmd-capitalize-word":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
-		ind := 0
-		for ind < len(app.ui.cmdAccRight) && unicode.IsSpace(app.ui.cmdAccRight[ind]) {
-			ind++
-		}
-		if ind >= len(app.ui.cmdAccRight) {
-			return
-		}
-		app.ui.cmdAccRight[ind] = unicode.ToUpper(app.ui.cmdAccRight[ind])
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 		if loc == nil {
 			return
 		}
-		ind = loc[3]
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(string(app.ui.cmdAccRight)[:ind])...)
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		ind := loc[3]
+		capitalize := func(s string) string {
+			runes := []rune(s)
+			for i, r := range runes {
+				if !unicode.IsSpace(r) {
+					runes[i] = unicode.ToUpper(r)
+					break
+				}
+			}
+			return string(runes)
+		}
+		app.ui.cmdAccLeft += capitalize(app.ui.cmdAccRight[:ind])
+		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		update(app)
 	case "cmd-uppercase-word":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 		if loc == nil {
 			return
 		}
 		ind := loc[3]
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToUpper(string(app.ui.cmdAccRight)[:ind]))...)
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		app.ui.cmdAccLeft += strings.ToUpper(app.ui.cmdAccRight[:ind])
+		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		update(app)
 	case "cmd-lowercase-word":
-		if len(app.ui.cmdAccRight) == 0 {
+		if app.ui.cmdAccRight == "" {
 			return
 		}
-		loc := reWordEnd.FindStringSubmatchIndex(string(app.ui.cmdAccRight))
+		loc := reWordEnd.FindStringSubmatchIndex(app.ui.cmdAccRight)
 		if loc == nil {
 			return
 		}
 		ind := loc[3]
-		app.ui.cmdAccLeft = append(app.ui.cmdAccLeft, []rune(strings.ToLower(string(app.ui.cmdAccRight)[:ind]))...)
-		app.ui.cmdAccRight = []rune(string(app.ui.cmdAccRight)[ind:])
+		app.ui.cmdAccLeft += strings.ToLower(app.ui.cmdAccRight[:ind])
+		app.ui.cmdAccRight = app.ui.cmdAccRight[ind:]
 		update(app)
 	case "on-focus-gained":
 		onFocusGained(app)

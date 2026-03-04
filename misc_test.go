@@ -34,36 +34,36 @@ func TestIsRoot(t *testing.T) {
 
 func TestFirstGraphemeCluster(t *testing.T) {
 	tests := []struct {
-		rs  []rune
-		exp []rune
+		s   string
+		exp string
 	}{
-		{[]rune{}, nil},
-		{[]rune{'a'}, []rune{'a'}},
-		{[]rune{'世', '界'}, []rune{'世'}},
-		{[]rune{0x1f3f3, 0xfe0f, 'a'}, []rune{0x1f3f3, 0xfe0f}}, // white flag
+		{"", ""},
+		{"a", "a"},
+		{"世界", "世"},
+		{"🏳️a", "🏳️"},
 	}
 
 	for _, test := range tests {
-		if got := firstGraphemeCluster(test.rs); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		if got := firstGraphemeCluster(test.s); got != test.exp {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
 
 func TestLastGraphemeCluster(t *testing.T) {
 	tests := []struct {
-		rs  []rune
-		exp []rune
+		s   string
+		exp string
 	}{
-		{[]rune{}, nil},
-		{[]rune{'a'}, []rune{'a'}},
-		{[]rune{'世', '界'}, []rune{'界'}},
-		{[]rune{'a', 0x1f3f3, 0xfe0f}, []rune{0x1f3f3, 0xfe0f}}, // white flag
+		{"", ""},
+		{"a", "a"},
+		{"世界", "界"},
+		{"a🏳️", "🏳️"},
 	}
 
 	for _, test := range tests {
-		if got := lastGraphemeCluster(test.rs); !reflect.DeepEqual(got, test.exp) {
-			t.Errorf("at input '%v' expected '%v' but got '%v'", test.rs, test.exp, got)
+		if got := lastGraphemeCluster(test.s); got != test.exp {
+			t.Errorf("at input '%v' expected '%v' but got '%v'", test.s, test.exp, got)
 		}
 	}
 }
