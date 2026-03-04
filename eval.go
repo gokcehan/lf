@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
+	"github.com/rivo/uniseg"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -416,6 +417,10 @@ func (e *setExpr) eval(app *app, _ []string) {
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
+		if uniseg.StringWidth(e.val) != 1 {
+			app.ui.echoerr("truncatechar: value should be a single character")
+			return
+		}
 		gOpts.truncatechar = e.val
 	case "truncatepct":
 		n, err := strconv.Atoi(e.val)
