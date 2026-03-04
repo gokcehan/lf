@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Emoji sequences containing Zero Width Joiner characters are now displayed as a single combined glyph (#2286).
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
+- The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 
 ### Fixed
 
@@ -29,6 +30,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `select` command can now select files immediately after creation as part of a script (#2377).
 - The `on-load` hook command now ignores `.git` directories to reduce flicker and repeated `on-load` triggers (#2382).
 - Preview messages like `empty` or `loading...` have their alignment improved (#2400).
+- A bug where the `loading...` message was not displayed for volatile previews after the first time is now fixed (#2410).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 

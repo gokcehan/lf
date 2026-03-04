@@ -21,6 +21,8 @@ import (
 	"golang.org/x/term"
 )
 
+const previewLoadingDelay = 100 * time.Millisecond
+
 type win struct {
 	w, h, x, y int
 }
@@ -121,11 +123,13 @@ func (win *win) printMsg(screen tcell.Screen, s string) {
 	win.print(screen, pad, 0, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg, previewLoading bool, sxs *sixelScreen) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previewTimer *time.Timer) {
 	switch {
 	case reg.loading:
-		if previewLoading {
+		if time.Since(reg.loadTime) > previewLoadingDelay {
 			win.printMsg(screen, "loading...")
+		} else {
+			previewTimer.Reset(previewLoadingDelay)
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -234,7 +238,7 @@ type dirStyle struct {
 	role   dirRole
 }
 
-func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle) {
+func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirStyle, previewTimer *time.Timer) {
 	if win.w < 5 || dir == nil {
 		return
 	}
@@ -242,11 +246,15 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 	fileslen := len(dir.files)
 
 	switch {
+	case dir.loading && fileslen == 0:
+		if time.Since(dir.loadTime) > previewLoadingDelay {
+			win.printMsg(ui.screen, "loading...")
+		} else {
+			previewTimer.Reset(previewLoadingDelay)
+		}
+		return
 	case dir.noPerm:
 		win.printMsg(ui.screen, "permission denied")
-		return
-	case dir.loading && fileslen == 0:
-		win.printMsg(ui.screen, "loading...")
 		return
 	case fileslen == 0:
 		win.printMsg(ui.screen, "empty")
@@ -1000,13 +1008,13 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 	if gOpts.preview {
 		if curr.isPreviewable() {
 			if reg, ok := nav.regCache[curr.path]; ok {
-				win.printReg(ui.screen, reg, nav.previewLoading, &ui.sxScreen)
+				win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
 			}
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""
 			dir := nav.getDir(curr.path)
 			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
-			win.printDir(ui, dir, context, dirStyle)
+			win.printDir(ui, dir, context, dirStyle, nav.previewTimer)
 		}
 	}
 }
@@ -1111,8 +1119,8 @@ func (ui *ui) draw(nav *nav) {
 			role = Active
 		}
 		if dir := ui.dirOfWin(nav, i); dir != nil {
-			ui.wins[i].printDir(ui, dir, &context,
-				&dirStyle{colors: ui.styles, icons: ui.icons, role: role})
+			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: role}
+			ui.wins[i].printDir(ui, dir, &context, dirStyle, nav.previewTimer)
 		}
 	}
 
