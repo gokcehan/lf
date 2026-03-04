@@ -21,6 +21,8 @@ import (
 	"golang.org/x/term"
 )
 
+const previewLoadingDelay = 100 * time.Millisecond
+
 type win struct {
 	w, h, x, y int
 }
@@ -124,10 +126,10 @@ func (win *win) printMsg(screen tcell.Screen, s string) {
 func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previewTimer *time.Timer) {
 	switch {
 	case reg.loading:
-		if time.Since(reg.loadTime) > 100*time.Millisecond {
+		if time.Since(reg.loadTime) > previewLoadingDelay {
 			win.printMsg(screen, "loading...")
 		} else {
-			previewTimer.Reset(100 * time.Millisecond)
+			previewTimer.Reset(previewLoadingDelay)
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
@@ -245,10 +247,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	switch {
 	case dir.loading && fileslen == 0:
-		if time.Since(dir.loadTime) > 100*time.Millisecond {
+		if time.Since(dir.loadTime) > previewLoadingDelay {
 			win.printMsg(ui.screen, "loading...")
 		} else {
-			previewTimer.Reset(100 * time.Millisecond)
+			previewTimer.Reset(previewLoadingDelay)
 		}
 		return
 	case dir.noPerm:
