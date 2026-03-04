@@ -811,9 +811,15 @@ Delete the previous Unix word.
 
 Paste the buffer content containing the last deleted item.
 
-## cmd-transpose (default `<c-t>`), cmd-transpose-word (default `<a-t>`)
+## cmd-transpose (default `<c-t>`)
 
-Transpose the positions of the last two characters/words.
+Swap the characters before and after the cursor, then move the cursor forward.
+If there is no character after the cursor, swap the previous two characters instead.
+
+## cmd-transpose-word (default `<a-t>`)
+
+Swap the words before and after the cursor, then move the cursor forward.
+If there is no word after the cursor, swap the previous two words instead.
 
 ## cmd-word (default `<a-f>`), cmd-word-back (default `<a-b>`)
 

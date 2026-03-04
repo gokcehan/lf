@@ -31,6 +31,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `on-load` hook command now ignores `.git` directories to reduce flicker and repeated `on-load` triggers (#2382).
 - Preview messages like `empty` or `loading...` have their alignment improved (#2400).
 - A bug where the `loading...` message was not displayed for volatile previews after the first time is now fixed (#2410).
+- The `cmd-transpose` command now advances the cursor correctly after swapping characters (#2413).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
