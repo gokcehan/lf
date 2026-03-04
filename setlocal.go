@@ -9,6 +9,12 @@ type setLocalRule[T any] struct {
 	val     T
 }
 
+// setLocalRules represents the rules for resolving the value of a particular
+// option for a given directory. Since users will typically call `setlocal` to
+// override only some options for a directory, the rules are assigned to each
+// option separately instead of being shared among all options. Because it is
+// possible for multiple rules (patterns) to match a directory, the first
+// matching rule will be used.
 type setLocalRules[T any] []setLocalRule[T]
 
 func (rules *setLocalRules[T]) set(pattern string, val T) {
@@ -18,6 +24,11 @@ func (rules *setLocalRules[T]) set(pattern string, val T) {
 	})
 }
 
+// update is a low-level function for updating rules created by `setlocal`. The
+// corresponding rule is obtained, or created and appended if it does not exist.
+// The rule is the updated by a callback function, which is required because the
+// syntax `setlocal /path bool_option!` needs to know the current value in order
+// to determine the new value.
 func (rules *setLocalRules[T]) update(pattern string, initVal T, updater func(val *T) error) error {
 	for i := range *rules {
 		rule := &(*rules)[i]
