@@ -1978,12 +1978,25 @@ func (e *callExpr) eval(app *app, _ []string) {
 		app.ui.cmdAccLeft += app.ui.cmdYankBuf
 		update(app)
 	case "cmd-transpose":
-		r := []rune(app.ui.cmdAccLeft)
-		if len(r) < 2 {
+		var c []string
+		gr := uniseg.NewGraphemes(app.ui.cmdAccLeft)
+		for gr.Next() {
+			c = append(c, gr.Str())
+		}
+
+		first := firstGraphemeCluster(app.ui.cmdAccRight)
+		if first != "" {
+			c = append(c, first)
+		}
+
+		if len(c) < 2 {
 			return
 		}
-		r[len(r)-1], r[len(r)-2] = r[len(r)-2], r[len(r)-1]
-		app.ui.cmdAccLeft = string(r)
+
+		app.ui.cmdAccRight = strings.TrimPrefix(app.ui.cmdAccRight, first)
+
+		c[len(c)-1], c[len(c)-2] = c[len(c)-2], c[len(c)-1]
+		app.ui.cmdAccLeft = strings.Join(c, "")
 		update(app)
 	case "cmd-transpose-word":
 		if app.ui.cmdAccLeft == "" {
