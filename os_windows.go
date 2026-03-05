@@ -123,6 +123,15 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+func previewCommand(previewer string, args ...string) *exec.Cmd {
+	ext := strings.ToLower(filepath.Ext(previewer))
+	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
+		return exec.Command(previewer, args...)
+	}
+	// Non-native executable (e.g. shell script): run through configured shell
+	return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
+}
+
 func shellCommand(s string, args []string) *exec.Cmd {
 	// Windows CMD requires special handling to deal with quoted arguments
 	if strings.ToLower(gOpts.shell) == "cmd" {

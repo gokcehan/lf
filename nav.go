@@ -877,7 +877,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(
+		cmd := previewCommand(
 			gOpts.previewer,
 			path,
 			strconv.Itoa(win.w),
