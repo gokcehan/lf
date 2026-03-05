@@ -127,8 +127,8 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
-func previewCommand(previewer string, args ...string) *exec.Cmd {
-	return exec.Command(previewer, args...)
+func scriptCommand(path string, args ...string) *exec.Cmd {
+	return exec.Command(path, args...)
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {

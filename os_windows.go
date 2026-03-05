@@ -134,18 +134,18 @@ func hasShebang(path string) bool {
 	return n == 2 && buf[0] == '#' && buf[1] == '!'
 }
 
-func previewCommand(previewer string, args ...string) *exec.Cmd {
-	ext := strings.ToLower(filepath.Ext(previewer))
+func scriptCommand(path string, args ...string) *exec.Cmd {
+	ext := strings.ToLower(filepath.Ext(path))
 	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
-		return exec.Command(previewer, args...)
+		return exec.Command(path, args...)
 	}
-	// Run scripts with a shebang through the configured shell.
+	// Run scripts with a shebang through the configured shell (if not cmd).
 	// Convert backslashes to forward slashes so sh can resolve the path.
-	if hasShebang(previewer) {
-		previewer = filepath.ToSlash(previewer)
-		return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
+	if strings.ToLower(gOpts.shell) != "cmd" && hasShebang(path) {
+		path = filepath.ToSlash(path)
+		return exec.Command(gOpts.shell, append([]string{path}, args...)...)
 	}
-	return exec.Command(previewer, args...)
+	return exec.Command(path, args...)
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
