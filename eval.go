@@ -456,20 +456,11 @@ func (e *setExpr) eval(app *app, _ []string) {
 }
 
 func (e *setLocalExpr) eval(app *app, _ []string) {
-	recursive := strings.HasSuffix(e.path, string(os.PathSeparator)) && e.path != string(os.PathSeparator)
-	if recursive {
-		e.path = strings.TrimSuffix(e.path, string(os.PathSeparator))
-	}
-
 	var err error
 	e.path, err = filepath.Abs(replaceTilde(e.path))
 	if err != nil {
 		app.ui.echoerrf("setlocal: %s", err)
 		return
-	}
-
-	if recursive && e.path != string(os.PathSeparator) {
-		e.path += string(os.PathSeparator)
 	}
 
 	switch e.opt {

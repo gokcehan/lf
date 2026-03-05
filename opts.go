@@ -2,7 +2,6 @@ package main
 
 import (
 	"maps"
-	"path/filepath"
 	"time"
 )
 
@@ -132,73 +131,51 @@ var gLocalOpts struct {
 	sortby    map[string]sortMethod
 }
 
-func localOptPaths(path string) []string {
-	list := []string{path}
-	for curr := path; !isRoot(curr); curr = filepath.Dir(curr) {
-		list = append(list, curr+string(filepath.Separator))
-	}
-	return list
-}
-
 func getDirCounts(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dircounts[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.dircounts[path]; ok {
+		return val
 	}
 	return gOpts.dircounts
 }
 
 func getDirFirst(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dirfirst[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.dirfirst[path]; ok {
+		return val
 	}
 	return gOpts.dirfirst
 }
 
 func getDirOnly(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.dironly[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.dironly[path]; ok {
+		return val
 	}
 	return gOpts.dironly
 }
 
 func getHidden(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.hidden[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.hidden[path]; ok {
+		return val
 	}
 	return gOpts.hidden
 }
 
 func getInfo(path string) []string {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.info[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.info[path]; ok {
+		return val
 	}
 	return gOpts.info
 }
 
 func getReverse(path string) bool {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.reverse[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.reverse[path]; ok {
+		return val
 	}
 	return gOpts.reverse
 }
 
 func getSortBy(path string) sortMethod {
-	for _, key := range localOptPaths(path) {
-		if val, ok := gLocalOpts.sortby[key]; ok {
-			return val
-		}
+	if val, ok := gLocalOpts.sortby[path]; ok {
+		return val
 	}
 	return gOpts.sortby
 }
