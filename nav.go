@@ -782,7 +782,7 @@ func (nav *nav) previewLoop(ui *ui) {
 		}
 		win := ui.wins[len(ui.wins)-1]
 		if isClear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			cmd := exec.Command(
+			cmd := scriptCommand(
 				gOpts.cleaner,
 				prev,
 				strconv.Itoa(win.w),
@@ -877,7 +877,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	var reader *bufio.Reader
 
 	if len(gOpts.previewer) != 0 {
-		cmd := exec.Command(
+		cmd := scriptCommand(
 			gOpts.previewer,
 			path,
 			strconv.Itoa(win.w),

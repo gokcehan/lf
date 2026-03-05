@@ -39,6 +39,18 @@ func replaceTilde(s string) string {
 	return s
 }
 
+// expandPath expands env vars, tilde, and resolves relative paths against config directory
+func expandPath(s string) string {
+	s = os.ExpandEnv(s)
+	s = replaceTilde(s)
+
+	if !filepath.IsAbs(s) && gConfigDir != "" {
+		s = filepath.Join(gConfigDir, s)
+	}
+
+	return s
+}
+
 // firstGraphemeCluster returns the string containing the first grapheme cluster
 // of the input.
 func firstGraphemeCluster(s string) string {
