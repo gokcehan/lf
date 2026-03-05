@@ -123,15 +123,29 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+func hasShebang(path string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	buf := make([]byte, 2)
+	n, _ := f.Read(buf)
+	return n == 2 && buf[0] == '#' && buf[1] == '!'
+}
+
 func previewCommand(previewer string, args ...string) *exec.Cmd {
 	ext := strings.ToLower(filepath.Ext(previewer))
 	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
 		return exec.Command(previewer, args...)
 	}
-	// Non-native executable (e.g. shell script): run through configured shell.
+	// Run scripts with a shebang through the configured shell.
 	// Convert backslashes to forward slashes so sh can resolve the path.
-	previewer = filepath.ToSlash(previewer)
-	return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
+	if hasShebang(previewer) {
+		previewer = filepath.ToSlash(previewer)
+		return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
+	}
+	return exec.Command(previewer, args...)
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
