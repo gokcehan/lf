@@ -139,9 +139,11 @@ func scriptCommand(path string, args ...string) *exec.Cmd {
 	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
 		return exec.Command(path, args...)
 	}
-	// Run scripts with a shebang through the configured shell (if not cmd).
+	// Run scripts with a shebang through POSIX-compatible shells only.
 	// Convert backslashes to forward slashes so sh can resolve the path.
-	if strings.ToLower(gOpts.shell) != "cmd" && hasShebang(path) {
+	shellBase := strings.ToLower(strings.TrimSuffix(filepath.Base(gOpts.shell), ".exe"))
+	posixShells := map[string]bool{"sh": true, "bash": true, "zsh": true, "dash": true}
+	if posixShells[shellBase] && hasShebang(path) {
 		path = filepath.ToSlash(path)
 		return exec.Command(gOpts.shell, append([]string{path}, args...)...)
 	}
