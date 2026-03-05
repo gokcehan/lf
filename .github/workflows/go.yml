@@ -103,12 +103,3 @@ jobs:
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
-
-      - name: Upload artifact
-        if: (matrix.os == 'windows') || (matrix.os == 'linux' && matrix.arch == 'amd64')
-        uses: actions/upload-artifact@v4
-        with:
-          name: lf-${{ matrix.os }}-${{ matrix.arch }}
-          path: lf*
-          retention-days: 7
-          if-no-files-found: ignore
