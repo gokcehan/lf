@@ -128,7 +128,9 @@ func previewCommand(previewer string, args ...string) *exec.Cmd {
 	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
 		return exec.Command(previewer, args...)
 	}
-	// Non-native executable (e.g. shell script): run through configured shell
+	// Non-native executable (e.g. shell script): run through configured shell.
+	// Convert backslashes to forward slashes so sh can resolve the path.
+	previewer = strings.ReplaceAll(previewer, `\\`, `/`)
 	return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
 }
 
