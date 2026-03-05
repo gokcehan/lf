@@ -1629,9 +1629,7 @@ string:
 
 Command setlocal is used to set a local option for a directory which can
 be a boolean or string. Currently supported local options are dircounts,
-dirfirst, dironly, hidden, info, reverse and sortby. Adding a trailing
-path separator (i.e. / for Unix and \ for Windows) sets the option for
-the given directory along with its subdirectories:
+dirfirst, dironly, hidden, info, reverse and sortby.
 
     setlocal /foo/bar hidden         # boolean enable
     setlocal /foo/bar hidden true    # boolean enable
@@ -1641,8 +1639,6 @@ the given directory along with its subdirectories:
     setlocal /foo/bar sortby time    # string value without quotes
     setlocal /foo/bar sortby 'time'  # string value with single quotes (whitespace)
     setlocal /foo/bar sortby "time"  # string value with double quotes (backslash escapes)
-    setlocal /foo/bar  hidden        # for only '/foo/bar' directory
-    setlocal /foo/bar/ hidden        # for '/foo/bar' and its subdirectories (e.g. '/foo/bar/baz')
 
 Command map is used to bind a key in Normal and Visual mode to a command
 which can be a built-in command, custom command, or shell command:

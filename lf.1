@@ -1425,9 +1425,6 @@ directory which can be a boolean or string.
 Currently supported local options are \f[CR]dircounts\f[R],
 \f[CR]dirfirst\f[R], \f[CR]dironly\f[R], \f[CR]hidden\f[R],
 \f[CR]info\f[R], \f[CR]reverse\f[R] and \f[CR]sortby\f[R].
-Adding a trailing path separator (i.e.
-\f[CR]/\f[R] for Unix and \f[CR]\(rs\f[R] for Windows) sets the option
-for the given directory along with its subdirectories:
 .IP
 .EX
 setlocal /foo/bar hidden         # boolean enable
@@ -1438,8 +1435,6 @@ setlocal /foo/bar hidden!        # boolean toggle
 setlocal /foo/bar sortby time    # string value without quotes
 setlocal /foo/bar sortby \(aqtime\(aq  # string value with single quotes (whitespace)
 setlocal /foo/bar sortby \(dqtime\(dq  # string value with double quotes (backslash escapes)
-setlocal /foo/bar  hidden        # for only \(aq/foo/bar\(aq directory
-setlocal /foo/bar/ hidden        # for \(aq/foo/bar\(aq and its subdirectories (e.g. \(aq/foo/bar/baz\(aq)
 .EE
 .PP
 Command \f[CR]map\f[R] is used to bind a key in Normal and Visual mode
