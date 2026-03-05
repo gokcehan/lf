@@ -44,8 +44,14 @@ func expandPath(s string) string {
 	s = os.ExpandEnv(s)
 	s = replaceTilde(s)
 
-	if !filepath.IsAbs(s) && gConfigDir != "" {
-		s = filepath.Join(gConfigDir, s)
+	if !filepath.IsAbs(s) {
+		if gConfigDir != "" {
+			s = filepath.Join(gConfigDir, s)
+		} else {
+			// Fallback to current directory if no config directory is set
+			s = filepath.Join(".", s)
+		}
+		s = filepath.Clean(s)
 	}
 
 	return s
