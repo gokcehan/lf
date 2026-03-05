@@ -105,6 +105,7 @@ jobs:
           GOARCH: ${{ matrix.arch }}
 
       - name: Upload artifact
+        if: matrix.os == 'windows'
         uses: actions/upload-artifact@v4
         with:
           name: lf-${{ matrix.os }}-${{ matrix.arch }}
