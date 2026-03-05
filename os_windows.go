@@ -139,7 +139,11 @@ func shellCommand(s string, args []string) *exec.Cmd {
 		return cmd
 	}
 
-	args = append([]string{gOpts.shellflag, s}, args...)
+	shellflag := gOpts.shellflag
+	if shellflag == "/c" {
+		shellflag = "-c"
+	}
+	args = append([]string{shellflag, s}, args...)
 	args = append(gOpts.shellopts, args...)
 	return exec.Command(gOpts.shell, args...)
 }
