@@ -191,7 +191,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 	case "borderfmt":
 		gOpts.borderfmt = e.val
 	case "cleaner":
-		gOpts.cleaner = replaceTilde(os.ExpandEnv(e.val))
+		gOpts.cleaner = expandPath(e.val)
 	case "copyfmt":
 		gOpts.copyfmt = e.val
 	case "cursoractivefmt":
@@ -311,7 +311,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 		gOpts.preserve = toks
 	case "previewer":
-		gOpts.previewer = replaceTilde(os.ExpandEnv(e.val))
+		gOpts.previewer = expandPath(e.val)
 	case "promptfmt":
 		gOpts.promptfmt = e.val
 	case "ratios":
@@ -338,7 +338,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		app.nav.resize(app.ui)
 		app.ui.loadFile(app, true)
 	case "rulerfile", "norulerfile", "rulerfile!":
-		gOpts.rulerfile = replaceTilde(os.ExpandEnv(e.val))
+		gOpts.rulerfile = expandPath(e.val)
 		app.ui.ruler, app.ui.rulerErr = parseRuler(gOpts.rulerfile)
 	case "rulerfmt":
 		gOpts.rulerfmt = e.val
@@ -1548,7 +1548,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("source: requires an argument")
 			return
 		}
-		app.readFile(replaceTilde(os.ExpandEnv(e.args[0])))
+		app.readFile(expandPath(e.args[0]))
 	case "push":
 		if len(e.args) != 1 {
 			app.ui.echoerr("push: requires an argument")
