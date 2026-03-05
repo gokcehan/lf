@@ -130,7 +130,7 @@ func previewCommand(previewer string, args ...string) *exec.Cmd {
 	}
 	// Non-native executable (e.g. shell script): run through configured shell.
 	// Convert backslashes to forward slashes so sh can resolve the path.
-	previewer = strings.ReplaceAll(previewer, `\\`, `/`)
+	previewer = filepath.ToSlash(previewer)
 	return exec.Command(gOpts.shell, append([]string{previewer}, args...)...)
 }
 
