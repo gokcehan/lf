@@ -109,4 +109,5 @@ jobs:
         with:
           name: lf-${{ matrix.os }}-${{ matrix.arch }}
           path: lf*
+          retention-days: 7
           if-no-files-found: ignore
