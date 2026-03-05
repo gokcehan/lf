@@ -103,3 +103,10 @@ jobs:
         env:
           GOOS: ${{ matrix.os }}
           GOARCH: ${{ matrix.arch }}
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: lf-${{ matrix.os }}-${{ matrix.arch }}
+          path: lf*
+          if-no-files-found: ignore
