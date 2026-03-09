@@ -1,13 +1,13 @@
 module github.com/gokcehan/lf
 
-go 1.24.0
+go 1.25.0
 
 require (
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.9.0
 	github.com/gdamore/tcell/v3 v3.1.2
 	github.com/rivo/uniseg v0.4.7
-	golang.org/x/sys v0.41.0
+	golang.org/x/sys v0.42.0
 	golang.org/x/term v0.40.0
 )
 
