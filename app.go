@@ -296,7 +296,6 @@ func (app *app) loop() {
 		}
 	}
 
-	app.nav.loadDirs()
 	app.nav.addJumpList()
 
 	if gSelect != "" {
@@ -473,12 +472,7 @@ func (app *app) loop() {
 			}
 
 			deletePathRecursive(app.nav.regCache, path)
-
 			deletePathRecursive(app.nav.dirCache, path)
-			currPath := app.nav.currDir().path
-			if currPath == path || strings.HasPrefix(currPath, path+string(filepath.Separator)) {
-				app.nav.loadDirs()
-			}
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
