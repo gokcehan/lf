@@ -476,7 +476,9 @@ func (app *app) loop() {
 
 			for _, dirPath := range app.nav.dirPaths {
 				if dirPath == path {
-					app.nav.cd(filepath.Dir(path))
+					if err := app.nav.cd(filepath.Dir(path)); err != nil {
+						log.Print(err)
+					}
 					break
 				}
 			}
