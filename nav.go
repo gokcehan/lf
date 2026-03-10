@@ -560,13 +560,7 @@ func (nav *nav) checkDir(dir *dir) {
 	}
 }
 
-func (nav *nav) loadDirs() {
-	wd, err := os.Getwd()
-	if err != nil {
-		log.Printf("getting current directory: %s", err)
-		return
-	}
-
+func (nav *nav) loadDirs(wd string) {
 	var dirPaths []string
 
 	for curr, base := wd, ""; !isRoot(base); curr, base = filepath.Dir(curr), filepath.Base(curr) {
@@ -664,12 +658,13 @@ func (nav *nav) renew() {
 }
 
 func (nav *nav) reload() {
+	wd := nav.currDir().path
 	curr := nav.currFile()
 
 	clear(nav.dirCache)
 	clear(nav.regCache)
 
-	nav.loadDirs()
+	nav.loadDirs(wd)
 
 	if curr != nil {
 		dir := nav.currDir()
@@ -1608,7 +1603,7 @@ func (nav *nav) cd(path string) error {
 		return err
 	}
 
-	nav.loadDirs()
+	nav.loadDirs(path)
 	nav.addJumpList()
 	return nil
 }
@@ -1934,7 +1929,11 @@ func (nav *nav) writeTags() error {
 
 func (nav *nav) currDir() *dir {
 	if len(nav.dirPaths) == 0 {
-		nav.loadDirs()
+		wd, err := os.Getwd()
+		if err != nil {
+			log.Printf("getting current directory: %s", err)
+		}
+		nav.loadDirs(wd)
 	}
 
 	path := nav.dirPaths[len(nav.dirPaths)-1]

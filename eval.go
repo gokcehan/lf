@@ -928,12 +928,9 @@ func insert(app *app, arg string) {
 }
 
 func cd(app *app, path string) error {
-	wd, err := os.Getwd()
-	if err != nil {
-		return fmt.Errorf("getting current directory: %w", err)
-	}
+	wd := app.nav.currDir().path
 
-	path, err = filepath.Abs(replaceTilde(path))
+	path, err := filepath.Abs(replaceTilde(path))
 	if err != nil {
 		return fmt.Errorf("getting absolute path: %w", err)
 	}
