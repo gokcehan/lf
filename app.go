@@ -473,6 +473,13 @@ func (app *app) loop() {
 
 			deletePathRecursive(app.nav.regCache, path)
 			deletePathRecursive(app.nav.dirCache, path)
+
+			for _, dirPath := range app.nav.dirPaths {
+				if dirPath == path {
+					app.nav.cd(filepath.Dir(path))
+					break
+				}
+			}
 		case ev := <-app.ui.evChan:
 			e := app.ui.readEvent(ev, app.nav)
 			if e == nil {
