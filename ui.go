@@ -91,7 +91,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 		if gc == "\t" {
 			w := gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
 			b.WriteString(strings.Repeat(" ", w))
-		} else if gc != "\r" {
+		} else if gc != "\r" && gc != "\n" {
 			b.WriteString(gc)
 		}
 
