@@ -1516,13 +1516,14 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 
-		path, err := filepath.Abs(replaceTilde(e.args[0]))
+		path := replaceTilde(e.args[0])
+		lstat, err := os.Lstat(path)
 		if err != nil {
 			app.ui.echoerrf("select: %s", err)
 			return
 		}
 
-		lstat, err := os.Lstat(path)
+		path, err = filepath.Abs(replaceTilde(e.args[0]))
 		if err != nil {
 			app.ui.echoerrf("select: %s", err)
 			return
