@@ -127,6 +127,10 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+func scriptCommand(path string, args ...string) *exec.Cmd {
+	return exec.Command(path, args...)
+}
+
 func shellCommand(s string, args []string) *exec.Cmd {
 	if len(gOpts.ifs) != 0 {
 		s = fmt.Sprintf("IFS='%s'; %s", gOpts.ifs, s)

@@ -123,6 +123,33 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+func hasShebang(path string) bool {
+	f, err := os.Open(path)
+	if err != nil {
+		return false
+	}
+	defer f.Close()
+	buf := make([]byte, 2)
+	n, _ := f.Read(buf)
+	return n == 2 && buf[0] == '#' && buf[1] == '!'
+}
+
+func scriptCommand(path string, args ...string) *exec.Cmd {
+	ext := strings.ToLower(filepath.Ext(path))
+	if ext == ".exe" || ext == ".cmd" || ext == ".bat" {
+		return exec.Command(path, args...)
+	}
+	// Run scripts with a shebang through POSIX-compatible shells only.
+	// Convert backslashes to forward slashes so sh can resolve the path.
+	shellBase := strings.ToLower(strings.TrimSuffix(filepath.Base(gOpts.shell), ".exe"))
+	posixShells := map[string]bool{"sh": true, "bash": true, "zsh": true, "dash": true}
+	if posixShells[shellBase] && hasShebang(path) {
+		path = filepath.ToSlash(path)
+		return exec.Command(gOpts.shell, append([]string{path}, args...)...)
+	}
+	return exec.Command(path, args...)
+}
+
 func shellCommand(s string, args []string) *exec.Cmd {
 	// Windows CMD requires special handling to deal with quoted arguments
 	if strings.ToLower(gOpts.shell) == "cmd" {
@@ -139,7 +166,11 @@ func shellCommand(s string, args []string) *exec.Cmd {
 		return cmd
 	}
 
-	args = append([]string{gOpts.shellflag, s}, args...)
+	shellflag := gOpts.shellflag
+	if shellflag == "/c" {
+		shellflag = "-c"
+	}
+	args = append([]string{shellflag, s}, args...)
 	args = append(gOpts.shellopts, args...)
 	return exec.Command(gOpts.shell, args...)
 }
@@ -194,6 +225,10 @@ func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
 	}
 
 	if attrs&windows.FILE_ATTRIBUTE_HIDDEN != 0 {
+		return true
+	}
+
+	if strings.HasPrefix(f.Name(), ".") {
 		return true
 	}
 

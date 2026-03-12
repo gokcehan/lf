@@ -18,6 +18,8 @@ import (
 	"time"
 )
 
+var gConfigDir string // directory of the currently loaded config file
+
 type app struct {
 	ui              *ui            // ui state (screen, windows, input)
 	nav             *nav           // navigation state (dirs, cursor, selections, preview, caches)
@@ -104,6 +106,11 @@ func (app *app) readFile(path string) {
 		return
 	}
 	defer f.Close()
+
+	// Set config directory for relative path resolution
+	savedConfigDir := gConfigDir
+	gConfigDir = filepath.Dir(path)
+	defer func() { gConfigDir = savedConfigDir }()
 
 	p := newParser(f)
 
