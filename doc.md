@@ -1595,7 +1595,7 @@ Some special keys and modifiers use different names and separators, and key name
 	map <enter> down  # not <Enter>, <Return> or <CR>
 	map <f-1> down    # not <F1>
 	map <a-j> down    # not <A-j> or <M-j> (Meta)
-	map <m-2> open    # not <RightMouse>
+	map <m-2> down    # not <RightMouse>
 	map <m-up> down   # not <ScrollWheelUp>
 
 WARNING: Some key combinations will likely be intercepted by your OS, window manager, or terminal.
