@@ -1769,8 +1769,8 @@ Mouse buttons are prefixed with an m character:
     map <m-1> down  # primary
     map <m-2> down  # secondary
     map <m-3> down  # middle
-    map <m-4> down
-    map <m-5> down
+    map <m-4> down  # thumb next
+    map <m-5> down  # thumb prev
     map <m-6> down
     map <m-7> down
     map <m-8> down
