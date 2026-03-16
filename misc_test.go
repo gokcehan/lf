@@ -94,6 +94,7 @@ func TestTruncateRight(t *testing.T) {
 		}
 	}
 }
+
 func TestTruncateLeft(t *testing.T) {
 	tests := []struct {
 		s        string
