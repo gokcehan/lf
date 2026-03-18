@@ -320,6 +320,7 @@ The following options can be used to customize the behavior of lf:
 	tabstop           int       (default 8)
 	tagfmt            string    (default "\033[31m")
 	tempmarks         string    (default '')
+	terminalcursor    string    (default 'default')
 	timefmt           string    (default 'Mon Jan _2 15:04:05 2006')
 	truncatechar      string    (default '~')
 	truncatepct       int       (default 100)
@@ -1249,6 +1250,11 @@ For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 Marks to be considered temporary (e.g. `abc` refers to marks `a`, `b`, and `c`).
 These marks are not synced to other clients and they are not saved in the bookmarks file.
 Note that the special bookmark `` ` `` is always treated as temporary and it does not need to be specified.
+
+## terminalcursor (string) (default `default`)
+
+Set the appearance of the terminal cursor for prompts shown in the bottom line.
+Currently supported values are `default`, `block`, `underline`, `bar`, `blinkblock`, `blinkunderline` and `blinkbar`.
 
 ## timefmt (string) (default `Mon Jan _2 15:04:05 2006`)
 
