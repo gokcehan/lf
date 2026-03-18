@@ -38,6 +38,18 @@ const (
 	regexSearch searchMethod = "regex"
 )
 
+type cursorStyle string
+
+const (
+	defaultCursor        cursorStyle = "default"
+	blockCursor          cursorStyle = "block"
+	underlineCursor      cursorStyle = "underline"
+	barCursor            cursorStyle = "bar"
+	blinkBlockCursor     cursorStyle = "blinkblock"
+	blinkUnderlineCursor cursorStyle = "blinkunderline"
+	blinkBarCursor       cursorStyle = "blinkbar"
+)
+
 var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
@@ -106,6 +118,7 @@ var gOpts struct {
 	tabstop          int
 	tagfmt           string
 	tempmarks        string
+	terminalcursor   cursorStyle
 	timefmt          string
 	truncatechar     string
 	truncatepct      int
@@ -248,6 +261,7 @@ func init() {
 	gOpts.tabstop = 8
 	gOpts.tagfmt = "\033[31m"
 	gOpts.tempmarks = "'"
+	gOpts.terminalcursor = defaultCursor
 	gOpts.timefmt = time.ANSIC
 	gOpts.truncatechar = "~"
 	gOpts.truncatepct = 100

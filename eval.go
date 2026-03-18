@@ -414,6 +414,24 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.tagfmt = e.val
 	case "tempmarks":
 		gOpts.tempmarks = "'" + e.val
+	case "terminalcursor":
+		shapes := map[cursorStyle]tcell.CursorStyle{
+			defaultCursor:        tcell.CursorStyleDefault,
+			blockCursor:          tcell.CursorStyleSteadyBlock,
+			underlineCursor:      tcell.CursorStyleSteadyUnderline,
+			barCursor:            tcell.CursorStyleSteadyBar,
+			blinkBlockCursor:     tcell.CursorStyleBlinkingBlock,
+			blinkUnderlineCursor: tcell.CursorStyleBlinkingUnderline,
+			blinkBarCursor:       tcell.CursorStyleBlinkingBar,
+		}
+		styleName := cursorStyle(e.val)
+		style, ok := shapes[styleName]
+		if !ok {
+			app.ui.echoerr("terminalcursor: value should either be 'default', 'block', 'underline', 'bar', 'blinkblock', 'blinkunderline' or 'blinkbar'")
+			return
+		}
+		gOpts.terminalcursor = styleName
+		app.ui.screen.SetCursorStyle(style)
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":

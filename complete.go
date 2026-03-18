@@ -407,6 +407,8 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			matches, longest = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+		case "terminalcursor":
+			matches, longest = matchWord(f[2], []string{"default", "block", "underline", "bar", "blinkblock", "blinkunderline", "blinkbar"})
 		default:
 			if slices.Contains(gOptWords, f[1]+"!") {
 				matches, longest = matchWord(f[2], []string{"false", "true"})
