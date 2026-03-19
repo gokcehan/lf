@@ -50,6 +50,15 @@ const (
 	blinkBarCursor       cursorStyle = "blinkbar"
 )
 
+type border string
+
+const (
+	none       border = "none"
+	outline    border = "outline"
+	separators border = "separators"
+	both       border = "both"
+)
+
 var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
@@ -60,6 +69,7 @@ var gOpts struct {
 	cursorparentfmt  string
 	cursorpreviewfmt string
 	cutfmt           string
+	drawborders      border
 	dircounts        bool
 	dirfirst         bool
 	dironly          bool
@@ -203,6 +213,7 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
+	gOpts.drawborders = none
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
 	gOpts.dironly = false

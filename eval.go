@@ -202,6 +202,17 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.cursorpreviewfmt = e.val
 	case "cutfmt":
 		gOpts.cutfmt = e.val
+	case "drawborders":
+		switch e.val {
+		case "none", "outline", "separators", "both":
+			gOpts.drawborders = border(e.val)
+		default:
+			app.ui.echoerr("drawborders: value should either be 'none', 'outline', 'separators' or 'both")
+			return
+		}
+		app.ui.renew()
+		app.nav.resize(app.ui)
+		app.ui.loadFile(app, true)
 	case "dupfilefmt":
 		gOpts.dupfilefmt = e.val
 	case "errorfmt":

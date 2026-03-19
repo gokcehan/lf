@@ -395,6 +395,8 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		switch f[1] {
 		case "cleaner", "previewer", "rulerfile":
 			matches, longest = matchCmdFile(f[2], false)
+		case "drawborders":
+			matches, longest = matchWord(f[2], []string{"none", "outline", "separators", "both"})
 		case "filtermethod", "searchmethod":
 			matches, longest = matchWord(f[2], []string{"glob", "regex", "text"})
 		case "info":
