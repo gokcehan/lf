@@ -1362,7 +1362,7 @@ tempmarks (string) (default ``)
 
 Marks to be considered temporary (e.g. abc refers to marks a, b, and c).
 These marks are not synced to other clients and they are not saved in
-the bookmarks file. Note that the special bookmark ` is always treated
+the bookmarks file. Note that the special bookmark ' is always treated
 as temporary and it does not need to be specified.
 
 terminalcursor (string) (default default)

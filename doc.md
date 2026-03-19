@@ -1249,7 +1249,7 @@ For example, `\033[4m%s\033[0m` has the same effect as `\033[4m`.
 
 Marks to be considered temporary (e.g. `abc` refers to marks `a`, `b`, and `c`).
 These marks are not synced to other clients and they are not saved in the bookmarks file.
-Note that the special bookmark `` ` `` is always treated as temporary and it does not need to be specified.
+Note that the special bookmark `'` is always treated as temporary and it does not need to be specified.
 
 ## terminalcursor (string) (default `default`)
 
