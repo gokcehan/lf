@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Emoji sequences containing Zero Width Joiner characters are now displayed as a single combined glyph (#2286).
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
+- A new option `terminalcursor` is added to customize the appearance of the terminal cursor (#2441).
 - The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 - `lf` will now automatically change to the parent directory if the current directory no longer exists and the `watch` option is enabled (#2424).
 
