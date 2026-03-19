@@ -22,9 +22,8 @@ const gEscapeCode byte = '\x1b'
 // the UI.
 func stripTermSequence(s string) string {
 	var b strings.Builder
-	i := 0
 	slen := len(s)
-	for i < slen {
+	for i := 0; i < slen; {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
 			i += len(seq) // skip known sequence

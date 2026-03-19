@@ -42,9 +42,8 @@ func (win *win) renew(w, h, x, y int) {
 func printLength(s string) int {
 	length := 0
 
-	i := 0
 	slen := len(s)
-	for i < slen {
+	for i := 0; i < slen; {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
 			i += len(seq)
@@ -76,9 +75,8 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 		}
 	}
 
-	i := 0
 	slen := len(s)
-	for i < slen {
+	for i := 0; i < slen; {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
 			put()
