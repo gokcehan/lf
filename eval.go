@@ -415,23 +415,27 @@ func (e *setExpr) eval(app *app, _ []string) {
 	case "tempmarks":
 		gOpts.tempmarks = "'" + e.val
 	case "terminalcursor":
-		shapes := map[cursorStyle]tcell.CursorStyle{
-			defaultCursor:        tcell.CursorStyleDefault,
-			blockCursor:          tcell.CursorStyleSteadyBlock,
-			underlineCursor:      tcell.CursorStyleSteadyUnderline,
-			barCursor:            tcell.CursorStyleSteadyBar,
-			blinkBlockCursor:     tcell.CursorStyleBlinkingBlock,
-			blinkUnderlineCursor: tcell.CursorStyleBlinkingUnderline,
-			blinkBarCursor:       tcell.CursorStyleBlinkingBar,
-		}
-		styleName := cursorStyle(e.val)
-		style, ok := shapes[styleName]
-		if !ok {
+		style := cursorStyle(e.val)
+		switch style {
+		case defaultCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleDefault)
+		case blockCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleSteadyBlock)
+		case underlineCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleSteadyUnderline)
+		case barCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleSteadyBar)
+		case blinkBlockCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleBlinkingBlock)
+		case blinkUnderlineCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleBlinkingUnderline)
+		case blinkBarCursor:
+			app.ui.screen.SetCursorStyle(tcell.CursorStyleBlinkingBar)
+		default:
 			app.ui.echoerr("terminalcursor: value should either be 'default', 'block', 'underline', 'bar', 'blinkblock', 'blinkunderline' or 'blinkbar'")
 			return
 		}
-		gOpts.terminalcursor = styleName
-		app.ui.screen.SetCursorStyle(style)
+		gOpts.terminalcursor = style
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
