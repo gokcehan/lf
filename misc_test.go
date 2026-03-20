@@ -560,29 +560,33 @@ func TestGetWidths(t *testing.T) {
 	tests := []struct {
 		wtot        int
 		ratios      []int
-		borderstyle border
+		drawbox     bool
+		borderstyle borderStyle
 		exp         []int
 	}{
-		{0, []int{1}, none, []int{0}},
-		{0, []int{1}, outline, []int{0}},
-		{0, []int{1, 3, 2}, none, []int{0, 0, 0}},
-		{0, []int{1, 3, 2}, outline, []int{0, 0, 0}},
+		{0, []int{1}, false, borderBox, []int{0}},
+		{0, []int{1}, true, borderBox, []int{0}},
+		{0, []int{1, 3, 2}, false, borderBox, []int{0, 0, 0}},
+		{0, []int{1, 3, 2}, true, borderBox, []int{0, 0, 0}},
 
-		{14, []int{1, 3, 2}, none, []int{2, 6, 4}},
-		{14, []int{1, 3, 2}, separators, []int{2, 6, 4}},
-		{16, []int{1, 3, 2}, outline, []int{2, 6, 4}},
-		{16, []int{1, 3, 2}, both, []int{2, 6, 4}},
+		{14, []int{1, 3, 2}, false, borderBox, []int{2, 6, 4}},
+		{16, []int{1, 3, 2}, true, borderBox, []int{2, 6, 4}},
 
-		{23, []int{1, 3, 2, 4}, none, []int{2, 6, 4, 8}}, // windows end at 2.0, 8.0, 12.0, 20.0 respectively
-		{24, []int{1, 3, 2, 4}, none, []int{2, 6, 5, 8}}, // windows end at 2.1, 8.4, 12.6, 21.0 respectively
-		{25, []int{1, 3, 2, 4}, none, []int{2, 7, 4, 9}}, // windows end at 2.2, 8.8, 13.2, 22.0 respectively
-		{26, []int{1, 3, 2, 4}, none, []int{2, 7, 5, 9}}, // windows end at 2.3, 9.2, 13.8, 23.0 respectively
+		{16, []int{1, 3, 2}, true, borderSeparators, []int{2, 7, 5}},
+		{16, []int{1, 3, 2}, true, borderOutline, []int{2, 6, 4}},
+		{16, []int{1, 3, 2}, true, borderRoundOutline, []int{2, 6, 4}},
+		{16, []int{1, 3, 2}, true, borderRoundBox, []int{2, 6, 4}},
+
+		{23, []int{1, 3, 2, 4}, false, borderBox, []int{2, 6, 4, 8}}, // windows end at 2.0, 8.0, 12.0, 20.0 respectively
+		{24, []int{1, 3, 2, 4}, false, borderBox, []int{2, 6, 5, 8}}, // windows end at 2.1, 8.4, 12.6, 21.0 respectively
+		{25, []int{1, 3, 2, 4}, false, borderBox, []int{2, 7, 4, 9}}, // windows end at 2.2, 8.8, 13.2, 22.0 respectively
+		{26, []int{1, 3, 2, 4}, false, borderBox, []int{2, 7, 5, 9}}, // windows end at 2.3, 9.2, 13.8, 23.0 respectively
 	}
 
 	for _, test := range tests {
-		widths := getWidths(test.wtot, test.ratios, test.borderstyle)
+		widths := getWidths(test.wtot, test.ratios, test.drawbox, test.borderstyle)
 		if !reflect.DeepEqual(widths, test.exp) {
-			t.Errorf("at input (%v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.borderstyle, test.exp, widths)
+			t.Errorf("at input (%v, %v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.drawbox, test.borderstyle, test.exp, widths)
 		}
 	}
 }
