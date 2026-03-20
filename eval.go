@@ -154,8 +154,9 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 		}
+	// DEPRECATED: remove after r42 is released
 	case "roundbox", "noroundbox", "roundbox!":
-		err = applyBoolOpt(&gOpts.roundbox, e)
+		app.ui.echoerr("option 'roundbox' is deprecated, use 'borderstyle' instead")
 	case "showbinds", "noshowbinds", "showbinds!":
 		err = applyBoolOpt(&gOpts.showbinds, e)
 	case "smartcase", "nosmartcase", "smartcase!":

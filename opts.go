@@ -130,7 +130,6 @@ var gOpts struct {
 	ratios           []int
 	relativenumber   bool
 	reverse          bool
-	roundbox         bool
 	rulerfile        string
 	rulerfmt         string
 	scrolloff        int
@@ -274,7 +273,6 @@ func init() {
 	gOpts.ratios = []int{1, 2, 3}
 	gOpts.relativenumber = false
 	gOpts.reverse = false
-	gOpts.roundbox = false
 	gOpts.rulerfile = ""
 	gOpts.rulerfmt = ""
 	gOpts.scrolloff = 0
