@@ -207,7 +207,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		case "none", "outline", "separators", "both":
 			gOpts.drawborders = border(e.val)
 		default:
-			app.ui.echoerr("drawborders: value should either be 'none', 'outline', 'separators' or 'both")
+			app.ui.echoerr("drawborders: value should either be 'none', 'outline', 'separators' or 'both'")
 			return
 		}
 		app.ui.renew()
