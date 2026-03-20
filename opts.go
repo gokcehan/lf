@@ -51,7 +51,7 @@ const (
 	blinkBarCursor       cursorStyle = "blinkbar"
 )
 
-type borderStyle uint8
+type borderStyle byte
 
 const (
 	borderOutline borderStyle = 1 << iota
