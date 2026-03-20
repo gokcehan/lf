@@ -202,12 +202,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.cursorpreviewfmt = e.val
 	case "cutfmt":
 		gOpts.cutfmt = e.val
-	case "drawborders":
+	case "borderstyle":
 		switch e.val {
 		case "none", "outline", "separators", "both":
-			gOpts.drawborders = border(e.val)
+			gOpts.borderstyle = border(e.val)
 		default:
-			app.ui.echoerr("drawborders: value should either be 'none', 'outline', 'separators' or 'both'")
+			app.ui.echoerr("borderstyle: value should either be 'none', 'outline', 'separators' or 'both'")
 			return
 		}
 		app.ui.renew()

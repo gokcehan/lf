@@ -484,13 +484,13 @@ func getWins(screen tcell.Screen) []*win {
 	h := max(htot-2, 0)
 	x := 0
 	y := 1
-	if gOpts.drawborders == outline || gOpts.drawborders == both {
+	if gOpts.borderstyle == outline || gOpts.borderstyle == both {
 		h = max(htot-4, 0)
 		x = 1
 		y = 2
 	}
 
-	widths := getWidths(wtot, gOpts.ratios, gOpts.drawborders)
+	widths := getWidths(wtot, gOpts.ratios, gOpts.borderstyle)
 	wins := make([]*win, 0, len(widths))
 	for _, w := range widths {
 		wins = append(wins, newWin(w, h, x, y))
@@ -1023,8 +1023,8 @@ func (ui *ui) drawBox() {
 
 	w, h := ui.screen.Size()
 
-	drawOutline := gOpts.drawborders == outline || gOpts.drawborders == both
-	drawSeparators := gOpts.drawborders == separators || gOpts.drawborders == both
+	drawOutline := gOpts.borderstyle == outline || gOpts.borderstyle == both
+	drawSeparators := gOpts.borderstyle == separators || gOpts.borderstyle == both
 
 	if drawOutline {
 		for i := 1; i < w-1; i++ {
@@ -1166,7 +1166,7 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.drawPreview(nav, &context)
 
-	if gOpts.drawborders != none {
+	if gOpts.borderstyle != none {
 		ui.drawBox()
 	}
 

@@ -560,7 +560,7 @@ func TestGetWidths(t *testing.T) {
 	tests := []struct {
 		wtot        int
 		ratios      []int
-		drawborders border
+		borderstyle border
 		exp         []int
 	}{
 		{0, []int{1}, none, []int{0}},
@@ -580,9 +580,9 @@ func TestGetWidths(t *testing.T) {
 	}
 
 	for _, test := range tests {
-		widths := getWidths(test.wtot, test.ratios, test.drawborders)
+		widths := getWidths(test.wtot, test.ratios, test.borderstyle)
 		if !reflect.DeepEqual(widths, test.exp) {
-			t.Errorf("at input (%v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.drawborders, test.exp, widths)
+			t.Errorf("at input (%v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.borderstyle, test.exp, widths)
 		}
 	}
 }
