@@ -69,11 +69,11 @@ var gOpts struct {
 	cursorparentfmt  string
 	cursorpreviewfmt string
 	cutfmt           string
-	drawborders      border
 	dircounts        bool
 	dirfirst         bool
 	dironly          bool
 	dirpreviews      bool
+	drawborders      border
 	drawbox          bool
 	dupfilefmt       string
 	errorfmt         string
@@ -213,11 +213,11 @@ func init() {
 	gOpts.cursorparentfmt = "\033[7m"
 	gOpts.cursorpreviewfmt = "\033[4m"
 	gOpts.cutfmt = "\033[7;31m"
-	gOpts.drawborders = none
 	gOpts.dircounts = false
 	gOpts.dirfirst = true
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
+	gOpts.drawborders = none
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.errorfmt = "\033[7;31;47m"
