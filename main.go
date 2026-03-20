@@ -106,10 +106,8 @@ func fieldToString(field reflect.Value) string {
 		return borderStyle(field.Uint()).String()
 	}
 
-	kind := field.Kind()
 	var value string
-
-	switch kind {
+	switch field.Kind() {
 	case reflect.Int:
 		value = strconv.Itoa(int(field.Int()))
 	case reflect.Bool:
