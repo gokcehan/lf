@@ -85,13 +85,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		}
 	case "dirpreviews", "nodirpreviews", "dirpreviews!":
 		err = applyBoolOpt(&gOpts.dirpreviews, e)
-	case "drawbox", "nodrawbox", "drawbox!":
-		err = applyBoolOpt(&gOpts.drawbox, e)
-		if err == nil {
-			app.ui.renew()
-			app.nav.resize(app.ui)
-			app.ui.loadFile(app, true)
-		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
