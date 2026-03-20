@@ -204,10 +204,18 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.cutfmt = e.val
 	case "borderstyle":
 		switch e.val {
-		case "none", "outline", "separators", "both":
-			gOpts.borderstyle = border(e.val)
+		case "box":
+			gOpts.borderstyle = borderBox
+		case "roundbox":
+			gOpts.borderstyle = borderRoundBox
+		case "outline":
+			gOpts.borderstyle = borderOutline
+		case "roundoutline":
+			gOpts.borderstyle = borderRoundOutline
+		case "separators":
+			gOpts.borderstyle = borderSeparators
 		default:
-			app.ui.echoerr("borderstyle: value should either be 'none', 'outline', 'separators' or 'both'")
+			app.ui.echoerr("borderstyle: value should either be 'box', 'roundbox', 'outline', 'roundoutline' or 'separators'")
 			return
 		}
 		app.ui.renew()

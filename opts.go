@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"maps"
 	"time"
 )
@@ -50,14 +51,34 @@ const (
 	blinkBarCursor       cursorStyle = "blinkbar"
 )
 
-type border string
+type borderStyle uint8
 
 const (
-	none       border = "none"
-	outline    border = "outline"
-	separators border = "separators"
-	both       border = "both"
+	borderOutline borderStyle = 1 << iota
+	borderSeparators
+	borderRound
+
+	borderBox          = borderOutline | borderSeparators
+	borderRoundOutline = borderOutline | borderRound
+	borderRoundBox     = borderBox | borderRound
 )
+
+func (s borderStyle) String() string {
+	switch s {
+	case borderBox:
+		return "box"
+	case borderRoundBox:
+		return "roundbox"
+	case borderOutline:
+		return "outline"
+	case borderRoundOutline:
+		return "roundoutline"
+	case borderSeparators:
+		return "separators"
+	default:
+		return fmt.Sprintf("borderStyle(%d)", s)
+	}
+}
 
 var gOpts struct {
 	anchorfind       bool
@@ -73,7 +94,7 @@ var gOpts struct {
 	dirfirst         bool
 	dironly          bool
 	dirpreviews      bool
-	borderstyle      border
+	borderstyle      borderStyle
 	drawbox          bool
 	dupfilefmt       string
 	errorfmt         string
@@ -217,7 +238,7 @@ func init() {
 	gOpts.dirfirst = true
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
-	gOpts.borderstyle = none
+	gOpts.borderstyle = borderBox
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.errorfmt = "\033[7;31;47m"

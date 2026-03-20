@@ -530,12 +530,12 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 
 // getWidths calculates the widths of windows as the result of applying the
 // `ratios` option to the screen width. One column is allocated for each divider
-// between windows. When `borderstyle` is `outline` or `both`, getWidths reserves
-// two additional columns for the left and right borders.
-func getWidths(wtot int, ratios []int, borderstyle border) []int {
+// between windows. When `drawbox` is enabled and `borderstyle` includes an outline,
+// getWidths reserves two additional columns for the left and right borders.
+func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []int {
 	rlen := len(ratios)
 	wtot -= rlen - 1
-	if borderstyle == outline || borderstyle == both {
+	if drawbox && borderstyle&borderOutline != 0 {
 		wtot -= 2
 	}
 	wtot = max(wtot, 0)

@@ -482,15 +482,13 @@ func getWins(screen tcell.Screen) []*win {
 	wtot, htot := screen.Size()
 
 	h := max(htot-2, 0)
-	x := 0
-	y := 1
-	if gOpts.borderstyle == outline || gOpts.borderstyle == both {
+	x, y := 0, 1
+	if gOpts.drawbox && gOpts.borderstyle&borderOutline != 0 {
 		h = max(htot-4, 0)
-		x = 1
-		y = 2
+		x, y = 1, 2
 	}
 
-	widths := getWidths(wtot, gOpts.ratios, gOpts.borderstyle)
+	widths := getWidths(wtot, gOpts.ratios, gOpts.drawbox, gOpts.borderstyle)
 	wins := make([]*win, 0, len(widths))
 	for _, w := range widths {
 		wins = append(wins, newWin(w, h, x, y))
@@ -1022,11 +1020,9 @@ func (ui *ui) drawBox() {
 	st := parseEscapeSequence(gOpts.borderfmt)
 
 	w, h := ui.screen.Size()
+	style := gOpts.borderstyle
 
-	drawOutline := gOpts.borderstyle == outline || gOpts.borderstyle == both
-	drawSeparators := gOpts.borderstyle == separators || gOpts.borderstyle == both
-
-	if drawOutline {
+	if style&borderOutline != 0 {
 		for i := 1; i < w-1; i++ {
 			ui.screen.PutStrStyled(i, 1, string(tcell.RuneHLine), st)
 			ui.screen.PutStrStyled(i, h-2, string(tcell.RuneHLine), st)
@@ -1037,7 +1033,7 @@ func (ui *ui) drawBox() {
 			ui.screen.PutStrStyled(w-1, i, string(tcell.RuneVLine), st)
 		}
 
-		if gOpts.roundbox {
+		if style&borderRound != 0 {
 			ui.screen.PutStrStyled(0, 1, "╭", st)
 			ui.screen.PutStrStyled(w-1, 1, "╮", st)
 			ui.screen.PutStrStyled(0, h-2, "╰", st)
@@ -1050,24 +1046,24 @@ func (ui *ui) drawBox() {
 		}
 	}
 
-	if !drawSeparators {
+	if style&borderSeparators == 0 {
 		return
 	}
 
 	top, bot := 1, h-1
-	if drawOutline {
+	if style&borderOutline != 0 {
 		top, bot = 2, h-2
 	}
 
 	for wind := range len(ui.wins) - 1 {
 		x := ui.wins[wind].x + ui.wins[wind].w
-		if drawOutline {
+		if style&borderOutline != 0 {
 			ui.screen.PutStrStyled(x, 1, string(tcell.RuneTTee), st)
 		}
 		for y := top; y < bot; y++ {
 			ui.screen.PutStrStyled(x, y, string(tcell.RuneVLine), st)
 		}
-		if drawOutline {
+		if style&borderOutline != 0 {
 			ui.screen.PutStrStyled(x, h-2, string(tcell.RuneBTee), st)
 		}
 	}
@@ -1166,7 +1162,7 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.drawPreview(nav, &context)
 
-	if gOpts.borderstyle != none {
+	if gOpts.drawbox {
 		ui.drawBox()
 	}
 
