@@ -74,6 +74,7 @@ var gOpts struct {
 	dironly          bool
 	dirpreviews      bool
 	drawborders      border
+	drawbox          bool
 	dupfilefmt       string
 	errorfmt         string
 	filesep          string
@@ -217,6 +218,7 @@ func init() {
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
 	gOpts.drawborders = none
+	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.errorfmt = "\033[7;31;47m"
 	gOpts.filesep = "\n"
