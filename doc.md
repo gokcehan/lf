@@ -256,6 +256,7 @@ The following options can be used to customize the behavior of lf:
 	anchorfind        bool      (default true)
 	autoquit          bool      (default true)
 	borderfmt         string    (default "\033[0m")
+	borderstyle       string    (default 'box')
 	cleaner           string    (default '')
 	copyfmt           string    (default "\033[7;33m")
 	cursoractivefmt   string    (default "\033[7m")
@@ -301,7 +302,6 @@ The following options can be used to customize the behavior of lf:
 	ratios            []int     (default '1:2:3')
 	relativenumber    bool      (default false)
 	reverse           bool      (default false)
-	roundbox          bool      (default false)
 	rulerfile         string    (default "")
 	rulerfmt          string    (default "")
 	scrolloff         int       (default 0)
@@ -853,7 +853,19 @@ Automatically quit the server when there are no clients left connected.
 
 ## borderfmt (string) (default `\033[0m`)
 
-Format string of the box drawing characters enabled by the `drawbox` option.
+Format string of border characters.
+
+## borderstyle (string) (default `box`)
+
+Border style used by `drawbox`.
+
+The following styles are supported:
+
+	box           outline around all panes and separators between them
+	roundbox      like `box`, but with rounded outer corners
+	outline       outline around all panes
+	roundoutline  like `outline`, but with rounded outer corners
+	separators    separators between panes
 
 ## cleaner (string) (default ``) (not called if empty)
 
@@ -908,7 +920,7 @@ If enabled, directories will also be passed to the previewer script. This allows
 
 ## drawbox (bool) (default false)
 
-Draw boxes around panes with box drawing characters.
+Draw borders around panes using box drawing characters.
 
 ## dupfilefmt (string) (default `%f.~%n~`)
 
@@ -1108,10 +1120,6 @@ When `number` is enabled, the current line shows the absolute position, otherwis
 ## reverse (bool) (default false)
 
 Reverse the direction of sort.
-
-## roundbox (bool) (default false)
-
-Draw rounded outer corners when the `drawbox` option is enabled.
 
 ## rulerfile (string) (default ``)
 
