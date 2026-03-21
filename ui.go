@@ -66,37 +66,27 @@ func printLength(s string) int {
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
 	var b strings.Builder
 	off := 0
-	put := func() {
-		if b.Len() > 0 {
-			s := b.String()
-			screen.PutStrStyled(win.x+x+off, win.y+y, s, st)
-			off += printLength(s)
-			b.Reset()
-		}
-	}
-
 	slen := len(s)
 	for i := 0; i < slen; {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
-			put()
 			st = applyTermSequence(seq, st)
 			i += len(seq)
 			continue
 		}
 
-		gc, _, _, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		gc, _, w, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
 		if gc == "\t" {
 			w := gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
-			b.WriteString(strings.Repeat(" ", w))
+			screen.PutStrStyled(win.x+x+off, win.y+y, strings.Repeat(" ", w), st)
 		} else if gc != "\r" && gc != "\n" {
-			b.WriteString(gc)
+			screen.PutStrStyled(win.x+x+off, win.y+y, gc, st)
 		}
 
+		off += w
 		i += len(gc)
 	}
 
-	put()
 	return st
 }
 
