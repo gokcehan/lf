@@ -7,6 +7,7 @@ import (
 	"os/exec"
 	"os/user"
 	"path/filepath"
+	"slices"
 	"strings"
 	"syscall"
 
@@ -185,13 +186,7 @@ func isExecutable(f os.FileInfo) bool {
 	if ext == "" {
 		return false
 	}
-	ext = strings.ToLower(ext)
-	for _, x := range envPathExts {
-		if ext == x {
-			return true
-		}
-	}
-	return false
+	return slices.Contains(envPathExts, strings.ToLower(ext))
 }
 
 func isHidden(f os.FileInfo, path string, hiddenfiles []string) bool {
