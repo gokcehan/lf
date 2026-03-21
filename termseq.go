@@ -23,15 +23,15 @@ const gEscapeCode byte = '\x1b'
 func stripTermSequence(s string) string {
 	var b strings.Builder
 	slen := len(s)
-	for i := 0; i < slen; i++ {
+	for i := 0; i < slen; {
 		seq := readTermSequence(s[i:])
 		if seq != "" {
-			i += len(seq) - 1 // skip known sequence
+			i += len(seq) // skip known sequence
 			continue
 		}
 
 		r, w := utf8.DecodeRuneInString(s[i:])
-		i += w - 1
+		i += w
 		b.WriteRune(r)
 	}
 
