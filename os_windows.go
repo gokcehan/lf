@@ -3,7 +3,6 @@ package main
 import (
 	"cmp"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -21,7 +20,7 @@ var (
 	envShell  = os.Getenv("SHELL")
 )
 
-var envPathExt = os.Getenv("PATHEXT")
+var envPathExts []string
 
 var (
 	gDefaultShell       = "cmd"
@@ -115,6 +114,14 @@ func init() {
 		gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
 		syscall.Close(socket)
 	}
+
+	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
+	for ext := range strings.SplitSeq(s, ";") {
+		if ext == "" {
+			continue
+		}
+		envPathExts = append(envPathExts, strings.ToLower(ext))
+	}
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
@@ -174,9 +181,13 @@ func setDefaults() {
 func setUserUmask() {}
 
 func isExecutable(f os.FileInfo) bool {
-	for e := range strings.SplitSeq(envPathExt, string(filepath.ListSeparator)) {
-		if strings.HasSuffix(strings.ToLower(f.Name()), strings.ToLower(e)) {
-			log.Print(f.Name(), e)
+	ext := filepath.Ext(f.Name())
+	if ext == "" {
+		return false
+	}
+	ext = strings.ToLower(ext)
+	for _, x := range envPathExts {
+		if ext == x {
 			return true
 		}
 	}
