@@ -79,6 +79,9 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 		if gc == "\t" {
 			w = gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
 			screen.PutStrStyled(win.x+x+off, win.y+y, strings.Repeat(" ", w), st)
+		} else if gc == "\x1b" {
+			w = 2
+			screen.PutStrStyled(win.x+x+off, win.y+y, "^[", st)
 		} else if gc != "\r" && gc != "\n" {
 			screen.PutStrStyled(win.x+x+off, win.y+y, gc, st)
 		}
