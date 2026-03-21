@@ -165,7 +165,7 @@ func (im iconMap) get(f *file) iconDef {
 		key = "su"
 	case f.Mode()&os.ModeSetgid != 0:
 		key = "sg"
-	case f.Mode()&0o111 != 0:
+	case isExecutable(f.FileInfo):
 		key = "ex"
 	}
 
