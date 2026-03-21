@@ -84,6 +84,7 @@ var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
 	borderfmt        string
+	borderstyle      borderStyle
 	cleaner          string
 	copyfmt          string
 	cursoractivefmt  string
@@ -94,7 +95,6 @@ var gOpts struct {
 	dirfirst         bool
 	dironly          bool
 	dirpreviews      bool
-	borderstyle      borderStyle
 	drawbox          bool
 	dupfilefmt       string
 	errorfmt         string
@@ -227,6 +227,7 @@ func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = true
 	gOpts.borderfmt = "\033[0m"
+	gOpts.borderstyle = borderBox
 	gOpts.cleaner = ""
 	gOpts.copyfmt = "\033[7;33m"
 	gOpts.cursoractivefmt = "\033[7m"
@@ -237,7 +238,6 @@ func init() {
 	gOpts.dirfirst = true
 	gOpts.dironly = false
 	gOpts.dirpreviews = false
-	gOpts.borderstyle = borderBox
 	gOpts.drawbox = false
 	gOpts.dupfilefmt = "%f.~%n~"
 	gOpts.errorfmt = "\033[7;31;47m"
