@@ -22,7 +22,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
 - A new option `terminalcursor` is added to customize the appearance of the terminal cursor (#2441).
-- A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445).
+- A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445). This also replaces the existing `roundbox` option.
 - The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 - `lf` will now automatically change to the parent directory if the current directory no longer exists and the `watch` option is enabled (#2424).
 
