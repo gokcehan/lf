@@ -37,6 +37,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `cmd-transpose` command now advances the cursor correctly after swapping characters (#2413).
 - Symbolic links are no longer followed when changing directories (#2423).
 - Using the `select` command with a blank string as the argument now properly raises an error instead of changing to the parent directory (#2429).
+- Executable files on Windows are now correctly recognized for icon and color lookup based on `PATHEXT` (#2448).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
