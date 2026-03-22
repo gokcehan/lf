@@ -474,12 +474,9 @@ func (app *app) loop() {
 			deletePathRecursive(app.nav.regCache, path)
 			deletePathRecursive(app.nav.dirCache, path)
 
-			for _, dirPath := range app.nav.dirPaths {
-				if dirPath == path {
-					if err := app.nav.cd(filepath.Dir(path)); err != nil {
-						log.Print(err)
-					}
-					break
+			if slices.Contains(app.nav.dirPaths, path) {
+				if err := app.nav.cd(filepath.Dir(path)); err != nil {
+					log.Print(err)
 				}
 			}
 		case ev := <-app.ui.evChan:
