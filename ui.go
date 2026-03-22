@@ -64,7 +64,6 @@ func printLength(s string) int {
 }
 
 func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) tcell.Style {
-	var b strings.Builder
 	off := 0
 	slen := len(s)
 	for i := 0; i < slen; {
@@ -77,7 +76,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 
 		gc, _, w, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
 		if gc == "\t" {
-			w = gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
+			w = gOpts.tabstop - (x+off)%gOpts.tabstop
 			screen.PutStrStyled(win.x+x+off, win.y+y, strings.Repeat(" ", w), st)
 		} else if gc == "\x1b" {
 			w = 2
