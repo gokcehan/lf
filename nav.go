@@ -1957,7 +1957,7 @@ func (nav *nav) currSelections() []string {
 	return paths
 }
 
-func (nav *nav) currFileOrSelections() (list []string, err error) {
+func (nav *nav) currFileOrSelections() ([]string, error) {
 	if sel := nav.currSelections(); len(sel) > 0 {
 		return sel, nil
 	}
