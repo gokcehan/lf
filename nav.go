@@ -14,7 +14,6 @@ import (
 	"path/filepath"
 	"regexp"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"time"
@@ -1938,20 +1937,6 @@ func (nav *nav) currFile() *file {
 	return dir.files[dir.ind]
 }
 
-type indexedSelections struct {
-	paths   []string
-	indices []int
-}
-
-func (m indexedSelections) Len() int { return len(m.paths) }
-
-func (m indexedSelections) Swap(i, j int) {
-	m.paths[i], m.paths[j] = m.paths[j], m.paths[i]
-	m.indices[i], m.indices[j] = m.indices[j], m.indices[i]
-}
-
-func (m indexedSelections) Less(i, j int) bool { return m.indices[i] < m.indices[j] }
-
 func (nav *nav) currSelections() []string {
 	currDirOnly := gOpts.selmode == "dir"
 	currDirPath := ""
@@ -1961,14 +1946,14 @@ func (nav *nav) currSelections() []string {
 	}
 
 	paths := make([]string, 0, len(nav.selections))
-	indices := make([]int, 0, len(nav.selections))
-	for path, index := range nav.selections {
+	for path := range nav.selections {
 		if !currDirOnly || filepath.Dir(path) == currDirPath {
 			paths = append(paths, path)
-			indices = append(indices, index)
 		}
 	}
-	sort.Sort(indexedSelections{paths: paths, indices: indices})
+	slices.SortFunc(paths, func(a, b string) int {
+		return cmp.Compare(nav.selections[a], nav.selections[b])
+	})
 	return paths
 }
 
