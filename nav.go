@@ -1848,15 +1848,10 @@ func (nav *nav) writeMarks() error {
 	}
 	defer f.Close()
 
-	var keys []string
-	for k := range nav.marks {
-		if !strings.Contains(gOpts.tempmarks, k) {
-			keys = append(keys, k)
+	for _, k := range slices.Sorted(maps.Keys(nav.marks)) {
+		if strings.Contains(gOpts.tempmarks, k) {
+			continue
 		}
-	}
-	sort.Strings(keys)
-
-	for _, k := range keys {
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.marks[k])
 		if err != nil {
 			return fmt.Errorf("writing marks file: %w", err)
@@ -1911,13 +1906,7 @@ func (nav *nav) writeTags() error {
 	}
 	defer f.Close()
 
-	var keys []string
-	for k := range nav.tags {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
-	for _, k := range keys {
+	for _, k := range slices.Sorted(maps.Keys(nav.tags)) {
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.tags[k])
 		if err != nil {
 			return fmt.Errorf("writing tags file: %w", err)
