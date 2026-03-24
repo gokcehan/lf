@@ -1850,7 +1850,7 @@ You can customize copy and move operations by defining a `paste` command.
 This is a special command that is called when it is defined instead of the built-in implementation.
 You can use the following example as a starting point:
 
-	cmd paste %{{
+	cmd paste ${{
 	    load=$(cat ~/.local/share/lf/files)
 	    mode=$(echo "$load" | sed -n '1p')
 	    list=$(echo "$load" | sed '1d')
