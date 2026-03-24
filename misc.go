@@ -471,65 +471,79 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
 	const maxLineBytes = 1 << 16 // 64 KiB per line
 
-	var buf bytes.Buffer
-	var last byte
-	inSixel := false
+	type state int
+	const (
+		stateNormal state = iota
+		stateEsc
+		stateSixel
+		stateSixelEsc
+	)
+	currState := stateNormal
 
-	for {
+	var buf bytes.Buffer
+	maxLinesReached := false
+	flush := func(force bool) {
+		if buf.Len() > 0 || force {
+			lines = append(lines, buf.String())
+		}
+		buf.Reset()
+		if len(lines) >= maxLines {
+			maxLinesReached = true
+		}
+	}
+
+	for !maxLinesReached {
 		b, err := reader.ReadByte()
 		if err != nil {
-			if buf.Len() > 0 {
-				lines = append(lines, buf.String())
-			}
+			flush(false)
 			return
 		}
 
-		if inSixel {
-			buf.WriteByte(b)
-			if b == '\\' && last == '\033' {
-				lines = append(lines, buf.String())
-				buf.Reset()
-				if len(lines) >= maxLines {
-					return
-				}
-				inSixel = false
-			}
-		} else {
-			switch {
-			case b == 0:
+		switch currState {
+		case stateNormal:
+			switch b {
+			case 0:
 				return nil, true, false
-			case b == '\033':
-				// withhold as it could be the start of a sixel image
-			case b == 'P' && last == '\033':
-				if buf.Len() > 0 {
-					lines = append(lines, buf.String())
-					buf.Reset()
-					if len(lines) >= maxLines {
-						return
-					}
-				}
-				buf.WriteByte(last)
-				buf.WriteByte(b)
-				inSixel = true
-				sixel = true
-			case last == '\033':
-				// not a sixel image
-				buf.WriteByte(last)
-				buf.WriteByte(b)
-			case b == '\r':
-			case b == '\n', buf.Len() >= maxLineBytes:
-				lines = append(lines, buf.String())
-				buf.Reset()
-				if len(lines) >= maxLines {
-					return
-				}
+			case '\033':
+				currState = stateEsc
+			case '\r':
+				// filter out carriage return
+			case '\n':
+				flush(true)
 			default:
+				if buf.Len() >= maxLineBytes {
+					flush(true)
+				}
 				buf.WriteByte(b)
+			}
+		case stateEsc:
+			if b == 'P' {
+				flush(false)
+				buf.WriteString("\033P")
+				currState = stateSixel
+			} else {
+				buf.WriteByte('\033')
+				buf.WriteByte(b)
+				currState = stateNormal
+			}
+		case stateSixel:
+			buf.WriteByte(b)
+			if b == '\033' {
+				currState = stateSixelEsc
+			}
+		case stateSixelEsc:
+			buf.WriteByte(b)
+			if b == '\\' {
+				flush(true)
+				sixel = true
+				currState = stateNormal
+			} else {
+				currState = stateSixel
 			}
 		}
-
-		last = b
 	}
+
+	return
 }
 
 // getWidths calculates the widths of windows as the result of applying the
