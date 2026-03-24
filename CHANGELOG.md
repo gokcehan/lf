@@ -39,6 +39,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Symbolic links are no longer followed when changing directories (#2423).
 - Using the `select` command with a blank string as the argument now properly raises an error instead of changing to the parent directory (#2429).
 - Executable files on Windows are now correctly recognized for icon and color lookup based on `PATHEXT` (#2448).
+- The number of bytes read is now limited for previews that contain extremely long lines (#2458).
+- Control characters are now stripped from previews to prevent dangerous terminal sequences from being processed if the default previewer is used (#2459).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
