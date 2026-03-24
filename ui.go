@@ -2,13 +2,14 @@ package main
 
 import (
 	"bytes"
+	"cmp"
 	"fmt"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"reflect"
 	"slices"
-	"sort"
 	"strconv"
 	"strings"
 	"text/tabwriter"
@@ -1212,11 +1213,11 @@ func listBinds(binds map[string]map[string]expr) string {
 		}
 	}
 
-	sort.Slice(entries, func(i, j int) bool {
-		if entries[i].key != entries[j].key {
-			return entries[i].key < entries[j].key
+	slices.SortFunc(entries, func(a, b entry) int {
+		if c := cmp.Compare(a.key, b.key); c != 0 {
+			return c
 		}
-		return entries[i].mode < entries[j].mode
+		return cmp.Compare(a.mode, b.mode)
 	})
 
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
@@ -1233,15 +1234,9 @@ func listMatchingBinds(binds map[string]expr, prefix string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
-	keys := make([]string, 0, len(binds))
-	for k := range binds {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "key\tcommand")
-	for _, k := range keys {
+	for _, k := range slices.Sorted(maps.Keys(binds)) {
 		remain, _ := strings.CutPrefix(k, prefix)
 		fmt.Fprintf(t, "%s\t%v\n", remain, binds[k])
 	}
@@ -1254,15 +1249,9 @@ func listCmds(cmds map[string]expr) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
-	keys := make([]string, 0, len(cmds))
-	for k := range cmds {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "name\tcommand")
-	for _, k := range keys {
+	for _, k := range slices.Sorted(maps.Keys(cmds)) {
 		fmt.Fprintf(t, "%s\t%v\n", k, cmds[k])
 	}
 	t.Flush()
@@ -1314,15 +1303,9 @@ func listMarks(marks map[string]string) string {
 	t := new(tabwriter.Writer)
 	b := new(bytes.Buffer)
 
-	keys := make([]string, 0, len(marks))
-	for k := range marks {
-		keys = append(keys, k)
-	}
-	sort.Strings(keys)
-
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mark\tpath")
-	for _, k := range keys {
+	for _, k := range slices.Sorted(maps.Keys(marks)) {
 		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
 	}
 	t.Flush()
