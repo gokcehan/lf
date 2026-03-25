@@ -4,9 +4,10 @@ import (
 	"bufio"
 	"fmt"
 	"log"
+	"maps"
 	"net"
 	"os"
-	"sort"
+	"slices"
 	"strconv"
 )
 
@@ -108,12 +109,7 @@ Loop:
 				echoerr(c, "listen: drop: requires a client id")
 			}
 		case "list":
-			ids := make([]int, 0, len(gConnList))
-			for id := range gConnList {
-				ids = append(ids, id)
-			}
-			sort.Ints(ids)
-			for _, id := range ids {
+			for _, id := range slices.Sorted(maps.Keys(gConnList)) {
 				fmt.Fprintln(c, id)
 			}
 		case "send":
