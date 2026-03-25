@@ -1176,7 +1176,7 @@ func (ui *ui) draw(nav *nav) {
 	ui.screen.Show()
 }
 
-func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok bool) {
+func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, exact bool) {
 	binds = make(map[string]expr)
 	for key, expr := range keys {
 		if !strings.HasPrefix(key, prefix) {
@@ -1184,10 +1184,10 @@ func findBinds(keys map[string]expr, prefix string) (binds map[string]expr, ok b
 		}
 		binds[key] = expr
 		if key == prefix {
-			ok = true
+			exact = true
 		}
 	}
-	return
+	return binds, exact
 }
 
 func listBinds(binds map[string]map[string]expr) string {
@@ -1339,7 +1339,6 @@ func listFilesInCurrDir(nav *nav) string {
 // preceding any non-digit characters (e.g. "42y2k" as 42 times "y2k").
 func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	draw := &callExpr{"draw", nil, 1}
-	count := 0
 
 	keys := gOpts.nkeys
 	if nav.isVisualMode() {
@@ -1374,46 +1373,41 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			ui.keyAcc += readKey(tev)
 		}
 
-		binds, ok := findBinds(keys, ui.keyAcc)
-
-		switch len(binds) {
-		case 0:
+		binds, exact := findBinds(keys, ui.keyAcc)
+		if len(binds) == 0 {
 			ui.echoerrf("unknown mapping: %s", ui.keyAcc)
 			ui.keyAcc = ""
 			ui.keyCount = ""
 			ui.menu = ""
 			return draw
-		default:
-			if ok {
-				if ui.keyCount != "" {
-					c, err := strconv.Atoi(ui.keyCount)
-					if err != nil {
-						log.Printf("converting command count: %s", err)
-					}
-					count = c
-				}
-				expr := keys[ui.keyAcc]
-
-				if count != 0 {
-					switch e := expr.(type) {
-					case *callExpr:
-						expr = &callExpr{name: e.name, args: e.args, count: count}
-					case *listExpr:
-						expr = &listExpr{exprs: e.exprs, count: count}
-					}
-				}
-
-				ui.keyAcc = ""
-				ui.keyCount = ""
-				ui.menu = ""
-				return expr
-			}
+		}
+		if !exact {
 			if gOpts.showbinds {
 				// mode and already typed keys are obvious here; no need to clutter the menu
 				ui.menu = listMatchingBinds(binds, ui.keyAcc)
 			}
 			return draw
 		}
+
+		expr := keys[ui.keyAcc]
+		if ui.keyCount != "" {
+			if count, err := strconv.Atoi(ui.keyCount); err != nil {
+				log.Printf("converting command count: %s", err)
+			} else if count > 0 {
+				switch e := expr.(type) {
+				case *callExpr:
+					expr = &callExpr{name: e.name, args: e.args, count: count}
+				case *listExpr:
+					expr = &listExpr{exprs: e.exprs, count: count}
+				}
+			}
+		}
+
+		ui.keyAcc = ""
+		ui.keyCount = ""
+		ui.menu = ""
+		return expr
+
 	case *tcell.EventMouse:
 		if ui.cmdPrefix != "" {
 			return nil
