@@ -952,9 +952,9 @@ func (ui *ui) drawRulerFile(nav *nav) {
 		mode = "VISUAL"
 	}
 
-	options := make(map[string]string)
 	v := reflect.ValueOf(gOpts)
 	t := v.Type()
+	options := make(map[string]string, v.NumField())
 	for i := range v.NumField() {
 		name := t.Field(i).Name
 		switch name {
