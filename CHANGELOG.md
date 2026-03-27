@@ -41,6 +41,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Executable files on Windows are now correctly recognized for icon and color lookup based on `PATHEXT` (#2448).
 - The number of bytes read is now limited for previews that contain extremely long lines (#2458).
 - Control characters are now stripped from previews to prevent dangerous terminal sequences from being processed if the default previewer is used (#2459).
+- Sixel images with the same height as the preview window are now displayed correctly when using `tmux` (#2474).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
