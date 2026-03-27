@@ -59,13 +59,6 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		iw, _ := strconv.Atoi(matches[1])
 		ih, _ := strconv.Atoi(matches[2])
 
-		if os.Getenv("TMUX") != "" {
-			// tmux rounds the image height up to a multiple of 6, so we
-			// need to do the same to avoid overwriting the image, as tmux
-			// would remove the image if we touched it.
-			ih = (ih + 5) / 6 * 6
-		}
-
 		sw := (iw + cw - 1) / cw
 		sh := (ih + ch - 1) / ch
 
