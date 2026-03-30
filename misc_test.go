@@ -529,7 +529,7 @@ func TestReadLines(t *testing.T) {
 		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false},
 		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true},
 		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true},
-		{"\033P\000\033\\", 10, []string{"\033P\000\033\\"}, false, true},
+		{"\033P\000\033\\", 10, []string{"\033\\"}, false, false},
 		{"\033P\n\033\\", 10, []string{"\033P\n\033\\"}, false, true},
 		{"\033P\r\n\033\\", 10, []string{"\033P\r\n\033\\"}, false, true},
 		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true},
