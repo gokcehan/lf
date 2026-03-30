@@ -527,9 +527,17 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			}
 		case stateSixel:
-			buf.WriteByte(b)
-			if b == '\033' {
+			// Accept printable bytes (0x20-0x7E), CR, LF, and ESC
+			// Reject other C0 controls and DEL
+			switch {
+			case b == '\033':
+				buf.WriteByte(b)
 				currState = stateSixelEsc
+			case b >= 0x20 && b <= 0x7E, b == '\r', b == '\n':
+				buf.WriteByte(b)
+			default:
+				buf.Reset()
+				currState = stateNormal
 			}
 		case stateSixelEsc:
 			buf.WriteByte(b)
