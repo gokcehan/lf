@@ -15,6 +15,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The key `<backspace2>` has been renamed to `<backspace>` for `map` keybindings (#2286).
 - `.Stat.DirSize` and `.Stat.DirCount` in the ruler file no longer have a pointer type, and will be set to `-1` instead of `nil` if the corresponding value cannot be determined (#2397).
 - `setlocal` commands no longer support the ability to specify recursive directories (#2415). For use cases where `setlocal` should apply to a directory based on some condition, it is recommended to script this inside the `on-load` hook command.
+- The `rulerfmt` and `statfmt` options are now marked as deprecated in favor of using the ruler file (configured using the `rulerfile` option), and will be removed in a future release (#2477).
 
 ### Added
 
