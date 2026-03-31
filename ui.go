@@ -694,6 +694,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
+// Deprecated: Only called by drawRuler, which will eventually be replaced by drawRulerFile
 func formatRulerOpt(name, val string) string {
 	// handle escape character so it doesn't mess up the ruler
 	val = strings.ReplaceAll(val, "\033", "\033[7m\\033\033[0m")
@@ -706,6 +707,7 @@ func formatRulerOpt(name, val string) string {
 	return val
 }
 
+// Deprecated: Will eventually be replaced by drawRulerFile
 func (ui *ui) drawStat(nav *nav) {
 	if ui.msg != "" {
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ui.msg)
@@ -756,6 +758,7 @@ func (ui *ui) drawStat(nav *nav) {
 	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfo.String())
 }
 
+// Deprecated: Will eventually be replaced by drawRulerFile
 func (ui *ui) drawRuler(nav *nav) {
 	st := tcell.StyleDefault
 
