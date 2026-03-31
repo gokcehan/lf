@@ -965,6 +965,23 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 		return r
 	}
 
+	// Rerun preview if the cached result has fewer lines than the current
+	// window height
+	if !r.loading && !r.sixel && len(r.lines) < nav.height && len(r.lines) > 0 {
+		delete(nav.regCache, path)
+		r = &reg{loading: true, loadTime: time.Now(), path: path}
+		nav.regCache[path] = r
+		if gOpts.preload {
+			select {
+			case nav.preloadChan <- path:
+			default:
+			}
+		} else {
+			nav.previewChan <- path
+		}
+		return r
+	}
+
 	if volatile && r.volatile {
 		if !gOpts.preload {
 			r.loadTime = time.Now()
