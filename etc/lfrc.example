@@ -34,17 +34,17 @@ map x $$f
 map X !$f
 
 # dedicated keys for file opener actions
-map o &mimeopen $f
-map O $mimeopen --ask $f
+map o &mimeopen "$f"
+map O $mimeopen --ask "$f"
 
 # define a custom 'open' command
 # This command is called when current file is not a directory. You may want to
 # use either file extensions and/or mime types here. Below uses an editor for
 # text files and a file opener for the rest.
 cmd open &{{
-    case $(file --mime-type -Lb $f) in
+    case $(file --mime-type -Lb "$f") in
         text/*) lf -remote "send $id \$$EDITOR \$fx";;
-        *) for f in $fx; do $OPENER $f > /dev/null 2> /dev/null & done;;
+        *) for f in $fx; do $OPENER "$f" > /dev/null 2> /dev/null & done;;
     esac
 }}
 
@@ -52,7 +52,7 @@ cmd open &{{
 map a :push %mkdir<space>
 
 # define a custom 'rename' command without prompt for overwrite
-# cmd rename %[ -e $1 ] && printf "file exists" || mv $f $1
+# cmd rename %[ -e "$1" ] && printf "file exists" || mv "$f" "$1"
 # map r push :rename<space>
 
 # make sure trash folder exists
@@ -60,7 +60,7 @@ map a :push %mkdir<space>
 
 # move current file or selected files to trash folder
 # (also see 'man mv' for backup/overwrite options)
-cmd trash %set -f; mv -t ~/.trash $fx
+cmd trash %set -f; mv -t ~/.trash -- $fx
 
 # define a custom 'delete' command
 # cmd delete ${{
@@ -79,30 +79,30 @@ cmd trash %set -f; mv -t ~/.trash $fx
 # (xkcd link: https://xkcd.com/1168/)
 cmd extract ${{
     set -f
-    case $f in
-        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf $f;;
-        *.tar.gz|*.tgz) tar xzvf $f;;
-        *.tar.xz|*.txz) tar xJvf $f;;
-        *.zip) unzip $f;;
-        *.rar) unrar x $f;;
-        *.7z) 7z x $f;;
+    case "$f" in
+        *.tar.bz|*.tar.bz2|*.tbz|*.tbz2) tar xjvf "$f";;
+        *.tar.gz|*.tgz) tar xzvf "$f";;
+        *.tar.xz|*.txz) tar xJvf "$f";;
+        *.zip) unzip "$f";;
+        *.rar) unrar x "$f";;
+        *.7z) 7z x "$f";;
     esac
 }}
 
 # compress current file or selected files with tar and gunzip
 cmd tar ${{
     set -f
-    mkdir $1
-    cp -r $fx $1
-    tar czf $1.tar.gz $1
-    rm -rf $1
+    mkdir "$1"
+    cp -r $fx "$1"
+    tar czf "$1.tar.gz" "$1"
+    rm -rf "$1"
 }}
 
 # compress current file or selected files with zip
 cmd zip ${{
     set -f
-    mkdir $1
-    cp -r $fx $1
-    zip -r $1.zip $1
-    rm -rf $1
+    mkdir "$1"
+    cp -r $fx "$1"
+    zip -r "$1.zip" "$1"
+    rm -rf "$1"
 }}
