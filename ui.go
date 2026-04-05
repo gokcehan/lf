@@ -1134,8 +1134,6 @@ func (ui *ui) draw(nav *nav) {
 	st := tcell.StyleDefault
 	context := dirContext{selections: nav.selections, clipboard: nav.clipboard, tags: nav.tags}
 
-	fmt.Fprint(os.Stderr, "\033[?2026h")
-	defer fmt.Fprint(os.Stderr, "\033[?2026l")
 	ui.screen.Clear()
 
 	ui.drawPromptLine(nav)
@@ -1518,7 +1516,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return &callExpr{"cd", []string{dir.path}, 1}
 		}
 	case *tcell.EventResize:
-		return &callExpr{"redraw", nil, 1}
+		return &callExpr{"redraw", []string{"resize"}, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
 	case *tcell.EventInterrupt:

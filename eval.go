@@ -1259,9 +1259,10 @@ func (e *callExpr) eval(app *app, _ []string) {
 		}
 	case "draw":
 	case "redraw":
-		fmt.Fprint(os.Stderr, "\033[?2026h")
-		defer fmt.Fprint(os.Stderr, "\033[?2026l")
-		app.ui.screen.Sync()
+		// Skip Sync() for resize events, tcell v3 already redraws on SIGWINCH
+		if !slices.Contains(e.args, "resize") {
+			app.ui.screen.Sync()
+		}
 		app.ui.renew()
 		app.nav.resize(app.ui)
 		app.ui.sxScreen.forceClear = true
