@@ -836,7 +836,7 @@ func (nav *nav) preload() {
 			return
 		}
 
-		if _, ok := nav.regCache[file.path]; ok {
+		if r, ok := nav.regCache[file.path]; ok && (r.loading || r.height >= nav.height) {
 			return
 		}
 
@@ -947,6 +947,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 
 	reg.lines = lines
 	reg.sixel = sixel
+	reg.height = win.h
 }
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {

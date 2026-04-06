@@ -605,6 +605,7 @@ type reg struct {
 	path     string
 	lines    []string
 	sixel    bool
+	height   int
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
