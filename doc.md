@@ -1613,7 +1613,7 @@ Some special keys and modifiers use different names and separators, and key name
 	map <m-up> down   # not <ScrollWheelUp>
 
 WARNING: Some key combinations will likely be intercepted by your OS, window manager, or terminal.
-Other key combinations cannot be recognized by lf due to the way terminals work (e.g. `Ctrl+h` combination sends a backspace key instead).
+Other key combinations may not be distinguishable by lf, depending on how the terminal reports them (e.g. `Ctrl+h` may be reported as `backspace` instead).
 The easiest way to find out the name of a key combination and whether it will work on your system is to press the key while lf is running and read the name from the `unknown mapping` error.
 
 Mouse buttons are prefixed with an `m` character:
