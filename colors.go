@@ -264,6 +264,14 @@ func (sm styleMap) get(f *file) tcell.Style {
 	}
 
 	if val, ok := sm.styles[key]; ok {
+		if key == "di" && strings.HasPrefix(f.Name(), ".") {
+			if dotval, ok2 := sm.styles[".*/"]; ok2 {
+				return dotval
+			}
+			if dotval, ok2 := sm.styles[".*"]; ok2 {
+				return dotval
+			}
+		}
 		return val
 	}
 
@@ -277,6 +285,12 @@ func (sm styleMap) get(f *file) tcell.Style {
 
 	if val, ok := sm.styles[filepath.Base(f.Name())+".*"]; ok {
 		return val
+	}
+
+	if strings.HasPrefix(f.Name(), ".") {
+		if val, ok := sm.styles[".*"]; ok {
+			return val
+		}
 	}
 
 	if val, ok := sm.styles["*"+strings.ToLower(f.ext)]; ok {
