@@ -21,6 +21,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - Emoji sequences containing Zero Width Joiner characters are now displayed as a single combined glyph (#2286).
+- Key combinations such as `<c-h>` and `<backspace>` can now be distinguished when supported by the terminal (#2286) (#2496).
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
 - A new option `terminalcursor` is added to customize the appearance of the terminal cursor (#2441).
