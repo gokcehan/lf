@@ -264,7 +264,7 @@ func (sm styleMap) get(f *file) tcell.Style {
 	}
 
 	if val, ok := sm.styles[key]; ok {
-		if key == "di" && strings.HasPrefix(f.Name(), ".") {
+		if key == "di" && isHidden(f.FileInfo, filepath.Dir(f.path), gOpts.hiddenfiles) {
 			if dotval, ok2 := sm.styles["hd"]; ok2 {
 				return dotval
 			}
@@ -284,7 +284,7 @@ func (sm styleMap) get(f *file) tcell.Style {
 		return val
 	}
 
-	if strings.HasPrefix(f.Name(), ".") {
+	if isHidden(f.FileInfo, filepath.Dir(f.path), gOpts.hiddenfiles) {
 		if val, ok := sm.styles["hf"]; ok {
 			return val
 		}
