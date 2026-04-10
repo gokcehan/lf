@@ -472,7 +472,7 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // The presence of a null byte outside a sixel image indicates a binary file.
 func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
 	const maxLineBytes = 1 << 16  // 64 KiB per line
-	const maxSixelBytes = 1 << 26 // 64 MiB per sixel frame
+	const maxSixelBytes = 1 << 24 // 16 MiB per sixel frame
 
 	type state int
 	const (
