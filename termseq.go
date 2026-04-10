@@ -83,6 +83,11 @@ func readTermSequence(s string) string {
 			if b == gEscapeCode && i+1 < slen && s[i+1] == '\\' {
 				return s[:i+2]
 			}
+			// reject any other control byte inside the body, which
+			// would otherwise be forwarded to tcell.Style.Url
+			if b < 0x20 || b == 0x7F || b >= 0x80 && b <= 0x9F {
+				return ""
+			}
 		}
 		// TODO: C1 forms?
 		return ""
