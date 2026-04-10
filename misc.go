@@ -21,7 +21,9 @@ import (
 
 var (
 	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
-	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
+	// only match real sixel frames, not other DCS commands that happen
+	// to contain the raster attributes substring in their body
+	reSixelSize = regexp.MustCompile(`^\x1bP[0-9;]*q.*"1;1;(\d+);(\d+)`)
 )
 
 var (
@@ -469,7 +471,8 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // Sixel images are also detected and stored as separate lines.
 // The presence of a null byte outside a sixel image indicates a binary file.
 func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
-	const maxLineBytes = 1 << 16 // 64 KiB per line
+	const maxLineBytes = 1 << 16  // 64 KiB per line
+	const maxSixelBytes = 1 << 26 // 64 MiB per sixel frame
 
 	type state int
 	const (
@@ -533,7 +536,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 			case b == '\033':
 				buf.WriteByte(b)
 				currState = stateSixelEsc
-			case b >= 0x20 && b <= 0x7E:
+			case b >= 0x20 && b <= 0x7E && buf.Len() < maxSixelBytes:
 				buf.WriteByte(b)
 			default:
 				buf.Reset()
