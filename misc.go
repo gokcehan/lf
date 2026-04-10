@@ -20,7 +20,7 @@ import (
 )
 
 var (
-	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
+	reRulerSub = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
 	// only match real sixel frames, not other DCS commands that happen
 	// to contain the raster attributes substring in their body
 	reSixelSize = regexp.MustCompile(`^\x1bP[0-9;]*q.*"1;1;(\d+);(\d+)`)
