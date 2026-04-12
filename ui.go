@@ -646,7 +646,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
-	pwd := dir.path
+	pwd := sanitizeName(dir.path)
 
 	if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
 		pwd = filepath.Join("~", after)
@@ -892,7 +892,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 			stat = &statData{
 				Path:        sanitizeName(curr.path),
 				Name:        sanitizeName(curr.Name()),
-				Extension:   curr.ext,
+				Extension:   sanitizeName(curr.ext),
 				Size:        curr.Size(),
 				DirSize:     curr.dirSize,
 				DirCount:    curr.dirCount,
