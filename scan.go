@@ -236,13 +236,13 @@ scan:
 					buf = append(buf, '\t')
 				case s.chr == 'v':
 					buf = append(buf, '\v')
-				case isDigit(s.chr):
+				case s.chr >= '0' && s.chr <= '7':
 					var oct []byte
-					for isDigit(s.chr) {
+					for !s.eof && s.chr >= '0' && s.chr <= '7' {
 						oct = append(oct, s.chr)
 						s.next()
 					}
-					n, err := strconv.ParseInt(string(oct), 8, 0)
+					n, err := strconv.ParseInt(string(oct), 8, 8)
 					if err != nil {
 						log.Printf("scanning: %s", err)
 					}

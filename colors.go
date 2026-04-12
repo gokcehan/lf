@@ -95,7 +95,7 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 
 	if toks[0] == "5" && len(toks) >= 2 {
 		n, err := strconv.Atoi(toks[1])
-		if err != nil {
+		if err != nil || n < 0 || n > 255 {
 			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
@@ -104,17 +104,17 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 
 	if toks[0] == "2" && len(toks) >= 4 {
 		r, err := strconv.Atoi(toks[1])
-		if err != nil {
+		if err != nil || r < 0 || r > 255 {
 			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		g, err := strconv.Atoi(toks[2])
-		if err != nil {
+		if err != nil || g < 0 || g > 255 {
 			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
 		b, err := strconv.Atoi(toks[3])
-		if err != nil {
+		if err != nil || b < 0 || b > 255 {
 			return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 		}
 
