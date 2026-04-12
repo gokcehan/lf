@@ -1618,7 +1618,7 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 	wtot, _ := screen.Size()
 	wcol := 0
 	for _, m := range matches {
-		wcol = max(wcol, uniseg.StringWidth(m.name))
+		wcol = max(wcol, printLength(m.name))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1630,7 +1630,7 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 		if i%ncol == 0 {
 			b.WriteByte('\n')
 		}
-		w := uniseg.StringWidth(match.name)
+		w := printLength(match.name)
 		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
 	}
 
