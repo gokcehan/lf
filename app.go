@@ -444,11 +444,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case f := <-app.nav.fileChan:
-			for _, dir := range app.nav.dirCache {
-				if dir.path != filepath.Dir(f.path) {
-					continue
-				}
-
+			if dir, ok := app.nav.dirCache[filepath.Dir(f.path)]; ok {
 				for i := range dir.allFiles {
 					if dir.allFiles[i].path == f.path {
 						dir.allFiles[i] = f
