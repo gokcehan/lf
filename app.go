@@ -432,6 +432,7 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			app.nav.regCache[r.path] = r
+			app.nav.evictRegCache()
 
 			if curr := app.nav.currFile(); curr != nil {
 				if r.path == curr.path {

@@ -841,6 +841,7 @@ func (nav *nav) preload() {
 		}
 
 		nav.regCache[file.path] = &reg{loading: true, loadTime: time.Now(), path: file.path}
+		nav.evictRegCache()
 		select {
 		case nav.preloadChan <- file.path:
 		default:
@@ -955,6 +956,7 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 	if !ok || (!gOpts.preload && r.loading) {
 		r = &reg{loading: true, loadTime: time.Now(), path: path}
 		nav.regCache[path] = r
+		nav.evictRegCache()
 		if gOpts.preload {
 			select {
 			case nav.preloadChan <- path:
@@ -2020,4 +2022,21 @@ func (nav *nav) calcDirSize() error {
 	}
 
 	return nil
+}
+
+const maxRegCacheSize = 512
+
+func (nav *nav) evictRegCache() {
+	if len(nav.regCache) <= maxRegCacheSize {
+		return
+	}
+	var oldestKey string
+	var oldestTime time.Time
+	for k, r := range nav.regCache {
+		if oldestKey == "" || r.loadTime.Before(oldestTime) {
+			oldestKey = k
+			oldestTime = r.loadTime
+		}
+	}
+	delete(nav.regCache, oldestKey)
 }
