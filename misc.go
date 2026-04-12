@@ -543,13 +543,17 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			}
 		case stateSixelEsc:
-			buf.WriteByte(b)
 			if b == '\\' {
+				buf.WriteByte(b)
 				flush(true)
 				sixel = true
 				currState = stateNormal
-			} else {
+			} else if b >= 0x20 && b <= 0x7E {
+				buf.WriteByte(b)
 				currState = stateSixel
+			} else {
+				buf.Reset()
+				currState = stateNormal
 			}
 		}
 	}
