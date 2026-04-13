@@ -171,7 +171,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			atime := times.Get(info).AccessTime()
 			mtime := info.ModTime()
 			if err := os.Chtimes(path, atime, mtime); err != nil {
-				errs <- fmt.Errorf("chtimes: %w", err)
+				errs <- err
 			}
 		}
 
