@@ -94,10 +94,6 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 		mtime := info.ModTime()
 		if err := os.Chtimes(dst, atime, mtime); err != nil {
 			errs <- err
-			if err = os.Remove(dst); err != nil {
-				errs <- err
-			}
-			return
 		}
 	}
 }
