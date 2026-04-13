@@ -88,7 +88,7 @@ func isSpace(b byte) bool {
 }
 
 func isDigit(b byte) bool {
-	return '0' <= b && b <= '9'
+	return '0' <= b && b <= '7'
 }
 
 func isPrefix(b byte) bool {
@@ -242,7 +242,7 @@ scan:
 						oct = append(oct, s.chr)
 						s.next()
 					}
-					n, err := strconv.ParseInt(string(oct), 8, 0)
+					n, err := strconv.ParseUint(string(oct), 8, 8)
 					if err != nil {
 						log.Printf("scanning: %s", err)
 					}
