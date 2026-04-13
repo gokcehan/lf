@@ -88,7 +88,7 @@ func isSpace(b byte) bool {
 }
 
 func isDigit(b byte) bool {
-	return '0' <= b && b <= '7'
+	return '0' <= b && b <= '9'
 }
 
 func isPrefix(b byte) bool {
