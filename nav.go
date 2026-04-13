@@ -1613,6 +1613,7 @@ func (nav *nav) cd(path string) error {
 	}
 
 	nav.loadDirs(path)
+	nav.renew()
 	nav.addJumpList()
 	return nil
 }
