@@ -1861,6 +1861,10 @@ func (nav *nav) writeMarks() error {
 		if strings.Contains(gOpts.tempmarks, k) {
 			continue
 		}
+		if strings.ContainsAny(nav.marks[k], "\n\r") {
+			log.Printf("marks: skipping mark '%s' with newline in path: %q", k, nav.marks[k])
+			continue
+		}
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.marks[k])
 		if err != nil {
 			return fmt.Errorf("writing marks file: %w", err)
@@ -1916,6 +1920,10 @@ func (nav *nav) writeTags() error {
 	defer f.Close()
 
 	for _, k := range slices.Sorted(maps.Keys(nav.tags)) {
+		if strings.ContainsAny(k, "\n\r") {
+			log.Printf("tags: skipping tag with newline in path: %q", k)
+			continue
+		}
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.tags[k])
 		if err != nil {
 			return fmt.Errorf("writing tags file: %w", err)
