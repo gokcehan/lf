@@ -144,9 +144,7 @@ func (watch *watch) processUpdate(update watchUpdate) {
 	switch update.kind {
 	case "dir":
 		if _, err := os.Lstat(update.path); err == nil {
-			dir := newDir(update.path)
-			dir.sort()
-			watch.dirChan <- dir
+			watch.dirChan <- newDir(update.path)
 		}
 	case "file":
 		if _, err := os.Lstat(update.path); err == nil {

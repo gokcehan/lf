@@ -391,8 +391,7 @@ func (app *app) loop() {
 				oldCurrPath = curr.path
 			}
 
-			prev, ok := app.nav.dirCache[d.path]
-			if ok {
+			if prev, ok := app.nav.dirCache[d.path]; ok {
 				d.ind = prev.ind
 				d.pos = prev.pos
 				d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
@@ -400,6 +399,8 @@ func (app *app) loop() {
 				d.filter = prev.filter
 				d.sort()
 				d.sel(prev.name(), app.nav.height)
+			} else {
+				d.sort()
 			}
 			app.nav.dirCache[d.path] = d
 
