@@ -3,6 +3,7 @@ package main
 import (
 	"cmp"
 	"fmt"
+	"log"
 	"os"
 	"os/exec"
 	"os/user"
@@ -108,13 +109,11 @@ func init() {
 
 	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
 	if err != nil {
-		gDefaultSocketProt = "tcp"
-		gDefaultSocketPath = "127.0.0.1:12345"
-	} else {
-		runtime := os.TempDir()
-		gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
-		syscall.Close(socket)
+		log.Fatalf("AF_UNIX sockets are not supported: %s", err)
 	}
+	runtime := os.TempDir()
+	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
+	syscall.Close(socket)
 
 	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
 	for ext := range strings.SplitSeq(s, ";") {
