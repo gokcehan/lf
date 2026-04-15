@@ -3,14 +3,12 @@ package main
 import (
 	"cmp"
 	"fmt"
-	"log"
 	"os"
 	"os/exec"
 	"os/user"
 	"path/filepath"
 	"slices"
 	"strings"
-	"syscall"
 
 	"golang.org/x/sys/windows"
 )
@@ -27,7 +25,6 @@ var envPathExts []string
 var (
 	gDefaultShell       = "cmd"
 	gDefaultShellFlag   = "/c"
-	gDefaultSocketProt  = "unix"
 	gDefaultSocketPath  string
 	gDefaultHiddenFiles []string
 )
@@ -107,13 +104,8 @@ func init() {
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
-	if err != nil {
-		log.Fatalf("AF_UNIX sockets are not supported: %s", err)
-	}
 	runtime := os.TempDir()
 	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
-	syscall.Close(socket)
 
 	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
 	for ext := range strings.SplitSeq(s, ";") {

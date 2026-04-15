@@ -28,7 +28,6 @@ var (
 var (
 	gDefaultShell       = "sh"
 	gDefaultShellFlag   = "-c"
-	gDefaultSocketProt  = "unix"
 	gDefaultSocketPath  string
 	gDefaultHiddenFiles = []string{".*"}
 )

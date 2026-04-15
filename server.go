@@ -29,11 +29,9 @@ func serve() {
 
 	log.Print("*************** starting server ***************")
 
-	if gSocketProt == "unix" {
-		setUserUmask()
-	}
+	setUserUmask()
 
-	l, err := net.Listen(gSocketProt, gSocketPath)
+	l, err := net.Listen("unix", gSocketPath)
 	if err != nil {
 		log.Printf("listening socket: %s", err)
 		return

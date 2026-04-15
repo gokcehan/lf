@@ -120,12 +120,12 @@ func readExpr() <-chan expr {
 	go func() {
 		duration := 100 * time.Millisecond
 
-		c, err := net.Dial(gSocketProt, gSocketPath)
+		c, err := net.Dial("unix", gSocketPath)
 		for err != nil {
 			log.Printf("connecting server: %s", err)
 			time.Sleep(duration)
 			duration *= 2
-			c, err = net.Dial(gSocketProt, gSocketPath)
+			c, err = net.Dial("unix", gSocketPath)
 		}
 
 		if _, err := fmt.Fprintf(c, "conn %d\n", gClientID); err != nil {
@@ -169,7 +169,7 @@ func readExpr() <-chan expr {
 }
 
 func remote(req string) (string, error) {
-	c, err := net.Dial(gSocketProt, gSocketPath)
+	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {
 		return "", fmt.Errorf("connecting to server: %w", err)
 	}

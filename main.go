@@ -35,7 +35,6 @@ var (
 	gHostname       string
 	gLastDirPath    string
 	gSelectionPath  string
-	gSocketProt     string
 	gSocketPath     string
 	gLogPath        string
 	gSelect         string
@@ -178,19 +177,13 @@ func startServer() {
 }
 
 func checkServer() {
-	if gSocketProt == "unix" {
-		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
-			startServer()
-		} else if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
-			if err := os.Remove(gSocketPath); err != nil {
-				log.Print(err)
-			}
-			startServer()
+	if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
+		startServer()
+	} else if _, err := net.Dial("unix", gSocketPath); err != nil {
+		if err := os.Remove(gSocketPath); err != nil {
+			log.Print(err)
 		}
-	} else {
-		if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
-			startServer()
-		}
+		startServer()
 	}
 }
 
@@ -316,7 +309,6 @@ Options:
 
 	flag.Parse()
 
-	gSocketProt = gDefaultSocketProt
 	gSocketPath = gDefaultSocketPath
 
 	if gLogPath != "" {
