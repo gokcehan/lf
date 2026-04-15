@@ -955,6 +955,14 @@ Show hidden files.
 On Unix systems, hidden files are determined by the value of `hiddenfiles`.
 On Windows, files with hidden attributes are also considered hidden files.
 
+## hiddendirfmt (string) (default ``), hiddenfilefmt (string) (default ``)
+
+Format strings for colouring hidden directories and files.
+When set to a non-empty value, they override the normal `di` and `fi` colours for entries considered hidden (see `hiddenfiles`).
+Hidden detection on Windows also respects the filesystem hidden attribute.
+Leave empty to disable and fall back to the regular colour lookup.
+Example: `set hiddendirfmt "\033[3;38;2;146;131;116m"`.
+
 ## hiddenfiles ([]string) (default `.*` for Unix and `` for Windows)
 
 List of hidden file glob patterns.
