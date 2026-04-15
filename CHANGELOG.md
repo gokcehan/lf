@@ -46,6 +46,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Sixel images with the same height as the preview window are now displayed correctly when using `tmux` (#2474).
 - Completion matches are now properly aligned if they contain terminal sequences (#2511).
 - `load` commands are now processed when the `watch` option is enabled, which should fix various issues with refreshing updated files/directories (#2513).
+- Parsing octal values in strings are now restricted to numbers between `0` and `255` (#2516).
 - Color values are now validated (must be between `0` and `255`) when parsing terminal sequences (#2517).
 - Directories are now refreshed properly after using the `cd` command (#2518).
 - Successfully copied files are no longer deleted if their timestamps could not be preserved (#2519).
