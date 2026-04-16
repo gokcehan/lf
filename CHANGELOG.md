@@ -17,6 +17,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - `setlocal` commands no longer support the ability to specify recursive directories (#2415). For use cases where `setlocal` should apply to a directory based on some condition, it is recommended to script this inside the `on-load` hook command.
 - On Windows, files are now considered executable according to `PATHEXT` when matching colors and icons (#2448).
 - The `rulerfmt` and `statfmt` options are now marked as deprecated in favor of using the ruler file (configured using the `rulerfile` option), and will be removed in a future release (#2477).
+- The client server connection will now exclusively use Unix domain sockets on Windows and no longer fall back to TCP sockets (#2527).
 
 ### Added
 
