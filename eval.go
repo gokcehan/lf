@@ -1296,7 +1296,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			normal(app)
 			if len(list) == 1 {
-				app.ui.cmdPrefix = "delete '" + list[0] + "'? [y/N] "
+				app.ui.cmdPrefix = "delete '" + sanitizeName(list[0]) + "'? [y/N] "
 			} else {
 				app.ui.cmdPrefix = "delete " + strconv.Itoa(len(list)) + " items? [y/N] "
 			}

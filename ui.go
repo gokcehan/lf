@@ -1332,7 +1332,7 @@ func listMarks(marks map[string]string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mark\tpath")
 	for _, k := range slices.Sorted(maps.Keys(marks)) {
-		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
+		fmt.Fprintf(t, "%s\t%s\n", k, sanitizeName(marks[k]))
 	}
 	t.Flush()
 
@@ -1615,10 +1615,15 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 		return "", nil
 	}
 
+	names := make([]string, len(matches))
+	for i, m := range matches {
+		names[i] = sanitizeName(m.name)
+	}
+
 	wtot, _ := screen.Size()
 	wcol := 0
-	for _, m := range matches {
-		wcol = max(wcol, printLength(m.name))
+	for _, n := range names {
+		wcol = max(wcol, printLength(n))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1626,19 +1631,19 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 	var b strings.Builder
 	b.WriteString("possible matches")
 
-	for i, match := range matches {
+	for i, n := range names {
 		if i%ncol == 0 {
 			b.WriteByte('\n')
 		}
-		w := printLength(match.name)
-		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
+		w := printLength(n)
+		fmt.Fprintf(&b, "%s%*s", n, wcol-w, "")
 	}
 
 	b.WriteByte('\n')
 
 	var selection *menuSelect
 	if selectedInd != -1 {
-		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, matches[selectedInd].name}
+		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, names[selectedInd]}
 	}
 
 	return b.String(), selection

@@ -279,9 +279,15 @@ func applyOSC(body string, st tcell.Style) tcell.Style {
 
 // isControlChar reports whether a rune is a control character or otherwise
 // unsafe to display in a terminal.
-// Covers C0 (0x00-0x1F), DEL (0x7F), and C1 (0x80-0x9F).
+// Covers C0, DEL, C1, and the BiDi override/isolate runes
 func isControlChar(r rune) bool {
-	return r < 0x20 || r == 0x7F || r >= 0x80 && r <= 0x9F
+	if r < 0x20 || r == 0x7F || (r >= 0x80 && r <= 0x9F) {
+		return true
+	}
+	if (r >= 0x202A && r <= 0x202E) || (r >= 0x2066 && r <= 0x2069) {
+		return true
+	}
+	return false
 }
 
 // sanitizeForDisplay replaces control characters and invalid bytes with the
