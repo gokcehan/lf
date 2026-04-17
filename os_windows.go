@@ -122,6 +122,11 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	return cmd
 }
 
+// socketOwnedByCurrentUser is a no-op on Windows
+func socketOwnedByCurrentUser(_ os.FileInfo) bool {
+	return true
+}
+
 func shellCommand(s string, args []string) *exec.Cmd {
 	// Windows CMD requires special handling to deal with quoted arguments
 	if strings.ToLower(gOpts.shell) == "cmd" {

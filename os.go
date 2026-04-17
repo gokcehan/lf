@@ -115,9 +115,26 @@ func init() {
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	runtime := cmp.Or(os.Getenv("XDG_RUNTIME_DIR"), os.TempDir())
+	// Use a private per-user dir when XDG_RUNTIME_DIR is unset
+	runtimeDir := os.Getenv("XDG_RUNTIME_DIR")
+	if runtimeDir == "" {
+		runtimeDir = filepath.Join(os.TempDir(), fmt.Sprintf("lf-%s", gUser.Uid))
+		if err := os.MkdirAll(runtimeDir, 0700); err != nil {
+			log.Printf("creating runtime dir: %s", err)
+			runtimeDir = os.TempDir()
+		}
+	}
 
-	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
+	gDefaultSocketPath = filepath.Join(runtimeDir, fmt.Sprintf("lf.%s.sock", gUser.Username))
+}
+
+// socketOwnedByCurrentUser returns true if info UID matches the process UID
+func socketOwnedByCurrentUser(info os.FileInfo) bool {
+	st, ok := info.Sys().(*syscall.Stat_t)
+	if !ok {
+		return false
+	}
+	return st.Uid == uint32(os.Geteuid())
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {
