@@ -107,43 +107,49 @@ func truncateLeft(s string, maxWidth int) string {
 }
 
 // cmdEscape is used to escape whitespace and special characters with
-// backslashes in a given string.
+// backslashes in a given string. Byte-oriented to preserve invalid UTF-8
 func cmdEscape(s string) string {
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
-		if unicode.IsSpace(r) || r == '\\' || r == ';' || r == '#' {
-			buf = append(buf, '\\')
+	var buf strings.Builder
+	buf.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c == '\\' || c == ';' || c == '#' ||
+			c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f' {
+			buf.WriteByte('\\')
 		}
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
-	return string(buf)
+	return buf.String()
 }
 
 // cmdUnescape is used to remove backslashes that are used to escape
 // whitespace and special characters in a given string.
 func cmdUnescape(s string) string {
+	var buf strings.Builder
+	buf.Grow(len(s))
 	esc := false
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
 		if esc {
-			if !unicode.IsSpace(r) && r != '\\' && r != ';' && r != '#' {
-				buf = append(buf, '\\')
+			isSpecial := c == '\\' || c == ';' || c == '#' ||
+				c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f'
+			if !isSpecial {
+				buf.WriteByte('\\')
 			}
-			buf = append(buf, r)
+			buf.WriteByte(c)
 			esc = false
 			continue
 		}
-		if r == '\\' {
+		if c == '\\' {
 			esc = true
 			continue
 		}
-		esc = false
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
 	if esc {
-		buf = append(buf, '\\')
+		buf.WriteByte('\\')
 	}
-	return string(buf)
+	return buf.String()
 }
 
 // tokenize splits the given string by whitespace. It is aware of escaped
