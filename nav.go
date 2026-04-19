@@ -676,6 +676,9 @@ func (nav *nav) resize(ui *ui) {
 		return
 	}
 
+	// only width affects preview output so height changes keep the cache
+	widthChanged := previewWin.w != nav.previewWidth
+
 	nav.height = previewWin.h
 	nav.previewWidth = previewWin.w
 
@@ -683,7 +686,16 @@ func (nav *nav) resize(ui *ui) {
 		nav.getDir(path).boundPos(nav.height)
 	}
 
-	clear(nav.regCache)
+	if widthChanged {
+		clear(nav.regCache)
+	} else {
+		// drop only volatile regs whose previewer opted in to size dependence
+		for path, r := range nav.regCache {
+			if r.volatile {
+				delete(nav.regCache, path)
+			}
+		}
+	}
 	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
