@@ -221,23 +221,6 @@ func (sm styleMap) parseBSD(env string) {
 	}
 }
 
-// parseFmtStyle converts an escape-sequence option value like
-// "\033[3;38;2;146;131;116m" to a tcell.Style. Returns false for empty or
-// malformed input so callers can fall back to the default style.
-func parseFmtStyle(fmtStr string) (tcell.Style, bool) {
-	if fmtStr == "" {
-		return tcell.StyleDefault, false
-	}
-	s, ok := strings.CutPrefix(fmtStr, "\033[")
-	if !ok {
-		return tcell.StyleDefault, false
-	}
-	s, ok = strings.CutSuffix(s, "m")
-	if !ok {
-		return tcell.StyleDefault, false
-	}
-	return applySGR(s, tcell.StyleDefault), true
-}
 
 func (sm styleMap) get(f *file) tcell.Style {
 	if val, ok := sm.styles[f.path]; ok {
@@ -282,11 +265,6 @@ func (sm styleMap) get(f *file) tcell.Style {
 	}
 
 	if val, ok := sm.styles[key]; ok {
-		if key == "di" && isHidden(f.FileInfo, filepath.Dir(f.path), gOpts.hiddenfiles) {
-			if st, ok := parseFmtStyle(gOpts.hiddendirfmt); ok {
-				return st
-			}
-		}
 		return val
 	}
 
@@ -300,12 +278,6 @@ func (sm styleMap) get(f *file) tcell.Style {
 
 	if val, ok := sm.styles[filepath.Base(f.Name())+".*"]; ok {
 		return val
-	}
-
-	if isHidden(f.FileInfo, filepath.Dir(f.path), gOpts.hiddenfiles) {
-		if st, ok := parseFmtStyle(gOpts.hiddenfilefmt); ok {
-			return st
-		}
 	}
 
 	if val, ok := sm.styles["*"+strings.ToLower(f.ext)]; ok {

@@ -26,7 +26,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445). This also replaces the existing `roundbox` option.
 - The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 - `lf` will now automatically change to the parent directory if the current directory no longer exists and the `watch` option is enabled (#2424).
-- New options `hiddendirfmt` and `hiddenfilefmt` are added to colour hidden directories and files separately from `di` and `fi` (#2492).
+- A new option `hiddenfmt` is added to colour hidden files and directories (#2492).
 
 ### Fixed
 

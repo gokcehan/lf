@@ -250,10 +250,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 		gOpts.findlen = n
-	case "hiddendirfmt":
-		gOpts.hiddendirfmt = e.val
-	case "hiddenfilefmt":
-		gOpts.hiddenfilefmt = e.val
+	case "hiddenfmt":
+		gOpts.hiddenfmt = e.val
 	case "hiddenfiles":
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {

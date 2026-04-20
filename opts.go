@@ -102,8 +102,7 @@ var gOpts struct {
 	filtermethod     searchMethod
 	findlen          int
 	hidden           bool
-	hiddendirfmt     string
-	hiddenfilefmt    string
+	hiddenfmt        string
 	hiddenfiles      []string
 	history          bool
 	icons            bool
@@ -247,8 +246,7 @@ func init() {
 	gOpts.filtermethod = textSearch
 	gOpts.findlen = 1
 	gOpts.hidden = false
-	gOpts.hiddendirfmt = ""
-	gOpts.hiddenfilefmt = ""
+	gOpts.hiddenfmt = ""
 	gOpts.hiddenfiles = gDefaultHiddenFiles
 	gOpts.history = true
 	gOpts.icons = false
