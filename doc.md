@@ -316,6 +316,7 @@ The following options can be used to customize the behavior of lf:
 	smartcase         bool      (default true)
 	smartdia          bool      (default false)
 	sortby            string    (default 'natural')
+	sortignorecase    bool      (default true)
 	statfmt           string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
 	tabstop           int       (default 8)
 	tagfmt            string    (default "\033[31m")
@@ -981,7 +982,7 @@ This option does not have any effect on Windows.
 
 ## ignorecase (bool) (default true)
 
-Ignore case in sorting and search patterns.
+Ignore case in search patterns. See also `sortignorecase`.
 
 ## ignoredia (bool) (default true)
 
@@ -1197,7 +1198,7 @@ Determines whether file sizes are displayed using binary units (`1K` is 1024 byt
 
 ## smartcase (bool) (default true)
 
-Override `ignorecase` option when the pattern contains an uppercase character.
+Override `ignorecase` option for searching when the pattern contains an uppercase character.
 This option has no effect when `ignorecase` is disabled.
 
 ## smartdia (bool) (default false)
@@ -1220,6 +1221,10 @@ The following sort types are supported:
 	btime     time of file birth
 	ctime     time of last status (inode) change
 	custom    property defined via `addcustominfo` (empty by default)
+
+## sortignorecase (bool) (default true)
+
+Ignore case in sorting. See also `ignorecase`.
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
@@ -1494,7 +1499,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse` and `sortby`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby` and `sortignorecase`.
 
 	setlocal /foo/bar hidden         # boolean enable
 	setlocal /foo/bar hidden true    # boolean enable

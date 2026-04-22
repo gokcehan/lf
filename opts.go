@@ -144,6 +144,7 @@ var gOpts struct {
 	smartcase        bool
 	smartdia         bool
 	sortby           sortMethod
+	sortignorecase   bool
 	statfmt          string
 	tabstop          int
 	tagfmt           string
@@ -172,6 +173,7 @@ var gLocalOpts struct {
 	info      map[string][]string
 	reverse   map[string]bool
 	sortby    map[string]sortMethod
+	sortignorecase map[string]bool
 }
 
 func getDirCounts(path string) bool {
@@ -221,6 +223,13 @@ func getSortBy(path string) sortMethod {
 		return val
 	}
 	return gOpts.sortby
+}
+
+func getSortIgnoreCase(path string) bool {
+	if val, ok := gLocalOpts.sortignorecase[path]; ok {
+		return val
+	}
+	return gOpts.sortignorecase
 }
 
 func init() {
@@ -287,6 +296,7 @@ func init() {
 	gOpts.smartcase = true
 	gOpts.smartdia = false
 	gOpts.sortby = naturalSort
+	gOpts.sortignorecase = true
 	gOpts.statfmt = "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l"
 	gOpts.tabstop = 8
 	gOpts.tagfmt = "\033[31m"
@@ -438,6 +448,7 @@ func init() {
 	gLocalOpts.info = make(map[string][]string)
 	gLocalOpts.reverse = make(map[string]bool)
 	gLocalOpts.sortby = make(map[string]sortMethod)
+	gLocalOpts.sortignorecase = make(map[string]bool)
 
 	setDefaults()
 }

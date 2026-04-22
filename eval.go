@@ -173,6 +173,13 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
+	case "sortignorecase", "nosortignorecase", "sortignorecase!":
+		err = applyBoolOpt(&gOpts.sortignorecase, e)
+		if err == nil {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.loadFile(app, true)
+		}
 	case "watch", "nowatch", "watch!":
 		err = applyBoolOpt(&gOpts.watch, e)
 		if err == nil {
@@ -531,6 +538,11 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
+		if err == nil {
+			app.nav.sort()
+		}
+	case "sortignorecase", "nosortignorecase", "sortignorecase!":
+		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
 		if err == nil {
 			app.nav.sort()
 		}
