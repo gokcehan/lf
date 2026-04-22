@@ -1297,11 +1297,11 @@ func listJumps(jumps []string, ind int) string {
 	for i := len(jumps) - 1; i >= 0; i-- {
 		switch {
 		case i < ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, sanitizeName(jumps[i]))
 		case i > ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, sanitizeName(jumps[i]))
 		default:
-			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, sanitizeName(jumps[i]))
 		}
 	}
 	t.Flush()
@@ -1318,7 +1318,7 @@ func listHistory(history []string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "number\tcommand")
 	for i, cmd := range history {
-		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
+		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, sanitizeName(cmd))
 	}
 	t.Flush()
 
@@ -1348,7 +1348,7 @@ func listFilesInCurrDir(nav *nav) string {
 
 	b := new(strings.Builder)
 	for _, file := range dir.files {
-		fmt.Fprintln(b, file.path)
+		fmt.Fprintln(b, sanitizeName(file.path))
 	}
 
 	return b.String()

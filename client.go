@@ -76,12 +76,12 @@ func run() {
 	}
 
 	if gPrintLastDir {
-		fmt.Println(app.nav.currDir().path)
+		fmt.Println(sanitizeName(app.nav.currDir().path))
 	}
 
 	if gPrintSelection && len(app.selectionOut) > 0 {
 		for _, file := range app.selectionOut {
-			fmt.Println(file)
+			fmt.Println(sanitizeName(file))
 		}
 	}
 }

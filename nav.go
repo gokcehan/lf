@@ -703,25 +703,25 @@ func (nav *nav) position() {
 func (nav *nav) exportFiles() {
 	var currFile string
 	if curr := nav.currFile(); curr != nil {
-		currFile = quoteString(curr.path)
+		currFile = sanitizeName(quoteString(curr.path))
 	}
 
 	var selections []string
 	for _, selection := range nav.currSelections() {
-		selections = append(selections, quoteString(selection))
+		selections = append(selections, sanitizeName(quoteString(selection)))
 	}
 	currSelections := strings.Join(selections, gOpts.filesep)
 
 	var vSelections []string
 	for _, selection := range nav.currDir().visualSelections() {
-		vSelections = append(vSelections, quoteString(selection))
+		vSelections = append(vSelections, sanitizeName(quoteString(selection)))
 	}
 	currVSelections := strings.Join(vSelections, gOpts.filesep)
 
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
 	os.Setenv("fv", currVSelections)
-	os.Setenv("PWD", quoteString(nav.currDir().path))
+	os.Setenv("PWD", sanitizeName(quoteString(nav.currDir().path)))
 
 	if len(selections) == 0 {
 		os.Setenv("fx", currFile)
