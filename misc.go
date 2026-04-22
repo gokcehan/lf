@@ -21,7 +21,7 @@ import (
 
 var (
 	reRulerSub  = regexp.MustCompile(`%[apmcsvfithPd]|%\{[^}]+\}`)
-	reSixelSize = regexp.MustCompile(`"1;1;(\d+);(\d+)`)
+	reSixelSize = regexp.MustCompile(`^\x1bP[0-9;]*q.*"1;1;(\d+);(\d+)`)
 )
 
 var (
@@ -527,26 +527,32 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			}
 		case stateSixel:
-			// Accept printable bytes (0x20-0x7E) and ESC inside the
-			// DCS frame. Reject everything else (C0, DEL, 0x80+).
+			// Accept only valid sixel grammar bytes inside the DCS frame
 			switch {
 			case b == '\033':
 				buf.WriteByte(b)
 				currState = stateSixelEsc
-			case b >= 0x20 && b <= 0x7E:
+			case b == ' ' || b == '!' || b == '"' || b == '#' || b == '$' || b == '-' || b == ';':
+				buf.WriteByte(b)
+			case b >= '0' && b <= '9':
+				buf.WriteByte(b)
+			case b >= '?' && b <= '~':
 				buf.WriteByte(b)
 			default:
 				buf.Reset()
 				currState = stateNormal
 			}
 		case stateSixelEsc:
-			buf.WriteByte(b)
+			// Only the ST terminator '\\' is valid after ESC in the DCS body
+			// Other bytes aborts the DCS so that ESC
 			if b == '\\' {
+				buf.WriteByte(b)
 				flush(true)
 				sixel = true
 				currState = stateNormal
 			} else {
-				currState = stateSixel
+				buf.Reset()
+				currState = stateNormal
 			}
 		}
 	}

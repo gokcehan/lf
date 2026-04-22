@@ -541,6 +541,16 @@ func TestReadLines(t *testing.T) {
 		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false},
 		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false},
 		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true},
+		// DCS body must contain only sixel grammar bytes. Bytes outside
+		// the grammar (e.g. '[', ']') abort the DCS so that an attacker
+		// cannot smuggle CSI/OSC/DCS/SOS/PM/APC through the sixel path.
+		{"\033P\033[2J\033\\", 10, []string{"2J\033\\"}, false, false},
+		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, false},
+		{"\033P\033P\033\\", 10, []string{"\033\\"}, false, false},
+		// After ESC in the DCS body only '\\' (ST) is valid. Any other
+		// byte aborts, so an attacker cannot embed CSI, OSC, or a nested
+		// DCS via ESC '[' / ']' / 'P' and still end the frame.
+		{"\033Pq\"1;1;1;1\033X\033\\", 10, []string{"\033\\"}, false, false},
 	}
 
 	for _, test := range tests {
