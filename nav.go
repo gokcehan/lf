@@ -1833,7 +1833,8 @@ func (nav *nav) readMarks() error {
 	for scanner.Scan() {
 		mark, path, found := strings.Cut(scanner.Text(), ":")
 		if !found {
-			return fmt.Errorf("invalid marks file entry: %s", scanner.Text())
+			log.Printf("marks: skipping invalid entry: %q", scanner.Text())
+			continue
 		}
 		if _, ok := nav.marks[mark]; !ok {
 			nav.marks[mark] = path
@@ -1888,7 +1889,8 @@ func (nav *nav) readTags() error {
 
 		ind := strings.LastIndex(text, ":")
 		if ind == -1 {
-			return fmt.Errorf("invalid tags file entry: %s", text)
+			log.Printf("tags: skipping invalid entry: %q", text)
+			continue
 		}
 
 		path := text[0:ind]
