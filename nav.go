@@ -179,9 +179,8 @@ type dir struct {
 	visualWrap     int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
 	hiddenfiles    []string   // hiddenfiles value from last sort
 	filter         []string   // last filter for this directory
-	ignorecase     bool       // ignorecase value from last sort
 	sortignorecase bool       // sortignorecase value from last sort
-	ignoredia      bool       // ignoredia value from last sort
+	sortignoredia  bool       // sortignoredia value from last sort
 	noPerm         bool       // whether lf has no permission to open the directory
 }
 
@@ -209,9 +208,8 @@ func (dir *dir) sort() {
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
-	dir.ignorecase = gOpts.ignorecase
 	dir.sortignorecase = getSortIgnoreCase(dir.path)
-	dir.ignoredia = gOpts.ignoredia
+	dir.sortignoredia = getSortIgnoreDia(dir.path)
 
 	dir.files = dir.allFiles
 
@@ -261,7 +259,7 @@ func (dir *dir) sort() {
 		if dir.sortignorecase {
 			s = strings.ToLower(s)
 		}
-		if dir.ignoredia {
+		if dir.sortignoredia {
 			s = removeDiacritics(s)
 		}
 		return s
@@ -504,9 +502,8 @@ func (nav *nav) getDir(path string) *dir {
 		reverse:        getReverse(path),
 		visualAnchor:   -1,
 		hiddenfiles:    gOpts.hiddenfiles,
-		ignorecase:     gOpts.ignorecase,
 		sortignorecase: getSortIgnoreCase(path),
-		ignoredia:      gOpts.ignoredia,
+		sortignoredia:  getSortIgnoreDia(path),
 	}
 	nav.dirCache[path] = d
 	return d
@@ -549,9 +546,8 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.hidden != getHidden(dir.path) ||
 		dir.reverse != getReverse(dir.path) ||
 		!slices.Equal(dir.hiddenfiles, gOpts.hiddenfiles) ||
-		dir.ignorecase != gOpts.ignorecase ||
 		dir.sortignorecase != getSortIgnoreCase(dir.path) ||
-		dir.ignoredia != gOpts.ignoredia:
+		dir.sortignoredia != getSortIgnoreDia(dir.path):
 		dir.loading = true
 		sd := *dir
 		go func() {

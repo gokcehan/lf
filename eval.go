@@ -166,6 +166,11 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			app.nav.sort()
 		}
+	case "sortignoredia", "nosortignoredia", "sortignoredia!":
+		err = applyBoolOpt(&gOpts.sortignoredia, e)
+		if err == nil {
+			app.nav.sort()
+		}
 	case "watch", "nowatch", "watch!":
 		err = applyBoolOpt(&gOpts.watch, e)
 		if err == nil {
@@ -521,6 +526,11 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		}
 	case "sortignorecase", "nosortignorecase", "sortignorecase!":
 		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
+		if err == nil {
+			app.nav.sort()
+		}
+	case "sortignoredia", "nosortignoredia", "sortignoredia!":
+		err = applyLocalBoolOpt(gLocalOpts.sortignoredia, gOpts.sortignoredia, e)
 		if err == nil {
 			app.nav.sort()
 		}

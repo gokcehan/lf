@@ -317,6 +317,7 @@ The following options can be used to customize the behavior of lf:
 	smartdia          bool      (default false)
 	sortby            string    (default 'natural')
 	sortignorecase    bool      (default true)
+	sortignoredia     bool      (default true)
 	statfmt           string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
 	tabstop           int       (default 8)
 	tagfmt            string    (default "\033[31m")
@@ -986,7 +987,7 @@ Ignore case in search patterns. See also `sortignorecase`.
 
 ## ignoredia (bool) (default true)
 
-Ignore diacritics in sorting and search patterns.
+Ignore diacritics in search patterns. See also `sortignoredia`.
 
 ## incfilter (bool) (default false)
 
@@ -1224,7 +1225,11 @@ The following sort types are supported:
 
 ## sortignorecase (bool) (default true)
 
-Ignore case in sorting. See also `ignorecase`.
+Ignore case when sorting. See also `ignorecase`.
+
+## sortignoredia (bool) (default true)
+
+Ignore diacritics when sorting. See also `ignoredia`.
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
@@ -1499,7 +1504,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby` and `sortignorecase`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby`, `sortignorecase` and `sortignoredia`.
 
 	setlocal /foo/bar hidden         # boolean enable
 	setlocal /foo/bar hidden true    # boolean enable
