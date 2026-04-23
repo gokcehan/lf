@@ -104,8 +104,8 @@ func init() {
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	runtime := os.TempDir()
-	gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
+	runtimeDir := os.TempDir()
+	gDefaultSocketPath = filepath.Join(runtimeDir, fmt.Sprintf("lf.%s.sock", gUser.Username))
 
 	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
 	for ext := range strings.SplitSeq(s, ";") {
@@ -120,11 +120,6 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 	cmd := exec.Command(name, arg...)
 	cmd.SysProcAttr = &windows.SysProcAttr{CreationFlags: 8}
 	return cmd
-}
-
-// socketOwnedByCurrentUser is a no-op on Windows
-func socketOwnedByCurrentUser(_ os.FileInfo) bool {
-	return true
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {

@@ -120,21 +120,18 @@ func init() {
 	if runtimeDir == "" {
 		runtimeDir = filepath.Join(os.TempDir(), fmt.Sprintf("lf-%s", gUser.Uid))
 		if err := os.MkdirAll(runtimeDir, 0700); err != nil {
-			log.Printf("creating runtime dir: %s", err)
-			runtimeDir = os.TempDir()
+			log.Fatalf("creating runtime dir: %s", err)
+		}
+		st, err := os.Stat(runtimeDir)
+		if err != nil {
+			log.Fatalf("stat runtime dir: %s", err)
+		}
+		if stat, ok := st.Sys().(*syscall.Stat_t); !ok || stat.Uid != uint32(os.Geteuid()) {
+			log.Fatalf("runtime dir not owned by current user: %s", runtimeDir)
 		}
 	}
 
 	gDefaultSocketPath = filepath.Join(runtimeDir, fmt.Sprintf("lf.%s.sock", gUser.Username))
-}
-
-// socketOwnedByCurrentUser returns true if info UID matches the process UID
-func socketOwnedByCurrentUser(info os.FileInfo) bool {
-	st, ok := info.Sys().(*syscall.Stat_t)
-	if !ok {
-		return false
-	}
-	return st.Uid == uint32(os.Geteuid())
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {

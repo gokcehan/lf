@@ -177,23 +177,9 @@ func startServer() {
 }
 
 func checkServer() {
-	st, err := os.Stat(gSocketPath)
-	if os.IsNotExist(err) {
+	if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
 		startServer()
-		return
-	}
-	if err != nil {
-		log.Printf("stat socket: %s", err)
-		return
-	}
-
-	// Fail closed if the socket isn't owned by process
-	if !socketOwnedByCurrentUser(st) {
-		log.Printf("refusing to use socket not owned by current user: %s", gSocketPath)
-		return
-	}
-
-	if _, err := net.Dial("unix", gSocketPath); err != nil {
+	} else if _, err := net.Dial("unix", gSocketPath); err != nil {
 		if err := os.Remove(gSocketPath); err != nil {
 			log.Print(err)
 		}
