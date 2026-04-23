@@ -166,13 +166,13 @@ var gOpts struct {
 }
 
 var gLocalOpts struct {
-	dircounts map[string]bool
-	dirfirst  map[string]bool
-	dironly   map[string]bool
-	hidden    map[string]bool
-	info      map[string][]string
-	reverse   map[string]bool
-	sortby    map[string]sortMethod
+	dircounts      map[string]bool
+	dirfirst       map[string]bool
+	dironly        map[string]bool
+	hidden         map[string]bool
+	info           map[string][]string
+	reverse        map[string]bool
+	sortby         map[string]sortMethod
 	sortignorecase map[string]bool
 }
 
