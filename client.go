@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/gdamore/tcell/v3"
+	"golang.org/x/term"
 )
 
 type State struct {
@@ -76,14 +77,22 @@ func run() {
 	}
 
 	if gPrintLastDir {
-		fmt.Println(sanitizeName(app.nav.currDir().path))
+		fmt.Println(conditionalSanitize(app.nav.currDir().path))
 	}
 
 	if gPrintSelection && len(app.selectionOut) > 0 {
 		for _, file := range app.selectionOut {
-			fmt.Println(sanitizeName(file))
+			fmt.Println(conditionalSanitize(file))
 		}
 	}
+}
+
+// conditionalSanitize strips control bytes only when stdout is a terminal
+func conditionalSanitize(s string) string {
+	if term.IsTerminal(int(os.Stdout.Fd())) {
+		return sanitizeName(s)
+	}
+	return s
 }
 
 func writeLastDir(filename, lastDir string) {
