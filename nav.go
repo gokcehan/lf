@@ -676,9 +676,7 @@ func (nav *nav) resize(ui *ui) {
 		return
 	}
 
-	// preview output is capped at the preview window height, so a height
-	// increase requires re-running the previewer; a decrease does not
-	resized := previewWin.w != nav.previewWidth || previewWin.h > nav.height
+	widthChanged := previewWin.w != nav.previewWidth
 
 	nav.height = previewWin.h
 	nav.previewWidth = previewWin.w
@@ -687,8 +685,16 @@ func (nav *nav) resize(ui *ui) {
 		nav.getDir(path).boundPos(nav.height)
 	}
 
-	if resized {
+	if widthChanged {
 		clear(nav.regCache)
+	} else {
+		// drop cached previews only when the new window height exceeds the
+		// cached line count and the previewer was not exhausted at load time
+		for path, r := range nav.regCache {
+			if !r.loading && len(r.lines) < previewWin.h && len(r.lines) == r.loadHeight {
+				delete(nav.regCache, path)
+			}
+		}
 	}
 	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
@@ -861,7 +867,7 @@ func (nav *nav) preload() {
 }
 
 func (nav *nav) preview(path string, win *win, mode string) {
-	reg := &reg{loadTime: time.Now(), path: path}
+	reg := &reg{loadTime: time.Now(), path: path, loadHeight: win.h}
 	defer func() {
 		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true

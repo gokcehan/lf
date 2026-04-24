@@ -607,12 +607,13 @@ func (ui *ui) echoerrf(format string, a ...any) {
 // Note: the name `reg` is historical. It originally meant "regular"
 // file preview, but `previewer` now also supports non-regular files.
 type reg struct {
-	loading  bool
-	volatile bool
-	loadTime time.Time
-	path     string
-	lines    []string
-	sixel    bool
+	loading    bool
+	volatile   bool
+	loadTime   time.Time
+	path       string
+	lines      []string
+	loadHeight int
+	sixel      bool
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
