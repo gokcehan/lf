@@ -131,7 +131,7 @@ func init() {
 		}
 	}
 
-	gDefaultSocketPath = filepath.Join(runtimeDir, fmt.Sprintf("lf.%s.sock", gUser.Username))
+	gDefaultSocketPath = filepath.Join(runtimeDir, "lf.sock")
 }
 
 func detachedCommand(name string, arg ...string) *exec.Cmd {

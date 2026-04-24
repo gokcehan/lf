@@ -105,7 +105,7 @@ func init() {
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
 	runtimeDir := os.TempDir()
-	gDefaultSocketPath = filepath.Join(runtimeDir, fmt.Sprintf("lf.%s.sock", gUser.Username))
+	gDefaultSocketPath = filepath.Join(runtimeDir, "lf.sock")
 
 	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
 	for ext := range strings.SplitSeq(s, ";") {

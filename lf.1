@@ -1797,7 +1797,7 @@ OpenBSD implementation of netcat (nc) is one such example.
 You can use it to send a command to the socket file:
 .IP
 .EX
-echo \(aqsend echo hello world\(aq | nc \-U ${XDG_RUNTIME_DIR:\-/tmp}/lf.${USER}.sock
+echo \(aqsend echo hello world\(aq | nc \-U ${XDG_RUNTIME_DIR:\-/tmp/lf\-$(id \-u)}/lf.sock
 .EE
 .PP
 Since such a client may not be available everywhere, lf comes bundled
