@@ -129,7 +129,8 @@ func readExpr() <-chan expr {
 		}
 
 		if _, err := fmt.Fprintf(c, "conn %d\n", gClientID); err != nil {
-			log.Fatalf("registering with server: %s", err)
+			log.Printf("registering with server: %s", err)
+			return
 		}
 
 		ch <- &callExpr{"sync", nil, 1}
@@ -148,7 +149,8 @@ func readExpr() <-chan expr {
 				state := gState.data[rest]
 				gState.mutex.Unlock()
 				if _, err := fmt.Fprintln(c, state); err != nil {
-					log.Fatalf("sending response to server: %s", err)
+					log.Printf("sending response to server: %s", err)
+					return
 				}
 			} else {
 				p := newParser(strings.NewReader(s.Text()))

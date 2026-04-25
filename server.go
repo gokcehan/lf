@@ -9,9 +9,11 @@ import (
 	"os"
 	"slices"
 	"strconv"
+	"sync"
 )
 
 var (
+	gConnMu   sync.Mutex
 	gConnList = make(map[int]net.Conn)
 	gQuitChan = make(chan struct{}, 1)
 	gListener net.Listener
@@ -75,6 +77,8 @@ Loop:
 	for s.Scan() {
 		log.Printf("listen: %s", s.Text())
 		word, rest := splitWord(s.Text())
+
+		gConnMu.Lock()
 		switch word {
 		case "conn":
 			if rest != "" {
@@ -86,6 +90,7 @@ Loop:
 					// lifetime of the connection is managed by the server and
 					// will be cleaned up via the `drop` command
 					gConnList[id] = c
+					gConnMu.Unlock()
 					return
 				}
 			} else {
@@ -163,6 +168,7 @@ Loop:
 			if len(gConnList) == 0 {
 				gQuitChan <- struct{}{}
 				gListener.Close()
+				gConnMu.Unlock()
 				break Loop
 			}
 		case "quit!":
@@ -172,10 +178,12 @@ Loop:
 				c.Close()
 			}
 			gListener.Close()
+			gConnMu.Unlock()
 			break Loop
 		default:
 			echoerrf(c, "listen: unexpected command: %s", word)
 		}
+		gConnMu.Unlock()
 	}
 
 	if s.Err() != nil {
