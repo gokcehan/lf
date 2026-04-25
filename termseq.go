@@ -297,14 +297,18 @@ func sanitizeForDisplay(s string) string {
 }
 
 // sanitizeName sanitizes a filename, path, or symlink target for display.
-// Unlike sanitizeForDisplay it also replaces tabs, because tabs in names
-// are expanded by the renderer to tabstop width while uniseg.StringWidth
-// counts them as width 1, causing column overflow.
+// Unlike sanitizeForDisplay it also replaces tabs (which would expand to
+// tabstop width and break column layout) and BiDi override/isolate runes
+// (U+202A-U+202E, U+2066-U+2069), which would visually reorder the name.
 func sanitizeName(s string) string {
 	return strings.Map(func(r rune) rune {
-		if !isControlChar(r) {
-			return r
+		if isControlChar(r) || isBidiControl(r) {
+			return '\uFFFD'
 		}
-		return '\uFFFD'
+		return r
 	}, s)
+}
+
+func isBidiControl(r rune) bool {
+	return (r >= 0x202A && r <= 0x202E) || (r >= 0x2066 && r <= 0x2069)
 }

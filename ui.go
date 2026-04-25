@@ -587,12 +587,12 @@ func (ui *ui) echo(msg string) {
 }
 
 func (ui *ui) echomsg(msg string) {
-	ui.echo(msg)
+	ui.echo(sanitizeName(msg))
 	log.Print(msg)
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(msg)))
 	log.Printf("error: %s", msg)
 }
 
@@ -1161,6 +1161,11 @@ func (ui *ui) draw(nav *nav) {
 		}
 	}
 
+	// sanitize cmd-line buffers at render time
+	cmdPrefix := sanitizeName(ui.cmdPrefix)
+	cmdAccLeft := sanitizeName(ui.cmdAccLeft)
+	cmdAccRight := sanitizeName(ui.cmdAccRight)
+
 	switch ui.cmdPrefix {
 	case "":
 		if gOpts.rulerfmt == "" {
@@ -1172,16 +1177,16 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		prefix := truncateRight(cmdPrefix, maxWidth)
+		left := truncateLeft(cmdAccLeft, maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
-		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+ui.cmdAccRight)
+		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+cmdAccRight)
 		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+ui.cmdAccRight)
+		prefix := truncateRight(cmdPrefix, maxWidth)
+		left := truncateLeft(cmdAccLeft, maxWidth-uniseg.StringWidth(prefix))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+cmdAccRight)
 		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
 	}
 
@@ -1332,7 +1337,7 @@ func listMarks(marks map[string]string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mark\tpath")
 	for _, k := range slices.Sorted(maps.Keys(marks)) {
-		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
+		fmt.Fprintf(t, "%s\t%s\n", k, sanitizeName(marks[k]))
 	}
 	t.Flush()
 
@@ -1615,10 +1620,15 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 		return "", nil
 	}
 
+	names := make([]string, len(matches))
+	for i, m := range matches {
+		names[i] = sanitizeName(m.name)
+	}
+
 	wtot, _ := screen.Size()
 	wcol := 0
-	for _, m := range matches {
-		wcol = max(wcol, printLength(m.name))
+	for _, n := range names {
+		wcol = max(wcol, printLength(n))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1626,19 +1636,19 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 	var b strings.Builder
 	b.WriteString("possible matches")
 
-	for i, match := range matches {
+	for i, n := range names {
 		if i%ncol == 0 {
 			b.WriteByte('\n')
 		}
-		w := printLength(match.name)
-		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
+		w := printLength(n)
+		fmt.Fprintf(&b, "%s%*s", n, wcol-w, "")
 	}
 
 	b.WriteByte('\n')
 
 	var selection *menuSelect
 	if selectedInd != -1 {
-		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, matches[selectedInd].name}
+		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, names[selectedInd]}
 	}
 
 	return b.String(), selection
