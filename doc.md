@@ -1083,8 +1083,8 @@ Set the path of a previewer file to filter the content of regular files for prev
 The file should be executable.
 The following arguments are passed to the file, (1) current filename, (2) width, (3) height, (4) horizontal position, (5) vertical position, and (6) mode ("preview" or "preload").
 SIGPIPE signal is sent when enough lines are read.
-If the previewer returns a non-zero exit code, then the preview cache for the given file is disabled.
-This means that if the file is selected in the future, the previewer is called once again.
+If the previewer returns a non-zero exit code, the cached preview is marked volatile.
+This means that the cached output is still displayed, but the previewer is called again the next time the file is selected.
 Preview filtering is disabled and files are displayed as they are when the value of this option is left empty.
 If the `preload` option is enabled, then this will be called with `preload` as the mode when preloading file previews.
 Refer to the [PREVIEWING FILES section](https://github.com/gokcehan/lf/blob/master/doc.md#previewing-files) for more information about how to configure custom previews.

@@ -861,7 +861,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 			nav.volatilePreview = true
 		}
 
-		if gOpts.preload == (mode == "preload") {
+		if gOpts.preload == (mode == "preload") || (mode == "preview" && !reg.volatile) {
 			nav.regChan <- reg
 		}
 	}()
