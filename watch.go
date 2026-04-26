@@ -4,6 +4,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -18,6 +19,8 @@ type watch struct {
 	dirChan  chan<- *dir
 	fileChan chan<- *file
 	delChan  chan<- string
+	pathsMu  sync.Mutex
+	paths    map[string]bool
 }
 
 func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
@@ -28,6 +31,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
+		paths:    make(map[string]bool),
 	}
 
 	return watch
@@ -60,6 +64,10 @@ func (watch *watch) stop() {
 
 	watch.watcher = nil
 	watch.events = nil
+
+	watch.pathsMu.Lock()
+	clear(watch.paths)
+	watch.pathsMu.Unlock()
 }
 
 func (watch *watch) add(path string) {
@@ -68,10 +76,16 @@ func (watch *watch) add(path string) {
 	}
 
 	// ignore /dev since write updates to /dev/tty causes high cpu usage
-	if path != "/dev" {
-		if err := watch.watcher.Add(path); err != nil {
-			log.Printf("watch path %s: %s", path, err)
-		}
+	if path == "/dev" {
+		return
+	}
+
+	watch.pathsMu.Lock()
+	watch.paths[path] = true
+	watch.pathsMu.Unlock()
+
+	if err := watch.watcher.Add(path); err != nil {
+		log.Printf("watch path %s: %s", path, err)
 	}
 }
 
@@ -153,8 +167,10 @@ func (watch *watch) processUpdate(update watchUpdate) {
 	}
 }
 
-// Hacky workaround since fsnotify reports changes for only one path if a
-// directory is located at more than one path (e.g. bind mounts).
+// fsnotify silently aliases watches by inode, so two paths to the same
+// directory (a symlink and its target) end up as a single entry in
+// watcher.WatchList. Track every Added path ourselves so getSameDirs can
+// fan events out to all aliases.
 func (watch *watch) getSameDirs(dir string) []string {
 	var paths []string
 
@@ -163,7 +179,14 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
-	for _, path := range watch.watcher.WatchList() {
+	watch.pathsMu.Lock()
+	candidates := make([]string, 0, len(watch.paths))
+	for p := range watch.paths {
+		candidates = append(candidates, p)
+	}
+	watch.pathsMu.Unlock()
+
+	for _, path := range candidates {
 		if path == dir {
 			paths = append(paths, path)
 			continue
