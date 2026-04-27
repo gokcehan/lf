@@ -4,7 +4,6 @@ import (
 	"log"
 	"os"
 	"path/filepath"
-	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
@@ -19,7 +18,7 @@ type watch struct {
 	dirChan  chan<- *dir
 	fileChan chan<- *file
 	delChan  chan<- string
-	pathsMu  sync.Mutex
+	addChan  chan string
 	paths    map[string]bool
 }
 
@@ -31,6 +30,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
+		addChan:  make(chan string, 1024),
 		paths:    make(map[string]bool),
 	}
 
@@ -64,10 +64,6 @@ func (watch *watch) stop() {
 
 	watch.watcher = nil
 	watch.events = nil
-
-	watch.pathsMu.Lock()
-	clear(watch.paths)
-	watch.pathsMu.Unlock()
 }
 
 func (watch *watch) add(path string) {
@@ -80,18 +76,17 @@ func (watch *watch) add(path string) {
 		return
 	}
 
-	watch.pathsMu.Lock()
-	watch.paths[path] = true
-	watch.pathsMu.Unlock()
-
-	if err := watch.watcher.Add(path); err != nil {
-		log.Printf("watch path %s: %s", path, err)
-	}
+	watch.addChan <- path
 }
 
 func (watch *watch) loop() {
 	for {
 		select {
+		case path := <-watch.addChan:
+			watch.paths[path] = true
+			if err := watch.watcher.Add(path); err != nil {
+				log.Printf("watch path %s: %s", path, err)
+			}
 		case ev := <-watch.events:
 			if ev.Has(fsnotify.Create) {
 				for _, path := range watch.getSameDirs(filepath.Dir(ev.Name)) {
@@ -132,6 +127,7 @@ func (watch *watch) loop() {
 				delete(watch.pending, update)
 			}
 		case <-watch.quit:
+			clear(watch.paths)
 			return
 		}
 	}
@@ -179,14 +175,7 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
-	watch.pathsMu.Lock()
-	candidates := make([]string, 0, len(watch.paths))
-	for p := range watch.paths {
-		candidates = append(candidates, p)
-	}
-	watch.pathsMu.Unlock()
-
-	for _, path := range candidates {
+	for path := range watch.paths {
 		if path == dir {
 			paths = append(paths, path)
 			continue
