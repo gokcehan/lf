@@ -14,8 +14,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
-	"github.com/rivo/uniseg"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -471,7 +471,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
-		if uniseg.StringWidth(e.val) != 1 {
+		if displaywidth.String(e.val) != 1 {
 			app.ui.echoerr("truncatechar: value should be a single character")
 			return
 		}
@@ -2029,9 +2029,9 @@ func (e *callExpr) eval(app *app, _ []string) {
 		update(app)
 	case "cmd-transpose":
 		var c []string
-		gr := uniseg.NewGraphemes(app.ui.cmdAccLeft)
+		gr := displaywidth.StringGraphemes(app.ui.cmdAccLeft)
 		for gr.Next() {
-			c = append(c, gr.Str())
+			c = append(c, gr.Value())
 		}
 
 		first := firstGraphemeCluster(app.ui.cmdAccRight)

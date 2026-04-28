@@ -11,12 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/rivo/uniseg"
+	"github.com/clipperhouse/displaywidth"
 )
 
 var (
@@ -42,18 +41,18 @@ func replaceTilde(s string) string {
 // firstGraphemeCluster returns the string containing the first grapheme cluster
 // of the input.
 func firstGraphemeCluster(s string) string {
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	gr.Next()
-	return gr.Str()
+	return gr.Value()
 }
 
 // lastGraphemeCluster returns the string containing the last grapheme cluster
 // of the input.
 func lastGraphemeCluster(s string) string {
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	var last string
 	for gr.Next() {
-		last = gr.Str()
+		last = gr.Value()
 	}
 	return last
 }
@@ -64,14 +63,14 @@ func truncateRight(s string, maxWidth int) string {
 	buf := make([]byte, 0, len(s))
 	width := 0
 
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	for gr.Next() {
 		width += gr.Width()
 		if width > maxWidth {
 			break
 		}
 
-		buf = append(buf, gr.Bytes()...)
+		buf = append(buf, gr.Value()...)
 	}
 
 	return string(buf)
@@ -87,9 +86,9 @@ func truncateLeft(s string, maxWidth int) string {
 
 	var clusters []cluster
 	totalWidth := 0
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	for gr.Next() {
-		clusters = append(clusters, cluster{slices.Clone(gr.Bytes()), gr.Width()})
+		clusters = append(clusters, cluster{[]byte(gr.Value()), gr.Width()})
 		totalWidth += gr.Width()
 	}
 
@@ -432,19 +431,19 @@ func getFileExtension(file fs.FileInfo) string {
 // if it exceeds the allowed width.
 func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar string) string {
 	filename := sanitizeName(file.Name())
-	if uniseg.StringWidth(filename) <= maxWidth {
+	if displaywidth.String(filename) <= maxWidth {
 		return filename
 	}
 
 	ext := sanitizeName(getFileExtension(file))
-	avail := maxWidth - uniseg.StringWidth(truncateChar) - uniseg.StringWidth(ext)
+	avail := maxWidth - displaywidth.String(truncateChar) - displaywidth.String(ext)
 	if avail < 0 {
 		return truncateRight(truncateChar+ext, maxWidth)
 	}
 
 	basename := strings.TrimSuffix(filename, ext)
 	left := truncateRight(basename, avail*truncatePct/100)
-	right := truncateLeft(basename, avail-uniseg.StringWidth(left))
+	right := truncateLeft(basename, avail-displaywidth.String(left))
 	return left + truncateChar + right + ext
 }
 
