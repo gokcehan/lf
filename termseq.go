@@ -312,3 +312,27 @@ func sanitizeName(s string) string {
 func isBidiControl(r rune) bool {
 	return (r >= 0x202A && r <= 0x202E) || (r >= 0x2066 && r <= 0x2069)
 }
+
+// sanitizeMessage sanitizes a message intended for the message line. Like
+// sanitizeName it strips control and BiDi-override runes, but it preserves
+// terminal sequences that lf itself recognizes (SGR, EL, OSC 8) so internal
+// messages that use color or hyperlinks still render correctly.
+func sanitizeMessage(s string) string {
+	var b strings.Builder
+	b.Grow(len(s))
+	for i := 0; i < len(s); {
+		if seq := readTermSequence(s[i:]); seq != "" {
+			b.WriteString(seq)
+			i += len(seq)
+			continue
+		}
+		r, w := utf8.DecodeRuneInString(s[i:])
+		if isControlChar(r) || isBidiControl(r) {
+			b.WriteRune('\uFFFD')
+		} else {
+			b.WriteRune(r)
+		}
+		i += w
+	}
+	return b.String()
+}

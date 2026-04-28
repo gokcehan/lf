@@ -1537,7 +1537,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 		}
 	case "echo":
-		app.ui.echo(sanitizeName(strings.Join(e.args, " ")))
+		app.ui.echo(sanitizeMessage(strings.Join(e.args, " ")))
 	case "echomsg":
 		app.ui.echomsg(strings.Join(e.args, " "))
 	case "echoerr":

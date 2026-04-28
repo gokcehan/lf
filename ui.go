@@ -587,12 +587,12 @@ func (ui *ui) echo(msg string) {
 }
 
 func (ui *ui) echomsg(msg string) {
-	ui.echo(sanitizeName(msg))
+	ui.echo(sanitizeMessage(msg))
 	log.Print(msg)
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(msg)))
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeMessage(msg)))
 	log.Printf("error: %s", msg)
 }
 
