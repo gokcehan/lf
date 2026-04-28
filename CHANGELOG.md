@@ -53,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Color values are now validated (must be between `0` and `255`) when parsing terminal sequences (#2517).
 - Directories are now refreshed properly after using the `cd` command (#2518).
 - Successfully copied files are no longer deleted if their timestamps could not be preserved (#2519).
+- Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
