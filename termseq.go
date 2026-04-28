@@ -4,10 +4,15 @@ import (
 	"log"
 	"strconv"
 	"strings"
+	"unicode"
 	"unicode/utf8"
 
+	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
+	"github.com/rivo/uniseg"
 )
+
+var displayWidthOpts = displaywidth.Options{}
 
 // gEscapeCode is the byte that starts ANSI control sequences.
 const gEscapeCode byte = '\x1b'
@@ -284,25 +289,43 @@ func isControlChar(r rune) bool {
 	return r < 0x20 || r == 0x7F || r >= 0x80 && r <= 0x9F
 }
 
-// sanitizeForDisplay replaces control characters and invalid bytes with the
-// Unicode replacement character (U+FFFD). Tabs are preserved for content
-// where tab expansion is handled by the renderer (e.g. preview panes).
+// isSafeForDisplay accepts only single-cell characters whose width is reported
+// identically by uniseg (used by lf for layout) and displaywidth (used by tcell).
+func isSafeForDisplay(r rune) bool {
+	if !unicode.In(r, unicode.L, unicode.N, unicode.S, unicode.P, unicode.Zs) {
+		return false
+	}
+	s := string(r)
+	return uniseg.StringWidth(s) == displayWidthOpts.String(s)
+}
+
+// sanitizeForDisplay replaces unsafe characters with U+FFFD. Recognized
+// terminal sequences and tabs are preserved.
 func sanitizeForDisplay(s string) string {
-	return strings.Map(func(r rune) rune {
-		if r == '\t' || !isControlChar(r) {
-			return r
+	var b strings.Builder
+	slen := len(s)
+	for i := 0; i < slen; {
+		if seq := readTermSequence(s[i:]); seq != "" {
+			b.WriteString(seq)
+			i += len(seq)
+			continue
 		}
-		return '\uFFFD'
-	}, s)
+		r, w := utf8.DecodeRuneInString(s[i:])
+		if r == '\t' || isSafeForDisplay(r) {
+			b.WriteRune(r)
+		} else {
+			b.WriteRune('\uFFFD')
+		}
+		i += w
+	}
+	return b.String()
 }
 
 // sanitizeName sanitizes a filename, path, or symlink target for display.
-// Unlike sanitizeForDisplay it also replaces tabs, because tabs in names
-// are expanded by the renderer to tabstop width while uniseg.StringWidth
-// counts them as width 1, causing column overflow.
+// Like sanitizeForDisplay but tabs are also replaced.
 func sanitizeName(s string) string {
 	return strings.Map(func(r rune) rune {
-		if !isControlChar(r) {
+		if isSafeForDisplay(r) {
 			return r
 		}
 		return '\uFFFD'

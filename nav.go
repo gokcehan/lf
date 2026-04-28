@@ -941,6 +941,8 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	// U+FFFD so they are visible but cannot form escape sequences.
 	if len(gOpts.previewer) == 0 && !binary {
 		sixel = false
+	}
+	if !binary && !sixel {
 		for i, l := range lines {
 			lines[i] = sanitizeForDisplay(l)
 		}
