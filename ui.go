@@ -539,6 +539,7 @@ type ui struct {
 	ruler       *template.Template // compiled `rulerfile`
 	rulerErr    error              // `rulerfile` parse error (if any)
 	currentFile string             // last path passed to `on-select`
+	forceSync   bool               // force full screen repaint on next draw
 	pasteEvent  bool               // whether paste event is active (to ignore pasted input in Normal mode)
 }
 
@@ -627,6 +628,7 @@ func (ui *ui) loadFile(app *app, volatile bool) {
 
 	if curr.path != ui.currentFile {
 		ui.currentFile = curr.path
+		ui.forceSync = true
 		onSelect(app)
 	}
 
@@ -1143,6 +1145,14 @@ func (ui *ui) draw(nav *nav) {
 	context := dirContext{selections: nav.selections, clipboard: nav.clipboard, tags: nav.tags}
 
 	ui.screen.Clear()
+
+	// On file change, force re-emit of every cell to clear pixels bled past cell bounds.
+	if ui.forceSync {
+		ui.forceSync = false
+		if cs, ok := ui.screen.(interface{ GetCells() *tcell.CellBuffer }); ok {
+			cs.GetCells().Invalidate()
+		}
+	}
 
 	ui.drawPromptLine(nav)
 
