@@ -1039,6 +1039,16 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 			win.printDir(ui, dir, context, dirStyle, nav.previewTimer)
 		}
 	}
+
+	// Force re-emit of preview cells to clear pixels bled past cell bounds by previous content.
+	if cs, ok := ui.screen.(interface{ GetCells() *tcell.CellBuffer }); ok {
+		cells := cs.GetCells()
+		for y := win.y; y < win.y+win.h; y++ {
+			for x := win.x; x < win.x+win.w; x++ {
+				cells.SetDirty(x, y, true)
+			}
+		}
+	}
 }
 
 func (ui *ui) drawBox() {
