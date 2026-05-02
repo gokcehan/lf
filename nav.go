@@ -994,7 +994,14 @@ func (nav *nav) checkReg(reg *reg) {
 
 	if s.ModTime().After(reg.loadTime) {
 		reg.loadTime = now
-		nav.previewChan <- reg.path
+		if gOpts.preload {
+			select {
+			case nav.preloadChan <- reg.path:
+			default:
+			}
+		} else {
+			nav.previewChan <- reg.path
+		}
 	}
 }
 
