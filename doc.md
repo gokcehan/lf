@@ -905,7 +905,7 @@ When this option is enabled, directory sizes show the number of items inside ins
 This information needs to be calculated by reading the directory and counting the items inside.
 Therefore, this option is disabled by default for performance reasons.
 This option only has an effect when `info` has a `size` field and the pane is wide enough to show the information.
-999 items are counted per directory at most, and bigger directories are shown as `999+`.
+9999 items are counted per directory at most, and bigger directories are shown as `9999+`.
 
 ## dirfirst (bool) (default true)
 
