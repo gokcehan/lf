@@ -13,6 +13,7 @@ import (
 	"os/exec"
 	"path/filepath"
 	"regexp"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -431,6 +432,11 @@ type clipboard struct {
 	mode  clipboardMode
 }
 
+type previewWork struct {
+	path string
+	mode string
+}
+
 type nav struct {
 	dirPaths        []string
 	copyJobs        int
@@ -452,6 +458,7 @@ type nav struct {
 	deleteTotalChan chan int
 	preloadChan     chan string
 	previewChan     chan string
+	workChan        chan previewWork
 	dirChan         chan *dir
 	regChan         chan *reg
 	fileChan        chan *file
@@ -585,6 +592,7 @@ func newNav(ui *ui) *nav {
 		deleteTotalChan: make(chan int, 1024),
 		preloadChan:     make(chan string, 1024),
 		previewChan:     make(chan string, 1024),
+		workChan:        make(chan previewWork),
 		dirChan:         make(chan *dir),
 		regChan:         make(chan *reg),
 		fileChan:        make(chan *file),
@@ -731,6 +739,15 @@ func (nav *nav) exportFiles() {
 }
 
 func (nav *nav) preloadLoop(ui *ui) {
+	workers := max(2, runtime.NumCPU()/2)
+	for i := 0; i < workers; i++ {
+		go func() {
+			for w := range nav.workChan {
+				nav.preview(w.path, ui.wins[len(ui.wins)-1], w.mode)
+			}
+		}()
+	}
+
 	stack := []string{}
 
 	push := func(path string) {
@@ -751,9 +768,8 @@ func (nav *nav) preloadLoop(ui *ui) {
 			select {
 			case path := <-nav.preloadChan:
 				push(path)
-			default:
-				path := pop()
-				nav.preview(path, ui.wins[len(ui.wins)-1], "preload")
+			case nav.workChan <- previewWork{stack[len(stack)-1], "preload"}:
+				pop()
 			}
 		}
 	}
@@ -799,7 +815,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.preview(path, win, "preview")
+			nav.workChan <- previewWork{path, "preview"}
 			prev = path
 		}
 	}
