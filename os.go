@@ -119,7 +119,7 @@ func init() {
 	runtimeDir := os.Getenv("XDG_RUNTIME_DIR")
 	if runtimeDir == "" {
 		runtimeDir = filepath.Join(os.TempDir(), fmt.Sprintf("lf-%s", gUser.Uid))
-		if err := os.MkdirAll(runtimeDir, 0700); err != nil {
+		if err := os.MkdirAll(runtimeDir, 0o700); err != nil {
 			log.Fatalf("creating runtime dir: %s", err)
 		}
 		st, err := os.Stat(runtimeDir)
