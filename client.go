@@ -76,23 +76,33 @@ func run() {
 		writeSelection(gSelectionPath, app.selectionOut)
 	}
 
-	if gPrintLastDir {
-		fmt.Println(conditionalSanitize(app.nav.currDir().path))
-	}
+	if gPrintLastDir || gPrintSelection {
+		stdoutIsTerminal := term.IsTerminal(int(os.Stdout.Fd()))
 
-	if gPrintSelection && len(app.selectionOut) > 0 {
-		for _, file := range app.selectionOut {
-			fmt.Println(conditionalSanitize(file))
+		if gPrintLastDir {
+			printPath("last-dir", app.nav.currDir().path, stdoutIsTerminal)
+		}
+
+		if gPrintSelection {
+			for _, file := range app.selectionOut {
+				printPath("selection", file, stdoutIsTerminal)
+			}
 		}
 	}
 }
 
-// conditionalSanitize strips control bytes only when stdout is a terminal
-func conditionalSanitize(s string) string {
-	if term.IsTerminal(int(os.Stdout.Fd())) {
-		return sanitizeName(s)
+// printPath prints path for -print-last-dir / -print-selection. Newlines are
+// rejected unconditionally (frame integrity for line-oriented consumers);
+// control bytes are stripped only when stdout is a terminal.
+func printPath(label, path string, stdoutIsTerminal bool) {
+	if strings.ContainsAny(path, "\n\r") {
+		log.Printf("%s: skipping path with newline: %q", label, path)
+		return
 	}
-	return s
+	if stdoutIsTerminal {
+		path = sanitizeName(path)
+	}
+	fmt.Println(path)
 }
 
 func writeLastDir(filename, lastDir string) {
