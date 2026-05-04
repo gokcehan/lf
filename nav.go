@@ -435,6 +435,7 @@ type clipboard struct {
 type previewWork struct {
 	path string
 	mode string
+	done chan struct{}
 }
 
 type nav struct {
@@ -740,10 +741,13 @@ func (nav *nav) exportFiles() {
 
 func (nav *nav) preloadLoop(ui *ui) {
 	workers := max(2, runtime.NumCPU()/2)
-	for i := 0; i < workers; i++ {
+	for range workers {
 		go func() {
 			for w := range nav.workChan {
 				nav.preview(w.path, ui.wins[len(ui.wins)-1], w.mode)
+				if w.done != nil {
+					close(w.done)
+				}
 			}
 		}()
 	}
@@ -768,7 +772,7 @@ func (nav *nav) preloadLoop(ui *ui) {
 			select {
 			case path := <-nav.preloadChan:
 				push(path)
-			case nav.workChan <- previewWork{stack[len(stack)-1], "preload"}:
+			case nav.workChan <- previewWork{stack[len(stack)-1], "preload", nil}:
 				pop()
 			}
 		}
@@ -815,7 +819,9 @@ func (nav *nav) previewLoop(ui *ui) {
 			nav.volatilePreview = false
 		}
 		if len(path) != 0 {
-			nav.workChan <- previewWork{path, "preview"}
+			done := make(chan struct{})
+			nav.workChan <- previewWork{path, "preview", done}
+			<-done
 			prev = path
 		}
 	}
