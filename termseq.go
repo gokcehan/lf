@@ -297,26 +297,22 @@ func sanitizeForDisplay(s string) string {
 }
 
 // sanitizeName sanitizes a filename, path, or symlink target for display.
-// Unlike sanitizeForDisplay it also replaces tabs (which would expand to
-// tabstop width and break column layout) and BiDi override/isolate runes
-// (U+202A-U+202E, U+2066-U+2069), which would visually reorder the name.
+// Unlike sanitizeForDisplay it also replaces tabs, because tabs in names
+// are expanded by the renderer to tabstop width while displaywidth.String
+// counts them as width 1, causing column overflow.
 func sanitizeName(s string) string {
 	return strings.Map(func(r rune) rune {
-		if isControlChar(r) || isBidiControl(r) {
-			return '\uFFFD'
+		if !isControlChar(r) {
+			return r
 		}
-		return r
+		return '\uFFFD'
 	}, s)
 }
 
-func isBidiControl(r rune) bool {
-	return (r >= 0x202A && r <= 0x202E) || (r >= 0x2066 && r <= 0x2069)
-}
-
 // sanitizeMessage sanitizes a message intended for the message line. Like
-// sanitizeName it strips control and BiDi-override runes, but it preserves
-// terminal sequences that lf itself recognizes (SGR, EL, OSC 8) so internal
-// messages that use color or hyperlinks still render correctly.
+// sanitizeName it strips control runes, but it preserves terminal sequences
+// that lf itself recognizes (SGR, EL, OSC 8) so internal messages that use
+// color or hyperlinks still render correctly.
 func sanitizeMessage(s string) string {
 	var b strings.Builder
 	b.Grow(len(s))
@@ -327,7 +323,7 @@ func sanitizeMessage(s string) string {
 			continue
 		}
 		r, w := utf8.DecodeRuneInString(s[i:])
-		if isControlChar(r) || isBidiControl(r) {
+		if isControlChar(r) {
 			b.WriteRune('\uFFFD')
 		} else {
 			b.WriteRune(r)
