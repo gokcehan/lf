@@ -54,6 +54,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Directories are now refreshed properly after using the `cd` command (#2518).
 - Successfully copied files are no longer deleted if their timestamps could not be preserved (#2519).
 - Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
+- Previews of modified files are now updated properly when the `preload` option is enabled (#2567).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
