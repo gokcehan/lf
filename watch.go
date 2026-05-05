@@ -18,6 +18,8 @@ type watch struct {
 	dirChan  chan<- *dir
 	fileChan chan<- *file
 	delChan  chan<- string
+	addChan  chan string
+	paths    map[string]bool
 }
 
 func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
@@ -28,6 +30,8 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
+		addChan:  make(chan string, 1024),
+		paths:    make(map[string]bool),
 	}
 
 	return watch
@@ -68,16 +72,21 @@ func (watch *watch) add(path string) {
 	}
 
 	// ignore /dev since write updates to /dev/tty causes high cpu usage
-	if path != "/dev" {
-		if err := watch.watcher.Add(path); err != nil {
-			log.Printf("watch path %s: %s", path, err)
-		}
+	if path == "/dev" {
+		return
 	}
+
+	watch.addChan <- path
 }
 
 func (watch *watch) loop() {
 	for {
 		select {
+		case path := <-watch.addChan:
+			watch.paths[path] = true
+			if err := watch.watcher.Add(path); err != nil {
+				log.Printf("watch path %s: %s", path, err)
+			}
 		case ev := <-watch.events:
 			if ev.Has(fsnotify.Create) {
 				for _, path := range watch.getSameDirs(filepath.Dir(ev.Name)) {
@@ -118,6 +127,7 @@ func (watch *watch) loop() {
 				delete(watch.pending, update)
 			}
 		case <-watch.quit:
+			clear(watch.paths)
 			return
 		}
 	}
@@ -153,8 +163,10 @@ func (watch *watch) processUpdate(update watchUpdate) {
 	}
 }
 
-// Hacky workaround since fsnotify reports changes for only one path if a
-// directory is located at more than one path (e.g. bind mounts).
+// fsnotify silently aliases watches by inode, so two paths to the same
+// directory (a symlink and its target) end up as a single entry in
+// watcher.WatchList. Track every Added path ourselves so getSameDirs can
+// fan events out to all aliases.
 func (watch *watch) getSameDirs(dir string) []string {
 	var paths []string
 
@@ -163,7 +175,7 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
-	for _, path := range watch.watcher.WatchList() {
+	for path := range watch.paths {
 		if path == dir {
 			paths = append(paths, path)
 			continue

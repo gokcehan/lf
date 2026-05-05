@@ -162,26 +162,26 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading      bool       // whether directory is loading from disk
-	loadTime     time.Time  // last load time
-	ind          int        // 0-based index of current entry in dir.files
-	pos          int        // 0-based cursor row in directory window
-	path         string     // full path of directory
-	files        []*file    // displayed files in directory including or excluding hidden ones
-	allFiles     []*file    // all files in directory including hidden ones (same array as files)
-	sortby       sortMethod // sortby value from last sort
-	dircounts    bool       // dircounts value from last sort
-	dirfirst     bool       // dirfirst value from last sort
-	dironly      bool       // dironly value from last sort
-	hidden       bool       // hidden value from last sort
-	reverse      bool       // reverse value from last sort
-	visualAnchor int        // index where Visual mode was initiated
-	visualWrap   int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
-	hiddenfiles  []string   // hiddenfiles value from last sort
-	filter       []string   // last filter for this directory
-	ignorecase   bool       // ignorecase value from last sort
-	ignoredia    bool       // ignoredia value from last sort
-	noPerm       bool       // whether lf has no permission to open the directory
+	loading        bool       // whether directory is loading from disk
+	loadTime       time.Time  // last load time
+	ind            int        // 0-based index of current entry in dir.files
+	pos            int        // 0-based cursor row in directory window
+	path           string     // full path of directory
+	files          []*file    // displayed files in directory including or excluding hidden ones
+	allFiles       []*file    // all files in directory including hidden ones (same array as files)
+	sortby         sortMethod // sortby value from last sort
+	dircounts      bool       // dircounts value from last sort
+	dirfirst       bool       // dirfirst value from last sort
+	dironly        bool       // dironly value from last sort
+	hidden         bool       // hidden value from last sort
+	reverse        bool       // reverse value from last sort
+	visualAnchor   int        // index where Visual mode was initiated
+	visualWrap     int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
+	hiddenfiles    []string   // hiddenfiles value from last sort
+	filter         []string   // last filter for this directory
+	sortignorecase bool       // sortignorecase value from last sort
+	sortignoredia  bool       // sortignoredia value from last sort
+	noPerm         bool       // whether lf has no permission to open the directory
 }
 
 func newDir(path string) *dir {
@@ -208,8 +208,8 @@ func (dir *dir) sort() {
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
 	dir.hiddenfiles = gOpts.hiddenfiles
-	dir.ignorecase = gOpts.ignorecase
-	dir.ignoredia = gOpts.ignoredia
+	dir.sortignorecase = getSortIgnoreCase(dir.path)
+	dir.sortignoredia = getSortIgnoreDia(dir.path)
 
 	dir.files = dir.allFiles
 
@@ -256,10 +256,10 @@ func (dir *dir) sort() {
 	}
 
 	normalize := func(s string) string {
-		if dir.ignorecase {
+		if dir.sortignorecase {
 			s = strings.ToLower(s)
 		}
-		if dir.ignoredia {
+		if dir.sortignoredia {
 			s = removeDiacritics(s)
 		}
 		return s
@@ -491,19 +491,19 @@ func (nav *nav) getDir(path string) *dir {
 	}()
 
 	d := &dir{
-		loading:      true,
-		loadTime:     time.Now(),
-		path:         path,
-		sortby:       getSortBy(path),
-		dircounts:    getDirCounts(path),
-		dirfirst:     getDirFirst(path),
-		dironly:      getDirOnly(path),
-		hidden:       getHidden(path),
-		reverse:      getReverse(path),
-		visualAnchor: -1,
-		hiddenfiles:  gOpts.hiddenfiles,
-		ignorecase:   gOpts.ignorecase,
-		ignoredia:    gOpts.ignoredia,
+		loading:        true,
+		loadTime:       time.Now(),
+		path:           path,
+		sortby:         getSortBy(path),
+		dircounts:      getDirCounts(path),
+		dirfirst:       getDirFirst(path),
+		dironly:        getDirOnly(path),
+		hidden:         getHidden(path),
+		reverse:        getReverse(path),
+		visualAnchor:   -1,
+		hiddenfiles:    gOpts.hiddenfiles,
+		sortignorecase: getSortIgnoreCase(path),
+		sortignoredia:  getSortIgnoreDia(path),
 	}
 	nav.dirCache[path] = d
 	return d
@@ -546,8 +546,8 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.hidden != getHidden(dir.path) ||
 		dir.reverse != getReverse(dir.path) ||
 		!slices.Equal(dir.hiddenfiles, gOpts.hiddenfiles) ||
-		dir.ignorecase != gOpts.ignorecase ||
-		dir.ignoredia != gOpts.ignoredia:
+		dir.sortignorecase != getSortIgnoreCase(dir.path) ||
+		dir.sortignoredia != getSortIgnoreDia(dir.path):
 		dir.loading = true
 		sd := *dir
 		go func() {
@@ -1862,6 +1862,10 @@ func (nav *nav) writeMarks() error {
 		if strings.Contains(gOpts.tempmarks, k) {
 			continue
 		}
+		if strings.ContainsAny(nav.marks[k], "\n\r") {
+			log.Printf("marks: skipping mark '%s' with newline in path: %q", k, nav.marks[k])
+			continue
+		}
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.marks[k])
 		if err != nil {
 			return fmt.Errorf("writing marks file: %w", err)
@@ -1917,6 +1921,10 @@ func (nav *nav) writeTags() error {
 	defer f.Close()
 
 	for _, k := range slices.Sorted(maps.Keys(nav.tags)) {
+		if strings.ContainsAny(k, "\n\r") {
+			log.Printf("tags: skipping tag with newline in path: %q", k)
+			continue
+		}
 		_, err = fmt.Fprintf(f, "%s:%s\n", k, nav.tags[k])
 		if err != nil {
 			return fmt.Errorf("writing tags file: %w", err)

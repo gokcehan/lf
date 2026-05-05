@@ -298,7 +298,7 @@ func sanitizeForDisplay(s string) string {
 
 // sanitizeName sanitizes a filename, path, or symlink target for display.
 // Unlike sanitizeForDisplay it also replaces tabs, because tabs in names
-// are expanded by the renderer to tabstop width while uniseg.StringWidth
+// are expanded by the renderer to tabstop width while displaywidth.String
 // counts them as width 1, causing column overflow.
 func sanitizeName(s string) string {
 	return strings.Map(func(r rune) rune {
