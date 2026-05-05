@@ -17,8 +17,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
-	"github.com/rivo/uniseg"
 	"golang.org/x/term"
 )
 
@@ -46,6 +46,15 @@ func isPrintable(gc string) bool {
 	return !isControlChar(r)
 }
 
+// firstGrapheme returns the first grapheme cluster in s and its display width.
+func firstGrapheme(s string) (string, int) {
+	gr := displaywidth.StringGraphemes(s)
+	if !gr.Next() {
+		return "", 0
+	}
+	return gr.Value(), gr.Width()
+}
+
 // printLength returns the display width of s in terminal cells.
 //
 // It ignores supported terminal control sequences (see [readTermSequence])
@@ -61,7 +70,7 @@ func printLength(s string) int {
 			continue
 		}
 
-		gc, _, w, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		gc, w := firstGrapheme(s[i:])
 		i += len(gc)
 
 		if gc == "\t" {
@@ -98,7 +107,7 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 			continue
 		}
 
-		gc, _, _, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		gc := firstGraphemeCluster(s[i:])
 		if gc == "\t" {
 			w := gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
 			b.WriteString(strings.Repeat(" ", w))
@@ -387,7 +396,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		// subtract space for icon
-		maxFilenameWidth := maxWidth - uniseg.StringWidth(icon)
+		maxFilenameWidth := maxWidth - displaywidth.String(icon)
 		// subtract space for tag if not merged with selection marker
 		if !gOpts.mergeindicators {
 			maxFilenameWidth--
@@ -401,14 +410,14 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
-		spacing := maxFilenameWidth - uniseg.StringWidth(filename)
+		spacing := maxFilenameWidth - displaywidth.String(filename)
 		if spacing > 0 {
 			filename += strings.Repeat(" ", spacing)
 		}
 
 		if showInfo {
 			filename += info
-			customOff += nameOff + uniseg.StringWidth(icon) + maxFilenameWidth
+			customOff += nameOff + displaywidth.String(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -451,7 +460,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, nameOff, i, iconStyle, icon)
 			}
 
-			win.print(ui.screen, nameOff+uniseg.StringWidth(icon), i, st, filename+" ")
+			win.print(ui.screen, nameOff+displaywidth.String(icon), i, st, filename+" ")
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
@@ -1178,16 +1187,16 @@ func (ui *ui) draw(nav *nav) {
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
 		prefix := truncateRight(cmdPrefix, maxWidth)
-		left := truncateLeft(cmdAccLeft, maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		left := truncateLeft(cmdAccLeft, maxWidth-displaywidth.String(prefix)-printLength(ui.msg))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
-		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+cmdAccRight)
-		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
+		ui.msgWin.print(ui.screen, displaywidth.String(prefix)+printLength(ui.msg), 0, st, left+cmdAccRight)
+		ui.screen.ShowCursor(ui.msgWin.x+displaywidth.String(prefix)+printLength(ui.msg)+displaywidth.String(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
 		prefix := truncateRight(cmdPrefix, maxWidth)
-		left := truncateLeft(cmdAccLeft, maxWidth-uniseg.StringWidth(prefix))
+		left := truncateLeft(cmdAccLeft, maxWidth-displaywidth.String(prefix))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+cmdAccRight)
-		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
+		ui.screen.ShowCursor(ui.msgWin.x+displaywidth.String(prefix)+displaywidth.String(left), ui.msgWin.y)
 	}
 
 	ui.drawPreview(nav, &context)
@@ -1353,6 +1362,9 @@ func listFilesInCurrDir(nav *nav) string {
 
 	b := new(strings.Builder)
 	for _, file := range dir.files {
+		if strings.ContainsAny(file.path, "\n\r") {
+			continue
+		}
 		fmt.Fprintln(b, file.path)
 	}
 

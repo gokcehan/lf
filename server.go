@@ -11,8 +11,16 @@ import (
 	"strconv"
 )
 
+type srvCmd struct {
+	op   string
+	id   int
+	msg  string
+	c    net.Conn
+	done chan struct{}
+}
+
 var (
-	gConnList = make(map[int]net.Conn)
+	gCmdChan  = make(chan srvCmd)
 	gQuitChan = make(chan struct{}, 1)
 	gListener net.Listener
 )
@@ -40,7 +48,82 @@ func serve() {
 
 	gListener = l
 
+	go manage()
+
 	listen(l)
+}
+
+func manage() {
+	connList := make(map[int]net.Conn)
+	for cmd := range gCmdChan {
+		switch cmd.op {
+		case "conn":
+			// lifetime of the connection is managed by the server and
+			// will be cleaned up via the `drop` command
+			connList[cmd.id] = cmd.c
+		case "drop":
+			if c2, ok := connList[cmd.id]; ok {
+				c2.Close()
+				delete(connList, cmd.id)
+			}
+		case "list":
+			for _, id := range slices.Sorted(maps.Keys(connList)) {
+				fmt.Fprintln(cmd.c, id)
+			}
+		case "broadcast":
+			for id, c2 := range connList {
+				if _, err := fmt.Fprintln(c2, cmd.msg); err != nil {
+					echoerrf(cmd.c, "failed to send command to client %v: %s", id, err)
+				}
+			}
+		case "send":
+			if c2, ok := connList[cmd.id]; ok {
+				if _, err := fmt.Fprintln(c2, cmd.msg); err != nil {
+					echoerrf(cmd.c, "failed to send command to client %v: %s", cmd.id, err)
+				}
+			} else {
+				echoerr(cmd.c, "listen: send: no such client id is connected")
+			}
+		case "query":
+			c2, ok := connList[cmd.id]
+			if !ok {
+				echoerr(cmd.c, "listen: query: no such client id is connected")
+				break
+			}
+			if _, err := fmt.Fprintln(c2, "query "+cmd.msg); err != nil {
+				echoerrf(cmd.c, "failed to send query to client %v: %s", cmd.id, err)
+				break
+			}
+			s2 := bufio.NewScanner(c2)
+			for s2.Scan() && s2.Text() != "" {
+				if _, err := fmt.Fprintln(cmd.c, s2.Text()); err != nil {
+					log.Printf("failed to forward query response from client %v: %s", cmd.id, err)
+				}
+			}
+			if s2.Err() != nil {
+				echoerrf(cmd.c, "failed to read query response from client %v: %s", cmd.id, s2.Err())
+			}
+		case "quit":
+			if len(connList) == 0 {
+				gQuitChan <- struct{}{}
+				gListener.Close()
+				close(cmd.done)
+				return
+			}
+		case "quit!":
+			gQuitChan <- struct{}{}
+			for _, c := range connList {
+				fmt.Fprintln(c, "echo server is quitting...")
+				c.Close()
+			}
+			gListener.Close()
+			close(cmd.done)
+			return
+		}
+		if cmd.done != nil {
+			close(cmd.done)
+		}
+	}
 }
 
 func listen(l net.Listener) {
@@ -68,6 +151,12 @@ func echoerrf(c net.Conn, format string, a ...any) {
 	echoerr(c, fmt.Sprintf(format, a...))
 }
 
+func send(cmd srvCmd) {
+	cmd.done = make(chan struct{})
+	gCmdChan <- cmd
+	<-cmd.done
+}
+
 func handleConn(c net.Conn) {
 	s := bufio.NewScanner(c)
 
@@ -75,6 +164,7 @@ Loop:
 	for s.Scan() {
 		log.Printf("listen: %s", s.Text())
 		word, rest := splitWord(s.Text())
+
 		switch word {
 		case "conn":
 			if rest != "" {
@@ -83,9 +173,7 @@ Loop:
 				if err != nil {
 					echoerr(c, "listen: conn: client id should be a number")
 				} else {
-					// lifetime of the connection is managed by the server and
-					// will be cleaned up via the `drop` command
-					gConnList[id] = c
+					send(srvCmd{op: "conn", id: id, c: c})
 					return
 				}
 			} else {
@@ -98,36 +186,21 @@ Loop:
 				if err != nil {
 					echoerr(c, "listen: drop: client id should be a number")
 				} else {
-					if c2, ok := gConnList[id]; ok {
-						c2.Close()
-					}
-					delete(gConnList, id)
+					send(srvCmd{op: "drop", id: id})
 				}
 			} else {
 				echoerr(c, "listen: drop: requires a client id")
 			}
 		case "list":
-			for _, id := range slices.Sorted(maps.Keys(gConnList)) {
-				fmt.Fprintln(c, id)
-			}
+			send(srvCmd{op: "list", c: c})
 		case "send":
 			if rest != "" {
 				word2, rest2 := splitWord(rest)
 				id, err := strconv.Atoi(word2)
 				if err != nil {
-					for id, c2 := range gConnList {
-						if _, err := fmt.Fprintln(c2, rest); err != nil {
-							echoerrf(c, "failed to send command to client %v: %s", id, err)
-						}
-					}
+					send(srvCmd{op: "broadcast", msg: rest, c: c})
 				} else {
-					if c2, ok := gConnList[id]; ok {
-						if _, err := fmt.Fprintln(c2, rest2); err != nil {
-							echoerrf(c, "failed to send command to client %v: %s", id, err)
-						}
-					} else {
-						echoerr(c, "listen: send: no such client id is connected")
-					}
+					send(srvCmd{op: "send", id: id, msg: rest2, c: c})
 				}
 			}
 		case "query":
@@ -141,37 +214,12 @@ Loop:
 				echoerr(c, "listen: query: client id should be a number")
 				break
 			}
-			c2, ok := gConnList[id]
-			if !ok {
-				echoerr(c, "listen: query: no such client id is connected")
-				break
-			}
-			if _, err := fmt.Fprintln(c2, "query "+rest2); err != nil {
-				echoerrf(c, "failed to send query to client %v: %s", id, err)
-				break
-			}
-			s2 := bufio.NewScanner(c2)
-			for s2.Scan() && s2.Text() != "" {
-				if _, err := fmt.Fprintln(c, s2.Text()); err != nil {
-					log.Printf("failed to forward query response from client %v: %s", id, err)
-				}
-			}
-			if s2.Err() != nil {
-				echoerrf(c, "failed to read query response from client %v: %s", id, s2.Err())
-			}
+			send(srvCmd{op: "query", id: id, msg: rest2, c: c})
 		case "quit":
-			if len(gConnList) == 0 {
-				gQuitChan <- struct{}{}
-				gListener.Close()
-				break Loop
-			}
+			send(srvCmd{op: "quit"})
+			break Loop
 		case "quit!":
-			gQuitChan <- struct{}{}
-			for _, c := range gConnList {
-				fmt.Fprintln(c, "echo server is quitting...")
-				c.Close()
-			}
-			gListener.Close()
+			send(srvCmd{op: "quit!"})
 			break Loop
 		default:
 			echoerrf(c, "listen: unexpected command: %s", word)

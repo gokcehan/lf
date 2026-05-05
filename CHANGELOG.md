@@ -18,6 +18,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - On Windows, files are now considered executable according to `PATHEXT` when matching colors and icons (#2448).
 - The `rulerfmt` and `statfmt` options are now marked as deprecated in favor of using the ruler file (configured using the `rulerfile` option), and will be removed in a future release (#2477).
 - The client server connection will now exclusively use Unix domain sockets on Windows and no longer fall back to TCP sockets (#2527).
+- The fallback location of the server socket (used if `XDG_RUNTIME_DIR` is not defined) is changed from `/tmp/lf.<user>.sock` to `/tmp/lf-<uid>/lf.sock`, and the containing directory must be owned by the current user (#2532).
+- The `ignorecase` and `ignoredia` options (intended for searching) no longer affect sorting, and instead `sortignorecase` and `sortignoredia` have been added to customize sorting (#2543).
 
 ### Added
 
@@ -51,6 +53,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Color values are now validated (must be between `0` and `255`) when parsing terminal sequences (#2517).
 - Directories are now refreshed properly after using the `cd` command (#2518).
 - Successfully copied files are no longer deleted if their timestamps could not be preserved (#2519).
+- Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 

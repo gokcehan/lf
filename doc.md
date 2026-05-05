@@ -316,6 +316,8 @@ The following options can be used to customize the behavior of lf:
 	smartcase         bool      (default true)
 	smartdia          bool      (default false)
 	sortby            string    (default 'natural')
+	sortignorecase    bool      (default true)
+	sortignoredia     bool      (default true)
 	statfmt           string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
 	tabstop           int       (default 8)
 	tagfmt            string    (default "\033[31m")
@@ -903,7 +905,7 @@ When this option is enabled, directory sizes show the number of items inside ins
 This information needs to be calculated by reading the directory and counting the items inside.
 Therefore, this option is disabled by default for performance reasons.
 This option only has an effect when `info` has a `size` field and the pane is wide enough to show the information.
-999 items are counted per directory at most, and bigger directories are shown as `999+`.
+9999 items are counted per directory at most, and bigger directories are shown as `9999+`.
 
 ## dirfirst (bool) (default true)
 
@@ -981,11 +983,11 @@ This option does not have any effect on Windows.
 
 ## ignorecase (bool) (default true)
 
-Ignore case in sorting and search patterns.
+Ignore case in search patterns. See also `sortignorecase`.
 
 ## ignoredia (bool) (default true)
 
-Ignore diacritics in sorting and search patterns.
+Ignore diacritics in search patterns. See also `sortignoredia`.
 
 ## incfilter (bool) (default false)
 
@@ -1197,7 +1199,7 @@ Determines whether file sizes are displayed using binary units (`1K` is 1024 byt
 
 ## smartcase (bool) (default true)
 
-Override `ignorecase` option when the pattern contains an uppercase character.
+Override `ignorecase` option for searching when the pattern contains an uppercase character.
 This option has no effect when `ignorecase` is disabled.
 
 ## smartdia (bool) (default false)
@@ -1220,6 +1222,14 @@ The following sort types are supported:
 	btime     time of file birth
 	ctime     time of last status (inode) change
 	custom    property defined via `addcustominfo` (empty by default)
+
+## sortignorecase (bool) (default true)
+
+Ignore case when sorting. See also `ignorecase`.
+
+## sortignoredia (bool) (default true)
+
+Ignore diacritics when sorting. See also `ignoredia`.
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
@@ -1494,7 +1504,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse` and `sortby`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby`, `sortignorecase` and `sortignoredia`.
 
 	setlocal /foo/bar hidden         # boolean enable
 	setlocal /foo/bar hidden true    # boolean enable
@@ -1744,7 +1754,7 @@ To use this feature, you need to use a client which supports communicating with 
 OpenBSD implementation of netcat (nc) is one such example.
 You can use it to send a command to the socket file:
 
-	echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/tmp}/lf.${USER}.sock
+	echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/tmp/lf-$(id -u)}/lf.sock
 
 Since such a client may not be available everywhere, lf comes bundled with a command line flag to be used as such.
 When using lf, you do not need to specify the address of the socket file.

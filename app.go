@@ -183,6 +183,10 @@ func saveFiles(clipboard clipboard) error {
 	}
 
 	for _, path := range clipboard.paths {
+		if strings.ContainsAny(path, "\n\r") {
+			log.Printf("clipboard: skipping path with newline: %q", path)
+			continue
+		}
 		if _, err := fmt.Fprintln(files, path); err != nil {
 			return fmt.Errorf("write path to file: %w", err)
 		}

@@ -14,8 +14,8 @@ import (
 	"unicode"
 	"unicode/utf8"
 
+	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
-	"github.com/rivo/uniseg"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -172,6 +172,16 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
+		}
+	case "sortignorecase", "nosortignorecase", "sortignorecase!":
+		err = applyBoolOpt(&gOpts.sortignorecase, e)
+		if err == nil {
+			app.nav.sort()
+		}
+	case "sortignoredia", "nosortignoredia", "sortignoredia!":
+		err = applyBoolOpt(&gOpts.sortignoredia, e)
+		if err == nil {
+			app.nav.sort()
 		}
 	case "watch", "nowatch", "watch!":
 		err = applyBoolOpt(&gOpts.watch, e)
@@ -461,7 +471,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 	case "timefmt":
 		gOpts.timefmt = e.val
 	case "truncatechar":
-		if uniseg.StringWidth(e.val) != 1 {
+		if displaywidth.String(e.val) != 1 {
 			app.ui.echoerr("truncatechar: value should be a single character")
 			return
 		}
@@ -531,6 +541,16 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
+		if err == nil {
+			app.nav.sort()
+		}
+	case "sortignorecase", "nosortignorecase", "sortignorecase!":
+		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
+		if err == nil {
+			app.nav.sort()
+		}
+	case "sortignoredia", "nosortignoredia", "sortignoredia!":
+		err = applyLocalBoolOpt(gLocalOpts.sortignoredia, gOpts.sortignoredia, e)
 		if err == nil {
 			app.nav.sort()
 		}
@@ -2009,9 +2029,9 @@ func (e *callExpr) eval(app *app, _ []string) {
 		update(app)
 	case "cmd-transpose":
 		var c []string
-		gr := uniseg.NewGraphemes(app.ui.cmdAccLeft)
+		gr := displaywidth.StringGraphemes(app.ui.cmdAccLeft)
 		for gr.Next() {
-			c = append(c, gr.Str())
+			c = append(c, gr.Value())
 		}
 
 		first := firstGraphemeCluster(app.ui.cmdAccRight)

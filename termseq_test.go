@@ -167,7 +167,7 @@ func TestParseEscapeSequence(t *testing.T) {
 		exp tcell.Style
 	}{
 		{"\033[1m", tcell.StyleDefault.Bold(true)},
-		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.XTerm1).Background(color.XTerm2)},
+		{"\033[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.Maroon).Background(color.Green)},
 	}
 
 	for _, test := range tests {
@@ -184,7 +184,7 @@ func TestApplyTermSequence(t *testing.T) {
 	}{
 		{"", tcell.StyleDefault},
 		{"\x1b[1m", tcell.StyleDefault.Bold(true)},
-		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.XTerm1).Background(color.XTerm2)},
+		{"\x1b[1;7;31;42m", tcell.StyleDefault.Bold(true).Reverse(true).Foreground(color.Maroon).Background(color.Green)},
 		{"\x1b]8;;https://example.com\x1b\\", tcell.StyleDefault.Url("https://example.com")},                  // OSC 8 terminated with ST (ESC\), no `id` provided
 		{"\x1b]8;;https://example.com\x07", tcell.StyleDefault.Url("https://example.com")},                    // OSC 8 terminated with BEL, no `id` provided
 		{"\x1b]8;id=42;https://example.com\x1b\\", tcell.StyleDefault.Url("https://example.com").UrlId("42")}, // OSC 8, `id` provided
@@ -206,25 +206,25 @@ func TestApplySGR(t *testing.T) {
 		stExp tcell.Style
 	}{
 		{"", none, none},
-		{"", none.Foreground(color.XTerm1).Background(color.XTerm1), none},
+		{"", none.Foreground(color.Maroon).Background(color.Maroon), none},
 		{"", none.Bold(true), none},
-		{"", none.Foreground(color.XTerm1).Bold(true), none},
+		{"", none.Foreground(color.Maroon).Bold(true), none},
 
 		{"0", none, none},
-		{"0", none.Foreground(color.XTerm1).Background(color.XTerm1), none},
+		{"0", none.Foreground(color.Maroon).Background(color.Maroon), none},
 		{"0", none.Bold(true), none},
-		{"0", none.Foreground(color.XTerm1).Bold(true), none},
+		{"0", none.Foreground(color.Maroon).Bold(true), none},
 
 		{"1", none, none.Bold(true)},
 		{"4", none, none.Underline(true)},
 		{"7", none, none.Reverse(true)},
 
-		{"1", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Bold(true)},
-		{"4", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Underline(true)},
-		{"7", none.Foreground(color.XTerm1), none.Foreground(color.XTerm1).Reverse(true)},
+		{"1", none.Foreground(color.Maroon), none.Foreground(color.Maroon).Bold(true)},
+		{"4", none.Foreground(color.Maroon), none.Foreground(color.Maroon).Underline(true)},
+		{"7", none.Foreground(color.Maroon), none.Foreground(color.Maroon).Reverse(true)},
 
 		{"4", none.Bold(true), none.Bold(true).Underline(true)},
-		{"4", none.Foreground(color.XTerm1).Bold(true), none.Foreground(color.XTerm1).Bold(true).Underline(true)},
+		{"4", none.Foreground(color.Maroon).Bold(true), none.Foreground(color.Maroon).Bold(true).Underline(true)},
 
 		{"4:0", none, none},
 		{"4:0", none.Underline(true), none},
@@ -241,38 +241,38 @@ func TestApplySGR(t *testing.T) {
 		{"27", none.Bold(true).Reverse(true), none.Bold(true)},
 		{"29", none.Bold(true).StrikeThrough(true), none.Bold(true)},
 
-		{"31", none, none.Foreground(color.XTerm1)},
-		{"31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1)},
-		{"31", none.Foreground(color.XTerm2).Bold(true), none.Foreground(color.XTerm1).Bold(true)},
+		{"31", none, none.Foreground(color.Maroon)},
+		{"31", none.Foreground(color.Green), none.Foreground(color.Maroon)},
+		{"31", none.Foreground(color.Green).Bold(true), none.Foreground(color.Maroon).Bold(true)},
 
-		{"41", none, none.Background(color.XTerm1)},
-		{"41", none.Background(color.XTerm2), none.Background(color.XTerm1)},
+		{"41", none, none.Background(color.Maroon)},
+		{"41", none.Background(color.Green), none.Background(color.Maroon)},
 
-		{"1;31", none, none.Foreground(color.XTerm1).Bold(true)},
-		{"1;31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
+		{"1;31", none, none.Foreground(color.Maroon).Bold(true)},
+		{"1;31", none.Foreground(color.Green), none.Foreground(color.Maroon).Bold(true)},
 
-		{"01;31", none, none.Foreground(color.XTerm1).Bold(true)},
-		{"01;31", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
+		{"01;31", none, none.Foreground(color.Maroon).Bold(true)},
+		{"01;31", none.Foreground(color.Green), none.Foreground(color.Maroon).Bold(true)},
 
-		{"38;5;0", none, none.Foreground(color.XTerm0)},
-		{"38;5;1", none, none.Foreground(color.XTerm1)},
-		{"38;5;8", none, none.Foreground(color.XTerm8)},
+		{"38;5;0", none, none.Foreground(color.Black)},
+		{"38;5;1", none, none.Foreground(color.Maroon)},
+		{"38;5;8", none, none.Foreground(color.Gray)},
 		{"38;5;16", none, none.Foreground(color.XTerm16)},
 		{"38;5;232", none, none.Foreground(color.XTerm232)},
 
-		{"38;5;1", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1)},
-		{"38;5;1", none.Foreground(color.XTerm2).Bold(true), none.Foreground(color.XTerm1).Bold(true)},
+		{"38;5;1", none.Foreground(color.Green), none.Foreground(color.Maroon)},
+		{"38;5;1", none.Foreground(color.Green).Bold(true), none.Foreground(color.Maroon).Bold(true)},
 
-		{"48;5;0", none, none.Background(color.XTerm0)},
-		{"48;5;1", none, none.Background(color.XTerm1)},
-		{"48;5;8", none, none.Background(color.XTerm8)},
+		{"48;5;0", none, none.Background(color.Black)},
+		{"48;5;1", none, none.Background(color.Maroon)},
+		{"48;5;8", none, none.Background(color.Gray)},
 		{"48;5;16", none, none.Background(color.XTerm16)},
 		{"48;5;232", none, none.Background(color.XTerm232)},
 
-		{"48;5;1", none.Background(color.XTerm2), none.Background(color.XTerm1)},
+		{"48;5;1", none.Background(color.Green), none.Background(color.Maroon)},
 
-		{"1;38;5;1", none, none.Foreground(color.XTerm1).Bold(true)},
-		{"1;38;5;1", none.Foreground(color.XTerm2), none.Foreground(color.XTerm1).Bold(true)},
+		{"1;38;5;1", none, none.Foreground(color.Maroon).Bold(true)},
+		{"1;38;5;1", none.Foreground(color.Green), none.Foreground(color.Maroon).Bold(true)},
 
 		{"38;2;5;102;8", none, none.Foreground(tcell.NewRGBColor(5, 102, 8))},
 		{"48;2;0;48;143", none, none.Background(tcell.NewRGBColor(0, 48, 143))},
