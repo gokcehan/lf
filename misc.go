@@ -24,22 +24,6 @@ var (
 	reSixelSize = regexp.MustCompile(`^\x1bP[0-9;]*q.*"1;1;(\d+);(\d+)`)
 )
 
-// sixelByteValid is a lookup table of bytes that are valid inside the body
-// of a sixel DCS frame: ' !"#$-;', digits '0'-'9', and printable graphics
-// '?'-'~'. ESC, '\r', and '\n' are handled separately by the state machine.
-var sixelByteValid = func() (t [256]bool) {
-	for _, b := range []byte(" !\"#$-;") {
-		t[b] = true
-	}
-	for b := byte('0'); b <= '9'; b++ {
-		t[b] = true
-	}
-	for b := byte('?'); b <= '~'; b++ {
-		t[b] = true
-	}
-	return
-}()
-
 var (
 	reWord    = regexp.MustCompile(`(\pL|\pN)+`)
 	reWordBeg = regexp.MustCompile(`([^\pL\pN]|^)(\pL|\pN)`)
@@ -543,17 +527,15 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			}
 		case stateSixel:
-			// Accept only valid sixel grammar bytes inside the DCS frame.
-			// '\r' and '\n' may appear in real-world sixel payloads
-			// (see https://en.wikipedia.org/wiki/Sixel#Sample); filter
-			// them out without aborting the DCS.
+			// Accept printable bytes inside the DCS frame; preserve real
+			// '\r'/'\n' that some sixel encoders emit; abort on anything else.
 			switch {
 			case b == '\033':
 				buf.WriteByte(b)
 				currState = stateSixelEsc
 			case b == '\r' || b == '\n':
 				// filter out line breaks within the DCS body
-			case sixelByteValid[b]:
+			case b >= 0x20 && b <= 0x7E:
 				buf.WriteByte(b)
 			default:
 				buf.Reset()
