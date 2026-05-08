@@ -1309,13 +1309,14 @@ func listJumps(jumps []string, ind int) string {
 	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
 	for i := len(jumps) - 1; i >= 0; i-- {
+		path := sanitizeName(jumps[i])
 		switch {
 		case i < ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
 		case i > ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, path)
 		default:
-			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, path)
 		}
 	}
 	t.Flush()
@@ -1332,7 +1333,9 @@ func listHistory(history []string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "number\tcommand")
 	for i, cmd := range history {
-		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
+		// History entries can contain filenames pre-filled into the
+		// cmd-line buffer (e.g. by rename) and persist across sessions
+		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, sanitizeName(cmd))
 	}
 	t.Flush()
 
