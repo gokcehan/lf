@@ -56,12 +56,16 @@ map a :push %mkdir<space>
 # cmd rename %[ -e "$1" ] && printf "file exists" || mv "$f" "$1"
 # map r push :rename<space>
 
-# make sure trash folder exists
-# %mkdir -p ~/.trash
-
 # move current file or selected files to trash folder
-# (also see 'man mv' for backup/overwrite options)
-cmd trash %set -f; mv -t ~/.trash -- $fx
+#  --backup=numbered prevents silent overwrite of duplicates
+cmd trash %{{
+    set -f
+    [ -z "$fx" ] && exit
+    mkdir -p -m 700 -- ~/.local/share/Trash
+    mv --backup=numbered -t ~/.local/share/Trash -- $fx
+}}
+
+# map D trash
 
 # define a custom 'delete' command
 # cmd delete ${{
