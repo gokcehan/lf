@@ -61,8 +61,9 @@ map a :push %mkdir<space>
 cmd trash %{{
     set -f
     [ -z "$fx" ] && exit
-    mkdir -p -m 700 -- ~/.local/share/Trash
-    mv --backup=numbered -t ~/.local/share/Trash -- $fx
+    mkdir -p -m 700 -- ~/.local/share/Trash/files
+    t=$(date +%s)
+    for f in $fx; do mv -- "$f" ~/.local/share/Trash/files/"$t-${f##*/}"; done
 }}
 
 # map D trash
