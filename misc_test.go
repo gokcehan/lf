@@ -558,6 +558,12 @@ func TestReadLines(t *testing.T) {
 			)
 		}
 	}
+
+	t.Setenv("TMUX", "x")
+	s := "\033Ptmux;\033\033Pq\033\033\\\033\\"
+	if lines, _, sixel := readLines(strings.NewReader(s), 10); !sixel || !reflect.DeepEqual(lines, []string{s}) {
+		t.Errorf("tmux passthrough: got (%#v, %v)", lines, sixel)
+	}
 }
 
 func TestGetWidths(t *testing.T) {

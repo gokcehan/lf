@@ -547,6 +547,9 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				flush(true)
 				sixel = true
 				currState = stateNormal
+			} else if b == '\033' && os.Getenv("TMUX") != "" {
+				buf.WriteByte(b)
+				currState = stateSixel
 			} else {
 				buf.Reset()
 				currState = stateNormal
