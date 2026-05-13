@@ -685,18 +685,27 @@ func (nav *nav) resize(ui *ui) {
 		nav.getDir(path).boundPos(nav.height)
 	}
 
+	dropped := false
 	if widthChanged {
-		clear(nav.regCache)
+		if len(nav.regCache) > 0 {
+			clear(nav.regCache)
+			dropped = true
+		}
 	} else {
-		// drop cached previews only when the new window height exceeds the
-		// cached line count and the previewer was not exhausted at load time
+		// drop entries that no longer match the new pane height
 		for path, r := range nav.regCache {
-			if !r.loading && len(r.lines) < previewWin.h && len(r.lines) == r.loadHeight {
+			if r.loading {
+				continue
+			}
+			if r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.loadHeight) {
 				delete(nav.regCache, path)
+				dropped = true
 			}
 		}
 	}
-	nav.preloadTimer.Reset(200 * time.Millisecond)
+	if dropped {
+		nav.preloadTimer.Reset(200 * time.Millisecond)
+	}
 }
 
 func (nav *nav) position() {
