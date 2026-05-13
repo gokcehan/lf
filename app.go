@@ -432,6 +432,7 @@ func (app *app) loop() {
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
 			if r.height != app.nav.height {
+				delete(app.nav.regCache, r.path)
 				continue
 			}
 			app.nav.regCache[r.path] = r
