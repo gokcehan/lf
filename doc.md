@@ -1077,7 +1077,7 @@ Note that preserving other attributes like ownership of change/birth timestamp i
 
 Show previews of files and directories at the rightmost pane.
 If the file has more lines than the preview pane, the rest of the lines are not read.
-Files containing the null character (U+0000) in the read portion are considered binary files and displayed as `binary`.
+Files are considered binary and displayed as `binary` if the read portion contains a control character other than tab, newline, vertical tab, form feed, carriage return, backspace, or escape.
 
 ## previewer (string) (default ``) (not filtered if empty)
 
