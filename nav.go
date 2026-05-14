@@ -836,7 +836,7 @@ func (nav *nav) preload() {
 			return
 		}
 
-		if r, ok := nav.regCache[file.path]; ok && r.loading {
+		if _, ok := nav.regCache[file.path]; ok {
 			return
 		}
 
