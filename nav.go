@@ -685,27 +685,17 @@ func (nav *nav) resize(ui *ui) {
 		nav.getDir(path).boundPos(nav.height)
 	}
 
-	dropped := false
 	if widthChanged {
-		if len(nav.regCache) > 0 {
-			clear(nav.regCache)
-			dropped = true
-		}
+		clear(nav.regCache)
 	} else {
 		// drop entries that no longer match the new pane height
 		for path, r := range nav.regCache {
-			if r.loading {
-				continue
-			}
-			if r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.loadHeight) {
+			if r.loading || r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.loadHeight) {
 				delete(nav.regCache, path)
-				dropped = true
 			}
 		}
 	}
-	if dropped {
-		nav.preloadTimer.Reset(200 * time.Millisecond)
-	}
+	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
 func (nav *nav) position() {
