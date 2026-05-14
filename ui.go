@@ -601,7 +601,7 @@ func (ui *ui) echomsg(msg string) {
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeMessage(msg)))
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(msg)))
 	log.Printf("error: %s", msg)
 }
 
