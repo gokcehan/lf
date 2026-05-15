@@ -466,7 +466,7 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // Individual lines are truncated to avoid unbounded memory usage on files
 // with very long or no newlines.
 // Sixel images are also detected and stored as separate lines.
-// The presence of a null byte outside a sixel image indicates a binary file.
+// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
 func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
 	const maxLineBytes = 1 << 16 // 64 KiB per line
 
@@ -500,7 +500,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 
 		switch currState {
 		case stateNormal:
-			// C0 controls outside \b \t \n \v \f \r \033 and DEL indicate binary content.
+			// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
 			if b < 0x07 || (b > 0x0D && b < 0x1B) || (b > 0x1B && b < 0x20) || b == 0x7F {
 				return nil, true, false
 			}

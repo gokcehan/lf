@@ -20,6 +20,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The client server connection will now exclusively use Unix domain sockets on Windows and no longer fall back to TCP sockets (#2527).
 - The fallback location of the server socket (used if `XDG_RUNTIME_DIR` is not defined) is changed from `/tmp/lf.<user>.sock` to `/tmp/lf-<uid>/lf.sock`, and the containing directory must be owned by the current user (#2532).
 - The `ignorecase` and `ignoredia` options (intended for searching) no longer affect sorting, and instead `sortignorecase` and `sortignoredia` have been added to customize sorting (#2543).
+- Previews are now marked as binary if they contain a control character other than bell, backspace, tab, newline, vertical tab, form feed, carriage return, escape or delete (#2561). Previously only null bytes were used to detect binary previews.
 
 ### Added
 
@@ -47,6 +48,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The number of bytes read is now limited for previews that contain extremely long lines (#2458).
 - Control characters are now stripped from previews to prevent dangerous terminal sequences from being processed if the default previewer is used (#2459).
 - Sixel images with the same height as the preview window are now displayed correctly when using `tmux` (#2474).
+- A bug where previews were loaded according to the old dimensions of the preview window following a terminal resize is now fixed (#2491).
 - Completion matches are now properly aligned if they contain terminal sequences (#2511).
 - `load` commands are now processed when the `watch` option is enabled, which should fix various issues with refreshing updated files/directories (#2513).
 - Parsing octal values in strings are now restricted to numbers between `0` and `255` (#2516).
