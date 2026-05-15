@@ -500,9 +500,11 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 
 		switch currState {
 		case stateNormal:
-			switch b {
-			case 0:
+			// C0 controls outside \b \t \n \v \f \r \033 and DEL indicate binary content.
+			if b < 0x07 || (b > 0x0D && b < 0x1B) || (b > 0x1B && b < 0x20) || b == 0x7F {
 				return nil, true, false
+			}
+			switch b {
 			case '\033':
 				currState = stateEsc
 			case '\r':
