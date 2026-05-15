@@ -690,7 +690,7 @@ func (nav *nav) resize(ui *ui) {
 	} else {
 		// drop entries that no longer match the new pane height
 		for path, r := range nav.regCache {
-			if r.loading || r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.loadHeight) {
+			if r.loading || r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.height) {
 				delete(nav.regCache, path)
 			}
 		}
@@ -866,7 +866,7 @@ func (nav *nav) preload() {
 }
 
 func (nav *nav) preview(path string, win *win, mode string) {
-	reg := &reg{loadTime: time.Now(), path: path, loadHeight: win.h}
+	reg := &reg{loadTime: time.Now(), path: path, height: win.h}
 	defer func() {
 		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true
