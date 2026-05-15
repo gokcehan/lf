@@ -855,7 +855,7 @@ func (nav *nav) preload() {
 }
 
 func (nav *nav) preview(path string, win *win, mode string) {
-	reg := &reg{loadTime: time.Now(), path: path}
+	reg := &reg{loadTime: time.Now(), path: path, height: win.h}
 	defer func() {
 		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true
