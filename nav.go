@@ -676,6 +676,8 @@ func (nav *nav) resize(ui *ui) {
 		return
 	}
 
+	widthChanged := previewWin.w != nav.previewWidth
+
 	nav.height = previewWin.h
 	nav.previewWidth = previewWin.w
 
@@ -683,7 +685,16 @@ func (nav *nav) resize(ui *ui) {
 		nav.getDir(path).boundPos(nav.height)
 	}
 
-	clear(nav.regCache)
+	if widthChanged {
+		clear(nav.regCache)
+	} else {
+		// drop entries that no longer match the new pane height
+		for path, r := range nav.regCache {
+			if r.loading || r.sixel || (previewWin.h > len(r.lines) && len(r.lines) == r.height) {
+				delete(nav.regCache, path)
+			}
+		}
+	}
 	nav.preloadTimer.Reset(200 * time.Millisecond)
 }
 
