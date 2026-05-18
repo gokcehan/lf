@@ -1278,7 +1278,7 @@ func listMatchingBinds(binds map[string]expr, prefix string) string {
 	fmt.Fprintln(t, "key\tcommand")
 	for _, k := range slices.Sorted(maps.Keys(binds)) {
 		remain, _ := strings.CutPrefix(k, prefix)
-		fmt.Fprintf(t, "%s\t%v\n", remain, binds[k])
+		fmt.Fprintf(t, "%s\t%v\n", sanitizeName(remain), binds[k])
 	}
 	t.Flush()
 
@@ -1309,7 +1309,7 @@ func listJumps(jumps []string, ind int) string {
 	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
 	for i := len(jumps) - 1; i >= 0; i-- {
-		path := sanitizeName(jumps[i])
+		path := jumps[i]
 		switch {
 		case i < ind:
 			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
@@ -1333,9 +1333,7 @@ func listHistory(history []string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "number\tcommand")
 	for i, cmd := range history {
-		// History entries can contain filenames pre-filled into the
-		// cmd-line buffer (e.g. by rename) and persist across sessions
-		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, sanitizeName(cmd))
+		fmt.Fprintf(t, "%*d\t%s\n", maxlength, i+1, cmd)
 	}
 	t.Flush()
 
