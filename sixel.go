@@ -72,11 +72,9 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		y += sh
 	}
 
-	fmt.Fprint(os.Stderr, "\033[?2026h") // Begin synchronized update
-	fmt.Fprint(os.Stderr, "\0337")       // Save cursor position
-	fmt.Fprint(os.Stderr, b.String())    // Write data
-	fmt.Fprint(os.Stderr, "\0338")       // Restore cursor position
-	fmt.Fprint(os.Stderr, "\033[?2026l") // End synchronized update
+	fmt.Fprint(os.Stderr, "\0337")    // Save cursor position
+	fmt.Fprint(os.Stderr, b.String()) // Write data
+	fmt.Fprint(os.Stderr, "\0338")    // Restore cursor position
 
 	sxs.lastFile = reg.path
 	sxs.lastWin = *win
