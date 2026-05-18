@@ -1349,7 +1349,7 @@ func listMarks(marks map[string]string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mark\tpath")
 	for _, k := range slices.Sorted(maps.Keys(marks)) {
-		fmt.Fprintf(t, "%s\t%s\n", k, sanitizeName(marks[k]))
+		fmt.Fprintf(t, "%s\t%s\n", sanitizeName(k), sanitizeName(marks[k]))
 	}
 	t.Flush()
 

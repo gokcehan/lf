@@ -314,6 +314,7 @@ func sanitizeName(s string) string {
 // that lf itself recognizes (SGR, EL, OSC 8) so internal messages that use
 // color or hyperlinks still render correctly.
 func sanitizeMessage(s string) string {
+	s = strings.TrimRight(s, "\n\r")
 	var b strings.Builder
 	b.Grow(len(s))
 	for i := 0; i < len(s); {
