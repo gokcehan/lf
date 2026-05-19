@@ -953,7 +953,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	if len(gOpts.previewer) == 0 && !binary {
 		sixel = false
 		for i, l := range lines {
-			lines[i] = sanitizeForDisplay(l)
+			lines[i] = sanitizePreview(l)
 		}
 	}
 

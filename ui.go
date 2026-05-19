@@ -36,16 +36,6 @@ func (win *win) renew(w, h, x, y int) {
 	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
-// isPrintable reports whether a grapheme cluster is safe to display.
-// It rejects C0/C1 controls, DEL, and invalid UTF-8.
-func isPrintable(gc string) bool {
-	r, size := utf8.DecodeRuneInString(gc)
-	if r == utf8.RuneError && size <= 1 {
-		return false
-	}
-	return !isControlChar(r)
-}
-
 // firstGrapheme returns the first grapheme cluster in s and its display width.
 func firstGrapheme(s string) (string, int) {
 	gr := displaywidth.StringGraphemes(s)
