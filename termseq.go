@@ -277,6 +277,19 @@ func applyOSC(body string, st tcell.Style) tcell.Style {
 	}
 }
 
+// Sanitation helpers for untrusted text (filenames, previews, messages).
+// Pick one of these when handling untrusted input:
+//
+//   sanitizePreview - replace control chars, keep tabs (preview content).
+//   sanitizeName    - replace control chars and tabs (names in width/column slots).
+//   sanitizeMessage - replace control chars, keep lf's own SGR/OSC8 (messages).
+//
+// isControlChar and isPrintable are internal predicates used by the above
+// and the renderer; they are not sanitation entry points.
+
+// isControlChar reports whether a rune is a control character or otherwise
+// unsafe to display in a terminal.
+// Covers C0 (0x00-0x1F), DEL (0x7F), and C1 (0x80-0x9F).
 func isControlChar(r rune) bool {
 	return r < 0x20 || r == 0x7F || r >= 0x80 && r <= 0x9F
 }
