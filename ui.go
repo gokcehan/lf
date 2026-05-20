@@ -890,7 +890,7 @@ func (ui *ui) drawRuler(nav *nav) {
 
 func (ui *ui) drawRulerFile(nav *nav) {
 	if ui.rulerErr != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("parsing ruler: %w", ui.rulerErr))
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("parsing ruler: %s", ui.rulerErr)))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
@@ -1019,7 +1019,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 
 	left, right, err := renderRuler(ui.ruler, data, ui.msgWin.w)
 	if err != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("rendering ruler: %w", err))
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("rendering ruler: %s", err)))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
