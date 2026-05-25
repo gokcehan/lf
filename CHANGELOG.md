@@ -47,7 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Using the `select` command with a blank string as the argument now properly raises an error instead of changing to the parent directory (#2429).
 - The number of bytes read is now limited for previews that contain extremely long lines (#2458).
 - Control characters are now stripped from previews to prevent dangerous terminal sequences from being processed if the default previewer is used (#2459).
-- Various fixes have been made to sanitize input data and prevent terminal sequence injection (#2467) (#2546).
+- Various fixes have been made to sanitize input data and prevent terminal sequence injection (#2467) (#2546) (#2590).
 - Sixel images with the same height as the preview window are now displayed correctly when using `tmux` (#2474).
 - A bug where previews were loaded according to the old dimensions of the preview window following a terminal resize is now fixed (#2491).
 - Completion matches are now properly aligned if they contain terminal sequences (#2511).
