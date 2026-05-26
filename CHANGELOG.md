@@ -61,6 +61,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Sixel previews are now properly sanitized to prevent injection of arbitrary terminal sequences (#2542).
 - Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 - Previews of modified files are now updated properly when the `preload` option is enabled (#2567).
+- The `loading...` message now shows for files that are reloading due to being modified (#2597).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
