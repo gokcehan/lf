@@ -288,3 +288,127 @@ func TestApplySGR(t *testing.T) {
 		}
 	}
 }
+
+func TestIsControlChar(t *testing.T) {
+	tests := []struct {
+		r   rune
+		exp bool
+	}{
+		{0x00, true},   // NUL
+		{0x07, true},   // BEL
+		{'\t', true},   // tab (caller decides whether to keep)
+		{'\n', true},   // LF
+		{0x1B, true},   // ESC
+		{0x1F, true},   // last C0
+		{' ', false},   // space
+		{'a', false},   // ASCII letter
+		{0x7E, false},  // ~
+		{0x7F, true},   // DEL
+		{0x80, true},   // first C1
+		{0x9B, true},   // CSI as single byte
+		{0x9F, true},   // last C1
+		{0xA0, false},  // NBSP
+		{'日', false},   // CJK
+	}
+	for _, test := range tests {
+		if got := isControlChar(test.r); got != test.exp {
+			t.Errorf("isControlChar(%U) = %v, want %v", test.r, got, test.exp)
+		}
+	}
+}
+
+func TestIsPrintable(t *testing.T) {
+	tests := []struct {
+		s   string
+		exp bool
+	}{
+		{"a", true},
+		{"日", true},
+		{" ", true},
+		{"\x00", false},
+		{"\t", false},
+		{"\n", false},
+		{"\x1b", false},
+		{"\x7f", false},
+		{"\x80", false},
+		{"\x9b", false},
+		{"\xc3", false}, // invalid UTF-8 lead byte
+		{"\xff", false}, // invalid UTF-8
+	}
+	for _, test := range tests {
+		if got := isPrintable(test.s); got != test.exp {
+			t.Errorf("isPrintable(%q) = %v, want %v", test.s, got, test.exp)
+		}
+	}
+}
+
+func TestSanitizeName(t *testing.T) {
+	tests := []struct {
+		s, exp string
+	}{
+		{"", ""},
+		{"hello.txt", "hello.txt"},
+		{"日本語", "日本語"},
+		{"a\tb", "a\uFFFDb"},     // tab replaced (not preserved for names)
+		{"a\nb", "a\uFFFDb"},
+		{"a\x00b", "a\uFFFDb"},
+		{"a\x07b", "a\uFFFDb"},
+		{"a\x1bb", "a\uFFFDb"},
+		{"a\x7fb", "a\uFFFDb"},
+		{"a\x80b", "a\uFFFDb"},
+		{"a\x9bb", "a\uFFFDb"},   // single-byte CSI
+		{"\x1b]0;evil\x07", "\uFFFD]0;evil\uFFFD"},
+		{"\x1b[31mfoo\x1b[0m", "\uFFFD[31mfoo\uFFFD[0m"},
+	}
+	for _, test := range tests {
+		if got := sanitizeName(test.s); got != test.exp {
+			t.Errorf("sanitizeName(%q) = %q, want %q", test.s, got, test.exp)
+		}
+	}
+}
+
+func TestSanitizePreview(t *testing.T) {
+	tests := []struct {
+		s, exp string
+	}{
+		{"", ""},
+		{"hello", "hello"},
+		{"日本語", "日本語"},
+		{"a\tb", "a\tb"},          // tab preserved for preview
+		{"a\nb", "a\uFFFDb"},      // newline still stripped (caller splits lines)
+		{"a\x00b", "a\uFFFDb"},
+		{"a\x1bb", "a\uFFFDb"},
+		{"a\x7fb", "a\uFFFDb"},
+		{"a\x9bb", "a\uFFFDb"},
+	}
+	for _, test := range tests {
+		if got := sanitizePreview(test.s); got != test.exp {
+			t.Errorf("sanitizePreview(%q) = %q, want %q", test.s, got, test.exp)
+		}
+	}
+}
+
+func TestSanitizeMessage(t *testing.T) {
+	tests := []struct {
+		s, exp string
+	}{
+		{"", ""},
+		{"hello", "hello"},
+		{"hello\n", "hello"},                                   // trailing newlines trimmed
+		{"hello\r\n", "hello"},
+		{"a\x00b", "a\uFFFDb"},
+		{"a\x1bb", "a\uFFFDb"},                                 // lone ESC (not a recognized sequence)
+		{"a\tb", "a\uFFFDb"},                                   // tab is a control char
+		{"\x1b[31mred\x1b[0m", "\x1b[31mred\x1b[0m"},           // SGR preserved
+		{"\x1b[Kline", "\x1b[Kline"},                           // EL preserved
+		{"\x1b]8;;http://x\x1b\\link\x1b]8;;\x1b\\",            // OSC 8 preserved
+			"\x1b]8;;http://x\x1b\\link\x1b]8;;\x1b\\"},
+		{"\x1b]0;title\x07", "\uFFFD]0;title\uFFFD"},           // non-OSC8 OSC not preserved
+		{"\x1b[2J", "\uFFFD[2J"},                               // disallowed CSI (final byte J) not preserved
+	}
+	for _, test := range tests {
+		if got := sanitizeMessage(test.s); got != test.exp {
+			t.Errorf("sanitizeMessage(%q) = %q, want %q", test.s, got, test.exp)
+		}
+	}
+}
