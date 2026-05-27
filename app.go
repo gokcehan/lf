@@ -466,7 +466,9 @@ func (app *app) loop() {
 				dir.sel(name, app.nav.height)
 			}
 
-			delete(app.nav.regCache, f.path)
+			if curr := app.nav.currFile(); curr == nil || curr.path != f.path {
+				delete(app.nav.regCache, f.path)
+			}
 			app.ui.loadFile(app, false)
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
