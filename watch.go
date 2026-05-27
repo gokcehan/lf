@@ -4,22 +4,23 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
 
 type watch struct {
-	watcher  *fsnotify.Watcher
-	events   <-chan fsnotify.Event
-	quit     chan struct{}
-	pending  map[watchUpdate]bool
-	timeout  chan watchUpdate
-	dirChan  chan<- *dir
-	fileChan chan<- *file
-	delChan  chan<- string
-	addChan  chan string
-	paths    map[string]bool
+	watcher   *fsnotify.Watcher
+	events    <-chan fsnotify.Event
+	quit      chan struct{}
+	pending   map[watchUpdate]bool
+	timeout   chan watchUpdate
+	dirChan   chan<- *dir
+	fileChan  chan<- *file
+	delChan   chan<- string
+	paths     map[string]bool
+	pathsLock sync.Mutex
 }
 
 func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
@@ -30,7 +31,6 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
-		addChan:  make(chan string, 1024),
 		paths:    make(map[string]bool),
 	}
 
@@ -76,17 +76,22 @@ func (watch *watch) add(path string) {
 		return
 	}
 
-	watch.addChan <- path
+	watch.pathsLock.Lock()
+	if watch.paths[path] {
+		watch.pathsLock.Unlock()
+		return
+	}
+	watch.paths[path] = true
+	watch.pathsLock.Unlock()
+
+	if err := watch.watcher.Add(path); err != nil {
+		log.Printf("watch path %s: %s", path, err)
+	}
 }
 
 func (watch *watch) loop() {
 	for {
 		select {
-		case path := <-watch.addChan:
-			watch.paths[path] = true
-			if err := watch.watcher.Add(path); err != nil {
-				log.Printf("watch path %s: %s", path, err)
-			}
 		case ev := <-watch.events:
 			if ev.Has(fsnotify.Create) {
 				for _, path := range watch.getSameDirs(filepath.Dir(ev.Name)) {
@@ -127,7 +132,9 @@ func (watch *watch) loop() {
 				delete(watch.pending, update)
 			}
 		case <-watch.quit:
+			watch.pathsLock.Lock()
 			clear(watch.paths)
+			watch.pathsLock.Unlock()
 			return
 		}
 	}
@@ -175,7 +182,14 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
+	watch.pathsLock.Lock()
+	all := make([]string, 0, len(watch.paths))
 	for path := range watch.paths {
+		all = append(all, path)
+	}
+	watch.pathsLock.Unlock()
+
+	for _, path := range all {
 		if path == dir {
 			paths = append(paths, path)
 			continue
