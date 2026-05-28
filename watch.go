@@ -77,16 +77,20 @@ func (watch *watch) add(path string) {
 	}
 
 	watch.pathsLock.Lock()
-	if watch.paths[path] {
-		watch.pathsLock.Unlock()
+	known := watch.paths[path]
+	watch.pathsLock.Unlock()
+	if known {
 		return
 	}
-	watch.paths[path] = true
-	watch.pathsLock.Unlock()
 
 	if err := watch.watcher.Add(path); err != nil {
 		log.Printf("watch path %s: %s", path, err)
+		return
 	}
+
+	watch.pathsLock.Lock()
+	watch.paths[path] = true
+	watch.pathsLock.Unlock()
 }
 
 func (watch *watch) loop() {
