@@ -468,6 +468,17 @@ func (app *app) loop() {
 
 			if r, ok := app.nav.regCache[f.path]; ok {
 				app.nav.checkReg(r)
+			} else {
+				r = &reg{loading: true, loadTime: time.Now(), path: f.path}
+				app.nav.regCache[f.path] = r
+				if gOpts.preload {
+					select {
+					case app.nav.preloadChan <- f.path:
+					default:
+					}
+				} else {
+					app.nav.previewChan <- f.path
+				}
 			}
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
