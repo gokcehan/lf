@@ -2,8 +2,10 @@ package main
 
 import (
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
 	"sync"
 	"time"
 
@@ -73,13 +75,6 @@ func (watch *watch) add(path string) {
 
 	// ignore /dev since write updates to /dev/tty causes high cpu usage
 	if path == "/dev" {
-		return
-	}
-
-	watch.pathsLock.Lock()
-	known := watch.paths[path]
-	watch.pathsLock.Unlock()
-	if known {
 		return
 	}
 
@@ -187,10 +182,7 @@ func (watch *watch) getSameDirs(dir string) []string {
 	}
 
 	watch.pathsLock.Lock()
-	all := make([]string, 0, len(watch.paths))
-	for path := range watch.paths {
-		all = append(all, path)
-	}
+	all := slices.Collect(maps.Keys(watch.paths))
 	watch.pathsLock.Unlock()
 
 	for _, path := range all {
