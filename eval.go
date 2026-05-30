@@ -403,7 +403,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 			return
 		}
 	case "shell":
-		gOpts.shell = e.val
+		if strings.EqualFold(e.val, "cmd") {
+			// Enforce lowercase spelling to simplify special handling later.
+			gOpts.shell = "cmd"
+		} else {
+			gOpts.shell = e.val
+		}
 	case "shellflag":
 		gOpts.shellflag = e.val
 	case "shellopts":
