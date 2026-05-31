@@ -614,7 +614,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		// read before calling [exec.Cmd.Wait], however in this case Cmd.Wait should
 		// only wait for the command to finish executing regardless of whether the
 		// output has been fully read or not.
-		inReader, inWriter, err := os.Pipe()
+		var err error
+		inReader, inWriter, err = os.Pipe()
 		if err != nil {
 			log.Printf("creating input pipe: %s", err)
 			return
