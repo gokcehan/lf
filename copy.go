@@ -129,6 +129,9 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					errs <- fmt.Errorf("walk: %w", err)
 					return nil
 				}
+				if info.IsDir() && filepath.Clean(path) == filepath.Clean(dst) {
+					return filepath.SkipDir // don't descend into the copy being made
+				}
 				rel, err := filepath.Rel(src, path)
 				if err != nil {
 					errs <- fmt.Errorf("relative: %w", err)
