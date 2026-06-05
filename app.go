@@ -16,6 +16,8 @@ import (
 	"strings"
 	"syscall"
 	"time"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 type app struct {
@@ -37,6 +39,7 @@ type app struct {
 	selectionOut    []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
 	watch           *watch         // fs watcher if `watch` is enabled
 	quitting        bool           // guard to prevent re-entering quit logic
+	luaState        *lua.LState    // lua state machine
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -274,18 +277,40 @@ func (app *app) loop() {
 
 	go app.ui.readEvents()
 
+	validConfigPath := []string{}
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
-			app.readFile(gConfigPath)
+			validConfigPath = append(validConfigPath, gConfigPath)
 		} else {
 			log.Printf("config file does not exist: %s", err)
 		}
 	} else {
 		for _, path := range gConfigPaths {
 			if _, err := os.Stat(path); !os.IsNotExist(err) {
-				app.readFile(path)
+				validConfigPath = append(validConfigPath, path)
 			}
 		}
+	}
+
+	// loading plugins before sourcing config files, so that functionalities
+	// provided by plugins can be used in config.
+	pluginRoots := make([]string, len(validConfigPath))
+	for i, path := range validConfigPath {
+		pluginRoots[i] = filepath.Dir(path)
+	}
+	luaState, err := luaStateInit(app, pluginRoots)
+	if err != nil {
+		app.ui.echoerrf("during Lua state initialization: %s", err)
+	}
+	if luaState != nil {
+		app.luaState = luaState
+		for _, pluginRoot := range pluginRoots {
+			loadLuaPluginFromDir(luaState, pluginRoot)
+		}
+	}
+
+	for _, path := range validConfigPath {
+		app.readFile(path)
 	}
 
 	for _, cmd := range gCommands {
