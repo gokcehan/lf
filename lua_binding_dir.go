@@ -51,7 +51,15 @@ func LAddDirToState(L *lua.LState, data *dir) int {
 
 // ----------------------------------------------------------------------------
 
-var luaDirStaticMethod = map[string]lua.LGFunction{}
+var luaDirStaticMethod = map[string]lua.LGFunction{
+	"new": luaDirNew,
+}
+
+func luaDirNew(L *lua.LState) int {
+	path := L.CheckString(1)
+	dir := newDir(path)
+	return LAddDirToState(L, dir)
+}
 
 // ----------------------------------------------------------------------------
 
@@ -102,4 +110,16 @@ func luaDirAllFilesForEach(L *lua.LState) int {
 	}
 
 	return 0
+}
+
+func luaDirSort(L *lua.LState) int {
+	dir := LCheckDir(L, 1)
+	dir.sort()
+	return 0
+}
+
+func luaDirName(L *lua.LState) int {
+	dir := LCheckDir(L, 1)
+	L.Push(lua.LString(dir.name()))
+	return 1
 }

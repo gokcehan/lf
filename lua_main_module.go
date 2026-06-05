@@ -19,6 +19,7 @@ func LfMainModuleLoader(L *lua.LState) int {
 
 var exports = map[string]lua.LGFunction{
 	"glob_match": luaGlobMatch,
+	"readdir":    luaReadDir,
 }
 
 func setupModuleConstants(L *lua.LState, mod *lua.LTable) {}
@@ -35,6 +36,26 @@ func luaGlobMatch(L *lua.LState) int {
 	}
 
 	L.Push(lua.LBool(match))
+
+	return 1
+}
+
+func luaReadDir(L *lua.LState) int {
+	path := L.CheckString(1)
+
+	files, err := readdir(path)
+	if err != nil {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+
+	tbl := L.NewTable()
+	for _, f := range files {
+		tbl.Append(LWrapFile(L, f))
+	}
+
+	L.Push(tbl)
 
 	return 1
 }

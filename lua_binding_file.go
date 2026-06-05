@@ -57,7 +57,15 @@ func LAddFileToState(L *lua.LState, data *file) int {
 
 // ----------------------------------------------------------------------------
 
-var luaFileStaticMethod = map[string]lua.LGFunction{}
+var luaFileStaticMethod = map[string]lua.LGFunction{
+	"new": luaFileNew,
+}
+
+func luaFileNew(L *lua.LState) int {
+	path := L.CheckString(1)
+	file := newFile(path)
+	return LAddFileToState(L, file)
+}
 
 // ----------------------------------------------------------------------------
 
@@ -190,5 +198,11 @@ func luaFileExt(L *lua.LState) int {
 
 	L.Push(lua.LString(file.ext))
 
+	return 1
+}
+
+func luaFileIsPreviewable(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	L.Push(lua.LBool(file.isPreviewable()))
 	return 1
 }
