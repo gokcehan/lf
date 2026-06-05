@@ -84,6 +84,8 @@ var luaFileMethods = map[string]lua.LGFunction{
 
 	"custom_info": luaFileCustomInfo,
 	"ext":         luaFileExt,
+
+	"extra_info": luaFileExtraInfo,
 }
 
 func luaFileName(L *lua.LState) int {
@@ -204,5 +206,29 @@ func luaFileExt(L *lua.LState) int {
 func luaFileIsPreviewable(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 	L.Push(lua.LBool(file.isPreviewable()))
+	return 1
+}
+
+func luaFileExtraInfo(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	key := L.Get(2)
+
+	value := lua.LNil
+	nargs := L.GetTop()
+	if nargs >= 3 {
+		value := L.Get(3)
+
+		if file.luaExtraInfo == nil {
+			file.luaExtraInfo = L.NewTable()
+		}
+		file.luaExtraInfo.RawSet(key, value)
+	} else {
+		if file.luaExtraInfo != nil {
+			value = file.luaExtraInfo.RawGet(key)
+		}
+	}
+
+	L.Push(value)
+
 	return 1
 }
