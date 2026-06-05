@@ -15,9 +15,12 @@ const pluginDirName = "plugins"
 func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()
 
-	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
 	lfTypes.RawSetString("App", LRegisterAppType(L))
 	lfTypes.RawSetString("UI", LRegisterUIType(L))
+
+	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
+	lfTypes.RawSetString("Dir", LRegisterDirType(L))
+	lfTypes.RawSetString("Nav", LRegisterNavType(L))
 }
 
 // setupScripImportPath appends plugin root directory paths to Lua loader search
@@ -90,6 +93,8 @@ func luaStateInit(app *app, rootDirs []string) (*lua.LState, error) {
 	}
 
 	setupLuaGlobals(app, L)
+
+	L.PreloadModule("lf", LfMainModuleLoader)
 
 	log.Println("Lua state initialized")
 

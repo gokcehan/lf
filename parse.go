@@ -45,6 +45,8 @@ import (
 	"fmt"
 	"io"
 	"strings"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 type expr interface {
@@ -198,6 +200,19 @@ func (e *listExpr) String() string {
 	buf.WriteString("}}")
 
 	return buf.String()
+}
+
+type luaCmdExpr struct {
+	name    string
+	expr    expr
+	luaFunc *lua.LFunction
+}
+
+func (e *luaCmdExpr) String() string {
+	if e.luaFunc != nil {
+		return fmt.Sprintf("luacmd: %s, func: %s", e.name, e.luaFunc)
+	}
+	return fmt.Sprintf("luacmd: %s, expr %s", e.name, e.expr)
 }
 
 type parser struct {

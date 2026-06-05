@@ -16,6 +16,7 @@ import (
 
 	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
+	lua "github.com/yuin/gopher-lua"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -636,6 +637,29 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 		} else {
 			app.ui.screen.DisableFocus()
 		}
+	}
+}
+
+func (e *luaCmdExpr) eval(app *app, args []string) {
+	L := app.luaState
+	if L == nil {
+		return
+	}
+
+	if e.luaFunc != nil {
+		L.Push(e.luaFunc)
+		for _, arg := range args {
+			L.Push(lua.LString(arg))
+		}
+
+		err := L.PCall(len(args), 0, nil)
+		if err != nil {
+			app.ui.echoerrf("error during lua command call: %s", err)
+		}
+	} else if e.expr != nil {
+		e.expr.eval(app, args)
+	} else {
+		delete(gOpts.cmds, e.name)
 	}
 }
 

@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -55,9 +57,41 @@ var luaAppStaticMethod = map[string]lua.LGFunction{}
 
 var luaAppMethods = map[string]lua.LGFunction{
 	"ui": luaAppUI,
+
+	"create_cmd": luaAppCreateCmd,
 }
 
 func luaAppUI(L *lua.LState) int {
 	app := LCheckApp(L, 1)
 	return LAddUIToState(L, app.ui)
+}
+
+func luaAppCreateCmd(L *lua.LState) int {
+	app := LCheckApp(L, 1)
+	name := L.CheckString(2)
+	action := L.Get(3)
+
+	switch action.Type() {
+	case lua.LTString:
+		text := action.String()
+		p := newParser(strings.NewReader(text))
+		expr := p.parseExpr()
+		if expr == nil {
+			app.ui.echoerrf("failed to parse Lua command: %s", text)
+		} else {
+			gOpts.cmds[name] = &luaCmdExpr{
+				name: name,
+				expr: expr,
+			}
+		}
+	case lua.LTFunction:
+		gOpts.cmds[name] = &luaCmdExpr{
+			name:    name,
+			luaFunc: action.(*lua.LFunction),
+		}
+	default:
+		L.ArgError(2, "string or function expected")
+	}
+
+	return 0
 }
