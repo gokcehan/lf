@@ -321,7 +321,7 @@ func (dir *dir) sort() {
 			return naturalCmp(s1, s2)
 		})
 	default:
-		luaFn := gOpts.luaSortMethod[string(dir.sortby)]
+		luaFn := gLuaRegistry.luaSortMethod[string(dir.sortby)]
 		if gLuaState != nil && luaFn != nil {
 			L := gLuaState.acquire()
 			applySort(makeLuaFnFileComparator(L, luaFn))

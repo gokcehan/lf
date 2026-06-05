@@ -108,10 +108,10 @@ func luaAppRegisterSortMethod(L *lua.LState) int {
 	name := L.CheckString(2)
 	sortFunc := L.CheckFunction(3)
 
-	if gOpts.luaSortMethod == nil {
-		gOpts.luaSortMethod = make(map[string]*lua.LFunction)
+	if gLuaRegistry.luaSortMethod == nil {
+		gLuaRegistry.luaSortMethod = make(map[string]*lua.LFunction)
 	}
-	gOpts.luaSortMethod[name] = sortFunc
+	gLuaRegistry.luaSortMethod[name] = sortFunc
 
 	return 0
 }

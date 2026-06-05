@@ -29,6 +29,10 @@ func (box *luaStateBox) release() {
 
 var gLuaState *luaStateBox
 
+var gLuaRegistry struct {
+	luaSortMethod map[string]*lua.LFunction
+}
+
 func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()
 
