@@ -16,8 +16,6 @@ import (
 	"strings"
 	"syscall"
 	"time"
-
-	lua "github.com/yuin/gopher-lua"
 )
 
 type app struct {
@@ -39,7 +37,6 @@ type app struct {
 	selectionOut    []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
 	watch           *watch         // fs watcher if `watch` is enabled
 	quitting        bool           // guard to prevent re-entering quit logic
-	luaState        *lua.LState    // lua state machine
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -80,6 +77,9 @@ func (app *app) quit() {
 	app.quitting = true
 
 	onQuit(app)
+
+	L := gLuaState.acquire()
+	L.Close()
 
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
@@ -303,7 +303,9 @@ func (app *app) loop() {
 		app.ui.echoerrf("during Lua state initialization: %s", err)
 	}
 	if luaState != nil {
-		app.luaState = luaState
+		gLuaState = &luaStateBox{
+			luaState: luaState,
+		}
 		for _, pluginRoot := range pluginRoots {
 			loadLuaPluginFromDir(luaState, pluginRoot)
 		}

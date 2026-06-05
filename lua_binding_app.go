@@ -59,7 +59,8 @@ var luaAppMethods = map[string]lua.LGFunction{
 	"ui":  luaAppUI,
 	"nav": luaAppNav,
 
-	"create_cmd": luaAppCreateCmd,
+	"create_cmd":           luaAppCreateCmd,
+	"register_sort_method": luaAppRegisterSortMethod,
 }
 
 func luaAppUI(L *lua.LState) int {
@@ -98,6 +99,19 @@ func luaAppCreateCmd(L *lua.LState) int {
 	default:
 		L.ArgError(2, "string or function expected")
 	}
+
+	return 0
+}
+
+func luaAppRegisterSortMethod(L *lua.LState) int {
+	// app := LCheckApp(L, 1)
+	name := L.CheckString(2)
+	sortFunc := L.CheckFunction(3)
+
+	if gOpts.luaSortMethod == nil {
+		gOpts.luaSortMethod = make(map[string]*lua.LFunction)
+	}
+	gOpts.luaSortMethod[name] = sortFunc
 
 	return 0
 }

@@ -641,10 +641,12 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 }
 
 func (e *luaCmdExpr) eval(app *app, args []string) {
-	L := app.luaState
-	if L == nil {
+	if gLuaState == nil {
 		return
 	}
+
+	L := gLuaState.acquire()
+	defer gLuaState.release()
 
 	if e.luaFunc != nil {
 		L.Push(e.luaFunc)

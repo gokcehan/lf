@@ -408,7 +408,11 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		case "sizeunits":
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
-			matches, longest = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+			candidates := []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"}
+			for name := range gOpts.luaSortMethod {
+				candidates = append(candidates, name)
+			}
+			matches, longest = matchWord(f[2], candidates)
 		case "terminalcursor":
 			matches, longest = matchWord(f[2], []string{"default", "block", "underline", "bar", "blinkblock", "blinkunderline", "blinkbar"})
 		default:

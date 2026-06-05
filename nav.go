@@ -320,6 +320,13 @@ func (dir *dir) sort() {
 			s2 := normalize(stripTermSequence(f2.customInfo))
 			return naturalCmp(s1, s2)
 		})
+	default:
+		luaFn := gOpts.luaSortMethod[string(dir.sortby)]
+		if gLuaState != nil && luaFn != nil {
+			L := gLuaState.acquire()
+			applySort(makeLuaFnFileComparator(L, luaFn))
+			gLuaState.release()
+		}
 	}
 
 	// when sorting by size while also showing dircounts, we always display files
@@ -339,6 +346,34 @@ func (dir *dir) sort() {
 
 	dir.ind = max(dir.ind, 0)
 	dir.ind = min(dir.ind, len(dir.files)-1)
+}
+
+func makeLuaFnFileComparator(L *lua.LState, luaFn *lua.LFunction) func(f1, f2 *file) int {
+	return func(f1, f2 *file) int {
+		err := L.CallByParam(
+			lua.P{
+				Fn:      luaFn,
+				NRet:    1,
+				Protect: true,
+			},
+			LWrapFile(L, f1),
+			LWrapFile(L, f2),
+		)
+
+		if err != nil {
+			log.Println("lua sort method error:", err)
+			return 0
+		}
+
+		ret := L.Get(-1)
+		L.Pop(1)
+		if ret.Type() != lua.LTNumber {
+			log.Println("lua sort method error: return value of Lua function is not a number")
+			return 0
+		}
+
+		return int(ret.(lua.LNumber))
+	}
 }
 
 func (dir *dir) name() string {

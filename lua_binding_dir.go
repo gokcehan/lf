@@ -83,7 +83,7 @@ func luaDirFilesForEach(L *lua.LState) int {
 			LWrapFile(L, file),
 		)
 		if err != nil {
-			log.Println("error during iteration : %s", err)
+			log.Printf("error during iteration : %s", err)
 		}
 	}
 
@@ -105,7 +105,7 @@ func luaDirAllFilesForEach(L *lua.LState) int {
 			LWrapFile(L, file),
 		)
 		if err != nil {
-			log.Println("error during iteration : %s", err)
+			log.Printf("error during iteration : %s", err)
 		}
 	}
 
