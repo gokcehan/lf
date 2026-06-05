@@ -6,11 +6,28 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
+	"sync"
 
 	lua "github.com/yuin/gopher-lua"
 )
 
 const pluginDirName = "plugins"
+
+type luaStateBox struct {
+	luaState *lua.LState
+	lock     sync.Mutex
+}
+
+func (box *luaStateBox) acquire() *lua.LState {
+	box.lock.Lock()
+	return box.luaState
+}
+
+func (box *luaStateBox) release() {
+	box.lock.Unlock()
+}
+
+var gLuaState *luaStateBox
 
 func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()

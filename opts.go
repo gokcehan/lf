@@ -4,6 +4,8 @@ import (
 	"fmt"
 	"maps"
 	"time"
+
+	lua "github.com/yuin/gopher-lua"
 )
 
 // String values match the sortby string sent by the user at startup
@@ -26,7 +28,8 @@ func isValidSortMethod(method sortMethod) bool {
 	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
 		return true
 	}
-	return false
+	_, ok := gOpts.luaSortMethod[string(method)]
+	return ok
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
@@ -164,6 +167,7 @@ var gOpts struct {
 	cmdkeys          map[string]expr
 	cmds             map[string]expr
 	user             map[string]string
+	luaSortMethod    map[string]*lua.LFunction
 }
 
 var gLocalOpts struct {
