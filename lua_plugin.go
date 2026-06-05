@@ -21,6 +21,8 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
+
+	L.SetGlobal("lf_types", lfTypes)
 }
 
 // setupScripImportPath appends plugin root directory paths to Lua loader search

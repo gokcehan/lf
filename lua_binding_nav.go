@@ -63,6 +63,7 @@ var luaNavMethods = map[string]lua.LGFunction{
 	"tag_toggle":           luaNavTagToggle,
 	"invert":               luaNavInvert,
 	"unselect":             luaNavUnselect,
+	"glob_sel":             luaNavGlobSel,
 
 	"curr_dir": luaNavCurrDir,
 }
@@ -83,13 +84,10 @@ func luaNavGetTag(L *lua.LState) int {
 
 func luaNavSelect(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
+	path := L.CheckString(2)
 
-	nargs := L.GetTop()
-	for i := 2; i <= nargs; i++ {
-		path := L.CheckString(i)
-		nav.selections[path] = nav.selectionInd
-		nav.selectionInd++
-	}
+	nav.selections[path] = nav.selectionInd
+	nav.selectionInd++
 
 	return 0
 }
@@ -131,6 +129,30 @@ func luaNavInvert(L *lua.LState) int {
 func luaNavUnselect(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
 	nav.unselect()
+	return 0
+}
+
+func luaNavUnselectOne(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	path := L.CheckString(2)
+
+	if _, ok := nav.selections[path]; ok {
+		delete(nav.selections, path)
+		if len(nav.selections) == 0 {
+			nav.selectionInd = 0
+		}
+	}
+
+	return 0
+}
+
+func luaNavGlobSel(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	pattern := L.CheckString(2)
+	invert := L.CheckBool(3)
+
+	nav.globSel(pattern, invert)
+
 	return 0
 }
 

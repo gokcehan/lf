@@ -56,7 +56,8 @@ var luaAppStaticMethod = map[string]lua.LGFunction{}
 // ----------------------------------------------------------------------------
 
 var luaAppMethods = map[string]lua.LGFunction{
-	"ui": luaAppUI,
+	"ui":  luaAppUI,
+	"nav": luaAppNav,
 
 	"create_cmd": luaAppCreateCmd,
 }
@@ -64,6 +65,11 @@ var luaAppMethods = map[string]lua.LGFunction{
 func luaAppUI(L *lua.LState) int {
 	app := LCheckApp(L, 1)
 	return LAddUIToState(L, app.ui)
+}
+
+func luaAppNav(L *lua.LState) int {
+	app := LCheckApp(L, 1)
+	return LAddNavToState(L, app.nav)
 }
 
 func luaAppCreateCmd(L *lua.LState) int {

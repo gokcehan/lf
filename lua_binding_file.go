@@ -61,7 +61,46 @@ var luaFileStaticMethod = map[string]lua.LGFunction{}
 
 // ----------------------------------------------------------------------------
 
-var luaFileMethods = map[string]lua.LGFunction{}
+var luaFileMethods = map[string]lua.LGFunction{
+	"name":   luaFileName,
+	"size":   luaFileSize,
+	"mode":   luaFileMode,
+	"is_dir": luaFileIsDir,
+
+	"link_state":  luaFileLinkState,
+	"link_target": luaFileLinkTarget,
+	"path":        luaFilePath,
+
+	"dir_count": luaFileDirCount,
+	"dir_size":  luaFileDirSize,
+
+	"custom_info": luaFileCustomInfo,
+	"ext":         luaFileExt,
+}
+
+func luaFileName(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	L.Push(lua.LString(file.Name()))
+	return 1
+}
+
+func luaFileSize(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	L.Push(lua.LNumber(file.Size()))
+	return 1
+}
+
+func luaFileMode(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	L.Push(lua.LNumber(file.Mode()))
+	return 1
+}
+
+func luaFileIsDir(L *lua.LState) int {
+	file := LCheckFile(L, 1)
+	L.Push(lua.LBool(file.IsDir()))
+	return 1
+}
 
 func luaFileLinkState(L *lua.LState) int {
 	file := LCheckFile(L, 1)
@@ -69,7 +108,6 @@ func luaFileLinkState(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckNumber(2)
 		file.linkState = linkState(value)
-		return 0
 	}
 
 	L.Push(lua.LNumber(file.linkState))
@@ -83,7 +121,6 @@ func luaFileLinkTarget(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
 		file.linkTarget = value
-		return 0
 	}
 
 	L.Push(lua.LString(file.linkTarget))
@@ -97,7 +134,6 @@ func luaFilePath(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
 		file.path = value
-		return 0
 	}
 
 	L.Push(lua.LString(file.path))
@@ -111,7 +147,6 @@ func luaFileDirCount(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckNumber(2)
 		file.dirCount = int(value)
-		return 0
 	}
 
 	L.Push(lua.LNumber(file.dirCount))
@@ -125,7 +160,6 @@ func luaFileDirSize(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckNumber(2)
 		file.dirSize = int64(value)
-		return 0
 	}
 
 	L.Push(lua.LNumber(file.dirSize))
@@ -139,7 +173,6 @@ func luaFileCustomInfo(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
 		file.customInfo = value
-		return 0
 	}
 
 	L.Push(lua.LString(file.customInfo))
@@ -153,7 +186,6 @@ func luaFileExt(L *lua.LState) int {
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
 		file.ext = value
-		return 0
 	}
 
 	L.Push(lua.LString(file.ext))
