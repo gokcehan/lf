@@ -409,7 +409,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			candidates := []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"}
-			for name := range gLuaRegistry.luaSortMethod {
+			for name := range gLuaRegistry.sortMethod {
 				candidates = append(candidates, name)
 			}
 			matches, longest = matchWord(f[2], candidates)

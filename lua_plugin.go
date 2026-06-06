@@ -30,7 +30,8 @@ func (box *luaStateBox) release() {
 var gLuaState *luaStateBox
 
 var gLuaRegistry struct {
-	luaSortMethod map[string]*lua.LFunction
+	sortMethod map[string]*lua.LFunction
+	eventHooks map[string][]*lua.LFunction
 }
 
 func setupLuaTypeBindings(L *lua.LState) {
@@ -164,4 +165,28 @@ func loadLuaPluginFromDir(L *lua.LState, root string) error {
 	}
 
 	return nil
+}
+
+// callLuaFuncWithArgList calls a Lua function with list of string arguments.
+func callLuaFuncWithArgList(fn *lua.LFunction, args []string) error {
+	L := gLuaState.acquire()
+	defer gLuaState.release()
+
+	L.Push(fn)
+	for _, arg := range args {
+		L.Push(lua.LString(arg))
+	}
+
+	return L.PCall(len(args), 0, nil)
+}
+
+// batchCallLuaFuncWithArgList calls a list of Lua functions with given argument
+// list.
+func batchCallLuaFuncWithArgList(app *app, fnList []*lua.LFunction, args []string) {
+	for _, fn := range fnList {
+		err := callLuaFuncWithArgList(fn, args)
+		if err != nil {
+			app.ui.echoerrf("error during Lua event hook call: %s", err)
+		}
+	}
 }

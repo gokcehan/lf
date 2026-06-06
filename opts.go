@@ -26,7 +26,7 @@ func isValidSortMethod(method sortMethod) bool {
 	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
 		return true
 	}
-	_, ok := gLuaRegistry.luaSortMethod[string(method)]
+	_, ok := gLuaRegistry.sortMethod[string(method)]
 	return ok
 }
 

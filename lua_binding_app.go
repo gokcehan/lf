@@ -61,6 +61,16 @@ var luaAppMethods = map[string]lua.LGFunction{
 
 	"create_cmd":           luaAppCreateCmd,
 	"register_sort_method": luaAppRegisterSortMethod,
+	"add_hook":             luaAppAddHook,
+	"hook_pre_cd":          makeAppHookAdder("pre-cd"),
+	"hook_on_cd":           makeAppHookAdder("on-cd"),
+	"hook_on_load":         makeAppHookAdder("on-load"),
+	"hook_on_focus_gained": makeAppHookAdder("on-focus-gained"),
+	"hook_on_focus_lost":   makeAppHookAdder("on-focus-lost"),
+	"hook_on_init":         makeAppHookAdder("on-init"),
+	"hook_on_redraw":       makeAppHookAdder("on-redraw"),
+	"hook_on_select":       makeAppHookAdder("on-select"),
+	"hook_on_quit":         makeAppHookAdder("on-quit"),
 }
 
 func luaAppUI(L *lua.LState) int {
@@ -108,10 +118,41 @@ func luaAppRegisterSortMethod(L *lua.LState) int {
 	name := L.CheckString(2)
 	sortFunc := L.CheckFunction(3)
 
-	if gLuaRegistry.luaSortMethod == nil {
-		gLuaRegistry.luaSortMethod = make(map[string]*lua.LFunction)
+	if gLuaRegistry.sortMethod == nil {
+		gLuaRegistry.sortMethod = make(map[string]*lua.LFunction)
 	}
-	gLuaRegistry.luaSortMethod[name] = sortFunc
+	gLuaRegistry.sortMethod[name] = sortFunc
 
 	return 0
+}
+
+func luaAppAddHook(L *lua.LState) int {
+	// app := LCheckApp(L, 1)
+	cmdName := L.CheckString(2)
+	hookFunc := L.CheckFunction(3)
+
+	if gLuaRegistry.eventHooks == nil {
+		gLuaRegistry.eventHooks = make(map[string][]*lua.LFunction)
+	}
+
+	list := gLuaRegistry.eventHooks[cmdName]
+	gLuaRegistry.eventHooks[cmdName] = append(list, hookFunc)
+
+	return 0
+}
+
+func makeAppHookAdder(cmdName string) lua.LGFunction {
+	return func(L *lua.LState) int {
+		// app := LCheckApp(L, 1)
+		hookFunc := L.CheckFunction(2)
+
+		if gLuaRegistry.eventHooks == nil {
+			gLuaRegistry.eventHooks = make(map[string][]*lua.LFunction)
+		}
+
+		list := gLuaRegistry.eventHooks[cmdName]
+		gLuaRegistry.eventHooks[cmdName] = append(list, hookFunc)
+
+		return 0
+	}
 }

@@ -322,7 +322,7 @@ func (dir *dir) sort() {
 		})
 	default:
 		name := string(dir.sortby)
-		luaFn := gLuaRegistry.luaSortMethod[name]
+		luaFn := gLuaRegistry.sortMethod[name]
 		if luaFn != nil {
 			err := sortByLuaFunc(luaFn, dir.files, dir.reverse)
 			if err != nil {
