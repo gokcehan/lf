@@ -10,16 +10,14 @@ import (
 )
 
 func LfMainModuleLoader(L *lua.LState) int {
-	mod := L.SetFuncs(L.NewTable(), exports)
-
-	setupModuleConstants(L, mod)
+	mod := L.SetFuncs(L.NewTable(), LfMainModuleExports)
 
 	L.Push(mod)
 
 	return 1
 }
 
-var exports = map[string]lua.LGFunction{
+var LfMainModuleExports = map[string]lua.LGFunction{
 	"glob_match": luaGlobMatch,
 	"readdir":    luaReadDir,
 
@@ -36,8 +34,6 @@ var exports = map[string]lua.LGFunction{
 	"hook_on_select":       makeHookAdder("on-select"),
 	"hook_on_quit":         makeHookAdder("on-quit"),
 }
-
-func setupModuleConstants(L *lua.LState, mod *lua.LTable) {}
 
 func luaGlobMatch(L *lua.LState) int {
 	pattern := L.CheckString(1)

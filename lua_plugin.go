@@ -119,6 +119,7 @@ func luaStateInit(app *app, rootDirs []string) (*lua.LState, error) {
 	setupLuaGlobals(app, L)
 
 	L.PreloadModule("lf", LfMainModuleLoader)
+	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
 
 	log.Println("Lua state initialized")
 
