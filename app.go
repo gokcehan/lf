@@ -78,8 +78,10 @@ func (app *app) quit() {
 
 	onQuit(app)
 
-	L := gLuaState.acquire()
+	L := gLuaStateSync.acquire()
 	L.Close()
+
+	gLuaPool.shutdown()
 
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
@@ -294,21 +296,16 @@ func (app *app) loop() {
 
 	// loading plugins before sourcing config files, so that functionalities
 	// provided by plugins can be used in config.
-	pluginRoots := make([]string, len(validConfigPath))
-	for i, path := range validConfigPath {
-		pluginRoots[i] = filepath.Dir(path)
+	gLuaPool = newLStatePool(app)
+	for _, path := range validConfigPath {
+		gLuaPool.addConfigRoot(filepath.Dir(path))
 	}
-	luaState, err := luaStateInit(app, pluginRoots)
+	err := gLuaPool.loadPluginScripts()
 	if err != nil {
-		app.ui.echoerrf("during Lua state initialization: %s", err)
+		app.ui.echoerr(err.Error())
 	}
-	if luaState != nil {
-		gLuaState = &luaStateBox{
-			luaState: luaState,
-		}
-		for _, pluginRoot := range pluginRoots {
-			loadLuaPluginFromDir(luaState, pluginRoot)
-		}
+	gLuaStateSync = &luaStateBox{
+		luaState: gLuaPool.get(),
 	}
 
 	for _, path := range validConfigPath {

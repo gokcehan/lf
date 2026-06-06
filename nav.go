@@ -351,12 +351,12 @@ func (dir *dir) sort() {
 }
 
 func sortByLuaFunc(luaFn *lua.LFunction, files []*file, isReverse bool) error {
-	if gLuaState == nil {
+	if gLuaStateSync == nil {
 		return fmt.Errorf("Lua state is not initialized")
 	}
 
-	L := gLuaState.acquire()
-	defer gLuaState.release()
+	L := gLuaStateSync.acquire()
+	defer gLuaStateSync.release()
 
 	udTbl := L.NewTable()
 	for _, file := range files {

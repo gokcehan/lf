@@ -640,7 +640,7 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 }
 
 func (e *luaCmdExpr) eval(app *app, args []string) {
-	if gLuaState == nil {
+	if gLuaStateSync == nil {
 		return
 	}
 
