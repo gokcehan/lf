@@ -321,11 +321,13 @@ func (dir *dir) sort() {
 			return naturalCmp(s1, s2)
 		})
 	default:
-		luaFn := gLuaRegistry.luaSortMethod[string(dir.sortby)]
-		if gLuaState != nil && luaFn != nil {
-			L := gLuaState.acquire()
-			applySort(makeLuaFnFileComparator(L, luaFn))
-			gLuaState.release()
+		name := string(dir.sortby)
+		luaFn := gLuaRegistry.luaSortMethod[name]
+		if luaFn != nil {
+			err := sortByLuaFunc(luaFn, dir.files, dir.reverse)
+			if err != nil {
+				log.Printf("`%s` lua sort function error: %s", name, err)
+			}
 		}
 	}
 
@@ -348,32 +350,71 @@ func (dir *dir) sort() {
 	dir.ind = min(dir.ind, len(dir.files)-1)
 }
 
-func makeLuaFnFileComparator(L *lua.LState, luaFn *lua.LFunction) func(f1, f2 *file) int {
-	return func(f1, f2 *file) int {
-		err := L.CallByParam(
-			lua.P{
-				Fn:      luaFn,
-				NRet:    1,
-				Protect: true,
-			},
-			LWrapFile(L, f1),
-			LWrapFile(L, f2),
-		)
-
-		if err != nil {
-			log.Println("lua sort method error:", err)
-			return 0
-		}
-
-		ret := L.Get(-1)
-		L.Pop(1)
-		if ret.Type() != lua.LTNumber {
-			log.Println("lua sort method error: return value of Lua function is not a number")
-			return 0
-		}
-
-		return int(ret.(lua.LNumber))
+func sortByLuaFunc(luaFn *lua.LFunction, files []*file, isReverse bool) error {
+	if gLuaState == nil {
+		return fmt.Errorf("Lua state is not initialized")
 	}
+
+	L := gLuaState.acquire()
+	defer gLuaState.release()
+
+	udTbl := L.NewTable()
+	for _, file := range files {
+		udTbl.Append(LWrapFile(L, file))
+	}
+
+	err := L.CallByParam(
+		lua.P{
+			Fn:      luaFn,
+			NRet:    1,
+			Protect: true,
+		},
+		udTbl,
+	)
+
+	if err != nil {
+		return fmt.Errorf("%s", err)
+	}
+
+	ret := L.Get(-1)
+	L.Pop(1)
+
+	if ret.Type() != lua.LTTable {
+		return fmt.Errorf("return value of Lua function is not a table")
+	}
+
+	retTbl := ret.(*lua.LTable)
+	nElem := retTbl.Len()
+	if nElem != len(files) {
+		return fmt.Errorf("number of elements in returned table does not match number of files")
+	}
+
+	result := make([]*file, nElem)
+	for i := 1; i <= nElem; i++ {
+		value := retTbl.RawGetInt(i)
+		if value.Type() != lua.LTUserData {
+			return fmt.Errorf("element %d in returned table is not userdata", i)
+		}
+
+		file, ok := value.(*lua.LUserData).Value.(*file)
+		if !ok {
+			return fmt.Errorf("element %d is not a *file data", i)
+		}
+
+		result[i-1] = file
+	}
+
+	if isReverse {
+		for i := range files {
+			files[i] = result[nElem-i-1]
+		}
+	} else {
+		for i := range files {
+			files[i] = result[i]
+		}
+	}
+
+	return nil
 }
 
 func (dir *dir) name() string {
