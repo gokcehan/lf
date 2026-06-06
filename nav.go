@@ -322,12 +322,9 @@ func (dir *dir) sort() {
 		})
 	default:
 		name := string(dir.sortby)
-		luaFn := gLuaRegistry.sortMethod[name]
-		if luaFn != nil {
-			err := sortByLuaFunc(luaFn, dir.files, dir.reverse)
-			if err != nil {
-				log.Printf("`%s` lua sort function error: %s", name, err)
-			}
+		msgExpr, ok := gLuaRegistry.sortMethod[name]
+		if ok {
+			sortByLuaMsg(&msgExpr, dir.files, dir.reverse)
 		}
 	}
 
@@ -350,35 +347,22 @@ func (dir *dir) sort() {
 	dir.ind = min(dir.ind, len(dir.files)-1)
 }
 
-func sortByLuaFunc(luaFn *lua.LFunction, files []*file, isReverse bool) error {
-	if gLuaStateSync == nil {
-		return fmt.Errorf("Lua state is not initialized")
-	}
-
-	L := gLuaStateSync.acquire()
-	defer gLuaStateSync.release()
-
-	udTbl := L.NewTable()
-	for _, file := range files {
-		udTbl.Append(LWrapFile(L, file))
-	}
-
-	err := L.CallByParam(
-		lua.P{
-			Fn:      luaFn,
-			NRet:    1,
-			Protect: true,
-		},
-		udTbl,
-	)
+func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
+	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
+		udTbl := L.NewTable()
+		for _, file := range files {
+			udTbl.Append(LWrapFile(L, file))
+		}
+		return []lua.LValue{udTbl}
+	})
 
 	if err != nil {
 		return fmt.Errorf("%s", err)
+	} else if len(retList) <= 0 {
+		return fmt.Errorf("Lua sort method returns nothing")
 	}
 
-	ret := L.Get(-1)
-	L.Pop(1)
-
+	ret := retList[0]
 	if ret.Type() != lua.LTTable {
 		return fmt.Errorf("return value of Lua function is not a table")
 	}

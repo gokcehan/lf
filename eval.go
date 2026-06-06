@@ -16,6 +16,7 @@ import (
 
 	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
+	lua "github.com/yuin/gopher-lua"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -639,20 +640,18 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 	}
 }
 
-func (e *luaCmdExpr) eval(app *app, args []string) {
-	if gLuaStateSync == nil {
-		return
-	}
-
-	if e.luaFunc != nil {
-		err := callLuaFuncWithArgList(e.luaFunc, args)
-		if err != nil {
-			app.ui.echoerrf("error during Lua command call: %s", err)
+func (e *luaMsgExpr) eval(app *app, args []string) {
+	_, err := callLuaMsgExpr(e, func(L *lua.LState) []lua.LValue {
+		msgArgs := make([]lua.LValue, len(args))
+		for i, arg := range args {
+			msgArgs[i] = lua.LString(arg)
 		}
-	} else if e.expr != nil {
-		e.expr.eval(app, args)
-	} else {
-		delete(gOpts.cmds, e.name)
+		return msgArgs
+	})
+
+	if err != nil {
+		app.ui.echoerrf("Lua msg execution failed, see log for more detail")
+		log.Println(err)
 	}
 }
 
@@ -661,9 +660,7 @@ func preChdir(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onChdir(app *app) {
@@ -672,9 +669,7 @@ func onChdir(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onLoad(app *app, files []string) {
@@ -682,9 +677,13 @@ func onLoad(app *app, files []string) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, files)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, files)
-	}
+	callLuaEventHooks(cmdName, func(L *lua.LState) []lua.LValue {
+		args := make([]lua.LValue, len(files))
+		for i, f := range files {
+			args[i] = lua.LString(f)
+		}
+		return args
+	})
 }
 
 func onFocusGained(app *app) {
@@ -692,9 +691,7 @@ func onFocusGained(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onFocusLost(app *app) {
@@ -702,9 +699,7 @@ func onFocusLost(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onInit(app *app) {
@@ -712,9 +707,7 @@ func onInit(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onRedraw(app *app) {
@@ -722,9 +715,7 @@ func onRedraw(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onSelect(app *app) {
@@ -733,9 +724,7 @@ func onSelect(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onQuit(app *app) {
@@ -743,9 +732,7 @@ func onQuit(app *app) {
 	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
-	if cmdList, ok := gLuaRegistry.eventHooks[cmdName]; ok {
-		batchCallLuaFuncWithArgList(app, cmdList, nil)
-	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func splitKeys(s string) (keys []string) {

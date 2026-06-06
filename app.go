@@ -304,10 +304,12 @@ func (app *app) loop() {
 	if err != nil {
 		app.ui.echoerr(err.Error())
 	}
+	// initialize sycnhronous Lua state and Lua registry
 	gLuaStateSync = &luaStateBox{
-		luaState: gLuaPool.get(),
+		luaState: gLuaPool.newWithRegistryUpdate(),
 	}
 
+	// source user config after Lua plugin initialization
 	for _, path := range validConfigPath {
 		app.readFile(path)
 	}
