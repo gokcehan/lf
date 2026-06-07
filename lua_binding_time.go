@@ -20,8 +20,8 @@ func LRegisterTimeType(L *lua.LState) *lua.LTable {
 		"new_unix_mili":  luaTimeNewUnixMili,
 		"new_unix_micro": luaTimeNewUnixMicro,
 
-		"since": luaTimeSince,
-		"until": luaTimeUntil,
+		"since_time": luaTimeSince,
+		"until_time": luaTimeUntil,
 
 		"__eq": luaTimeMetaEq,
 		"__lt": luaTimeMetaLt,
@@ -51,13 +51,13 @@ func LRegisterTimeType(L *lua.LState) *lua.LTable {
 		"add_date": luaTimeAddDate,
 
 		"utc":              luaTimeUTC,
-		"local":            luaLocal,
+		"local_time":       luaLocal,
 		"time_zone":        luaTimeZone,
 		"time_zone_bounds": luaTimeZoneBounds,
 
-		"unix":      luaTimeUnix,
-		"unix_mili": luaTimeUnixMili,
-		"unix_nano": luaTimeUnixNano,
+		"to_unix":      luaTimeUnix,
+		"to_unix_mili": luaTimeUnixMili,
+		"to_unix_nano": luaTimeUnixNano,
 
 		"format": luaTimeFormat,
 	}))
@@ -458,6 +458,8 @@ const LuaDurationTypeName = "time.Duration"
 func LRegisterDurationType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaDurationTypeName)
 
+	addDurationConstantToMt(L, mt)
+
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":        luaDurationNew,
 		"__mul":      luaDurationMetaMul,
@@ -581,15 +583,15 @@ func luaDurationHours(L *lua.LState) int {
 
 func luaDurationTruncate(L *lua.LState) int {
 	dur := LCheckDuration(L, 1)
-	trunc := L.CheckNumber(2)
-	result := dur.Truncate(time.Duration(trunc))
+	m := LCheckDuration(L, 2)
+	result := dur.Truncate(m)
 	return LAddDurationToState(L, result)
 }
 
 func luaDurationRound(L *lua.LState) int {
 	dur := LCheckDuration(L, 1)
-	round := L.CheckNumber(2)
-	result := dur.Round(time.Duration(round))
+	m := LCheckDuration(L, 2)
+	result := dur.Round(m)
 	return LAddDurationToState(L, result)
 }
 
