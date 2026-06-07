@@ -387,16 +387,24 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()
 
+	// app
 	lfTypes.RawSetString("App", LRegisterAppType(L))
-	lfTypes.RawSetString("UI", LRegisterUIType(L))
-
+	// complete
+	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
+	// misc
+	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
+	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
+	// nav
 	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
-
-	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
-	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
-	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
+	// time
+	lfTypes.RawSetString("Time", LRegisterTimeType(L))
+	lfTypes.RawSetString("Month", LRegisterMonthType(L))
+	lfTypes.RawSetString("Weekday", LRegisterWeekdayType(L))
+	lfTypes.RawSetString("Duration", LRegisterDurationType(L))
+	// ui
+	lfTypes.RawSetString("UI", LRegisterUIType(L))
 
 	L.SetGlobal("lf_types", lfTypes)
 }
