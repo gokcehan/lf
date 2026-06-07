@@ -25,6 +25,11 @@ const (
 )
 
 const (
+	luaCommandCompletionFuncKey = "completion"
+	luaCommandActionFuncKey     = "action"
+)
+
+const (
 	luaPreviewerConditionFuncKey = "condition"
 	luaPreviewerActionFuncKey    = "action"
 )
@@ -324,9 +329,9 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
 
-	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
-
 	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
+	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
+	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
 
 	L.SetGlobal("lf_types", lfTypes)
 }
@@ -513,8 +518,19 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				registry:   registryKey,
 				msg:        name,
 			}
+		case lua.LTTable:
+			actionValue := value.(*lua.LTable).RawGetString(luaCommandActionFuncKey)
+			if actionValue.Type() == lua.LTFunction {
+				gOpts.cmds[name] = &luaMsgExpr{
+					sourceName: sourceName,
+					registry:   registryKey,
+					msg:        name,
+				}
+			} else {
+				log.Printf("invalid command action value: %s", value)
+			}
 		default:
-			log.Printf("command registry value is expected to be string or function, get %s: %s", value.Type(), value)
+			log.Printf("invalid command registry value of type %s: %s", value.Type(), value)
 		}
 	})
 }
@@ -642,6 +658,19 @@ type luaMsgCallArgs struct {
 }
 
 var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
+	registryKeyCommand: func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+		switch msgEntry.Type() {
+		case lua.LTFunction:
+			return msgEntry.(*lua.LFunction)
+		case lua.LTTable:
+			actionFunc := msgEntry.(*lua.LTable).RawGetString(luaCommandActionFuncKey)
+			if actionFunc.Type() == lua.LTFunction {
+				return actionFunc.(*lua.LFunction)
+			}
+		}
+		// invalid action
+		return nil
+	},
 	registryKeyPreviewer: func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
 		switch msgEntry.Type() {
 		case lua.LTFunction:
@@ -657,7 +686,7 @@ var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
 	},
 }
 
-func callLuaCmdOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
+func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	entry, err := getLuaMsgEntry(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg)
 	if err != nil {
 		return nil, err
@@ -711,13 +740,13 @@ func callLuaCmdOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 func callLuaMsg(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaPool.get()
 	defer gLuaPool.put(L)
-	return callLuaCmdOnState(L, callArgs)
+	return callLuaMsgOnState(L, callArgs)
 }
 
 func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaStateSync.acquire()
 	defer gLuaStateSync.release()
-	return callLuaCmdOnState(L, callArgs)
+	return callLuaMsgOnState(L, callArgs)
 }
 
 func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, getArgs luaMsgArgsMaker) ([]lua.LValue, error) {
@@ -734,6 +763,79 @@ func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, g
 	} else {
 		return callLuaMsg(callArgs)
 	}
+}
+
+func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) ([]compMatch, string) {
+	ret, err := callLuaMsgExpr(
+		expr,
+		func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+			switch msgEntry.Type() {
+			case lua.LTFunction:
+				return L.NewFunction(func(L *lua.LState) int {
+					return 0
+				})
+			case lua.LTTable:
+				actionFunc := msgEntry.(*lua.LTable).RawGetString(luaCommandCompletionFuncKey)
+				if actionFunc.Type() == lua.LTFunction {
+					return actionFunc.(*lua.LFunction)
+				}
+			}
+			// invalid action
+			return nil
+		},
+		func(L *lua.LState) []lua.LValue {
+			tbl := L.NewTable()
+			for i, arg := range args {
+				tbl.RawSetInt(i+1, lua.LString(arg))
+			}
+			return []lua.LValue{tbl, lua.LString(longest)}
+		},
+	)
+
+	if err != nil {
+		log.Printf("failed to call Lua command completion function: %s", err)
+		return nil, longest
+	}
+
+	if len(ret) == 0 {
+		return nil, longest
+	}
+
+	ret1, ret2 := ret[0], ret[1]
+
+	if ret1.Type() != lua.LTTable {
+		log.Println("return value #1 of completion function should be a table")
+		return nil, longest
+	}
+
+	if ret2.Type() != lua.LTString {
+		log.Println("return value #2 of completion function should be a string")
+		return nil, longest
+	}
+
+	matchesTbl := ret1.(*lua.LTable)
+	longest = ret2.String()
+
+	matches := []compMatch{}
+	cnt := matchesTbl.Len()
+	for i := 1; i <= cnt; i++ {
+		value := matchesTbl.RawGetInt(i)
+		switch value.Type() {
+		case lua.LTString:
+			str := value.String()
+			matches = append(matches, compMatch{str, str})
+		case lua.LTUserData:
+			if v, ok := value.(*lua.LUserData).Value.(*compMatch); ok {
+				matches = append(matches, *v)
+			} else {
+				log.Println("matches list element #%d is not a valid user data")
+			}
+		default:
+			log.Printf("matches list element #%d be string or user data, found %s: %s", i, value.Type(), value)
+		}
+	}
+
+	return matches, longest
 }
 
 func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue) error {

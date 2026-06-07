@@ -465,10 +465,13 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 				names = append(names, previewer.name)
 			}
 			slices.Sort(names)
-			matches, longest = matchWord(f[len(f)-1], slices.Compact(names))
+			matches, longest = matchWord(longest, slices.Compact(names))
 		}
 	default:
-		if !slices.Contains(gCmdWords, f[0]) {
+		expr := gOpts.cmds[f[0]]
+		if luaExpr, ok := expr.(*luaMsgExpr); ok {
+			matches, longest = callLuaCommandCompletion(luaExpr, f, longest)
+		} else if !slices.Contains(gCmdWords, f[0]) {
 			matches, longest = matchCmdFile(f[len(f)-1], false)
 		}
 	}
