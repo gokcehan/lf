@@ -53,8 +53,8 @@ type lStatePool struct {
 	saved []*lua.LState
 
 	app             *app
-	rootDirs        []string
-	pluginByteCodes []*lua.FunctionProto
+	rootDirs        []string             // plugin root directory list
+	pluginByteCodes []*lua.FunctionProto // compiled Lua byte code of all plugin
 }
 
 func newLStatePool(app *app) *lStatePool {
@@ -64,6 +64,7 @@ func newLStatePool(app *app) *lStatePool {
 	}
 }
 
+// setRootDirs updates plugin root list with a list of config root directory.
 func (pl *lStatePool) setRootDirs(configRoots []string) {
 	rootDirs := make([]string, len(configRoots))
 
@@ -74,10 +75,17 @@ func (pl *lStatePool) setRootDirs(configRoots []string) {
 	pl.rootDirs = rootDirs
 }
 
+// addConfigRoot takes a config root directory, add corresponding plugin root
+// to plugin root list.
 func (pl *lStatePool) addConfigRoot(configRoot string) {
-	pl.rootDirs = append(pl.rootDirs, filepath.Join(configRoot, pluginDirName))
+	rootDir := filepath.Join(configRoot, pluginDirName)
+	if !slices.Contains(pl.rootDirs, rootDir) {
+		pl.rootDirs = append(pl.rootDirs, rootDir)
+	}
 }
 
+// loadPluginScripts compiles and sotre plugin entrance Lua script founded under
+// each plugin roots.
 func (pl *lStatePool) loadPluginScripts() error {
 	pluginByteCodes := make([]*lua.FunctionProto, 0)
 
@@ -127,6 +135,7 @@ func (pl *lStatePool) loadPluginScripts() error {
 	return nil
 }
 
+// get takes one Lua state from pool.
 func (pl *lStatePool) get() *lua.LState {
 	pl.m.Lock()
 	defer pl.m.Unlock()
@@ -139,10 +148,16 @@ func (pl *lStatePool) get() *lua.LState {
 	return x
 }
 
+// newWithRetAction creates a new Lua state and takes a `action` function that
+// can do extra stuff with value returned by each plugin script.
 func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LState, tbl *lua.LTable)) *lua.LState {
 	L := lua.NewState()
 
-	pl.setupLStateEnvironment(L)
+	if err := setupScripImportPath(L, pl.rootDirs); err != nil {
+		log.Printf("failed to setup Lua loader search path: %s", err)
+	}
+	setupLuaGlobals(pl.app, L)
+	setupPreloadModules(L)
 
 	for _, proto := range pl.pluginByteCodes {
 		err := doCompiledFile(L, proto)
@@ -185,10 +200,13 @@ func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LSt
 	return L
 }
 
+// new creates a new Lua state.
 func (pl *lStatePool) new() *lua.LState {
 	return pl.newWithRetAction(nil)
 }
 
+// newWithRegistryUpdate creates a new Lua state, and updates global Lua registry
+// with value returned by each plugin script during Lua state initialization.
 func (pl *lStatePool) newWithRegistryUpdate() *lua.LState {
 	return pl.newWithRetAction(func(sourceName string, L *lua.LState, tbl *lua.LTable) {
 		if tbl == nil {
@@ -206,45 +224,33 @@ func (pl *lStatePool) newWithRegistryUpdate() *lua.LState {
 	})
 }
 
-func (pl *lStatePool) setupLStateEnvironment(L *lua.LState) {
-	setupLuaTypeBindings(L)
-
-	// setup modules
-	err := setupScripImportPath(L, pl.rootDirs)
-	if err != nil {
-		log.Printf("failed to setup Lua loader search path: %s", err)
-	}
-
-	setupLuaGlobals(pl.app, L)
-
-	L.PreloadModule("lf", LfMainModuleLoader)
-	L.PreloadModule("lf.fs", LfFsModuleLoader)
-	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
-}
-
+// put returns a Lua state to pool.
 func (pl *lStatePool) put(L *lua.LState) {
 	pl.m.Lock()
 	defer pl.m.Unlock()
 	pl.saved = append(pl.saved, L)
 }
 
+// shutdown closes all Lua states in pool.
 func (pl *lStatePool) shutdown() {
 	for _, L := range pl.saved {
 		L.Close()
 	}
 }
 
+type luaPreviewerInfo struct {
+	priority int    // priority value for this previewer
+	name     string // name of this previewer, takes the form `<plugin-source>.<previewer-key>`
+	msgexpr  luaMsgExpr
+}
+
+// ----------------------------------------------------------------------------
+
 // Global LState pool, used for asynchronous execution
 var gLuaPool *lStatePool
 
 // Global LState instance with lock, used for synchronous execution
 var gLuaStateSync *luaStateBox
-
-type luaPreviewerInfo struct {
-	priority int
-	name     string
-	msgexpr  luaMsgExpr
-}
 
 var gLuaRegistry struct {
 	stateDataMap map[*lua.LState]map[string]*lua.LTable
@@ -259,8 +265,6 @@ var lgFuncUnconditional = lua.LGFunction(func(L *lua.LState) int {
 	L.Push(lua.LTrue)
 	return 1
 })
-
-// ----------------------------------------------------------------------------
 
 // goValueToLuaValue converts Go value to lua.LValue.
 func goValueToLuaValue(value any) (lua.LValue, error) {
@@ -317,25 +321,6 @@ func doCompiledFile(L *lua.LState, proto *lua.FunctionProto) error {
 	return L.PCall(0, lua.MultRet, nil)
 }
 
-// setupLuaTypeBindings adds `lf_types` global table as entrance of accessing
-// Go type binding meta tables.
-func setupLuaTypeBindings(L *lua.LState) {
-	lfTypes := L.NewTable()
-
-	lfTypes.RawSetString("App", LRegisterAppType(L))
-	lfTypes.RawSetString("UI", LRegisterUIType(L))
-
-	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
-	lfTypes.RawSetString("Dir", LRegisterDirType(L))
-	lfTypes.RawSetString("Nav", LRegisterNavType(L))
-
-	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
-	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
-	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
-
-	L.SetGlobal("lf_types", lfTypes)
-}
-
 // setupScripImportPath appends plugin root directory paths to Lua loader search
 // list.
 func setupScripImportPath(L *lua.LState, runtimeDirs []string) error {
@@ -372,6 +357,10 @@ func setupScripImportPath(L *lua.LState, runtimeDirs []string) error {
 
 // setupLuaGlobals setup global variables.
 func setupLuaGlobals(app *app, L *lua.LState) {
+	// Lua meta table registering must happens before any user data gets pushed
+	// onto Lua state.
+	setupLuaTypeBindings(L)
+
 	L.SetGlobal("print", L.NewFunction(func(L *lua.LState) int {
 		nargs := L.GetTop()
 		values := make([]any, nargs)
@@ -389,8 +378,36 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 	L.SetGlobal("app", LWrapApp(L, app))
 }
 
+// setupLuaTypeBindings adds `lf_types` global table as entrance of accessing
+// Go type binding meta tables.
+func setupLuaTypeBindings(L *lua.LState) {
+	lfTypes := L.NewTable()
+
+	lfTypes.RawSetString("App", LRegisterAppType(L))
+	lfTypes.RawSetString("UI", LRegisterUIType(L))
+
+	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
+	lfTypes.RawSetString("Dir", LRegisterDirType(L))
+	lfTypes.RawSetString("Nav", LRegisterNavType(L))
+
+	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
+	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
+	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
+
+	L.SetGlobal("lf_types", lfTypes)
+}
+
+// setupPreloadModules register load functions for preload modules.
+func setupPreloadModules(L *lua.LState) {
+	L.PreloadModule("lf", LfMainModuleLoader)
+	L.PreloadModule("lf.fs", LfFsModuleLoader)
+	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
+}
+
 // ----------------------------------------------------------------------------
 
+// loadEventHookRegistryFromTbl registers event hooks defined in table returned
+// from plugin script.
 func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyEventHook
 
@@ -436,6 +453,8 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
+// loadSortMethodRegistryFromTbl registers sort methods defined in table returned
+// from plugin script.
 func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeySortMethod
 
@@ -478,6 +497,8 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
+// loadCommandRegistryFromTbl registers commands defined in table returned from
+// plugin script.
 func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyCommand
 
@@ -535,6 +556,8 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
+// loadPreviewerRegistryFromTbl registers previewers defined in table returned
+// rom plugin script.
 func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyPreviewer
 
@@ -581,6 +604,8 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
+// sortLuaPreviewers sorts Lua previewers by their priority and name. Previewers
+// with higher priority takes precedence.
 func sortLuaPreviewers() {
 	slices.SortStableFunc(gLuaRegistry.previewers, func(a, b luaPreviewerInfo) int {
 		if a.priority < b.priority {
@@ -599,6 +624,12 @@ func sortLuaPreviewers() {
 	})
 }
 
+// setLuaPreviewerPriority updates priority value for previewer with given name.
+// When `withSort` is true, this function will sort previewer list when previewer
+// priority is actually changed.
+// If no previewer with given name is found, this function does nothing.
+// This function returns true if previewer priority is actually changed, otherwise
+// false.
 func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 	changed := false
 
@@ -621,40 +652,21 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 
 // ----------------------------------------------------------------------------
 
-func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg string) (lua.LValue, error) {
-	registryMap := gLuaRegistry.stateDataMap[L]
-	if registryMap == nil {
-		return nil, fmt.Errorf("no registry data found for current Lua state")
-	}
-
-	tbl := registryMap[sourceName]
-	if tbl == nil {
-		return nil, fmt.Errorf("invalid msg source name: %s", sourceName)
-	}
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
-	case lua.LTNil:
-		return nil, fmt.Errorf("no handler table found for registry key `%s`", registryKey)
-	case lua.LTTable:
-		// ok
-	default:
-		return nil, fmt.Errorf("unexpected type of registry value for key `%s`: %s", registryKey, value.Type())
-	}
-
-	handlerTbl := value.(*lua.LTable)
-	handler := handlerTbl.RawGetString(msg)
-
-	return handler, nil
-}
-
+// luaMsgHandlerExtractor takes Lua state and a message entry, and should return
+// a Lua function pointer as action function of this message entry. When no valid
+// action can be made for given message entry, this function returns nil.
 type luaMsgHandlerExtractor func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction
+
+// luaMsgArgsMaker is message argument type converter function, it takes Lua state
+// and returns a slice of Lua values as arguments for message action. This will
+// be used for Go value conversion after determining actual Lua State used for
+// running message call.
 type luaMsgArgsMaker func(L *lua.LState) []lua.LValue
 
 type luaMsgCallArgs struct {
-	sourceName, registryKey, msg string
-	handlerExtractor             luaMsgHandlerExtractor
-	getArgs                      luaMsgArgsMaker
+	sourceName, registryKey, msg, variant string
+	handlerExtractor                      luaMsgHandlerExtractor
+	getArgs                               luaMsgArgsMaker
 }
 
 var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
@@ -686,6 +698,35 @@ var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
 	},
 }
 
+// getLuaMsgEntry looks up Lua registry table for target message entry.
+func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg string) (lua.LValue, error) {
+	registryMap := gLuaRegistry.stateDataMap[L]
+	if registryMap == nil {
+		return nil, fmt.Errorf("no registry data found for current Lua state")
+	}
+
+	tbl := registryMap[sourceName]
+	if tbl == nil {
+		return nil, fmt.Errorf("invalid msg source name: %s", sourceName)
+	}
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return nil, fmt.Errorf("no handler table found for registry key `%s`", registryKey)
+	case lua.LTTable:
+		// ok
+	default:
+		return nil, fmt.Errorf("unexpected type of registry value for key `%s`: %s", registryKey, value.Type())
+	}
+
+	handlerTbl := value.(*lua.LTable)
+	handler := handlerTbl.RawGetString(msg)
+
+	return handler, nil
+}
+
+// callLuaMsgOnState finds and runs target Lua message handler on given Lua state.
 func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	entry, err := getLuaMsgEntry(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg)
 	if err != nil {
@@ -717,7 +758,11 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		L.Push(arg)
 	}
 
-	log.Printf("call Lua msg: (%s, %s, %s): %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, luaArgs)
+	if callArgs.variant != "" {
+		log.Printf("call Lua msg: (%s, %s, %s)@%s: %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant, luaArgs)
+	} else {
+		log.Printf("call Lua msg: (%s, %s, %s): %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, luaArgs)
+	}
 	err = L.PCall(len(luaArgs), lua.MultRet, nil)
 	if err != nil {
 		return nil, err
@@ -737,18 +782,23 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 	return ret, nil
 }
 
+// callLuaMsg gets a Lua state from pool and runs target Lua message on it.
 func callLuaMsg(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaPool.get()
 	defer gLuaPool.put(L)
 	return callLuaMsgOnState(L, callArgs)
 }
 
+// callLuaMsgSync acquires global synchronous Lua state and runs target Lua message
+// on it.
 func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaStateSync.acquire()
 	defer gLuaStateSync.release()
 	return callLuaMsgOnState(L, callArgs)
 }
 
+// callLuaMsgExpr runs specified Lua message expression, this function will use
+// the `isSync` flag in luaMsgExpr to determine which Lua state source to use.
 func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, getArgs luaMsgArgsMaker) ([]lua.LValue, error) {
 	callArgs := luaMsgCallArgs{
 		sourceName:       expr.sourceName,
@@ -765,6 +815,7 @@ func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, g
 	}
 }
 
+// callLuaCommandCompletion calls completion message for given Lua command.
 func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) ([]compMatch, string) {
 	ret, err := callLuaMsgExpr(
 		expr,
@@ -838,6 +889,7 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 	return matches, longest
 }
 
+// callLuaEventHooks calls all Lua event hooks under given command name.
 func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue) error {
 	exprList, ok := gLuaRegistry.eventHooks[cmdName]
 	if !ok {
@@ -860,6 +912,8 @@ func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue)
 	return nil
 }
 
+// callLuaPreviewerConditionChecker calls condition message for given Lua previewer.
+// And returns a bool flag indicating if this previewer is active for given argument.
 func callLuaPreviewerConditionChecker(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
 	ret, err := callLuaMsgExpr(
 		expr,
@@ -894,6 +948,9 @@ func callLuaPreviewerConditionChecker(expr *luaMsgExpr, getArgs luaMsgArgsMaker)
 	return !lua.LVIsFalse(ret[0]), nil
 }
 
+// callLuaPreviewerAction calls action message for given Lua previewer. when this
+// function returns true, preview content should be marked as volatile, just link
+// an non-zero exit code returned by previewer command.
 func callLuaPreviewerAction(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
 	ret, err := callLuaMsgExpr(expr, nil, getArgs)
 	if err != nil {
@@ -907,8 +964,7 @@ func callLuaPreviewerAction(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, er
 	return !lua.LVIsFalse(ret[0]), nil
 }
 
-// ----------------------------------------------------------------------------
-
+// getLuaPreviewerForPath search for active previewer for certain path.
 func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
 	getArgs := func(L *lua.LState) []lua.LValue {
 		return []lua.LValue{lua.LString(path)}
