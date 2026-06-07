@@ -19,13 +19,13 @@ func LfMainModuleLoader(L *lua.LState) int {
 
 var LfMainModuleExports = map[string]lua.LGFunction{
 	"glob_match": luaGlobMatch,
-	"readdir":    luaReadDir,
 }
 
 func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	mod.RawSetString("REGISTRY_SORT_METHOD", lua.LString(registryKeySortMethod))
 	mod.RawSetString("REGISTRY_COMMAND", lua.LString(registryKeyCommand))
 	mod.RawSetString("REGISTRY_EVENT_HOOK", lua.LString(registryKeyEventHook))
+	mod.RawSetString("REGISTRY_PREVIEWER", lua.LString(registryKeyPreviewer))
 
 	eventType := L.NewTable()
 	eventType.RawSetString("PreCd", lua.LString("pre-cd"))
@@ -52,26 +52,6 @@ func luaGlobMatch(L *lua.LState) int {
 	}
 
 	L.Push(lua.LBool(match))
-
-	return 1
-}
-
-func luaReadDir(L *lua.LState) int {
-	path := L.CheckString(1)
-
-	files, err := readdir(path)
-	if err != nil {
-		L.Push(lua.LNil)
-		L.Push(lua.LString(err.Error()))
-		return 2
-	}
-
-	tbl := L.NewTable()
-	for _, f := range files {
-		tbl.Append(LWrapFile(L, f))
-	}
-
-	L.Push(tbl)
 
 	return 1
 }

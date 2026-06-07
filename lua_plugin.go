@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strings"
 	"sync"
 
@@ -20,6 +21,12 @@ const (
 	registryKeySortMethod = "sort_method"
 	registryKeyCommand    = "command"
 	registryKeyEventHook  = "event_hook"
+	registryKeyPreviewer  = "previewer"
+)
+
+const (
+	luaPreviewerConditionFuncKey = "condition"
+	luaPreviewerActionFuncKey    = "action"
 )
 
 type luaStateBox struct {
@@ -188,6 +195,9 @@ func (pl *lStatePool) newWithRegistryUpdate() *lua.LState {
 		loadEventHookRegistryFromTbl(sourceName, tbl)
 		loadSortMethodRegistryFromTbl(sourceName, tbl)
 		loadCommandRegistryFromTbl(sourceName, tbl)
+
+		loadPreviewerRegistryFromTbl(sourceName, tbl)
+		sortLuaPreviewers()
 	})
 }
 
@@ -203,6 +213,7 @@ func (pl *lStatePool) setupLStateEnvironment(L *lua.LState) {
 	setupLuaGlobals(pl.app, L)
 
 	L.PreloadModule("lf", LfMainModuleLoader)
+	L.PreloadModule("lf.fs", LfFsModuleLoader)
 	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
 }
 
@@ -224,19 +235,27 @@ var gLuaPool *lStatePool
 // Global LState instance with lock, used for synchronous execution
 var gLuaStateSync *luaStateBox
 
-type luaMsgTarget struct {
-	sourceName  string
-	registryKey string
-	msg         string
-	isSync      bool
+type luaPreviewerInfo struct {
+	priority int
+	name     string
+	msgexpr  luaMsgExpr
 }
 
 var gLuaRegistry struct {
+	stateDataMap map[*lua.LState]map[string]*lua.LTable
+
 	sortMethod map[string]luaMsgExpr
 	eventHooks map[string][]luaMsgExpr
-
-	stateDataMap map[*lua.LState]map[string]*lua.LTable
+	previewers []luaPreviewerInfo
 }
+
+// lgFuncUnconditional is a Lua function that always returns true.
+var lgFuncUnconditional = lua.LGFunction(func(L *lua.LState) int {
+	L.Push(lua.LTrue)
+	return 1
+})
+
+// ----------------------------------------------------------------------------
 
 // goValueToLuaValue converts Go value to lua.LValue.
 func goValueToLuaValue(value any) (lua.LValue, error) {
@@ -305,6 +324,10 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
 
+	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
+
+	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
+
 	L.SetGlobal("lf_types", lfTypes)
 }
 
@@ -361,6 +384,8 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 	L.SetGlobal("app", LWrapApp(L, app))
 }
 
+// ----------------------------------------------------------------------------
+
 func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyEventHook
 
@@ -371,19 +396,19 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	case lua.LTTable:
 		// ok
 	default:
-		log.Printf("registry field `%s` is not a table", sourceName, registryKey)
+		log.Printf("registry field `%s` is not a table", registryKey)
 		return
 	}
 
 	eventHookTbl := value.(*lua.LTable)
 	eventHookTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
-			log.Printf("event hook registry key is expected to be string, found %s: %s", sourceName, key.Type(), key)
+			log.Printf("event hook registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
 		}
 
 		if value.Type() != lua.LTFunction {
-			log.Printf("event hook registry value is expected to be function, found %s: %s", sourceName, value.Type(), value)
+			log.Printf("event hook registry value is expected to be function, found %s: %s", value.Type(), value)
 			return
 		}
 
@@ -416,19 +441,19 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	case lua.LTTable:
 		// ok
 	default:
-		log.Printf("registry field `%s` is not a table", sourceName, registryKey)
+		log.Printf("registry field `%s` is not a table", registryKey)
 		return
 	}
 
 	sortMethodTbl := value.(*lua.LTable)
 	sortMethodTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
-			log.Printf("sort method registry key is expected to be string, found %s: %s", sourceName, key.Type(), key)
+			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
 		}
 
 		if value.Type() != lua.LTFunction {
-			log.Printf("sort method registry value is expected to be function, found %s: %s", sourceName, value.Type(), value)
+			log.Printf("sort method registry value is expected to be function, found %s: %s", value.Type(), value)
 			return
 		}
 
@@ -458,14 +483,14 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	case lua.LTTable:
 		// ok
 	default:
-		log.Printf("registry field `%s` is not a table", sourceName, registryKey)
+		log.Printf("registry field `%s` is not a table", registryKey)
 		return
 	}
 
 	cmdTbl := value.(*lua.LTable)
 	cmdTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
-			log.Printf("command registry key is expected to be string, found %s: %s", sourceName, key.Type(), key)
+			log.Printf("command registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
 		}
 
@@ -489,12 +514,78 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				msg:        name,
 			}
 		default:
-			log.Printf("command registry value is expected to be string or function, get %s: %s", sourceName, value.Type(), value)
+			log.Printf("command registry value is expected to be string or function, get %s: %s", value.Type(), value)
 		}
 	})
 }
 
-func callLuaCmdOnState(L *lua.LState, sourceName string, registryKey string, msg string, getargs func(L *lua.LState) []lua.LValue) ([]lua.LValue, error) {
+func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyPreviewer
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl := value.(*lua.LTable)
+	registryTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("previewer registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		switch value.Type() {
+		case lua.LTFunction, lua.LTTable:
+			// ok
+		default:
+			log.Printf("previewer registry value is expected to be function or table, found %s: %s", value.Type(), value)
+			return
+		}
+
+		msg := key.String()
+		name := filepath.Base(filepath.Dir(sourceName)) + "." + msg
+		gLuaRegistry.previewers = append(gLuaRegistry.previewers, luaPreviewerInfo{
+			priority: 0,
+			name:     name,
+			msgexpr: luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				// isSync:      false,
+			},
+		})
+
+		log.Printf("add previewer: %s", name)
+	})
+}
+
+func sortLuaPreviewers() {
+	slices.SortStableFunc(gLuaRegistry.previewers, func(a, b luaPreviewerInfo) int {
+		if a.priority < b.priority {
+			return -1
+		} else if a.priority > b.priority {
+			return 1
+		}
+
+		if a.name < b.name {
+			return -1
+		} else if a.name > b.name {
+			return 1
+		}
+
+		return 0
+	})
+}
+
+// ----------------------------------------------------------------------------
+
+func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg string) (lua.LValue, error) {
 	registryMap := gLuaRegistry.stateDataMap[L]
 	if registryMap == nil {
 		return nil, fmt.Errorf("no registry data found for current Lua state")
@@ -517,22 +608,68 @@ func callLuaCmdOnState(L *lua.LState, sourceName string, registryKey string, msg
 
 	handlerTbl := value.(*lua.LTable)
 	handler := handlerTbl.RawGetString(msg)
-	if handler.Type() != lua.LTFunction {
-		return nil, fmt.Errorf("msg handler is not a function")
+
+	return handler, nil
+}
+
+type luaMsgHandlerExtractor func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction
+type luaMsgArgsMaker func(L *lua.LState) []lua.LValue
+
+type luaMsgCallArgs struct {
+	sourceName, registryKey, msg string
+	handlerExtractor             luaMsgHandlerExtractor
+	getArgs                      luaMsgArgsMaker
+}
+
+var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
+	registryKeyPreviewer: func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+		switch msgEntry.Type() {
+		case lua.LTFunction:
+			return msgEntry.(*lua.LFunction)
+		case lua.LTTable:
+			actionFunc := msgEntry.(*lua.LTable).RawGetString(luaPreviewerActionFuncKey)
+			if actionFunc.Type() == lua.LTFunction {
+				return actionFunc.(*lua.LFunction)
+			}
+		}
+		// invalid previewer
+		return nil
+	},
+}
+
+func callLuaCmdOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
+	entry, err := getLuaMsgEntry(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg)
+	if err != nil {
+		return nil, err
+	}
+
+	var handler *lua.LFunction
+	extractor := callArgs.handlerExtractor
+	if extractor == nil {
+		extractor = handlerExtractorMap[callArgs.registryKey]
+	}
+
+	if extractor != nil {
+		handler = extractor(L, entry)
+	} else {
+		handler, _ = entry.(*lua.LFunction)
+	}
+	if handler == nil {
+		return nil, fmt.Errorf("can't get valid msg handler function")
 	}
 
 	var luaArgs []lua.LValue
-	if getargs != nil {
-		luaArgs = getargs(L)
+	if callArgs.getArgs != nil {
+		luaArgs = callArgs.getArgs(L)
 	}
 
-	L.Push(handler.(*lua.LFunction))
+	L.Push(handler)
 	for _, arg := range luaArgs {
 		L.Push(arg)
 	}
 
-	log.Printf("call Lua msg: (%s, %s, %s): %q", sourceName, registryKey, msg, luaArgs)
-	err := L.PCall(len(luaArgs), lua.MultRet, nil)
+	log.Printf("call Lua msg: (%s, %s, %s): %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, luaArgs)
+	err = L.PCall(len(luaArgs), lua.MultRet, nil)
 	if err != nil {
 		return nil, err
 	}
@@ -551,23 +688,31 @@ func callLuaCmdOnState(L *lua.LState, sourceName string, registryKey string, msg
 	return ret, nil
 }
 
-func callLuaMsg(sourceName string, registryKey string, msg string, getArgs func(L *lua.LState) []lua.LValue) ([]lua.LValue, error) {
+func callLuaMsg(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaPool.get()
 	defer gLuaPool.put(L)
-	return callLuaCmdOnState(L, sourceName, registryKey, msg, getArgs)
+	return callLuaCmdOnState(L, callArgs)
 }
 
-func callLuaMsgSync(sourceName string, registryKey string, msg string, getArgs func(L *lua.LState) []lua.LValue) ([]lua.LValue, error) {
+func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	L := gLuaStateSync.acquire()
 	defer gLuaStateSync.release()
-	return callLuaCmdOnState(L, sourceName, registryKey, msg, getArgs)
+	return callLuaCmdOnState(L, callArgs)
 }
 
-func callLuaMsgExpr(expr *luaMsgExpr, getArgs func(L *lua.LState) []lua.LValue) ([]lua.LValue, error) {
+func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, getArgs luaMsgArgsMaker) ([]lua.LValue, error) {
+	callArgs := luaMsgCallArgs{
+		sourceName:       expr.sourceName,
+		registryKey:      expr.registry,
+		msg:              expr.msg,
+		handlerExtractor: handlerExtractor,
+		getArgs:          getArgs,
+	}
+
 	if expr.isSync {
-		return callLuaMsgSync(expr.sourceName, expr.registry, expr.msg, getArgs)
+		return callLuaMsgSync(callArgs)
 	} else {
-		return callLuaMsg(expr.sourceName, expr.registry, expr.msg, getArgs)
+		return callLuaMsg(callArgs)
 	}
 }
 
@@ -579,7 +724,7 @@ func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue)
 
 	errCnt := 0
 	for _, expr := range exprList {
-		_, err := callLuaMsgExpr(&expr, getArgs)
+		_, err := callLuaMsgExpr(&expr, nil, getArgs)
 		if err != nil {
 			errCnt++
 			log.Printf("failed to run hook %s: %s", &expr, err)
@@ -591,4 +736,71 @@ func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue)
 	}
 
 	return nil
+}
+
+func callLuaPreviewerConditionChecker(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
+	ret, err := callLuaMsgExpr(
+		expr,
+		func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+			switch msgEntry.Type() {
+			case lua.LTFunction:
+				// previewer defined as a simple function, activated unconditionally.
+				return L.NewFunction(lgFuncUnconditional)
+			case lua.LTTable:
+				// previewer defined as a table, try find condition function from it.
+				condFunc := msgEntry.(*lua.LTable).RawGetString(luaPreviewerConditionFuncKey)
+				if condFunc.Type() == lua.LTFunction {
+					return condFunc.(*lua.LFunction)
+				} else {
+					return L.NewFunction(lgFuncUnconditional)
+				}
+			}
+			// invalid previewer
+			return nil
+		},
+		getArgs,
+	)
+
+	if err != nil {
+		return false, fmt.Errorf("previewer condition check failed: %s", err)
+	}
+
+	if len(ret) == 0 {
+		return false, nil
+	}
+
+	return !lua.LVIsFalse(ret[0]), nil
+}
+
+func callLuaPreviewerAction(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
+	ret, err := callLuaMsgExpr(expr, nil, getArgs)
+	if err != nil {
+		return true, fmt.Errorf("previewer action failed: %s", err)
+	}
+
+	if len(ret) == 0 {
+		return false, nil
+	}
+
+	return !lua.LVIsFalse(ret[0]), nil
+}
+
+// ----------------------------------------------------------------------------
+
+func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
+	getArgs := func(L *lua.LState) []lua.LValue {
+		return []lua.LValue{lua.LString(path)}
+	}
+
+	var result *luaPreviewerInfo
+	for i := range gLuaRegistry.previewers {
+		previewer := &gLuaRegistry.previewers[i]
+		ok, _ := callLuaPreviewerConditionChecker(&previewer.msgexpr, getArgs)
+		if ok {
+			result = previewer
+			break
+		}
+	}
+
+	return result
 }
