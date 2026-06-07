@@ -15,8 +15,14 @@ const LuaBufWriterTypeName = "lf.buf_writer"
 func LRegisterBufWriterType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaBufWriterTypeName)
 
-	L.SetFuncs(mt, luaBufWriterStaticMethod)
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), luaBufWriterMethods))
+	// L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"available":    luaBufWriterAvailable,
+		"buffered":     luaBufWriterBuffered,
+		"flush":        luaBufWriterFlush,
+		"size":         luaBufWriterSize,
+		"write_string": luaBufWriterWriteString,
+	}))
 
 	return mt
 }
@@ -54,18 +60,6 @@ func LAddBufWriterToState(L *lua.LState, data *bufio.Writer) int {
 }
 
 // ----------------------------------------------------------------------------
-
-var luaBufWriterStaticMethod = map[string]lua.LGFunction{}
-
-// ----------------------------------------------------------------------------
-
-var luaBufWriterMethods = map[string]lua.LGFunction{
-	"available":    luaBufWriterAvailable,
-	"buffered":     luaBufWriterBuffered,
-	"flush":        luaBufWriterFlush,
-	"size":         luaBufWriterSize,
-	"write_string": luaBufWriterWriteString,
-}
 
 func luaBufWriterAvailable(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
@@ -121,8 +115,14 @@ const LuaFileInfoTypeName = "lf.file_info"
 func LRegisterFileInfoType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaFileInfoTypeName)
 
-	L.SetFuncs(mt, luaFileInfoStaticMethod)
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), luaFileInfoMethods))
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"name":     luaFileInfoName,
+		"size":     luaFileInfoSize,
+		"mode":     luaFileInfoMode,
+		"mod_time": luaFileInfoModTime,
+		"is_dir":   luaFileInfoIsDir,
+	}))
 
 	return mt
 }
@@ -161,17 +161,6 @@ func LAddFileInfoToState(L *lua.LState, data fs.FileInfo) int {
 
 // ----------------------------------------------------------------------------
 
-var luaFileInfoStaticMethod = map[string]lua.LGFunction{}
-
-// ----------------------------------------------------------------------------
-
-var luaFileInfoMethods = map[string]lua.LGFunction{
-	"name":   luaFileInfoName,
-	"size":   luaFileInfoSize,
-	"mode":   luaFileInfoMode,
-	"is_dir": luaFileInfoIsDir,
-}
-
 func luaFileInfoName(L *lua.LState) int {
 	info := LCheckFileInfo(L, 1)
 	L.Push(lua.LString(info.Name()))
@@ -188,6 +177,12 @@ func luaFileInfoMode(L *lua.LState) int {
 	info := LCheckFileInfo(L, 1)
 	L.Push(lua.LNumber(info.Mode()))
 	return 1
+}
+
+func luaFileInfoModTime(L *lua.LState) int {
+	info := LCheckFileInfo(L, 1)
+	t := info.ModTime()
+	return LAddTimeToState(L, &t)
 }
 
 func luaFileInfoIsDir(L *lua.LState) int {

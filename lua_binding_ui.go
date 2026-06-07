@@ -12,8 +12,13 @@ const LuaUITypeName = "lf.ui"
 func LRegisterUIType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaUITypeName)
 
-	L.SetFuncs(mt, luaUIStaticMethod)
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), luaUIMethods))
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"echo":     luaUIEcho,
+		"echomsg":  luaUIEchoMsg,
+		"echoerr":  luaUIEchhoErr,
+		"echoerrf": luaUIEchhoErrf,
+	}))
 
 	return mt
 }
@@ -51,17 +56,6 @@ func LAddUIToState(L *lua.LState, data *ui) int {
 }
 
 // ----------------------------------------------------------------------------
-
-var luaUIStaticMethod = map[string]lua.LGFunction{}
-
-// ----------------------------------------------------------------------------
-
-var luaUIMethods = map[string]lua.LGFunction{
-	"echo":     luaUIEcho,
-	"echomsg":  luaUIEchoMsg,
-	"echoerr":  luaUIEchhoErr,
-	"echoerrf": luaUIEchhoErrf,
-}
 
 func luaUIEcho(L *lua.LState) int {
 	ui := LCheckUI(L, 1)

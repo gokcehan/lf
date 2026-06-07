@@ -10,8 +10,13 @@ const LuaCompMatchTypeName = "lf.comp_match"
 func LRegisterCompMatchType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaCompMatchTypeName)
 
-	L.SetFuncs(mt, luaCompMatchStaticMethod)
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), luaCompMatchMethods))
+	L.SetFuncs(mt, map[string]lua.LGFunction{
+		"new": luaCompMatchNew,
+	})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"name":   luaCompMatchName,
+		"result": luaCompMatchResult,
+	}))
 
 	return mt
 }
@@ -50,10 +55,6 @@ func LAddCompMatchToState(L *lua.LState, data *compMatch) int {
 
 // ----------------------------------------------------------------------------
 
-var luaCompMatchStaticMethod = map[string]lua.LGFunction{
-	"new": luaCompMatchNew,
-}
-
 func luaCompMatchNew(L *lua.LState) int {
 	name := L.CheckString(1)
 	result := L.CheckString(2)
@@ -61,11 +62,6 @@ func luaCompMatchNew(L *lua.LState) int {
 }
 
 // ----------------------------------------------------------------------------
-
-var luaCompMatchMethods = map[string]lua.LGFunction{
-	"name":   luaCompMatchName,
-	"result": luaCompMatchResult,
-}
 
 func luaCompMatchName(L *lua.LState) int {
 	cm := LCheckCompMatch(L, 1)

@@ -12,8 +12,11 @@ const LuaAppTypeName = "lf.app"
 func LRegisterAppType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaAppTypeName)
 
-	L.SetFuncs(mt, luaAppStaticMethod)
-	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), luaAppMethods))
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"ui":  luaAppUI,
+		"nav": luaAppNav,
+	}))
 
 	return mt
 }
@@ -51,15 +54,6 @@ func LAddAppToState(L *lua.LState, data *app) int {
 }
 
 // ----------------------------------------------------------------------------
-
-var luaAppStaticMethod = map[string]lua.LGFunction{}
-
-// ----------------------------------------------------------------------------
-
-var luaAppMethods = map[string]lua.LGFunction{
-	"ui":  luaAppUI,
-	"nav": luaAppNav,
-}
 
 func luaAppUI(L *lua.LState) int {
 	app := LCheckApp(L, 1)
