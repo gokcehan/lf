@@ -17,6 +17,8 @@ import (
 
 const pluginDirName = "plugins"
 
+const luaMsgVariantMain = ""
+
 const (
 	registryKeySortMethod = "sort_method"
 	registryKeyCommand    = "command"
@@ -259,12 +261,6 @@ var gLuaRegistry struct {
 	eventHooks map[string][]luaMsgExpr
 	previewers []luaPreviewerInfo
 }
-
-// lgFuncUnconditional is a Lua function that always returns true.
-var lgFuncUnconditional = lua.LGFunction(func(L *lua.LState) int {
-	L.Push(lua.LTrue)
-	return 1
-})
 
 // goValueToLuaValue converts Go value to lua.LValue.
 func goValueToLuaValue(value any) (lua.LValue, error) {
@@ -665,37 +661,75 @@ type luaMsgArgsMaker func(L *lua.LState) []lua.LValue
 
 type luaMsgCallArgs struct {
 	sourceName, registryKey, msg, variant string
-	handlerExtractor                      luaMsgHandlerExtractor
 	getArgs                               luaMsgArgsMaker
 }
 
-var handlerExtractorMap = map[string]luaMsgHandlerExtractor{
-	registryKeyCommand: func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
+	registryKeyCommand: {
+		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaCommandActionFuncKey),
+		luaCommandCompletionFuncKey: extractLuaMsgHandlerWithDefaultAction(
+			luaCommandCompletionFuncKey,
+			func(L *lua.LState) int {
+				return 0
+			},
+		),
+	},
+	registryKeyPreviewer: {
+		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaPreviewerActionFuncKey),
+		luaPreviewerConditionFuncKey: extractLuaMsgHandlerWithDefaultAction(
+			luaPreviewerConditionFuncKey,
+			func(L *lua.LState) int {
+				L.Push(lua.LTrue)
+				return 1
+			},
+		),
+	},
+}
+
+// extractLuaMsgHandlerWithTblKey returns a handler extractor function, returned
+// function will retruns message entry as a Lua function if it is one, if that
+// entry is a table, extractor will check the value for given key, and returns
+// that value if it is a function.
+// Otherwise extractor returns nil.
+func extractLuaMsgHandlerWithTblKey(key string) luaMsgHandlerExtractor {
+	return func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
 		switch msgEntry.Type() {
 		case lua.LTFunction:
+			//  if entry is a function, return it as is.
 			return msgEntry.(*lua.LFunction)
 		case lua.LTTable:
-			actionFunc := msgEntry.(*lua.LTable).RawGetString(luaCommandActionFuncKey)
+			// if entry is a table, try to get actioin function with given key
+			actionFunc := msgEntry.(*lua.LTable).RawGetString(key)
 			if actionFunc.Type() == lua.LTFunction {
 				return actionFunc.(*lua.LFunction)
 			}
 		}
-		// invalid action
+		// invalid entry
 		return nil
-	},
-	registryKeyPreviewer: func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
+	}
+}
+
+// extractLuaMsgHandlerWithDefaultAction returns a handler extractor that works
+// pretty much like extractLuaMsgHandlerWithTblKey ones, but will return a Lua
+// function made by wrapping `defualtAction` when message entry is defined as
+// a function itself, or is defined as a table but does not contains specified key.
+func extractLuaMsgHandlerWithDefaultAction(key string, defaultAction lua.LGFunction) luaMsgHandlerExtractor {
+	return func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
 		switch msgEntry.Type() {
 		case lua.LTFunction:
-			return msgEntry.(*lua.LFunction)
+			return L.NewFunction(defaultAction)
 		case lua.LTTable:
-			actionFunc := msgEntry.(*lua.LTable).RawGetString(luaPreviewerActionFuncKey)
-			if actionFunc.Type() == lua.LTFunction {
+			actionFunc := msgEntry.(*lua.LTable).RawGetString(key)
+			switch actionFunc.Type() {
+			case lua.LTFunction:
 				return actionFunc.(*lua.LFunction)
+			case lua.LTNil:
+				return L.NewFunction(defaultAction)
 			}
 		}
-		// invalid previewer
+		// invalid entry
 		return nil
-	},
+	}
 }
 
 // getLuaMsgEntry looks up Lua registry table for target message entry.
@@ -734,9 +768,9 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 	}
 
 	var handler *lua.LFunction
-	extractor := callArgs.handlerExtractor
-	if extractor == nil {
-		extractor = handlerExtractorMap[callArgs.registryKey]
+	var extractor luaMsgHandlerExtractor
+	if extractorMap, ok := handlerExtractorMap[callArgs.registryKey]; ok {
+		extractor = extractorMap[callArgs.variant]
 	}
 
 	if extractor != nil {
@@ -799,13 +833,13 @@ func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 
 // callLuaMsgExpr runs specified Lua message expression, this function will use
 // the `isSync` flag in luaMsgExpr to determine which Lua state source to use.
-func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, getArgs luaMsgArgsMaker) ([]lua.LValue, error) {
+func callLuaMsgExpr(expr *luaMsgExpr, variant string, getArgs luaMsgArgsMaker) ([]lua.LValue, error) {
 	callArgs := luaMsgCallArgs{
-		sourceName:       expr.sourceName,
-		registryKey:      expr.registry,
-		msg:              expr.msg,
-		handlerExtractor: handlerExtractor,
-		getArgs:          getArgs,
+		sourceName:  expr.sourceName,
+		registryKey: expr.registry,
+		msg:         expr.msg,
+		variant:     variant,
+		getArgs:     getArgs,
 	}
 
 	if expr.isSync {
@@ -819,21 +853,7 @@ func callLuaMsgExpr(expr *luaMsgExpr, handlerExtractor luaMsgHandlerExtractor, g
 func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) ([]compMatch, string) {
 	ret, err := callLuaMsgExpr(
 		expr,
-		func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
-			switch msgEntry.Type() {
-			case lua.LTFunction:
-				return L.NewFunction(func(L *lua.LState) int {
-					return 0
-				})
-			case lua.LTTable:
-				actionFunc := msgEntry.(*lua.LTable).RawGetString(luaCommandCompletionFuncKey)
-				if actionFunc.Type() == lua.LTFunction {
-					return actionFunc.(*lua.LFunction)
-				}
-			}
-			// invalid action
-			return nil
-		},
+		luaCommandCompletionFuncKey,
 		func(L *lua.LState) []lua.LValue {
 			tbl := L.NewTable()
 			for i, arg := range args {
@@ -879,7 +899,7 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 			if v, ok := value.(*lua.LUserData).Value.(*compMatch); ok {
 				matches = append(matches, *v)
 			} else {
-				log.Println("matches list element #%d is not a valid user data")
+				log.Printf("matches list element #%d is not a valid user data", i)
 			}
 		default:
 			log.Printf("matches list element #%d be string or user data, found %s: %s", i, value.Type(), value)
@@ -890,7 +910,7 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 }
 
 // callLuaEventHooks calls all Lua event hooks under given command name.
-func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue) error {
+func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 	exprList, ok := gLuaRegistry.eventHooks[cmdName]
 	if !ok {
 		return nil
@@ -898,7 +918,7 @@ func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue)
 
 	errCnt := 0
 	for _, expr := range exprList {
-		_, err := callLuaMsgExpr(&expr, nil, getArgs)
+		_, err := callLuaMsgExpr(&expr, luaMsgVariantMain, getArgs)
 		if err != nil {
 			errCnt++
 			log.Printf("failed to run hook %s: %s", &expr, err)
@@ -914,31 +934,12 @@ func callLuaEventHooks(cmdName string, getArgs func(L *lua.LState) []lua.LValue)
 
 // callLuaPreviewerConditionChecker calls condition message for given Lua previewer.
 // And returns a bool flag indicating if this previewer is active for given argument.
-func callLuaPreviewerConditionChecker(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
-	ret, err := callLuaMsgExpr(
-		expr,
-		func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
-			switch msgEntry.Type() {
-			case lua.LTFunction:
-				// previewer defined as a simple function, activated unconditionally.
-				return L.NewFunction(lgFuncUnconditional)
-			case lua.LTTable:
-				// previewer defined as a table, try find condition function from it.
-				condFunc := msgEntry.(*lua.LTable).RawGetString(luaPreviewerConditionFuncKey)
-				if condFunc.Type() == lua.LTFunction {
-					return condFunc.(*lua.LFunction)
-				} else {
-					return L.NewFunction(lgFuncUnconditional)
-				}
-			}
-			// invalid previewer
-			return nil
-		},
-		getArgs,
-	)
-
+func callLuaPreviewerConditionChecker(expr *luaMsgExpr, path string) (bool, error) {
+	ret, err := callLuaMsgExpr(expr, luaPreviewerConditionFuncKey, func(L *lua.LState) []lua.LValue {
+		return []lua.LValue{lua.LString(path)}
+	})
 	if err != nil {
-		return false, fmt.Errorf("previewer condition check failed: %s", err)
+		return false, err
 	}
 
 	if len(ret) == 0 {
@@ -951,10 +952,19 @@ func callLuaPreviewerConditionChecker(expr *luaMsgExpr, getArgs luaMsgArgsMaker)
 // callLuaPreviewerAction calls action message for given Lua previewer. when this
 // function returns true, preview content should be marked as volatile, just link
 // an non-zero exit code returned by previewer command.
-func callLuaPreviewerAction(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, error) {
-	ret, err := callLuaMsgExpr(expr, nil, getArgs)
+func callLuaPreviewerAction(expr *luaMsgExpr, writer *bufio.Writer, path string, w, h, x, y int) (bool, error) {
+	ret, err := callLuaMsgExpr(expr, luaMsgVariantMain, func(L *lua.LState) []lua.LValue {
+		return []lua.LValue{
+			LWrapBufWriter(L, writer),
+			lua.LString(path),
+			lua.LNumber(w),
+			lua.LNumber(h),
+			lua.LNumber(x),
+			lua.LNumber(y),
+		}
+	})
 	if err != nil {
-		return true, fmt.Errorf("previewer action failed: %s", err)
+		return true, err
 	}
 
 	if len(ret) == 0 {
@@ -966,15 +976,13 @@ func callLuaPreviewerAction(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (bool, er
 
 // getLuaPreviewerForPath search for active previewer for certain path.
 func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
-	getArgs := func(L *lua.LState) []lua.LValue {
-		return []lua.LValue{lua.LString(path)}
-	}
-
 	var result *luaPreviewerInfo
 	for i := range gLuaRegistry.previewers {
 		previewer := &gLuaRegistry.previewers[i]
-		ok, _ := callLuaPreviewerConditionChecker(&previewer.msgexpr, getArgs)
-		if ok {
+		ok, err := callLuaPreviewerConditionChecker(&previewer.msgexpr, path)
+		if err != nil {
+			log.Printf("failed to check condition for previewer %s: %s", previewer.name, err)
+		} else if ok {
 			result = previewer
 			break
 		}

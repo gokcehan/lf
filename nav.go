@@ -348,7 +348,7 @@ func (dir *dir) sort() {
 }
 
 func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
-	retList, err := callLuaMsgExpr(expr, nil, func(L *lua.LState) []lua.LValue {
+	retList, err := callLuaMsgExpr(expr, luaMsgVariantMain, func(L *lua.LState) []lua.LValue {
 		udTbl := L.NewTable()
 		for _, file := range files {
 			udTbl.Append(LWrapFile(L, file))
@@ -949,16 +949,11 @@ func (nav *nav) preview(path string, win *win, mode string) {
 		writer := bufio.NewWriter(buffer)
 		reader = bufio.NewReader(buffer)
 
-		reg.volatile, _ = callLuaPreviewerAction(&luaPreviewer.msgexpr, func(L *lua.LState) []lua.LValue {
-			return []lua.LValue{
-				LWrapBufWriter(L, writer),
-				lua.LString(path),
-				lua.LNumber(win.w),
-				lua.LNumber(win.h),
-				lua.LNumber(win.x),
-				lua.LNumber(win.y),
-			}
-		})
+		var err error
+		reg.volatile, err = callLuaPreviewerAction(&luaPreviewer.msgexpr, writer, path, win.w, win.h, win.x, win.y)
+		if err != nil {
+			log.Printf("lua previewer failed: %s", err)
+		}
 	} else if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(
 			gOpts.previewer,
