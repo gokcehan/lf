@@ -204,6 +204,7 @@ type luaMsgExpr struct {
 	sourceName string
 	registry   string
 	msg        string
+	variant    string
 	isSync     bool
 }
 

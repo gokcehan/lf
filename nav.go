@@ -348,7 +348,7 @@ func (dir *dir) sort() {
 }
 
 func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
-	retList, err := callLuaMsgExpr(expr, luaMsgVariantMain, func(L *lua.LState) []lua.LValue {
+	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 		udTbl := L.NewTable()
 		for _, file := range files {
 			udTbl.Append(LWrapFile(L, file))

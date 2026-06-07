@@ -641,7 +641,7 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 }
 
 func (e *luaMsgExpr) eval(app *app, args []string) {
-	_, err := callLuaMsgExpr(e, luaMsgVariantMain, func(L *lua.LState) []lua.LValue {
+	_, err := callLuaMsgExpr(e, func(L *lua.LState) []lua.LValue {
 		msgArgs := make([]lua.LValue, len(args))
 		for i, arg := range args {
 			msgArgs[i] = lua.LString(arg)
