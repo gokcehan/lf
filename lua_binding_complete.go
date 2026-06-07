@@ -2,6 +2,9 @@ package main
 
 import lua "github.com/yuin/gopher-lua"
 
+// ----------------------------------------------------------------------------
+// Type compMatch
+
 const LuaCompMatchTypeName = "lf.comp_match"
 
 func LRegisterCompMatchType(L *lua.LState) *lua.LTable {

@@ -4,6 +4,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+// ----------------------------------------------------------------------------
+// Type app
+
 const LuaAppTypeName = "lf.app"
 
 func LRegisterAppType(L *lua.LState) *lua.LTable {

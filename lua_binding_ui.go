@@ -4,6 +4,9 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
+// ----------------------------------------------------------------------------
+// Type ui
+
 const LuaUITypeName = "lf.ui"
 
 func LRegisterUIType(L *lua.LState) *lua.LTable {
