@@ -568,9 +568,9 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 func sortLuaPreviewers() {
 	slices.SortStableFunc(gLuaRegistry.previewers, func(a, b luaPreviewerInfo) int {
 		if a.priority < b.priority {
-			return -1
-		} else if a.priority > b.priority {
 			return 1
+		} else if a.priority > b.priority {
+			return -1
 		}
 
 		if a.name < b.name {
@@ -581,6 +581,26 @@ func sortLuaPreviewers() {
 
 		return 0
 	})
+}
+
+func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
+	changed := false
+
+	for i := range gLuaRegistry.previewers {
+		if gLuaRegistry.previewers[i].name == name {
+			if gLuaRegistry.previewers[i].priority != priority {
+				changed = true
+				gLuaRegistry.previewers[i].priority = priority
+			}
+			break
+		}
+	}
+
+	if changed && withSort {
+		sortLuaPreviewers()
+	}
+
+	return changed
 }
 
 // ----------------------------------------------------------------------------

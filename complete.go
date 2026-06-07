@@ -119,6 +119,7 @@ var (
 		"cmd-word",
 		"cmd-word-back",
 		"cmd-yank",
+		"luapreviewer-priority",
 	}
 
 	gOptWords      = getOptWords(gOpts)
@@ -457,6 +458,15 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		}
 	case "toggle":
 		matches, longest = matchCmdFile(f[len(f)-1], false)
+	case "luapreviewer-priority":
+		if len(f)%2 == 0 {
+			names := []string{}
+			for _, previewer := range gLuaRegistry.previewers {
+				names = append(names, previewer.name)
+			}
+			slices.Sort(names)
+			matches, longest = matchWord(f[len(f)-1], slices.Compact(names))
+		}
 	default:
 		if !slices.Contains(gCmdWords, f[0]) {
 			matches, longest = matchCmdFile(f[len(f)-1], false)
