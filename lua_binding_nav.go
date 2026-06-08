@@ -719,32 +719,32 @@ func luaNavOpen(L *lua.LState) int {
 
 func luaNavTop(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
-	nav.top()
-	return 0
+	L.Push(lua.LBool(nav.top()))
+	return 1
 }
 
 func luaNavBottom(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
-	nav.bottom()
-	return 0
+	L.Push(lua.LBool(nav.bottom()))
+	return 1
 }
 
 func luaNavHigh(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
-	nav.high()
-	return 0
+	L.Push(lua.LBool(nav.high()))
+	return 1
 }
 
 func luaNavMiddle(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
-	nav.middle()
-	return 0
+	L.Push(lua.LBool(nav.middle()))
+	return 1
 }
 
 func luaNavLow(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
-	nav.low()
-	return 0
+	L.Push(lua.LBool(nav.low()))
+	return 1
 }
 
 func luaNavMove(L *lua.LState) int {
