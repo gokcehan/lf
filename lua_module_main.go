@@ -15,6 +15,9 @@ func LfMainModuleLoader(L *lua.LState) int {
 		"cmd":   luaRunColonCommand,
 		"shell": luaRunShellCommand,
 
+		"set_opt":       luaSetOptionValue,
+		"set_local_opt": luaSetLocalOptionValue,
+
 		"glob_match": luaGlobMatch,
 		"match_word": luaLuaMatchWord,
 	})
@@ -115,6 +118,39 @@ func luaRunShellCommand(L *lua.LState) int {
 	default:
 		log.Printf("unknown execution prefix: %q", prefix)
 	}
+
+	return 0
+}
+
+func luaSetOptionValue(L *lua.LState) int {
+	opt := L.CheckString(1)
+	val := L.CheckString(2)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	expr := &setExpr{opt, val}
+	expr.eval(app, nil)
+
+	return 0
+}
+
+func luaSetLocalOptionValue(L *lua.LState) int {
+	path := L.CheckString(1)
+	opt := L.CheckString(2)
+	val := L.CheckString(3)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	expr := &setLocalExpr{path, opt, val}
+	expr.eval(app, nil)
 
 	return 0
 }
