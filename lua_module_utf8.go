@@ -7,17 +7,15 @@ import (
 )
 
 func LfUtf8ModuleLoader(L *lua.LState) int {
-	mod := L.SetFuncs(L.NewTable(), LfUtf8ModuleExports)
+	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"to_rune_tbl": luaUtf8ToRuneTbl,
+		"len":         luaUtf8Len,
+		"get_rune":    luaUtf8GetRune,
+	})
 
 	L.Push(mod)
 
 	return 1
-}
-
-var LfUtf8ModuleExports = map[string]lua.LGFunction{
-	"to_rune_tbl": luaUtf8ToRuneTbl,
-	"len":         luaUtf8Len,
-	"get_rune":    luaUtf8GetRune,
 }
 
 func luaUtf8ToRuneTbl(L *lua.LState) int {

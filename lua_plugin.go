@@ -17,6 +17,8 @@ import (
 
 const pluginDirName = "plugins"
 
+const luaGlobalNameApp = "app"
+
 const luaMsgVariantMain = ""
 
 const (
@@ -293,6 +295,23 @@ func goValueToLuaValue(value any) (lua.LValue, error) {
 	return lValue, err
 }
 
+// getAppObjectFromLuaGlobals fetchs app object from Lua state's global variable.
+func getAppObjectFromLuaGlobals(L *lua.LState) (*app, error) {
+	value := L.GetGlobal(luaGlobalNameApp)
+
+	ud, ok := value.(*lua.LUserData)
+	if !ok {
+		return nil, fmt.Errorf("global variable `%s` is not a user data", luaGlobalNameApp)
+	}
+
+	app, ok := ud.Value.(*app)
+	if !ok {
+		return nil, fmt.Errorf("global variable `%s` is not `*app` value")
+	}
+
+	return app, nil
+}
+
 // getPluginNameForSourcePath return plugin name for given plugin script path
 func getPluginNameForSourcePath(sourceName string) string {
 	return filepath.Base(filepath.Dir(sourceName))
@@ -379,7 +398,7 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 		return 0
 	}))
 
-	L.SetGlobal("app", LWrapApp(L, app))
+	L.SetGlobal(luaGlobalNameApp, LWrapApp(L, app))
 }
 
 // setupLuaTypeBindings adds `lf_types` global table as entrance of accessing

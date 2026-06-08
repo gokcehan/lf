@@ -11,29 +11,27 @@ import (
 )
 
 func LfFsModuleLoader(L *lua.LState) int {
-	mod := L.SetFuncs(L.NewTable(), LfFsModuleExports)
+	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"mkdir":     luaFsMkdir,
+		"mkdir_all": luaFsMkdirAll,
+		"link":      luaFsLink,
+		"symlink":   luaFsSymlink,
+		"copy":      luaFsCopyFile,
+
+		"join":      luaFsJoin,
+		"split":     luaFsSplit,
+		"split_ext": luaFsSplitExt,
+		"dirname":   luaFsDirname,
+		"basename":  luaFsBasename,
+		"ext":       luaFsExt,
+
+		"stat":    luaFsStat,
+		"readdir": luaFsReadDir,
+	})
 
 	L.Push(mod)
 
 	return 1
-}
-
-var LfFsModuleExports = map[string]lua.LGFunction{
-	"mkdir":     luaFsMkdir,
-	"mkdir_all": luaFsMkdirAll,
-	"link":      luaFsLink,
-	"symlink":   luaFsSymlink,
-	"copy":      luaFsCopyFile,
-
-	"join":      luaFsJoin,
-	"split":     luaFsSplit,
-	"split_ext": luaFsSplitExt,
-	"dirname":   luaFsDirname,
-	"basename":  luaFsBasename,
-	"ext":       luaFsExt,
-
-	"stat":    luaFsStat,
-	"readdir": luaFsReadDir,
 }
 
 func luaFsMkdir(L *lua.LState) int {
