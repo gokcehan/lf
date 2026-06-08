@@ -283,7 +283,7 @@ var gLuaRegistry struct {
 }
 
 // goValueToLuaValue converts Go value to lua.LValue.
-func goValueToLuaValue(value any) (lua.LValue, error) {
+func goValueToLuaValue(L *lua.LState, value any) (lua.LValue, error) {
 	var err error
 
 	lValue, ok := value.(lua.LValue)
@@ -303,8 +303,49 @@ func goValueToLuaValue(value any) (lua.LValue, error) {
 			lValue = lua.LFalse
 		}
 	default:
-		err = fmt.Errorf("unsupported element value type: %T", value)
-		lValue = lua.LNil
+		rValue := reflect.ValueOf(v)
+		switch rValue.Kind() {
+		case reflect.Slice, reflect.Array:
+			var elemValue lua.LValue
+			tbl := L.NewTable()
+
+			for i := 0; i < rValue.Len(); i++ {
+				elem := rValue.Index(i)
+				if elemValue, err = goValueToLuaValue(L, elem.Interface()); err == nil {
+					tbl.Append(elemValue)
+				} else {
+					err = fmt.Errorf("failed to convert slice/array element: %s", err)
+					break
+				}
+			}
+
+			lValue = tbl
+		case reflect.Map:
+			var lMapKey, lMapValue lua.LValue
+			tbl := L.NewTable()
+			keys := rValue.MapKeys()
+
+			for _, mapKey := range keys {
+				mapValue := rValue.MapIndex(mapKey)
+
+				lMapKey, err = goValueToLuaValue(L, mapKey.Interface())
+				if err != nil {
+					err = fmt.Errorf("failed to convert map key: %s", err)
+				}
+
+				lMapValue, err = goValueToLuaValue(L, mapValue.Interface())
+				if err != nil {
+					err = fmt.Errorf("failed to convert map value: %s", err)
+				}
+
+				tbl.RawSet(lMapKey, lMapValue)
+			}
+
+			lValue = tbl
+		default:
+			err = fmt.Errorf("unsupported value type: %T", value)
+			lValue = lua.LNil
+		}
 	}
 
 	return lValue, err
@@ -600,8 +641,14 @@ func loadKeyMapRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 // addKeyMapForRegistryValue loads one type of key map from registry table.
 func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, displayName string, keys map[string]expr) {
 	tbl := registryTbl.RawGetString(keyMapType)
-	if tbl.Type() != lua.LTTable {
+	switch tbl.Type() {
+	case lua.LTTable:
+		// ok
+	case lua.LTNil:
+		return
+	default:
 		log.Printf("key map group %s is not a table: %s", keyMapType)
+		return
 	}
 
 	keyMapCnt := 0
