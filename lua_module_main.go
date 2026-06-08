@@ -12,8 +12,10 @@ import (
 
 func LfMainModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"cmd":   luaRunColonCommand,
-		"shell": luaRunShellCommand,
+		"cmd":    luaRunColonCommand,
+		"shell":  luaRunShellCommand,
+		"call":   luaCallCommand,
+		"call_n": luaCallCommandN,
 
 		"set_opt":       luaSetOptionValue,
 		"set_local_opt": luaSetLocalOptionValue,
@@ -118,6 +120,53 @@ func luaRunShellCommand(L *lua.LState) int {
 	default:
 		log.Printf("unknown execution prefix: %q", prefix)
 	}
+
+	return 0
+}
+
+func luaCallCommand(L *lua.LState) int {
+	name := L.CheckString(1)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		arg := L.Get(i)
+		args[i-st] = arg.String()
+	}
+
+	expr := &callExpr{name, args, 1}
+	expr.eval(app, nil)
+
+	return 0
+}
+
+func luaCallCommandN(L *lua.LState) int {
+	count := L.CheckInt(1)
+	name := L.CheckString(2)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	st := 3
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		arg := L.Get(i)
+		args[i-st] = arg.String()
+	}
+
+	expr := &callExpr{name, args, count}
+	expr.eval(app, nil)
 
 	return 0
 }
