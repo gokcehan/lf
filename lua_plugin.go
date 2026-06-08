@@ -1097,46 +1097,57 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 		},
 	)
 
+	var matches []compMatch
+
 	if err != nil {
 		log.Printf("failed to call Lua command completion function: %s", err)
-		return nil, longest
+		return matches, longest
 	}
 
-	if len(ret) == 0 {
-		return nil, longest
+	nRet := len(ret)
+	if nRet == 0 {
+		return matches, longest
 	}
 
-	ret1, ret2 := ret[0], ret[1]
+	ret1 := ret[0]
+	switch ret1.Type() {
+	case lua.LTTable:
+		matchesTbl := ret1.(*lua.LTable)
 
-	if ret1.Type() != lua.LTTable {
-		log.Println("return value #1 of completion function should be a table")
-		return nil, longest
-	}
-
-	if ret2.Type() != lua.LTString {
-		log.Println("return value #2 of completion function should be a string")
-		return nil, longest
-	}
-
-	matchesTbl := ret1.(*lua.LTable)
-	longest = ret2.String()
-
-	matches := []compMatch{}
-	cnt := matchesTbl.Len()
-	for i := 1; i <= cnt; i++ {
-		value := matchesTbl.RawGetInt(i)
-		switch value.Type() {
-		case lua.LTString:
-			str := value.String()
-			matches = append(matches, compMatch{str, str})
-		case lua.LTUserData:
-			if v, ok := value.(*lua.LUserData).Value.(*compMatch); ok {
-				matches = append(matches, *v)
-			} else {
-				log.Printf("matches list element #%d is not a valid user data", i)
+		cnt := matchesTbl.Len()
+		for i := 1; i <= cnt; i++ {
+			value := matchesTbl.RawGetInt(i)
+			switch value.Type() {
+			case lua.LTString:
+				str := value.String()
+				matches = append(matches, compMatch{str, str})
+			case lua.LTUserData:
+				if v, ok := value.(*lua.LUserData).Value.(*compMatch); ok {
+					matches = append(matches, *v)
+				} else {
+					log.Printf("matches list element #%d is not a valid user data", i)
+				}
+			default:
+				log.Printf("matches list element #%d be string or user data, found %s: %s", i, value.Type(), value)
 			}
+		}
+	case lua.LTNil:
+		// pass
+	default:
+		log.Println("return value #1 of completion function should be a table")
+		return matches, longest
+	}
+
+	if len(ret) >= 2 {
+		ret2 := ret[1]
+		switch ret2.Type() {
+		case lua.LTString:
+			longest = ret2.String()
+		case lua.LTNil:
+			// pass
 		default:
-			log.Printf("matches list element #%d be string or user data, found %s: %s", i, value.Type(), value)
+			log.Println("return value #2 of completion function should be a string")
+			return nil, longest
 		}
 	}
 
