@@ -212,6 +212,17 @@ func (e *luaMsgExpr) String() string {
 	return fmt.Sprintf("luamsg: %s, registry: %s, msg: %s, sync: %v", e.sourceName, e.registry, e.msg, e.isSync)
 }
 
+type luaKeyMapExpr struct {
+	sourceName string
+	keyMapType string
+	key        string
+	isSync     bool
+}
+
+func (e *luaKeyMapExpr) String() string {
+	return fmt.Sprintf("luakeymap: %s, type: %s, key: %q", e.sourceName, e.keyMapType, e.key)
+}
+
 type parser struct {
 	scanner *scanner
 	expr    expr

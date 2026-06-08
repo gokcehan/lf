@@ -655,6 +655,13 @@ func (e *luaMsgExpr) eval(app *app, args []string) {
 	}
 }
 
+func (e *luaKeyMapExpr) eval(app *app, _ []string) {
+	err := callLuaKeyMapMsg(e)
+	if err != nil {
+		app.ui.echoerrf("Lua key map error: %s\n%s", e, err)
+	}
+}
+
 func preChdir(app *app) {
 	cmdName := "pre-cd"
 	if cmd, ok := gOpts.cmds[cmdName]; ok {

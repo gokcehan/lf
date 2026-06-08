@@ -24,20 +24,34 @@ const luaMsgVariantMain = ""
 const (
 	registryKeyCommand    = "command"
 	registryKeyEventHook  = "event_hook"
+	registryKeyKeyMap     = "key_map"
 	registryKeyPreviewer  = "previewer"
 	registryKeySortMethod = "sort_method"
 )
 
 const (
-	luaCommandCompletionFuncKey = "completion"
 	luaCommandActionFuncKey     = "action"
+	luaCommandCompletionFuncKey = "completion"
+	luaCommandIsSyncKey         = "is_sync"
 
 	luaEventHookActionFuncKey = "action"
+	luaEventHookIsSyncKey     = "is_sync"
 
-	luaPreviewerConditionFuncKey = "condition"
+	luaKeyMapActionFuncKey = "action"
+	luaKeyMapIsSyncKey     = "is_sync"
+
 	luaPreviewerActionFuncKey    = "action"
+	luaPreviewerConditionFuncKey = "condition"
+	luaPreviewerIsSyncKey        = "is_sync"
 
 	luaSortMethodActionFuncKey = "action"
+	luaSortMethodIsSyncKey     = "is_sync"
+)
+
+const (
+	luaKeyMapTypeNormal  = "n"
+	luaKeyMapTypeVisual  = "v"
+	luaKeyMapTypeCommand = "c"
 )
 
 type luaStateBox struct {
@@ -221,11 +235,12 @@ func (pl *lStatePool) newWithRegistryUpdate() *lua.LState {
 
 		log.Println("update Lua registry for plugin script:", sourceName)
 
-		loadEventHookRegistryFromTbl(sourceName, tbl)
-		loadSortMethodRegistryFromTbl(sourceName, tbl)
 		loadCommandRegistryFromTbl(sourceName, tbl)
-
+		loadEventHookRegistryFromTbl(sourceName, tbl)
+		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
+		loadSortMethodRegistryFromTbl(sourceName, tbl)
+
 		sortLuaPreviewers()
 	})
 }
@@ -437,122 +452,6 @@ func setupPreloadModules(L *lua.LState) {
 
 // ----------------------------------------------------------------------------
 
-// loadEventHookRegistryFromTbl registers event hooks defined in table returned
-// from plugin script.
-func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
-	registryKey := registryKeyEventHook
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
-	case lua.LTNil:
-		return
-	case lua.LTTable:
-		// ok
-	default:
-		log.Printf("registry field `%s` is not a table", registryKey)
-		return
-	}
-
-	eventHookTbl := value.(*lua.LTable)
-	eventHookTbl.ForEach(func(key, value lua.LValue) {
-		if key.Type() != lua.LTString {
-			log.Printf("event hook registry key is expected to be string, found %s: %s", key.Type(), key)
-			return
-		}
-
-		if gLuaRegistry.eventHooks == nil {
-			gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
-		}
-		msg := key.String()
-
-		switch value.Type() {
-		case lua.LTFunction:
-			gLuaRegistry.eventHooks[msg] = append(
-				gLuaRegistry.eventHooks[msg],
-				luaMsgExpr{
-					sourceName: sourceName,
-					registry:   registryKey,
-					msg:        msg,
-					variant:    luaMsgVariantMain,
-					isSync:     false,
-				},
-			)
-		case lua.LTTable:
-			gLuaRegistry.eventHooks[msg] = append(
-				gLuaRegistry.eventHooks[msg],
-				luaMsgExpr{
-					sourceName: sourceName,
-					registry:   registryKey,
-					msg:        msg,
-					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString("is_sync")),
-				},
-			)
-		default:
-			log.Printf("unsupported event hook registry value type for key: %s", msg)
-			return
-		}
-
-		log.Printf("add event hook: %s", msg)
-	})
-}
-
-// loadSortMethodRegistryFromTbl registers sort methods defined in table returned
-// from plugin script.
-func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
-	registryKey := registryKeySortMethod
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
-	case lua.LTNil:
-		return
-	case lua.LTTable:
-		// ok
-	default:
-		log.Printf("registry field `%s` is not a table", registryKey)
-		return
-	}
-
-	sortMethodTbl := value.(*lua.LTable)
-	sortMethodTbl.ForEach(func(key, value lua.LValue) {
-		if key.Type() != lua.LTString {
-			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
-			return
-		}
-
-		if gLuaRegistry.sortMethod == nil {
-			gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
-		}
-
-		msg := key.String()
-		name := getPluginNameForSourcePath(sourceName) + "." + msg
-
-		switch value.Type() {
-		case lua.LTFunction:
-			gLuaRegistry.sortMethod[name] = luaMsgExpr{
-				sourceName: sourceName,
-				registry:   registryKey,
-				msg:        msg,
-				variant:    luaMsgVariantMain,
-				isSync:     false,
-			}
-		case lua.LTTable:
-			gLuaRegistry.sortMethod[name] = luaMsgExpr{
-				sourceName: sourceName,
-				registry:   registryKey,
-				msg:        msg,
-				variant:    luaMsgVariantMain,
-				isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString("is_sync")),
-			}
-		default:
-			log.Printf("unsupported sort method registry value for key: %s", msg)
-			return
-		}
-
-		log.Printf("add sort method: %s", msg)
-	})
-}
-
 // loadCommandRegistryFromTbl registers commands defined in table returned from
 // plugin script.
 func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
@@ -604,7 +503,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString("is_sync")),
+					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
 				}
 			} else {
 				log.Printf("invalid command action value: %s", value)
@@ -613,6 +512,145 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 			log.Printf("invalid command registry value of type %s: %s", value.Type(), value)
 		}
 	})
+}
+
+// loadEventHookRegistryFromTbl registers event hooks defined in table returned
+// from plugin script.
+func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyEventHook
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	eventHookTbl := value.(*lua.LTable)
+	eventHookTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("event hook registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		if gLuaRegistry.eventHooks == nil {
+			gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
+		}
+		msg := key.String()
+
+		switch value.Type() {
+		case lua.LTFunction:
+			gLuaRegistry.eventHooks[msg] = append(
+				gLuaRegistry.eventHooks[msg],
+				luaMsgExpr{
+					sourceName: sourceName,
+					registry:   registryKey,
+					msg:        msg,
+					variant:    luaMsgVariantMain,
+					isSync:     false,
+				},
+			)
+		case lua.LTTable:
+			gLuaRegistry.eventHooks[msg] = append(
+				gLuaRegistry.eventHooks[msg],
+				luaMsgExpr{
+					sourceName: sourceName,
+					registry:   registryKey,
+					msg:        msg,
+					variant:    luaMsgVariantMain,
+					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaEventHookIsSyncKey)),
+				},
+			)
+		default:
+			log.Printf("unsupported event hook registry value type for key: %s", msg)
+			return
+		}
+
+		log.Printf("add event hook: %s", msg)
+	})
+}
+
+// loadKeyMapRegistryFromTbl registers key maps defined in table returned from plugin
+// script.
+func loadKeyMapRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyKeyMap
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl := value.(*lua.LTable)
+
+	addKeyMapForRegistryValue(registryTbl, sourceName, luaKeyMapTypeNormal, "normal", gOpts.nkeys)
+	addKeyMapForRegistryValue(registryTbl, sourceName, luaKeyMapTypeVisual, "visual", gOpts.vkeys)
+	addKeyMapForRegistryValue(registryTbl, sourceName, luaKeyMapTypeCommand, "command", gOpts.cmdkeys)
+}
+
+// addKeyMapForRegistryValue loads one type of key map from registry table.
+func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, displayName string, keys map[string]expr) {
+	tbl := registryTbl.RawGetString(keyMapType)
+	if tbl.Type() != lua.LTTable {
+		log.Printf("key map group %s is not a table: %s", keyMapType)
+	}
+
+	keyMapCnt := 0
+
+	tbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("map registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		mapKey := key.String()
+		isSync := false
+
+		mapAction := value
+		if value.Type() == lua.LTTable {
+			tbl := value.(*lua.LTable)
+
+			mapAction = tbl.RawGetString(luaKeyMapActionFuncKey)
+			isSync = lua.LVIsFalse(tbl.RawGetString(luaKeyMapIsSyncKey))
+		}
+
+		switch mapAction.Type() {
+		case lua.LTString:
+			text := mapAction.String()
+			p := newParser(strings.NewReader(text))
+			expr := p.parseExpr()
+			if expr == nil {
+				log.Printf("failed to parse Lua key map %s.%s: %s", keyMapType, mapKey, p.err)
+			} else {
+				keys[mapKey] = expr
+			}
+		case lua.LTFunction:
+			keys[mapKey] = &luaKeyMapExpr{
+				sourceName: sourceName,
+				keyMapType: keyMapType,
+				key:        mapKey,
+				isSync:     isSync,
+			}
+		default:
+			log.Printf("unsupported key map registry value for %s.%s", keyMapType, mapKey)
+			return
+		}
+
+		keyMapCnt++
+	})
+
+	if keyMapCnt > 0 {
+		log.Printf("added %d %s key map", keyMapCnt, displayName)
+	}
 }
 
 // loadPreviewerRegistryFromTbl registers previewers defined in table returned
@@ -663,7 +701,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString("is_sync")),
+					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaPreviewerIsSyncKey)),
 				},
 			})
 		default:
@@ -719,6 +757,62 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 	}
 
 	return changed
+}
+
+// loadSortMethodRegistryFromTbl registers sort methods defined in table returned
+// from plugin script.
+func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeySortMethod
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	sortMethodTbl := value.(*lua.LTable)
+	sortMethodTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		if gLuaRegistry.sortMethod == nil {
+			gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
+		}
+
+		msg := key.String()
+		name := getPluginNameForSourcePath(sourceName) + "." + msg
+
+		switch value.Type() {
+		case lua.LTFunction:
+			gLuaRegistry.sortMethod[name] = luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isSync:     false,
+			}
+		case lua.LTTable:
+			gLuaRegistry.sortMethod[name] = luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaSortMethodIsSyncKey)),
+			}
+		default:
+			log.Printf("unsupported sort method registry value for key: %s", msg)
+			return
+		}
+
+		log.Printf("add sort method: %s", msg)
+	})
 }
 
 // ----------------------------------------------------------------------------
@@ -845,6 +939,12 @@ func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg st
 
 // callLuaMsgOnState finds and runs target Lua message handler on given Lua state.
 func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
+	if callArgs.variant != "" {
+		log.Printf("call Lua msg: (%s, %s, %s)@%s", callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant)
+	} else {
+		log.Printf("call Lua msg: (%s, %s, %s)", callArgs.sourceName, callArgs.registryKey, callArgs.msg)
+	}
+
 	entry, err := getLuaMsgEntry(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg)
 	if err != nil {
 		return nil, err
@@ -875,11 +975,6 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		L.Push(arg)
 	}
 
-	if callArgs.variant != "" {
-		log.Printf("call Lua msg: (%s, %s, %s)@%s: %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant, luaArgs)
-	} else {
-		log.Printf("call Lua msg: (%s, %s, %s): %q", callArgs.sourceName, callArgs.registryKey, callArgs.msg, luaArgs)
-	}
 	err = L.PCall(len(luaArgs), lua.MultRet, nil)
 	if err != nil {
 		return nil, err
@@ -1089,4 +1184,61 @@ func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
 	}
 
 	return result
+}
+
+// callLuaKeyMapMsgOnState calls Lua key map message on given Lua state.
+func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
+	log.Printf("call Lua key map: %s - %s.%s", expr.sourceName, expr.keyMapType, expr.key)
+
+	keyMapGroup, err := getLuaMsgEntry(L, expr.sourceName, registryKeyKeyMap, expr.keyMapType)
+	if err != nil {
+		return err
+	}
+
+	groupTbl, ok := keyMapGroup.(*lua.LTable)
+	if !ok {
+		return fmt.Errorf("key map group is not table value")
+	}
+
+	var handler *lua.LFunction
+
+	entry := groupTbl.RawGetString(expr.key)
+	switch entry.Type() {
+	case lua.LTFunction:
+		handler = entry.(*lua.LFunction)
+	case lua.LTTable:
+		value := entry.(*lua.LTable).RawGetString(luaKeyMapActionFuncKey)
+		handler, _ = value.(*lua.LFunction)
+	case lua.LTNil:
+		return fmt.Errorf("no handler found")
+	default:
+		return fmt.Errorf("not supported handler value type")
+	}
+
+	if handler == nil {
+		return fmt.Errorf("no handler found")
+	}
+
+	L.Push(handler)
+
+	err = L.PCall(0, 0, nil)
+	if err != nil {
+		return err
+	}
+
+	return nil
+}
+
+// callLuaKeyMapMsg calls Lua key map message, pick proper Lua state source according
+// to `isSync` flag in message expression.
+func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
+	if expr.isSync {
+		L := gLuaStateSync.acquire()
+		defer gLuaStateSync.release()
+		return callLuaKeyMapMsgOnState(L, expr)
+	} else {
+		L := gLuaPool.get()
+		defer gLuaPool.put(L)
+		return callLuaKeyMapMsgOnState(L, expr)
+	}
 }

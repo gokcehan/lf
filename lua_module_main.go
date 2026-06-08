@@ -52,6 +52,13 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	shellCmdType.RawSetString("Wait", lua.LString("!"))
 	shellCmdType.RawSetString("Async", lua.LString("&"))
 	mod.RawSetString("ShellCmdType", shellCmdType)
+
+	// key map type
+	keyMapType := L.NewTable()
+	keyMapType.RawSetString("Normal", lua.LString(luaKeyMapTypeNormal))
+	keyMapType.RawSetString("Visual", lua.LString(luaKeyMapTypeVisual))
+	keyMapType.RawSetString("Command", lua.LString(luaKeyMapTypeCommand))
+	mod.RawSetString("KeyMapType", keyMapType)
 }
 
 func luaRunColonCommand(L *lua.LState) int {
