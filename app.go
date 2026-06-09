@@ -160,11 +160,11 @@ func loadFiles() (clipboard clipboard, err error) {
 }
 
 func saveFiles(clipboard clipboard) error {
-	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(gFilesPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	files, err := os.Create(gFilesPath)
+	files, err := os.OpenFile(gFilesPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("opening file selections file: %w", err)
 	}
@@ -240,11 +240,11 @@ func (app *app) writeHistory() error {
 		app.cmdHistory = app.cmdHistory[len(app.cmdHistory)-1000:]
 	}
 
-	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(gHistoryPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	f, err := os.Create(gHistoryPath)
+	f, err := os.OpenFile(gHistoryPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating history file: %w", err)
 	}
