@@ -2,7 +2,10 @@ package main
 
 import (
 	"bufio"
+	"bytes"
+	"errors"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -10,6 +13,7 @@ import (
 	"slices"
 	"strings"
 	"sync"
+	"time"
 
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
@@ -466,8 +470,11 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("App", LRegisterAppType(L))
 	// complete
 	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
+	// exec
+	lfTypes.RawSetString("Cmd", LRegisterCmdType(L))
 	// misc
 	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
+	lfTypes.RawSetString("BufReader", LRegisterBufReaderType(L))
 	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
 	// nav
 	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
@@ -1177,6 +1184,135 @@ func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 	return nil
 }
 
+type luaPreviewerPipe struct {
+	m   sync.Mutex
+	buf *bytes.Buffer
+
+	ticker *time.Ticker
+	wake   chan struct{}
+
+	closed bool
+	done   chan struct{}
+
+	volatile bool
+
+	previewErr error
+}
+
+func newLuaPreviewerPipe() *luaPreviewerPipe {
+	lp := &luaPreviewerPipe{
+		buf: new(bytes.Buffer),
+
+		ticker: time.NewTicker(10 * time.Millisecond),
+		wake:   make(chan struct{}, 1),
+		done:   make(chan struct{}),
+	}
+
+	go lp.wakeupLoop()
+
+	return lp
+}
+
+func (lp *luaPreviewerPipe) wakeupLoop() {
+	for {
+		select {
+		case <-lp.ticker.C:
+			select {
+			case lp.wake <- struct{}{}:
+			default:
+			}
+		case <-lp.done:
+			return
+		}
+	}
+}
+
+func (lp *luaPreviewerPipe) Write(p []byte) (n int, err error) {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	if lp.closed {
+		return 0, io.ErrClosedPipe
+	}
+
+	return lp.buf.Write(p)
+}
+
+func (lp *luaPreviewerPipe) Read(p []byte) (n int, err error) {
+	maxTry := 100
+
+	for range maxTry {
+		lp.m.Lock()
+
+		n, _ = lp.buf.Read(p)
+		if n > 0 {
+			lp.m.Unlock()
+			return n, nil
+		}
+
+		if lp.closed {
+			lp.m.Unlock()
+			return 0, io.EOF
+		}
+
+		lp.m.Unlock()
+
+		select {
+		case <-lp.wake:
+			continue
+		case <-lp.done:
+			continue
+		case <-time.After(10 * time.Second):
+			return 0, errors.New("previewer pipe read timeout")
+		}
+	}
+
+	return 0, fmt.Errorf("previewer reads nothing after %d attempt", maxTry)
+}
+
+func (lp *luaPreviewerPipe) Close() error {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	lp.closed = true
+
+	close(lp.done)
+	lp.ticker.Stop()
+
+	return nil
+}
+
+func (lp *luaPreviewerPipe) setVolatile(isVolatile bool) {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	lp.volatile = isVolatile
+}
+
+func (lp *luaPreviewerPipe) isVolatile() bool {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	return lp.volatile
+}
+
+func (lp *luaPreviewerPipe) wait() {
+	<-lp.done
+}
+
+func (lp *luaPreviewerPipe) setPreviewError(err error) {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	lp.previewErr = err
+}
+
+func (lp *luaPreviewerPipe) checkPreviewError() error {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+	return lp.previewErr
+}
+
 // callLuaPreviewerConditionChecker calls condition message for given Lua previewer.
 // And returns a bool flag indicating if this previewer is active for given argument.
 func callLuaPreviewerConditionChecker(expr *luaMsgExpr, path string) (bool, error) {
@@ -1205,26 +1341,46 @@ func callLuaPreviewerConditionChecker(expr *luaMsgExpr, path string) (bool, erro
 // callLuaPreviewerAction calls action message for given Lua previewer. when this
 // function returns true, preview content should be marked as volatile, just link
 // an non-zero exit code returned by previewer command.
-func callLuaPreviewerAction(expr *luaMsgExpr, writer *bufio.Writer, path string, w, h, x, y int) (bool, error) {
-	ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
-		return []lua.LValue{
-			LWrapBufWriter(L, writer),
-			lua.LString(path),
-			lua.LNumber(w),
-			lua.LNumber(h),
-			lua.LNumber(x),
-			lua.LNumber(y),
+func callLuaPreviewerAction(expr *luaMsgExpr, path string, w, h, x, y int, mode string) *luaPreviewerPipe {
+	pipe := newLuaPreviewerPipe()
+
+	go func() {
+		writer := bufio.NewWriter(pipe)
+		defer pipe.Close()
+		defer writer.Flush()
+
+		ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
+			return []lua.LValue{
+				LWrapBufWriter(L, writer),
+				lua.LString(path),
+				lua.LNumber(w),
+				lua.LNumber(h),
+				lua.LNumber(x),
+				lua.LNumber(y),
+				lua.LString(mode),
+			}
+		})
+
+		if err != nil {
+			pipe.setPreviewError(err)
+			pipe.setVolatile(false)
+			return
 		}
-	})
-	if err != nil {
-		return true, err
-	}
 
-	if len(ret) == 0 {
-		return false, nil
-	}
+		nRet := len(ret)
+		if nRet > 0 {
+			pipe.setVolatile(lua.LVAsBool(ret[0]))
+		}
 
-	return !lua.LVIsFalse(ret[0]), nil
+		if nRet > 1 {
+			luaErr := ret[1]
+			if luaErr.Type() != lua.LTNil {
+				pipe.setPreviewError(errors.New(luaErr.String()))
+			}
+		}
+	}()
+
+	return pipe
 }
 
 // getLuaPreviewerForPath search for active previewer for certain path.
@@ -1299,4 +1455,58 @@ func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 		defer gLuaPool.put(L)
 		return callLuaKeyMapMsgOnState(L, expr)
 	}
+}
+
+func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
+	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
+		udTbl := L.NewTable()
+		for _, file := range files {
+			udTbl.Append(LWrapFile(L, file))
+		}
+		return []lua.LValue{udTbl}
+	})
+
+	if err != nil {
+		return fmt.Errorf("%s", err)
+	} else if len(retList) <= 0 {
+		return fmt.Errorf("Lua sort method returns nothing")
+	}
+
+	ret := retList[0]
+	if ret.Type() != lua.LTTable {
+		return fmt.Errorf("return value of Lua function is not a table")
+	}
+
+	retTbl := ret.(*lua.LTable)
+	nElem := retTbl.Len()
+	if nElem != len(files) {
+		return fmt.Errorf("number of elements in returned table does not match number of files")
+	}
+
+	result := make([]*file, nElem)
+	for i := 1; i <= nElem; i++ {
+		value := retTbl.RawGetInt(i)
+		if value.Type() != lua.LTUserData {
+			return fmt.Errorf("element %d in returned table is not userdata", i)
+		}
+
+		file, ok := value.(*lua.LUserData).Value.(*file)
+		if !ok {
+			return fmt.Errorf("element %d is not a *file data", i)
+		}
+
+		result[i-1] = file
+	}
+
+	if isReverse {
+		for i := range files {
+			files[i] = result[nElem-i-1]
+		}
+	} else {
+		for i := range files {
+			files[i] = result[i]
+		}
+	}
+
+	return nil
 }

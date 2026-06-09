@@ -347,60 +347,6 @@ func (dir *dir) sort() {
 	dir.ind = min(dir.ind, len(dir.files)-1)
 }
 
-func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
-	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
-		udTbl := L.NewTable()
-		for _, file := range files {
-			udTbl.Append(LWrapFile(L, file))
-		}
-		return []lua.LValue{udTbl}
-	})
-
-	if err != nil {
-		return fmt.Errorf("%s", err)
-	} else if len(retList) <= 0 {
-		return fmt.Errorf("Lua sort method returns nothing")
-	}
-
-	ret := retList[0]
-	if ret.Type() != lua.LTTable {
-		return fmt.Errorf("return value of Lua function is not a table")
-	}
-
-	retTbl := ret.(*lua.LTable)
-	nElem := retTbl.Len()
-	if nElem != len(files) {
-		return fmt.Errorf("number of elements in returned table does not match number of files")
-	}
-
-	result := make([]*file, nElem)
-	for i := 1; i <= nElem; i++ {
-		value := retTbl.RawGetInt(i)
-		if value.Type() != lua.LTUserData {
-			return fmt.Errorf("element %d in returned table is not userdata", i)
-		}
-
-		file, ok := value.(*lua.LUserData).Value.(*file)
-		if !ok {
-			return fmt.Errorf("element %d is not a *file data", i)
-		}
-
-		result[i-1] = file
-	}
-
-	if isReverse {
-		for i := range files {
-			files[i] = result[nElem-i-1]
-		}
-	} else {
-		for i := range files {
-			files[i] = result[i]
-		}
-	}
-
-	return nil
-}
-
 func (dir *dir) name() string {
 	if len(dir.files) == 0 {
 		return ""
@@ -945,15 +891,17 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	luaPreviewer := getLuaPreviewerForPath(path)
 
 	if luaPreviewer != nil {
-		buffer := bytes.NewBufferString("")
-		writer := bufio.NewWriter(buffer)
-		reader = bufio.NewReader(buffer)
+		pipe := callLuaPreviewerAction(&luaPreviewer.msgexpr, path, win.w, win.h, win.x, win.y, mode)
+		reader = bufio.NewReader(pipe)
 
-		var err error
-		reg.volatile, err = callLuaPreviewerAction(&luaPreviewer.msgexpr, writer, path, win.w, win.h, win.x, win.y)
-		if err != nil {
-			log.Printf("lua previewer failed: %s", err)
-		}
+		defer func() {
+			pipe.wait()
+			reg.volatile = pipe.isVolatile()
+
+			if err := pipe.checkPreviewError(); err != nil {
+				log.Println("Lua previewer error %s: %s", luaPreviewer.msgexpr, err)
+			}
+		}()
 	} else if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(
 			gOpts.previewer,
@@ -1025,7 +973,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	// escape sequences that corrupt the display or enable code execution
 	// (e.g. OSC 52 clipboard writes). Replace control characters with
 	// U+FFFD so they are visible but cannot form escape sequences.
-	if len(gOpts.previewer) == 0 && !binary {
+	if luaPreviewer == nil && len(gOpts.previewer) == 0 && !binary {
 		sixel = false
 		for i, l := range lines {
 			lines[i] = sanitizePreview(l)
