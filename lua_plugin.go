@@ -59,76 +59,48 @@ const (
 	luaKeyMapTypeCommand = "c"
 )
 
-var errLuaStateQuited = errors.New("Lua State has been closed on app quit")
+var errLuaStateNotInitialized = errors.New("Lua State has not been initialized")
+var errLuaStateClosed = errors.New("Lua State has been closed on app quit")
 var errLuaStateNotAvailable = errors.New("No Lua State is available")
-
-type luaStateBox struct {
-	luaState *lua.LState
-	lock     sync.Mutex
-	isClosed bool
-}
-
-func (box *luaStateBox) acquire(action func(L *lua.LState)) error {
-	box.lock.Lock()
-	defer box.lock.Unlock()
-
-	if box.isClosed {
-		return errLuaStateQuited
-	}
-
-	if box.luaState == nil {
-		return errLuaStateNotAvailable
-	}
-
-	action(box.luaState)
-
-	return nil
-}
-
-func (box *luaStateBox) close() {
-	box.lock.Lock()
-	defer box.lock.Unlock()
-
-	box.isClosed = true
-
-	box.luaState.Close()
-}
+var errLuaStateBusy = errors.New("Lua State is busy")
 
 type lStatePool struct {
-	m     sync.Mutex
-	saved []*lua.LState
+	lockPool  sync.Mutex
+	saved     []*lua.LState
+	allStates []*lua.LState
 
-	isClosed bool // indicating a shutdown has been called on the pool
+	lockLuaStateSync sync.Mutex
+	luaStateSync     *lua.LState
+
+	isInitialized bool // Lua global registry has been updated by instanciate first Lua state
+	isClosed      bool // indicating a shutdown has been called on the pool
 
 	app             *app
-	rootDirs        []string             // plugin root directory list
+	pluginRootDirs  []string             // plugin root directory list
 	pluginByteCodes []*lua.FunctionProto // compiled Lua byte code of all plugin
 }
 
-func newLStatePool(app *app) *lStatePool {
+func newLStatePool(app *app, configRootDir []string) *lStatePool {
+	rootDirs := make([]string, len(configRootDir))
+	for _, dir := range rootDirs {
+		rootDirs = append(rootDirs, filepath.Join(dir, pluginDirName))
+	}
+
 	return &lStatePool{
-		saved: make([]*lua.LState, 0),
-		app:   app,
+		app:            app,
+		pluginRootDirs: rootDirs,
 	}
 }
 
-// setRootDirs updates plugin root list with a list of config root directory.
-func (pl *lStatePool) setRootDirs(configRoots []string) {
-	rootDirs := make([]string, len(configRoots))
-
-	for i, configRoot := range configRoots {
-		rootDirs[i] = filepath.Join(configRoot, pluginDirName)
-	}
-
-	pl.rootDirs = rootDirs
-}
+// ----------------------------------------------------------------------------
+// lock-free APIs
 
 // addConfigRoot takes a config root directory, add corresponding plugin root
 // to plugin root list.
 func (pl *lStatePool) addConfigRoot(configRoot string) {
 	rootDir := filepath.Join(configRoot, pluginDirName)
-	if !slices.Contains(pl.rootDirs, rootDir) {
-		pl.rootDirs = append(pl.rootDirs, rootDir)
+	if !slices.Contains(pl.pluginRootDirs, rootDir) {
+		pl.pluginRootDirs = append(pl.pluginRootDirs, rootDir)
 	}
 }
 
@@ -139,7 +111,7 @@ func (pl *lStatePool) loadPluginScripts() error {
 
 	errorCnt := 0
 
-	for _, pluginDir := range pl.rootDirs {
+	for _, pluginDir := range pl.pluginRootDirs {
 		if _, err := os.Stat(pluginDir); os.IsNotExist(err) {
 			continue
 		}
@@ -183,33 +155,16 @@ func (pl *lStatePool) loadPluginScripts() error {
 	return nil
 }
 
-// get takes one Lua state from pool.
-func (pl *lStatePool) get() (*lua.LState, error) {
-	if pl.isClosed {
-		return nil, errLuaStateQuited
-	}
-
-	pl.m.Lock()
-	defer pl.m.Unlock()
-	n := len(pl.saved)
-	if n == 0 {
-		return pl.new()
-	}
-	x := pl.saved[n-1]
-	pl.saved = pl.saved[0 : n-1]
-	return x, nil
-}
-
 // newWithRetAction creates a new Lua state and takes a `action` function that
 // can do extra stuff with value returned by each plugin script.
 func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LState, tbl *lua.LTable)) (*lua.LState, error) {
 	if pl.isClosed {
-		return nil, errLuaStateQuited
+		return nil, errLuaStateClosed
 	}
 
 	L := lua.NewState()
 
-	if err := setupScripImportPath(L, pl.rootDirs); err != nil {
+	if err := setupScripImportPath(L, pl.pluginRootDirs); err != nil {
 		log.Printf("failed to setup Lua loader search path: %s", err)
 	}
 	setupLuaGlobals(pl.app, L)
@@ -257,7 +212,7 @@ func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LSt
 }
 
 // new creates a new Lua state.
-func (pl *lStatePool) new() (*lua.LState, error) {
+func (pl *lStatePool) newSimple() (*lua.LState, error) {
 	return pl.newWithRetAction(nil)
 }
 
@@ -281,10 +236,63 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 	})
 }
 
+// ----------------------------------------------------------------------------
+
+func (pl *lStatePool) initializeState(app *app) {
+	pl.lockPool.Lock()
+	defer pl.lockPool.Unlock()
+
+	if pl.isInitialized {
+		return
+	}
+
+	pl.isInitialized = true
+
+	err := gLuaPool.loadPluginScripts()
+	if err != nil {
+		app.ui.echoerr(err.Error())
+	}
+
+	// initialize sycnhronous Lua state and Lua registry
+	if L, err := gLuaPool.newWithRegistryUpdate(); err == nil {
+		pl.luaStateSync = L
+	} else {
+		app.ui.echoerrf("failed to initialize synchronous Lua state: %s", err)
+	}
+}
+
+// get takes one Lua state from pool.
+func (pl *lStatePool) get() (*lua.LState, error) {
+	pl.lockPool.Lock()
+	defer pl.lockPool.Unlock()
+
+	if !pl.isInitialized {
+		return nil, errLuaStateNotInitialized
+	}
+
+	if pl.isClosed {
+		return nil, errLuaStateClosed
+	}
+
+	n := len(pl.saved)
+	if n > 0 {
+		L := pl.saved[n-1]
+		pl.saved = pl.saved[0 : n-1]
+		return L, nil
+	}
+
+	L, err := pl.newSimple()
+	if L != nil {
+		pl.allStates = append(pl.allStates, L)
+	}
+
+	return L, err
+}
+
 // put returns a Lua state to pool.
 func (pl *lStatePool) put(L *lua.LState) {
-	pl.m.Lock()
-	defer pl.m.Unlock()
+	pl.lockPool.Lock()
+	defer pl.lockPool.Unlock()
 
 	if pl.isClosed {
 		L.Close()
@@ -292,16 +300,89 @@ func (pl *lStatePool) put(L *lua.LState) {
 	pl.saved = append(pl.saved, L)
 }
 
+func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
+	pl.lockPool.Lock()
+
+	if !pl.isInitialized {
+		pl.lockPool.Unlock()
+		return nil, errLuaStateNotInitialized
+	}
+
+	if pl.isClosed {
+		pl.lockPool.Unlock()
+		return nil, errLuaStateClosed
+	}
+
+	pl.lockPool.Unlock()
+
+	pl.lockLuaStateSync.Lock()
+
+	if pl.luaStateSync == nil {
+		return nil, errLuaStateNotAvailable
+	}
+
+	return pl.luaStateSync, nil
+}
+
+func (pl *lStatePool) releaseSyncState() {
+	pl.lockLuaStateSync.Unlock()
+}
+
 // shutdown closes all Lua states in pool.
 func (pl *lStatePool) shutdown() {
-	pl.m.Lock()
-	defer pl.m.Unlock()
+	pl.lockPool.Lock()
+	defer pl.lockPool.Unlock()
+
+	pl.lockLuaStateSync.Lock()
+	defer pl.lockLuaStateSync.Unlock()
 
 	pl.isClosed = true
+
+	if pl.luaStateSync != nil {
+		pl.luaStateSync.Close()
+	}
 
 	for _, L := range pl.saved {
 		L.Close()
 	}
+}
+
+func (pl *lStatePool) resetLuaState() error {
+	pl.lockLuaStateSync.Lock()
+	defer pl.lockLuaStateSync.Unlock()
+
+	for range 10 {
+		pl.lockPool.Lock()
+
+		if len(pl.saved) != len(pl.allStates) {
+			// some Lua states are occupied
+			pl.lockPool.Unlock()
+			<-time.After(10 * time.Millisecond)
+			continue
+		}
+
+		if pl.luaStateSync != nil {
+			pl.luaStateSync.Close()
+		}
+
+		for _, L := range pl.allStates {
+			L.Close()
+		}
+
+		pl.saved = nil
+		pl.allStates = nil
+		pl.luaStateSync = nil
+
+		pl.isInitialized = false
+
+		pl.pluginByteCodes = nil
+
+		pl.lockPool.Unlock()
+
+		return nil
+	}
+
+	return errLuaStateBusy
 }
 
 type luaPreviewerInfo struct {
@@ -316,9 +397,6 @@ type luaPreviewerInfo struct {
 
 // Global LState pool, used for asynchronous execution
 var gLuaPool *lStatePool
-
-// Global LState instance with lock, used for synchronous execution
-var gLuaStateSync = new(luaStateBox)
 
 var gLuaRegistry struct {
 	stateDataMap map[*lua.LState]map[string]*lua.LTable
@@ -538,6 +616,34 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf", LfMainModuleLoader)
 	L.PreloadModule("lf.fs", LfFsModuleLoader)
 	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
+}
+
+func initializeLua(app *app, validConfigPath []string) {
+	gLuaPool = newLStatePool(app, nil)
+
+	for _, path := range validConfigPath {
+		gLuaPool.addConfigRoot(filepath.Dir(path))
+	}
+
+	gLuaPool.initializeState(app)
+}
+
+func luaPluginReload(app *app) {
+	err := gLuaPool.resetLuaState()
+	if err != nil {
+		app.ui.echoerrf("Lua plugin reload failed: %s", err)
+		return
+	}
+
+	gLuaRegistry.stateDataMap = make(map[*lua.LState]map[string]*lua.LTable)
+
+	gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
+	gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
+	gLuaRegistry.previewers = nil
+
+	gLuaPool.initializeState(app)
+
+	app.ui.echomsg("Lua plugins reloaded")
 }
 
 // ----------------------------------------------------------------------------
@@ -1107,11 +1213,15 @@ func callLuaMsgAsync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 
 // callLuaMsgSync acquires global synchronous Lua state and runs target Lua message
 // on it.
-func callLuaMsgSync(callArgs luaMsgCallArgs) (luaRet []lua.LValue, luaErr error) {
-	gLuaStateSync.acquire(func(L *lua.LState) {
-		luaRet, luaErr = callLuaMsgOnState(L, callArgs)
-	})
-	return
+func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
+	L, err := gLuaPool.acquireSyncState()
+	defer gLuaPool.releaseSyncState()
+
+	if err != nil {
+		return nil, err
+	}
+
+	return callLuaMsgOnState(L, callArgs)
 }
 
 // callLuaMsg calls Lua message specified in call argument, this function will use
@@ -1525,11 +1635,14 @@ func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
 // to `isSync` flag in message expression.
 func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 	if expr.isSync {
-		var err error
-		gLuaStateSync.acquire(func(L *lua.LState) {
-			err = callLuaKeyMapMsgOnState(L, expr)
-		})
-		return err
+		L, err := gLuaPool.acquireSyncState()
+		defer gLuaPool.releaseSyncState()
+
+		if err != nil {
+			return err
+		}
+
+		return callLuaKeyMapMsgOnState(L, expr)
 	} else {
 		L, err := gLuaPool.get()
 		if err != nil {

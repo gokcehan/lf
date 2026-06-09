@@ -78,7 +78,6 @@ func (app *app) quit() {
 
 	onQuit(app)
 
-	gLuaStateSync.close()
 	gLuaPool.shutdown()
 
 	if gOpts.history {
@@ -294,21 +293,7 @@ func (app *app) loop() {
 
 	// loading plugins before sourcing config files, so that functionalities
 	// provided by plugins can be used in config.
-	gLuaPool = newLStatePool(app)
-	for _, path := range validConfigPath {
-		gLuaPool.addConfigRoot(filepath.Dir(path))
-	}
-	err := gLuaPool.loadPluginScripts()
-	if err != nil {
-		app.ui.echoerr(err.Error())
-	}
-
-	// initialize sycnhronous Lua state and Lua registry
-	if luaState, err := gLuaPool.newWithRegistryUpdate(); err == nil {
-		gLuaStateSync.luaState = luaState
-	} else {
-		app.ui.echoerrf("failed to initialize Lua state: %s", err)
-	}
+	initializeLua(app, validConfigPath)
 
 	// source user config after Lua plugin initialization
 	for _, path := range validConfigPath {

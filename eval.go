@@ -658,7 +658,7 @@ func (e *luaMsgExpr) eval(app *app, args []string) {
 func (e *luaKeyMapExpr) eval(app *app, _ []string) {
 	err := callLuaKeyMapMsg(e)
 	if err != nil {
-		app.ui.echoerrf("Lua key map error: %s\n%s", e, err)
+		app.ui.echoerrf("Lua key map error (%s): %s", e, err)
 	}
 }
 
@@ -2241,6 +2241,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 				app.ui.echoerrf("luapreviewer-priority: invalid priority for %s: %s", name, priorityStr)
 			}
 		}
+	case "plugin-reload":
+		luaPluginReload(app)
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

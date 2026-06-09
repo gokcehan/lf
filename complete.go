@@ -120,6 +120,7 @@ var (
 		"cmd-word-back",
 		"cmd-yank",
 		"luapreviewer-priority",
+		"plugin-reload",
 	}
 
 	gOptWords      = getOptWords(gOpts)
