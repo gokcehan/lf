@@ -45,6 +45,7 @@ const (
 	luaKeyMapIsSyncKey     = "is_sync"
 
 	luaPreviewerActionFuncKey    = "action"
+	luaPreviewerCleanFuncKey     = "clean"
 	luaPreviewerConditionFuncKey = "condition"
 	luaPreviewerIsSyncKey        = "is_sync"
 
@@ -264,9 +265,10 @@ func (pl *lStatePool) shutdown() {
 }
 
 type luaPreviewerInfo struct {
-	priority int    // priority value for this previewer
-	name     string // name of this previewer, takes the form `<plugin-source>.<previewer-key>`
-	msgexpr  luaMsgExpr
+	priority   int    // priority value for this previewer
+	name       string // name of this previewer, takes the form `<plugin-source>.<previewer-key>`
+	hasCleaner bool   // if a cleaner function is defined for this previewer
+	msgexpr    luaMsgExpr
 }
 
 // ----------------------------------------------------------------------------
@@ -747,15 +749,19 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				},
 			})
 		case lua.LTTable:
+			previewerTbl := value.(*lua.LTable)
+			hasCleaner := previewerTbl.RawGetString(luaPreviewerCleanFuncKey).Type() == lua.LTFunction
+
 			gLuaRegistry.previewers = append(gLuaRegistry.previewers, luaPreviewerInfo{
-				priority: 0,
-				name:     name,
+				priority:   0,
+				name:       name,
+				hasCleaner: hasCleaner,
 				msgexpr: luaMsgExpr{
 					sourceName: sourceName,
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaPreviewerIsSyncKey)),
+					isSync:     lua.LVAsBool(previewerTbl.RawGetString(luaPreviewerIsSyncKey)),
 				},
 			})
 		default:
@@ -903,7 +909,8 @@ var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
 		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaEventHookActionFuncKey),
 	},
 	registryKeyPreviewer: {
-		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaPreviewerActionFuncKey),
+		luaMsgVariantMain:        extractLuaMsgHandlerWithTblKey(luaPreviewerActionFuncKey),
+		luaPreviewerCleanFuncKey: extractLuaMsgHandlerWithTblKey(luaPreviewerCleanFuncKey),
 		luaPreviewerConditionFuncKey: extractLuaMsgHandlerWithDefaultAction(
 			luaPreviewerConditionFuncKey,
 			func(L *lua.LState) int {
@@ -1381,6 +1388,29 @@ func callLuaPreviewerAction(expr *luaMsgExpr, path string, w, h, x, y int, mode 
 	}()
 
 	return pipe
+}
+
+// callLuaPreviewerCleaning calls clean message for given Lua previewer.
+func callLuaPreviewerCleaning(expr *luaMsgExpr, previousFile string, w, h, x, y int, nextFile string) error {
+	_, err := callLuaMsg(luaMsgCallArgs{
+		sourceName:  expr.sourceName,
+		registryKey: expr.registry,
+		msg:         expr.msg,
+		variant:     luaPreviewerCleanFuncKey,
+		isSync:      expr.isSync,
+		getArgs: func(L *lua.LState) []lua.LValue {
+			return []lua.LValue{
+				lua.LString(previousFile),
+				lua.LNumber(w),
+				lua.LNumber(h),
+				lua.LNumber(x),
+				lua.LNumber(y),
+				lua.LString(nextFile),
+			}
+		},
+	})
+
+	return err
 }
 
 // getLuaPreviewerForPath search for active previewer for certain path.

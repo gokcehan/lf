@@ -792,29 +792,37 @@ func (nav *nav) previewLoop(ui *ui) {
 			}
 		}
 		win := ui.wins[len(ui.wins)-1]
-		if isClear && len(gOpts.cleaner) != 0 && nav.volatilePreview &&
-			(len(gOpts.previewer) != 0 || getLuaPreviewerForPath(prev) != nil) {
-			cmd := exec.Command(
-				gOpts.cleaner,
-				prev,
-				strconv.Itoa(win.w),
-				strconv.Itoa(win.h),
-				strconv.Itoa(win.x),
-				strconv.Itoa(win.y),
-				path,
-			)
-			var stderr bytes.Buffer
-			cmd.Stderr = &stderr
+		if isClear && len(gOpts.cleaner) != 0 && nav.volatilePreview {
+			luaPreviewer := getLuaPreviewerForPath(prev)
 
-			if err := cmd.Run(); err != nil {
-				var exitErr *exec.ExitError
-				if !errors.As(err, &exitErr) {
-					log.Printf("cleaning preview: %s", err)
+			if luaPreviewer != nil && luaPreviewer.hasCleaner {
+				err := callLuaPreviewerCleaning(&luaPreviewer.msgexpr, prev, win.w, win.h, win.x, win.y, path)
+				if err != nil {
+					log.Printf("Lua cleaner error: %s", err)
 				}
-			}
-			if s := strings.TrimSpace(stderr.String()); s != "" {
-				s = strings.Join(strings.Fields(s), " ")
-				log.Printf("cleaning preview (stderr): %s", s)
+			} else if len(gOpts.previewer) != 0 {
+				cmd := exec.Command(
+					gOpts.cleaner,
+					prev,
+					strconv.Itoa(win.w),
+					strconv.Itoa(win.h),
+					strconv.Itoa(win.x),
+					strconv.Itoa(win.y),
+					path,
+				)
+				var stderr bytes.Buffer
+				cmd.Stderr = &stderr
+
+				if err := cmd.Run(); err != nil {
+					var exitErr *exec.ExitError
+					if !errors.As(err, &exitErr) {
+						log.Printf("cleaning preview: %s", err)
+					}
+				}
+				if s := strings.TrimSpace(stderr.String()); s != "" {
+					s = strings.Join(strings.Fields(s), " ")
+					log.Printf("cleaning preview (stderr): %s", s)
+				}
 			}
 			nav.volatilePreview = false
 		}
