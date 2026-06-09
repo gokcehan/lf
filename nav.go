@@ -907,9 +907,10 @@ func (nav *nav) preview(path string, win *win, mode string) {
 			reg.volatile = pipe.isVolatile()
 
 			if err := pipe.checkPreviewError(); err != nil {
-				log.Println("Lua previewer error %s: %s", luaPreviewer.msgexpr, err)
+				log.Printf("Lua previewer error %s: %s", &luaPreviewer.msgexpr, err)
 			}
 		}()
+		defer pipe.Close()
 	} else if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(
 			gOpts.previewer,

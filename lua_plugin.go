@@ -408,7 +408,7 @@ func getAppObjectFromLuaGlobals(L *lua.LState) (*app, error) {
 
 	app, ok := ud.Value.(*app)
 	if !ok {
-		return nil, fmt.Errorf("global variable `%s` is not `*app` value")
+		return nil, fmt.Errorf("global variable `%s` is not `*app` value", ud.Value)
 	}
 
 	return app, nil
@@ -696,7 +696,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 	case lua.LTNil:
 		return
 	default:
-		log.Printf("key map group %s is not a table: %s", keyMapType)
+		log.Printf("key map group %s is not a table: %s", keyMapType, tbl)
 		return
 	}
 
@@ -1324,6 +1324,10 @@ func (lp *luaPreviewerPipe) Read(p []byte) (n int, err error) {
 func (lp *luaPreviewerPipe) Close() error {
 	lp.m.Lock()
 	defer lp.m.Unlock()
+
+	if lp.closed {
+		return nil
+	}
 
 	lp.closed = true
 
