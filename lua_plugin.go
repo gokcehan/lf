@@ -551,7 +551,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
 				}
 			} else {
 				log.Printf("invalid command action value: %s", value)
@@ -610,7 +610,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaEventHookIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaEventHookIsSyncKey)),
 				},
 			)
 		default:
@@ -674,7 +674,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 			tbl := value.(*lua.LTable)
 
 			mapAction = tbl.RawGetString(luaKeyMapActionFuncKey)
-			isSync = lua.LVIsFalse(tbl.RawGetString(luaKeyMapIsSyncKey))
+			isSync = lua.LVAsBool(tbl.RawGetString(luaKeyMapIsSyncKey))
 		}
 
 		switch mapAction.Type() {
@@ -755,7 +755,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaPreviewerIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaPreviewerIsSyncKey)),
 				},
 			})
 		default:
@@ -858,7 +858,7 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				registry:   registryKey,
 				msg:        msg,
 				variant:    luaMsgVariantMain,
-				isSync:     lua.LVIsFalse(value.(*lua.LTable).RawGetString(luaSortMethodIsSyncKey)),
+				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaSortMethodIsSyncKey)),
 			}
 		default:
 			log.Printf("unsupported sort method registry value for key: %s", msg)
@@ -1335,7 +1335,7 @@ func callLuaPreviewerConditionChecker(expr *luaMsgExpr, path string) (bool, erro
 		return false, nil
 	}
 
-	return !lua.LVIsFalse(ret[0]), nil
+	return lua.LVAsBool(ret[0]), nil
 }
 
 // callLuaPreviewerAction calls action message for given Lua previewer. when this
