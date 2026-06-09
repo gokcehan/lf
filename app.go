@@ -78,9 +78,7 @@ func (app *app) quit() {
 
 	onQuit(app)
 
-	L := gLuaStateSync.acquire()
-	L.Close()
-
+	gLuaStateSync.close()
 	gLuaPool.shutdown()
 
 	if gOpts.history {
@@ -304,9 +302,12 @@ func (app *app) loop() {
 	if err != nil {
 		app.ui.echoerr(err.Error())
 	}
+
 	// initialize sycnhronous Lua state and Lua registry
-	gLuaStateSync = &luaStateBox{
-		luaState: gLuaPool.newWithRegistryUpdate(),
+	if luaState, err := gLuaPool.newWithRegistryUpdate(); err == nil {
+		gLuaStateSync.luaState = luaState
+	} else {
+		app.ui.echoerrf("failed to initialize Lua state: %s", err)
 	}
 
 	// source user config after Lua plugin initialization
