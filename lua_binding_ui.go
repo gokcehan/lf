@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	lua "github.com/yuin/gopher-lua"
 )
 
@@ -59,43 +61,62 @@ func LAddUIToState(L *lua.LState, data *ui) int {
 
 func luaUIEcho(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
-	msg := L.ToString(2)
 
-	ui.echo(msg)
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echo", args, 1}
 
 	return 0
 }
 
 func luaUIEchoMsg(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
-	msg := L.ToString(2)
 
-	ui.echomsg(msg)
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echomsg", args, 1}
 
 	return 0
 }
 
 func luaUIEchhoErr(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
-	msg := L.ToString(2)
 
-	ui.echoerr(msg)
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echoerr", args, 1}
 
 	return 0
 }
 
 func luaUIEchhoErrf(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
-	msg := L.ToString(2)
+	fmtStr := L.ToString(2)
 
-	args := []any{}
-	nargs := L.GetTop()
-	for i := 3; i <= nargs; i++ {
-		value := L.Get(i)
-		args = append(args, value.String())
+	st := 3
+	nArgs := L.GetTop()
+	args := make([]any, nArgs-st+1)
+	for i := 3; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
 	}
 
-	ui.echoerrf(msg, args...)
+	msg := fmt.Sprintf(fmtStr, args...)
+	ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
 
 	return 0
 }

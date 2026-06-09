@@ -81,7 +81,7 @@ func luaCmdNew(L *lua.LState) int {
 	nArgs := L.GetTop()
 	args := make([]string, nArgs-st+1)
 	for i := st; i <= nArgs; i++ {
-		args[i-st] = L.CheckAny(i).String()
+		args[i-st] = L.Get(i).String()
 	}
 
 	cmd := exec.Command(cmdStr, args...)
