@@ -631,7 +631,11 @@ func initializeLua(app *app, validConfigPath []string) {
 func luaPluginReload(app *app) {
 	err := gLuaPool.resetLuaState()
 	if err != nil {
-		app.ui.echoerrf("Lua plugin reload failed: %s", err)
+		app.ui.exprChan <- &callExpr{
+			"echoerr",
+			[]string{fmt.Sprintf("Lua plugin reload failed: %s", err)},
+			1,
+		}
 		return
 	}
 
@@ -643,7 +647,7 @@ func luaPluginReload(app *app) {
 
 	gLuaPool.initializeState(app)
 
-	app.ui.echomsg("Lua plugins reloaded")
+	app.ui.exprChan <- &callExpr{"echo", []string{"Lua plugins reloaded"}, 1}
 }
 
 // ----------------------------------------------------------------------------

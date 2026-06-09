@@ -2242,7 +2242,12 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 		}
 	case "plugin-reload":
-		luaPluginReload(app)
+		// run reload in background so that even if this command is triggered
+		// in Lua script, Lua state can still have time to become free again.
+		go func() {
+			<-time.After(10 * time.Millisecond)
+			luaPluginReload(app)
+		}()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {
