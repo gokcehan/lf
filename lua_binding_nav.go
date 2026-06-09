@@ -572,6 +572,11 @@ func LRegisterNavType(L *lua.LState) *lua.LTable {
 		"cd":                   luaNavCd,
 		"glob_sel":             luaNavGlobSel,
 
+		"read_marks":  luaNavReadMarks,
+		"write_marks": luaNavWriteMarks,
+		"read_tags":   luaNavReadTags,
+		"write_tags":  luaNavWriteTags,
+
 		"curr_dir":               luaNavCurrDir,
 		"curr_file":              luaNavCurrFile,
 		"curr_selections":        luaNavCurrSelections,
@@ -863,6 +868,46 @@ func luaNavGlobSel(L *lua.LState) int {
 func luaNavCurrDir(L *lua.LState) int {
 	nav := LCheckNav(L, 1)
 	return LAddDirToState(L, nav.currDir())
+}
+
+func luaNavReadMarks(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	err := nav.readMarks()
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
+	return 0
+}
+
+func luaNavWriteMarks(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	err := nav.writeMarks()
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
+	return 0
+}
+
+func luaNavReadTags(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	err := nav.readTags()
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
+	return 0
+}
+
+func luaNavWriteTags(L *lua.LState) int {
+	nav := LCheckNav(L, 1)
+	err := nav.writeTags()
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
+	return 0
 }
 
 func luaNavCurrFile(L *lua.LState) int {
