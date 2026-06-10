@@ -600,6 +600,9 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
+	// tcell
+	lfTypes.RawSetString("TcellColor", LRegisterTcellColorType(L))
+	lfTypes.RawSetString("TcellStyle", LRegisterTcellStyleType(L))
 	// time
 	lfTypes.RawSetString("Time", LRegisterTimeType(L))
 	lfTypes.RawSetString("Month", LRegisterMonthType(L))
