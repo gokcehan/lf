@@ -349,16 +349,20 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		path := filepath.Join(dir.path, f.Name())
 
-		var fmtStr string
+		drawFileState := false
+		var fileStateStyle tcell.Style
 		if slices.Contains(visualSelections, path) {
-			fmtStr = gOpts.visualfmt
+			drawFileState = true
+			fileStateStyle = getLuaUIStyleWithDefaultStr("visualfmt", gOpts.visualfmt)
 		} else if _, ok := context.selections[path]; ok {
-			fmtStr = gOpts.selectfmt
+			drawFileState = true
+			fileStateStyle = getLuaUIStyleWithDefaultStr("selectfmt", gOpts.selectfmt)
 		} else if slices.Contains(context.clipboard.paths, path) {
+			drawFileState = true
 			if context.clipboard.mode == clipboardCopy {
-				fmtStr = gOpts.copyfmt
+				fileStateStyle = getLuaUIStyleWithDefaultStr("copyfmt", gOpts.copyfmt)
 			} else {
-				fmtStr = gOpts.cutfmt
+				fileStateStyle = getLuaUIStyleWithDefaultStr("cutfmt", gOpts.cutfmt)
 			}
 		}
 
@@ -367,12 +371,12 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			tag = val
 		}
 
-		if fmtStr != "" {
+		if drawFileState {
 			ind := " "
 			if gOpts.mergeindicators {
 				ind = tag
 			}
-			win.print(ui.screen, indOff, i, parseEscapeSequence(fmtStr), ind)
+			win.print(ui.screen, indOff, i, fileStateStyle, ind)
 		}
 
 		// make space for select marker, and leave another space at the end
@@ -422,7 +426,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			}
 
 			// print tag separately as it can contain color escape sequences
-			if !gOpts.mergeindicators || fmtStr == "" {
+			if !gOpts.mergeindicators || drawFileState {
 				win.print(ui.screen, tagOff, i, st, fmt.Sprintf(cursorFmt, tag))
 			}
 
@@ -433,7 +437,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, customOff, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
 			}
 		} else {
-			if !gOpts.mergeindicators || fmtStr == "" {
+			if !gOpts.mergeindicators || drawFileState {
 				if tag == " " {
 					win.print(ui.screen, tagOff, i, st, " ")
 				} else {
@@ -1042,7 +1046,7 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 }
 
 func (ui *ui) drawBox() {
-	st := parseEscapeSequence(gOpts.borderfmt)
+	st := getLuaUIStyleWithDefaultStr("borderfmt", gOpts.borderfmt)
 
 	w, h := ui.screen.Size()
 	style := gOpts.borderstyle
@@ -1112,16 +1116,16 @@ func (ui *ui) drawMenu() {
 	for i, line := range lines {
 		var st tcell.Style
 		if i == 0 {
-			st = parseEscapeSequence(gOpts.menuheaderfmt)
+			st = getLuaUIStyleWithDefaultStr("menuheaderfmt", gOpts.menuheaderfmt)
 		} else {
-			st = parseEscapeSequence(gOpts.menufmt)
+			st = getLuaUIStyleWithDefaultStr("menufmt", gOpts.menufmt)
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
 	}
 
 	if ui.menuSelect != nil {
-		st := parseEscapeSequence(gOpts.menuselectfmt)
+		st := getLuaUIStyleWithDefaultStr("menuselectfmt", gOpts.menuselectfmt)
 		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, st, ui.menuSelect.s)
 	}
 }

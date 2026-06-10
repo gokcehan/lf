@@ -15,6 +15,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/gdamore/tcell/v3"
 	lua "github.com/yuin/gopher-lua"
 	"github.com/yuin/gopher-lua/parse"
 )
@@ -31,6 +32,7 @@ const (
 	registryKeyKeyMap     = "key_map"
 	registryKeyPreviewer  = "previewer"
 	registryKeySortMethod = "sort_method"
+	registryKeyUIStyle    = "ui_style"
 )
 
 const (
@@ -231,6 +233,7 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
 		loadSortMethodRegistryFromTbl(sourceName, tbl)
+		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
 
 		sortLuaPreviewers()
 	})
@@ -404,6 +407,7 @@ var gLuaRegistry struct {
 	sortMethod map[string]luaMsgExpr
 	eventHooks map[string][]luaMsgExpr
 	previewers []luaPreviewerInfo
+	uiStyleMap map[string]tcell.Style
 }
 
 // goValueToLuaValue converts Go value to lua.LValue.
@@ -647,6 +651,7 @@ func luaPluginReload(app *app) {
 	gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
 	gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
 	gLuaRegistry.previewers = nil
+	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
 	gLuaPool.initializeState(app)
 
@@ -1025,6 +1030,78 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		}
 
 		log.Printf("add sort method: %s", msg)
+	})
+}
+
+// allowed UI style registry keys
+var luaUIStyleOptionKeys = []string{
+	"borderfmt",
+	"copyfmt",
+	"cutfmt",
+	"menufmt",
+	"menuheaderfmt",
+	"menuselectfmt",
+	"selectfmt",
+	"visualfmt",
+}
+
+// loadUIStyleRegistryFromTbl loads UI styles defined in table into Go map.
+func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyUIStyle
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl := value.(*lua.LTable)
+	registryTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("ui style registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		settingName := key.String()
+		option := value
+
+		if !slices.Contains(luaUIStyleOptionKeys, settingName) {
+			log.Printf("unsupported ui style registry key: %s", settingName)
+			return
+		}
+
+		if option.Type() == lua.LTFunction {
+			if err := L.CallByParam(lua.P{
+				Fn:      value.(*lua.LFunction),
+				NRet:    1,
+				Protect: true,
+			}); err == nil {
+				option = L.Get(-1)
+				L.Pop(1)
+			} else {
+				log.Printf("failed to evaluate ui style registry function for key `%s`: %s", settingName, err)
+				return
+			}
+		}
+
+		if option.Type() == lua.LTUserData {
+			ud := value.(*lua.LUserData)
+			if style, ok := ud.Value.(*tcell.Style); ok {
+				if gLuaRegistry.uiStyleMap == nil {
+					gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
+				}
+				gLuaRegistry.uiStyleMap[settingName] = *style
+			} else {
+				log.Printf("invalid ui style registry user data for key: %s", settingName)
+			}
+		} else {
+			log.Printf("unsupported ui style registry value type for key: %s", settingName)
+		}
 	})
 }
 
@@ -1712,4 +1789,21 @@ func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
 	}
 
 	return nil
+}
+
+// getLuaUIStyle looks up Lua UI style registry with given name
+func getLuaUIStyle(name string, defaultFmtStr string) (tcell.Style, bool) {
+	style, ok := gLuaRegistry.uiStyleMap[name]
+	return style, ok
+}
+
+// getLuaUIStyleWithDefaultStr looks up Lua UI style registry with given name.
+// When target key does not exists, make a new style object with default format
+// string.
+func getLuaUIStyleWithDefaultStr(name string, defaultFmtStr string) tcell.Style {
+	style, ok := gLuaRegistry.uiStyleMap[name]
+	if !ok {
+		style = parseEscapeSequence(defaultFmtStr)
+	}
+	return style
 }

@@ -30,6 +30,14 @@ func LRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 		"reverse":        luaTcellStyleReverse,
 		"strike_through": luaTcellStyleStrikeThrough,
 		"underline":      luaTcellStyleUnderline,
+
+		"has_bold":           luaTcellStyleHasBold,
+		"has_blink":          luaTcellStyleHasBlink,
+		"has_reverse":        luaTcellStyleHasReverse,
+		"has_italic":         luaTcellStyleHasItalic,
+		"has_dim":            luaTcellStyleHasDim,
+		"has_strike_through": luaTcellStyleHasStrikeThrough,
+		"has_underline":      luaTcellStyleHasUnderline,
 	}))
 
 	return mt
@@ -80,14 +88,14 @@ func luaTcellStyleForeground(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	color := LCheckTcellColor(L, 2)
 	*st = st.Foreground(*color)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBackground(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	color := LCheckTcellColor(L, 2)
 	*st = st.Background(*color)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleForegroundRGB(L *lua.LState) int {
@@ -97,8 +105,7 @@ func luaTcellStyleForegroundRGB(L *lua.LState) int {
 	b := L.CheckInt(4)
 
 	*st = st.Foreground(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
-
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBackgroundRGB(L *lua.LState) int {
@@ -109,62 +116,104 @@ func luaTcellStyleBackgroundRGB(L *lua.LState) int {
 
 	*st = st.Background(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
 
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleNormal(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	*st = st.Normal()
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBold(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Bold(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBlink(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Blink(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleDim(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Dim(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleItalic(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Italic(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleReverse(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Reverse(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleStrikeThrough(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.StrikeThrough(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleUnderline(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Underline(isActive)
-	return 0
+	return LAddTcellStyleToState(L, st)
+}
+
+func luaTcellStyleHasBold(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasBold()))
+	return 1
+}
+
+func luaTcellStyleHasBlink(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasBlink()))
+	return 1
+}
+
+func luaTcellStyleHasReverse(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasReverse()))
+	return 1
+}
+
+func luaTcellStyleHasItalic(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasItalic()))
+	return 1
+}
+
+func luaTcellStyleHasDim(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasDim()))
+	return 1
+}
+
+func luaTcellStyleHasStrikeThrough(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasStrikeThrough()))
+	return 1
+}
+
+func luaTcellStyleHasUnderline(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LBool(st.HasUnderline()))
+	return 1
 }
 
 // ----------------------------------------------------------------------------
