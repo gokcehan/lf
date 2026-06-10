@@ -26,8 +26,7 @@ func isValidSortMethod(method sortMethod) bool {
 	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
 		return true
 	}
-	_, ok := gLuaRegistry.sortMethod[string(method)]
-	return ok
+	return getLuaSortMethod(string(method)) != nil
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`

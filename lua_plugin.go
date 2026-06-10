@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
 	"reflect"
@@ -27,12 +28,13 @@ const luaGlobalNameApp = "app"
 const luaMsgVariantMain = ""
 
 const (
-	registryKeyCommand    = "command"
-	registryKeyEventHook  = "event_hook"
-	registryKeyKeyMap     = "key_map"
-	registryKeyPreviewer  = "previewer"
-	registryKeySortMethod = "sort_method"
-	registryKeyUIStyle    = "ui_style"
+	registryKeyCommand     = "command"
+	registryKeyEventHook   = "event_hook"
+	registryKeyKeyMap      = "key_map"
+	registryKeyPreviewer   = "previewer"
+	registryKeySortMethod  = "sort_method"
+	registryKeyUIFormatter = "ui_formatter"
+	registryKeyUIStyle     = "ui_style"
 )
 
 const (
@@ -53,6 +55,9 @@ const (
 
 	luaSortMethodActionFuncKey = "action"
 	luaSortMethodIsSyncKey     = "is_sync"
+
+	luaUIFormatterActionFuncKey = "action"
+	luaUIFormatterIsSyncKey     = "is_sync"
 )
 
 const (
@@ -233,6 +238,7 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
 		loadSortMethodRegistryFromTbl(sourceName, tbl)
+		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
 		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
 
 		sortLuaPreviewers()
@@ -404,10 +410,68 @@ var gLuaPool *lStatePool
 var gLuaRegistry struct {
 	stateDataMap map[*lua.LState]map[string]*lua.LTable
 
-	sortMethod map[string]luaMsgExpr
-	eventHooks map[string][]luaMsgExpr
-	previewers []luaPreviewerInfo
-	uiStyleMap map[string]tcell.Style
+	eventHooks  map[string][]*luaMsgExpr
+	previewers  []luaPreviewerInfo
+	sortMethod  map[string]*luaMsgExpr
+	uiFormatter map[string]*luaMsgExpr
+	uiStyleMap  map[string]tcell.Style
+}
+
+func goReflectValueToLuaValue(L *lua.LState, rValue reflect.Value) (luaValue lua.LValue, err error) {
+	switch rValue.Kind() {
+	case reflect.Int, reflect.Int16, reflect.Int32, reflect.Int64, reflect.Float32, reflect.Float64:
+		luaValue = lua.LNumber(rValue.Convert(reflect.TypeOf(float64(0))).Float())
+	case reflect.String:
+		luaValue = lua.LString(rValue.String())
+	case reflect.Bool:
+		if rValue.Bool() {
+			luaValue = lua.LTrue
+		} else {
+			luaValue = lua.LFalse
+		}
+	case reflect.Slice, reflect.Array:
+		var elemValue lua.LValue
+		tbl := L.NewTable()
+
+		for i := 0; i < rValue.Len(); i++ {
+			elem := rValue.Index(i)
+			if elemValue, err = goReflectValueToLuaValue(L, elem); err == nil {
+				tbl.Append(elemValue)
+			} else {
+				err = fmt.Errorf("failed to convert slice/array element: %s", err)
+				break
+			}
+		}
+
+		luaValue = tbl
+	case reflect.Map:
+		var lMapKey, lMapValue lua.LValue
+		tbl := L.NewTable()
+		keys := rValue.MapKeys()
+
+		for _, mapKey := range keys {
+			mapValue := rValue.MapIndex(mapKey)
+
+			lMapKey, err = goReflectValueToLuaValue(L, mapKey)
+			if err != nil {
+				err = fmt.Errorf("failed to convert map key: %s", err)
+			}
+
+			lMapValue, err = goReflectValueToLuaValue(L, mapValue)
+			if err != nil {
+				err = fmt.Errorf("failed to convert map value: %s", err)
+			}
+
+			tbl.RawSet(lMapKey, lMapValue)
+		}
+
+		luaValue = tbl
+	default:
+		err = fmt.Errorf("unsupported value type: %s", rValue.Kind())
+		luaValue = lua.LNil
+	}
+
+	return
 }
 
 // goValueToLuaValue converts Go value to lua.LValue.
@@ -419,64 +483,7 @@ func goValueToLuaValue(L *lua.LState, value any) (lua.LValue, error) {
 		return lValue, err
 	}
 
-	switch v := value.(type) {
-	case int, int16, int32, int64, float32, float64:
-		lValue = lua.LNumber(reflect.ValueOf(v).Convert(reflect.TypeOf(float64(0))).Float())
-	case string:
-		lValue = lua.LString(v)
-	case bool:
-		if v {
-			lValue = lua.LTrue
-		} else {
-			lValue = lua.LFalse
-		}
-	default:
-		rValue := reflect.ValueOf(v)
-		switch rValue.Kind() {
-		case reflect.Slice, reflect.Array:
-			var elemValue lua.LValue
-			tbl := L.NewTable()
-
-			for i := 0; i < rValue.Len(); i++ {
-				elem := rValue.Index(i)
-				if elemValue, err = goValueToLuaValue(L, elem.Interface()); err == nil {
-					tbl.Append(elemValue)
-				} else {
-					err = fmt.Errorf("failed to convert slice/array element: %s", err)
-					break
-				}
-			}
-
-			lValue = tbl
-		case reflect.Map:
-			var lMapKey, lMapValue lua.LValue
-			tbl := L.NewTable()
-			keys := rValue.MapKeys()
-
-			for _, mapKey := range keys {
-				mapValue := rValue.MapIndex(mapKey)
-
-				lMapKey, err = goValueToLuaValue(L, mapKey.Interface())
-				if err != nil {
-					err = fmt.Errorf("failed to convert map key: %s", err)
-				}
-
-				lMapValue, err = goValueToLuaValue(L, mapValue.Interface())
-				if err != nil {
-					err = fmt.Errorf("failed to convert map value: %s", err)
-				}
-
-				tbl.RawSet(lMapKey, lMapValue)
-			}
-
-			lValue = tbl
-		default:
-			err = fmt.Errorf("unsupported value type: %T", value)
-			lValue = lua.LNil
-		}
-	}
-
-	return lValue, err
+	return goReflectValueToLuaValue(L, reflect.ValueOf(value))
 }
 
 // getAppObjectFromLuaGlobals fetchs app object from Lua state's global variable.
@@ -623,6 +630,7 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf", LfMainModuleLoader)
 	L.PreloadModule("lf.fs", LfFsModuleLoader)
 	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
+	L.PreloadModule("lf.ui", LfUIModuleLoader)
 }
 
 func initializeLua(app *app, validConfigPath []string) {
@@ -648,9 +656,10 @@ func luaPluginReload(app *app) {
 
 	gLuaRegistry.stateDataMap = make(map[*lua.LState]map[string]*lua.LTable)
 
-	gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
-	gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
+	gLuaRegistry.sortMethod = make(map[string]*luaMsgExpr)
+	gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	gLuaRegistry.previewers = nil
+	gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
 	gLuaPool.initializeState(app)
@@ -738,6 +747,10 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
+	if gLuaRegistry.eventHooks == nil {
+		gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
+	}
+
 	eventHookTbl := value.(*lua.LTable)
 	eventHookTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
@@ -745,16 +758,13 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 			return
 		}
 
-		if gLuaRegistry.eventHooks == nil {
-			gLuaRegistry.eventHooks = make(map[string][]luaMsgExpr)
-		}
 		msg := key.String()
 
 		switch value.Type() {
 		case lua.LTFunction:
 			gLuaRegistry.eventHooks[msg] = append(
 				gLuaRegistry.eventHooks[msg],
-				luaMsgExpr{
+				&luaMsgExpr{
 					sourceName: sourceName,
 					registry:   registryKey,
 					msg:        msg,
@@ -765,7 +775,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		case lua.LTTable:
 			gLuaRegistry.eventHooks[msg] = append(
 				gLuaRegistry.eventHooks[msg],
-				luaMsgExpr{
+				&luaMsgExpr{
 					sourceName: sourceName,
 					registry:   registryKey,
 					msg:        msg,
@@ -1001,7 +1011,7 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		}
 
 		if gLuaRegistry.sortMethod == nil {
-			gLuaRegistry.sortMethod = make(map[string]luaMsgExpr)
+			gLuaRegistry.sortMethod = make(map[string]*luaMsgExpr)
 		}
 
 		msg := key.String()
@@ -1009,7 +1019,7 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		switch value.Type() {
 		case lua.LTFunction:
-			gLuaRegistry.sortMethod[name] = luaMsgExpr{
+			gLuaRegistry.sortMethod[name] = &luaMsgExpr{
 				sourceName: sourceName,
 				registry:   registryKey,
 				msg:        msg,
@@ -1017,7 +1027,7 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				isSync:     false,
 			}
 		case lua.LTTable:
-			gLuaRegistry.sortMethod[name] = luaMsgExpr{
+			gLuaRegistry.sortMethod[name] = &luaMsgExpr{
 				sourceName: sourceName,
 				registry:   registryKey,
 				msg:        msg,
@@ -1030,6 +1040,84 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		}
 
 		log.Printf("add sort method: %s", msg)
+	})
+}
+
+var luaUIFormatterOptionKeys = []string{
+	"cursoractivefmt",
+	"cursorparentfmt",
+	"cursorpreviewfmt",
+	"dupfilefmt",
+	"errorfmt",
+	"numbercursorfmt",
+	"numberfmt",
+	"rulerfile",
+	"promptfmt",
+	"tagfmt",
+}
+
+// loadUIFormatterRegistryFromTbl registers UI formatters defined in table returned
+// from plugin script.
+func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyUIFormatter
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	if gLuaRegistry.uiFormatter == nil {
+		gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
+	}
+
+	registryTbl := value.(*lua.LTable)
+	registryTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("UI formatter key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		option := key.String()
+
+		if !slices.Contains(luaUIFormatterOptionKeys, option) {
+			log.Println("unsupported UI formatter registry key:", option)
+			return
+		}
+
+		switch value.Type() {
+		case lua.LTString:
+			text := value.String()
+			expr := &setExpr{opt: option, val: text}
+			expr.eval(app, nil)
+		case lua.LTFunction:
+			gLuaRegistry.uiFormatter[option] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        option,
+				variant:    luaMsgVariantMain,
+			}
+		case lua.LTTable:
+			actionValue := value.(*lua.LTable).RawGetString(luaCommandActionFuncKey)
+			if actionValue.Type() == lua.LTFunction {
+				gLuaRegistry.uiFormatter[option] = &luaMsgExpr{
+					sourceName: sourceName,
+					registry:   registryKey,
+					msg:        option,
+					variant:    luaMsgVariantMain,
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
+				}
+			} else {
+				log.Println("invalid UI formatter value:", value)
+			}
+		default:
+			log.Printf("invalid UI formatter registry value of type %s: %s", value.Type(), value)
+		}
 	})
 }
 
@@ -1060,6 +1148,10 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		return
 	}
 
+	if gLuaRegistry.uiStyleMap == nil {
+		gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
+	}
+
 	registryTbl := value.(*lua.LTable)
 	registryTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
@@ -1071,7 +1163,7 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		option := value
 
 		if !slices.Contains(luaUIStyleOptionKeys, settingName) {
-			log.Printf("unsupported ui style registry key: %s", settingName)
+			log.Println("unsupported UI style registry key:", settingName)
 			return
 		}
 
@@ -1084,7 +1176,7 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 				option = L.Get(-1)
 				L.Pop(1)
 			} else {
-				log.Printf("failed to evaluate ui style registry function for key `%s`: %s", settingName, err)
+				log.Printf("failed to evaluate UI style registry function for key `%s`: %s", settingName, err)
 				return
 			}
 		}
@@ -1092,15 +1184,13 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		if option.Type() == lua.LTUserData {
 			ud := value.(*lua.LUserData)
 			if style, ok := ud.Value.(*tcell.Style); ok {
-				if gLuaRegistry.uiStyleMap == nil {
-					gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
-				}
+
 				gLuaRegistry.uiStyleMap[settingName] = *style
 			} else {
-				log.Printf("invalid ui style registry user data for key: %s", settingName)
+				log.Printf("invalid UI style registry user data for key: %s", settingName)
 			}
 		} else {
-			log.Printf("unsupported ui style registry value type for key: %s", settingName)
+			log.Printf("unsupported UI style registry value type for key: %s", settingName)
 		}
 	})
 }
@@ -1151,6 +1241,9 @@ var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
 	},
 	registryKeySortMethod: {
 		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaSortMethodActionFuncKey),
+	},
+	registryKeyUIFormatter: {
+		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaUIFormatterActionFuncKey),
 	},
 }
 
@@ -1226,6 +1319,23 @@ func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg st
 	handler := handlerTbl.RawGetString(msg)
 
 	return handler, nil
+}
+
+// makeLuaMsgArgsWrapper returns a luaMsgArgsMaker function that converts all
+// of passed arguments into Lua value slices.
+func makeLuaMsgArgsWrapper(args ...any) luaMsgArgsMaker {
+	return func(L *lua.LState) []lua.LValue {
+		result := make([]lua.LValue, len(args))
+		for i, arg := range args {
+			if value, err := goValueToLuaValue(L, arg); err == nil {
+				result[i] = value
+			} else {
+				log.Printf("Lua message argument wrapper error at value %v: %s", arg, err)
+				result[i] = lua.LNil
+			}
+		}
+		return result
+	}
 }
 
 // callLuaMsgOnState finds and runs target Lua message handler on given Lua state.
@@ -1415,10 +1525,10 @@ func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 
 	errCnt := 0
 	for _, expr := range exprList {
-		_, err := callLuaMsgExpr(&expr, getArgs)
+		_, err := callLuaMsgExpr(expr, getArgs)
 		if err != nil {
 			errCnt++
-			log.Printf("failed to run hook %s: %s", &expr, err)
+			log.Printf("failed to run hook %s: %s", expr, err)
 		}
 	}
 
@@ -1672,6 +1782,15 @@ func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
 	return result
 }
 
+// getLuaPreviewerNames returns name list of all registered Lua previewers.
+func getLuaPreviewerNames() []string {
+	names := make([]string, len(gLuaRegistry.previewers))
+	for i, previewer := range gLuaRegistry.previewers {
+		names[i] = previewer.name
+	}
+	return names
+}
+
 // callLuaKeyMapMsgOnState calls Lua key map message on given Lua state.
 func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
 	log.Printf("call Lua key map: %s - %s.%s", expr.sourceName, expr.keyMapType, expr.key)
@@ -1737,6 +1856,16 @@ func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 	}
 }
 
+// getLuaSortMethodNames returns name list of all registered Lua sort method.
+func getLuaSortMethodNames() []string {
+	return slices.Collect(maps.Keys(gLuaRegistry.sortMethod))
+}
+
+// getLuaSortMethod returns Lua message expression for sort method with given name.
+func getLuaSortMethod(name string) *luaMsgExpr {
+	return gLuaRegistry.sortMethod[name]
+}
+
 func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
 	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 		udTbl := L.NewTable()
@@ -1789,6 +1918,52 @@ func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
 	}
 
 	return nil
+}
+
+// getLuaUIFormatter finds Lua UI formatter message with given name.
+func getLuaUIFormatter(name string) *luaMsgExpr {
+	return gLuaRegistry.uiFormatter[name]
+}
+
+// callLuaUIFormatter calls a Lua UI formatter message and returns the string
+// build by formatter.
+func callLuaUIFormatter(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (string, error) {
+	ret, err := callLuaMsgExpr(expr, getArgs)
+	if err != nil {
+		return "", err
+	}
+
+	if len(ret) == 0 {
+		return "", fmt.Errorf("Lua UI formatter does not return a string")
+	}
+
+	value := ret[0]
+	if value.Type() != lua.LTString {
+		return "", fmt.Errorf("Lua UI formatter does not return a string")
+	}
+
+	return string(value.(lua.LString)), nil
+}
+
+// callLuaUIFormatterIgnoreError is a wrapper of callLuaUIFormatter which logs
+// any error returned by callLuaUIFormatter without returning it.
+func callLuaUIFormatterIgnoreError(expr *luaMsgExpr, getArgs luaMsgArgsMaker) string {
+	ret, err := callLuaUIFormatter(expr, getArgs)
+	if err != nil {
+		log.Printf("failed to execute Lua UI formatter %s: %s", expr, err)
+	}
+	return ret
+}
+
+// callLuaUIFormatterWithSingleParam calls Lua UI formatter with single string
+// parameter, if such formatter does not exists, a string build with given default
+// format string will be returned.
+func callLuaUIFormatterWithSingleParam(formatterName, defaultFmtStr, param string) string {
+	luaFormatter := getLuaUIFormatter(formatterName)
+	if luaFormatter != nil {
+		return callLuaUIFormatterIgnoreError(luaFormatter, makeLuaMsgArgsWrapper(param))
+	}
+	return fmt.Sprintf(optionToFmtstr(defaultFmtStr), param)
 }
 
 // getLuaUIStyle looks up Lua UI style registry with given name

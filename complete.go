@@ -411,9 +411,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			candidates := []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"}
-			for name := range gLuaRegistry.sortMethod {
-				candidates = append(candidates, name)
-			}
+			candidates = append(candidates, getLuaSortMethodNames()...)
 			matches, longest = matchWord(f[2], candidates)
 		case "terminalcursor":
 			matches, longest = matchWord(f[2], []string{"default", "block", "underline", "bar", "blinkblock", "blinkunderline", "blinkbar"})
@@ -461,10 +459,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		matches, longest = matchCmdFile(f[len(f)-1], false)
 	case "luapreviewer-priority":
 		if len(f)%2 == 0 {
-			names := []string{}
-			for _, previewer := range gLuaRegistry.previewers {
-				names = append(names, previewer.name)
-			}
+			names := getLuaPreviewerNames()
 			slices.Sort(names)
 			matches, longest = matchWord(longest, slices.Compact(names))
 		}

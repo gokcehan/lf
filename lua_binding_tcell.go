@@ -1,6 +1,8 @@
 package main
 
 import (
+	"strings"
+
 	"github.com/gdamore/tcell/v3"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -14,13 +16,20 @@ func LRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaTcellStyleTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
-		"new": luaTcellStyleNew,
+		"new":          luaTcellStyleNew,
+		"reset_string": luaTcellStyleRestString,
+		"__tostring":   luaTcellStyleMetaTostring,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"foreground":     luaTcellStyleForeground,
-		"background":     luaTcellStyleBackground,
-		"foreground_rgb": luaTcellStyleForegroundRGB,
-		"background_rgb": luaTcellStyleBackgroundRGB,
+		"tostring": luaTcellStyleTostring,
+		"wrap":     luaTcellStyleWrap,
+
+		"foreground":      luaTcellStyleForeground,
+		"background":      luaTcellStyleBackground,
+		"foreground_rgb":  luaTcellStyleForegroundRGB,
+		"background_rgb":  luaTcellStyleBackgroundRGB,
+		"foreground_name": luaTcellStyleForegroundName,
+		"background_name": luaTcellStyleBackgroundName,
 
 		"normal":         luaTcellStyleNormal,
 		"bold":           luaTcellStyleBold,
@@ -82,7 +91,40 @@ func luaTcellStyleNew(L *lua.LState) int {
 	return LAddTcellStyleToState(L, &st)
 }
 
+func luaTcellStyleRestString(L *lua.LState) int {
+	L.Push(lua.LString("\033[0m"))
+	return 1
+}
+
+func luaTcellStyleMetaTostring(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LString(tcellStyleToString(*st)))
+	return 1
+}
+
 // ----------------------------------------------------------------------------
+
+func luaTcellStyleTostring(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	L.Push(lua.LString(tcellStyleToString(*st)))
+	return 1
+}
+
+func luaTcellStyleWrap(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+
+	nArgs := L.GetTop()
+	contents := make([]string, nArgs+1)
+
+	contents[0] = tcellStyleToString(*st)
+	for i := 2; i <= nArgs; i++ {
+		contents[i-1] = L.CheckString(i)
+	}
+	contents[nArgs] = "\033[0m"
+
+	L.Push(lua.LString(strings.Join(contents, "")))
+	return 1
+}
 
 func luaTcellStyleForeground(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
@@ -115,6 +157,24 @@ func luaTcellStyleBackgroundRGB(L *lua.LState) int {
 	b := L.CheckInt(4)
 
 	*st = st.Background(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
+
+	return LAddTcellStyleToState(L, st)
+}
+
+func luaTcellStyleForegroundName(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	name := L.CheckString(2)
+
+	*st = st.Foreground(tcell.GetColor(name))
+
+	return LAddTcellStyleToState(L, st)
+}
+
+func luaTcellStyleBackgroundName(L *lua.LState) int {
+	st := LCheckTcellStyle(L, 1)
+	name := L.CheckString(2)
+
+	*st = st.Background(tcell.GetColor(name))
 
 	return LAddTcellStyleToState(L, st)
 }

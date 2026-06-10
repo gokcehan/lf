@@ -4,7 +4,9 @@ import (
 	"fmt"
 	"log"
 	"path/filepath"
+	"reflect"
 	"slices"
+	"strconv"
 	"strings"
 
 	lua "github.com/yuin/gopher-lua"
@@ -12,6 +14,8 @@ import (
 
 func LfMainModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"print": luaPrint,
+
 		"cmd":    luaRunColonCommand,
 		"shell":  luaRunShellCommand,
 		"call":   luaCallCommand,
@@ -19,6 +23,8 @@ func LfMainModuleLoader(L *lua.LState) int {
 
 		"set_opt":       luaSetOptionValue,
 		"set_local_opt": luaSetLocalOptionValue,
+		"get_opt":       luaGetOptionValue,
+		"get_local_opt": luaGetLocalOptionValue,
 
 		"glob_match": luaGlobMatch,
 		"match_word": luaLuaMatchWord,
@@ -124,6 +130,60 @@ func luaRunShellCommand(L *lua.LState) int {
 	return 0
 }
 
+func prettyPrintLuaValue(builder *strings.Builder, val lua.LValue, visited map[lua.LValue]int, tableCnt, indentLevel int) int {
+	switch val.Type() {
+	case lua.LTNil, lua.LTBool, lua.LTNumber, lua.LTFunction, lua.LTUserData, lua.LTThread, lua.LTChannel:
+		builder.WriteString(val.String())
+	case lua.LTString:
+		fmt.Fprintf(builder, "%q", val.String())
+	case lua.LTTable:
+		mark := visited[val]
+		if mark > 0 {
+			builder.WriteString("table<")
+			builder.WriteString(strconv.Itoa(mark))
+			builder.WriteString(">")
+			return tableCnt
+		}
+
+		tableCnt++
+		visited[val] = tableCnt
+
+		builder.WriteString("{")
+
+		isEmpty := true
+		val.(*lua.LTable).ForEach(func(key, value lua.LValue) {
+			isEmpty = false
+
+			builder.WriteString("\n")
+			for range indentLevel + 1 {
+				builder.WriteString("  ")
+			}
+			tableCnt = prettyPrintLuaValue(builder, key, visited, tableCnt, indentLevel+1)
+			builder.WriteString(" = ")
+			tableCnt = prettyPrintLuaValue(builder, value, visited, tableCnt, indentLevel+1)
+			builder.WriteString(",")
+		})
+
+		if !isEmpty {
+			builder.WriteString("\n")
+			for range indentLevel {
+				builder.WriteString("  ")
+			}
+		}
+		builder.WriteString("}")
+	}
+
+	return tableCnt
+}
+
+func luaPrint(L *lua.LState) int {
+	value := L.CheckAny(1)
+	var builder strings.Builder
+	prettyPrintLuaValue(&builder, value, make(map[lua.LValue]int), 0, 0)
+	log.Println(builder.String())
+	return 0
+}
+
 func luaCallCommand(L *lua.LState) int {
 	name := L.CheckString(1)
 
@@ -202,6 +262,68 @@ func luaSetLocalOptionValue(L *lua.LState) int {
 	expr.eval(app, nil)
 
 	return 0
+}
+
+func luaGetOptionValue(L *lua.LState) int {
+	opt := L.CheckString(1)
+
+	rValue := reflect.ValueOf(gOpts)
+	field := rValue.FieldByName(opt)
+
+	if !field.IsValid() {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(fmt.Sprintf("option %q does not exist", opt)))
+		return 2
+	}
+
+	luaValue, err := goReflectValueToLuaValue(L, field)
+	if err != nil {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(fmt.Sprintf("error converting option value: %s", err)))
+		return 2
+	}
+
+	L.Push(luaValue)
+
+	return 1
+}
+
+func luaGetLocalOptionValue(L *lua.LState) int {
+	path := L.CheckString(1)
+	opt := L.CheckString(2)
+
+	rValue := reflect.ValueOf(gLocalOpts)
+	field := rValue.FieldByName(opt)
+
+	if !field.IsValid() {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(fmt.Sprintf("option %q does not exist", opt)))
+		return 2
+	}
+
+	if field.Kind() != reflect.Map {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(fmt.Sprintf("option %q is not a map field", opt)))
+		return 2
+	}
+
+	value := field.MapIndex(reflect.ValueOf(path))
+	if !value.IsValid() {
+		L.Push(lua.LNil)
+		L.Push(lua.LNil)
+		return 2
+	}
+
+	luaValue, err := goReflectValueToLuaValue(L, value)
+	if err != nil {
+		L.Push(lua.LNil)
+		L.Push(lua.LString(fmt.Sprintf("error converting option value: %s", err)))
+		return 2
+	}
+
+	L.Push(luaValue)
+
+	return 1
 }
 
 func luaGlobMatch(L *lua.LState) int {

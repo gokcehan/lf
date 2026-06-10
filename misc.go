@@ -592,6 +592,27 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 	return widths
 }
 
+// formatDuplicatedFilename returns name used for duplicated files during copy
+// or move operation.
+func formatDuplicatedFilename(basename, ext string, dupIndex int) string {
+	luaFormatter := getLuaUIFormatter("dupfilefmt")
+	if luaFormatter != nil {
+		return callLuaUIFormatterIgnoreError(luaFormatter, makeLuaMsgArgsWrapper(basename, ext, dupIndex))
+	}
+
+	file := strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
+	file = strings.ReplaceAll(file, "%b", basename)
+	file = strings.ReplaceAll(file, "%e", ext)
+	file = strings.ReplaceAll(file, "%n", strconv.Itoa(dupIndex))
+
+	return file
+}
+
+// formatDisplayedErrorMsg returns displayed format of error message
+func formatDisplayedErrorMsg(msg string) string {
+	return callLuaUIFormatterWithSingleParam("errorfmt", gOpts.errorfmt, sanitizeName(msg))
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler

@@ -7,6 +7,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/gdamore/tcell/v3"
+	"github.com/gdamore/tcell/v3/color"
 )
 
 // gEscapeCode is the byte that starts ANSI control sequences.
@@ -275,6 +276,87 @@ func applyOSC(body string, st tcell.Style) tcell.Style {
 	default:
 		return st
 	}
+}
+
+// tcellStyleToString converts a Style object to string
+func tcellStyleToString(st tcell.Style) string {
+	args := []string{}
+	fg := st.GetForeground()
+
+	addColor := func(c color.Color) {
+		if c&color.IsRGB == 0 {
+			args = append(args, "5", strconv.Itoa(int(c&^color.IsValid)))
+		} else {
+			r, g, b := c.RGB()
+			args = append(args, "2", strconv.Itoa(int(r)), strconv.Itoa(int(g)), strconv.Itoa(int(b)))
+		}
+	}
+
+	if fg != color.Default {
+		if fg > color.White {
+			args = append(args, "38")
+			addColor(fg)
+		} else if (fg - color.IsValid) < 8 {
+			args = append(args, strconv.Itoa(int(30+(fg-color.IsValid))))
+		} else {
+			args = append(args, strconv.Itoa(int(82+(fg-color.IsValid))))
+		}
+	}
+
+	bg := st.GetBackground()
+	if bg != color.Default {
+		if bg > color.White {
+			args = append(args, "48")
+			addColor(bg)
+		} else if (bg - color.IsValid) < 8 {
+			args = append(args, strconv.Itoa(int(40+(bg-color.IsValid))))
+		} else {
+			args = append(args, strconv.Itoa(int(92+(bg-color.IsValid))))
+		}
+	}
+
+	if st.HasBold() {
+		args = append(args, "1")
+	}
+
+	if st.HasDim() {
+		args = append(args, "2")
+	}
+
+	if st.HasItalic() {
+		args = append(args, "3")
+	}
+
+	if st.HasUnderline() {
+		ulArg := "4"
+		switch st.GetUnderlineStyle() {
+		case tcell.UnderlineStyleSolid:
+			ulArg = "4:1"
+		case tcell.UnderlineStyleDouble:
+			ulArg = "4:2"
+		case tcell.UnderlineStyleCurly:
+			ulArg = "4:3"
+		case tcell.UnderlineStyleDotted:
+			ulArg = "4:4"
+		case tcell.UnderlineStyleDashed:
+			ulArg = "4:5"
+		}
+		args = append(args, ulArg)
+	}
+
+	if st.HasBlink() {
+		args = append(args, "5")
+	}
+
+	if st.HasReverse() {
+		args = append(args, "7")
+	}
+
+	if st.HasStrikeThrough() {
+		args = append(args, "9")
+	}
+
+	return "\x1b[" + strings.Join(args, ";") + "m"
 }
 
 // Sanitation helpers for untrusted text (filenames, previews, messages).

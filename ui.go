@@ -19,6 +19,7 @@ import (
 
 	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
+	lua "github.com/yuin/gopher-lua"
 	"golang.org/x/term"
 )
 
@@ -340,11 +341,13 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				}
 			}
 
-			fmtStr := optionToFmtstr(gOpts.numberfmt)
-			if i == dir.pos && gOpts.numbercursorfmt != "" {
-				fmtStr = optionToFmtstr(gOpts.numbercursorfmt)
+			lnDisplay := ""
+			if i == dir.pos && (getLuaUIFormatter("numbercursorfmt") != nil || gOpts.numbercursorfmt != "") {
+				lnDisplay = callLuaUIFormatterWithSingleParam("numbercursorfmt", gOpts.numbercursorfmt, ln)
+			} else {
+				lnDisplay = callLuaUIFormatterWithSingleParam("numberfmt", gOpts.numberfmt, ln)
 			}
-			win.print(ui.screen, 0, i, tcell.StyleDefault, fmt.Sprintf(fmtStr, ln))
+			win.print(ui.screen, 0, i, tcell.StyleDefault, lnDisplay)
 		}
 
 		path := filepath.Join(dir.path, f.Name())
@@ -416,18 +419,28 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		if i == dir.pos {
 			var cursorFmt string
+			var luaCursorFmt *luaMsgExpr
 			switch dirStyle.role {
 			case Active:
 				cursorFmt = optionToFmtstr(gOpts.cursoractivefmt)
+				luaCursorFmt = getLuaUIFormatter("cursoractivefmt")
 			case Parent:
 				cursorFmt = optionToFmtstr(gOpts.cursorparentfmt)
+				luaCursorFmt = getLuaUIFormatter("cursorparentfmt")
 			case Preview:
 				cursorFmt = optionToFmtstr(gOpts.cursorpreviewfmt)
+				luaCursorFmt = getLuaUIFormatter("cursorpreviewfmt")
 			}
 
 			// print tag separately as it can contain color escape sequences
 			if !gOpts.mergeindicators || drawFileState {
-				win.print(ui.screen, tagOff, i, st, fmt.Sprintf(cursorFmt, tag))
+				var indicator string
+				if luaCursorFmt != nil {
+					indicator = callLuaUIFormatterIgnoreError(luaCursorFmt, makeLuaMsgArgsWrapper(tag))
+				} else {
+					indicator = fmt.Sprintf(cursorFmt, tag)
+				}
+				win.print(ui.screen, tagOff, i, st, indicator)
 			}
 
 			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, icon+filename+" "))
@@ -441,7 +454,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				if tag == " " {
 					win.print(ui.screen, tagOff, i, st, " ")
 				} else {
-					tagStr := fmt.Sprintf(optionToFmtstr(gOpts.tagfmt), tag)
+					tagStr := callLuaUIFormatterWithSingleParam("tagfmt", gOpts.tagfmt, tag)
 					win.print(ui.screen, tagOff, i, tcell.StyleDefault, tagStr)
 				}
 			}
@@ -595,7 +608,7 @@ func (ui *ui) echomsg(msg string) {
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(msg)))
+	ui.echo(formatDisplayedErrorMsg(msg))
 	log.Printf("error: %s", msg)
 }
 
@@ -706,6 +719,47 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
 }
 
+func (ui *ui) drawPromptLineWithLua(nav *nav, expr *luaMsgExpr) {
+	prompt := callLuaUIFormatterIgnoreError(expr, func(L *lua.LState) []lua.LValue {
+		dir := nav.currDir()
+		pwd := sanitizeName(dir.path)
+
+		if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
+			pwd = filepath.Join("~", after)
+		}
+
+		var fname string
+		if curr := nav.currFile(); curr != nil {
+			fname = sanitizeName(filepath.Base(curr.path))
+		}
+
+		pwdWithSep := pwd
+		sep := string(filepath.Separator)
+		if !strings.HasSuffix(pwd, sep) {
+			pwdWithSep += sep
+		}
+
+		filter := L.NewTable()
+		for _, f := range dir.filter {
+			filter.Append(lua.LString(f))
+		}
+
+		data := L.NewTable()
+		data.RawSetString("width", lua.LNumber(ui.promptWin.w))
+		data.RawSetString("user_name", lua.LString(gUser.Username))
+		data.RawSetString("host_name", lua.LString(gHostname))
+		data.RawSetString("file_name", lua.LString(fname))
+		data.RawSetString("pwd", lua.LString(pwd))
+		data.RawSetString("pwd_with_sep", lua.LString(pwdWithSep))
+		data.RawSetString("filter", filter)
+
+		return []lua.LValue{data}
+	})
+
+	st := tcell.StyleDefault
+	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
+}
+
 // Deprecated: Only called by drawRuler, which will eventually be replaced by drawRulerFile
 func formatRulerOpt(name, val string) string {
 	// handle escape character so it doesn't mess up the ruler
@@ -737,37 +791,68 @@ func (ui *ui) drawStat(nav *nav) {
 		return
 	}
 
-	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-	replace := func(s, val string) {
-		if val == "" {
-			val = "\x00"
-		}
-		statfmt = strings.ReplaceAll(statfmt, s, val)
-	}
-	if nav.isVisualMode() {
-		replace("%m", "VISUAL")
-		replace("%M", "VISUAL")
+	var fileInfoStr string
+
+	if luaFormatter := getLuaUIFormatter("statfmt"); luaFormatter != nil {
+		fileInfoStr = callLuaUIFormatterIgnoreError(luaFormatter, func(L *lua.LState) []lua.LValue {
+			modTime := curr.ModTime()
+
+			tbl := L.NewTable()
+
+			tbl.RawSetString("permission", lua.LString(permString(curr.Mode())))
+			tbl.RawSetString("link_count", lua.LString(linkCount(curr)))
+			tbl.RawSetString("user_name", lua.LString(userName(curr)))
+			tbl.RawSetString("group_name", lua.LString(groupName(curr)))
+			tbl.RawSetString("file_size", lua.LString(humanize(curr.Size())))
+			tbl.RawSetString("padded_file_size", lua.LString(fmt.Sprintf("%5s", humanize(curr.Size()))))
+			tbl.RawSetString("mod_time", LWrapTime(L, &modTime))
+			tbl.RawSetString("link_target", lua.LString(sanitizeName(curr.linkTarget)))
+
+			if nav.isVisualMode() {
+				tbl.RawSetString("curr_mode", lua.LString("VISUAL"))
+				tbl.RawSetString("curr_mode_full", lua.LString("VISUAL"))
+			} else {
+				tbl.RawSetString("curr_mode", lua.LString(""))
+				tbl.RawSetString("curr_mode_full", lua.LString("NORMAL"))
+			}
+
+			return []lua.LValue{tbl}
+		})
 	} else {
-		replace("%m", "")
-		replace("%M", "NORMAL")
-	}
-	replace("%p", permString(curr.Mode()))
-	replace("%c", linkCount(curr))
-	replace("%u", userName(curr))
-	replace("%g", groupName(curr))
-	replace("%s", humanize(curr.Size()))
-	replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
-	replace("%t", curr.ModTime().Format(gOpts.timefmt))
-	replace("%l", sanitizeName(curr.linkTarget))
-
-	var fileInfo strings.Builder
-	for section := range strings.SplitSeq(statfmt, "\x1f") {
-		if !strings.Contains(section, "\x00") {
-			fileInfo.WriteString(section)
+		statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
+		replace := func(s, val string) {
+			if val == "" {
+				val = "\x00"
+			}
+			statfmt = strings.ReplaceAll(statfmt, s, val)
 		}
+		if nav.isVisualMode() {
+			replace("%m", "VISUAL")
+			replace("%M", "VISUAL")
+		} else {
+			replace("%m", "")
+			replace("%M", "NORMAL")
+		}
+		replace("%p", permString(curr.Mode()))
+		replace("%c", linkCount(curr))
+		replace("%u", userName(curr))
+		replace("%g", groupName(curr))
+		replace("%s", humanize(curr.Size()))
+		replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
+		replace("%t", curr.ModTime().Format(gOpts.timefmt))
+		replace("%l", sanitizeName(curr.linkTarget))
+
+		var fileInfo strings.Builder
+		for section := range strings.SplitSeq(statfmt, "\x1f") {
+			if !strings.Contains(section, "\x00") {
+				fileInfo.WriteString(section)
+			}
+		}
+
+		fileInfoStr = fileInfo.String()
 	}
 
-	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfo.String())
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfoStr)
 }
 
 // Deprecated: Will eventually be replaced by drawRulerFile
@@ -884,7 +969,7 @@ func (ui *ui) drawRuler(nav *nav) {
 
 func (ui *ui) drawRulerFile(nav *nav) {
 	if ui.rulerErr != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("parsing ruler: %s", ui.rulerErr)))
+		err := formatDisplayedErrorMsg(fmt.Sprintf("parsing ruler: %s", ui.rulerErr))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
@@ -1013,13 +1098,146 @@ func (ui *ui) drawRulerFile(nav *nav) {
 
 	left, right, err := renderRuler(ui.ruler, data, ui.msgWin.w)
 	if err != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("rendering ruler: %s", err)))
+		err := formatDisplayedErrorMsg(fmt.Sprintf("rendering ruler: %s", err))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
 
 	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, left)
 	ui.msgWin.printRight(ui.screen, 0, tcell.StyleDefault, right)
+}
+
+func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
+	width := ui.msgWin.w
+
+	ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
+		currFile := LWrapFile(L, nav.currFile())
+
+		dir := nav.currDir()
+		tot := len(dir.files)
+		ind := min(dir.ind+1, tot)
+		all := len(dir.allFiles)
+		hid := all - tot
+
+		var linePercentage string
+		if tot == 0 {
+			linePercentage = "100%"
+		} else {
+			linePercentage = fmt.Sprintf("%d%%", ind*100/tot)
+		}
+
+		var scrollPercentage string
+		beg := max(dir.ind-dir.pos, 0)
+		switch {
+		case tot <= nav.height:
+			scrollPercentage = "All"
+		case beg == 0:
+			scrollPercentage = "Top"
+		case beg == tot-nav.height:
+			scrollPercentage = "Bot"
+		default:
+			scrollPercentage = fmt.Sprintf("%2d%%", beg*100/(tot-nav.height))
+		}
+
+		copiedPaths := L.NewTable()
+		cutPaths := L.NewTable()
+		if nav.clipboard.mode == clipboardCopy {
+			for _, path := range nav.clipboard.paths {
+				copiedPaths.Append(lua.LString(path))
+			}
+		} else {
+			for _, path := range nav.clipboard.paths {
+				cutPaths.Append(lua.LString(path))
+			}
+		}
+
+		currSelections := L.NewTable()
+		for _, path := range nav.currSelections() {
+			currSelections.Append(lua.LString(path))
+		}
+
+		currVSelections := L.NewTable()
+		for _, path := range nav.currDir().visualSelections() {
+			currVSelections.Append(lua.LString(path))
+		}
+
+		progress := L.NewTable()
+
+		if nav.copyJobs > 0 {
+			if nav.copyTotal == 0 {
+				progress.Append(lua.LString(fmt.Sprintf("[0%%]")))
+			} else {
+				progress.Append(lua.LString(fmt.Sprintf("[%d%%]", nav.copyBytes*100/nav.copyTotal)))
+			}
+		}
+
+		if nav.moveTotal > 0 {
+			progress.Append(lua.LString(fmt.Sprintf("[%d/%d]", nav.moveCount, nav.moveTotal)))
+		}
+
+		if nav.deleteTotal > 0 {
+			progress.Append(lua.LString(fmt.Sprintf("[%d/%d]", nav.deleteCount, nav.deleteTotal)))
+		}
+
+		mode := "NORMAL"
+		if nav.isVisualMode() {
+			mode = "VISUAL"
+		}
+
+		filter := L.NewTable()
+		for _, f := range dir.filter {
+			filter.Append(lua.LString(f))
+		}
+
+		data := L.NewTable()
+		data.RawSetString("curr_file", currFile)
+		data.RawSetString("width", lua.LNumber(width))
+		data.RawSetString("message", lua.LString(ui.msg))
+		data.RawSetString("keys", lua.LString(ui.keyCount+ui.keyAcc))
+		data.RawSetString("progress", progress)
+		data.RawSetString("copy", copiedPaths)
+		data.RawSetString("cut", cutPaths)
+		data.RawSetString("select", currSelections)
+		data.RawSetString("visual", currVSelections)
+		data.RawSetString("index", lua.LNumber(ind))
+		data.RawSetString("total", lua.LNumber(tot))
+		data.RawSetString("hidden", lua.LNumber(hid))
+		data.RawSetString("all", lua.LNumber(all))
+		data.RawSetString("line_percentage", lua.LString(linePercentage))
+		data.RawSetString("scroll_percentage", lua.LString(scrollPercentage))
+		data.RawSetString("filter", filter)
+		data.RawSetString("mode", lua.LString(mode))
+
+		return []lua.LValue{data}
+	})
+
+	if err != nil {
+		err := formatDisplayedErrorMsg(fmt.Sprintf("Lua ruler: %s", err))
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
+		return
+	}
+
+	if len(ret) <= 0 {
+		err := formatDisplayedErrorMsg(fmt.Sprintf("Lua ruler: %s", "formatter returns nothing"))
+		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
+		return
+	}
+
+	replacer := strings.NewReplacer("\r", "", "\n", "")
+
+	var left, right, space string
+	left = ret[0].String()
+	if len(ret) > 1 {
+		right = ret[1].String()
+	}
+
+	spaceCnt := width - printLength(left) - printLength(right)
+	if spaceCnt > 0 {
+		space = strings.Repeat(" ", spaceCnt)
+	}
+
+	ruler := replacer.Replace(left) + space + replacer.Replace(right)
+	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ruler)
 }
 
 func (ui *ui) drawPreview(nav *nav, context *dirContext) {
@@ -1148,7 +1366,12 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.screen.Clear()
 
-	ui.drawPromptLine(nav)
+	promptFormatter := getLuaUIFormatter("promptfmt")
+	if promptFormatter != nil {
+		ui.drawPromptLineWithLua(nav, promptFormatter)
+	} else {
+		ui.drawPromptLine(nav)
+	}
 
 	wins := len(ui.wins)
 	if gOpts.preview {
@@ -1172,7 +1395,10 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		if gOpts.rulerfmt == "" {
+		luaFormatter := getLuaUIFormatter("rulerfile")
+		if luaFormatter != nil {
+			ui.drawRulerWithLua(nav, luaFormatter)
+		} else if gOpts.rulerfmt == "" {
 			ui.drawRulerFile(nav)
 		} else {
 			ui.drawStat(nav)

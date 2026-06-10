@@ -322,9 +322,8 @@ func (dir *dir) sort() {
 		})
 	default:
 		name := string(dir.sortby)
-		msgExpr, ok := gLuaRegistry.sortMethod[name]
-		if ok {
-			sortByLuaMsg(&msgExpr, dir.files, dir.reverse)
+		if msgExpr := getLuaSortMethod(name); msgExpr != nil {
+			sortByLuaMsg(msgExpr, dir.files, dir.reverse)
 		}
 	}
 
@@ -1465,10 +1464,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			basename := file[:len(file)-len(ext)]
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
-				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
-				file = strings.ReplaceAll(file, "%b", basename)
-				file = strings.ReplaceAll(file, "%e", ext)
-				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+				file = formatDuplicatedFilename(basename, ext, i)
 				newPath = filepath.Join(dstDir, file)
 				_, err = os.Lstat(newPath)
 			}
