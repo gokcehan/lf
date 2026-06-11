@@ -31,7 +31,9 @@ const luaMsgMetaKeyIsSync = "is_sync"
 const (
 	registryKeyCommand       = "command"
 	registryKeyEventHook     = "event_hook"
+	registryKeyLocalOption   = "local_option"
 	registryKeyKeyMap        = "key_map"
+	registryKeyOption        = "option"
 	registryKeyPreviewer     = "previewer"
 	registryKeySortingMethod = "sorting_method"
 	registryKeyUIFormatter   = "ui_formatter"
@@ -217,7 +219,9 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 
 		loadCommandRegistryFromTbl(sourceName, tbl)
 		loadEventHookRegistryFromTbl(sourceName, tbl)
+		loadLocalOptionRegistryFromTbl(L, pl.app, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
+		loadOptionRegistryFromTbl(L, pl.app, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
 		loadSortingMethodRegistryFromTbl(sourceName, tbl)
 		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
@@ -828,6 +832,76 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
+// loadLocalPreviewerRegistryFromTbl loads option value from table returned from plugin script.
+func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
+	registryKey := registryKeyLocalOption
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl := value.(*lua.LTable)
+	registryTbl.ForEach(func(pathKey, optionTbl lua.LValue) {
+		if pathKey.Type() != lua.LTString {
+			log.Printf("local option registry key is expected to be string, found %s: %s", pathKey.Type(), pathKey)
+			return
+		}
+
+		path := string(pathKey.(lua.LString))
+
+		if optionTbl.Type() != lua.LTTable {
+			msg := fmt.Sprintf("registry value for local option group `%s` is not a table", path)
+			app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+			return
+		}
+
+		optionTbl.(*lua.LTable).ForEach(func(optionKey, optionValue lua.LValue) {
+			if optionKey.Type() != lua.LTString {
+				msg := fmt.Sprintf("local option group option key is expected to be string, found %s: %s", optionKey.Type(), optionKey)
+				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				return
+			}
+
+			option := string(optionKey.(lua.LString))
+
+			switch optionValue.Type() {
+			case lua.LTString:
+				app.ui.exprChan <- &setLocalExpr{path: path, opt: option, val: string(optionValue.(lua.LString))}
+			case lua.LTFunction:
+				err := L.CallByParam(lua.P{
+					Fn:      optionValue.(*lua.LFunction),
+					NRet:    1,
+					Protect: true,
+				})
+				if err != nil {
+					msg := fmt.Sprintf("failed to evaluate local option `%s`, see log for more detail", option)
+					app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+					log.Println("failed to run function for local option `%s` `%s`: %s", path, option, err)
+				}
+
+				defer L.Pop(1)
+				ret := L.Get(-1)
+				if ret.Type() == lua.LTString {
+					app.ui.exprChan <- &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
+				} else {
+					msg := fmt.Sprintf("Lua function for local option `%s` `%s` does not return string value", path, option)
+					app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				}
+			default:
+				log.Printf("unsupported local option registry value type for %s %s", path, option)
+				return
+			}
+		})
+	})
+}
+
 // loadKeyMapRegistryFromTbl registers key maps defined in table returned from plugin
 // script.
 func loadKeyMapRegistryFromTbl(sourceName string, tbl *lua.LTable) {
@@ -911,6 +985,60 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 	if keyMapCnt > 0 {
 		log.Printf("added %d %s key map", keyMapCnt, displayName)
 	}
+}
+
+// loadPreviewerRegistryFromTbl loads option value from table returned from plugin script.
+func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
+	registryKey := registryKeyOption
+
+	value := tbl.RawGetString(registryKey)
+	switch value.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl := value.(*lua.LTable)
+	registryTbl.ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("option registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		option := key.String()
+
+		switch value.Type() {
+		case lua.LTString:
+			app.ui.exprChan <- &setExpr{opt: option, val: string(value.(lua.LString))}
+		case lua.LTFunction:
+			err := L.CallByParam(lua.P{
+				Fn:      value.(*lua.LFunction),
+				NRet:    1,
+				Protect: true,
+			})
+			if err != nil {
+				msg := fmt.Sprintf("failed to evaluate option `%s`, see log for more detail", option)
+				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				log.Printf("failed to run function for option `%s`: %s", option, err)
+			}
+
+			defer L.Pop(1)
+			ret := L.Get(-1)
+			if ret.Type() == lua.LTString {
+				app.ui.exprChan <- &setExpr{opt: option, val: string(ret.(lua.LString))}
+			} else {
+				msg := fmt.Sprintf("Lua function for option `%s` does not return string value", option)
+				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+			}
+		default:
+			log.Printf("unsupported option registry value type for key: %s", option)
+			return
+		}
+	})
 }
 
 // loadPreviewerRegistryFromTbl registers previewers defined in table returned
