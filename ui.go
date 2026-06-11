@@ -419,35 +419,32 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 		if i == dir.pos {
 			var cursorFmt string
-			var luaCursorFmt *luaMsgExpr
+			var luaFormatterName string
 			switch dirStyle.role {
 			case Active:
 				cursorFmt = optionToFmtstr(gOpts.cursoractivefmt)
-				luaCursorFmt = getLuaUIFormatter("cursoractive")
+				luaFormatterName = "cursoractive"
 			case Parent:
 				cursorFmt = optionToFmtstr(gOpts.cursorparentfmt)
-				luaCursorFmt = getLuaUIFormatter("cursorparent")
+				luaFormatterName = "cursorparent"
 			case Preview:
 				cursorFmt = optionToFmtstr(gOpts.cursorpreviewfmt)
-				luaCursorFmt = getLuaUIFormatter("cursorpreview")
+				luaFormatterName = "cursorpreview"
 			}
 
 			// print tag separately as it can contain color escape sequences
 			if !gOpts.mergeindicators || drawFileState {
-				var indicator string
-				if luaCursorFmt != nil {
-					indicator = callLuaUIFormatterIgnoreError(luaCursorFmt, makeLuaMsgArgsWrapper(tag))
-				} else {
-					indicator = fmt.Sprintf(cursorFmt, tag)
-				}
+				indicator := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, tag)
 				win.print(ui.screen, tagOff, i, st, indicator)
 			}
 
-			win.print(ui.screen, nameOff, i, st, fmt.Sprintf(cursorFmt, icon+filename+" "))
+			fileEntryStr := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, icon+filename+" ")
+			win.print(ui.screen, nameOff, i, st, fileEntryStr)
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
-				win.print(ui.screen, customOff, i, st, fmt.Sprintf(cursorFmt, stripTermSequence(custom)))
+				spaceStr := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, stripTermSequence(custom))
+				win.print(ui.screen, customOff, i, st, spaceStr)
 			}
 		} else {
 			if !gOpts.mergeindicators || drawFileState {
