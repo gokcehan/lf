@@ -1074,16 +1074,16 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 
 		option := key.String()
 		switch option {
-		case "cursoractivefmt",
-			"cursorparentfmt",
-			"cursorpreviewfmt",
-			"dupfilefmt",
-			"errorfmt",
-			"numbercursorfmt",
-			"numberfmt",
-			"rulerfile",
-			"promptfmt",
-			"tagfmt":
+		case "cursoractive",
+			"cursorparent",
+			"cursorpreview",
+			"dupfile",
+			"error",
+			"numbercursor",
+			"number",
+			"ruler",
+			"prompt",
+			"tag":
 			// ok
 		default:
 			log.Println("unsupported UI formatter registry key:", option)
@@ -1091,10 +1091,6 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 		}
 
 		switch value.Type() {
-		case lua.LTString:
-			text := value.String()
-			expr := &setExpr{opt: option, val: text}
-			expr.eval(app, nil)
 		case lua.LTFunction:
 			gLuaRegistry.uiFormatter[option] = &luaMsgExpr{
 				sourceName: sourceName,
@@ -1164,8 +1160,6 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 			log.Println("unsupported UI style registry key:", settingName)
 			return
 		}
-
-		settingName += "fmt"
 
 		if option.Type() == lua.LTFunction {
 			if err := L.CallByParam(lua.P{

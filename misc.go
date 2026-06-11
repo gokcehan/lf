@@ -595,7 +595,7 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 // formatDuplicatedFilename returns name used for duplicated files during copy
 // or move operation.
 func formatDuplicatedFilename(basename, ext string, dupIndex int) string {
-	luaFormatter := getLuaUIFormatter("dupfilefmt")
+	luaFormatter := getLuaUIFormatter("dupfile")
 	if luaFormatter != nil {
 		return callLuaUIFormatterIgnoreError(luaFormatter, makeLuaMsgArgsWrapper(basename, ext, dupIndex))
 	}
@@ -610,7 +610,7 @@ func formatDuplicatedFilename(basename, ext string, dupIndex int) string {
 
 // formatDisplayedErrorMsg returns displayed format of error message
 func formatDisplayedErrorMsg(msg string) string {
-	return callLuaUIFormatterWithSingleParam("errorfmt", gOpts.errorfmt, sanitizeName(msg))
+	return callLuaUIFormatterWithSingleParam("error", gOpts.errorfmt, sanitizeName(msg))
 }
 
 // We don't need no generic code

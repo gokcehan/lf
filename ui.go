@@ -342,10 +342,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			}
 
 			lnDisplay := ""
-			if i == dir.pos && (getLuaUIFormatter("numbercursorfmt") != nil || gOpts.numbercursorfmt != "") {
-				lnDisplay = callLuaUIFormatterWithSingleParam("numbercursorfmt", gOpts.numbercursorfmt, ln)
+			if i == dir.pos && (getLuaUIFormatter("numbercursor") != nil || gOpts.numbercursorfmt != "") {
+				lnDisplay = callLuaUIFormatterWithSingleParam("numbercursor", gOpts.numbercursorfmt, ln)
 			} else {
-				lnDisplay = callLuaUIFormatterWithSingleParam("numberfmt", gOpts.numberfmt, ln)
+				lnDisplay = callLuaUIFormatterWithSingleParam("number", gOpts.numberfmt, ln)
 			}
 			win.print(ui.screen, 0, i, tcell.StyleDefault, lnDisplay)
 		}
@@ -356,16 +356,16 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		var fileStateStyle tcell.Style
 		if slices.Contains(visualSelections, path) {
 			drawFileState = true
-			fileStateStyle = getLuaUIStyleWithDefaultStr("visualfmt", gOpts.visualfmt)
+			fileStateStyle = getLuaUIStyleWithDefaultStr("visual", gOpts.visualfmt)
 		} else if _, ok := context.selections[path]; ok {
 			drawFileState = true
-			fileStateStyle = getLuaUIStyleWithDefaultStr("selectfmt", gOpts.selectfmt)
+			fileStateStyle = getLuaUIStyleWithDefaultStr("select", gOpts.selectfmt)
 		} else if slices.Contains(context.clipboard.paths, path) {
 			drawFileState = true
 			if context.clipboard.mode == clipboardCopy {
-				fileStateStyle = getLuaUIStyleWithDefaultStr("copyfmt", gOpts.copyfmt)
+				fileStateStyle = getLuaUIStyleWithDefaultStr("copy", gOpts.copyfmt)
 			} else {
-				fileStateStyle = getLuaUIStyleWithDefaultStr("cutfmt", gOpts.cutfmt)
+				fileStateStyle = getLuaUIStyleWithDefaultStr("cut", gOpts.cutfmt)
 			}
 		}
 
@@ -423,13 +423,13 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			switch dirStyle.role {
 			case Active:
 				cursorFmt = optionToFmtstr(gOpts.cursoractivefmt)
-				luaCursorFmt = getLuaUIFormatter("cursoractivefmt")
+				luaCursorFmt = getLuaUIFormatter("cursoractive")
 			case Parent:
 				cursorFmt = optionToFmtstr(gOpts.cursorparentfmt)
-				luaCursorFmt = getLuaUIFormatter("cursorparentfmt")
+				luaCursorFmt = getLuaUIFormatter("cursorparent")
 			case Preview:
 				cursorFmt = optionToFmtstr(gOpts.cursorpreviewfmt)
-				luaCursorFmt = getLuaUIFormatter("cursorpreviewfmt")
+				luaCursorFmt = getLuaUIFormatter("cursorpreview")
 			}
 
 			// print tag separately as it can contain color escape sequences
@@ -454,7 +454,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				if tag == " " {
 					win.print(ui.screen, tagOff, i, st, " ")
 				} else {
-					tagStr := callLuaUIFormatterWithSingleParam("tagfmt", gOpts.tagfmt, tag)
+					tagStr := callLuaUIFormatterWithSingleParam("tag", gOpts.tagfmt, tag)
 					win.print(ui.screen, tagOff, i, tcell.StyleDefault, tagStr)
 				}
 			}
@@ -793,7 +793,7 @@ func (ui *ui) drawStat(nav *nav) {
 
 	var fileInfoStr string
 
-	if luaFormatter := getLuaUIFormatter("statfmt"); luaFormatter != nil {
+	if luaFormatter := getLuaUIFormatter("stat"); luaFormatter != nil {
 		fileInfoStr = callLuaUIFormatterIgnoreError(luaFormatter, func(L *lua.LState) []lua.LValue {
 			modTime := curr.ModTime()
 
@@ -1264,7 +1264,7 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 }
 
 func (ui *ui) drawBox() {
-	st := getLuaUIStyleWithDefaultStr("borderfmt", gOpts.borderfmt)
+	st := getLuaUIStyleWithDefaultStr("border", gOpts.borderfmt)
 
 	w, h := ui.screen.Size()
 	style := gOpts.borderstyle
@@ -1334,16 +1334,16 @@ func (ui *ui) drawMenu() {
 	for i, line := range lines {
 		var st tcell.Style
 		if i == 0 {
-			st = getLuaUIStyleWithDefaultStr("menuheaderfmt", gOpts.menuheaderfmt)
+			st = getLuaUIStyleWithDefaultStr("menuheader", gOpts.menuheaderfmt)
 		} else {
-			st = getLuaUIStyleWithDefaultStr("menufmt", gOpts.menufmt)
+			st = getLuaUIStyleWithDefaultStr("menu", gOpts.menufmt)
 		}
 
 		ui.menuWin.printLine(ui.screen, 0, i, st, line)
 	}
 
 	if ui.menuSelect != nil {
-		st := getLuaUIStyleWithDefaultStr("menuselectfmt", gOpts.menuselectfmt)
+		st := getLuaUIStyleWithDefaultStr("menuselect", gOpts.menuselectfmt)
 		ui.menuWin.print(ui.screen, ui.menuSelect.x, ui.menuSelect.y, st, ui.menuSelect.s)
 	}
 }
@@ -1366,7 +1366,7 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.screen.Clear()
 
-	promptFormatter := getLuaUIFormatter("promptfmt")
+	promptFormatter := getLuaUIFormatter("prompt")
 	if promptFormatter != nil {
 		ui.drawPromptLineWithLua(nav, promptFormatter)
 	} else {
@@ -1395,7 +1395,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		luaFormatter := getLuaUIFormatter("rulerfile")
+		luaFormatter := getLuaUIFormatter("ruler")
 		if luaFormatter != nil {
 			ui.drawRulerWithLua(nav, luaFormatter)
 		} else if gOpts.rulerfmt == "" {
