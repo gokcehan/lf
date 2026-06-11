@@ -1867,11 +1867,11 @@ func (nav *nav) readMarks() error {
 }
 
 func (nav *nav) writeMarks() error {
-	if err := os.MkdirAll(filepath.Dir(gMarksPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(gMarksPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	f, err := os.Create(gMarksPath)
+	f, err := os.OpenFile(gMarksPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating marks file: %w", err)
 	}
@@ -1929,11 +1929,11 @@ func (nav *nav) readTags() error {
 }
 
 func (nav *nav) writeTags() error {
-	if err := os.MkdirAll(filepath.Dir(gTagsPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(gTagsPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	f, err := os.Create(gTagsPath)
+	f, err := os.OpenFile(gTagsPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating tags file: %w", err)
 	}
