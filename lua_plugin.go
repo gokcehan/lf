@@ -66,11 +66,6 @@ const (
 	luaKeyMapTypeCommand = "c"
 )
 
-var errLuaStateNotInitialized = errors.New("Lua State has not been initialized")
-var errLuaStateClosed = errors.New("Lua State has been closed on app quit")
-var errLuaStateNotAvailable = errors.New("No Lua State is available")
-var errLuaStateBusy = errors.New("Lua State is busy")
-
 type lStatePool struct {
 	lockPool  sync.Mutex
 	saved     []*lua.LState
@@ -166,7 +161,7 @@ func (pl *lStatePool) loadPluginScripts() error {
 // can do extra stuff with value returned by each plugin script.
 func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LState, tbl *lua.LTable)) (*lua.LState, error) {
 	if pl.isClosed {
-		return nil, errLuaStateClosed
+		return nil, fmt.Errorf("Lua State has been closed on app quit")
 	}
 
 	L := lua.NewState()
@@ -278,11 +273,11 @@ func (pl *lStatePool) get() (*lua.LState, error) {
 	defer pl.lockPool.Unlock()
 
 	if !pl.isInitialized {
-		return nil, errLuaStateNotInitialized
+		return nil, fmt.Errorf("Lua State has not been initialized")
 	}
 
 	if pl.isClosed {
-		return nil, errLuaStateClosed
+		return nil, fmt.Errorf("Lua State has been closed on app quit")
 	}
 
 	n := len(pl.saved)
@@ -318,12 +313,12 @@ func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 
 	if !pl.isInitialized {
 		pl.lockPool.Unlock()
-		return nil, errLuaStateNotInitialized
+		return nil, fmt.Errorf("Lua State has not been initialized")
 	}
 
 	if pl.isClosed {
 		pl.lockPool.Unlock()
-		return nil, errLuaStateClosed
+		return nil, fmt.Errorf("Lua State has been closed on app quit")
 	}
 
 	pl.lockPool.Unlock()
@@ -331,7 +326,7 @@ func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 	pl.lockLuaStateSync.Lock()
 
 	if pl.luaStateSync == nil {
-		return nil, errLuaStateNotAvailable
+		return nil, fmt.Errorf("No Lua State is available")
 	}
 
 	return pl.luaStateSync, nil
@@ -398,7 +393,7 @@ func (pl *lStatePool) resetLuaState() error {
 		return nil
 	}
 
-	return errLuaStateBusy
+	return fmt.Errorf("Lua State is busy")
 }
 
 type luaPreviewerInfo struct {
@@ -1050,19 +1045,6 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
-var luaUIFormatterOptionKeys = []string{
-	"cursoractivefmt",
-	"cursorparentfmt",
-	"cursorpreviewfmt",
-	"dupfilefmt",
-	"errorfmt",
-	"numbercursorfmt",
-	"numberfmt",
-	"rulerfile",
-	"promptfmt",
-	"tagfmt",
-}
-
 // loadUIFormatterRegistryFromTbl registers UI formatters defined in table returned
 // from plugin script.
 func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable) {
@@ -1091,8 +1073,19 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 		}
 
 		option := key.String()
-
-		if !slices.Contains(luaUIFormatterOptionKeys, option) {
+		switch option {
+		case "cursoractivefmt",
+			"cursorparentfmt",
+			"cursorpreviewfmt",
+			"dupfilefmt",
+			"errorfmt",
+			"numbercursorfmt",
+			"numberfmt",
+			"rulerfile",
+			"promptfmt",
+			"tagfmt":
+			// ok
+		default:
 			log.Println("unsupported UI formatter registry key:", option)
 			return
 		}
@@ -1128,18 +1121,6 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 	})
 }
 
-// allowed UI style registry keys
-var luaUIStyleOptionKeys = []string{
-	"borderfmt",
-	"copyfmt",
-	"cutfmt",
-	"menufmt",
-	"menuheaderfmt",
-	"menuselectfmt",
-	"selectfmt",
-	"visualfmt",
-}
-
 // loadUIStyleRegistryFromTbl loads UI styles defined in table into Go map.
 func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyUIStyle
@@ -1169,10 +1150,22 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		settingName := key.String()
 		option := value
 
-		if !slices.Contains(luaUIStyleOptionKeys, settingName) {
+		switch settingName {
+		case "border",
+			"copy",
+			"cut",
+			"menu",
+			"menuheader",
+			"menuselect",
+			"select",
+			"visual":
+			// ok
+		default:
 			log.Println("unsupported UI style registry key:", settingName)
 			return
 		}
+
+		settingName += "fmt"
 
 		if option.Type() == lua.LTFunction {
 			if err := L.CallByParam(lua.P{
@@ -1191,7 +1184,6 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		if option.Type() == lua.LTUserData {
 			ud := value.(*lua.LUserData)
 			if style, ok := ud.Value.(*tcell.Style); ok {
-
 				gLuaRegistry.uiStyleMap[settingName] = *style
 			} else {
 				log.Printf("invalid UI style registry user data for key: %s", settingName)
@@ -1205,10 +1197,10 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 // ----------------------------------------------------------------------------
 // message call operation
 
-// luaMsgHandlerExtractor takes Lua state and a message entry, and should return
+// luaMsgActionExtractor takes Lua state and a message entry, and should return
 // a Lua function pointer as action function of this message entry. When no valid
 // action can be made for given message entry, this function returns nil.
-type luaMsgHandlerExtractor func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction
+type luaMsgActionExtractor func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction
 
 // luaMsgArgsMaker is message argument type converter function, it takes Lua state
 // and returns a slice of Lua values as arguments for message action. This will
@@ -1222,10 +1214,10 @@ type luaMsgCallArgs struct {
 	getArgs                               luaMsgArgsMaker
 }
 
-var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
+var gLuaMsgActionExtractorMap = map[string]map[string]luaMsgActionExtractor{
 	registryKeyCommand: {
-		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaCommandActionFuncKey),
-		luaCommandCompletionFuncKey: extractLuaMsgHandlerWithDefaultAction(
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaCommandActionFuncKey),
+		luaCommandCompletionFuncKey: extractLuaMsgActionWithDefaultAction(
 			luaCommandCompletionFuncKey,
 			func(L *lua.LState) int {
 				return 0
@@ -1233,12 +1225,12 @@ var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
 		),
 	},
 	registryKeyEventHook: {
-		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaEventHookActionFuncKey),
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaEventHookActionFuncKey),
 	},
 	registryKeyPreviewer: {
-		luaMsgVariantMain:        extractLuaMsgHandlerWithTblKey(luaPreviewerActionFuncKey),
-		luaPreviewerCleanFuncKey: extractLuaMsgHandlerWithTblKey(luaPreviewerCleanFuncKey),
-		luaPreviewerConditionFuncKey: extractLuaMsgHandlerWithDefaultAction(
+		luaMsgVariantMain:        extractLuaMsgActionWithTblKey(luaPreviewerActionFuncKey),
+		luaPreviewerCleanFuncKey: extractLuaMsgActionWithTblKey(luaPreviewerCleanFuncKey),
+		luaPreviewerConditionFuncKey: extractLuaMsgActionWithDefaultAction(
 			luaPreviewerConditionFuncKey,
 			func(L *lua.LState) int {
 				L.Push(lua.LTrue)
@@ -1247,19 +1239,19 @@ var handlerExtractorMap = map[string]map[string]luaMsgHandlerExtractor{
 		),
 	},
 	registryKeySortMethod: {
-		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaSortMethodActionFuncKey),
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaSortMethodActionFuncKey),
 	},
 	registryKeyUIFormatter: {
-		luaMsgVariantMain: extractLuaMsgHandlerWithTblKey(luaUIFormatterActionFuncKey),
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaUIFormatterActionFuncKey),
 	},
 }
 
-// extractLuaMsgHandlerWithTblKey returns a handler extractor function, returned
+// extractLuaMsgActionWithTblKey returns a action extractor function, returned
 // function will retruns message entry as a Lua function if it is one, if that
 // entry is a table, extractor will check the value for given key, and returns
 // that value if it is a function.
 // Otherwise extractor returns nil.
-func extractLuaMsgHandlerWithTblKey(key string) luaMsgHandlerExtractor {
+func extractLuaMsgActionWithTblKey(key string) luaMsgActionExtractor {
 	return func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
 		switch msgEntry.Type() {
 		case lua.LTFunction:
@@ -1277,11 +1269,11 @@ func extractLuaMsgHandlerWithTblKey(key string) luaMsgHandlerExtractor {
 	}
 }
 
-// extractLuaMsgHandlerWithDefaultAction returns a handler extractor that works
-// pretty much like extractLuaMsgHandlerWithTblKey ones, but will return a Lua
+// extractLuaMsgActionWithDefaultAction returns a action extractor that works
+// pretty much like extractLuaMsgActionWithTblKey ones, but will return a Lua
 // function made by wrapping `defualtAction` when message entry is defined as
 // a function itself, or is defined as a table but does not contains specified key.
-func extractLuaMsgHandlerWithDefaultAction(key string, defaultAction lua.LGFunction) luaMsgHandlerExtractor {
+func extractLuaMsgActionWithDefaultAction(key string, defaultAction lua.LGFunction) luaMsgActionExtractor {
 	return func(L *lua.LState, msgEntry lua.LValue) *lua.LFunction {
 		switch msgEntry.Type() {
 		case lua.LTFunction:
@@ -1345,7 +1337,7 @@ func makeLuaMsgArgsWrapper(args ...any) luaMsgArgsMaker {
 	}
 }
 
-// callLuaMsgOnState finds and runs target Lua message handler on given Lua state.
+// callLuaMsgOnState finds and runs target Lua message action on given Lua state.
 func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 	if callArgs.variant != "" {
 		log.Printf("call Lua msg: (%s, %s, %s)@%s", callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant)
@@ -1358,19 +1350,19 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		return nil, err
 	}
 
-	var handler *lua.LFunction
-	var extractor luaMsgHandlerExtractor
-	if extractorMap, ok := handlerExtractorMap[callArgs.registryKey]; ok {
+	var action *lua.LFunction
+	var extractor luaMsgActionExtractor
+	if extractorMap, ok := gLuaMsgActionExtractorMap[callArgs.registryKey]; ok {
 		extractor = extractorMap[callArgs.variant]
 	}
 
 	if extractor != nil {
-		handler = extractor(L, entry)
+		action = extractor(L, entry)
 	} else {
-		handler, _ = entry.(*lua.LFunction)
+		action, _ = entry.(*lua.LFunction)
 	}
-	if handler == nil {
-		return nil, fmt.Errorf("can't get valid msg handler function")
+	if action == nil {
+		return nil, fmt.Errorf("can't get valid msg action function")
 	}
 
 	var luaArgs []lua.LValue
@@ -1378,7 +1370,7 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		luaArgs = callArgs.getArgs(L)
 	}
 
-	L.Push(handler)
+	L.Push(action)
 	for _, arg := range luaArgs {
 		L.Push(arg)
 	}
@@ -1823,26 +1815,26 @@ func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
 		return fmt.Errorf("key map group is not table value")
 	}
 
-	var handler *lua.LFunction
+	var action *lua.LFunction
 
 	entry := groupTbl.RawGetString(expr.key)
 	switch entry.Type() {
 	case lua.LTFunction:
-		handler = entry.(*lua.LFunction)
+		action = entry.(*lua.LFunction)
 	case lua.LTTable:
 		value := entry.(*lua.LTable).RawGetString(luaKeyMapActionFuncKey)
-		handler, _ = value.(*lua.LFunction)
+		action, _ = value.(*lua.LFunction)
 	case lua.LTNil:
-		return fmt.Errorf("no handler found")
+		return fmt.Errorf("no action found")
 	default:
-		return fmt.Errorf("not supported handler value type")
+		return fmt.Errorf("not supported action value type")
 	}
 
-	if handler == nil {
-		return fmt.Errorf("no handler found")
+	if action == nil {
+		return fmt.Errorf("no action found")
 	}
 
-	L.Push(handler)
+	L.Push(action)
 
 	err = L.PCall(0, 0, nil)
 	if err != nil {
