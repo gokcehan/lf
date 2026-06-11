@@ -61,18 +61,21 @@ func LAddBufWriterToState(L *lua.LState, data *bufio.Writer) int {
 
 // ----------------------------------------------------------------------------
 
+// luaBufWriterAvailable returns available byte count in buffer.
 func luaBufWriterAvailable(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Available()))
 	return 1
 }
 
+// luaBufWriterBuffered returns number of bytes that has been written to buffer.
 func luaBufWriterBuffered(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Buffered()))
 	return 1
 }
 
+// luaBufWriterFlush writes buffered data to underlying output writer.
 func luaBufWriterFlush(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
 	err := writer.Flush()
@@ -85,12 +88,14 @@ func luaBufWriterFlush(L *lua.LState) int {
 	return 0
 }
 
+// luaBufWriterSize returns byte size of underlying buffer.
 func luaBufWriterSize(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Size()))
 	return 1
 }
 
+// luaBufWriterWriteString writes string value to buffer.
 func luaBufWriterWriteString(L *lua.LState) int {
 	writer := LCheckBufWriter(L, 1)
 
@@ -169,12 +174,14 @@ func LAddBufReaderToState(L *lua.LState, data *bufio.Reader) int {
 
 // ----------------------------------------------------------------------------
 
+// luaBufReaderBuffered returns number of bytes buffered.
 func luaBufReaderBuffered(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	L.Push(lua.LNumber(reader.Buffered()))
 	return 1
 }
 
+// luaBufReaderDiscard skips following n bytes, returns number of bytes skipped.
 func luaBufReaderDiscard(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	n := L.CheckInt(2)
@@ -190,6 +197,7 @@ func luaBufReaderDiscard(L *lua.LState) int {
 	return 1
 }
 
+// luaBufReaderPeek returns next n bytes without advancing reader.
 func luaBufReaderPeek(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	n := L.CheckInt(2)
@@ -205,6 +213,7 @@ func luaBufReaderPeek(L *lua.LState) int {
 	return 1
 }
 
+// luaBufReaderRead read n bytes from reader, and returns datga as a string.
 func luaBufReaderRead(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	n := L.CheckInt(2)
@@ -223,6 +232,8 @@ func luaBufReaderRead(L *lua.LState) int {
 	return 2
 }
 
+// luaBufReaderReadLine reads one line of data. Returned data will not contain
+// trailing `\r\n` or `\n`
 func luaBufReaderReadLine(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 
@@ -239,6 +250,8 @@ func luaBufReaderReadLine(L *lua.LState) int {
 	return 2
 }
 
+// luaBufReaderReadString takes a delimiter string, and reads until that string
+// occurs.
 func luaBufReaderReadString(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	delim := L.CheckString(2)
@@ -254,6 +267,7 @@ func luaBufReaderReadString(L *lua.LState) int {
 	return 1
 }
 
+// luaBufReaderSize returns byte size of underlying buffer.
 func luaBufReaderSize(L *lua.LState) int {
 	reader := LCheckBufReader(L, 1)
 	L.Push(lua.LNumber(reader.Size()))

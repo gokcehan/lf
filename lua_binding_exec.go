@@ -74,6 +74,7 @@ func LAddCmdToState(L *lua.LState, data *exec.Cmd) int {
 
 // ----------------------------------------------------------------------------
 
+// luaCmdNew creates a new command object.
 func luaCmdNew(L *lua.LState) int {
 	cmdStr := L.CheckString(1)
 
@@ -97,6 +98,8 @@ func luaCmdMetaTostring(L *lua.LState) int {
 
 // ----------------------------------------------------------------------------
 
+// luaCmdEnviron returns a copy of command's environment variable list as table.
+// Every environment variable is set in form of a `<key>=<value>` string.
 func luaCmdEnviron(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -112,6 +115,8 @@ func luaCmdEnviron(L *lua.LState) int {
 	return 1
 }
 
+// luaCmdAddEnviron appends new key-value string to command's environment variable
+// list.
 func luaCmdAddEnviron(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 	kv := L.CheckString(2)
@@ -121,6 +126,8 @@ func luaCmdAddEnviron(L *lua.LState) int {
 	return 0
 }
 
+// luaCmdCombinedOutput runs command and returns string result containing both
+// stdout and stderr output.
 func luaCmdCombinedOutput(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -135,6 +142,8 @@ func luaCmdCombinedOutput(L *lua.LState) int {
 	return 1
 }
 
+// luaCmdOutput runs command and returns string result containing only stdout
+// output.
 func luaCmdOutput(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -149,6 +158,7 @@ func luaCmdOutput(L *lua.LState) int {
 	return 1
 }
 
+// luaCmdRun runs current command.
 func luaCmdRun(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -161,6 +171,8 @@ func luaCmdRun(L *lua.LState) int {
 	return 0
 }
 
+// luaCmdStart stars execution command. Caller should then calls `wait` method
+// to wait for execution ends.
 func luaCmdStart(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -173,6 +185,7 @@ func luaCmdStart(L *lua.LState) int {
 	return 0
 }
 
+// luaCmdWait blocks execution until execution of command ends.
 func luaCmdWait(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -185,6 +198,8 @@ func luaCmdWait(L *lua.LState) int {
 	return 0
 }
 
+// luaCmdStrerrPipe returns a reader handle to command's stderr output. This should
+// be called before command starts execution.
 func luaCmdStrerrPipe(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -200,6 +215,8 @@ func luaCmdStrerrPipe(L *lua.LState) int {
 	return LAddBufReaderToState(L, reader)
 }
 
+// luaCmdStdoutPipe returns a reader handle to command's stdout output. This should
+// be called before command starts execution.
 func luaCmdStdoutPipe(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -215,6 +232,8 @@ func luaCmdStdoutPipe(L *lua.LState) int {
 	return LAddBufReaderToState(L, reader)
 }
 
+// luaCmdStdinPipe returns a writer handle to command's stdin input. This should
+// be called before command starts execution.
 func luaCmdStdinPipe(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 
@@ -230,6 +249,8 @@ func luaCmdStdinPipe(L *lua.LState) int {
 	return LAddBufWriterToState(L, writer)
 }
 
+// luaCmdExitCode returns exit code of finished command. When exit code is not
+// available, this method returns `nil`.
 func luaCmdExitCode(L *lua.LState) int {
 	cmd := LCheckCmd(L, 1)
 

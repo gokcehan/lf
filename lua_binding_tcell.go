@@ -91,6 +91,7 @@ func luaTcellStyleNew(L *lua.LState) int {
 	return LAddTcellStyleToState(L, &st)
 }
 
+// luaTcellStyleRestString returns reset CSI string.
 func luaTcellStyleRestString(L *lua.LState) int {
 	L.Push(lua.LString("\033[0m"))
 	return 1
@@ -104,12 +105,17 @@ func luaTcellStyleMetaTostring(L *lua.LState) int {
 
 // ----------------------------------------------------------------------------
 
+// luaTcellStyleTostring converts current style to CSI string. Does the same thing
+// as __tostring meta method.
 func luaTcellStyleTostring(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	L.Push(lua.LString(tcellStyleToString(*st)))
 	return 1
 }
 
+// luaTcellStyleWrap takes a list of content strings, and wrap them with CSI string
+// form of current style and reset CSI sequens. Result is returned as a single
+// string.
 func luaTcellStyleWrap(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 
@@ -161,6 +167,8 @@ func luaTcellStyleBackgroundRGB(L *lua.LState) int {
 	return LAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleForegroundName sets foreground color with color name or hex code
+// starting with `#`.
 func luaTcellStyleForegroundName(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	name := L.CheckString(2)
@@ -170,6 +178,8 @@ func luaTcellStyleForegroundName(L *lua.LState) int {
 	return LAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleBackgroundName sets background color with color name or hex code
+// starting with `#`.
 func luaTcellStyleBackgroundName(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	name := L.CheckString(2)
@@ -179,6 +189,8 @@ func luaTcellStyleBackgroundName(L *lua.LState) int {
 	return LAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleNormal returns the style with all attributes disabled.
+// Colors and hyperlinks are preserved
 func luaTcellStyleNormal(L *lua.LState) int {
 	st := LCheckTcellStyle(L, 1)
 	*st = st.Normal()
@@ -345,6 +357,8 @@ func luaTcellColorNewHex(L *lua.LState) int {
 	return LAddTcellColorToState(L, &color)
 }
 
+// luaTcellColorNewName creates a color with color name or hex code starting with
+// `#`.
 func luaTcellColorNewName(L *lua.LState) int {
 	name := L.CheckString(1)
 	color := tcell.GetColor(name)

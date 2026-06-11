@@ -72,64 +72,6 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	mod.RawSetString("KeyMapType", keyMapType)
 }
 
-func luaRunColonCommand(L *lua.LState) int {
-	cmd := L.CheckString(1)
-
-	app, err := getAppObjectFromLuaGlobals(L)
-	if err != nil {
-		L.RaiseError("failed to get app object: %s", err)
-		return 0
-	}
-
-	p := newParser(strings.NewReader(cmd))
-	for p.parse() {
-		p.expr.eval(app, nil)
-	}
-	if p.err != nil {
-		app.ui.echoerrf("%s", p.err)
-	}
-
-	return 0
-}
-
-func luaRunShellCommand(L *lua.LState) int {
-	prefix := L.CheckString(1)
-	cmd := L.CheckString(2)
-
-	app, err := getAppObjectFromLuaGlobals(L)
-	if err != nil {
-		L.RaiseError("failed to get app object: %s", err)
-		return 0
-	}
-
-	st := 3
-	nArgs := L.GetTop()
-	args := make([]string, nArgs-st+1)
-	for i := st; i <= nArgs; i++ {
-		arg := L.Get(i)
-		args[i-st] = arg.String()
-	}
-
-	switch prefix {
-	case "$":
-		log.Printf("shell: %s -- %q", cmd, args)
-		app.runShell(cmd, args, prefix)
-	case "%":
-		log.Printf("shell-pipe: %s -- %q", cmd, args)
-		app.runShell(cmd, args, prefix)
-	case "!":
-		log.Printf("shell-wait: %s -- %q", cmd, args)
-		app.runShell(cmd, args, prefix)
-	case "&":
-		log.Printf("shell-async: %s -- %q", cmd, args)
-		app.runShell(cmd, args, prefix)
-	default:
-		log.Printf("unknown execution prefix: %q", prefix)
-	}
-
-	return 0
-}
-
 func prettyPrintLuaValue(builder *strings.Builder, val lua.LValue, visited map[lua.LValue]int, tableCnt, indentLevel int) int {
 	switch val.Type() {
 	case lua.LTNil, lua.LTBool, lua.LTNumber, lua.LTFunction, lua.LTUserData, lua.LTThread, lua.LTChannel:
@@ -176,6 +118,7 @@ func prettyPrintLuaValue(builder *strings.Builder, val lua.LValue, visited map[l
 	return tableCnt
 }
 
+// luaPrint prints a Lua value, this can be used for debugging.
 func luaPrint(L *lua.LState) int {
 	value := L.CheckAny(1)
 	var builder strings.Builder
@@ -184,6 +127,68 @@ func luaPrint(L *lua.LState) int {
 	return 0
 }
 
+// luaRunColonCommand runs a lf command string just like calling command with `:`.
+func luaRunColonCommand(L *lua.LState) int {
+	cmd := L.CheckString(1)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	p := newParser(strings.NewReader(cmd))
+	for p.parse() {
+		p.expr.eval(app, nil)
+	}
+	if p.err != nil {
+		app.ui.echoerrf("%s", p.err)
+	}
+
+	return 0
+}
+
+// luaRunShellCommand takes execution type prefix, command name and variable length
+// argument list, and asks lf to execute given shell command.
+func luaRunShellCommand(L *lua.LState) int {
+	prefix := L.CheckString(1)
+	cmd := L.CheckString(2)
+
+	app, err := getAppObjectFromLuaGlobals(L)
+	if err != nil {
+		L.RaiseError("failed to get app object: %s", err)
+		return 0
+	}
+
+	st := 3
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		arg := L.Get(i)
+		args[i-st] = arg.String()
+	}
+
+	switch prefix {
+	case "$":
+		log.Printf("shell: %s -- %q", cmd, args)
+		app.runShell(cmd, args, prefix)
+	case "%":
+		log.Printf("shell-pipe: %s -- %q", cmd, args)
+		app.runShell(cmd, args, prefix)
+	case "!":
+		log.Printf("shell-wait: %s -- %q", cmd, args)
+		app.runShell(cmd, args, prefix)
+	case "&":
+		log.Printf("shell-async: %s -- %q", cmd, args)
+		app.runShell(cmd, args, prefix)
+	default:
+		log.Printf("unknown execution prefix: %q", prefix)
+	}
+
+	return 0
+}
+
+// luaCallCommand runs lf command.
 func luaCallCommand(L *lua.LState) int {
 	name := L.CheckString(1)
 
@@ -207,6 +212,7 @@ func luaCallCommand(L *lua.LState) int {
 	return 0
 }
 
+// luaCallCommandN runs lf command with repetition argument `n`.
 func luaCallCommandN(L *lua.LState) int {
 	count := L.CheckInt(1)
 	name := L.CheckString(2)
@@ -326,6 +332,7 @@ func luaGetLocalOptionValue(L *lua.LState) int {
 	return 1
 }
 
+// luaGlobMatch checks if a pattern matches certain string.
 func luaGlobMatch(L *lua.LState) int {
 	pattern := L.CheckString(1)
 	str := L.CheckString(2)
@@ -342,6 +349,8 @@ func luaGlobMatch(L *lua.LState) int {
 	return 1
 }
 
+// luaLuaMatchWord takes a source string, and a list of candidate string, and
+// returns a list of match object and longest common matched string.
 func luaLuaMatchWord(L *lua.LState) int {
 	longest := L.CheckString(1)
 	wordTbl := L.CheckTable(2)

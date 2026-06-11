@@ -247,6 +247,8 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 
 // ----------------------------------------------------------------------------
 
+// initializeState loads plugin script byte code and create synchronous Lua state
+// object.
 func (pl *lStatePool) initializeState(app *app) {
 	pl.lockPool.Lock()
 	defer pl.lockPool.Unlock()
@@ -309,6 +311,8 @@ func (pl *lStatePool) put(L *lua.LState) {
 	pl.saved = append(pl.saved, L)
 }
 
+// acquireSyncState tries acquire synchronous Lua state's mutex, and returns
+// synchronous Lua state object after successfully acquired lock.
 func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 	pl.lockPool.Lock()
 
@@ -333,6 +337,7 @@ func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 	return pl.luaStateSync, nil
 }
 
+// releaseSyncState releases synchronous Lua state's mutex.
 func (pl *lStatePool) releaseSyncState() {
 	pl.lockLuaStateSync.Unlock()
 }
@@ -356,6 +361,8 @@ func (pl *lStatePool) shutdown() {
 	}
 }
 
+// resetLuaState closes and removes all Lua state in pool object, and reset Lua
+// related data to uninitialized state.
 func (pl *lStatePool) resetLuaState() error {
 	pl.lockLuaStateSync.Lock()
 	defer pl.lockLuaStateSync.Unlock()
@@ -1568,6 +1575,8 @@ func newLuaPreviewerPipe() *luaPreviewerPipe {
 	return lp
 }
 
+// wakeupLoop runs in background goroutine, wakes blocked `Read` call from time
+// to time for checking new content in pipe buffer.
 func (lp *luaPreviewerPipe) wakeupLoop() {
 	for {
 		select {
@@ -1582,6 +1591,8 @@ func (lp *luaPreviewerPipe) wakeupLoop() {
 	}
 }
 
+// Write puts data to pipe buffer. Returns `io.ErrClosedPipe` when pipe is closed,
+// so that writing side can known no more data is required on reading side.
 func (lp *luaPreviewerPipe) Write(p []byte) (n int, err error) {
 	lp.m.Lock()
 	defer lp.m.Unlock()
@@ -1593,6 +1604,8 @@ func (lp *luaPreviewerPipe) Write(p []byte) (n int, err error) {
 	return lp.buf.Write(p)
 }
 
+// Read tries to read from pipe buffer, and if there is currently nothing to read,
+// this function will wait for small amount of time and then try reading again.
 func (lp *luaPreviewerPipe) Read(p []byte) (n int, err error) {
 	maxTry := 100
 
@@ -1641,6 +1654,7 @@ func (lp *luaPreviewerPipe) Close() error {
 	return nil
 }
 
+// setVolatile updates volatile indicator on pipe.
 func (lp *luaPreviewerPipe) setVolatile(isVolatile bool) {
 	lp.m.Lock()
 	defer lp.m.Unlock()
@@ -1648,6 +1662,7 @@ func (lp *luaPreviewerPipe) setVolatile(isVolatile bool) {
 	lp.volatile = isVolatile
 }
 
+// isVolatile returns flag indicating if preview result should be marked as volatile.
 func (lp *luaPreviewerPipe) isVolatile() bool {
 	lp.m.Lock()
 	defer lp.m.Unlock()
@@ -1655,10 +1670,12 @@ func (lp *luaPreviewerPipe) isVolatile() bool {
 	return lp.volatile
 }
 
+// wait blocks goroutine until previewer pip is closed.
 func (lp *luaPreviewerPipe) wait() {
 	<-lp.done
 }
 
+// setPreviewError bind Lua execution error to pipe.
 func (lp *luaPreviewerPipe) setPreviewError(err error) {
 	lp.m.Lock()
 	defer lp.m.Unlock()
@@ -1666,6 +1683,7 @@ func (lp *luaPreviewerPipe) setPreviewError(err error) {
 	lp.previewErr = err
 }
 
+// checkPreviewError retruns Lua execution error binded to pipe.
 func (lp *luaPreviewerPipe) checkPreviewError() error {
 	lp.m.Lock()
 	defer lp.m.Unlock()
@@ -1866,6 +1884,8 @@ func getLuaSortMethod(name string) *luaMsgExpr {
 	return gLuaRegistry.sortMethod[name]
 }
 
+// sortByLuaMsg pass given file list to Lua sort method and update file list order
+// in place.
 func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
 	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 		udTbl := L.NewTable()

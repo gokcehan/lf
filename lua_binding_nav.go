@@ -137,12 +137,14 @@ func luaFilePath(L *lua.LState) int {
 	return 1
 }
 
+// luaFileDirCount returns number items of a directory.
 func luaFileDirCount(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 	L.Push(lua.LNumber(file.dirCount))
 	return 1
 }
 
+// luaFileDirSize return directory's total content size.
 func luaFileDirSize(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 	L.Push(lua.LNumber(file.dirSize))
@@ -164,6 +166,8 @@ func luaFileChangeTime(L *lua.LState) int {
 	return LAddTimeToState(L, &file.changeTime)
 }
 
+// luaFileCustomInfo returns custom info string add to this file by `addcustominfo`
+// command.
 func luaFileCustomInfo(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 
@@ -183,6 +187,9 @@ func luaFileExt(L *lua.LState) int {
 	return 1
 }
 
+// luaFileExtraInfo can get & set Lua value to a table binded to this file object.
+// This method takes data key, and a optional data value, when value argument is
+// not nil, this method will set named key to given value.
 func luaFileExtraInfo(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 	key := L.Get(2)
@@ -207,6 +214,7 @@ func luaFileExtraInfo(L *lua.LState) int {
 	return 1
 }
 
+// luaFileIsPreviewable returns true if this file requires a preview call.
 func luaFileIsPreviewable(L *lua.LState) int {
 	file := LCheckFile(L, 1)
 	L.Push(lua.LBool(file.isPreviewable()))
@@ -311,12 +319,14 @@ func luaDirLoadTime(L *lua.LState) int {
 	return LAddTimeToState(L, &dir.loadTime)
 }
 
+// luaDirInd returns a 0-based index of current entry in directory.
 func luaDirInd(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.ind))
 	return 1
 }
 
+// luaDirPos returns a 0-based row index indicating position of cursor.
 func luaDirPos(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.pos))
@@ -329,6 +339,7 @@ func luaDirPath(L *lua.LState) int {
 	return 1
 }
 
+// luaDirFiles returns a list of displayed file.
 func luaDirFiles(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 
@@ -342,6 +353,7 @@ func luaDirFiles(L *lua.LState) int {
 	return 1
 }
 
+// luaDirAllFiles returns a list of file including non-displayed ones.
 func luaDirAllFiles(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 
@@ -355,6 +367,7 @@ func luaDirAllFiles(L *lua.LState) int {
 	return 1
 }
 
+// luaDirSortby is getter & setter for directory sort method
 func luaDirSortby(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 
@@ -398,12 +411,14 @@ func luaDirReverse(L *lua.LState) int {
 	return 1
 }
 
+// luaDirVisualAnchor returns anchor position of visual mode selection range.
 func luaDirVisualAnchor(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.visualAnchor))
 	return 1
 }
 
+// luaDirVisualWrap returns wrap method of visual mode.
 func luaDirVisualWrap(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.visualWrap))
@@ -425,7 +440,7 @@ func luaDirHiddenFiles(L *lua.LState) int {
 func luaDirFilter(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	filterTable := L.NewTable()
-	for _, file := range dir.hiddenfiles {
+	for _, file := range dir.filter {
 		filterTable.Append(lua.LString(file))
 	}
 
@@ -446,12 +461,14 @@ func luaDirSortignoredia(L *lua.LState) int {
 	return 1
 }
 
+// luaDirNoPerm returns true if progm doesn't have permission to open this directory.
 func luaDirNoPerm(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	L.Push(lua.LBool(dir.noPerm))
 	return 1
 }
 
+// luaDirSort runs sorting for current directory
 func luaDirSort(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	dir.sort()
@@ -464,6 +481,7 @@ func luaDirName(L *lua.LState) int {
 	return 1
 }
 
+// luaDirVisualSelectioins returns a list of path selected in visual mode.
 func luaDirVisualSelectioins(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	tbl := L.NewTable()
@@ -486,6 +504,7 @@ func luaDirSel(L *lua.LState) int {
 	return 0
 }
 
+// luaDirFilesForEach is a helper method for iterating over list of displayed files.
 func luaDirFilesForEach(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	fn := L.CheckFunction(2)
@@ -508,6 +527,7 @@ func luaDirFilesForEach(L *lua.LState) int {
 	return 0
 }
 
+// luaDirAllFilesForEach is a helper method iterating over list of all files.
 func luaDirAllFilesForEach(L *lua.LState) int {
 	dir := LCheckDir(L, 1)
 	fn := L.CheckFunction(2)

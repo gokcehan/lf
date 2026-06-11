@@ -14,6 +14,7 @@ func LfUIModuleLoader(L *lua.LState) int {
 	return 1
 }
 
+// lfUIModulePrintLength returns displayed width of string content.
 func lfUIModulePrintLength(L *lua.LState) int {
 	str := L.CheckString(1)
 	L.Push(lua.LNumber(printLength(str)))

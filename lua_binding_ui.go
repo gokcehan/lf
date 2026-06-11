@@ -59,6 +59,7 @@ func LAddUIToState(L *lua.LState, data *ui) int {
 
 // ----------------------------------------------------------------------------
 
+// luaUIEcho prints content to lf message bar.
 func luaUIEcho(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
 
@@ -74,6 +75,7 @@ func luaUIEcho(L *lua.LState) int {
 	return 0
 }
 
+// luaUIEcho prints content to both lf message bar and log.
 func luaUIEchoMsg(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
 
@@ -89,6 +91,7 @@ func luaUIEchoMsg(L *lua.LState) int {
 	return 0
 }
 
+// luaUIEcho prints error message to both lf message bar and log.
 func luaUIEchhoErr(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
 
@@ -104,6 +107,7 @@ func luaUIEchhoErr(L *lua.LState) int {
 	return 0
 }
 
+// luaUIEcho prints error message with formatting string.
 func luaUIEchhoErrf(L *lua.LState) int {
 	ui := LCheckUI(L, 1)
 	fmtStr := L.ToString(2)

@@ -55,11 +55,13 @@ func LAddAppToState(L *lua.LState, data *app) int {
 
 // ----------------------------------------------------------------------------
 
+// luaAppUI returns `ui` object hold by app
 func luaAppUI(L *lua.LState) int {
 	app := LCheckApp(L, 1)
 	return LAddUIToState(L, app.ui)
 }
 
+// luaAppNav returns `nav` object hold by app
 func luaAppNav(L *lua.LState) int {
 	app := LCheckApp(L, 1)
 	return LAddNavToState(L, app.nav)

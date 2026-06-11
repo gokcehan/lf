@@ -63,6 +63,8 @@ func luaCompMatchNew(L *lua.LState) int {
 
 // ----------------------------------------------------------------------------
 
+// luaCompMatchName is getter & setter for name field. It's displayed text for
+// this completion entry.
 func luaCompMatchName(L *lua.LState) int {
 	cm := LCheckCompMatch(L, 1)
 
@@ -76,6 +78,8 @@ func luaCompMatchName(L *lua.LState) int {
 	return 1
 }
 
+// luaCompMatchResult is getter & setter for result field. It's applied text used
+// when this completion entry is picked.
 func luaCompMatchResult(L *lua.LState) int {
 	cm := LCheckCompMatch(L, 1)
 
