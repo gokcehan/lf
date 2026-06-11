@@ -960,12 +960,16 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 		switch mapAction.Type() {
 		case lua.LTString:
 			text := mapAction.String()
-			p := newParser(strings.NewReader(text))
-			expr := p.parseExpr()
-			if expr == nil {
-				log.Printf("failed to parse Lua key map %s.%s: %s", keyMapType, mapKey, p.err)
+			if text == "" {
+				delete(keys, mapKey)
 			} else {
-				keys[mapKey] = expr
+				p := newParser(strings.NewReader(text))
+				expr := p.parseExpr()
+				if expr == nil {
+					log.Printf("failed to parse Lua key map %s.%s: %s", keyMapType, mapKey, p.err)
+				} else {
+					keys[mapKey] = expr
+				}
 			}
 		case lua.LTFunction:
 			keys[mapKey] = &luaKeyMapExpr{
