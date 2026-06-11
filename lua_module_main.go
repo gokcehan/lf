@@ -38,11 +38,6 @@ func LfMainModuleLoader(L *lua.LState) int {
 }
 
 func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
-	mod.RawSetString("REGISTRY_SORT_METHOD", lua.LString(registryKeySortMethod))
-	mod.RawSetString("REGISTRY_COMMAND", lua.LString(registryKeyCommand))
-	mod.RawSetString("REGISTRY_EVENT_HOOK", lua.LString(registryKeyEventHook))
-	mod.RawSetString("REGISTRY_PREVIEWER", lua.LString(registryKeyPreviewer))
-
 	// event type
 	eventType := L.NewTable()
 	eventType.RawSetString("PreCd", lua.LString("pre-cd"))

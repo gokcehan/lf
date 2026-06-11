@@ -26,7 +26,7 @@ func isValidSortMethod(method sortMethod) bool {
 	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
 		return true
 	}
-	return getLuaSortMethod(string(method)) != nil
+	return getLuaSortingMethod(string(method)) != nil
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`

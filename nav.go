@@ -322,7 +322,7 @@ func (dir *dir) sort() {
 		})
 	default:
 		name := string(dir.sortby)
-		if msgExpr := getLuaSortMethod(name); msgExpr != nil {
+		if msgExpr := getLuaSortingMethod(name); msgExpr != nil {
 			sortByLuaMsg(msgExpr, dir.files, dir.reverse)
 		}
 	}

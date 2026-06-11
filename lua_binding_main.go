@@ -1,6 +1,9 @@
 package main
 
 import (
+	"fmt"
+	"log"
+
 	lua "github.com/yuin/gopher-lua"
 )
 

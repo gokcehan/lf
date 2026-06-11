@@ -28,13 +28,13 @@ const luaGlobalNameApp = "app"
 const luaMsgVariantMain = ""
 
 const (
-	registryKeyCommand     = "command"
-	registryKeyEventHook   = "event_hook"
-	registryKeyKeyMap      = "key_map"
-	registryKeyPreviewer   = "previewer"
-	registryKeySortMethod  = "sort_method"
-	registryKeyUIFormatter = "ui_formatter"
-	registryKeyUIStyle     = "ui_style"
+	registryKeyCommand       = "command"
+	registryKeyEventHook     = "event_hook"
+	registryKeyKeyMap        = "key_map"
+	registryKeyPreviewer     = "previewer"
+	registryKeySortingMethod = "sorting_method"
+	registryKeyUIFormatter   = "ui_formatter"
+	registryKeyUIStyle       = "ui_style"
 )
 
 const (
@@ -53,8 +53,8 @@ const (
 	luaPreviewerConditionFuncKey = "condition"
 	luaPreviewerIsSyncKey        = "is_sync"
 
-	luaSortMethodActionFuncKey = "action"
-	luaSortMethodIsSyncKey     = "is_sync"
+	luaSortingMethodActionFuncKey = "action"
+	luaSortingMethodIsSyncKey     = "is_sync"
 
 	luaUIFormatterActionFuncKey = "action"
 	luaUIFormatterIsSyncKey     = "is_sync"
@@ -232,7 +232,7 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadEventHookRegistryFromTbl(sourceName, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
-		loadSortMethodRegistryFromTbl(sourceName, tbl)
+		loadSortingMethodRegistryFromTbl(sourceName, tbl)
 		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
 		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
 
@@ -412,11 +412,11 @@ var gLuaPool *lStatePool
 var gLuaRegistry struct {
 	stateDataMap map[*lua.LState]map[string]*lua.LTable
 
-	eventHooks  map[string][]*luaMsgExpr
-	previewers  []luaPreviewerInfo
-	sortMethod  map[string]*luaMsgExpr
-	uiFormatter map[string]*luaMsgExpr
-	uiStyleMap  map[string]tcell.Style
+	eventHooks    map[string][]*luaMsgExpr
+	previewers    []luaPreviewerInfo
+	sortingMethod map[string]*luaMsgExpr
+	uiFormatter   map[string]*luaMsgExpr
+	uiStyleMap    map[string]tcell.Style
 }
 
 func goReflectValueToLuaValue(L *lua.LState, rValue reflect.Value) (luaValue lua.LValue, err error) {
@@ -658,7 +658,7 @@ func luaPluginReload(app *app) {
 
 	gLuaRegistry.stateDataMap = make(map[*lua.LState]map[string]*lua.LTable)
 
-	gLuaRegistry.sortMethod = make(map[string]*luaMsgExpr)
+	gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
 	gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	gLuaRegistry.previewers = nil
 	gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
@@ -989,10 +989,10 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 	return changed
 }
 
-// loadSortMethodRegistryFromTbl registers sort methods defined in table returned
+// loadSortingMethodRegistryFromTbl registers sort methods defined in table returned
 // from plugin script.
-func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
-	registryKey := registryKeySortMethod
+func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeySortingMethod
 
 	value := tbl.RawGetString(registryKey)
 	switch value.Type() {
@@ -1005,15 +1005,15 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
-	sortMethodTbl := value.(*lua.LTable)
-	sortMethodTbl.ForEach(func(key, value lua.LValue) {
+	sortingMethodTbl := value.(*lua.LTable)
+	sortingMethodTbl.ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
 		}
 
-		if gLuaRegistry.sortMethod == nil {
-			gLuaRegistry.sortMethod = make(map[string]*luaMsgExpr)
+		if gLuaRegistry.sortingMethod == nil {
+			gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
 		}
 
 		msg := key.String()
@@ -1021,7 +1021,7 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		switch value.Type() {
 		case lua.LTFunction:
-			gLuaRegistry.sortMethod[name] = &luaMsgExpr{
+			gLuaRegistry.sortingMethod[name] = &luaMsgExpr{
 				sourceName: sourceName,
 				registry:   registryKey,
 				msg:        msg,
@@ -1029,12 +1029,12 @@ func loadSortMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				isSync:     false,
 			}
 		case lua.LTTable:
-			gLuaRegistry.sortMethod[name] = &luaMsgExpr{
+			gLuaRegistry.sortingMethod[name] = &luaMsgExpr{
 				sourceName: sourceName,
 				registry:   registryKey,
 				msg:        msg,
 				variant:    luaMsgVariantMain,
-				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaSortMethodIsSyncKey)),
+				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaSortingMethodIsSyncKey)),
 			}
 		default:
 			log.Printf("unsupported sort method registry value for key: %s", msg)
@@ -1232,8 +1232,8 @@ var gLuaMsgActionExtractorMap = map[string]map[string]luaMsgActionExtractor{
 			},
 		),
 	},
-	registryKeySortMethod: {
-		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaSortMethodActionFuncKey),
+	registryKeySortingMethod: {
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaSortingMethodActionFuncKey),
 	},
 	registryKeyUIFormatter: {
 		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaUIFormatterActionFuncKey),
@@ -1860,14 +1860,14 @@ func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 	}
 }
 
-// getLuaSortMethodNames returns name list of all registered Lua sort method.
-func getLuaSortMethodNames() []string {
-	return slices.Collect(maps.Keys(gLuaRegistry.sortMethod))
+// getLuaSortingMethodNames returns name list of all registered Lua sort method.
+func getLuaSortingMethodNames() []string {
+	return slices.Collect(maps.Keys(gLuaRegistry.sortingMethod))
 }
 
-// getLuaSortMethod returns Lua message expression for sort method with given name.
-func getLuaSortMethod(name string) *luaMsgExpr {
-	return gLuaRegistry.sortMethod[name]
+// getLuaSortingMethod returns Lua message expression for sort method with given name.
+func getLuaSortingMethod(name string) *luaMsgExpr {
+	return gLuaRegistry.sortingMethod[name]
 }
 
 // sortByLuaMsg pass given file list to Lua sort method and update file list order

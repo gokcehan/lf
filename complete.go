@@ -411,7 +411,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
 			candidates := []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"}
-			candidates = append(candidates, getLuaSortMethodNames()...)
+			candidates = append(candidates, getLuaSortingMethodNames()...)
 			matches, longest = matchWord(f[2], candidates)
 		case "terminalcursor":
 			matches, longest = matchWord(f[2], []string{"default", "block", "underline", "bar", "blinkblock", "blinkunderline", "blinkbar"})
