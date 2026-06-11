@@ -10,10 +10,10 @@ import (
 // ----------------------------------------------------------------------------
 // Type app
 
-const LuaAppTypeName = "lf.app"
+const luaAppTypeName = "lf.app"
 
-func LRegisterAppType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaAppTypeName)
+func lRegisterAppType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaAppTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -24,7 +24,7 @@ func LRegisterAppType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckApp(L *lua.LState, index int) *app {
+func lCheckApp(L *lua.LState, index int) *app {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*app); ok {
 		return v
@@ -35,22 +35,22 @@ func LCheckApp(L *lua.LState, index int) *app {
 	return nil
 }
 
-func LWrapApp(L *lua.LState, data *app) *lua.LUserData {
+func lWrapApp(L *lua.LState, data *app) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaAppTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaAppTypeName))
 
 	return ud
 }
 
-func LAddAppToState(L *lua.LState, data *app) int {
+func lAddAppToState(L *lua.LState, data *app) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapApp(L, data)
+	ud := lWrapApp(L, data)
 	L.Push(ud)
 
 	return 1
@@ -60,23 +60,23 @@ func LAddAppToState(L *lua.LState, data *app) int {
 
 // luaAppUI returns `ui` object hold by app
 func luaAppUI(L *lua.LState) int {
-	app := LCheckApp(L, 1)
-	return LAddUIToState(L, app.ui)
+	app := lCheckApp(L, 1)
+	return lAddUIToState(L, app.ui)
 }
 
 // luaAppNav returns `nav` object hold by app
 func luaAppNav(L *lua.LState) int {
-	app := LCheckApp(L, 1)
-	return LAddNavToState(L, app.nav)
+	app := lCheckApp(L, 1)
+	return lAddNavToState(L, app.nav)
 }
 
 // ----------------------------------------------------------------------------
 // Type compMatch
 
-const LuaCompMatchTypeName = "lf.comp_match"
+const luaCompMatchTypeName = "lf.comp_match"
 
-func LRegisterCompMatchType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaCompMatchTypeName)
+func lRegisterCompMatchType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaCompMatchTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new": luaCompMatchNew,
@@ -89,7 +89,7 @@ func LRegisterCompMatchType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckCompMatch(L *lua.LState, index int) *compMatch {
+func lCheckCompMatch(L *lua.LState, index int) *compMatch {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*compMatch); ok {
 		return v
@@ -100,22 +100,22 @@ func LCheckCompMatch(L *lua.LState, index int) *compMatch {
 	return nil
 }
 
-func LWrapCompMatch(L *lua.LState, data *compMatch) *lua.LUserData {
+func lWrapCompMatch(L *lua.LState, data *compMatch) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaCompMatchTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCompMatchTypeName))
 
 	return ud
 }
 
-func LAddCompMatchToState(L *lua.LState, data *compMatch) int {
+func lAddCompMatchToState(L *lua.LState, data *compMatch) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapCompMatch(L, data)
+	ud := lWrapCompMatch(L, data)
 	L.Push(ud)
 
 	return 1
@@ -126,7 +126,7 @@ func LAddCompMatchToState(L *lua.LState, data *compMatch) int {
 func luaCompMatchNew(L *lua.LState) int {
 	name := L.CheckString(1)
 	result := L.CheckString(2)
-	return LAddCompMatchToState(L, &compMatch{name: name, result: result})
+	return lAddCompMatchToState(L, &compMatch{name: name, result: result})
 }
 
 // ----------------------------------------------------------------------------
@@ -134,7 +134,7 @@ func luaCompMatchNew(L *lua.LState) int {
 // luaCompMatchName is getter & setter for name field. It's displayed text for
 // this completion entry.
 func luaCompMatchName(L *lua.LState) int {
-	cm := LCheckCompMatch(L, 1)
+	cm := lCheckCompMatch(L, 1)
 
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
@@ -149,7 +149,7 @@ func luaCompMatchName(L *lua.LState) int {
 // luaCompMatchResult is getter & setter for result field. It's applied text used
 // when this completion entry is picked.
 func luaCompMatchResult(L *lua.LState) int {
-	cm := LCheckCompMatch(L, 1)
+	cm := lCheckCompMatch(L, 1)
 
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
@@ -166,7 +166,7 @@ func luaCompMatchResult(L *lua.LState) int {
 
 const FileTypeName = "lf.file"
 
-func LRegisterFileTypeMt(L *lua.LState) *lua.LTable {
+func lRegisterFileTypeMt(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(FileTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
@@ -208,7 +208,7 @@ func addLinkStateConstantToMt(L *lua.LState, tbl *lua.LTable) {
 	L.SetField(tbl, "LinkStateBroken", lua.LNumber(broken))
 }
 
-func LCheckFile(L *lua.LState, index int) *file {
+func lCheckFile(L *lua.LState, index int) *file {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*file); ok {
 		return v
@@ -219,7 +219,7 @@ func LCheckFile(L *lua.LState, index int) *file {
 	return nil
 }
 
-func LWrapFile(L *lua.LState, data *file) *lua.LUserData {
+func lWrapFile(L *lua.LState, data *file) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
@@ -228,13 +228,13 @@ func LWrapFile(L *lua.LState, data *file) *lua.LUserData {
 	return ud
 }
 
-func LAddFileToState(L *lua.LState, data *file) int {
+func lAddFileToState(L *lua.LState, data *file) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapFile(L, data)
+	ud := lWrapFile(L, data)
 	L.Push(ud)
 
 	return 1
@@ -245,86 +245,86 @@ func LAddFileToState(L *lua.LState, data *file) int {
 func luaFileNew(L *lua.LState) int {
 	path := L.CheckString(1)
 	file := newFile(path)
-	return LAddFileToState(L, file)
+	return lAddFileToState(L, file)
 }
 
 // ----------------------------------------------------------------------------
 
 func luaFileName(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LString(file.Name()))
 	return 1
 }
 
 func luaFileSize(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LNumber(file.Size()))
 	return 1
 }
 
 func luaFileMode(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LNumber(file.Mode()))
 	return 1
 }
 
 func luaFileIsDir(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LBool(file.IsDir()))
 	return 1
 }
 
 func luaFileLinkState(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LNumber(file.linkState))
 	return 1
 }
 
 func luaFileLinkTarget(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LString(file.linkTarget))
 	return 1
 }
 
 func luaFilePath(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LString(file.path))
 	return 1
 }
 
 // luaFileDirCount returns number items of a directory.
 func luaFileDirCount(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LNumber(file.dirCount))
 	return 1
 }
 
 // luaFileDirSize return directory's total content size.
 func luaFileDirSize(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LNumber(file.dirSize))
 	return 1
 }
 
 func luaFileAccessTime(L *lua.LState) int {
-	file := LCheckFile(L, 1)
-	return LAddTimeToState(L, &file.accessTime)
+	file := lCheckFile(L, 1)
+	return lAddTimeToState(L, &file.accessTime)
 }
 
 func luaFileBirthTime(L *lua.LState) int {
-	file := LCheckFile(L, 1)
-	return LAddTimeToState(L, &file.birthTime)
+	file := lCheckFile(L, 1)
+	return lAddTimeToState(L, &file.birthTime)
 }
 
 func luaFileChangeTime(L *lua.LState) int {
-	file := LCheckFile(L, 1)
-	return LAddTimeToState(L, &file.changeTime)
+	file := lCheckFile(L, 1)
+	return lAddTimeToState(L, &file.changeTime)
 }
 
 // luaFileCustomInfo returns custom info string add to this file by `addcustominfo`
 // command.
 func luaFileCustomInfo(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
@@ -337,7 +337,7 @@ func luaFileCustomInfo(L *lua.LState) int {
 }
 
 func luaFileExt(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LString(file.ext))
 	return 1
 }
@@ -346,7 +346,7 @@ func luaFileExt(L *lua.LState) int {
 // This method takes data key, and a optional data value, when value argument is
 // not nil, this method will set named key to given value.
 func luaFileExtraInfo(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	key := L.Get(2)
 
 	value := lua.LNil
@@ -371,7 +371,7 @@ func luaFileExtraInfo(L *lua.LState) int {
 
 // luaFileIsPreviewable returns true if this file requires a preview call.
 func luaFileIsPreviewable(L *lua.LState) int {
-	file := LCheckFile(L, 1)
+	file := lCheckFile(L, 1)
 	L.Push(lua.LBool(file.isPreviewable()))
 	return 1
 }
@@ -379,10 +379,10 @@ func luaFileIsPreviewable(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // Type dir
 
-const LuaDirTypeName = "lf.dir"
+const luaDirTypeName = "lf.dir"
 
-func LRegisterDirType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaDirTypeName)
+func lRegisterDirType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaDirTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new": luaDirNew,
@@ -421,7 +421,7 @@ func LRegisterDirType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckDir(L *lua.LState, index int) *dir {
+func lCheckDir(L *lua.LState, index int) *dir {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*dir); ok {
 		return v
@@ -432,22 +432,22 @@ func LCheckDir(L *lua.LState, index int) *dir {
 	return nil
 }
 
-func LWrapDir(L *lua.LState, data *dir) *lua.LUserData {
+func lWrapDir(L *lua.LState, data *dir) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaDirTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaDirTypeName))
 
 	return ud
 }
 
-func LAddDirToState(L *lua.LState, data *dir) int {
+func lAddDirToState(L *lua.LState, data *dir) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapDir(L, data)
+	ud := lWrapDir(L, data)
 	L.Push(ud)
 
 	return 1
@@ -458,49 +458,49 @@ func LAddDirToState(L *lua.LState, data *dir) int {
 func luaDirNew(L *lua.LState) int {
 	path := L.CheckString(1)
 	dir := newDir(path)
-	return LAddDirToState(L, dir)
+	return lAddDirToState(L, dir)
 }
 
 // ----------------------------------------------------------------------------
 
 func luaDirLoading(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.loading))
 	return 1
 }
 
 func luaDirLoadTime(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
-	return LAddTimeToState(L, &dir.loadTime)
+	dir := lCheckDir(L, 1)
+	return lAddTimeToState(L, &dir.loadTime)
 }
 
 // luaDirInd returns a 0-based index of current entry in directory.
 func luaDirInd(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.ind))
 	return 1
 }
 
 // luaDirPos returns a 0-based row index indicating position of cursor.
 func luaDirPos(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.pos))
 	return 1
 }
 
 func luaDirPath(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LString(dir.path))
 	return 1
 }
 
 // luaDirFiles returns a list of displayed file.
 func luaDirFiles(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 
 	filesTable := L.NewTable()
 	for _, file := range dir.files {
-		filesTable.Append(LWrapFile(L, file))
+		filesTable.Append(lWrapFile(L, file))
 	}
 
 	L.Push(filesTable)
@@ -510,11 +510,11 @@ func luaDirFiles(L *lua.LState) int {
 
 // luaDirAllFiles returns a list of file including non-displayed ones.
 func luaDirAllFiles(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 
 	filesTable := L.NewTable()
 	for _, file := range dir.allFiles {
-		filesTable.Append(LWrapFile(L, file))
+		filesTable.Append(lWrapFile(L, file))
 	}
 
 	L.Push(filesTable)
@@ -524,7 +524,7 @@ func luaDirAllFiles(L *lua.LState) int {
 
 // luaDirSortby is getter & setter for directory sort method
 func luaDirSortby(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 
 	if L.GetTop() >= 2 {
 		value := L.CheckString(2)
@@ -537,51 +537,51 @@ func luaDirSortby(L *lua.LState) int {
 }
 
 func luaDirDircounts(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.dircounts))
 	return 1
 }
 
 func luaLuaDirfirst(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.dirfirst))
 	return 1
 }
 
 func luaDirDironly(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.dironly))
 	return 1
 }
 
 func luaDirHidden(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.hidden))
 	return 1
 }
 
 func luaDirReverse(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.reverse))
 	return 1
 }
 
 // luaDirVisualAnchor returns anchor position of visual mode selection range.
 func luaDirVisualAnchor(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.visualAnchor))
 	return 1
 }
 
 // luaDirVisualWrap returns wrap method of visual mode.
 func luaDirVisualWrap(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LNumber(dir.visualWrap))
 	return 1
 }
 
 func luaDirHiddenFiles(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	hiddenFilesTable := L.NewTable()
 	for _, file := range dir.hiddenfiles {
 		hiddenFilesTable.Append(lua.LString(file))
@@ -593,7 +593,7 @@ func luaDirHiddenFiles(L *lua.LState) int {
 }
 
 func luaDirFilter(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	filterTable := L.NewTable()
 	for _, file := range dir.filter {
 		filterTable.Append(lua.LString(file))
@@ -605,40 +605,40 @@ func luaDirFilter(L *lua.LState) int {
 }
 
 func luaDirSortignorecase(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.sortignorecase))
 	return 1
 }
 
 func luaDirSortignoredia(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.sortignoredia))
 	return 1
 }
 
 // luaDirNoPerm returns true if progm doesn't have permission to open this directory.
 func luaDirNoPerm(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LBool(dir.noPerm))
 	return 1
 }
 
 // luaDirSort runs sorting for current directory
 func luaDirSort(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	dir.sort()
 	return 0
 }
 
 func luaDirName(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	L.Push(lua.LString(dir.name()))
 	return 1
 }
 
 // luaDirVisualSelectioins returns a list of path selected in visual mode.
 func luaDirVisualSelectioins(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	tbl := L.NewTable()
 
 	paths := dir.visualSelections()
@@ -652,7 +652,7 @@ func luaDirVisualSelectioins(L *lua.LState) int {
 }
 
 func luaDirSel(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	name := L.CheckString(2)
 	height := int(L.CheckNumber(3))
 	dir.sel(name, height)
@@ -661,7 +661,7 @@ func luaDirSel(L *lua.LState) int {
 
 // luaDirFilesForEach is a helper method for iterating over list of displayed files.
 func luaDirFilesForEach(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	fn := L.CheckFunction(2)
 
 	for i, file := range dir.files {
@@ -672,7 +672,7 @@ func luaDirFilesForEach(L *lua.LState) int {
 				Protect: true,
 			},
 			lua.LNumber(i),
-			LWrapFile(L, file),
+			lWrapFile(L, file),
 		)
 		if err != nil {
 			log.Printf("error during iteration : %s", err)
@@ -684,7 +684,7 @@ func luaDirFilesForEach(L *lua.LState) int {
 
 // luaDirAllFilesForEach is a helper method iterating over list of all files.
 func luaDirAllFilesForEach(L *lua.LState) int {
-	dir := LCheckDir(L, 1)
+	dir := lCheckDir(L, 1)
 	fn := L.CheckFunction(2)
 
 	for i, file := range dir.allFiles {
@@ -695,7 +695,7 @@ func luaDirAllFilesForEach(L *lua.LState) int {
 				Protect: true,
 			},
 			lua.LNumber(i),
-			LWrapFile(L, file),
+			lWrapFile(L, file),
 		)
 		if err != nil {
 			log.Printf("error during iteration : %s", err)
@@ -708,10 +708,10 @@ func luaDirAllFilesForEach(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // Type nav
 
-const LuaNavTypeName = "lf.nav"
+const luaNavTypeName = "lf.nav"
 
-func LRegisterNavType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaNavTypeName)
+func lRegisterNavType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaNavTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -763,7 +763,7 @@ func LRegisterNavType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckNav(L *lua.LState, index int) *nav {
+func lCheckNav(L *lua.LState, index int) *nav {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*nav); ok {
 		return v
@@ -774,22 +774,22 @@ func LCheckNav(L *lua.LState, index int) *nav {
 	return nil
 }
 
-func LWrapNav(L *lua.LState, data *nav) *lua.LUserData {
+func lWrapNav(L *lua.LState, data *nav) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaNavTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaNavTypeName))
 
 	return ud
 }
 
-func LAddNavToState(L *lua.LState, data *nav) int {
+func lAddNavToState(L *lua.LState, data *nav) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapNav(L, data)
+	ud := lWrapNav(L, data)
 	L.Push(ud)
 
 	return 1
@@ -798,44 +798,44 @@ func LAddNavToState(L *lua.LState, data *nav) int {
 // ----------------------------------------------------------------------------
 
 func luaNavGetDir(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 	dir := nav.getDir(path)
-	return LAddDirToState(L, dir)
+	return lAddDirToState(L, dir)
 }
 
 func luaNavCdJumpListPrev(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.cdJumpListPrev()
 	return 0
 }
 
 func luaNavCdJumpListNext(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.cdJumpListNext()
 	return 0
 }
 
 func luaNavRenew(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.renew()
 	return 0
 }
 
 func luaNavReload(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.reload()
 	return 0
 }
 
 func luaNavSort(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.sort()
 	return 0
 }
 
 func luaNavSetFilter(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	tbl := L.CheckTable(2)
 
 	nPatt := tbl.Len()
@@ -858,84 +858,84 @@ func luaNavSetFilter(L *lua.LState) int {
 }
 
 func luaNavUp(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
 	nav.up(int(dist))
 	return 0
 }
 
 func luaNavDown(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
 	nav.down(int(dist))
 	return 0
 }
 
 func luaNavScrollUp(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
 	nav.scrollUp(int(dist))
 	return 0
 }
 
 func luaNavScrollDown(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
 	nav.scrollDown(int(dist))
 	return 0
 }
 
 func luaNavUpDir(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.updir()
 	return 0
 }
 
 func luaNavOpen(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.open()
 	return 0
 }
 
 func luaNavTop(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.top()))
 	return 1
 }
 
 func luaNavBottom(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.bottom()))
 	return 1
 }
 
 func luaNavHigh(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.high()))
 	return 1
 }
 
 func luaNavMiddle(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.middle()))
 	return 1
 }
 
 func luaNavLow(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.low()))
 	return 1
 }
 
 func luaNavMove(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	index := L.CheckNumber(2)
 	nav.move(int(index))
 	return 0
 }
 
 func luaNavSelect(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
 	nav.selections[path] = nav.selectionInd
@@ -945,20 +945,20 @@ func luaNavSelect(L *lua.LState) int {
 }
 
 func luaNavToggleSelection(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 	nav.toggleSelection(path)
 	return 0
 }
 
 func luaNavToggle(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.toggle()
 	return 0
 }
 
 func luaNavTagToggleSelection(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 	tag := L.CheckString(3)
 	nav.tagToggleSelection(path, tag)
@@ -966,7 +966,7 @@ func luaNavTagToggleSelection(L *lua.LState) int {
 }
 
 func luaNavTagToggle(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	tag := L.CheckString(2)
 
 	if err := nav.tagToggle(tag); err != nil {
@@ -978,7 +978,7 @@ func luaNavTagToggle(L *lua.LState) int {
 }
 
 func luaNavTag(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	tag := L.CheckString(2)
 
 	if err := nav.tag(tag); err != nil {
@@ -990,19 +990,19 @@ func luaNavTag(L *lua.LState) int {
 }
 
 func luaNavInvert(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.invert()
 	return 0
 }
 
 func luaNavUnselect(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	nav.unselect()
 	return 0
 }
 
 func luaNavUnselectOne(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
 	if _, ok := nav.selections[path]; ok {
@@ -1016,7 +1016,7 @@ func luaNavUnselectOne(L *lua.LState) int {
 }
 
 func luaNavCd(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
 	if err := nav.cd(path); err != nil {
@@ -1028,7 +1028,7 @@ func luaNavCd(L *lua.LState) int {
 }
 
 func luaNavGlobSel(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	pattern := L.CheckString(2)
 	invert := L.CheckBool(3)
 
@@ -1041,12 +1041,12 @@ func luaNavGlobSel(L *lua.LState) int {
 }
 
 func luaNavCurrDir(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
-	return LAddDirToState(L, nav.currDir())
+	nav := lCheckNav(L, 1)
+	return lAddDirToState(L, nav.currDir())
 }
 
 func luaNavReadMarks(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	err := nav.readMarks()
 	if err != nil {
 		L.Push(lua.LString(err.Error()))
@@ -1056,7 +1056,7 @@ func luaNavReadMarks(L *lua.LState) int {
 }
 
 func luaNavWriteMarks(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	err := nav.writeMarks()
 	if err != nil {
 		L.Push(lua.LString(err.Error()))
@@ -1066,7 +1066,7 @@ func luaNavWriteMarks(L *lua.LState) int {
 }
 
 func luaNavReadTags(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	err := nav.readTags()
 	if err != nil {
 		L.Push(lua.LString(err.Error()))
@@ -1076,7 +1076,7 @@ func luaNavReadTags(L *lua.LState) int {
 }
 
 func luaNavWriteTags(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	err := nav.writeTags()
 	if err != nil {
 		L.Push(lua.LString(err.Error()))
@@ -1086,12 +1086,12 @@ func luaNavWriteTags(L *lua.LState) int {
 }
 
 func luaNavCurrFile(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
-	return LAddFileInfoToState(L, nav.currFile())
+	nav := lCheckNav(L, 1)
+	return lAddFileInfoToState(L, nav.currFile())
 }
 
 func luaNavCurrSelections(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 
 	tbl := L.NewTable()
 	selections := nav.currSelections()
@@ -1105,7 +1105,7 @@ func luaNavCurrSelections(L *lua.LState) int {
 }
 
 func luaNavCurrFileOrSelection(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 
 	results, err := nav.currFileOrSelections()
 	if err != nil {
@@ -1125,7 +1125,7 @@ func luaNavCurrFileOrSelection(L *lua.LState) int {
 }
 
 func luaNavGetTag(L *lua.LState) int {
-	nav := LCheckNav(L, 1)
+	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
 	value, exists := nav.tags[path]
@@ -1141,10 +1141,10 @@ func luaNavGetTag(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // Type ui
 
-const LuaUITypeName = "lf.ui"
+const luaUITypeName = "lf.ui"
 
-func LRegisterUIType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaUITypeName)
+func lRegisterUIType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaUITypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -1157,7 +1157,7 @@ func LRegisterUIType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckUI(L *lua.LState, index int) *ui {
+func lCheckUI(L *lua.LState, index int) *ui {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*ui); ok {
 		return v
@@ -1168,22 +1168,22 @@ func LCheckUI(L *lua.LState, index int) *ui {
 	return nil
 }
 
-func LWrapUI(L *lua.LState, data *ui) *lua.LUserData {
+func lWrapUI(L *lua.LState, data *ui) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaUITypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaUITypeName))
 
 	return ud
 }
 
-func LAddUIToState(L *lua.LState, data *ui) int {
+func lAddUIToState(L *lua.LState, data *ui) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapUI(L, data)
+	ud := lWrapUI(L, data)
 	L.Push(ud)
 
 	return 1
@@ -1193,7 +1193,7 @@ func LAddUIToState(L *lua.LState, data *ui) int {
 
 // luaUIEcho prints content to lf message bar.
 func luaUIEcho(L *lua.LState) int {
-	ui := LCheckUI(L, 1)
+	ui := lCheckUI(L, 1)
 
 	st := 2
 	nArgs := L.GetTop()
@@ -1209,7 +1209,7 @@ func luaUIEcho(L *lua.LState) int {
 
 // luaUIEcho prints content to both lf message bar and log.
 func luaUIEchoMsg(L *lua.LState) int {
-	ui := LCheckUI(L, 1)
+	ui := lCheckUI(L, 1)
 
 	st := 2
 	nArgs := L.GetTop()
@@ -1225,7 +1225,7 @@ func luaUIEchoMsg(L *lua.LState) int {
 
 // luaUIEcho prints error message to both lf message bar and log.
 func luaUIEchhoErr(L *lua.LState) int {
-	ui := LCheckUI(L, 1)
+	ui := lCheckUI(L, 1)
 
 	st := 2
 	nArgs := L.GetTop()
@@ -1241,7 +1241,7 @@ func luaUIEchhoErr(L *lua.LState) int {
 
 // luaUIEcho prints error message with formatting string.
 func luaUIEchhoErrf(L *lua.LState) int {
-	ui := LCheckUI(L, 1)
+	ui := lCheckUI(L, 1)
 	fmtStr := L.ToString(2)
 
 	st := 3
@@ -1260,10 +1260,10 @@ func luaUIEchhoErrf(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type luaFuncWriter
 
-const LuaFuncWriterTypeName = "lf.FuncWriter"
+const luaFuncWriterTypeName = "lf.FuncWriter"
 
-func LRegisterFuncWriterType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaFuncWriterTypeName)
+func lRegisterFuncWriterType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaFuncWriterTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new": luaFuncWriterNew,
@@ -1275,7 +1275,7 @@ func LRegisterFuncWriterType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
+func lCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*luaFuncWriter); ok {
 		return v
@@ -1286,22 +1286,22 @@ func LCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
 	return nil
 }
 
-func LWrapFuncWriter(L *lua.LState, data *luaFuncWriter) *lua.LUserData {
+func lWrapFuncWriter(L *lua.LState, data *luaFuncWriter) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaFuncWriterTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaFuncWriterTypeName))
 
 	return ud
 }
 
-func LAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
+func lAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapFuncWriter(L, data)
+	ud := lWrapFuncWriter(L, data)
 	L.Push(ud)
 
 	return 1
@@ -1315,13 +1315,13 @@ func luaFuncWriterNew(L *lua.LState) int {
 		luaState: L,
 		fn:       fn,
 	}
-	return LAddFuncWriterToState(L, writer)
+	return lAddFuncWriterToState(L, writer)
 }
 
 // ----------------------------------------------------------------------------
 
 func luaFuncWriterWrite(L *lua.LState) int {
-	writer := LCheckFuncWriter(L, 1)
+	writer := lCheckFuncWriter(L, 1)
 	content := L.CheckString(2)
 
 	n, err := writer.Write([]byte(content))

@@ -9,10 +9,10 @@ import (
 // ----------------------------------------------------------------------------
 // Type bufio.Writer
 
-const LuaBufWriterTypeName = "bufio.Writer"
+const luaBufWriterTypeName = "bufio.Writer"
 
-func LRegisterBufWriterType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaBufWriterTypeName)
+func lRegisterBufWriterType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaBufWriterTypeName)
 
 	// L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -26,7 +26,7 @@ func LRegisterBufWriterType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckBufWriter(L *lua.LState, index int) *bufio.Writer {
+func lCheckBufWriter(L *lua.LState, index int) *bufio.Writer {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*bufio.Writer); ok {
 		return v
@@ -37,22 +37,22 @@ func LCheckBufWriter(L *lua.LState, index int) *bufio.Writer {
 	return nil
 }
 
-func LWrapBufWriter(L *lua.LState, data *bufio.Writer) *lua.LUserData {
+func lWrapBufWriter(L *lua.LState, data *bufio.Writer) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaBufWriterTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaBufWriterTypeName))
 
 	return ud
 }
 
-func LAddBufWriterToState(L *lua.LState, data *bufio.Writer) int {
+func lAddBufWriterToState(L *lua.LState, data *bufio.Writer) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapBufWriter(L, data)
+	ud := lWrapBufWriter(L, data)
 	L.Push(ud)
 
 	return 1
@@ -62,21 +62,21 @@ func LAddBufWriterToState(L *lua.LState, data *bufio.Writer) int {
 
 // luaBufWriterAvailable returns available byte count in buffer.
 func luaBufWriterAvailable(L *lua.LState) int {
-	writer := LCheckBufWriter(L, 1)
+	writer := lCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Available()))
 	return 1
 }
 
 // luaBufWriterBuffered returns number of bytes that has been written to buffer.
 func luaBufWriterBuffered(L *lua.LState) int {
-	writer := LCheckBufWriter(L, 1)
+	writer := lCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Buffered()))
 	return 1
 }
 
 // luaBufWriterFlush writes buffered data to underlying output writer.
 func luaBufWriterFlush(L *lua.LState) int {
-	writer := LCheckBufWriter(L, 1)
+	writer := lCheckBufWriter(L, 1)
 	err := writer.Flush()
 
 	if err != nil {
@@ -89,14 +89,14 @@ func luaBufWriterFlush(L *lua.LState) int {
 
 // luaBufWriterSize returns byte size of underlying buffer.
 func luaBufWriterSize(L *lua.LState) int {
-	writer := LCheckBufWriter(L, 1)
+	writer := lCheckBufWriter(L, 1)
 	L.Push(lua.LNumber(writer.Size()))
 	return 1
 }
 
 // luaBufWriterWriteString writes string value to buffer.
 func luaBufWriterWriteString(L *lua.LState) int {
-	writer := LCheckBufWriter(L, 1)
+	writer := lCheckBufWriter(L, 1)
 
 	nArgs := L.GetTop()
 	sum := 0
@@ -120,10 +120,10 @@ func luaBufWriterWriteString(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type bufio.Reader
 
-const LuaBufReaderTypeName = "bufio.Reader"
+const luaBufReaderTypeName = "bufio.Reader"
 
-func LRegisterBufReaderType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaBufReaderTypeName)
+func lRegisterBufReaderType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaBufReaderTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -139,7 +139,7 @@ func LRegisterBufReaderType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckBufReader(L *lua.LState, index int) *bufio.Reader {
+func lCheckBufReader(L *lua.LState, index int) *bufio.Reader {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*bufio.Reader); ok {
 		return v
@@ -150,22 +150,22 @@ func LCheckBufReader(L *lua.LState, index int) *bufio.Reader {
 	return nil
 }
 
-func LWrapBufReader(L *lua.LState, data *bufio.Reader) *lua.LUserData {
+func lWrapBufReader(L *lua.LState, data *bufio.Reader) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaBufReaderTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaBufReaderTypeName))
 
 	return ud
 }
 
-func LAddBufReaderToState(L *lua.LState, data *bufio.Reader) int {
+func lAddBufReaderToState(L *lua.LState, data *bufio.Reader) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapBufReader(L, data)
+	ud := lWrapBufReader(L, data)
 	L.Push(ud)
 
 	return 1
@@ -175,14 +175,14 @@ func LAddBufReaderToState(L *lua.LState, data *bufio.Reader) int {
 
 // luaBufReaderBuffered returns number of bytes buffered.
 func luaBufReaderBuffered(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	L.Push(lua.LNumber(reader.Buffered()))
 	return 1
 }
 
 // luaBufReaderDiscard skips following n bytes, returns number of bytes skipped.
 func luaBufReaderDiscard(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	n := L.CheckInt(2)
 
 	discarded, err := reader.Discard(n)
@@ -198,7 +198,7 @@ func luaBufReaderDiscard(L *lua.LState) int {
 
 // luaBufReaderPeek returns next n bytes without advancing reader.
 func luaBufReaderPeek(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	n := L.CheckInt(2)
 
 	buf, err := reader.Peek(n)
@@ -214,7 +214,7 @@ func luaBufReaderPeek(L *lua.LState) int {
 
 // luaBufReaderRead read n bytes from reader, and returns datga as a string.
 func luaBufReaderRead(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	n := L.CheckInt(2)
 
 	buf := make([]byte, n)
@@ -234,7 +234,7 @@ func luaBufReaderRead(L *lua.LState) int {
 // luaBufReaderReadLine reads one line of data. Returned data will not contain
 // trailing `\r\n` or `\n`
 func luaBufReaderReadLine(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 
 	line, isPrefix, err := reader.ReadLine()
 
@@ -252,7 +252,7 @@ func luaBufReaderReadLine(L *lua.LState) int {
 // luaBufReaderReadString takes a delimiter string, and reads until that string
 // occurs.
 func luaBufReaderReadString(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	delim := L.CheckString(2)
 
 	str, err := reader.ReadString(delim[0])
@@ -268,7 +268,7 @@ func luaBufReaderReadString(L *lua.LState) int {
 
 // luaBufReaderSize returns byte size of underlying buffer.
 func luaBufReaderSize(L *lua.LState) int {
-	reader := LCheckBufReader(L, 1)
+	reader := lCheckBufReader(L, 1)
 	L.Push(lua.LNumber(reader.Size()))
 	return 1
 }

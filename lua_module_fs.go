@@ -10,7 +10,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func LfFsModuleLoader(L *lua.LState) int {
+func lfFsModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"mkdir":     luaFsMkdir,
 		"mkdir_all": luaFsMkdirAll,
@@ -209,7 +209,7 @@ func luaFsStat(L *lua.LState) int {
 		return 2
 	}
 
-	LAddFileInfoToState(L, stat)
+	lAddFileInfoToState(L, stat)
 
 	return 1
 }
@@ -226,7 +226,7 @@ func luaFsReadDir(L *lua.LState) int {
 
 	tbl := L.NewTable()
 	for _, f := range files {
-		tbl.Append(LWrapFile(L, f))
+		tbl.Append(lWrapFile(L, f))
 	}
 
 	L.Push(tbl)

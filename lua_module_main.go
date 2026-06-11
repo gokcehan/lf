@@ -12,7 +12,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func LfMainModuleLoader(L *lua.LState) int {
+func lfMainModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"print": luaPrint,
 
@@ -363,7 +363,7 @@ func luaLuaMatchWord(L *lua.LState) int {
 
 	tbl := L.NewTable()
 	for _, match := range matches {
-		tbl.Append(LWrapCompMatch(L, &match))
+		tbl.Append(lWrapCompMatch(L, &match))
 	}
 
 	L.Push(tbl)

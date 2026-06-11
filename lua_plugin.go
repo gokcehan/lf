@@ -618,7 +618,7 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 		return 0
 	}))
 
-	L.SetGlobal(luaGlobalNameApp, LWrapApp(L, app))
+	L.SetGlobal(luaGlobalNameApp, lWrapApp(L, app))
 }
 
 // setupLuaTypeBindings adds `lf_types` global table as entrance of accessing
@@ -627,38 +627,38 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()
 
 	// bufio
-	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
-	lfTypes.RawSetString("BufReader", LRegisterBufReaderType(L))
+	lfTypes.RawSetString("BufWriter", lRegisterBufWriterType(L))
+	lfTypes.RawSetString("BufReader", lRegisterBufReaderType(L))
 	// fs
-	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
+	lfTypes.RawSetString("FileInfo", lRegisterFileInfoType(L))
 	// main
-	lfTypes.RawSetString("App", LRegisterAppType(L))
-	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
-	lfTypes.RawSetString("Dir", LRegisterDirType(L))
-	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
-	lfTypes.RawSetString("Nav", LRegisterNavType(L))
-	lfTypes.RawSetString("UI", LRegisterUIType(L))
-	lfTypes.RawSetString("FuncWriter", LRegisterFuncWriterType(L))
+	lfTypes.RawSetString("App", lRegisterAppType(L))
+	lfTypes.RawSetString("CompMatch", lRegisterCompMatchType(L))
+	lfTypes.RawSetString("Dir", lRegisterDirType(L))
+	lfTypes.RawSetString("File", lRegisterFileTypeMt(L))
+	lfTypes.RawSetString("Nav", lRegisterNavType(L))
+	lfTypes.RawSetString("UI", lRegisterUIType(L))
+	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
 	// exec
-	lfTypes.RawSetString("Cmd", LRegisterCmdType(L))
+	lfTypes.RawSetString("Cmd", lRegisterCmdType(L))
 	// tcell
-	lfTypes.RawSetString("TcellColor", LRegisterTcellColorType(L))
-	lfTypes.RawSetString("TcellStyle", LRegisterTcellStyleType(L))
+	lfTypes.RawSetString("TcellColor", lRegisterTcellColorType(L))
+	lfTypes.RawSetString("TcellStyle", lRegisterTcellStyleType(L))
 	// time
-	lfTypes.RawSetString("Time", LRegisterTimeType(L))
-	lfTypes.RawSetString("Month", LRegisterMonthType(L))
-	lfTypes.RawSetString("Weekday", LRegisterWeekdayType(L))
-	lfTypes.RawSetString("Duration", LRegisterDurationType(L))
+	lfTypes.RawSetString("Time", lRegisterTimeType(L))
+	lfTypes.RawSetString("Month", lRegisterMonthType(L))
+	lfTypes.RawSetString("Weekday", lRegisterWeekdayType(L))
+	lfTypes.RawSetString("Duration", lRegisterDurationType(L))
 
 	L.SetGlobal("lf_types", lfTypes)
 }
 
 // setupPreloadModules register load functions for preload modules.
 func setupPreloadModules(L *lua.LState) {
-	L.PreloadModule("lf", LfMainModuleLoader)
-	L.PreloadModule("lf.fs", LfFsModuleLoader)
-	L.PreloadModule("lf.utf8", LfUtf8ModuleLoader)
-	L.PreloadModule("lf.ui", LfUIModuleLoader)
+	L.PreloadModule("lf", lfMainModuleLoader)
+	L.PreloadModule("lf.fs", lfFsModuleLoader)
+	L.PreloadModule("lf.utf8", lfUtf8ModuleLoader)
+	L.PreloadModule("lf.ui", lfUIModuleLoader)
 }
 
 func initializeLua(app *app) {
@@ -1748,7 +1748,7 @@ func callLuaPreviewerAction(expr *luaMsgExpr, path string, w, h, x, y int, mode 
 
 		ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 			return []lua.LValue{
-				LWrapBufWriter(L, writer),
+				lWrapBufWriter(L, writer),
 				lua.LString(path),
 				lua.LNumber(w),
 				lua.LNumber(h),
@@ -1910,7 +1910,7 @@ func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
 	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 		udTbl := L.NewTable()
 		for _, file := range files {
-			udTbl.Append(LWrapFile(L, file))
+			udTbl.Append(lWrapFile(L, file))
 		}
 		return []lua.LValue{udTbl}
 	})

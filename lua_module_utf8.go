@@ -6,7 +6,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func LfUtf8ModuleLoader(L *lua.LState) int {
+func lfUtf8ModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"to_rune_tbl": luaUtf8ToRuneTbl,
 		"len":         luaUtf8Len,

@@ -9,10 +9,10 @@ import (
 // ----------------------------------------------------------------------------
 // Type fs.FileInfo
 
-const LuaFileInfoTypeName = "fs.FileInfo"
+const luaFileInfoTypeName = "fs.FileInfo"
 
-func LRegisterFileInfoType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaFileInfoTypeName)
+func lRegisterFileInfoType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaFileInfoTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -26,7 +26,7 @@ func LRegisterFileInfoType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckFileInfo(L *lua.LState, index int) fs.FileInfo {
+func lCheckFileInfo(L *lua.LState, index int) fs.FileInfo {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(fs.FileInfo); ok {
 		return v
@@ -37,22 +37,22 @@ func LCheckFileInfo(L *lua.LState, index int) fs.FileInfo {
 	return nil
 }
 
-func LWrapFileInfo(L *lua.LState, data fs.FileInfo) *lua.LUserData {
+func lWrapFileInfo(L *lua.LState, data fs.FileInfo) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaFileInfoTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaFileInfoTypeName))
 
 	return ud
 }
 
-func LAddFileInfoToState(L *lua.LState, data fs.FileInfo) int {
+func lAddFileInfoToState(L *lua.LState, data fs.FileInfo) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapFileInfo(L, data)
+	ud := lWrapFileInfo(L, data)
 	L.Push(ud)
 
 	return 1
@@ -61,31 +61,31 @@ func LAddFileInfoToState(L *lua.LState, data fs.FileInfo) int {
 // ----------------------------------------------------------------------------
 
 func luaFileInfoName(L *lua.LState) int {
-	info := LCheckFileInfo(L, 1)
+	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LString(info.Name()))
 	return 1
 }
 
 func luaFileInfoSize(L *lua.LState) int {
-	info := LCheckFileInfo(L, 1)
+	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LNumber(info.Size()))
 	return 1
 }
 
 func luaFileInfoMode(L *lua.LState) int {
-	info := LCheckFileInfo(L, 1)
+	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LNumber(info.Mode()))
 	return 1
 }
 
 func luaFileInfoModTime(L *lua.LState) int {
-	info := LCheckFileInfo(L, 1)
+	info := lCheckFileInfo(L, 1)
 	t := info.ModTime()
-	return LAddTimeToState(L, &t)
+	return lAddTimeToState(L, &t)
 }
 
 func luaFileInfoIsDir(L *lua.LState) int {
-	info := LCheckFileInfo(L, 1)
+	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LBool(info.IsDir()))
 	return 1
 }

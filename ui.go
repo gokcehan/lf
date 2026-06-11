@@ -805,7 +805,7 @@ func (ui *ui) drawStat(nav *nav) {
 			tbl.RawSetString("group_name", lua.LString(groupName(curr)))
 			tbl.RawSetString("file_size", lua.LString(humanize(curr.Size())))
 			tbl.RawSetString("padded_file_size", lua.LString(fmt.Sprintf("%5s", humanize(curr.Size()))))
-			tbl.RawSetString("mod_time", LWrapTime(L, &modTime))
+			tbl.RawSetString("mod_time", lWrapTime(L, &modTime))
 			tbl.RawSetString("link_target", lua.LString(sanitizeName(curr.linkTarget)))
 
 			if nav.isVisualMode() {
@@ -1111,7 +1111,7 @@ func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
 	width := ui.msgWin.w
 
 	ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
-		currFile := LWrapFile(L, nav.currFile())
+		currFile := lWrapFile(L, nav.currFile())
 
 		dir := nav.currDir()
 		tot := len(dir.files)

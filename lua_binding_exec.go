@@ -11,10 +11,10 @@ import (
 // ----------------------------------------------------------------------------
 // type exec.Cmd
 
-const LuaCmdTypeName = "exec.Cmd"
+const luaCmdTypeName = "exec.Cmd"
 
-func LRegisterCmdType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaCmdTypeName)
+func lRegisterCmdType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaCmdTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":        luaCmdNew,
@@ -46,7 +46,7 @@ func LRegisterCmdType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckCmd(L *lua.LState, index int) *exec.Cmd {
+func lCheckCmd(L *lua.LState, index int) *exec.Cmd {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*exec.Cmd); ok {
 		return v
@@ -57,11 +57,11 @@ func LCheckCmd(L *lua.LState, index int) *exec.Cmd {
 	return nil
 }
 
-func LWrapCmd(L *lua.LState, data *exec.Cmd) *lua.LUserData {
+func lWrapCmd(L *lua.LState, data *exec.Cmd) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaCmdTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaCmdTypeName))
 
 	return ud
 }
@@ -72,7 +72,7 @@ func LAddCmdToState(L *lua.LState, data *exec.Cmd) int {
 		return 1
 	}
 
-	ud := LWrapCmd(L, data)
+	ud := lWrapCmd(L, data)
 	L.Push(ud)
 
 	return 1
@@ -97,7 +97,7 @@ func luaCmdNew(L *lua.LState) int {
 }
 
 func luaCmdMetaTostring(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	L.Push(lua.LString(cmd.String()))
 	return 1
 }
@@ -107,7 +107,7 @@ func luaCmdMetaTostring(L *lua.LState) int {
 // luaCmdEnviron returns a copy of command's environment variable list as table.
 // Every environment variable is set in form of a `<key>=<value>` string.
 func luaCmdEnviron(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	env := cmd.Environ()
 
@@ -124,7 +124,7 @@ func luaCmdEnviron(L *lua.LState) int {
 // luaCmdAddEnviron appends new key-value string to command's environment variable
 // list.
 func luaCmdAddEnviron(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	kv := L.CheckString(2)
 
 	cmd.Env = append(cmd.Env, kv)
@@ -135,7 +135,7 @@ func luaCmdAddEnviron(L *lua.LState) int {
 // luaCmdCombinedOutput runs command and returns string result containing both
 // stdout and stderr output.
 func luaCmdCombinedOutput(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	output, err := cmd.CombinedOutput()
 	L.Push(lua.LString(string(output)))
@@ -151,7 +151,7 @@ func luaCmdCombinedOutput(L *lua.LState) int {
 // luaCmdOutput runs command and returns string result containing only stdout
 // output.
 func luaCmdOutput(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	output, err := cmd.Output()
 	L.Push(lua.LString(string(output)))
@@ -166,7 +166,7 @@ func luaCmdOutput(L *lua.LState) int {
 
 // luaCmdRun runs current command.
 func luaCmdRun(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	err := cmd.Run()
 	if err != nil {
@@ -180,7 +180,7 @@ func luaCmdRun(L *lua.LState) int {
 // luaCmdStart stars execution command. Caller should then calls `wait` method
 // to wait for execution ends.
 func luaCmdStart(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	err := cmd.Start()
 	if err != nil {
@@ -193,7 +193,7 @@ func luaCmdStart(L *lua.LState) int {
 
 // luaCmdWait blocks execution until execution of command ends.
 func luaCmdWait(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	err := cmd.Wait()
 	if err != nil {
@@ -207,7 +207,7 @@ func luaCmdWait(L *lua.LState) int {
 // luaCmdStrerrPipe returns a reader handle to command's stderr output. This should
 // be called before command starts execution.
 func luaCmdStrerrPipe(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	stderrPipe, err := cmd.StderrPipe()
 	if err != nil {
@@ -218,13 +218,13 @@ func luaCmdStrerrPipe(L *lua.LState) int {
 
 	reader := bufio.NewReader(stderrPipe)
 
-	return LAddBufReaderToState(L, reader)
+	return lAddBufReaderToState(L, reader)
 }
 
 // luaCmdStdoutPipe returns a reader handle to command's stdout output. This should
 // be called before command starts execution.
 func luaCmdStdoutPipe(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	stdoutPipe, err := cmd.StdoutPipe()
 	if err != nil {
@@ -235,13 +235,13 @@ func luaCmdStdoutPipe(L *lua.LState) int {
 
 	reader := bufio.NewReader(stdoutPipe)
 
-	return LAddBufReaderToState(L, reader)
+	return lAddBufReaderToState(L, reader)
 }
 
 // luaCmdStdinPipe returns a writer handle to command's stdin input. This should
 // be called before command starts execution.
 func luaCmdStdinPipe(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	stdinPipe, err := cmd.StdinPipe()
 	if err != nil {
@@ -252,13 +252,13 @@ func luaCmdStdinPipe(L *lua.LState) int {
 
 	writer := bufio.NewWriter(stdinPipe)
 
-	return LAddBufWriterToState(L, writer)
+	return lAddBufWriterToState(L, writer)
 }
 
 // luaCmdExitCode returns exit code of finished command. When exit code is not
 // available, this method returns `nil`.
 func luaCmdExitCode(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 
 	if cmd.ProcessState == nil {
 		return 0
@@ -273,7 +273,7 @@ func luaCmdExitCode(L *lua.LState) int {
 
 // luaCmdSetStdoutWriter sets a writer value for command stdout.
 func luaCmdSetStdoutWriter(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	ud := L.CheckUserData(2)
 
 	writer, ok := ud.Value.(io.Writer)
@@ -288,7 +288,7 @@ func luaCmdSetStdoutWriter(L *lua.LState) int {
 
 // luaCmdSetStderrWriter sets a writer value for command stdout.
 func luaCmdSetStderrWriter(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	ud := L.CheckUserData(2)
 
 	writer, ok := ud.Value.(io.Writer)
@@ -303,7 +303,7 @@ func luaCmdSetStderrWriter(L *lua.LState) int {
 
 // luaCmdSetStdoutWriterFunc sets a Lua function as writer used for command stdout.
 func luaCmdSetStdoutWriterFunc(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	fn := L.CheckFunction(2)
 
 	writer := &luaFuncWriter{
@@ -318,7 +318,7 @@ func luaCmdSetStdoutWriterFunc(L *lua.LState) int {
 
 // luaCmdSetStderrWriterFunc sets a Lua function as writer used for command stderr.
 func luaCmdSetStderrWriterFunc(L *lua.LState) int {
-	cmd := LCheckCmd(L, 1)
+	cmd := lCheckCmd(L, 1)
 	fn := L.CheckFunction(2)
 
 	writer := &luaFuncWriter{

@@ -4,7 +4,7 @@ import (
 	lua "github.com/yuin/gopher-lua"
 )
 
-func LfUIModuleLoader(L *lua.LState) int {
+func lfUIModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"print_length": lfUIModulePrintLength,
 	})

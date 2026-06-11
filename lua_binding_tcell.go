@@ -10,10 +10,10 @@ import (
 // ----------------------------------------------------------------------------
 // type tcell.Style
 
-const LuaTcellStyleTypeName = "tcell.Style"
+const luaTcellStyleTypeName = "tcell.Style"
 
-func LRegisterTcellStyleType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaTcellStyleTypeName)
+func lRegisterTcellStyleType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaTcellStyleTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":          luaTcellStyleNew,
@@ -52,7 +52,7 @@ func LRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckTcellStyle(L *lua.LState, index int) *tcell.Style {
+func lCheckTcellStyle(L *lua.LState, index int) *tcell.Style {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*tcell.Style); ok {
 		return v
@@ -63,22 +63,22 @@ func LCheckTcellStyle(L *lua.LState, index int) *tcell.Style {
 	return nil
 }
 
-func LWrapTcellStyle(L *lua.LState, data *tcell.Style) *lua.LUserData {
+func lWrapTcellStyle(L *lua.LState, data *tcell.Style) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaTcellStyleTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTcellStyleTypeName))
 
 	return ud
 }
 
-func LAddTcellStyleToState(L *lua.LState, data *tcell.Style) int {
+func lAddTcellStyleToState(L *lua.LState, data *tcell.Style) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapTcellStyle(L, data)
+	ud := lWrapTcellStyle(L, data)
 	L.Push(ud)
 
 	return 1
@@ -88,7 +88,7 @@ func LAddTcellStyleToState(L *lua.LState, data *tcell.Style) int {
 
 func luaTcellStyleNew(L *lua.LState) int {
 	st := tcell.StyleDefault
-	return LAddTcellStyleToState(L, &st)
+	return lAddTcellStyleToState(L, &st)
 }
 
 // luaTcellStyleRestString returns reset CSI string.
@@ -98,7 +98,7 @@ func luaTcellStyleRestString(L *lua.LState) int {
 }
 
 func luaTcellStyleMetaTostring(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LString(tcellStyleToString(*st)))
 	return 1
 }
@@ -108,7 +108,7 @@ func luaTcellStyleMetaTostring(L *lua.LState) int {
 // luaTcellStyleTostring converts current style to CSI string. Does the same thing
 // as __tostring meta method.
 func luaTcellStyleTostring(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LString(tcellStyleToString(*st)))
 	return 1
 }
@@ -117,7 +117,7 @@ func luaTcellStyleTostring(L *lua.LState) int {
 // form of current style and reset CSI sequens. Result is returned as a single
 // string.
 func luaTcellStyleWrap(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 
 	nArgs := L.GetTop()
 	contents := make([]string, nArgs+1)
@@ -133,157 +133,157 @@ func luaTcellStyleWrap(L *lua.LState) int {
 }
 
 func luaTcellStyleForeground(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
-	color := LCheckTcellColor(L, 2)
+	st := lCheckTcellStyle(L, 1)
+	color := lCheckTcellColor(L, 2)
 	*st = st.Foreground(*color)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBackground(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
-	color := LCheckTcellColor(L, 2)
+	st := lCheckTcellStyle(L, 1)
+	color := lCheckTcellColor(L, 2)
 	*st = st.Background(*color)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleForegroundRGB(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	r := L.CheckInt(2)
 	g := L.CheckInt(3)
 	b := L.CheckInt(4)
 
 	*st = st.Foreground(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBackgroundRGB(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	r := L.CheckInt(2)
 	g := L.CheckInt(3)
 	b := L.CheckInt(4)
 
 	*st = st.Background(tcell.NewRGBColor(int32(r), int32(g), int32(b)))
 
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 // luaTcellStyleForegroundName sets foreground color with color name or hex code
 // starting with `#`.
 func luaTcellStyleForegroundName(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	name := L.CheckString(2)
 
 	*st = st.Foreground(tcell.GetColor(name))
 
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 // luaTcellStyleBackgroundName sets background color with color name or hex code
 // starting with `#`.
 func luaTcellStyleBackgroundName(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	name := L.CheckString(2)
 
 	*st = st.Background(tcell.GetColor(name))
 
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 // luaTcellStyleNormal returns the style with all attributes disabled.
 // Colors and hyperlinks are preserved
 func luaTcellStyleNormal(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	*st = st.Normal()
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBold(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Bold(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleBlink(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Blink(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleDim(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Dim(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleItalic(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Italic(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleReverse(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Reverse(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleStrikeThrough(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.StrikeThrough(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleUnderline(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
 	*st = st.Underline(isActive)
-	return LAddTcellStyleToState(L, st)
+	return lAddTcellStyleToState(L, st)
 }
 
 func luaTcellStyleHasBold(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasBold()))
 	return 1
 }
 
 func luaTcellStyleHasBlink(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasBlink()))
 	return 1
 }
 
 func luaTcellStyleHasReverse(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasReverse()))
 	return 1
 }
 
 func luaTcellStyleHasItalic(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasItalic()))
 	return 1
 }
 
 func luaTcellStyleHasDim(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasDim()))
 	return 1
 }
 
 func luaTcellStyleHasStrikeThrough(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasStrikeThrough()))
 	return 1
 }
 
 func luaTcellStyleHasUnderline(L *lua.LState) int {
-	st := LCheckTcellStyle(L, 1)
+	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasUnderline()))
 	return 1
 }
@@ -291,10 +291,10 @@ func luaTcellStyleHasUnderline(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type tcell.Color
 
-const LuaTcellColorTypeName = "tcell.Color"
+const luaTcellColorTypeName = "tcell.Color"
 
-func LRegisterTcellColorType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaTcellColorTypeName)
+func lRegisterTcellColorType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaTcellColorTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new_rgb":     luaTcellColorNewRgb,
@@ -307,7 +307,7 @@ func LRegisterTcellColorType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckTcellColor(L *lua.LState, index int) *tcell.Color {
+func lCheckTcellColor(L *lua.LState, index int) *tcell.Color {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*tcell.Color); ok {
 		return v
@@ -318,22 +318,22 @@ func LCheckTcellColor(L *lua.LState, index int) *tcell.Color {
 	return nil
 }
 
-func LWrapTcellColor(L *lua.LState, data *tcell.Color) *lua.LUserData {
+func lWrapTcellColor(L *lua.LState, data *tcell.Color) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaTcellColorTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTcellColorTypeName))
 
 	return ud
 }
 
-func LAddTcellColorToState(L *lua.LState, data *tcell.Color) int {
+func lAddTcellColorToState(L *lua.LState, data *tcell.Color) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapTcellColor(L, data)
+	ud := lWrapTcellColor(L, data)
 	L.Push(ud)
 
 	return 1
@@ -348,13 +348,13 @@ func luaTcellColorNewRgb(L *lua.LState) int {
 
 	color := tcell.NewRGBColor(int32(r), int32(g), int32(b))
 
-	return LAddTcellColorToState(L, &color)
+	return lAddTcellColorToState(L, &color)
 }
 
 func luaTcellColorNewHex(L *lua.LState) int {
 	hex := L.CheckInt64(1)
 	color := tcell.NewHexColor(int32(hex))
-	return LAddTcellColorToState(L, &color)
+	return lAddTcellColorToState(L, &color)
 }
 
 // luaTcellColorNewName creates a color with color name or hex code starting with
@@ -362,11 +362,11 @@ func luaTcellColorNewHex(L *lua.LState) int {
 func luaTcellColorNewName(L *lua.LState) int {
 	name := L.CheckString(1)
 	color := tcell.GetColor(name)
-	return LAddTcellColorToState(L, &color)
+	return lAddTcellColorToState(L, &color)
 }
 
 func luaTcellColorNewPalette(L *lua.LState) int {
 	index := L.CheckInt(1)
 	color := tcell.PaletteColor(index)
-	return LAddTcellColorToState(L, &color)
+	return lAddTcellColorToState(L, &color)
 }

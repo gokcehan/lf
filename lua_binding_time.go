@@ -9,10 +9,10 @@ import (
 // ----------------------------------------------------------------------------
 // Type time.Time
 
-const LuaTimeTypeName = "time.Time"
+const luaTimeTypeName = "time.Time"
 
-func LRegisterTimeType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaTimeTypeName)
+func lRegisterTimeType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaTimeTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"now":            luaTimeNow,
@@ -65,7 +65,7 @@ func LRegisterTimeType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckTime(L *lua.LState, index int) *time.Time {
+func lCheckTime(L *lua.LState, index int) *time.Time {
 	ud := L.CheckUserData(index)
 	if v, ok := ud.Value.(*time.Time); ok {
 		return v
@@ -76,22 +76,22 @@ func LCheckTime(L *lua.LState, index int) *time.Time {
 	return nil
 }
 
-func LWrapTime(L *lua.LState, data *time.Time) *lua.LUserData {
+func lWrapTime(L *lua.LState, data *time.Time) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaTimeTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTimeTypeName))
 
 	return ud
 }
 
-func LAddTimeToState(L *lua.LState, data *time.Time) int {
+func lAddTimeToState(L *lua.LState, data *time.Time) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := LWrapTime(L, data)
+	ud := lWrapTime(L, data)
 	L.Push(ud)
 
 	return 1
@@ -101,55 +101,55 @@ func LAddTimeToState(L *lua.LState, data *time.Time) int {
 
 func luaTimeNow(L *lua.LState) int {
 	t := time.Now()
-	return LAddTimeToState(L, &t)
+	return lAddTimeToState(L, &t)
 }
 
 func luaTimeNewUnix(L *lua.LState) int {
 	sec := L.CheckInt64(1)
 	nsec := L.CheckInt64(2)
 	t := time.Unix(sec, nsec)
-	return LAddTimeToState(L, &t)
+	return lAddTimeToState(L, &t)
 }
 
 func luaTimeNewUnixMili(L *lua.LState) int {
 	millis := L.CheckInt64(1)
 	t := time.UnixMilli(millis)
-	return LAddTimeToState(L, &t)
+	return lAddTimeToState(L, &t)
 }
 
 func luaTimeNewUnixMicro(L *lua.LState) int {
 	micro := L.CheckInt64(1)
 	t := time.UnixMicro(micro)
-	return LAddTimeToState(L, &t)
+	return lAddTimeToState(L, &t)
 }
 
 func luaTimeSince(L *lua.LState) int {
-	t := LCheckTime(L, 1)
-	return LAddDurationToState(L, time.Since(*t))
+	t := lCheckTime(L, 1)
+	return lAddDurationToState(L, time.Since(*t))
 }
 
 func luaTimeUntil(L *lua.LState) int {
-	t := LCheckTime(L, 1)
-	return LAddDurationToState(L, time.Until(*t))
+	t := lCheckTime(L, 1)
+	return lAddDurationToState(L, time.Until(*t))
 }
 
 func luaTimeMetaEq(L *lua.LState) int {
-	self := LCheckTime(L, 1)
-	other := LCheckTime(L, 2)
+	self := lCheckTime(L, 1)
+	other := lCheckTime(L, 2)
 	L.Push(lua.LBool(self.Equal(*other)))
 	return 1
 }
 
 func luaTimeMetaLt(L *lua.LState) int {
-	self := LCheckTime(L, 1)
-	other := LCheckTime(L, 2)
+	self := lCheckTime(L, 1)
+	other := lCheckTime(L, 2)
 	L.Push(lua.LBool(self.Before(*other)))
 	return 1
 }
 
 func luaTimeMetaLe(L *lua.LState) int {
-	self := LCheckTime(L, 1)
-	other := LCheckTime(L, 2)
+	self := lCheckTime(L, 1)
+	other := lCheckTime(L, 2)
 	after := self.After(*other)
 	L.Push(lua.LBool(!after))
 	return 1
@@ -158,55 +158,55 @@ func luaTimeMetaLe(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 
 func luaTimeIsZero(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	L.Push(lua.LBool(t.IsZero()))
 	return 1
 }
 
 func luaTimeCompare(L *lua.LState) int {
-	self := LCheckTime(L, 1)
-	other := LCheckTime(L, 2)
+	self := lCheckTime(L, 1)
+	other := lCheckTime(L, 2)
 	L.Push(lua.LNumber(self.Compare(*other)))
 	return 1
 }
 
 func luaTimeDate(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	year, month, day := t.Date()
 	L.Push(lua.LNumber(year))
-	LAddMonthToState(L, month)
+	lAddMonthToState(L, month)
 	L.Push(lua.LNumber(day))
 	return 3
 }
 
 func luaTimeYear(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	year := t.Year()
 	L.Push(lua.LNumber(year))
 	return 1
 }
 
 func luaTimeMonth(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	month := t.Month()
-	return LAddMonthToState(L, month)
+	return lAddMonthToState(L, month)
 }
 
 func luaTimeDay(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	day := t.Day()
 	L.Push(lua.LNumber(day))
 	return 1
 }
 
 func luaTimeWeekday(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	weekday := t.Weekday()
-	return LAddWeekdayToState(L, weekday)
+	return lAddWeekdayToState(L, weekday)
 }
 
 func luaTimeISOWeek(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	year, week := t.ISOWeek()
 	L.Push(lua.LNumber(year))
 	L.Push(lua.LNumber(week))
@@ -214,7 +214,7 @@ func luaTimeISOWeek(L *lua.LState) int {
 }
 
 func luaTimeClock(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	hour, min, sec := t.Clock()
 	L.Push(lua.LNumber(hour))
 	L.Push(lua.LNumber(min))
@@ -223,78 +223,78 @@ func luaTimeClock(L *lua.LState) int {
 }
 
 func luaTimeHour(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	hour := t.Hour()
 	L.Push(lua.LNumber(hour))
 	return 1
 }
 
 func luaTimeMinute(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	minute := t.Minute()
 	L.Push(lua.LNumber(minute))
 	return 1
 }
 
 func luaTimeSecond(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	second := t.Second()
 	L.Push(lua.LNumber(second))
 	return 1
 }
 
 func luaTimeNanosecond(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	nanosecond := t.Nanosecond()
 	L.Push(lua.LNumber(nanosecond))
 	return 1
 }
 
 func luaTimeYearDay(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	yearDay := t.YearDay()
 	L.Push(lua.LNumber(yearDay))
 	return 1
 }
 
 func luaTimeAdd(L *lua.LState) int {
-	t := LCheckTime(L, 1)
-	dur := LCheckDuration(L, 2)
+	t := lCheckTime(L, 1)
+	dur := lCheckDuration(L, 2)
 	result := t.Add(dur)
-	return LAddTimeToState(L, &result)
+	return lAddTimeToState(L, &result)
 }
 
 func luaTimeSub(L *lua.LState) int {
-	t := LCheckTime(L, 1)
-	other := LCheckTime(L, 2)
+	t := lCheckTime(L, 1)
+	other := lCheckTime(L, 2)
 	result := t.Sub(*other)
-	return LAddDurationToState(L, result)
+	return lAddDurationToState(L, result)
 }
 
 func luaTimeAddDate(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	years := L.CheckInt(2)
 	months := L.CheckInt(3)
 	days := L.CheckInt(4)
 
 	result := t.AddDate(years, months, days)
-	return LAddTimeToState(L, &result)
+	return lAddTimeToState(L, &result)
 }
 
 func luaTimeUTC(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	result := t.UTC()
-	return LAddTimeToState(L, &result)
+	return lAddTimeToState(L, &result)
 }
 
 func luaLocal(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	result := t.Local()
-	return LAddTimeToState(L, &result)
+	return lAddTimeToState(L, &result)
 }
 
 func luaTimeZone(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	name, offset := t.Zone()
 	L.Push(lua.LString(name))
 	L.Push(lua.LNumber(offset))
@@ -302,36 +302,36 @@ func luaTimeZone(L *lua.LState) int {
 }
 
 func luaTimeZoneBounds(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	minOffset, maxOffset := t.ZoneBounds()
-	LAddTimeToState(L, &minOffset)
-	LAddTimeToState(L, &maxOffset)
+	lAddTimeToState(L, &minOffset)
+	lAddTimeToState(L, &maxOffset)
 	return 2
 }
 
 func luaTimeUnix(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	sec := t.Unix()
 	L.Push(lua.LNumber(sec))
 	return 1
 }
 
 func luaTimeUnixMili(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	millis := t.UnixMilli()
 	L.Push(lua.LNumber(millis))
 	return 1
 }
 
 func luaTimeUnixNano(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	nanos := t.UnixNano()
 	L.Push(lua.LNumber(nanos))
 	return 1
 }
 
 func luaTimeFormat(L *lua.LState) int {
-	t := LCheckTime(L, 1)
+	t := lCheckTime(L, 1)
 	fmtStr := L.CheckString(2)
 	L.Push(lua.LString(t.Format(fmtStr)))
 	return 1
@@ -340,10 +340,10 @@ func luaTimeFormat(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type time.Month
 
-const LuaMonthTypeName = "time.Month"
+const luaMonthTypeName = "time.Month"
 
-func LRegisterMonthType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaMonthTypeName)
+func lRegisterMonthType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaMonthTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"__tostring": luaMonthMetaTostring,
@@ -353,7 +353,7 @@ func LRegisterMonthType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckMonth(L *lua.LState, index int) time.Month {
+func lCheckMonth(L *lua.LState, index int) time.Month {
 	value := L.Get(index)
 	switch value.Type() {
 	case lua.LTNumber:
@@ -370,17 +370,17 @@ func LCheckMonth(L *lua.LState, index int) time.Month {
 	return 0
 }
 
-func LWrapMonth(L *lua.LState, data time.Month) *lua.LUserData {
+func lWrapMonth(L *lua.LState, data time.Month) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaMonthTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaMonthTypeName))
 
 	return ud
 }
 
-func LAddMonthToState(L *lua.LState, data time.Month) int {
-	ud := LWrapMonth(L, data)
+func lAddMonthToState(L *lua.LState, data time.Month) int {
+	ud := lWrapMonth(L, data)
 	L.Push(ud)
 
 	return 1
@@ -389,17 +389,17 @@ func LAddMonthToState(L *lua.LState, data time.Month) int {
 // ----------------------------------------------------------------------------
 
 func luaMonthMetaTostring(L *lua.LState) int {
-	month := LCheckMonth(L, 1)
+	month := lCheckMonth(L, 1)
 	L.Push(lua.LString(month.String()))
 	return 1
 }
 
 // ----------------------------------------------------------------------------
 
-const LuaWeekdayTypeName = "time.Weekday"
+const luaWeekdayTypeName = "time.Weekday"
 
-func LRegisterWeekdayType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaWeekdayTypeName)
+func lRegisterWeekdayType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaWeekdayTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"__tostring": luaWeekdayMetaTostring,
@@ -409,7 +409,7 @@ func LRegisterWeekdayType(L *lua.LState) *lua.LTable {
 	return mt
 }
 
-func LCheckWeekday(L *lua.LState, index int) time.Weekday {
+func lCheckWeekday(L *lua.LState, index int) time.Weekday {
 	value := L.Get(index)
 	switch value.Type() {
 	case lua.LTNumber:
@@ -426,17 +426,17 @@ func LCheckWeekday(L *lua.LState, index int) time.Weekday {
 	return 0
 }
 
-func LWrapWeekday(L *lua.LState, data time.Weekday) *lua.LUserData {
+func lWrapWeekday(L *lua.LState, data time.Weekday) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaWeekdayTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaWeekdayTypeName))
 
 	return ud
 }
 
-func LAddWeekdayToState(L *lua.LState, data time.Weekday) int {
-	ud := LWrapWeekday(L, data)
+func lAddWeekdayToState(L *lua.LState, data time.Weekday) int {
+	ud := lWrapWeekday(L, data)
 	L.Push(ud)
 
 	return 1
@@ -445,7 +445,7 @@ func LAddWeekdayToState(L *lua.LState, data time.Weekday) int {
 // ----------------------------------------------------------------------------
 
 func luaWeekdayMetaTostring(L *lua.LState) int {
-	weekday := LCheckWeekday(L, 1)
+	weekday := lCheckWeekday(L, 1)
 	L.Push(lua.LString(weekday.String()))
 	return 1
 }
@@ -453,10 +453,10 @@ func luaWeekdayMetaTostring(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type time.Duration
 
-const LuaDurationTypeName = "time.Duration"
+const luaDurationTypeName = "time.Duration"
 
-func LRegisterDurationType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaDurationTypeName)
+func lRegisterDurationType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaDurationTypeName)
 
 	addDurationConstantToMt(L, mt)
 
@@ -481,15 +481,15 @@ func LRegisterDurationType(L *lua.LState) *lua.LTable {
 }
 
 func addDurationConstantToMt(L *lua.LState, tbl *lua.LTable) {
-	tbl.RawSetString("Nanosecond", LWrapDuration(L, time.Nanosecond))
-	tbl.RawSetString("Microsecond", LWrapDuration(L, time.Microsecond))
-	tbl.RawSetString("Millisecond", LWrapDuration(L, time.Millisecond))
-	tbl.RawSetString("Second", LWrapDuration(L, time.Second))
-	tbl.RawSetString("Minute", LWrapDuration(L, time.Minute))
-	tbl.RawSetString("Hour", LWrapDuration(L, time.Hour))
+	tbl.RawSetString("Nanosecond", lWrapDuration(L, time.Nanosecond))
+	tbl.RawSetString("Microsecond", lWrapDuration(L, time.Microsecond))
+	tbl.RawSetString("Millisecond", lWrapDuration(L, time.Millisecond))
+	tbl.RawSetString("Second", lWrapDuration(L, time.Second))
+	tbl.RawSetString("Minute", lWrapDuration(L, time.Minute))
+	tbl.RawSetString("Hour", lWrapDuration(L, time.Hour))
 }
 
-func LCheckDuration(L *lua.LState, index int) time.Duration {
+func lCheckDuration(L *lua.LState, index int) time.Duration {
 	value := L.Get(index)
 	switch value.Type() {
 	case lua.LTNumber:
@@ -506,17 +506,17 @@ func LCheckDuration(L *lua.LState, index int) time.Duration {
 	return 0
 }
 
-func LWrapDuration(L *lua.LState, data time.Duration) *lua.LUserData {
+func lWrapDuration(L *lua.LState, data time.Duration) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaDurationTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaDurationTypeName))
 
 	return ud
 }
 
-func LAddDurationToState(L *lua.LState, data time.Duration) int {
-	ud := LWrapDuration(L, data)
+func lAddDurationToState(L *lua.LState, data time.Duration) int {
+	ud := lWrapDuration(L, data)
 	L.Push(ud)
 
 	return 1
@@ -527,18 +527,18 @@ func LAddDurationToState(L *lua.LState, data time.Duration) int {
 func luaDurationNew(L *lua.LState) int {
 	value := L.CheckNumber(1)
 	dur := time.Duration(value)
-	return LAddDurationToState(L, dur)
+	return lAddDurationToState(L, dur)
 }
 
 func luaDurationMetaMul(L *lua.LState) int {
-	self := LCheckDuration(L, 1)
-	other := LCheckDuration(L, 2)
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
 	result := self * other
-	return LAddDurationToState(L, result)
+	return lAddDurationToState(L, result)
 }
 
 func luaDurationMetaTostring(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LString(dur.String()))
 	return 1
 }
@@ -546,56 +546,56 @@ func luaDurationMetaTostring(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 
 func luaDurationNanoseconds(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Nanoseconds()))
 	return 1
 }
 
 func luadurationMicroseconds(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Microseconds()))
 	return 1
 }
 
 func luaDurationMilliseconds(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Milliseconds()))
 	return 1
 }
 
 func luaDurationSeconds(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Seconds()))
 	return 1
 }
 
 func luaDurationMinutes(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Minutes()))
 	return 1
 }
 
 func luaDurationHours(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
+	dur := lCheckDuration(L, 1)
 	L.Push(lua.LNumber(dur.Hours()))
 	return 1
 }
 
 func luaDurationTruncate(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
-	m := LCheckDuration(L, 2)
+	dur := lCheckDuration(L, 1)
+	m := lCheckDuration(L, 2)
 	result := dur.Truncate(m)
-	return LAddDurationToState(L, result)
+	return lAddDurationToState(L, result)
 }
 
 func luaDurationRound(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
-	m := LCheckDuration(L, 2)
+	dur := lCheckDuration(L, 1)
+	m := lCheckDuration(L, 2)
 	result := dur.Round(m)
-	return LAddDurationToState(L, result)
+	return lAddDurationToState(L, result)
 }
 
 func luaDurationAbs(L *lua.LState) int {
-	dur := LCheckDuration(L, 1)
-	return LAddDurationToState(L, dur.Abs())
+	dur := lCheckDuration(L, 1)
+	return lAddDurationToState(L, dur.Abs())
 }
