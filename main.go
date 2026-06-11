@@ -15,6 +15,8 @@ import (
 	"strings"
 
 	_ "embed"
+
+	"golang.org/x/term"
 )
 
 //go:embed doc.txt
@@ -342,6 +344,14 @@ Options:
 		if err != nil {
 			log.Fatalf("remote command: %s", err)
 			return
+		}
+		// sanitize untrusted names when writing to a terminal
+		if term.IsTerminal(int(os.Stdout.Fd())) {
+			lines := strings.Split(resp, "\n")
+			for i := range lines {
+				lines[i] = sanitizeName(lines[i])
+			}
+			resp = strings.Join(lines, "\n")
 		}
 		fmt.Print(resp)
 	case *serverMode:
