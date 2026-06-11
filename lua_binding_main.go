@@ -1256,3 +1256,81 @@ func luaUIEchhoErrf(L *lua.LState) int {
 
 	return 0
 }
+
+// ----------------------------------------------------------------------------
+// type luaFuncWriter
+
+const LuaFuncWriterTypeName = "lf.FuncWriter"
+
+func LRegisterFuncWriterType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaFuncWriterTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{
+		"new": luaFuncWriterNew,
+	})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"write": luaFuncWriterWrite,
+	}))
+
+	return mt
+}
+
+func LCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*luaFuncWriter); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `FuncWriter` expected")
+
+	return nil
+}
+
+func LWrapFuncWriter(L *lua.LState, data *luaFuncWriter) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaFuncWriterTypeName))
+
+	return ud
+}
+
+func LAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := LWrapFuncWriter(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaFuncWriterNew(L *lua.LState) int {
+	fn := L.CheckFunction(1)
+	writer := &luaFuncWriter{
+		luaState: L,
+		fn:       fn,
+	}
+	return LAddFuncWriterToState(L, writer)
+}
+
+// ----------------------------------------------------------------------------
+
+func luaFuncWriterWrite(L *lua.LState) int {
+	writer := LCheckFuncWriter(L, 1)
+	content := L.CheckString(2)
+
+	n, err := writer.Write([]byte(content))
+	L.Push(lua.LNumber(n))
+
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+
+	return 1
+}

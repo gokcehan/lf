@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"io"
 	"os/exec"
 
 	lua "github.com/yuin/gopher-lua"
@@ -35,6 +36,11 @@ func LRegisterCmdType(L *lua.LState) *lua.LTable {
 		"stdin_pipe":  luaCmdStdinPipe,
 
 		"exit_code": luaCmdExitCode,
+
+		"set_stdout_writer":      luaCmdSetStdoutWriter,
+		"set_stderr_writer":      luaCmdSetStderrWriter,
+		"set_stdout_writer_func": luaCmdSetStdoutWriterFunc,
+		"set_stderr_writer_func": luaCmdSetStderrWriterFunc,
 	}))
 
 	return mt
@@ -263,4 +269,64 @@ func luaCmdExitCode(L *lua.LState) int {
 	L.Push(lua.LNumber(exitCode))
 
 	return 1
+}
+
+// luaCmdSetStdoutWriter sets a writer value for command stdout.
+func luaCmdSetStdoutWriter(L *lua.LState) int {
+	cmd := LCheckCmd(L, 1)
+	ud := L.CheckUserData(2)
+
+	writer, ok := ud.Value.(io.Writer)
+	if !ok {
+		L.ArgError(2, "is not a writer")
+	}
+
+	cmd.Stdout = writer
+
+	return 0
+}
+
+// luaCmdSetStderrWriter sets a writer value for command stdout.
+func luaCmdSetStderrWriter(L *lua.LState) int {
+	cmd := LCheckCmd(L, 1)
+	ud := L.CheckUserData(2)
+
+	writer, ok := ud.Value.(io.Writer)
+	if !ok {
+		L.ArgError(2, "is not a writer")
+	}
+
+	cmd.Stderr = writer
+
+	return 0
+}
+
+// luaCmdSetStdoutWriterFunc sets a Lua function as writer used for command stdout.
+func luaCmdSetStdoutWriterFunc(L *lua.LState) int {
+	cmd := LCheckCmd(L, 1)
+	fn := L.CheckFunction(2)
+
+	writer := &luaFuncWriter{
+		luaState: L,
+		fn:       fn,
+	}
+
+	cmd.Stdout = writer
+
+	return 0
+}
+
+// luaCmdSetStderrWriterFunc sets a Lua function as writer used for command stderr.
+func luaCmdSetStderrWriterFunc(L *lua.LState) int {
+	cmd := LCheckCmd(L, 1)
+	fn := L.CheckFunction(2)
+
+	writer := &luaFuncWriter{
+		luaState: L,
+		fn:       fn,
+	}
+
+	cmd.Stderr = writer
+
+	return 0
 }

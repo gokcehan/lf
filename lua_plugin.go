@@ -390,6 +390,46 @@ type luaPreviewerInfo struct {
 	msgexpr    luaMsgExpr
 }
 
+// luaFuncWriter implments io.Writer interface with a Lua function.
+type luaFuncWriter struct {
+	luaState *lua.LState
+	fn       *lua.LFunction
+}
+
+func (writer *luaFuncWriter) Write(p []byte) (n int, err error) {
+	luaErr := writer.luaState.CallByParam(
+		lua.P{
+			Fn:      writer.fn,
+			NRet:    2,
+			Protect: true,
+		},
+		lua.LString(string(p)),
+	)
+	if luaErr != nil {
+		return 0, luaErr
+	}
+
+	defer writer.luaState.Pop(2)
+
+	ret1 := writer.luaState.Get(-2)
+	if ret1.Type() != lua.LTNumber {
+		return 0, fmt.Errorf("return value #1 of Lua write function is not a number")
+	}
+	n = int(ret1.(lua.LNumber))
+
+	var errStr string
+	ret2 := writer.luaState.Get(-1)
+	if lua.LVAsBool(ret2) {
+		errStr = ret2.String()
+	}
+
+	if errStr != "" {
+		err = fmt.Errorf("Lua writer function error: %s", err)
+	}
+
+	return
+}
+
 // ----------------------------------------------------------------------------
 // Lua registry value operation
 
@@ -586,20 +626,21 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes := L.NewTable()
 
-	// app
-	lfTypes.RawSetString("App", LRegisterAppType(L))
-	// complete
-	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
-	// exec
-	lfTypes.RawSetString("Cmd", LRegisterCmdType(L))
-	// misc
+	// bufio
 	lfTypes.RawSetString("BufWriter", LRegisterBufWriterType(L))
 	lfTypes.RawSetString("BufReader", LRegisterBufReaderType(L))
+	// fs
 	lfTypes.RawSetString("FileInfo", LRegisterFileInfoType(L))
-	// nav
-	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
+	// main
+	lfTypes.RawSetString("App", LRegisterAppType(L))
+	lfTypes.RawSetString("CompMatch", LRegisterCompMatchType(L))
 	lfTypes.RawSetString("Dir", LRegisterDirType(L))
+	lfTypes.RawSetString("File", LRegisterFileTypeMt(L))
 	lfTypes.RawSetString("Nav", LRegisterNavType(L))
+	lfTypes.RawSetString("UI", LRegisterUIType(L))
+	lfTypes.RawSetString("FuncWriter", LRegisterFuncWriterType(L))
+	// exec
+	lfTypes.RawSetString("Cmd", LRegisterCmdType(L))
 	// tcell
 	lfTypes.RawSetString("TcellColor", LRegisterTcellColorType(L))
 	lfTypes.RawSetString("TcellStyle", LRegisterTcellStyleType(L))
@@ -608,8 +649,6 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("Month", LRegisterMonthType(L))
 	lfTypes.RawSetString("Weekday", LRegisterWeekdayType(L))
 	lfTypes.RawSetString("Duration", LRegisterDurationType(L))
-	// ui
-	lfTypes.RawSetString("UI", LRegisterUIType(L))
 
 	L.SetGlobal("lf_types", lfTypes)
 }
