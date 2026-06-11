@@ -1,10 +1,162 @@
 package main
 
 import (
-	"log"
-
 	lua "github.com/yuin/gopher-lua"
 )
+
+// ----------------------------------------------------------------------------
+// Type app
+
+const LuaAppTypeName = "lf.app"
+
+func LRegisterAppType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaAppTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"ui":  luaAppUI,
+		"nav": luaAppNav,
+	}))
+
+	return mt
+}
+
+func LCheckApp(L *lua.LState, index int) *app {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*app); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `App` expected")
+
+	return nil
+}
+
+func LWrapApp(L *lua.LState, data *app) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaAppTypeName))
+
+	return ud
+}
+
+func LAddAppToState(L *lua.LState, data *app) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := LWrapApp(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+// luaAppUI returns `ui` object hold by app
+func luaAppUI(L *lua.LState) int {
+	app := LCheckApp(L, 1)
+	return LAddUIToState(L, app.ui)
+}
+
+// luaAppNav returns `nav` object hold by app
+func luaAppNav(L *lua.LState) int {
+	app := LCheckApp(L, 1)
+	return LAddNavToState(L, app.nav)
+}
+
+// ----------------------------------------------------------------------------
+// Type compMatch
+
+const LuaCompMatchTypeName = "lf.comp_match"
+
+func LRegisterCompMatchType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaCompMatchTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{
+		"new": luaCompMatchNew,
+	})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"name":   luaCompMatchName,
+		"result": luaCompMatchResult,
+	}))
+
+	return mt
+}
+
+func LCheckCompMatch(L *lua.LState, index int) *compMatch {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*compMatch); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `CompMatch` expected")
+
+	return nil
+}
+
+func LWrapCompMatch(L *lua.LState, data *compMatch) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaCompMatchTypeName))
+
+	return ud
+}
+
+func LAddCompMatchToState(L *lua.LState, data *compMatch) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := LWrapCompMatch(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaCompMatchNew(L *lua.LState) int {
+	name := L.CheckString(1)
+	result := L.CheckString(2)
+	return LAddCompMatchToState(L, &compMatch{name: name, result: result})
+}
+
+// ----------------------------------------------------------------------------
+
+// luaCompMatchName is getter & setter for name field. It's displayed text for
+// this completion entry.
+func luaCompMatchName(L *lua.LState) int {
+	cm := LCheckCompMatch(L, 1)
+
+	if L.GetTop() >= 2 {
+		value := L.CheckString(2)
+		cm.name = value
+	}
+
+	L.Push(lua.LString(cm.name))
+
+	return 1
+}
+
+// luaCompMatchResult is getter & setter for result field. It's applied text used
+// when this completion entry is picked.
+func luaCompMatchResult(L *lua.LState) int {
+	cm := LCheckCompMatch(L, 1)
+
+	if L.GetTop() >= 2 {
+		value := L.CheckString(2)
+		cm.result = value
+	}
+
+	L.Push(lua.LString(cm.result))
+
+	return 1
+}
 
 // ----------------------------------------------------------------------------
 // Type file
@@ -981,4 +1133,123 @@ func luaNavGetTag(L *lua.LState) int {
 	L.Push(lua.LString(value))
 
 	return 1
+}
+
+// ----------------------------------------------------------------------------
+// Type ui
+
+const LuaUITypeName = "lf.ui"
+
+func LRegisterUIType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaUITypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"echo":     luaUIEcho,
+		"echomsg":  luaUIEchoMsg,
+		"echoerr":  luaUIEchhoErr,
+		"echoerrf": luaUIEchhoErrf,
+	}))
+
+	return mt
+}
+
+func LCheckUI(L *lua.LState, index int) *ui {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*ui); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `UI` expected")
+
+	return nil
+}
+
+func LWrapUI(L *lua.LState, data *ui) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaUITypeName))
+
+	return ud
+}
+
+func LAddUIToState(L *lua.LState, data *ui) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := LWrapUI(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+// luaUIEcho prints content to lf message bar.
+func luaUIEcho(L *lua.LState) int {
+	ui := LCheckUI(L, 1)
+
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echo", args, 1}
+
+	return 0
+}
+
+// luaUIEcho prints content to both lf message bar and log.
+func luaUIEchoMsg(L *lua.LState) int {
+	ui := LCheckUI(L, 1)
+
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echomsg", args, 1}
+
+	return 0
+}
+
+// luaUIEcho prints error message to both lf message bar and log.
+func luaUIEchhoErr(L *lua.LState) int {
+	ui := LCheckUI(L, 1)
+
+	st := 2
+	nArgs := L.GetTop()
+	args := make([]string, nArgs-st+1)
+	for i := st; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	ui.exprChan <- &callExpr{"echoerr", args, 1}
+
+	return 0
+}
+
+// luaUIEcho prints error message with formatting string.
+func luaUIEchhoErrf(L *lua.LState) int {
+	ui := LCheckUI(L, 1)
+	fmtStr := L.ToString(2)
+
+	st := 3
+	nArgs := L.GetTop()
+	args := make([]any, nArgs-st+1)
+	for i := 3; i <= nArgs; i++ {
+		args[i-st] = L.Get(i).String()
+	}
+
+	msg := fmt.Sprintf(fmtStr, args...)
+	ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+
+	return 0
 }
