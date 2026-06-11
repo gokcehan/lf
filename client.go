@@ -100,10 +100,7 @@ func printPath(label, path string, stdoutIsTerminal bool) {
 		log.Printf("%s: skipping path with newline: %q", label, path)
 		return
 	}
-	if stdoutIsTerminal {
-		path = sanitizeName(path)
-	}
-	fmt.Println(path)
+	fmt.Println(sanitizeStdout(path, stdoutIsTerminal))
 }
 
 func writeLastDir(filename, lastDir string) {

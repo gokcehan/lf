@@ -346,14 +346,8 @@ Options:
 			return
 		}
 		// sanitize untrusted names when writing to a terminal
-		if term.IsTerminal(int(os.Stdout.Fd())) {
-			lines := strings.Split(resp, "\n")
-			for i := range lines {
-				lines[i] = sanitizeName(lines[i])
-			}
-			resp = strings.Join(lines, "\n")
-		}
-		fmt.Print(resp)
+		stdoutIsTerminal := term.IsTerminal(int(os.Stdout.Fd()))
+		fmt.Print(sanitizeStdout(resp, stdoutIsTerminal))
 	case *serverMode:
 		if err := os.Chdir(gUser.HomeDir); err != nil {
 			log.Print(err)
