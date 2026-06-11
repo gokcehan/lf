@@ -627,6 +627,9 @@ func initializeLua(app *app) {
 
 	if gPluginDir != "" {
 		gLuaPool.addPluginRoot(gPluginDir)
+	} else if gConfigPath != "" {
+		pluginRoot := filepath.Join(filepath.Dir(gConfigPath), luaPluginDirName)
+		gLuaPool.addPluginRoot(pluginRoot)
 	} else {
 		for _, path := range gConfigPaths {
 			pluginRoot := filepath.Join(filepath.Dir(path), luaPluginDirName)

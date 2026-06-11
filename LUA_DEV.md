@@ -17,9 +17,11 @@ Lua state gets initialized right before user config files are sourced, so that
 sorting methods, commands, etc. registered in Lua plugins can be used in user
 config file.
 
-When initializing, program will look for `plugins` ditectory next to config files,
-all subdirectory under `plugins` directories that contains `init.lua` in them
-will be considered a plugin. And those `init.lua` will be used as plugin entrance.
+When initializing, program will look for `plugins` ditectory under parent directory
+of config file (if no plugin directory path or config file path is specified from
+command line), all subdirectory under `plugins` directories that contains `init.lua`
+in them will be considered a plugin. And those `init.lua` will be used as plugin
+entrance.
 
 Lua states, are single threaded Lua interpreter state machines. To execute Lua
 script, two different groups of Lua state objects are used:
