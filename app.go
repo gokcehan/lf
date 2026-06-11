@@ -276,28 +276,22 @@ func (app *app) loop() {
 
 	go app.ui.readEvents()
 
-	validConfigPath := []string{}
+	// loads plugins before sourcing config files, so that functionalities
+	// provided by plugins can be used in config.
+	initializeLua(app)
+
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
-			validConfigPath = append(validConfigPath, gConfigPath)
+			app.readFile(gConfigPath)
 		} else {
 			log.Printf("config file does not exist: %s", err)
 		}
 	} else {
 		for _, path := range gConfigPaths {
 			if _, err := os.Stat(path); !os.IsNotExist(err) {
-				validConfigPath = append(validConfigPath, path)
+				app.readFile(path)
 			}
 		}
-	}
-
-	// loading plugins before sourcing config files, so that functionalities
-	// provided by plugins can be used in config.
-	initializeLua(app, validConfigPath)
-
-	// source user config after Lua plugin initialization
-	for _, path := range validConfigPath {
-		app.readFile(path)
 	}
 
 	for _, cmd := range gCommands {

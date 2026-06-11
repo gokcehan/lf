@@ -21,7 +21,7 @@ import (
 	"github.com/yuin/gopher-lua/parse"
 )
 
-const pluginDirName = "plugins"
+const luaPluginDirName = "plugins"
 
 const luaGlobalNameApp = "app"
 
@@ -77,25 +77,17 @@ type lStatePool struct {
 	pluginByteCodes []*lua.FunctionProto // compiled Lua byte code of all plugin
 }
 
-func newLStatePool(app *app, configRootDir []string) *lStatePool {
-	rootDirs := make([]string, len(configRootDir))
-	for _, dir := range rootDirs {
-		rootDirs = append(rootDirs, filepath.Join(dir, pluginDirName))
-	}
-
+func newLStatePool(app *app) *lStatePool {
 	return &lStatePool{
-		app:            app,
-		pluginRootDirs: rootDirs,
+		app: app,
 	}
 }
 
 // ----------------------------------------------------------------------------
 // lock-free APIs
 
-// addConfigRoot takes a config root directory, add corresponding plugin root
-// to plugin root list.
-func (pl *lStatePool) addConfigRoot(configRoot string) {
-	rootDir := filepath.Join(configRoot, pluginDirName)
+// addPluginRoot adds given path to plugin root directory list.
+func (pl *lStatePool) addPluginRoot(rootDir string) {
 	if !slices.Contains(pl.pluginRootDirs, rootDir) {
 		pl.pluginRootDirs = append(pl.pluginRootDirs, rootDir)
 	}
@@ -630,11 +622,16 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf.ui", LfUIModuleLoader)
 }
 
-func initializeLua(app *app, validConfigPath []string) {
-	gLuaPool = newLStatePool(app, nil)
+func initializeLua(app *app) {
+	gLuaPool = newLStatePool(app)
 
-	for _, path := range validConfigPath {
-		gLuaPool.addConfigRoot(filepath.Dir(path))
+	if gPluginDir != "" {
+		gLuaPool.addPluginRoot(gPluginDir)
+	} else {
+		for _, path := range gConfigPaths {
+			pluginRoot := filepath.Join(filepath.Dir(path), luaPluginDirName)
+			gLuaPool.addPluginRoot(pluginRoot)
+		}
 	}
 
 	gLuaPool.initializeState(app)
