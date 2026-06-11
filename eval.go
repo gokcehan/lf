@@ -1716,6 +1716,31 @@ func (e *callExpr) eval(app *app, _ []string) {
 		clear(gOpts.vkeys)
 		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
 		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
+	case "luapreviewer-priority":
+		argc := len(e.args)
+		if argc%2 != 0 {
+			app.ui.echoerr("luapreviewer-priority: requires an even number of arguments")
+			return
+		}
+
+		changed := false
+		for i := 0; i < argc; i += 2 {
+			name, priorityStr := e.args[i], e.args[i+1]
+			priority, err := strconv.Atoi(priorityStr)
+			if err == nil {
+				withSort := i+2 >= argc && changed
+				changed = setLuaPreviewerPriority(name, priority, withSort) || changed
+			} else {
+				app.ui.echoerrf("luapreviewer-priority: invalid priority for %s: %s", name, priorityStr)
+			}
+		}
+	case "plugin-reload":
+		// run reload in background so that even if this command is triggered
+		// in Lua script, Lua state can still have time to become free again.
+		go func() {
+			<-time.After(10 * time.Millisecond)
+			luaPluginReload(app)
+		}()
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")
@@ -2223,31 +2248,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 		onFocusLost(app)
 	case "on-init":
 		onInit(app)
-	case "luapreviewer-priority":
-		argc := len(e.args)
-		if argc%2 != 0 {
-			app.ui.echoerr("luapreviewer-priority: requires an even number of arguments")
-			return
-		}
-
-		changed := false
-		for i := 0; i < argc; i += 2 {
-			name, priorityStr := e.args[i], e.args[i+1]
-			priority, err := strconv.Atoi(priorityStr)
-			if err == nil {
-				withSort := i+2 >= argc && changed
-				changed = setLuaPreviewerPriority(name, priority, withSort) || changed
-			} else {
-				app.ui.echoerrf("luapreviewer-priority: invalid priority for %s: %s", name, priorityStr)
-			}
-		}
-	case "plugin-reload":
-		// run reload in background so that even if this command is triggered
-		// in Lua script, Lua state can still have time to become free again.
-		go func() {
-			<-time.After(10 * time.Millisecond)
-			luaPluginReload(app)
-		}()
 	default:
 		cmd, ok := gOpts.cmds[e.name]
 		if !ok {

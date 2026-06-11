@@ -49,6 +49,7 @@ var (
 		"jump-prev",
 		"load",
 		"low",
+		"luapreviewer-priority",
 		"mark-load",
 		"mark-remove",
 		"mark-save",
@@ -57,6 +58,7 @@ var (
 		"page-down",
 		"page-up",
 		"paste",
+		"plugin-reload",
 		"push",
 		"quit",
 		"read",
@@ -119,8 +121,6 @@ var (
 		"cmd-word",
 		"cmd-word-back",
 		"cmd-yank",
-		"luapreviewer-priority",
-		"plugin-reload",
 	}
 
 	gOptWords      = getOptWords(gOpts)
