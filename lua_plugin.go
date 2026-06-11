@@ -26,6 +26,7 @@ const pluginDirName = "plugins"
 const luaGlobalNameApp = "app"
 
 const luaMsgVariantMain = ""
+const luaMsgMetaKeyIsSync = "is_sync"
 
 const (
 	registryKeyCommand       = "command"
@@ -40,24 +41,18 @@ const (
 const (
 	luaCommandActionFuncKey     = "action"
 	luaCommandCompletionFuncKey = "completion"
-	luaCommandIsSyncKey         = "is_sync"
 
 	luaEventHookActionFuncKey = "action"
-	luaEventHookIsSyncKey     = "is_sync"
 
 	luaKeyMapActionFuncKey = "action"
-	luaKeyMapIsSyncKey     = "is_sync"
 
 	luaPreviewerActionFuncKey    = "action"
 	luaPreviewerCleanFuncKey     = "clean"
 	luaPreviewerConditionFuncKey = "condition"
-	luaPreviewerIsSyncKey        = "is_sync"
 
 	luaSortingMethodActionFuncKey = "action"
-	luaSortingMethodIsSyncKey     = "is_sync"
 
 	luaUIFormatterActionFuncKey = "action"
-	luaUIFormatterIsSyncKey     = "is_sync"
 )
 
 const (
@@ -722,7 +717,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
 				}
 			} else {
 				log.Printf("invalid command action value: %s", value)
@@ -782,7 +777,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaEventHookIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
 				},
 			)
 		default:
@@ -846,7 +841,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 			tbl := value.(*lua.LTable)
 
 			mapAction = tbl.RawGetString(luaKeyMapActionFuncKey)
-			isSync = lua.LVAsBool(tbl.RawGetString(luaKeyMapIsSyncKey))
+			isSync = lua.LVAsBool(tbl.RawGetString(luaMsgMetaKeyIsSync))
 		}
 
 		switch mapAction.Type() {
@@ -931,7 +926,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(previewerTbl.RawGetString(luaPreviewerIsSyncKey)),
+					isSync:     lua.LVAsBool(previewerTbl.RawGetString(luaMsgMetaKeyIsSync)),
 				},
 			})
 		default:
@@ -1034,7 +1029,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				registry:   registryKey,
 				msg:        msg,
 				variant:    luaMsgVariantMain,
-				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaSortingMethodIsSyncKey)),
+				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
 			}
 		default:
 			log.Printf("unsupported sort method registry value for key: %s", msg)
@@ -1106,7 +1101,7 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 					registry:   registryKey,
 					msg:        option,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaCommandIsSyncKey)),
+					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
 				}
 			} else {
 				log.Println("invalid UI formatter value:", value)
