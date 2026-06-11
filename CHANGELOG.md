@@ -47,7 +47,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Using the `select` command with a blank string as the argument now properly raises an error instead of changing to the parent directory (#2429).
 - The number of bytes read is now limited for previews that contain extremely long lines (#2458).
 - Control characters are now stripped from previews to prevent dangerous terminal sequences from being processed if the default previewer is used (#2459).
-- Various fixes have been made to sanitize input data and prevent terminal sequence injection (#2467) (#2546) (#2590).
+- Various fixes have been made to sanitize input data and prevent terminal sequence injection (#2467) (#2540) (#2542) (#2546) (#2590) (#2603).
 - Sixel images with the same height as the preview window are now displayed correctly when using `tmux` (#2474).
 - A bug where previews were loaded according to the old dimensions of the preview window following a terminal resize is now fixed (#2491).
 - Completion matches are now properly aligned if they contain terminal sequences (#2511).
@@ -57,12 +57,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Directories are now refreshed properly after using the `cd` command (#2518).
 - Successfully copied files are no longer deleted if their timestamps could not be preserved (#2519).
 - Previews no longer flicker when the terminal height decreases (#2537).
-- The output for `-print-last-dir`/`-print-selection` is sanitized if `stdout` is connected to a terminal (#2540).
-- Sixel previews are now properly sanitized to prevent injection of arbitrary terminal sequences (#2542).
 - Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 - Previews of modified files are now updated properly when the `preload` option is enabled (#2567).
 - Previews of files other than the current file are now reloaded immediately after being modified when the `watch` option is enabled (#2594).
 - The `loading...` message now shows for files that are reloading due to being modified (#2597).
+- Attempting to copy a directory into itself will now result in an error (#2608).
+- The permissions of state files (i.e. `files`/`history`/`marks`/`tags`) is now changed to only be accessible by the owner (#2612).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
