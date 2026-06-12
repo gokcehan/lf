@@ -790,10 +790,11 @@ func (nav *nav) previewLoop(ui *ui) {
 			}
 		}
 		win := ui.wins[len(ui.wins)-1]
-		if isClear && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			luaPreviewer := getLuaPreviewerForPath(prev)
+		luaPreviewer := getLuaPreviewerForPath(prev)
+		luaCleanerOk := luaPreviewer != nil && luaPreviewer.hasCleaner
 
-			if luaPreviewer != nil && luaPreviewer.hasCleaner {
+		if isClear && (len(gOpts.cleaner) != 0 || luaCleanerOk) && nav.volatilePreview {
+			if luaCleanerOk {
 				err := callLuaPreviewerCleaning(&luaPreviewer.msgexpr, prev, win.w, win.h, win.x, win.y, path)
 				if err != nil {
 					log.Printf("Lua cleaner error: %s", err)
