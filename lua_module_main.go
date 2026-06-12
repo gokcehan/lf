@@ -14,7 +14,9 @@ import (
 
 func lfMainModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"print": luaMainModulePrint,
+		"print":      luaMainModulePrint,
+		"list_ext":   luaMainModuleListExtend,
+		"tbl_extend": luaMainModuleTblExtend,
 
 		"cmd":    luaMainModuleRunColonCommand,
 		"shell":  luaMainModuleRunShellCommand,
@@ -122,6 +124,107 @@ func luaMainModulePrint(L *lua.LState) int {
 	prettyPrintLuaValue(&builder, value, make(map[lua.LValue]int), 0, 0)
 	log.Println(builder.String())
 	return 0
+}
+
+// luaMainModuleListExtend takes 2 table, append all elements in `src` table into
+// `dst` table.
+func luaMainModuleListExtend(L *lua.LState) int {
+	dst := L.CheckTable(1)
+	src := L.CheckTable(2)
+	stValue := L.Get(3)
+	edValue := L.Get(4)
+
+	nElem := src.Len()
+	st := 1
+	ed := nElem
+
+	if stValue.Type() == lua.LTNumber {
+		st = int(stValue.(lua.LNumber))
+		if st < 1 {
+			st = 0
+		}
+	}
+	if edValue.Type() == lua.LTNumber {
+		ed = int(edValue.(lua.LNumber))
+		if ed > nElem {
+			ed = nElem
+		}
+	}
+
+	for i := st; i <= ed; i++ {
+		dst.Append(src.RawGetInt(i))
+	}
+
+	L.Push(dst)
+
+	return 1
+}
+
+// luaMainModuleTableExtend merges two or more tables.
+func luaMainModuleTblExtend(L *lua.LState) int {
+	behaviorValue := L.CheckAny(1)
+
+	var behavior string
+	var checker *lua.LFunction
+
+	switch behaviorValue.Type() {
+	case lua.LTString:
+		behavior = string(behaviorValue.(lua.LString))
+		switch behavior {
+		case "error", "keep", "force":
+			// ok
+		default:
+			L.ArgError(1, "unsupport behavior value")
+		}
+	case lua.LTFunction:
+		checker = behaviorValue.(*lua.LFunction)
+	default:
+		L.ArgError(1, "expected string or function")
+		return 0
+	}
+
+	dst := L.NewTable()
+
+	offset := 2
+	nArgs := L.GetTop()
+	for i := offset; i <= nArgs; i++ {
+		tbl := L.CheckTable(i)
+		tbl.ForEach(func(key, value lua.LValue) {
+			oldValue := dst.RawGet(key)
+
+			if checker != nil {
+				L.CallByParam(
+					lua.P{
+						Fn:   checker,
+						NRet: 1,
+					},
+					key,
+					oldValue,
+					value,
+				)
+
+				newValue := L.Get(-1)
+				L.Pop(1)
+
+				dst.RawSet(key, newValue)
+			} else if oldValue == lua.LNil {
+				dst.RawSet(key, value)
+			} else {
+				switch behavior {
+				case "error":
+					L.RaiseError("key duplicated: %s", key)
+				case "keep":
+					// pass
+				case "force":
+					dst.RawSet(key, value)
+				}
+			}
+		})
+	}
+
+	L.Push(dst)
+
+	return 1
 }
 
 // ----------------------------------------------------------------------------
