@@ -929,7 +929,7 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 				})
 				if err != nil {
 					app.ui.echoerrf("failed to evaluate local option `%s`, see log for more detail", option)
-					log.Println("failed to run function for local option `%s` `%s`: %s", path, option, err)
+					log.Printf("failed to run function for local option `%s` `%s`: %s", path, option, err)
 				}
 
 				defer L.Pop(1)

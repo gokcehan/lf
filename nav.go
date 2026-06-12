@@ -19,7 +19,6 @@ import (
 	"time"
 
 	"github.com/djherbis/times"
-	lua "github.com/yuin/gopher-lua"
 )
 
 // A linkState describes whether a file is a symlink and whether its target exists.
