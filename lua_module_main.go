@@ -138,7 +138,7 @@ func luaMainModuleRunColonCommand(L *lua.LState) int {
 
 	p := newParser(strings.NewReader(cmd))
 	for p.parse() {
-		p.expr.eval(app, nil)
+		app.ui.exprChan <- p.expr
 	}
 	if p.err != nil {
 		app.ui.echoerrf("%s", p.err)
@@ -205,8 +205,7 @@ func luaMainModuleCallCommand(L *lua.LState) int {
 		args[i-st] = arg.String()
 	}
 
-	expr := &callExpr{name, args, 1}
-	expr.eval(app, nil)
+	app.ui.exprChan <- &callExpr{name, args, 1}
 
 	return 0
 }
@@ -230,8 +229,7 @@ func luaMainModuleCallCommandN(L *lua.LState) int {
 		args[i-st] = arg.String()
 	}
 
-	expr := &callExpr{name, args, count}
-	expr.eval(app, nil)
+	app.ui.exprChan <- &callExpr{name, args, count}
 
 	return 0
 }
@@ -246,8 +244,7 @@ func luaMainModuleSetOptionValue(L *lua.LState) int {
 		return 0
 	}
 
-	expr := &setExpr{opt, val}
-	expr.eval(app, nil)
+	app.ui.exprChan <- &setExpr{opt, val}
 
 	return 0
 }
@@ -263,8 +260,7 @@ func luaMainModuleSetLocalOptionValue(L *lua.LState) int {
 		return 0
 	}
 
-	expr := &setLocalExpr{path, opt, val}
-	expr.eval(app, nil)
+	app.ui.exprChan <- &setLocalExpr{path, opt, val}
 
 	return 0
 }

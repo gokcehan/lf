@@ -209,6 +209,9 @@ func (pl *lStatePool) newSimple() (*lua.LState, error) {
 
 // newWithRegistryUpdate creates a new Lua state, and updates global Lua registry
 // with value returned by each plugin script during Lua state initialization.
+//
+// P.S.: this function modify global option and registry, this function should
+// be called on main goroutine.
 func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 	return pl.newWithRetAction(func(sourceName string, L *lua.LState, tbl *lua.LTable) {
 		if tbl == nil {
@@ -666,6 +669,10 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf.ui", lfUIModuleLoader)
 }
 
+// initializeLua load plugin scripts, and initialize Lua state.
+//
+// P.S.: this function modify global option and registry, this function should
+// be called on main goroutine.
 func initializeLua(app *app) {
 	gLuaPool = newLStatePool(app)
 
@@ -684,14 +691,14 @@ func initializeLua(app *app) {
 	gLuaPool.initializeState(app)
 }
 
+// luaPluginReload reset Lua state, Lua registry, then reload Lua script again.
+//
+// P.S.: this function modify global option and registry, this function should
+// be called on main goroutine.
 func luaPluginReload(app *app) {
 	err := gLuaPool.resetLuaState()
 	if err != nil {
-		app.ui.exprChan <- &callExpr{
-			"echoerr",
-			[]string{fmt.Sprintf("Lua plugin reload failed: %s", err)},
-			1,
-		}
+		app.ui.echoerrf("Lua plugin reload failed: %s", err)
 		return
 	}
 
@@ -705,7 +712,7 @@ func luaPluginReload(app *app) {
 
 	gLuaPool.initializeState(app)
 
-	app.ui.exprChan <- &callExpr{"echo", []string{"Lua plugins reloaded"}, 1}
+	app.ui.echo("Lua plugins reloaded")
 }
 
 // ----------------------------------------------------------------------------
@@ -858,15 +865,13 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 		path := string(pathKey.(lua.LString))
 
 		if optionTbl.Type() != lua.LTTable {
-			msg := fmt.Sprintf("registry value for local option group `%s` is not a table", path)
-			app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+			app.ui.echoerrf("registry value for local option group `%s` is not a table", path)
 			return
 		}
 
 		optionTbl.(*lua.LTable).ForEach(func(optionKey, optionValue lua.LValue) {
 			if optionKey.Type() != lua.LTString {
-				msg := fmt.Sprintf("local option group option key is expected to be string, found %s: %s", optionKey.Type(), optionKey)
-				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				app.ui.echoerrf("local option group option key is expected to be string, found %s: %s", optionKey.Type(), optionKey)
 				return
 			}
 
@@ -874,7 +879,8 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 
 			switch optionValue.Type() {
 			case lua.LTString:
-				app.ui.exprChan <- &setLocalExpr{path: path, opt: option, val: string(optionValue.(lua.LString))}
+				expr := &setLocalExpr{path: path, opt: option, val: string(optionValue.(lua.LString))}
+				expr.eval(app, nil)
 			case lua.LTFunction:
 				err := L.CallByParam(lua.P{
 					Fn:      optionValue.(*lua.LFunction),
@@ -882,18 +888,17 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 					Protect: true,
 				})
 				if err != nil {
-					msg := fmt.Sprintf("failed to evaluate local option `%s`, see log for more detail", option)
-					app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+					app.ui.echoerrf("failed to evaluate local option `%s`, see log for more detail", option)
 					log.Println("failed to run function for local option `%s` `%s`: %s", path, option, err)
 				}
 
 				defer L.Pop(1)
 				ret := L.Get(-1)
 				if ret.Type() == lua.LTString {
-					app.ui.exprChan <- &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
+					expr := &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
+					expr.eval(app, nil)
 				} else {
-					msg := fmt.Sprintf("Lua function for local option `%s` `%s` does not return string value", path, option)
-					app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+					app.ui.echoerrf("Lua function for local option `%s` `%s` does not return string value", path, option)
 				}
 			default:
 				log.Printf("unsupported local option registry value type for %s %s", path, option)
@@ -1018,7 +1023,8 @@ func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 
 		switch value.Type() {
 		case lua.LTString:
-			app.ui.exprChan <- &setExpr{opt: option, val: string(value.(lua.LString))}
+			expr := &setExpr{opt: option, val: string(value.(lua.LString))}
+			expr.eval(app, nil)
 		case lua.LTFunction:
 			err := L.CallByParam(lua.P{
 				Fn:      value.(*lua.LFunction),
@@ -1026,18 +1032,17 @@ func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 				Protect: true,
 			})
 			if err != nil {
-				msg := fmt.Sprintf("failed to evaluate option `%s`, see log for more detail", option)
-				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				app.ui.echoerrf("failed to evaluate option `%s`, see log for more detail", option)
 				log.Printf("failed to run function for option `%s`: %s", option, err)
 			}
 
 			defer L.Pop(1)
 			ret := L.Get(-1)
 			if ret.Type() == lua.LTString {
-				app.ui.exprChan <- &setExpr{opt: option, val: string(ret.(lua.LString))}
+				expr := &setExpr{opt: option, val: string(ret.(lua.LString))}
+				expr.eval(app, nil)
 			} else {
-				msg := fmt.Sprintf("Lua function for option `%s` does not return string value", option)
-				app.ui.exprChan <- &callExpr{"echoerr", []string{msg}, 1}
+				app.ui.echoerrf("Lua function for option `%s` does not return string value", option)
 			}
 		default:
 			log.Printf("unsupported option registry value type for key: %s", option)

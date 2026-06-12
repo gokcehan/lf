@@ -1735,12 +1735,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 		}
 	case "plugin-reload":
-		// run reload in background so that even if this command is triggered
-		// in Lua script, Lua state can still have time to become free again.
-		go func() {
-			<-time.After(10 * time.Millisecond)
-			luaPluginReload(app)
-		}()
+		luaPluginReload(app)
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")
