@@ -597,7 +597,7 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	gState.data["files"] = listFilesInCurrDir(app.nav)
 	gState.mutex.Unlock()
 
-	luaCmdMaker := getLuaShellMsg(luaMsgShellMakeCmd)
+	luaCmdMaker := getLuaMiscMsg(luaMiscMsgShell)
 	var cmd *exec.Cmd
 	if luaCmdMaker != nil {
 		var makerErr error

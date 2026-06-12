@@ -34,16 +34,16 @@ const (
 	registryKeyEventHook     = "event_hook"
 	registryKeyKeyMap        = "key_map"
 	registryKeyLocalOption   = "local_option"
+	registryKeyMisc          = "misc"
 	registryKeyOption        = "option"
 	registryKeyPreviewer     = "previewer"
-	registryKeyShell         = "shell"
 	registryKeySortingMethod = "sorting_method"
 	registryKeyUIFormatter   = "ui_formatter"
 	registryKeyUIStyle       = "ui_style"
 )
 
 const (
-	luaMsgShellMakeCmd = "make_cmd"
+	luaMiscMsgShell = "shell"
 )
 
 const (
@@ -52,9 +52,9 @@ const (
 
 	luaEventHookActionFuncKey = "action"
 
-	luaKeyMapActionFuncKey = "action"
+	luaMiscActionFuncKey = "action"
 
-	luaShellActionFuncKey = "action"
+	luaKeyMapActionFuncKey = "action"
 
 	luaPreviewerActionFuncKey    = "action"
 	luaPreviewerCleanFuncKey     = "clean"
@@ -232,7 +232,7 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadEventHookRegistryFromTbl(sourceName, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
-		loadShellRegistryFromTbl(sourceName, tbl)
+		loadMiscRegistryFromTbl(sourceName, tbl)
 		loadSortingMethodRegistryFromTbl(sourceName, tbl)
 		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
 		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
@@ -459,8 +459,8 @@ var gLuaRegistry struct {
 	stateDataMap map[*lua.LState]map[string]*lua.LTable
 
 	eventHooks    map[string][]*luaMsgExpr
+	misc          map[string]*luaMsgExpr
 	previewers    []luaPreviewerInfo
-	shell         map[string]*luaMsgExpr
 	sortingMethod map[string]*luaMsgExpr
 	uiFormatter   map[string]*luaMsgExpr
 	uiStyleMap    map[string]tcell.Style
@@ -773,7 +773,7 @@ func luaPluginReload(app *app) {
 	gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
 	gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	gLuaRegistry.previewers = nil
-	gLuaRegistry.shell = make(map[string]*luaMsgExpr)
+	gLuaRegistry.misc = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
@@ -1060,6 +1060,63 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 	})
 }
 
+// loadMiscRegistryFromTbl loads shell relative registry entry.
+func loadMiscRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyMisc
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	if gLuaRegistry.misc == nil {
+		gLuaRegistry.misc = make(map[string]*luaMsgExpr)
+	}
+
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("misc registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		msg := key.String()
+		switch msg {
+		case luaMiscMsgShell:
+			// ok
+		default:
+			log.Println("unsupported misc registry entry key:", msg)
+			return
+		}
+
+		switch value.Type() {
+		case lua.LTFunction:
+			gLuaRegistry.misc[msg] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isAsync:    false,
+			}
+		case lua.LTTable:
+			gLuaRegistry.misc[msg] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
+			}
+		default:
+			log.Printf("unsupported misc registry value for key: %s", msg)
+			return
+		}
+	})
+}
+
 // loadPreviewerRegistryFromTbl loads option value from table returned from plugin script.
 func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 	registryKey := registryKeyOption
@@ -1218,63 +1275,6 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 	}
 
 	return changed
-}
-
-// loadShellRegistryFromTbl loads shell relative registry entry.
-func loadShellRegistryFromTbl(sourceName string, tbl *lua.LTable) {
-	registryKey := registryKeyShell
-	registryTbl := tbl.RawGetString(registryKey)
-	switch registryTbl.Type() {
-	case lua.LTNil:
-		return
-	case lua.LTTable:
-		// ok
-	default:
-		log.Printf("registry field `%s` is not a table", registryKey)
-		return
-	}
-
-	if gLuaRegistry.shell == nil {
-		gLuaRegistry.shell = make(map[string]*luaMsgExpr)
-	}
-
-	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
-		if key.Type() != lua.LTString {
-			log.Printf("shell registry key is expected to be string, found %s: %s", key.Type(), key)
-			return
-		}
-
-		msg := key.String()
-		switch msg {
-		case luaMsgShellMakeCmd:
-			// ok
-		default:
-			log.Println("unsupported shell registry entry key:", msg)
-			return
-		}
-
-		switch value.Type() {
-		case lua.LTFunction:
-			gLuaRegistry.shell[msg] = &luaMsgExpr{
-				sourceName: sourceName,
-				registry:   registryKey,
-				msg:        msg,
-				variant:    luaMsgVariantMain,
-				isAsync:    false,
-			}
-		case lua.LTTable:
-			gLuaRegistry.shell[msg] = &luaMsgExpr{
-				sourceName: sourceName,
-				registry:   registryKey,
-				msg:        msg,
-				variant:    luaMsgVariantMain,
-				isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
-			}
-		default:
-			log.Printf("unsupported shell registry value for key: %s", msg)
-			return
-		}
-	})
 }
 
 // loadSortingMethodRegistryFromTbl registers sort methods defined in table returned
@@ -1502,6 +1502,9 @@ var gLuaMsgActionExtractorMap = map[string]map[string]luaMsgActionExtractor{
 	},
 	registryKeyEventHook: {
 		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaEventHookActionFuncKey),
+	},
+	registryKeyMisc: {
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaMiscActionFuncKey),
 	},
 	registryKeyPreviewer: {
 		luaMsgVariantMain:        extractLuaMsgActionWithTblKey(luaPreviewerActionFuncKey),
@@ -2271,10 +2274,10 @@ func getLuaUIStyleWithDefaultStr(name string, defaultFmtStr string) tcell.Style 
 	return style
 }
 
-// getLuaShellMsg returns shell message with given name. If no such message exists,
+// getLuaMiscMsg returns misc message with given name. If no such message is registered,
 // this function returns nil.
-func getLuaShellMsg(name string) *luaMsgExpr {
-	return gLuaRegistry.shell[name]
+func getLuaMiscMsg(name string) *luaMsgExpr {
+	return gLuaRegistry.misc[name]
 }
 
 // makeShellCmdWithLuaMsg creates `exec.Cmd` object by calling Lua message.

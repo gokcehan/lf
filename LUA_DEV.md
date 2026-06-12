@@ -196,9 +196,21 @@ Currently, following keys are supported:
   Variant:
 
   - `action`, a function to run when key map is triggered.
+- `local_option`, each key in this registry table is a directory paths,
   corresponding value is table containing options for this directory. All values
-  in option table, is string, and allow keys are option names allowed by `setlocal`
+  in option table are string, and allowed keys are option names allowed by `setlocal`
   command.
+- `misc`, is a message table, provide some extension to lf.
+
+  Entry type: `function`, `table`
+
+  Message variant provided by each message may vary depending on how lf use them,
+  but all of them has a `action` variant as main message action.
+
+  Currently supported messages are:
+
+  - `shell`, takes shell command and argument list, and makes an `exec.Cmd` from
+    them.
 - `option`, is a table of string keys and string values. Keys are lf option names,
   and its value will be set to corresponding lf option.
 - `previewer`, is a message table, adds new preview action.
