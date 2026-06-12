@@ -390,9 +390,6 @@ func (pl *lStatePool) resetLuaState() error {
 
 // checkIsSyncState checks if given state is synchronous Lua state.
 func (pl *lStatePool) checkIsSyncState(L *lua.LState) bool {
-	pl.lockLuaStateSync.RLock()
-	defer pl.lockLuaStateSync.RUnlock()
-
 	return pl.luaStateSync == L
 }
 
