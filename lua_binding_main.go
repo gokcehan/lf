@@ -327,6 +327,7 @@ func luaFileCustomInfo(L *lua.LState) int {
 	file := lCheckFile(L, 1)
 
 	if L.GetTop() >= 2 {
+		tryRaiseNonSyncLuaStateError(L)
 		value := L.CheckString(2)
 		file.customInfo = value
 	}
@@ -351,6 +352,7 @@ func luaFileExtraInfo(L *lua.LState) int {
 
 	nargs := L.GetTop()
 	if nargs >= 3 {
+		tryRaiseNonSyncLuaStateError(L)
 		value := L.Get(3)
 
 		if file.extraInfo == nil {
@@ -538,15 +540,8 @@ func luaDirAllFiles(L *lua.LState) int {
 // luaDirSortby is getter & setter for directory sort method
 func luaDirSortby(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
-
-	if L.GetTop() >= 2 {
-		value := L.CheckString(2)
-		dir.sortby = sortMethod(value)
-	}
-
 	L.Push(lua.LString(dir.sortby))
-
-	return 0
+	return 1
 }
 
 func luaDirDircounts(L *lua.LState) int {
@@ -665,10 +660,14 @@ func luaDirVisualSelectioins(L *lua.LState) int {
 }
 
 func luaDirSel(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	dir := lCheckDir(L, 1)
 	name := L.CheckString(2)
+
 	height := int(L.CheckNumber(3))
 	dir.sel(name, height)
+
 	return 0
 }
 
@@ -818,36 +817,53 @@ func luaNavGetDir(L *lua.LState) int {
 }
 
 func luaNavCdJumpListPrev(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.cdJumpListPrev()
+
 	return 0
 }
 
 func luaNavCdJumpListNext(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.cdJumpListNext()
+
 	return 0
 }
 
 func luaNavRenew(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.renew()
+
 	return 0
 }
 
 func luaNavReload(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.reload()
+
 	return 0
 }
 
 func luaNavSort(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.sort()
+
 	return 0
 }
 
 func luaNavSetFilter(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	tbl := L.CheckTable(2)
 
@@ -871,83 +887,126 @@ func luaNavSetFilter(L *lua.LState) int {
 }
 
 func luaNavUp(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
+
 	nav.up(int(dist))
+
 	return 0
 }
 
 func luaNavDown(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
+
 	nav.down(int(dist))
+
 	return 0
 }
 
 func luaNavScrollUp(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
+
 	nav.scrollUp(int(dist))
+
 	return 0
 }
 
 func luaNavScrollDown(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	dist := L.CheckNumber(2)
+
 	nav.scrollDown(int(dist))
+
 	return 0
 }
 
 func luaNavUpDir(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.updir()
+
 	return 0
 }
 
 func luaNavOpen(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.open()
+
 	return 0
 }
 
 func luaNavTop(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.top()))
+
 	return 1
 }
 
 func luaNavBottom(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.bottom()))
+
 	return 1
 }
 
 func luaNavHigh(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.high()))
+
 	return 1
 }
 
 func luaNavMiddle(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.middle()))
+
 	return 1
 }
 
 func luaNavLow(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	L.Push(lua.LBool(nav.low()))
+
 	return 1
 }
 
 func luaNavMove(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	index := L.CheckNumber(2)
+
 	nav.move(int(index))
+
 	return 0
 }
 
 func luaNavSelect(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
@@ -958,27 +1017,40 @@ func luaNavSelect(L *lua.LState) int {
 }
 
 func luaNavToggleSelection(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
+
 	nav.toggleSelection(path)
+
 	return 0
 }
 
 func luaNavToggle(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.toggle()
+
 	return 0
 }
 
 func luaNavTagToggleSelection(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 	tag := L.CheckString(3)
+
 	nav.tagToggleSelection(path, tag)
+
 	return 0
 }
 
 func luaNavTagToggle(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	tag := L.CheckString(2)
 
@@ -991,6 +1063,8 @@ func luaNavTagToggle(L *lua.LState) int {
 }
 
 func luaNavTag(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	tag := L.CheckString(2)
 
@@ -1003,18 +1077,26 @@ func luaNavTag(L *lua.LState) int {
 }
 
 func luaNavInvert(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.invert()
+
 	return 0
 }
 
 func luaNavUnselect(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	nav.unselect()
+
 	return 0
 }
 
 func luaNavUnselectOne(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
@@ -1029,6 +1111,8 @@ func luaNavUnselectOne(L *lua.LState) int {
 }
 
 func luaNavCd(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	path := L.CheckString(2)
 
@@ -1041,6 +1125,8 @@ func luaNavCd(L *lua.LState) int {
 }
 
 func luaNavGlobSel(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	pattern := L.CheckString(2)
 	invert := L.CheckBool(3)
@@ -1059,6 +1145,8 @@ func luaNavCurrDir(L *lua.LState) int {
 }
 
 func luaNavReadMarks(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	err := nav.readMarks()
 	if err != nil {
@@ -1069,6 +1157,8 @@ func luaNavReadMarks(L *lua.LState) int {
 }
 
 func luaNavWriteMarks(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	err := nav.writeMarks()
 	if err != nil {
@@ -1079,6 +1169,8 @@ func luaNavWriteMarks(L *lua.LState) int {
 }
 
 func luaNavReadTags(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	err := nav.readTags()
 	if err != nil {
@@ -1089,6 +1181,8 @@ func luaNavReadTags(L *lua.LState) int {
 }
 
 func luaNavWriteTags(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
 	nav := lCheckNav(L, 1)
 	err := nav.writeTags()
 	if err != nil {

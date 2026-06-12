@@ -140,6 +140,9 @@ return {
 }
 ```
 
+There are some Lua API requires synchronous state to call, when those APIs being
+called under asynchronous mode, Lua state will throw an error.
+
 ## Supported Registry Keys
 
 > All entry types, returns types in this section are Lua types, some of them are

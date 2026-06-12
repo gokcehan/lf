@@ -698,6 +698,10 @@ func setupPreloadModules(L *lua.LState) {
 // This function is used to enforce a Lua API to be called on synchronous Lua state.
 func tryRaiseNonSyncLuaStateError(L *lua.LState) {
 	if !gLuaPool.checkIsSyncState(L) {
+		app, _ := getAppObjectFromLuaGlobals(L)
+		if app != nil {
+			app.ui.exprChan <- &callExpr{"echoerr", []string{"synchronous Lua function is called under asynchronous mode"}, 1}
+		}
 		L.RaiseError("this func should be called with synchronous mode")
 	}
 }
