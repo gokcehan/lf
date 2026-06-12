@@ -1441,3 +1441,136 @@ func luaFuncWriterWrite(L *lua.LState) int {
 
 	return 1
 }
+
+// ----------------------------------------------------------------------------
+// type iconDef
+
+const LuaIconDefTypeName = "lf.iconDef"
+
+func lRegisterIconDefType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaIconDefTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"icon":      luaIconDefIcon,
+		"has_style": luaIconDefHasStyle,
+		"style":     luaIconDefStyle,
+	}))
+
+	return mt
+}
+
+func lCheckIconDef(L *lua.LState, index int) *iconDef {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*iconDef); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `IconDef` expected")
+
+	return nil
+}
+
+func lWrapIconDef(L *lua.LState, data *iconDef) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaIconDefTypeName))
+
+	return ud
+}
+
+func lAddIconDefToState(L *lua.LState, data *iconDef) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapIconDef(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+// luaIconDefIcon gets icon string of a file.
+func luaIconDefIcon(L *lua.LState) int {
+	def := lCheckIconDef(L, 1)
+	L.Push(lua.LString(def.icon))
+	return 1
+}
+
+// luaIconDefHasStyle returns if this icon has style.
+func luaIconDefHasStyle(L *lua.LState) int {
+	def := lCheckIconDef(L, 1)
+	L.Push(lua.LBool(def.hasStyle))
+	return 1
+}
+
+// luaIconDefStyle returns style object binded with this icon.
+func luaIconDefStyle(L *lua.LState) int {
+	def := lCheckIconDef(L, 1)
+	return lAddTcellStyleToState(L, &def.style)
+}
+
+// ----------------------------------------------------------------------------
+// type iconMap
+
+const LuaIconMapTypeName = "lf.iconMap"
+
+func lRegisterIconMapType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaIconMapTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"get": l// printLength returns the display width of s in terminal cells.
+//
+// It ignores supported terminal control sequences (see [readTermSequence])
+// and accounts for tab expansions using the `tabstop` option.uaIconMapGet,
+	}))
+
+	return mt
+}
+
+func lCheckIconMap(L *lua.LState, index int) *iconMap {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*iconMap); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `IconMap` expected")
+
+	return nil
+}
+
+func lWrapIconMap(L *lua.LState, data *iconMap) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaIconMapTypeName))
+
+	return ud
+}
+
+func lAddIconMapToState(L *lua.LState, data *iconMap) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapIconMap(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+// luaIconMapGet gets icon definition of a file.
+func luaIconMapGet(L *lua.LState) int {
+	im := lCheckIconMap(L, 1)
+	file := lCheckFile(L, 2)
+	def := im.get(file)
+	return lAddIconDefToState(L, &def)
+}

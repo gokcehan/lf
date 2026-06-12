@@ -676,9 +676,11 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("CompMatch", lRegisterCompMatchType(L))
 	lfTypes.RawSetString("Dir", lRegisterDirType(L))
 	lfTypes.RawSetString("File", lRegisterFileTypeMt(L))
+	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
+	lfTypes.RawSetString("IconDef", lRegisterIconDefType(L))
+	lfTypes.RawSetString("IconMap", lRegisterIconMapType(L))
 	lfTypes.RawSetString("Nav", lRegisterNavType(L))
 	lfTypes.RawSetString("UI", lRegisterUIType(L))
-	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
 	// exec
 	lfTypes.RawSetString("Cmd", lRegisterCmdType(L))
 	// tcell
