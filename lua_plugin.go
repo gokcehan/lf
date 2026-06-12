@@ -801,6 +801,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
+	cnt := 0
 	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("command registry key is expected to be string, found %s: %s", key.Type(), key)
@@ -809,7 +810,6 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		msg := key.String()
 
-		log.Printf("add command: %s", msg)
 		switch value.Type() {
 		case lua.LTString:
 			text := value.String()
@@ -817,6 +817,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 			expr := p.parseExpr()
 			if expr == nil {
 				log.Printf("failed to parse Lua command: %s", text)
+				return
 			} else {
 				gOpts.cmds[msg] = expr
 			}
@@ -839,11 +840,19 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				}
 			} else {
 				log.Printf("invalid command action value: %s", value)
+				return
 			}
 		default:
 			log.Printf("invalid command registry value of type %s: %s", value.Type(), value)
+			return
 		}
+
+		cnt++
 	})
+
+	if cnt > 0 {
+		log.Printf("%d command(s) added", cnt)
+	}
 }
 
 // loadEventHookRegistryFromTbl registers event hooks defined in table returned
@@ -865,6 +874,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	}
 
+	cnt := 0
 	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("event hook registry key is expected to be string, found %s: %s", key.Type(), key)
@@ -901,8 +911,12 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 			return
 		}
 
-		log.Printf("add event hook: %s", msg)
+		cnt++
 	})
+
+	if cnt > 0 {
+		log.Printf("%d event hook(s) added", cnt)
+	}
 }
 
 // loadKeyMapRegistryFromTbl registers key maps defined in table returned from plugin
@@ -990,7 +1004,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 	})
 
 	if keyMapCnt > 0 {
-		log.Printf("added %d %s key map", keyMapCnt, displayName)
+		log.Printf("%d %s key map(s) added", keyMapCnt, displayName)
 	}
 }
 
@@ -1618,7 +1632,9 @@ func makeLuaMsgArgsWrapper(args ...any) luaMsgArgsMaker {
 
 // callLuaMsgOnState finds and runs target Lua message action on given Lua state.
 func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, error) {
-	if callArgs.variant != "" {
+	if !gOpts.luamsglog {
+		// pass
+	} else if callArgs.variant != "" {
 		log.Printf("call Lua msg: (%s, %s, %s)@%s", callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant)
 	} else {
 		log.Printf("call Lua msg: (%s, %s, %s)", callArgs.sourceName, callArgs.registryKey, callArgs.msg)

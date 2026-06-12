@@ -285,6 +285,7 @@ The following options can be used to customize the behavior of lf:
 	info              []string  (default '')
 	infotimefmtnew    string    (default 'Jan _2 15:04')
 	infotimefmtold    string    (default 'Jan _2  2006')
+	luamsglog         bool      (default false)
 	menufmt           string    (default "\033[0m")
 	menuheaderfmt     string    (default "\033[1m")
 	menuselectfmt     string    (default "\033[7m")
@@ -1023,6 +1024,10 @@ Format string of the file time shown in the info column when it matches this yea
 
 Format string of the file time shown in the info column when it doesn't match this year.
 
+## luamsglog (bool) (default false)
+
+Log each call of Lua message, this option can be used for debug purpose.
+
 ## menufmt (string) (default `\033[0m`)
 
 Format string of the menu.
@@ -1077,7 +1082,7 @@ Note that preserving other attributes like ownership or change/birth timestamps 
 
 Show previews of files and directories at the rightmost pane.
 If the file has more lines than the preview pane, the rest of the lines are not read.
-Files are considered binary and displayed as `binary` if the read portion contains a control character other than bell, backspace, tab, newline, vertical tab, form feed, carriage return, escape or delete. 
+Files are considered binary and displayed as `binary` if the read portion contains a control character other than bell, backspace, tab, newline, vertical tab, form feed, carriage return, escape or delete.
 
 ## previewer (string) (default ``) (not filtered if empty)
 
