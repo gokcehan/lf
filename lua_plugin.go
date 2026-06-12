@@ -183,13 +183,13 @@ func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LSt
 				gLuaRegistry.stateDataMap = make(map[*lua.LState]map[string]*lua.LTable)
 			}
 
-			registryMap, ok := gLuaRegistry.stateDataMap[L]
+			dataTblMap, ok := gLuaRegistry.stateDataMap[L]
 			if !ok {
-				registryMap = make(map[string]*lua.LTable)
-				gLuaRegistry.stateDataMap[L] = registryMap
+				dataTblMap = make(map[string]*lua.LTable)
+				gLuaRegistry.stateDataMap[L] = dataTblMap
 			}
 
-			registryMap[sourceName] = tbl
+			dataTblMap[sourceName] = tbl
 
 			if action != nil {
 				action(sourceName, L, tbl)
@@ -782,8 +782,8 @@ func luaPluginReload(app *app) {
 func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyCommand
 
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -793,8 +793,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
-	cmdTbl := value.(*lua.LTable)
-	cmdTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("command registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -843,9 +842,8 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 // from plugin script.
 func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyEventHook
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -859,8 +857,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	}
 
-	eventHookTbl := value.(*lua.LTable)
-	eventHookTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("event hook registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -903,9 +900,8 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 // loadLocalPreviewerRegistryFromTbl loads option value from table returned from plugin script.
 func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 	registryKey := registryKeyLocalOption
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -915,8 +911,7 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 		return
 	}
 
-	registryTbl := value.(*lua.LTable)
-	registryTbl.ForEach(func(pathKey, optionTbl lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(pathKey, optionTbl lua.LValue) {
 		if pathKey.Type() != lua.LTString {
 			log.Printf("local option registry key is expected to be string, found %s: %s", pathKey.Type(), pathKey)
 			return
@@ -1060,9 +1055,8 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 // loadPreviewerRegistryFromTbl loads option value from table returned from plugin script.
 func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 	registryKey := registryKeyOption
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -1072,8 +1066,7 @@ func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 		return
 	}
 
-	registryTbl := value.(*lua.LTable)
-	registryTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("option registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -1115,9 +1108,8 @@ func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 // rom plugin script.
 func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyPreviewer
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -1127,8 +1119,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
-	registryTbl := value.(*lua.LTable)
-	registryTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("previewer registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -1225,9 +1216,8 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 // from plugin script.
 func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeySortingMethod
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -1237,8 +1227,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
-	sortingMethodTbl := value.(*lua.LTable)
-	sortingMethodTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -1281,9 +1270,8 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 // from plugin script.
 func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyUIFormatter
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -1297,8 +1285,7 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 		gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
 	}
 
-	registryTbl := value.(*lua.LTable)
-	registryTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("UI formatter key is expected to be string, found %s: %s", key.Type(), key)
 			return
@@ -1352,9 +1339,8 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 // loadUIStyleRegistryFromTbl loads UI styles defined in table into Go map.
 func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyUIStyle
-
-	value := tbl.RawGetString(registryKey)
-	switch value.Type() {
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
 	case lua.LTNil:
 		return
 	case lua.LTTable:
@@ -1368,8 +1354,7 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 	}
 
-	registryTbl := value.(*lua.LTable)
-	registryTbl.ForEach(func(key, value lua.LValue) {
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("ui style registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
