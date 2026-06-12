@@ -433,7 +433,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 			}
 
 			// print tag separately as it can contain color escape sequences
-			if !gOpts.mergeindicators || drawFileState {
+			if !gOpts.mergeindicators || !drawFileState {
 				indicator := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, tag)
 				win.print(ui.screen, tagOff, i, st, indicator)
 			}
@@ -447,7 +447,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, customOff, i, st, spaceStr)
 			}
 		} else {
-			if !gOpts.mergeindicators || drawFileState {
+			if !gOpts.mergeindicators || !drawFileState {
 				if tag == " " {
 					win.print(ui.screen, tagOff, i, st, " ")
 				} else {
