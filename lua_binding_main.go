@@ -347,26 +347,39 @@ func luaFileExt(L *lua.LState) int {
 // not nil, this method will set named key to given value.
 func luaFileExtraInfo(L *lua.LState) int {
 	file := lCheckFile(L, 1)
-	key := L.Get(2)
+	key := L.CheckString(2)
 
-	value := lua.LNil
 	nargs := L.GetTop()
 	if nargs >= 3 {
 		value := L.Get(3)
 
-		if file.luaExtraInfo == nil {
-			file.luaExtraInfo = L.NewTable()
+		if file.extraInfo == nil {
+			file.extraInfo = make(map[string]any)
 		}
-		file.luaExtraInfo.RawSet(key, value)
-	} else {
-		if file.luaExtraInfo != nil {
-			value = file.luaExtraInfo.RawGet(key)
+
+		goValue, err := luaValueToGoValue(value)
+		if err != nil {
+			file.extraInfo[key] = goValue
 		}
+
+		L.Push(value)
+		L.Push(lua.LString(err.Error()))
+
+		return 2
 	}
 
-	L.Push(value)
+	if file.extraInfo == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
 
-	return 1
+	goValue := file.extraInfo[key]
+	value, err := goValueToLuaValue(L, goValue)
+
+	L.Push(value)
+	L.Push(lua.LString(err.Error()))
+
+	return 2
 }
 
 // luaFileIsPreviewable returns true if this file requires a preview call.

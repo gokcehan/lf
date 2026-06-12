@@ -520,6 +520,26 @@ func goValueToLuaValue(L *lua.LState, value any) (lua.LValue, error) {
 	return goReflectValueToLuaValue(L, reflect.ValueOf(value))
 }
 
+// luaValueToGoValue converts simple Lua value to Go value.
+func luaValueToGoValue(value lua.LValue) (any, error) {
+	switch value.Type() {
+	case lua.LTNil:
+		return nil, nil
+	case lua.LTBool:
+		if value == lua.LTrue {
+			return true, nil
+		} else {
+			return false, nil
+		}
+	case lua.LTNumber:
+		return float64(value.(lua.LNumber)), nil
+	case lua.LTString:
+		return string(value.(lua.LString)), nil
+	default:
+		return nil, fmt.Errorf("unsupported type: %s", value.Type())
+	}
+}
+
 // getAppObjectFromLuaGlobals fetchs app object from Lua state's global variable.
 func getAppObjectFromLuaGlobals(L *lua.LState) (*app, error) {
 	value := L.GetGlobal(luaGlobalNameApp)

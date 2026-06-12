@@ -32,19 +32,19 @@ const (
 )
 
 type file struct {
-	os.FileInfo              // stat information
-	linkState    linkState   // symlink state
-	linkTarget   string      // path a symlink points to
-	path         string      // full path including the name
-	dirCount     int         // number of items inside the directory
-	dirSize      int64       // total directory size (needs to be calculated via `calcdirsize`)
-	accessTime   time.Time   // time of last access
-	birthTime    time.Time   // time of file birth
-	changeTime   time.Time   // time of last status (inode) change
-	customInfo   string      // property defined via `addcustominfo`
-	ext          string      // file extension (including the dot)
-	err          error       // potential error returned by [os.Lstat]
-	luaExtraInfo *lua.LTable // A Lua table that stores data marked by Lua plugins
+	os.FileInfo                // stat information
+	linkState   linkState      // symlink state
+	linkTarget  string         // path a symlink points to
+	path        string         // full path including the name
+	dirCount    int            // number of items inside the directory
+	dirSize     int64          // total directory size (needs to be calculated via `calcdirsize`)
+	accessTime  time.Time      // time of last access
+	birthTime   time.Time      // time of file birth
+	changeTime  time.Time      // time of last status (inode) change
+	customInfo  string         // property defined via `addcustominfo`
+	ext         string         // file extension (including the dot)
+	err         error          // potential error returned by [os.Lstat]
+	extraInfo   map[string]any // stores data set by Lua scripts
 }
 
 func newFile(path string) *file {
