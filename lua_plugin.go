@@ -217,11 +217,12 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 
 		log.Println("update Lua registry for plugin script:", sourceName)
 
+		loadLocalOptionRegistryFromTbl(L, pl.app, tbl)
+		loadOptionRegistryFromTbl(L, pl.app, tbl)
+
 		loadCommandRegistryFromTbl(sourceName, tbl)
 		loadEventHookRegistryFromTbl(sourceName, tbl)
-		loadLocalOptionRegistryFromTbl(L, pl.app, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
-		loadOptionRegistryFromTbl(L, pl.app, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
 		loadSortingMethodRegistryFromTbl(sourceName, tbl)
 		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
