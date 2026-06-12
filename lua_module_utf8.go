@@ -8,9 +8,9 @@ import (
 
 func lfUtf8ModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"to_rune_tbl": luaUtf8ToRuneTbl,
-		"len":         luaUtf8Len,
-		"get_rune":    luaUtf8GetRune,
+		"to_rune_tbl": luaUtf8ModuleToRuneTbl,
+		"len":         luaUtf8ModuleLen,
+		"get_rune":    luaUtf8ModuleGetRune,
 	})
 
 	L.Push(mod)
@@ -18,8 +18,8 @@ func lfUtf8ModuleLoader(L *lua.LState) int {
 	return 1
 }
 
-// luaUtf8ToRuneTbl converts given string into a list of UTF-8 runes.
-func luaUtf8ToRuneTbl(L *lua.LState) int {
+// luaUtf8ModuleToRuneTbl converts given string into a list of UTF-8 runes.
+func luaUtf8ModuleToRuneTbl(L *lua.LState) int {
 	str := L.CheckString(1)
 	runes := []rune(str)
 
@@ -33,8 +33,8 @@ func luaUtf8ToRuneTbl(L *lua.LState) int {
 	return 1
 }
 
-// luaUtf8Len returns length of a string counted in UTF-8 rune.
-func luaUtf8Len(L *lua.LState) int {
+// luaUtf8ModuleLen returns length of a string counted in UTF-8 rune.
+func luaUtf8ModuleLen(L *lua.LState) int {
 	str := L.CheckString(1)
 	length := utf8.RuneCountInString(str)
 
@@ -43,8 +43,8 @@ func luaUtf8Len(L *lua.LState) int {
 	return 1
 }
 
-// luaUtf8GetRune returns UTF-8 rune at given index.
-func luaUtf8GetRune(L *lua.LState) int {
+// luaUtf8ModuleGetRune returns UTF-8 rune at given index.
+func luaUtf8ModuleGetRune(L *lua.LState) int {
 	str := L.CheckString(1)
 	index := L.CheckInt(2)
 

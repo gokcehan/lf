@@ -14,20 +14,20 @@ import (
 
 func lfMainModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"print": luaPrint,
+		"print": luaMainModulePrint,
 
-		"cmd":    luaRunColonCommand,
-		"shell":  luaRunShellCommand,
-		"call":   luaCallCommand,
-		"call_n": luaCallCommandN,
+		"cmd":    luaMainModuleRunColonCommand,
+		"shell":  luaMainModuleRunShellCommand,
+		"call":   luaMainModuleCallCommand,
+		"call_n": luaMainModuleCallCommandN,
 
-		"set_opt":       luaSetOptionValue,
-		"set_local_opt": luaSetLocalOptionValue,
-		"get_opt":       luaGetOptionValue,
-		"get_local_opt": luaGetLocalOptionValue,
+		"set_opt":       luaMainModuleSetOptionValue,
+		"set_local_opt": luaMainModuleSetLocalOptionValue,
+		"get_opt":       luaMainModuleGetOptionValue,
+		"get_local_opt": luaMainModuleGetLocalOptionValue,
 
-		"glob_match": luaGlobMatch,
-		"match_word": luaLuaMatchWord,
+		"glob_match": luaMainModuleGlobMatch,
+		"match_word": luaMainModuleMatchWord,
 	})
 
 	setupModuleConstants(L, mod)
@@ -66,6 +66,8 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	keyMapType.RawSetString("Command", lua.LString(luaKeyMapTypeCommand))
 	mod.RawSetString("KeyMapType", keyMapType)
 }
+
+// ----------------------------------------------------------------------------
 
 func prettyPrintLuaValue(builder *strings.Builder, val lua.LValue, visited map[lua.LValue]int, tableCnt, indentLevel int) int {
 	switch val.Type() {
@@ -113,8 +115,8 @@ func prettyPrintLuaValue(builder *strings.Builder, val lua.LValue, visited map[l
 	return tableCnt
 }
 
-// luaPrint prints a Lua value, this can be used for debugging.
-func luaPrint(L *lua.LState) int {
+// luaMainModulePrint prints a Lua value, this can be used for debugging.
+func luaMainModulePrint(L *lua.LState) int {
 	value := L.CheckAny(1)
 	var builder strings.Builder
 	prettyPrintLuaValue(&builder, value, make(map[lua.LValue]int), 0, 0)
@@ -122,8 +124,10 @@ func luaPrint(L *lua.LState) int {
 	return 0
 }
 
-// luaRunColonCommand runs a lf command string just like calling command with `:`.
-func luaRunColonCommand(L *lua.LState) int {
+// ----------------------------------------------------------------------------
+
+// luaMainModuleRunColonCommand runs a lf command string just like calling command with `:`.
+func luaMainModuleRunColonCommand(L *lua.LState) int {
 	cmd := L.CheckString(1)
 
 	app, err := getAppObjectFromLuaGlobals(L)
@@ -143,9 +147,9 @@ func luaRunColonCommand(L *lua.LState) int {
 	return 0
 }
 
-// luaRunShellCommand takes execution type prefix, command name and variable length
+// luaMainModuleRunShellCommand takes execution type prefix, command name and variable length
 // argument list, and asks lf to execute given shell command.
-func luaRunShellCommand(L *lua.LState) int {
+func luaMainModuleRunShellCommand(L *lua.LState) int {
 	prefix := L.CheckString(1)
 	cmd := L.CheckString(2)
 
@@ -183,8 +187,8 @@ func luaRunShellCommand(L *lua.LState) int {
 	return 0
 }
 
-// luaCallCommand runs lf command.
-func luaCallCommand(L *lua.LState) int {
+// luaMainModuleCallCommand runs lf command.
+func luaMainModuleCallCommand(L *lua.LState) int {
 	name := L.CheckString(1)
 
 	app, err := getAppObjectFromLuaGlobals(L)
@@ -207,8 +211,8 @@ func luaCallCommand(L *lua.LState) int {
 	return 0
 }
 
-// luaCallCommandN runs lf command with repetition argument `n`.
-func luaCallCommandN(L *lua.LState) int {
+// luaMainModuleCallCommandN runs lf command with repetition argument `n`.
+func luaMainModuleCallCommandN(L *lua.LState) int {
 	count := L.CheckInt(1)
 	name := L.CheckString(2)
 
@@ -232,7 +236,7 @@ func luaCallCommandN(L *lua.LState) int {
 	return 0
 }
 
-func luaSetOptionValue(L *lua.LState) int {
+func luaMainModuleSetOptionValue(L *lua.LState) int {
 	opt := L.CheckString(1)
 	val := L.CheckString(2)
 
@@ -248,7 +252,7 @@ func luaSetOptionValue(L *lua.LState) int {
 	return 0
 }
 
-func luaSetLocalOptionValue(L *lua.LState) int {
+func luaMainModuleSetLocalOptionValue(L *lua.LState) int {
 	path := L.CheckString(1)
 	opt := L.CheckString(2)
 	val := L.CheckString(3)
@@ -265,7 +269,7 @@ func luaSetLocalOptionValue(L *lua.LState) int {
 	return 0
 }
 
-func luaGetOptionValue(L *lua.LState) int {
+func luaMainModuleGetOptionValue(L *lua.LState) int {
 	opt := L.CheckString(1)
 
 	rValue := reflect.ValueOf(gOpts)
@@ -289,7 +293,7 @@ func luaGetOptionValue(L *lua.LState) int {
 	return 1
 }
 
-func luaGetLocalOptionValue(L *lua.LState) int {
+func luaMainModuleGetLocalOptionValue(L *lua.LState) int {
 	path := L.CheckString(1)
 	opt := L.CheckString(2)
 
@@ -327,8 +331,10 @@ func luaGetLocalOptionValue(L *lua.LState) int {
 	return 1
 }
 
-// luaGlobMatch checks if a pattern matches certain string.
-func luaGlobMatch(L *lua.LState) int {
+// ----------------------------------------------------------------------------
+
+// luaMainModuleGlobMatch checks if a pattern matches certain string.
+func luaMainModuleGlobMatch(L *lua.LState) int {
 	pattern := L.CheckString(1)
 	str := L.CheckString(2)
 
@@ -344,9 +350,9 @@ func luaGlobMatch(L *lua.LState) int {
 	return 1
 }
 
-// luaLuaMatchWord takes a source string, and a list of candidate string, and
+// luaMainModuleMatchWord takes a source string, and a list of candidate string, and
 // returns a list of match object and longest common matched string.
-func luaLuaMatchWord(L *lua.LState) int {
+func luaMainModuleMatchWord(L *lua.LState) int {
 	longest := L.CheckString(1)
 	wordTbl := L.CheckTable(2)
 

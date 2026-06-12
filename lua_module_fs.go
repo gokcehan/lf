@@ -13,20 +13,20 @@ import (
 func lfFsModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"mkdir":     luaFsMkdir,
-		"mkdir_all": luaFsMkdirAll,
-		"link":      luaFsLink,
-		"symlink":   luaFsSymlink,
-		"copy":      luaFsCopyFile,
+		"mkdir_all": luaFsModuleMkdirAll,
+		"link":      luaFsModuleLink,
+		"symlink":   luaFsModuleSymlink,
+		"copy":      luaFsModuleCopyFile,
 
-		"join":      luaFsJoin,
-		"split":     luaFsSplit,
-		"split_ext": luaFsSplitExt,
-		"dirname":   luaFsDirname,
-		"basename":  luaFsBasename,
-		"ext":       luaFsExt,
+		"join":      luaFsModuleJoin,
+		"split":     luaFsModuleSplit,
+		"split_ext": luaFsModuleSplitExt,
+		"dirname":   luaFsModuleDirname,
+		"basename":  luaFsModuleBasename,
+		"ext":       luaFsModuleExt,
 
-		"stat":    luaFsStat,
-		"readdir": luaFsReadDir,
+		"stat":    luaFsModuleStat,
+		"readdir": luaFsModuleReadDir,
 	})
 
 	L.Push(mod)
@@ -46,7 +46,7 @@ func luaFsMkdir(L *lua.LState) int {
 	return 1
 }
 
-func luaFsMkdirAll(L *lua.LState) int {
+func luaFsModuleMkdirAll(L *lua.LState) int {
 	path := L.CheckString(1)
 
 	if err := os.MkdirAll(path, 0o777); err == nil {
@@ -58,7 +58,7 @@ func luaFsMkdirAll(L *lua.LState) int {
 	return 1
 }
 
-func luaFsLink(L *lua.LState) int {
+func luaFsModuleLink(L *lua.LState) int {
 	oldname := L.CheckString(1)
 	newname := L.CheckString(2)
 	force := L.OptBool(3, false)
@@ -86,7 +86,7 @@ func luaFsLink(L *lua.LState) int {
 	return 1
 }
 
-func luaFsSymlink(L *lua.LState) int {
+func luaFsModuleSymlink(L *lua.LState) int {
 	oldname := L.CheckString(1)
 	newname := L.CheckString(2)
 	force := L.OptBool(3, false)
@@ -114,7 +114,7 @@ func luaFsSymlink(L *lua.LState) int {
 	return 1
 }
 
-func luaFsCopyFile(L *lua.LState) int {
+func luaFsModuleCopyFile(L *lua.LState) int {
 	src := L.CheckString(1)
 	dst := L.CheckString(2)
 
@@ -147,7 +147,7 @@ func luaFsCopyFile(L *lua.LState) int {
 	return 1
 }
 
-func luaFsJoin(L *lua.LState) int {
+func luaFsModuleJoin(L *lua.LState) int {
 	cnt := L.GetTop()
 	parts := []string{}
 
@@ -161,7 +161,7 @@ func luaFsJoin(L *lua.LState) int {
 	return 1
 }
 
-func luaFsSplit(L *lua.LState) int {
+func luaFsModuleSplit(L *lua.LState) int {
 	path := L.CheckString(1)
 	dirname, basename := filepath.Split(path)
 	L.Push(lua.LString(dirname))
@@ -169,7 +169,7 @@ func luaFsSplit(L *lua.LState) int {
 	return 2
 }
 
-func luaFsSplitExt(L *lua.LState) int {
+func luaFsModuleSplitExt(L *lua.LState) int {
 	path := L.CheckString(1)
 	ext := filepath.Ext(path)
 	stem := path[:len(path)-len(ext)]
@@ -178,28 +178,28 @@ func luaFsSplitExt(L *lua.LState) int {
 	return 2
 }
 
-func luaFsDirname(L *lua.LState) int {
+func luaFsModuleDirname(L *lua.LState) int {
 	path := L.CheckString(1)
 	result := filepath.Dir(path)
 	L.Push(lua.LString(result))
 	return 1
 }
 
-func luaFsBasename(L *lua.LState) int {
+func luaFsModuleBasename(L *lua.LState) int {
 	path := L.CheckString(1)
 	result := filepath.Base(path)
 	L.Push(lua.LString(result))
 	return 1
 }
 
-func luaFsExt(L *lua.LState) int {
+func luaFsModuleExt(L *lua.LState) int {
 	path := L.CheckString(1)
 	result := filepath.Ext(path)
 	L.Push(lua.LString(result))
 	return 1
 }
 
-func luaFsStat(L *lua.LState) int {
+func luaFsModuleStat(L *lua.LState) int {
 	path := L.CheckString(1)
 
 	stat, err := os.Stat(path)
@@ -214,7 +214,7 @@ func luaFsStat(L *lua.LState) int {
 	return 1
 }
 
-func luaFsReadDir(L *lua.LState) int {
+func luaFsModuleReadDir(L *lua.LState) int {
 	path := L.CheckString(1)
 
 	files, err := readdir(path)
