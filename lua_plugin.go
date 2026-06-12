@@ -26,7 +26,7 @@ const luaPluginDirName = "plugins"
 const luaGlobalNameApp = "app"
 
 const luaMsgVariantMain = ""
-const luaMsgMetaKeyIsSync = "is_sync"
+const luaMsgMetaKeyIsAsync = "is_async"
 
 const (
 	registryKeyCommand       = "command"
@@ -68,7 +68,7 @@ type lStatePool struct {
 	saved     []*lua.LState
 	allStates []*lua.LState
 
-	lockLuaStateSync sync.Mutex
+	lockLuaStateSync sync.RWMutex
 	luaStateSync     *lua.LState
 
 	isInitialized bool // Lua global registry has been updated by instanciate first Lua state
@@ -388,6 +388,14 @@ func (pl *lStatePool) resetLuaState() error {
 	return fmt.Errorf("Lua State is busy")
 }
 
+// checkIsSyncState checks if given state is synchronous Lua state.
+func (pl *lStatePool) checkIsSyncState(L *lua.LState) bool {
+	pl.lockLuaStateSync.RLock()
+	defer pl.lockLuaStateSync.RUnlock()
+
+	return pl.luaStateSync == L
+}
+
 type luaPreviewerInfo struct {
 	priority   int    // priority value for this previewer
 	name       string // name of this previewer, takes the form `<plugin-source>.<previewer-key>`
@@ -686,6 +694,14 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf.ui", lfUIModuleLoader)
 }
 
+// tryRaiseNonSyncLuaStateError raises an error if `L` is not synchronous Lua state.
+// This function is used to enforce a Lua API to be called on synchronous Lua state.
+func tryRaiseNonSyncLuaStateError(L *lua.LState) {
+	if !gLuaPool.checkIsSyncState(L) {
+		L.RaiseError("this func should be called with synchronous mode")
+	}
+}
+
 // loadLuaPluginOptionValue loads option and local option defined in Lua script.
 // This process may trigger other Lua message call, it has to be seperated from
 // other registry load.
@@ -808,7 +824,7 @@ func loadCommandRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
+					isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
 				}
 			} else {
 				log.Printf("invalid command action value: %s", value)
@@ -857,7 +873,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     false,
+					isAsync:    false,
 				},
 			)
 		case lua.LTTable:
@@ -868,7 +884,7 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
+					isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
 				},
 			)
 		default:
@@ -993,14 +1009,14 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 		}
 
 		mapKey := key.String()
-		isSync := false
+		isAsync := false
 
 		mapAction := value
 		if value.Type() == lua.LTTable {
 			tbl := value.(*lua.LTable)
 
 			mapAction = tbl.RawGetString(luaKeyMapActionFuncKey)
-			isSync = lua.LVAsBool(tbl.RawGetString(luaMsgMetaKeyIsSync))
+			isAsync = lua.LVAsBool(tbl.RawGetString(luaMsgMetaKeyIsAsync))
 		}
 
 		switch mapAction.Type() {
@@ -1022,7 +1038,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 				sourceName: sourceName,
 				keyMapType: keyMapType,
 				key:        mapKey,
-				isSync:     isSync,
+				isAsync:    isAsync,
 			}
 		default:
 			log.Printf("unsupported key map registry value for %s.%s", keyMapType, mapKey)
@@ -1127,7 +1143,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     false,
+					isAsync:    false,
 				},
 			})
 		case lua.LTTable:
@@ -1143,7 +1159,7 @@ func loadPreviewerRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 					registry:   registryKey,
 					msg:        msg,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(previewerTbl.RawGetString(luaMsgMetaKeyIsSync)),
+					isAsync:    lua.LVAsBool(previewerTbl.RawGetString(luaMsgMetaKeyIsAsync)),
 				},
 			})
 		default:
@@ -1238,7 +1254,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				registry:   registryKey,
 				msg:        msg,
 				variant:    luaMsgVariantMain,
-				isSync:     false,
+				isAsync:    false,
 			}
 		case lua.LTTable:
 			gLuaRegistry.sortingMethod[name] = &luaMsgExpr{
@@ -1246,7 +1262,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 				registry:   registryKey,
 				msg:        msg,
 				variant:    luaMsgVariantMain,
-				isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
+				isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
 			}
 		default:
 			log.Printf("unsupported sort method registry value for key: %s", msg)
@@ -1318,7 +1334,7 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 					registry:   registryKey,
 					msg:        option,
 					variant:    luaMsgVariantMain,
-					isSync:     lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsSync)),
+					isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
 				}
 			} else {
 				log.Println("invalid UI formatter value:", value)
@@ -1416,7 +1432,7 @@ type luaMsgArgsMaker func(L *lua.LState) []lua.LValue
 
 type luaMsgCallArgs struct {
 	sourceName, registryKey, msg, variant string
-	isSync                                bool // if this message should be called on synchronous Lua state
+	isAsync                               bool // if this message should be called on asynchronous Lua state
 	getArgs                               luaMsgArgsMaker
 }
 
@@ -1624,12 +1640,12 @@ func callLuaMsgSync(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
 }
 
 // callLuaMsg calls Lua message specified in call argument, this function will use
-// the `isSync` flag in argument to determine which Lua state source to use.
+// the `isAsync` flag in argument to determine which Lua state source to use.
 func callLuaMsg(callArgs luaMsgCallArgs) ([]lua.LValue, error) {
-	if callArgs.isSync {
-		return callLuaMsgSync(callArgs)
-	} else {
+	if callArgs.isAsync {
 		return callLuaMsgAsync(callArgs)
+	} else {
+		return callLuaMsgSync(callArgs)
 	}
 }
 
@@ -1640,7 +1656,7 @@ func callLuaMsgExpr(expr *luaMsgExpr, getArgs luaMsgArgsMaker) ([]lua.LValue, er
 		registryKey: expr.registry,
 		msg:         expr.msg,
 		variant:     expr.variant,
-		isSync:      expr.isSync,
+		isAsync:     expr.isAsync,
 		getArgs:     getArgs,
 	})
 }
@@ -1653,7 +1669,7 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 			registryKey: expr.registry,
 			msg:         expr.msg,
 			variant:     luaCommandCompletionFuncKey,
-			isSync:      expr.isSync,
+			isAsync:     expr.isAsync,
 			getArgs: func(L *lua.LState) []lua.LValue {
 				tbl := L.NewTable()
 				for i, arg := range args {
@@ -1896,7 +1912,7 @@ func callLuaPreviewerConditionChecker(expr *luaMsgExpr, path string) (bool, erro
 		registryKey: expr.registry,
 		msg:         expr.msg,
 		variant:     luaPreviewerConditionFuncKey,
-		isSync:      expr.isSync,
+		isAsync:     expr.isAsync,
 		getArgs: func(L *lua.LState) []lua.LValue {
 			return []lua.LValue{lua.LString(path)}
 		},
@@ -1965,7 +1981,7 @@ func callLuaPreviewerCleaning(expr *luaMsgExpr, previousFile string, w, h, x, y 
 		registryKey: expr.registry,
 		msg:         expr.msg,
 		variant:     luaPreviewerCleanFuncKey,
-		isSync:      expr.isSync,
+		isAsync:     expr.isAsync,
 		getArgs: func(L *lua.LState) []lua.LValue {
 			return []lua.LValue{
 				lua.LString(previousFile),
@@ -2051,9 +2067,16 @@ func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
 }
 
 // callLuaKeyMapMsg calls Lua key map message, pick proper Lua state source according
-// to `isSync` flag in message expression.
+// to `isAsync` flag in message expression.
 func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
-	if expr.isSync {
+	if expr.isAsync {
+		L, err := gLuaPool.get()
+		if err != nil {
+			return err
+		}
+		defer gLuaPool.put(L)
+		return callLuaKeyMapMsgOnState(L, expr)
+	} else {
 		L, err := gLuaPool.acquireSyncState()
 		defer gLuaPool.releaseSyncState()
 
@@ -2061,13 +2084,6 @@ func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 			return err
 		}
 
-		return callLuaKeyMapMsgOnState(L, expr)
-	} else {
-		L, err := gLuaPool.get()
-		if err != nil {
-			return err
-		}
-		defer gLuaPool.put(L)
 		return callLuaKeyMapMsgOnState(L, expr)
 	}
 }

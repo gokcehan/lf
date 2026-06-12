@@ -32,8 +32,7 @@ makes running Lua code asynchronously possible.
 
 Different Lua states share no data, so if a function depends on a variable data
 stored on Lua state, then one needs to mark this funtion as synchronous to make
-sure this function gets ececuted on the one and only synchronous Lua state, more
-about marking function as synchronous later.
+sure this function gets executed on the one and only synchronous Lua state.
 
 Lua states are encapsulate in a global variable `gLuaPool` defined in `lua_plugin.go`.
 Lua state used for code execution can be get from this object.
@@ -117,10 +116,10 @@ action function found in message entry table, and sometimes returns default
 action function when such variant cannot be found, or message entry is simply
 defined as a non-table value.
 
-### Synchronous Message Action
+### Asynchronous Message Action
 
-For now, all message actions are asynchronous by default, when message action
-needs to be marked synchronous, a message entry table with `is_sync` set to true
+For now, all message actions are synchronous by default, when message action
+needs to be marked asynchronous, a message entry table with `is_async` set to true
 is used.
 
 For example:
@@ -135,7 +134,7 @@ return {
                 cnt = cnt + 1
                 app:ui():echo(tostring(cnt))
             end,
-            is_sync = true,
+            is_async = true,
         },
     },
 }
@@ -173,7 +172,7 @@ Currently, following keys are supported:
                   action = function()
                       app:ui:echo("hello")
                   end,
-                  is_sync = true,
+                  is_async = true,
               },
           }
       }

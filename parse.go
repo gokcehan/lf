@@ -205,18 +205,18 @@ type luaMsgExpr struct {
 	registry   string
 	msg        string
 	variant    string
-	isSync     bool
+	isAsync    bool
 }
 
 func (e *luaMsgExpr) String() string {
-	return fmt.Sprintf("luamsg: %s, registry: %s, msg: %s, sync: %v", e.sourceName, e.registry, e.msg, e.isSync)
+	return fmt.Sprintf("luamsg: %s, registry: %s, msg: %s, async: %v", e.sourceName, e.registry, e.msg, e.isAsync)
 }
 
 type luaKeyMapExpr struct {
 	sourceName string
 	keyMapType string
 	key        string
-	isSync     bool
+	isAsync    bool
 }
 
 func (e *luaKeyMapExpr) String() string {
