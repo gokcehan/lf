@@ -220,9 +220,6 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 
 		log.Println("update Lua registry for plugin script:", sourceName)
 
-		loadLocalOptionRegistryFromTbl(L, pl.app, tbl)
-		loadOptionRegistryFromTbl(L, pl.app, tbl)
-
 		loadCommandRegistryFromTbl(sourceName, tbl)
 		loadEventHookRegistryFromTbl(sourceName, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
@@ -669,6 +666,27 @@ func setupPreloadModules(L *lua.LState) {
 	L.PreloadModule("lf.ui", lfUIModuleLoader)
 }
 
+// loadLuaPluginOptionValue loads option and local option defined in Lua script.
+// This process may trigger other Lua message call, it has to be seperated from
+// other registry load.
+func loadLuaPluginOptionValue(app *app) {
+	L, err := gLuaPool.get()
+	defer gLuaPool.put(L)
+
+	if err != nil {
+		app.ui.echoerrf("failed to initialize async Lua state")
+		return
+	}
+
+	registryMap, ok := gLuaRegistry.stateDataMap[L]
+	if ok {
+		for _, tbl := range registryMap {
+			loadLocalOptionRegistryFromTbl(L, app, tbl)
+			loadOptionRegistryFromTbl(L, app, tbl)
+		}
+	}
+}
+
 // initializeLua load plugin scripts, and initialize Lua state.
 //
 // P.S.: this function modify global option and registry, this function should
@@ -689,6 +707,7 @@ func initializeLua(app *app) {
 	}
 
 	gLuaPool.initializeState(app)
+	loadLuaPluginOptionValue(app)
 }
 
 // luaPluginReload reset Lua state, Lua registry, then reload Lua script again.
@@ -711,6 +730,7 @@ func luaPluginReload(app *app) {
 	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
 	gLuaPool.initializeState(app)
+	loadLuaPluginOptionValue(app)
 
 	app.ui.echo("Lua plugins reloaded")
 }
@@ -1213,7 +1233,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 			return
 		}
 
-		log.Printf("add sort method: %s", msg)
+		log.Printf("add sort method: %s", name)
 	})
 }
 
