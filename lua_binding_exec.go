@@ -148,10 +148,27 @@ func luaCmdMetaTostring(L *lua.LState) int {
 
 // ----------------------------------------------------------------------------
 
-// luaCmdEnviron returns a copy of command's environment variable list as table.
+// luaCmdEnviron is a getter & setter for environment variable list of Cmd.
+// When used as a getter, it returns a copy of command's environment variable
+// list as table.
 // Every environment variable is set in form of a `<key>=<value>` string.
 func luaCmdEnviron(L *lua.LState) int {
 	cmd := lCheckCmd(L, 1)
+
+	if L.GetTop() >= 2 {
+		kvList := L.CheckTable(2)
+		nElem := kvList.Len()
+		env := make([]string, nElem)
+
+		for i := 0; i < nElem; i++ {
+			env[i] = kvList.RawGetInt(i + 1).String()
+		}
+		cmd.Env = env
+
+		L.Push(kvList)
+
+		return 1
+	}
 
 	env := cmd.Environ()
 

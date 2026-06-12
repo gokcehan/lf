@@ -9,6 +9,7 @@ import (
 	"log"
 	"maps"
 	"os"
+	"os/exec"
 	"path/filepath"
 	"reflect"
 	"slices"
@@ -31,13 +32,18 @@ const luaMsgMetaKeyIsAsync = "is_async"
 const (
 	registryKeyCommand       = "command"
 	registryKeyEventHook     = "event_hook"
-	registryKeyLocalOption   = "local_option"
 	registryKeyKeyMap        = "key_map"
+	registryKeyLocalOption   = "local_option"
 	registryKeyOption        = "option"
 	registryKeyPreviewer     = "previewer"
+	registryKeyShell         = "shell"
 	registryKeySortingMethod = "sorting_method"
 	registryKeyUIFormatter   = "ui_formatter"
 	registryKeyUIStyle       = "ui_style"
+)
+
+const (
+	luaMsgShellMakeCmd = "make_cmd"
 )
 
 const (
@@ -47,6 +53,8 @@ const (
 	luaEventHookActionFuncKey = "action"
 
 	luaKeyMapActionFuncKey = "action"
+
+	luaShellActionFuncKey = "action"
 
 	luaPreviewerActionFuncKey    = "action"
 	luaPreviewerCleanFuncKey     = "clean"
@@ -224,6 +232,7 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadEventHookRegistryFromTbl(sourceName, tbl)
 		loadKeyMapRegistryFromTbl(sourceName, tbl)
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
+		loadShellRegistryFromTbl(sourceName, tbl)
 		loadSortingMethodRegistryFromTbl(sourceName, tbl)
 		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
 		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
@@ -451,6 +460,7 @@ var gLuaRegistry struct {
 
 	eventHooks    map[string][]*luaMsgExpr
 	previewers    []luaPreviewerInfo
+	shell         map[string]*luaMsgExpr
 	sortingMethod map[string]*luaMsgExpr
 	uiFormatter   map[string]*luaMsgExpr
 	uiStyleMap    map[string]tcell.Style
@@ -763,6 +773,7 @@ func luaPluginReload(app *app) {
 	gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
 	gLuaRegistry.eventHooks = make(map[string][]*luaMsgExpr)
 	gLuaRegistry.previewers = nil
+	gLuaRegistry.shell = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
@@ -894,72 +905,6 @@ func loadEventHookRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	})
 }
 
-// loadLocalPreviewerRegistryFromTbl loads option value from table returned from plugin script.
-func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
-	registryKey := registryKeyLocalOption
-	registryTbl := tbl.RawGetString(registryKey)
-	switch registryTbl.Type() {
-	case lua.LTNil:
-		return
-	case lua.LTTable:
-		// ok
-	default:
-		log.Printf("registry field `%s` is not a table", registryKey)
-		return
-	}
-
-	registryTbl.(*lua.LTable).ForEach(func(pathKey, optionTbl lua.LValue) {
-		if pathKey.Type() != lua.LTString {
-			log.Printf("local option registry key is expected to be string, found %s: %s", pathKey.Type(), pathKey)
-			return
-		}
-
-		path := string(pathKey.(lua.LString))
-
-		if optionTbl.Type() != lua.LTTable {
-			app.ui.echoerrf("registry value for local option group `%s` is not a table", path)
-			return
-		}
-
-		optionTbl.(*lua.LTable).ForEach(func(optionKey, optionValue lua.LValue) {
-			if optionKey.Type() != lua.LTString {
-				app.ui.echoerrf("local option group option key is expected to be string, found %s: %s", optionKey.Type(), optionKey)
-				return
-			}
-
-			option := string(optionKey.(lua.LString))
-
-			switch optionValue.Type() {
-			case lua.LTString:
-				expr := &setLocalExpr{path: path, opt: option, val: string(optionValue.(lua.LString))}
-				expr.eval(app, nil)
-			case lua.LTFunction:
-				err := L.CallByParam(lua.P{
-					Fn:      optionValue.(*lua.LFunction),
-					NRet:    1,
-					Protect: true,
-				})
-				if err != nil {
-					app.ui.echoerrf("failed to evaluate local option `%s`, see log for more detail", option)
-					log.Printf("failed to run function for local option `%s` `%s`: %s", path, option, err)
-				}
-
-				defer L.Pop(1)
-				ret := L.Get(-1)
-				if ret.Type() == lua.LTString {
-					expr := &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
-					expr.eval(app, nil)
-				} else {
-					app.ui.echoerrf("Lua function for local option `%s` `%s` does not return string value", path, option)
-				}
-			default:
-				log.Printf("unsupported local option registry value type for %s %s", path, option)
-				return
-			}
-		})
-	})
-}
-
 // loadKeyMapRegistryFromTbl registers key maps defined in table returned from plugin
 // script.
 func loadKeyMapRegistryFromTbl(sourceName string, tbl *lua.LTable) {
@@ -1047,6 +992,72 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 	if keyMapCnt > 0 {
 		log.Printf("added %d %s key map", keyMapCnt, displayName)
 	}
+}
+
+// loadLocalPreviewerRegistryFromTbl loads option value from table returned from plugin script.
+func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
+	registryKey := registryKeyLocalOption
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	registryTbl.(*lua.LTable).ForEach(func(pathKey, optionTbl lua.LValue) {
+		if pathKey.Type() != lua.LTString {
+			log.Printf("local option registry key is expected to be string, found %s: %s", pathKey.Type(), pathKey)
+			return
+		}
+
+		path := string(pathKey.(lua.LString))
+
+		if optionTbl.Type() != lua.LTTable {
+			app.ui.echoerrf("registry value for local option group `%s` is not a table", path)
+			return
+		}
+
+		optionTbl.(*lua.LTable).ForEach(func(optionKey, optionValue lua.LValue) {
+			if optionKey.Type() != lua.LTString {
+				app.ui.echoerrf("local option group option key is expected to be string, found %s: %s", optionKey.Type(), optionKey)
+				return
+			}
+
+			option := string(optionKey.(lua.LString))
+
+			switch optionValue.Type() {
+			case lua.LTString:
+				expr := &setLocalExpr{path: path, opt: option, val: string(optionValue.(lua.LString))}
+				expr.eval(app, nil)
+			case lua.LTFunction:
+				err := L.CallByParam(lua.P{
+					Fn:      optionValue.(*lua.LFunction),
+					NRet:    1,
+					Protect: true,
+				})
+				if err != nil {
+					app.ui.echoerrf("failed to evaluate local option `%s`, see log for more detail", option)
+					log.Printf("failed to run function for local option `%s` `%s`: %s", path, option, err)
+				}
+
+				defer L.Pop(1)
+				ret := L.Get(-1)
+				if ret.Type() == lua.LTString {
+					expr := &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
+					expr.eval(app, nil)
+				} else {
+					app.ui.echoerrf("Lua function for local option `%s` `%s` does not return string value", path, option)
+				}
+			default:
+				log.Printf("unsupported local option registry value type for %s %s", path, option)
+				return
+			}
+		})
+	})
 }
 
 // loadPreviewerRegistryFromTbl loads option value from table returned from plugin script.
@@ -1209,6 +1220,63 @@ func setLuaPreviewerPriority(name string, priority int, withSort bool) bool {
 	return changed
 }
 
+// loadShellRegistryFromTbl loads shell relative registry entry.
+func loadShellRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyShell
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	if gLuaRegistry.shell == nil {
+		gLuaRegistry.shell = make(map[string]*luaMsgExpr)
+	}
+
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("shell registry key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		msg := key.String()
+		switch msg {
+		case luaMsgShellMakeCmd:
+			// ok
+		default:
+			log.Println("unsupported shell registry entry key:", msg)
+			return
+		}
+
+		switch value.Type() {
+		case lua.LTFunction:
+			gLuaRegistry.shell[msg] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isAsync:    false,
+			}
+		case lua.LTTable:
+			gLuaRegistry.shell[msg] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        msg,
+				variant:    luaMsgVariantMain,
+				isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
+			}
+		default:
+			log.Printf("unsupported shell registry value for key: %s", msg)
+			return
+		}
+	})
+}
+
 // loadSortingMethodRegistryFromTbl registers sort methods defined in table returned
 // from plugin script.
 func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
@@ -1224,14 +1292,14 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 		return
 	}
 
+	if gLuaRegistry.sortingMethod == nil {
+		gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
+	}
+
 	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
 		if key.Type() != lua.LTString {
 			log.Printf("sort method registry key is expected to be string, found %s: %s", key.Type(), key)
 			return
-		}
-
-		if gLuaRegistry.sortingMethod == nil {
-			gLuaRegistry.sortingMethod = make(map[string]*luaMsgExpr)
 		}
 
 		msg := key.String()
@@ -2201,4 +2269,35 @@ func getLuaUIStyleWithDefaultStr(name string, defaultFmtStr string) tcell.Style 
 		style = parseEscapeSequence(defaultFmtStr)
 	}
 	return style
+}
+
+// getLuaShellMsg returns shell message with given name. If no such message exists,
+// this function returns nil.
+func getLuaShellMsg(name string) *luaMsgExpr {
+	return gLuaRegistry.shell[name]
+}
+
+// makeShellCmdWithLuaMsg creates `exec.Cmd` object by calling Lua message.
+func makeShellCmdWithLuaMsg(expr *luaMsgExpr, cmd_name string, args []string) (*exec.Cmd, error) {
+	ret, err := callLuaMsgExpr(expr, makeLuaMsgArgsWrapper(cmd_name, args))
+	if err != nil {
+		return nil, err
+	}
+
+	if len(ret) <= 0 {
+		return nil, fmt.Errorf("Lua shell command maker returns nonthing")
+	}
+
+	ret1 := ret[0]
+	ud, ok := ret1.(*lua.LUserData)
+	if !ok {
+		return nil, fmt.Errorf("return value #1 of Lua shell command maker is not a userdata")
+	}
+
+	cmd, ok := ud.Value.(*exec.Cmd)
+	if !ok {
+		return nil, fmt.Errorf("return value #1 of Lua shell command is not a Cmd object")
+	}
+
+	return cmd, nil
 }
