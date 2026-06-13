@@ -1,6 +1,8 @@
 package main
 
 import (
+	"fmt"
+
 	"github.com/clipperhouse/displaywidth"
 	lua "github.com/yuin/gopher-lua"
 )
@@ -9,6 +11,15 @@ func lfUIModuleLoader(L *lua.LState) int {
 	mod := L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"print_length":  lfUIModulePrintLength,
 		"display_width": lfUIModuleDisplayWidth,
+
+		"get_formatter":                   luaMainModuleGetUIFormatter,
+		"call_formatter_with_default_str": luaUIModuleCallFormatterWithDefaultStr,
+		"get_style_with_default_str":      luaUIModuleGetStyleWithDefaultStr,
+		"format_option_str":               luaUIModuleFormatUIOptionStr,
+		"get_file_display_info":           luaUIModuleGetFileDisplayInfo,
+		"truncate_filename":               luaUIModuleTruncateFilename,
+		"option_to_fmtstr":                luaUIModuleOptionToFmtstr,
+		"strip_term_sequence":             luaUIModuleStripTermSequence,
 	})
 
 	L.Push(mod)
@@ -31,5 +42,103 @@ func lfUIModulePrintLength(L *lua.LState) int {
 func lfUIModuleDisplayWidth(L *lua.LState) int {
 	str := L.CheckString(1)
 	L.Push(lua.LNumber(displaywidth.String(str)))
+	return 1
+}
+
+func luaMainModuleGetUIFormatter(L *lua.LState) int {
+	name := L.CheckString(1)
+	formatter := getLuaUIFormatter(name)
+	return lAddLuaMsgExprToState(L, formatter)
+}
+
+func luaUIModuleCallFormatterWithDefaultStr(L *lua.LState) int {
+	name := L.CheckString(1)
+	defaultFmtStr := L.CheckString(2)
+	nArgs := L.GetTop()
+
+	expr := getLuaUIFormatter(name)
+	if expr == nil {
+		offset := 3
+		param := make([]any, nArgs-offset+1)
+		for i := offset; i <= nArgs; i++ {
+			param[i-offset] = L.Get(i).String()
+		}
+
+		result := fmt.Sprintf(optionToFmtstr(defaultFmtStr), param...)
+		L.Push(lua.LString(result))
+
+		return 1
+	}
+
+	action, err := getLuaMsgAction(L, expr.sourceName, expr.registry, expr.msg, expr.variant)
+	if err != nil {
+		L.RaiseError(err.Error())
+		return 0
+	}
+
+	L.Replace(1, action)
+	for i := 2; i <= nArgs; i++ {
+		L.Replace(i, L.Get(i+1))
+	}
+	L.Call(L.GetTop()-1, lua.MultRet)
+
+	return L.GetTop()
+}
+
+func luaUIModuleGetStyleWithDefaultStr(L *lua.LState) int {
+	name := L.CheckString(1)
+	defaultFmtStr := L.CheckString(2)
+	st := getLuaUIStyleWithDefaultStr(name, defaultFmtStr)
+	return lAddTcellStyleToState(L, &st)
+}
+
+func luaUIModuleFormatUIOptionStr(L *lua.LState) int {
+	fmtStr := L.CheckString(1)
+
+	offset := 2
+	nArg := L.GetTop()
+	param := make([]any, nArg-offset+1)
+	for i := offset; i <= nArg; i++ {
+		param[i-offset] = L.Get(i).String()
+	}
+
+	result := fmt.Sprintf(optionToFmtstr(fmtStr), param...)
+	L.Push(lua.LString(result))
+
+	return 1
+}
+
+func luaUIModuleGetFileDisplayInfo(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	dir := lCheckDir(L, 2)
+	userWidth := L.CheckInt(3)
+	groupWidth := L.CheckInt(4)
+	customWidth := L.CheckInt(5)
+
+	info, custom, customOff := fileInfo(file, dir, userWidth, groupWidth, customWidth)
+	L.Push(lua.LString(info))
+	L.Push(lua.LString(custom))
+	L.Push(lua.LNumber(customOff))
+
+	return 3
+}
+
+func luaUIModuleTruncateFilename(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	maxWidth := L.CheckInt(2)
+	filename := truncateFilename(file, maxWidth, gOpts.truncatepct, gOpts.truncatechar)
+	L.Push(lua.LString(filename))
+	return 1
+}
+
+func luaUIModuleOptionToFmtstr(L *lua.LState) int {
+	str := L.CheckString(1)
+	L.Push(lua.LString(optionToFmtstr(str)))
+	return 1
+}
+
+func luaUIModuleStripTermSequence(L *lua.LState) int {
+	str := L.CheckString(1)
+	L.Push(lua.LString(stripTermSequence(str)))
 	return 1
 }

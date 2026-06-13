@@ -3,6 +3,7 @@ package main
 import (
 	"fmt"
 	"log"
+	"slices"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -1258,6 +1259,8 @@ func lRegisterUIType(L *lua.LState) *lua.LTable {
 		"echomsg":  luaUIEchoMsg,
 		"echoerr":  luaUIEchhoErr,
 		"echoerrf": luaUIEchhoErrf,
+
+		"screen": luaUiScreen,
 	}))
 
 	return mt
@@ -1296,6 +1299,11 @@ func lAddUIToState(L *lua.LState, data *ui) int {
 }
 
 // ----------------------------------------------------------------------------
+
+func luaUiScreen(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	return lAddTcellScreenToState(L, ui.screen)
+}
 
 // luaUIEcho prints content to lf message bar.
 func luaUIEcho(L *lua.LState) int {
@@ -1364,50 +1372,57 @@ func luaUIEchhoErrf(L *lua.LState) int {
 }
 
 // ----------------------------------------------------------------------------
-// type luaFuncWriter
+// type win
 
-const luaFuncWriterTypeName = "lf.FuncWriter"
+const LuaWinTypeName = "lf.win"
 
-func lRegisterFuncWriterType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(luaFuncWriterTypeName)
+func lRegisterWinType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaWinTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
-		"new": luaFuncWriterNew,
+		"new": luaWinNew,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"write": luaFuncWriterWrite,
+		"w": luaWinW,
+		"h": luaWinH,
+		"x": luaWinX,
+		"y": luaWinY,
+
+		"renew": luaWinRenew,
+
+		"print": luaWinPrint,
 	}))
 
 	return mt
 }
 
-func lCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
+func lCheckWin(L *lua.LState, index int) *win {
 	ud := L.CheckUserData(index)
-	if v, ok := ud.Value.(*luaFuncWriter); ok {
+	if v, ok := ud.Value.(*win); ok {
 		return v
 	}
 
-	L.ArgError(index, "value of type `FuncWriter` expected")
+	L.ArgError(index, "value of type `Win` expected")
 
 	return nil
 }
 
-func lWrapFuncWriter(L *lua.LState, data *luaFuncWriter) *lua.LUserData {
+func lWrapWin(L *lua.LState, data *win) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(luaFuncWriterTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaWinTypeName))
 
 	return ud
 }
 
-func lAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
+func lAddWinToState(L *lua.LState, data *win) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	ud := lWrapFuncWriter(L, data)
+	ud := lWrapWin(L, data)
 	L.Push(ud)
 
 	return 1
@@ -1415,30 +1430,189 @@ func lAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
 
 // ----------------------------------------------------------------------------
 
-func luaFuncWriterNew(L *lua.LState) int {
-	fn := L.CheckFunction(1)
-	writer := &luaFuncWriter{
-		luaState: L,
-		fn:       fn,
-	}
-	return lAddFuncWriterToState(L, writer)
+func luaWinNew(L *lua.LState) int {
+	w := L.CheckInt(1)
+	h := L.CheckInt(1)
+	x := L.CheckInt(1)
+	y := L.CheckInt(1)
+
+	return lAddWinToState(L, newWin(w, h, x, y))
 }
 
 // ----------------------------------------------------------------------------
 
-func luaFuncWriterWrite(L *lua.LState) int {
-	writer := lCheckFuncWriter(L, 1)
-	content := L.CheckString(2)
+func luaWinW(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	L.Push(lua.LNumber(win.w))
+	return 1
+}
 
-	n, err := writer.Write([]byte(content))
-	L.Push(lua.LNumber(n))
+func luaWinH(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	L.Push(lua.LNumber(win.h))
+	return 1
+}
 
-	if err != nil {
-		L.Push(lua.LString(err.Error()))
-		return 2
+func luaWinX(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	L.Push(lua.LNumber(win.x))
+	return 1
+}
+
+func luaWinY(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	L.Push(lua.LNumber(win.y))
+	return 1
+}
+
+func luaWinRenew(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	w := L.CheckInt(1)
+	h := L.CheckInt(1)
+	x := L.CheckInt(1)
+	y := L.CheckInt(1)
+
+	win.renew(w, h, x, y)
+
+	return 0
+}
+
+func luaWinPrint(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	screen := lCheckTcellScreen(L, 2)
+	x := L.CheckInt(3)
+	y := L.CheckInt(4)
+	st := lCheckTcellStyle(L, 5)
+	str := L.CheckString(6)
+
+	result := win.print(screen, x, y, *st, str)
+
+	return lAddTcellStyleToState(L, &result)
+}
+
+// ----------------------------------------------------------------------------
+// type dirStyle
+
+const LuaDirStyleTypeName = "lf.dirStyle"
+
+func lRegisterDirStyleType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaDirStyleTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"colors": luaDirStyleColors,
+		"icons":  luaDirStyleIcons,
+		"role":   luaDirStyleRole,
+	}))
+
+	return mt
+}
+
+func lCheckDirStyle(L *lua.LState, index int) *dirStyle {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*dirStyle); ok {
+		return v
 	}
 
+	L.ArgError(index, "value of type `DirStyle` expected")
+
+	return nil
+}
+
+func lWrapDirStyle(L *lua.LState, data *dirStyle) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaDirStyleTypeName))
+
+	return ud
+}
+
+func lAddDirStyleToState(L *lua.LState, data *dirStyle) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapDirStyle(L, data)
+	L.Push(ud)
+
 	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaDirStyleColors(L *lua.LState) int {
+	dirSt := lCheckDirStyle(L, 1)
+	return lAddStyleMapToState(L, &dirSt.colors)
+}
+
+func luaDirStyleIcons(L *lua.LState) int {
+	dirSt := lCheckDirStyle(L, 1)
+	return lAddIconMapToState(L, &dirSt.icons)
+}
+
+func luaDirStyleRole(L *lua.LState) int {
+	dirSt := lCheckDirStyle(L, 1)
+	L.Push(lua.LNumber(dirSt.role))
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+// type styleMap
+
+const LuaStyleMapTypeName = "lf.styleMap"
+
+func lRegisterStyleMapType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaStyleMapTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"get": luaStyleMapGet,
+	}))
+
+	return mt
+}
+
+func lCheckStyleMap(L *lua.LState, index int) *styleMap {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*styleMap); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `StyleMap` expected")
+
+	return nil
+}
+
+func lWrapStyleMap(L *lua.LState, data *styleMap) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaStyleMapTypeName))
+
+	return ud
+}
+
+func lAddStyleMapToState(L *lua.LState, data *styleMap) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapStyleMap(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaStyleMapGet(L *lua.LState) int {
+	stMap := lCheckStyleMap(L, 1)
+	file := lCheckFile(L, 2)
+	st := stMap.get(file)
+	return lAddTcellStyleToState(L, &st)
 }
 
 // ----------------------------------------------------------------------------
@@ -1569,4 +1743,442 @@ func luaIconMapGet(L *lua.LState) int {
 	file := lCheckFile(L, 2)
 	def := im.get(file)
 	return lAddIconDefToState(L, &def)
+}
+
+// ----------------------------------------------------------------------------
+// type printDirEntryContext
+
+const LuaPrintDirEntryContextTypeName = "lf.printDirEntryContext"
+
+func lRegisterPrintDirEntryContextType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaPrintDirEntryContextTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"dir":       luaPrintDirEntryContextDir,
+		"dir_beg":   luaPrintDirEntryContextDirBeg,
+		"dir_end":   luaPrintDirEntryContextDirEnd,
+		"dir_style": luaPrintDirEntryContextDirStyle,
+
+		"lnwidth":      luaPrintDirEntryContextLnwidth,
+		"user_width":   luaPrintDirEntryContextUserWidth,
+		"group_width":  luaPrintDirEntryContextGroupWidth,
+		"custom_width": luaPrintDirEntryContextCustomWidth,
+
+		"selections":         luaPrintDirEntryContextSelections,
+		"clipboard":          luaPrintDirEntryContextClipboard,
+		"tags":               luaPrintDirEntryContextTags,
+		"visual_selectioins": luaPrintDirEntryContextVisualSelections,
+
+		"get_selection_index":      luaPrintDirEntryContextGetSelectionIndex,
+		"visual_selection_contain": luaPrintDirEntryContextVisualSelectionsContain,
+		"get_tag":                  luaPrintDirEntryContextGetTag,
+	}))
+
+	return mt
+}
+
+func lCheckPrintDirEntryContext(L *lua.LState, index int) *printDirEntryContext {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*printDirEntryContext); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `PrintDirEntryContext` expected")
+
+	return nil
+}
+
+func lWrapPrintDirEntryContext(L *lua.LState, data *printDirEntryContext) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaPrintDirEntryContextTypeName))
+
+	return ud
+}
+
+func lAddPrintDirEntryContextToState(L *lua.LState, data *printDirEntryContext) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapPrintDirEntryContext(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaPrintDirEntryContextDir(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	return lAddDirToState(L, context.dir)
+}
+
+func luaPrintDirEntryContextDirBeg(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.dirBeg))
+	return 1
+}
+
+func luaPrintDirEntryContextDirEnd(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.dirEnd))
+	return 1
+}
+
+func luaPrintDirEntryContextDirStyle(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	return lAddDirStyleToState(L, context.dirStyle)
+}
+
+func luaPrintDirEntryContextLnwidth(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.lnwidth))
+	return 1
+}
+
+func luaPrintDirEntryContextUserWidth(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.userWidth))
+	return 1
+}
+
+func luaPrintDirEntryContextGroupWidth(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.groupWidth))
+	return 1
+}
+
+func luaPrintDirEntryContextCustomWidth(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	L.Push(lua.LNumber(context.customWidth))
+	return 1
+}
+
+func luaPrintDirEntryContextSelections(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+
+	tbl := L.NewTable()
+	for k, v := range context.selections {
+		tbl.RawSetString(k, lua.LNumber(v))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+func luaPrintDirEntryContextClipboard(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	return lAddClipboardToState(L, &context.clipboard)
+}
+
+func luaPrintDirEntryContextTags(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+
+	tbl := L.NewTable()
+	for k, v := range context.tags {
+		tbl.RawSetString(k, lua.LString(v))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+func luaPrintDirEntryContextVisualSelections(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+
+	tbl := L.NewTable()
+	for _, v := range context.visualSelections {
+		tbl.Append(lua.LString(v))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+// luaPrintDirEntryContextGetSelectionIndex returns 1-based selection index of
+// given path, returns 0 when that path is not selected.
+func luaPrintDirEntryContextGetSelectionIndex(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	path := L.CheckString(2)
+
+	index, found := context.selections[path]
+	if found {
+		L.Push(lua.LNumber(index + 1))
+	} else {
+		L.Push(lua.LNumber(0))
+	}
+
+	return 1
+}
+
+// luaPrintDirEntryContextVisualSelectionsContain checks if visual selection
+// contains given path.
+func luaPrintDirEntryContextVisualSelectionsContain(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	path := L.CheckString(2)
+
+	found := slices.Contains(context.visualSelections, path)
+	L.Push(lua.LBool(found))
+
+	return 1
+}
+
+// luaPrintDirEntryContextGetTag returns tag of given path, returns `nil` when
+// no tag is set for target path.
+func luaPrintDirEntryContextGetTag(L *lua.LState) int {
+	context := lCheckPrintDirEntryContext(L, 1)
+	path := L.CheckString(2)
+
+	tag, ok := context.tags[path]
+	if ok {
+		L.Push(lua.LString(tag))
+	} else {
+		L.Push(lua.LNil)
+	}
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+// type clipboard
+
+const LuaClipboardTypeName = "lf.clipboard"
+
+func lRegisterClipboardType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaClipboardTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"paths":         luaClipboardPaths,
+		"mode":          luaClipboardMode,
+		"iter_path":     luaClipboardIterPath,
+		"contains_path": luaClipboardPathsContain,
+	}))
+
+	return mt
+}
+
+func lCheckClipboard(L *lua.LState, index int) *clipboard {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*clipboard); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `Clipboard` expected")
+
+	return nil
+}
+
+func lWrapClipboard(L *lua.LState, data *clipboard) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaClipboardTypeName))
+
+	return ud
+}
+
+func lAddClipboardToState(L *lua.LState, data *clipboard) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapClipboard(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaClipboardPaths(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+
+	tbl := L.NewTable()
+	for _, path := range board.paths {
+		tbl.Append(lua.LString(path))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+func luaClipboardMode(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+	L.Push(lua.LNumber(board.mode))
+	return 1
+}
+
+func luaClipboardIterPath(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]string)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lua.LString(list[index]))
+
+		return 2
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = board.paths
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
+}
+
+func luaClipboardPathsContain(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+	path := L.CheckString(2)
+	found := slices.Contains(board.paths, path)
+	L.Push(lua.LBool(found))
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+// type luaMsgExpr
+
+const LuaLuaMsgExprTypeName = "lf.luaMsgExpr"
+
+func lRegisterLuaMsgExprType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaLuaMsgExprTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{}))
+
+	return mt
+}
+
+func lCheckLuaMsgExpr(L *lua.LState, index int) *luaMsgExpr {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*luaMsgExpr); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `LuaMsgExpr` expected")
+
+	return nil
+}
+
+func lWrapLuaMsgExpr(L *lua.LState, data *luaMsgExpr) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaLuaMsgExprTypeName))
+
+	return ud
+}
+
+func lAddLuaMsgExprToState(L *lua.LState, data *luaMsgExpr) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapLuaMsgExpr(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+// type luaFuncWriter
+
+const luaFuncWriterTypeName = "lf.FuncWriter"
+
+func lRegisterFuncWriterType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaFuncWriterTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{
+		"new": luaFuncWriterNew,
+	})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"write": luaFuncWriterWrite,
+	}))
+
+	return mt
+}
+
+func lCheckFuncWriter(L *lua.LState, index int) *luaFuncWriter {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*luaFuncWriter); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `FuncWriter` expected")
+
+	return nil
+}
+
+func lWrapFuncWriter(L *lua.LState, data *luaFuncWriter) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(luaFuncWriterTypeName))
+
+	return ud
+}
+
+func lAddFuncWriterToState(L *lua.LState, data *luaFuncWriter) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapFuncWriter(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaFuncWriterNew(L *lua.LState) int {
+	fn := L.CheckFunction(1)
+	writer := &luaFuncWriter{
+		luaState: L,
+		fn:       fn,
+	}
+	return lAddFuncWriterToState(L, writer)
+}
+
+// ----------------------------------------------------------------------------
+
+func luaFuncWriterWrite(L *lua.LState) int {
+	writer := lCheckFuncWriter(L, 1)
+	content := L.CheckString(2)
+
+	n, err := writer.Write([]byte(content))
+	L.Push(lua.LNumber(n))
+
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+
+	return 1
 }

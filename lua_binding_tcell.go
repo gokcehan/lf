@@ -370,3 +370,51 @@ func luaTcellColorNewPalette(L *lua.LState) int {
 	color := tcell.PaletteColor(index)
 	return lAddTcellColorToState(L, &color)
 }
+
+// ----------------------------------------------------------------------------
+// type tcell.Screen
+
+const LuaTcellScreenTypeName = "tcell.Screen"
+
+func lRegisterTcellScreenType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaTcellScreenTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{}))
+
+	return mt
+}
+
+func lCheckTcellScreen(L *lua.LState, index int) tcell.Screen {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(tcell.Screen); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `TcellScreen` expected")
+
+	return nil
+}
+
+func lWrapTcellScreen(L *lua.LState, data tcell.Screen) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaTcellScreenTypeName))
+
+	return ud
+}
+
+func lAddTcellScreenToState(L *lua.LState, data tcell.Screen) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapTcellScreen(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------

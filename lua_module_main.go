@@ -28,8 +28,12 @@ func lfMainModuleLoader(L *lua.LState) int {
 		"get_opt":       luaMainModuleGetOptionValue,
 		"get_local_opt": luaMainModuleGetLocalOptionValue,
 
-		"glob_match": luaMainModuleGlobMatch,
-		"match_word": luaMainModuleMatchWord,
+		"call_msg_expr": luaMainModuleCallMsgExpr,
+
+		"glob_match":     luaMainModuleGlobMatch,
+		"match_word":     luaMainModuleMatchWord,
+		"str_fill":       luaMainModuleStrFill,
+		"str_fill_right": luaMainModuleStrFillRight,
 	})
 
 	setupModuleConstants(L, mod)
@@ -40,6 +44,19 @@ func lfMainModuleLoader(L *lua.LState) int {
 }
 
 func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
+	// clipboard mode
+	clipboardMode := L.NewTable()
+	clipboardMode.RawSetString("Copy", lua.LNumber(clipboardCopy))
+	clipboardMode.RawSetString("Cut", lua.LNumber(clipboardCut))
+	mod.RawSetString("ClipboardMode", clipboardMode)
+
+	// dir role
+	dirRole := L.NewTable()
+	dirRole.RawSetString("Active", lua.LNumber(Active))
+	dirRole.RawSetString("Parent", lua.LNumber(Parent))
+	dirRole.RawSetString("Preview", lua.LNumber(Preview))
+	mod.RawSetString("DirRole", dirRole)
+
 	// event type
 	eventType := L.NewTable()
 	eventType.RawSetString("PreCd", lua.LString("pre-cd"))
@@ -67,6 +84,33 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	keyMapType.RawSetString("Visual", lua.LString(luaKeyMapTypeVisual))
 	keyMapType.RawSetString("Command", lua.LString(luaKeyMapTypeCommand))
 	mod.RawSetString("KeyMapType", keyMapType)
+
+	// ui formatter type
+	uiFormatterType := L.NewTable()
+	uiFormatterType.RawSetString("cursoractive", lua.LString(luaUIFormatterCursorActive))
+	uiFormatterType.RawSetString("cursorparent", lua.LString(luaUIFormatterCursorParent))
+	uiFormatterType.RawSetString("cursorpreview", lua.LString(luaUIFormatterCursorPreview))
+	uiFormatterType.RawSetString("dupfile", lua.LString(luaUIFormatterDupFile))
+	uiFormatterType.RawSetString("error", lua.LString(luaUIFormatterError))
+	uiFormatterType.RawSetString("file", lua.LString(luaUIFormatterFile))
+	uiFormatterType.RawSetString("numbercursor", lua.LString(luaUIFormatterNumberCursor))
+	uiFormatterType.RawSetString("number", lua.LString(luaUIFormatterNumber))
+	uiFormatterType.RawSetString("ruler", lua.LString(luaUIFormatterRuler))
+	uiFormatterType.RawSetString("prompt", lua.LString(luaUIFormatterPrompt))
+	uiFormatterType.RawSetString("tag", lua.LString(luaUIFormatterTag))
+	mod.RawSetString("UIFormatterType", uiFormatterType)
+
+	// ui style type
+	uiStyleType := L.NewTable()
+	uiStyleType.RawSetString("border", lua.LString(luaUIStyleBorder))
+	uiStyleType.RawSetString("copy", lua.LString(luaUIStyleCopy))
+	uiStyleType.RawSetString("cut", lua.LString(luaUIStyleCut))
+	uiStyleType.RawSetString("menu", lua.LString(luaUIStyleMenu))
+	uiStyleType.RawSetString("menuheader", lua.LString(luaUIStyleMenuheader))
+	uiStyleType.RawSetString("menuselect", lua.LString(luaUIStyleMenuselect))
+	uiStyleType.RawSetString("select", lua.LString(luaUIStyleSelect))
+	uiStyleType.RawSetString("visual", lua.LString(luaUIStyleVisual))
+	mod.RawSetString("UIStyleType", uiStyleType)
 }
 
 // ----------------------------------------------------------------------------
@@ -432,6 +476,23 @@ func luaMainModuleGetLocalOptionValue(L *lua.LState) int {
 
 // ----------------------------------------------------------------------------
 
+func luaMainModuleCallMsgExpr(L *lua.LState) int {
+	expr := lCheckLuaMsgExpr(L, 1)
+
+	action, err := getLuaMsgAction(L, expr.sourceName, expr.registry, expr.msg, expr.variant)
+	if err != nil {
+		L.RaiseError(err.Error())
+		return 0
+	}
+
+	L.Replace(1, action)
+	L.Call(L.GetTop()-1, lua.MultRet)
+
+	return L.GetTop()
+}
+
+// ----------------------------------------------------------------------------
+
 // luaMainModuleGlobMatch checks if a pattern matches certain string.
 func luaMainModuleGlobMatch(L *lua.LState) int {
 	pattern := L.CheckString(1)
@@ -475,4 +536,60 @@ func luaMainModuleMatchWord(L *lua.LState) int {
 	L.Push(lua.LString(longest))
 
 	return 2
+}
+
+func luaMainModuleStrFill(L *lua.LState) int {
+	base := L.CheckString(1)
+	width := L.CheckInt(2)
+	fillStrValue := L.Get(3)
+
+	fillStr := " "
+	switch fillStrValue.Type() {
+	case lua.LTString:
+		fillStr = string(fillStrValue.(lua.LString))
+	case lua.LTNil:
+		// pass
+	default:
+		L.ArgError(3, "a string is expected")
+	}
+
+	baseLen := len(base)
+	fillLen := len(fillStr)
+	repeatCnt := (width - baseLen) / fillLen
+	if repeatCnt <= 0 {
+		L.Push(lua.LString(base))
+		return 1
+	}
+
+	L.Push(lua.LString(strings.Repeat(fillStr, repeatCnt) + base))
+
+	return 1
+}
+
+func luaMainModuleStrFillRight(L *lua.LState) int {
+	base := L.CheckString(1)
+	width := L.CheckInt(2)
+	fillStrValue := L.Get(3)
+
+	fillStr := " "
+	switch fillStrValue.Type() {
+	case lua.LTString:
+		fillStr = string(fillStrValue.(lua.LString))
+	case lua.LTNil:
+		// pass
+	default:
+		L.ArgError(3, "a string is expected")
+	}
+
+	baseLen := len(base)
+	fillLen := len(fillStr)
+	repeatCnt := (width - baseLen) / fillLen
+	if repeatCnt <= 0 {
+		L.Push(lua.LString(base))
+		return 1
+	}
+
+	L.Push(lua.LString(base + strings.Repeat(fillStr, repeatCnt)))
+
+	return 1
 }

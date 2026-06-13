@@ -217,16 +217,17 @@ func luaFsModuleStat(L *lua.LState) int {
 func luaFsModuleReadDir(L *lua.LState) int {
 	path := L.CheckString(1)
 
-	files, err := readdir(path)
+	tbl := L.NewTable()
+
+	entries, err := os.ReadDir(path)
 	if err != nil {
-		L.Push(lua.LNil)
+		L.Push(tbl)
 		L.Push(lua.LString(err.Error()))
 		return 2
 	}
 
-	tbl := L.NewTable()
-	for _, f := range files {
-		tbl.Append(lWrapFile(L, f))
+	for _, entry := range entries {
+		tbl.Append(lWrapDirEntry(L, entry))
 	}
 
 	L.Push(tbl)

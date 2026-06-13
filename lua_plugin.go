@@ -44,6 +44,27 @@ const (
 
 const (
 	luaMiscMsgShell = "shell"
+
+	luaUIFormatterCursorActive  = "cursoractive"
+	luaUIFormatterCursorParent  = "cursorparent"
+	luaUIFormatterCursorPreview = "cursorpreview"
+	luaUIFormatterDupFile       = "dupfile"
+	luaUIFormatterError         = "error"
+	luaUIFormatterFile          = "file"
+	luaUIFormatterNumberCursor  = "numbercursor"
+	luaUIFormatterNumber        = "number"
+	luaUIFormatterRuler         = "ruler"
+	luaUIFormatterPrompt        = "prompt"
+	luaUIFormatterTag           = "tag"
+
+	luaUIStyleBorder     = "border"
+	luaUIStyleCopy       = "copy"
+	luaUIStyleCut        = "cut"
+	luaUIStyleMenu       = "menu"
+	luaUIStyleMenuheader = "menuheader"
+	luaUIStyleMenuselect = "menuselect"
+	luaUIStyleSelect     = "select"
+	luaUIStyleVisual     = "visual"
 )
 
 const (
@@ -674,12 +695,17 @@ func setupLuaTypeBindings(L *lua.LState) {
 	// main
 	lfTypes.RawSetString("App", lRegisterAppType(L))
 	lfTypes.RawSetString("CompMatch", lRegisterCompMatchType(L))
+	lfTypes.RawSetString("Clipboard", lRegisterClipboardType(L))
 	lfTypes.RawSetString("Dir", lRegisterDirType(L))
+	lfTypes.RawSetString("DirStyle", lRegisterDirStyleType(L))
 	lfTypes.RawSetString("File", lRegisterFileTypeMt(L))
 	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
 	lfTypes.RawSetString("IconDef", lRegisterIconDefType(L))
 	lfTypes.RawSetString("IconMap", lRegisterIconMapType(L))
 	lfTypes.RawSetString("Nav", lRegisterNavType(L))
+	lfTypes.RawSetString("PrintDirEntryContext", lRegisterPrintDirEntryContextType(L))
+	lfTypes.RawSetString("StyleMap", lRegisterStyleMapType(L))
+	lfTypes.RawSetString("Win", lRegisterWinType(L))
 	lfTypes.RawSetString("UI", lRegisterUIType(L))
 	// exec
 	lfTypes.RawSetString("Cmd", lRegisterCmdType(L))
@@ -1374,16 +1400,17 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 
 		option := key.String()
 		switch option {
-		case "cursoractive",
-			"cursorparent",
-			"cursorpreview",
-			"dupfile",
-			"error",
-			"numbercursor",
-			"number",
-			"ruler",
-			"prompt",
-			"tag":
+		case luaUIFormatterCursorActive,
+			luaUIFormatterCursorParent,
+			luaUIFormatterCursorPreview,
+			luaUIFormatterDupFile,
+			luaUIFormatterError,
+			luaUIFormatterNumberCursor,
+			luaUIFormatterNumber,
+			luaUIFormatterFile,
+			luaUIFormatterRuler,
+			luaUIFormatterPrompt,
+			luaUIFormatterTag:
 			// ok
 		default:
 			log.Println("unsupported UI formatter registry key:", option)
@@ -1445,14 +1472,14 @@ func loadUIStyleRegistryFromTbl(L *lua.LState, sourceName string, tbl *lua.LTabl
 		option := value
 
 		switch settingName {
-		case "border",
-			"copy",
-			"cut",
-			"menu",
-			"menuheader",
-			"menuselect",
-			"select",
-			"visual":
+		case luaUIStyleBorder,
+			luaUIStyleCopy,
+			luaUIStyleCut,
+			luaUIStyleMenu,
+			luaUIStyleMenuheader,
+			luaUIStyleMenuselect,
+			luaUIStyleSelect,
+			luaUIStyleVisual:
 			// ok
 		default:
 			log.Println("unsupported UI style registry key:", settingName)
@@ -1613,6 +1640,31 @@ func getLuaMsgEntry(L *lua.LState, sourceName string, registryKey string, msg st
 	handler := handlerTbl.RawGetString(msg)
 
 	return handler, nil
+}
+
+// getLuaMsgAction finds message action of specified message.
+func getLuaMsgAction(L *lua.LState, sourceName, registryKey, msg, variant string) (*lua.LFunction, error) {
+	entry, err := getLuaMsgEntry(L, sourceName, registryKey, msg)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get msg entry: %s", err)
+	}
+
+	var action *lua.LFunction
+	var extractor luaMsgActionExtractor
+	if extractorMap, ok := gLuaMsgActionExtractorMap[registryKey]; ok {
+		extractor = extractorMap[variant]
+	}
+
+	if extractor != nil {
+		action = extractor(L, entry)
+	} else {
+		action, _ = entry.(*lua.LFunction)
+	}
+	if action == nil {
+		return nil, fmt.Errorf("failed to get valid msg action function")
+	}
+
+	return action, nil
 }
 
 // makeLuaMsgArgsWrapper returns a luaMsgArgsMaker function that converts all
