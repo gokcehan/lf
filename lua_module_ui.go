@@ -72,7 +72,7 @@ func luaUIModuleCallFormatterWithDefaultStr(L *lua.LState) int {
 
 	action, err := getLuaMsgAction(L, expr.sourceName, expr.registry, expr.msg, expr.variant)
 	if err != nil {
-		L.RaiseError(err.Error())
+		L.RaiseError("%s", err)
 		return 0
 	}
 
