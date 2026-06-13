@@ -174,10 +174,11 @@ func lRegisterFileTypeMt(L *lua.LState) *lua.LTable {
 		"new": luaFileNew,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"name":   luaFileName,
-		"size":   luaFileSize,
-		"mode":   luaFileMode,
-		"is_dir": luaFileIsDir,
+		"name":     luaFileName,
+		"size":     luaFileSize,
+		"mode":     luaFileMode,
+		"mod_time": luaFileModTime,
+		"is_dir":   luaFileIsDir,
 
 		"link_state":  luaFileLinkState,
 		"link_target": luaFileLinkTarget,
@@ -266,6 +267,12 @@ func luaFileSize(L *lua.LState) int {
 func luaFileMode(L *lua.LState) int {
 	file := lCheckFile(L, 1)
 	return lAddFileModeToState(L, file.Mode())
+}
+
+func luaFileModTime(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	modTime := file.ModTime()
+	return lAddTimeToState(L, &modTime)
 }
 
 func luaFileIsDir(L *lua.LState) int {

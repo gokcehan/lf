@@ -24,12 +24,14 @@ func lRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 		"tostring": luaTcellStyleTostring,
 		"wrap":     luaTcellStyleWrap,
 
-		"foreground":      luaTcellStyleForeground,
-		"background":      luaTcellStyleBackground,
-		"foreground_rgb":  luaTcellStyleForegroundRGB,
-		"background_rgb":  luaTcellStyleBackgroundRGB,
-		"foreground_name": luaTcellStyleForegroundName,
-		"background_name": luaTcellStyleBackgroundName,
+		"foreground":         luaTcellStyleForeground,
+		"background":         luaTcellStyleBackground,
+		"foreground_rgb":     luaTcellStyleForegroundRGB,
+		"background_rgb":     luaTcellStyleBackgroundRGB,
+		"foreground_name":    luaTcellStyleForegroundName,
+		"background_name":    luaTcellStyleBackgroundName,
+		"foreground_palette": luaTcellStyleForegroundPalette,
+		"background_palette": luaTcellStyleBackgroundPalette,
 
 		"normal":         luaTcellStyleNormal,
 		"bold":           luaTcellStyleBold,
@@ -185,6 +187,26 @@ func luaTcellStyleBackgroundName(L *lua.LState) int {
 	name := L.CheckString(2)
 
 	*st = st.Background(tcell.GetColor(name))
+
+	return lAddTcellStyleToState(L, st)
+}
+
+// luaTcellStyleForegroundPalette sets foreground color with palette index.
+func luaTcellStyleForegroundPalette(L *lua.LState) int {
+	st := lCheckTcellStyle(L, 1)
+	index := L.CheckInt(2)
+
+	*st = st.Foreground(tcell.PaletteColor(index))
+
+	return lAddTcellStyleToState(L, st)
+}
+
+// luaTcellStyleBackgroundPalette sets background color with palette index.
+func luaTcellStyleBackgroundPalette(L *lua.LState) int {
+	st := lCheckTcellStyle(L, 1)
+	index := L.CheckInt(2)
+
+	*st = st.Background(tcell.PaletteColor(index))
 
 	return lAddTcellStyleToState(L, st)
 }

@@ -266,7 +266,7 @@ type printDirEntryContext struct {
 }
 
 // printDirEntry draws a single file entry in directory.
-func (win *win) printDirEntry(ui *ui, i int, f *file, context *printDirEntryContext) {
+func printDirEntry(win *win, ui *ui, i int, f *file, context *printDirEntryContext) {
 	dirStyle := context.dirStyle
 	st := dirStyle.colors.get(f)
 
@@ -389,8 +389,8 @@ func (win *win) printDirEntry(ui *ui, i int, f *file, context *printDirEntryCont
 
 		// print tag separately as it can contain color escape sequences
 		if !gOpts.mergeindicators || !drawFileState {
-			tag_str := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, tag)
-			win.print(ui.screen, tagOff, i, st, tag_str)
+			tagStr := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, tag)
+			win.print(ui.screen, tagOff, i, st, tagStr)
 		}
 
 		fileEntryStr := callLuaUIFormatterWithSingleParam(luaFormatterName, cursorFmt, icon+filename+" ")
@@ -509,24 +509,25 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		visualSelections: visualSelections,
 	}
 
-	for i, f := range dir.files[beg:end] {
-		luaMsg := getLuaUIFormatter(luaUIFormatterFile)
-		if luaMsg == nil {
-			win.printDirEntry(ui, i, f, &entryContext)
-			continue
+	luaMsg := getLuaUIFormatter(luaUIFormatterFile)
+	if luaMsg == nil {
+		for i, f := range dir.files[beg:end] {
+			printDirEntry(win, ui, i, f, &entryContext)
 		}
-
-		_, err := callLuaMsgExpr(luaMsg, func(L *lua.LState) []lua.LValue {
-			return []lua.LValue{
-				lWrapWin(L, win),
-				lWrapUI(L, ui),
-				lua.LNumber(i),
-				lWrapFile(L, f),
-				lWrapPrintDirEntryContext(L, &entryContext),
+	} else {
+		for i, f := range dir.files[beg:end] {
+			_, err := callLuaMsgExpr(luaMsg, func(L *lua.LState) []lua.LValue {
+				return []lua.LValue{
+					lWrapWin(L, win),
+					lWrapTcellScreen(L, ui.screen),
+					lWrapPrintDirEntryContext(L, &entryContext),
+					lua.LNumber(i),
+					lWrapFile(L, f),
+				}
+			})
+			if err != nil {
+				log.Printf("Lua UI formatter %s error: %s", luaUIFormatterFile, err)
 			}
-		})
-		if err != nil {
-			log.Printf("Lua UI formatter %s error: %s", luaUIFormatterFile, err)
 		}
 	}
 }
@@ -774,7 +775,7 @@ func (ui *ui) drawPromptLine(nav *nav) {
 }
 
 func (ui *ui) drawPromptLineWithLua(nav *nav, expr *luaMsgExpr) {
-	prompt := callLuaUIFormatterIgnoreError(expr, func(L *lua.LState) []lua.LValue {
+	_, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 		dir := nav.currDir()
 		pwd := sanitizeName(dir.path)
 
@@ -799,7 +800,6 @@ func (ui *ui) drawPromptLineWithLua(nav *nav, expr *luaMsgExpr) {
 		}
 
 		data := L.NewTable()
-		data.RawSetString("width", lua.LNumber(ui.promptWin.w))
 		data.RawSetString("user_name", lua.LString(gUser.Username))
 		data.RawSetString("host_name", lua.LString(gHostname))
 		data.RawSetString("file_name", lua.LString(fname))
@@ -807,11 +807,16 @@ func (ui *ui) drawPromptLineWithLua(nav *nav, expr *luaMsgExpr) {
 		data.RawSetString("pwd_with_sep", lua.LString(pwdWithSep))
 		data.RawSetString("filter", filter)
 
-		return []lua.LValue{data}
+		return []lua.LValue{
+			lWrapWin(L, ui.promptWin),
+			lWrapTcellScreen(L, ui.screen),
+			data,
+		}
 	})
 
-	st := tcell.StyleDefault
-	ui.promptWin.print(ui.screen, 0, 0, st, prompt)
+	if err != nil {
+		log.Printf("Lua prompt formatter error: %s", err)
+	}
 }
 
 // Deprecated: Only called by drawRuler, which will eventually be replaced by drawRulerFile
@@ -1162,10 +1167,13 @@ func (ui *ui) drawRulerFile(nav *nav) {
 }
 
 func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
-	width := ui.msgWin.w
+	_, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
+		currFile := lua.LNil
 
-	ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
-		currFile := lWrapFile(L, nav.currFile())
+		file := nav.currFile()
+		if file != nil {
+			currFile = lWrapFile(L, file)
+		}
 
 		dir := nav.currDir()
 		tot := len(dir.files)
@@ -1245,7 +1253,6 @@ func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
 
 		data := L.NewTable()
 		data.RawSetString("curr_file", currFile)
-		data.RawSetString("width", lua.LNumber(width))
 		data.RawSetString("message", lua.LString(ui.msg))
 		data.RawSetString("keys", lua.LString(ui.keyCount+ui.keyAcc))
 		data.RawSetString("progress", progress)
@@ -1262,36 +1269,16 @@ func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
 		data.RawSetString("filter", filter)
 		data.RawSetString("mode", lua.LString(mode))
 
-		return []lua.LValue{data}
+		return []lua.LValue{
+			lWrapWin(L, ui.msgWin),
+			lWrapTcellScreen(L, ui.screen),
+			data,
+		}
 	})
 
 	if err != nil {
-		err := formatDisplayedErrorMsg(fmt.Sprintf("Lua ruler: %s", err))
-		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
-		return
+		log.Printf("Lua ruler formatter error: %s", err)
 	}
-
-	if len(ret) <= 0 {
-		err := formatDisplayedErrorMsg(fmt.Sprintf("Lua ruler: %s", "formatter returns nothing"))
-		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
-		return
-	}
-
-	replacer := strings.NewReplacer("\r", "", "\n", "")
-
-	var left, right, space string
-	left = ret[0].String()
-	if len(ret) > 1 {
-		right = ret[1].String()
-	}
-
-	spaceCnt := width - printLength(left) - printLength(right)
-	if spaceCnt > 0 {
-		space = strings.Repeat(" ", spaceCnt)
-	}
-
-	ruler := replacer.Replace(left) + space + replacer.Replace(right)
-	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, ruler)
 }
 
 func (ui *ui) drawPreview(nav *nav, context *dirContext) {

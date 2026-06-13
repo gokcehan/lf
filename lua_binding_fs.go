@@ -197,9 +197,15 @@ func lRegisterFileModeType(L *lua.LState) *lua.LTable {
 }
 
 func lCheckFileMode(L *lua.LState, index int) fs.FileMode {
-	ud := L.CheckUserData(index)
-	if v, ok := ud.Value.(fs.FileMode); ok {
-		return v
+	value := L.Get(index)
+	switch value.Type() {
+	case lua.LTNumber:
+		dur := fs.FileMode(value.(lua.LNumber))
+		return dur
+	case lua.LTUserData:
+		if v, ok := value.(*lua.LUserData).Value.(fs.FileMode); ok {
+			return v
+		}
 	}
 
 	L.ArgError(index, "value of type `FileMode` expected")

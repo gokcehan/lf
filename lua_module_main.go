@@ -30,10 +30,17 @@ func lfMainModuleLoader(L *lua.LState) int {
 
 		"call_msg_expr": luaMainModuleCallMsgExpr,
 
-		"glob_match":     luaMainModuleGlobMatch,
-		"match_word":     luaMainModuleMatchWord,
-		"str_fill":       luaMainModuleStrFill,
-		"str_fill_right": luaMainModuleStrFillRight,
+		"glob_match":          luaMainModuleGlobMatch,
+		"match_word":          luaMainModuleMatchWord,
+		"str_fill":            luaMainModuleStrFill,
+		"str_fill_right":      luaMainModuleStrFillRight,
+		"to_perm_string":      luaMainModuleToPermString,
+		"make_link_count_str": luaMainModuleMakeLinkCountStr,
+		"make_user_name_str":  luaMainModuleMakeUserNameStr,
+		"make_group_name_str": luaMainModuleMakeGroupNameStr,
+		"sanitize_name":       luaMainModuleSanitizeName,
+		"file_size_humanize":  luaMainModuleFileSizeHumanize,
+		"disk_free_space":     luaMainModuleDiskFreeSpace,
 	})
 
 	setupModuleConstants(L, mod)
@@ -590,6 +597,60 @@ func luaMainModuleStrFillRight(L *lua.LState) int {
 	}
 
 	L.Push(lua.LString(base + strings.Repeat(fillStr, repeatCnt)))
+
+	return 1
+}
+
+func luaMainModuleToPermString(L *lua.LState) int {
+	mod := lCheckFileMode(L, 1)
+	L.Push(lua.LString(permString(mod)))
+	return 1
+}
+
+func luaMainModuleMakeLinkCountStr(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	L.Push(lua.LString(linkCount(file)))
+	return 1
+}
+
+func luaMainModuleMakeUserNameStr(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	L.Push(lua.LString(userName(file)))
+	return 1
+}
+
+func luaMainModuleMakeGroupNameStr(L *lua.LState) int {
+	file := lCheckFile(L, 1)
+	L.Push(lua.LString(groupName(file)))
+	return 1
+}
+
+func luaMainModuleSanitizeName(L *lua.LState) int {
+	str := L.CheckString(1)
+	L.Push(lua.LString(sanitizeName(str)))
+	return 1
+}
+
+func luaMainModuleFileSizeHumanize(L *lua.LState) int {
+	size := L.CheckInt64(1)
+	L.Push(lua.LString(humanize(size)))
+	return 1
+}
+
+func luaMainModuleDiskFreeSpace(L *lua.LState) int {
+	pathValue := L.Get(1)
+
+	path := "."
+	switch pathValue.Type() {
+	case lua.LTString:
+		path = string(pathValue.(lua.LString))
+	case lua.LTNil:
+		// pass
+	default:
+		L.ArgError(1, "string expected")
+	}
+
+	L.Push(lua.LString(diskFree(path)))
 
 	return 1
 }
