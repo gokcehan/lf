@@ -465,9 +465,9 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // Lines are split on `\n` characters, and `\r` characters are discarded.
 // Individual lines are truncated to avoid unbounded memory usage on files
 // with very long or no newlines.
-// Sixel images are also detected and stored as separate lines.
+// Sixel and Kitty images are also detected and stored as separate lines.
 // C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
-func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
+func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool, kitty bool) {
 	const maxLineBytes = 1 << 16 // 64 KiB per line
 
 	type state int
@@ -476,8 +476,12 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		stateEsc
 		stateSixel
 		stateSixelEsc
+		stateAPC
+		stateKitty
+		stateKittyEsc
 	)
 	currState := stateNormal
+	seenSemi := false // track whether we have passed the ';' in a Kitty APC frame
 
 	var buf bytes.Buffer
 	maxLinesReached := false
@@ -502,7 +506,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		case stateNormal:
 			// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
 			if b < 0x07 || (b > 0x0D && b < 0x1B) || (b > 0x1B && b < 0x20) || b == 0x7F {
-				return nil, true, false
+				return nil, true, false, false
 			}
 			switch b {
 			case '\033':
@@ -522,6 +526,10 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				flush(false)
 				buf.WriteString("\033P")
 				currState = stateSixel
+			} else if b == '_' {
+				flush(false)
+				buf.WriteString("\033_")
+				currState = stateAPC
 			} else {
 				buf.WriteByte('\033')
 				buf.WriteByte(b)
@@ -551,6 +559,78 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			} else {
 				buf.Reset()
+				currState = stateNormal
+			}
+		case stateAPC:
+			// Kitty graphics uses APC (ESC _) followed by 'G'.
+			// Accept only printable bytes until we confirm it's
+			// a Kitty command or the sequence is terminated.
+			if b == 'G' {
+				buf.WriteByte(b)
+				kitty = true
+				currState = stateKitty
+			} else if b >= 0x20 && b <= 0x7E {
+				buf.WriteByte(b)
+			} else if b == '\033' {
+				// Early ST: not a Kitty command (no 'G'), flush as text.
+				buf.WriteByte(b)
+				currState = stateKittyEsc
+			} else {
+				// Unexpected byte: abort and treat as text.
+				currState = stateNormal
+			}
+		case stateKitty:
+			// Inside the Kitty APC frame.  The payload can be either
+			// base64-encoded (f=24, f=100, t=t) or raw binary (f=32
+			// with t=d).  Before the first ';' we are in the control
+			// section where \r/\n may appear for readability; after
+			// ';' every byte is payload and must be preserved.
+			//
+			// IMPORTANT: we do NOT terminate on \033\ inside the
+			// payload because raw compressed data may contain these
+			// bytes.  Instead, the frame ends naturally when we
+			// encounter a non-printable byte that is not part of a
+			// valid continuation (i.e. the next byte is not \033 or a
+			// printable character).
+			switch {
+			case b == '\033':
+				buf.WriteByte(b)
+				if seenSemi {
+					// Inside payload: \033 is just data.
+					continue
+				}
+				currState = stateKittyEsc
+			case !seenSemi && (b == '\r' || b == '\n'):
+				// dropped (readability formatting in control section)
+			case !seenSemi:
+				if b == ';' {
+					seenSemi = true
+				}
+				// Accept only printable bytes in control section.
+				// Non-printable bytes abort the frame for security.
+				if b >= 0x20 && b <= 0x7E {
+					buf.WriteByte(b)
+				} else {
+					buf.Reset()
+					seenSemi = false
+					currState = stateNormal
+				}
+			default:
+				// Payload section: accept all bytes (raw image data).
+				buf.WriteByte(b)
+			}
+		case stateKittyEsc:
+			if b == '\\' {
+				buf.WriteByte(b)
+				flush(true)
+				seenSemi = false
+				currState = stateNormal
+			} else if seenSemi {
+				buf.WriteByte(b)
+				currState = stateKitty
+			} else {
+				buf.Reset()
+				seenSemi = false
 				currState = stateNormal
 			}
 		}

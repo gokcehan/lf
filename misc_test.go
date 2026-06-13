@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"math"
 	"os"
 	"reflect"
@@ -511,50 +512,63 @@ func TestReadLines(t *testing.T) {
 		lines    []string
 		binary   bool
 		sixel    bool
+		kitty    bool
 	}{
-		{"", 10, nil, false, false},
-		{"\r", 10, nil, false, false},
-		{"\r\n", 10, []string{""}, false, false},
-		{"\r\r\n", 10, []string{""}, false, false},
-		{"\n\n", 10, []string{"", ""}, false, false},
-		{"foo", 10, []string{"foo"}, false, false},
-		{"foo\n", 10, []string{"foo"}, false, false},
-		{"foo\r\n", 10, []string{"foo"}, false, false},
-		{"foo\nbar", 10, []string{"foo", "bar"}, false, false},
-		{"foo\nbar\n", 10, []string{"foo", "bar"}, false, false},
-		{"foo\r\nbar", 10, []string{"foo", "bar"}, false, false},
-		{"foo\r\nbar\r\n", 10, []string{"foo", "bar"}, false, false},
-		{"\033[31mfoo\033[0m", 10, []string{"\033[31mfoo\033[0m"}, false, false},
-		{"\000", 10, nil, true, false},
-		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false},
-		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true},
-		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true},
-		{"\033P\000\033\\", 10, []string{"\033\\"}, false, false},
-		{"\033P\n\033\\", 10, []string{"\033P\033\\"}, false, true},
-		{"\033P\r\n\033\\", 10, []string{"\033P\033\\"}, false, true},
-		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true},
-		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, true},
-		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, true},
-		{"foo\nbar\nbaz", 2, []string{"foo", "bar"}, false, false},
-		{"foo\nbar\nbaz\n", 2, []string{"foo", "bar"}, false, false},
-		{"foo\nbar\033P\033\\", 2, []string{"foo", "bar"}, false, false},
-		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false},
-		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false},
-		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true},
+		{"", 10, nil, false, false, false},
+		{"\r", 10, nil, false, false, false},
+		{"\r\n", 10, []string{""}, false, false, false},
+		{"\r\r\n", 10, []string{""}, false, false, false},
+		{"\n\n", 10, []string{"", ""}, false, false, false},
+		{"foo", 10, []string{"foo"}, false, false, false},
+		{"foo\n", 10, []string{"foo"}, false, false, false},
+		{"foo\r\n", 10, []string{"foo"}, false, false, false},
+		{"foo\nbar", 10, []string{"foo", "bar"}, false, false, false},
+		{"foo\nbar\n", 10, []string{"foo", "bar"}, false, false, false},
+		{"foo\r\nbar", 10, []string{"foo", "bar"}, false, false, false},
+		{"foo\r\nbar\r\n", 10, []string{"foo", "bar"}, false, false, false},
+		{"\033[31mfoo\033[0m", 10, []string{"\033[31mfoo\033[0m"}, false, false, false},
+		{"\000", 10, nil, true, false, false},
+		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false, false},
+		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true, false},
+		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true, false},
+		{"\033P\000\033\\", 10, []string{"\033\\"}, false, false, false},
+		{"\033P\n\033\\", 10, []string{"\033P\033\\"}, false, true, false},
+		{"\033P\r\n\033\\", 10, []string{"\033P\033\\"}, false, true, false},
+		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true, false},
+		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, true, false},
+		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, true, false},
+		{"foo\nbar\nbaz", 2, []string{"foo", "bar"}, false, false, false},
+		{"foo\nbar\nbaz\n", 2, []string{"foo", "bar"}, false, false, false},
+		{"foo\nbar\033P\033\\", 2, []string{"foo", "bar"}, false, false, false},
+		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false, false},
+		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false, false},
+		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true, false},
 		// Inside the DCS body, ESC must be followed by '\\' (ST) for the
 		// frame to be accepted. Any other byte aborts, so an attacker
 		// cannot embed CSI/OSC/nested-DCS through the sixel path.
-		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, false},
+		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, false, false},
+		// Kitty graphics protocol: \033_G...\033\\
+		{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\", 10, []string{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\"}, false, false, true},
+		{"foo\033_Ga=T;data\033\\bar", 10, []string{"foo", "\033_Ga=T;data\033\\bar"}, false, false, true},
+		{"\033_G\n;\033\\", 10, []string{"\033_G;\033\\"}, false, false, true},
+		{"\033_G\r\n;\033\\", 10, []string{"\033_G;\033\\"}, false, false, true},
+		// Kitty with raw binary payload (simulating chafa -f kitty f=32,t=d).
+		// The payload after ';' may contain any byte including \000, \033, etc.
+		{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\"}, false, false, true},
+		// \033 byte in raw payload followed by non-\\ must NOT abort the frame.
+		{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\"}, false, false, true},
+		// Verify non-kitty APC (no G after ESC _) is not flagged as kitty.
+		{"\033_Xhello\033\\", 10, []string{"\033_Xhello\033\\"}, false, false, false},
 	}
 
 	for _, test := range tests {
-		lines, binary, sixel := readLines(strings.NewReader(test.s), test.maxLines)
-		if !reflect.DeepEqual(lines, test.lines) || binary != test.binary || sixel != test.sixel {
+		lines, binary, sixel, kitty := readLines(strings.NewReader(test.s), test.maxLines)
+		if !reflect.DeepEqual(lines, test.lines) || binary != test.binary || sixel != test.sixel || kitty != test.kitty {
 			t.Errorf(
-				"at input (%q, %v) expected (%#v, %v, %v) but got (%#v, %v, %v)",
+				"at input (%q, %v) expected (%#v, %v, %v, %v) but got (%#v, %v, %v, %v)",
 				test.s, test.maxLines,
-				test.lines, test.binary, test.sixel,
-				lines, binary, sixel,
+				test.lines, test.binary, test.sixel, test.kitty,
+				lines, binary, sixel, kitty,
 			)
 		}
 	}
@@ -592,5 +606,79 @@ func TestGetWidths(t *testing.T) {
 		if !reflect.DeepEqual(widths, test.exp) {
 			t.Errorf("at input (%v, %v, %v, %v) expected %v but got %v", test.wtot, test.ratios, test.drawbox, test.borderstyle, test.exp, widths)
 		}
+	}
+}
+
+func TestKittyCellSize(t *testing.T) {
+	tests := []struct {
+		cmd  string
+		cw   int
+		ch   int
+		expW int
+		expH int
+	}{
+		// S=/V= (cell-based sizing) takes priority
+		{"\033_Ga=T,f=100,s=300,v=200,S=30,V=15;AA==\033\\", 10, 20, 30, 15},
+		// c=/r= (chafa's cell-based sizing)
+		{"\033_Ga=T,f=32,s=270,v=150,c=54,r=30;AA==\033\\", 10, 20, 54, 30},
+		// s=/v= (pixel sizing) with conversion
+		{"\033_Ga=T,f=100,s=100,v=100;AA==\033\\", 10, 20, 10, 5},
+		{"\033_Ga=T,f=32,s=80,v=40;\x00\033\\", 8, 16, 10, 3},
+		// Neither S/V/c/r nor s/v → fallback
+		{"\033_Ga=T;data\033\\", 10, 20, 0, 0},
+		// No semicolon → fallback
+		{"\033_Gincomplete", 10, 20, 1, 1},
+	}
+
+	for _, test := range tests {
+		w, h := kittyCellSize(test.cmd, test.cw, test.ch)
+		if w != test.expW || h != test.expH {
+			t.Errorf("kittyCellSize(%q, %d, %d) = %d, %d; want %d, %d",
+				test.cmd, test.cw, test.ch, w, h, test.expW, test.expH)
+		}
+	}
+}
+
+func TestReadLinesChafa(t *testing.T) {
+	// Read actual chafa output and verify Kitty detection.
+	data, err := os.ReadFile("/tmp/chafa_test.bin")
+	if err != nil {
+		t.Skipf("skipping: chafa test data not found (%s)", err)
+	}
+
+	lines, binary, sixel, kitty := readLines(bytes.NewReader(data), 100)
+	if binary {
+		t.Fatal("unexpected binary detection")
+	}
+	if sixel {
+		t.Fatal("unexpected sixel detection")
+	}
+	if !kitty {
+		t.Fatalf("expected kitty=true, got kitty=%v (lines=%d)", kitty, len(lines))
+	}
+
+	// The first line should be \033[?25l (cursor hide CSI)
+	// followed by one or more \033_G... kitty frames.
+	kittyCount := 0
+	for _, l := range lines {
+		if strings.HasPrefix(l, "\033_G") {
+			kittyCount++
+		}
+	}
+	t.Logf("total lines=%d, kitty frames=%d", len(lines), kittyCount)
+	if kittyCount < 2 {
+		t.Errorf("expected at least 2 kitty frames (chunked), got %d", kittyCount)
+	}
+
+	// Verify the first kitty frame has c=54,r=30
+	found := false
+	for _, l := range lines {
+		if strings.Contains(l, "c=54") && strings.Contains(l, "r=30") {
+			found = true
+			break
+		}
+	}
+	if !found {
+		t.Error("first kitty frame missing c=54,r=30")
 	}
 }

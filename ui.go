@@ -135,7 +135,7 @@ func (win *win) printMsg(screen tcell.Screen, s string) {
 	win.print(screen, pad, 0, st, s)
 }
 
-func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previewTimer *time.Timer) {
+func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, kts *kittyScreen, previewTimer *time.Timer) {
 	switch {
 	case reg.loading:
 		if time.Since(reg.loadTime) > previewLoadingDelay {
@@ -145,6 +145,8 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previe
 		}
 	case reg.sixel:
 		sxs.printSixel(win, screen, reg)
+	case reg.kitty:
+		kts.printKitty(win, screen, reg)
 	default:
 		st := tcell.StyleDefault
 		for i, l := range reg.lines {
@@ -158,6 +160,9 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previe
 
 	if !reg.sixel {
 		sxs.lastFile = ""
+	}
+	if !reg.kitty {
+		kts.lastFile = ""
 	}
 }
 
@@ -518,6 +523,7 @@ type menuSelect struct {
 type ui struct {
 	screen      tcell.Screen       // primary screen used for drawing and event polling
 	sxScreen    sixelScreen        // sixel preview state
+	ktScreen    kittyScreen        // kitty preview state
 	wins        []*win             // pane windows from `ratios` (last is `preview` when enabled)
 	promptWin   *win               // prompt line window
 	msgWin      *win               // status line window
@@ -556,6 +562,7 @@ func newUI(screen tcell.Screen) *ui {
 		icons:       parseIcons(),
 		currentFile: "",
 		sxScreen:    sixelScreen{},
+		ktScreen:    kittyScreen{},
 	}
 	ui.ruler, ui.rulerErr = parseRuler(gOpts.rulerfile)
 
@@ -612,6 +619,7 @@ type reg struct {
 	path     string
 	lines    []string
 	sixel    bool
+	kitty    bool
 	height   int
 }
 
@@ -1026,14 +1034,16 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 
 	win := ui.wins[len(ui.wins)-1]
 	ui.sxScreen.clearSixel(win, ui.screen, curr.path)
+	ui.ktScreen.clearKitty(win, ui.screen, curr.path)
 
 	if gOpts.preview {
 		if curr.isPreviewable() {
 			if reg, ok := nav.regCache[curr.path]; ok {
-				win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
+				win.printReg(ui.screen, reg, &ui.sxScreen, &ui.ktScreen, nav.previewTimer)
 			}
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""
+			ui.ktScreen.lastFile = ""
 			dir := nav.getDir(curr.path)
 			dirStyle := &dirStyle{colors: ui.styles, icons: ui.icons, role: Preview}
 			win.printDir(ui, dir, context, dirStyle, nav.previewTimer)
@@ -1105,9 +1115,10 @@ func (ui *ui) drawMenu() {
 	ui.menuWin.h = len(lines)
 	ui.menuWin.y = ui.msgWin.y - ui.menuWin.h
 
-	// clear sixel image if it overlaps with the menu
+	// clear sixel/kitty image if it overlaps with the menu
 	ui.screen.LockRegion(ui.menuWin.x, ui.menuWin.y, ui.menuWin.w, ui.menuWin.h, false)
 	ui.sxScreen.forceClear = true
+	ui.ktScreen.forceClear = true
 
 	for i, line := range lines {
 		var st tcell.Style
@@ -1587,6 +1598,7 @@ func (ui *ui) readEvents() {
 
 func (ui *ui) suspend() error {
 	ui.sxScreen.forceClear = true
+	ui.ktScreen.forceClear = true
 	return ui.screen.Suspend()
 }
 

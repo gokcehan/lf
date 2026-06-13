@@ -117,6 +117,10 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
+	case "kitty", "nokitty", "kitty!":
+		// Kitty graphics protocol is always active; this option exists
+		// only so that "set kitty true" in the config does not error.
+		err = nil
 	case "incfilter", "noincfilter", "incfilter!":
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
@@ -145,6 +149,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			gOpts.preview = preview
 			app.ui.sxScreen.forceClear = true
+			app.ui.ktScreen.forceClear = true
 			app.ui.loadFile(app, true)
 		}
 	case "relativenumber", "norelativenumber", "relativenumber!":
