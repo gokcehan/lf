@@ -34,6 +34,8 @@ type kittyScreen struct {
 
 func (ks *kittyScreen) clearKitty(win *win, screen tcell.Screen, filePath string) {
 	if ks.lastFile != "" && (filePath != ks.lastFile || *win != ks.lastWin || ks.forceClear) {
+		// Delete all kitty images so they don't linger on screen
+		// when the preview changes.
 		fmt.Fprint(os.Stderr, "\033_Ga=d,d=a,q=2;\033\\")
 	}
 }
@@ -41,6 +43,12 @@ func (ks *kittyScreen) clearKitty(win *win, screen tcell.Screen, filePath string
 func (ks *kittyScreen) printKitty(win *win, screen tcell.Screen, reg *reg) {
 	if reg.path == ks.lastFile && *win == ks.lastWin && !ks.forceClear {
 		return
+	}
+
+	// Unlock any region locked by a previous kitty render so tcell
+	// can redraw the full pane before we place the new image.
+	if ks.lastFile != "" {
+		screen.LockRegion(ks.lastWin.x, ks.lastWin.y, ks.lastWin.w, ks.lastWin.h, false)
 	}
 
 	cw, ch, err := cellSize(screen)
@@ -52,14 +60,13 @@ func (ks *kittyScreen) printKitty(win *win, screen tcell.Screen, reg *reg) {
 	var b strings.Builder
 
 	// Collect consecutive Kitty frames so that chunked transmission
-	// (m=1 / m=0) is written as a single logical image.
+	// (m=1 / m=0) is written as a single logical image at one position.
 	var kittyBuf []string
-	var imageY, imageH int
-
 	flushKitty := func() {
 		if len(kittyBuf) == 0 {
 			return
 		}
+		// Use the first frame that has dimension info for sizing.
 		sw, sh := 0, 0
 		for _, k := range kittyBuf {
 			sw, sh = kittyCellSize(k, cw, ch)
@@ -80,8 +87,7 @@ func (ks *kittyScreen) printKitty(win *win, screen tcell.Screen, reg *reg) {
 			}
 			b.WriteString(k)
 		}
-		imageY = y
-		imageH = sh
+		screen.LockRegion(win.x, y, sw, sh, true)
 		y += sh
 		kittyBuf = nil
 	}
@@ -102,20 +108,8 @@ func (ks *kittyScreen) printKitty(win *win, screen tcell.Screen, reg *reg) {
 	}
 	flushKitty()
 
-	// Clear the preview pane in tcell's buffer to erase old text.
-	st := tcell.StyleDefault
-	for row := range win.h {
-		for col := range win.w {
-			screen.SetContent(win.x+col, win.y+row, ' ', nil, st)
-		}
-	}
-
-	// Lock the image rows so Show() won't overwrite them.
-	if imageH > 0 {
-		screen.LockRegion(win.x, imageY, win.w, imageH, true)
-	}
-
-	// Render pane clear and kitty image atomically via sync update.
+	// Write all output directly to stderr with synchronized update
+	// so the image renders atomically without flickering.
 	fmt.Fprint(os.Stderr, "\033[?2026h")
 	fmt.Fprint(os.Stderr, "\0337")
 	screen.Show()
@@ -143,14 +137,16 @@ func kittyCellSize(cmd string, cw, ch int) (int, int) {
 		ch = 20
 	}
 
+	// The control section is between "\033_G" and the first ';'.
+	// "\033_G" is 3 bytes (\033, _, G).
 	start := strings.IndexByte(cmd, ';')
 	if start < 0 {
 		return 1, 1
 	}
 	control := cmd[3:start]
 
-	var sc, sr int
-	var pw, ph int
+	var sc, sr int // S= / V= (cells)
+	var pw, ph int // s= / v= (pixels)
 
 	for kv := range strings.SplitSeq(control, ",") {
 		k, v, ok := strings.Cut(kv, "=")
@@ -200,15 +196,20 @@ func generateKittyPreview(path string, win *win) ([]string, error) {
 		return nil, fmt.Errorf("invalid image dimensions: %dx%d", iw, ih)
 	}
 
+	// Estimate cell size (the same fallback used by sixel). The preview
+	// goroutine does not have access to the tcell Screen, so we use the
+	// historically safe defaults of 10×20 pixels per cell.
 	const estCellW = 10
 	const estCellH = 20
 
 	maxW := win.w
 	maxH := win.h
 
+	// Compute the number of cells the image would occupy at its natural size.
 	natCW := (iw + estCellW - 1) / estCellW
 	natCH := (ih + estCellH - 1) / estCellH
 
+	// Scale down to fit the preview window.
 	scale := 1.0
 	if natCW > maxW {
 		scale = float64(maxW) / float64(natCW)
@@ -220,6 +221,7 @@ func generateKittyPreview(path string, win *win) ([]string, error) {
 	targetW := max(int(float64(iw)*scale), 1)
 	targetH := max(int(float64(ih)*scale), 1)
 
+	// Resize using nearest-neighbour (fast, no extra dependencies).
 	var resized image.Image
 	if targetW == iw && targetH == ih {
 		resized = img
