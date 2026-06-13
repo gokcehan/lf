@@ -39,23 +39,25 @@ const (
 	registryKeyPreviewer     = "previewer"
 	registryKeySortingMethod = "sorting_method"
 	registryKeyUIFormatter   = "ui_formatter"
+	registryKeyUIPrinter     = "ui_printer"
 	registryKeyUIStyle       = "ui_style"
 )
 
 const (
-	luaMiscMsgShell = "shell"
+	luaMiscMsgShell   = "shell"
+	luaMiscMsgDupFile = "dupfile"
 
 	luaUIFormatterCursorActive  = "cursoractive"
 	luaUIFormatterCursorParent  = "cursorparent"
 	luaUIFormatterCursorPreview = "cursorpreview"
-	luaUIFormatterDupFile       = "dupfile"
 	luaUIFormatterError         = "error"
-	luaUIFormatterFile          = "file"
 	luaUIFormatterNumberCursor  = "numbercursor"
 	luaUIFormatterNumber        = "number"
-	luaUIFormatterRuler         = "ruler"
-	luaUIFormatterPrompt        = "prompt"
 	luaUIFormatterTag           = "tag"
+
+	luaUIPrinterFile   = "file"
+	luaUIPrinterRuler  = "ruler"
+	luaUIPrinterPrompt = "prompt"
 
 	luaUIStyleBorder     = "border"
 	luaUIStyleCopy       = "copy"
@@ -84,6 +86,8 @@ const (
 	luaSortingMethodActionFuncKey = "action"
 
 	luaUIFormatterActionFuncKey = "action"
+
+	luaUIPrinterActionFuncKey = "action"
 )
 
 const (
@@ -255,7 +259,8 @@ func (pl *lStatePool) newWithRegistryUpdate() (*lua.LState, error) {
 		loadPreviewerRegistryFromTbl(sourceName, tbl)
 		loadMiscRegistryFromTbl(sourceName, tbl)
 		loadSortingMethodRegistryFromTbl(sourceName, tbl)
-		loadUIFormatterRegistryFromTbl(pl.app, sourceName, tbl)
+		loadUIFormatterRegistryFromTbl(sourceName, tbl)
+		loadUIPrinterRegistryFromTbl(sourceName, tbl)
 		loadUIStyleRegistryFromTbl(L, sourceName, tbl)
 
 		sortLuaPreviewers()
@@ -484,6 +489,7 @@ var gLuaRegistry struct {
 	previewers    []luaPreviewerInfo
 	sortingMethod map[string]*luaMsgExpr
 	uiFormatter   map[string]*luaMsgExpr
+	uiPrinter     map[string]*luaMsgExpr
 	uiStyleMap    map[string]tcell.Style
 }
 
@@ -803,6 +809,7 @@ func luaPluginReload(app *app) {
 	gLuaRegistry.previewers = nil
 	gLuaRegistry.misc = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiFormatter = make(map[string]*luaMsgExpr)
+	gLuaRegistry.uiPrinter = make(map[string]*luaMsgExpr)
 	gLuaRegistry.uiStyleMap = make(map[string]tcell.Style)
 
 	gLuaPool.initializeState(app)
@@ -1128,7 +1135,8 @@ func loadMiscRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		msg := key.String()
 		switch msg {
-		case luaMiscMsgShell:
+		case luaMiscMsgDupFile,
+			luaMiscMsgShell:
 			// ok
 		default:
 			log.Println("unsupported misc registry entry key:", msg)
@@ -1375,7 +1383,7 @@ func loadSortingMethodRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 // loadUIFormatterRegistryFromTbl registers UI formatters defined in table returned
 // from plugin script.
-func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable) {
+func loadUIFormatterRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 	registryKey := registryKeyUIFormatter
 	registryTbl := tbl.RawGetString(registryKey)
 	switch registryTbl.Type() {
@@ -1403,13 +1411,9 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 		case luaUIFormatterCursorActive,
 			luaUIFormatterCursorParent,
 			luaUIFormatterCursorPreview,
-			luaUIFormatterDupFile,
 			luaUIFormatterError,
 			luaUIFormatterNumberCursor,
 			luaUIFormatterNumber,
-			luaUIFormatterFile,
-			luaUIFormatterRuler,
-			luaUIFormatterPrompt,
 			luaUIFormatterTag:
 			// ok
 		default:
@@ -1440,6 +1444,69 @@ func loadUIFormatterRegistryFromTbl(app *app, sourceName string, tbl *lua.LTable
 			}
 		default:
 			log.Printf("invalid UI formatter registry value of type %s: %s", value.Type(), value)
+		}
+	})
+}
+
+// loadUIPrinterRegistryFromTbl registers UI printer defined in table returned
+// from plugin script.
+func loadUIPrinterRegistryFromTbl(sourceName string, tbl *lua.LTable) {
+	registryKey := registryKeyUIPrinter
+	registryTbl := tbl.RawGetString(registryKey)
+	switch registryTbl.Type() {
+	case lua.LTNil:
+		return
+	case lua.LTTable:
+		// ok
+	default:
+		log.Printf("registry field `%s` is not a table", registryKey)
+		return
+	}
+
+	if gLuaRegistry.uiPrinter == nil {
+		gLuaRegistry.uiPrinter = make(map[string]*luaMsgExpr)
+	}
+
+	registryTbl.(*lua.LTable).ForEach(func(key, value lua.LValue) {
+		if key.Type() != lua.LTString {
+			log.Printf("UI pinter key is expected to be string, found %s: %s", key.Type(), key)
+			return
+		}
+
+		option := key.String()
+		switch option {
+		case luaUIPrinterFile,
+			luaUIPrinterRuler,
+			luaUIPrinterPrompt:
+			// ok
+		default:
+			log.Println("unsupported UI pinter registry key:", option)
+			return
+		}
+
+		switch value.Type() {
+		case lua.LTFunction:
+			gLuaRegistry.uiPrinter[option] = &luaMsgExpr{
+				sourceName: sourceName,
+				registry:   registryKey,
+				msg:        option,
+				variant:    luaMsgVariantMain,
+			}
+		case lua.LTTable:
+			actionValue := value.(*lua.LTable).RawGetString(luaCommandActionFuncKey)
+			if actionValue.Type() == lua.LTFunction {
+				gLuaRegistry.uiPrinter[option] = &luaMsgExpr{
+					sourceName: sourceName,
+					registry:   registryKey,
+					msg:        option,
+					variant:    luaMsgVariantMain,
+					isAsync:    lua.LVAsBool(value.(*lua.LTable).RawGetString(luaMsgMetaKeyIsAsync)),
+				}
+			} else {
+				log.Println("invalid UI pinter value:", value)
+			}
+		default:
+			log.Printf("invalid UI printer registry value of type %s: %s", value.Type(), value)
 		}
 	})
 }
@@ -1565,6 +1632,9 @@ var gLuaMsgActionExtractorMap = map[string]map[string]luaMsgActionExtractor{
 	},
 	registryKeyUIFormatter: {
 		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaUIFormatterActionFuncKey),
+	},
+	registryKeyUIPrinter: {
+		luaMsgVariantMain: extractLuaMsgActionWithTblKey(luaUIPrinterActionFuncKey),
 	},
 }
 
@@ -2327,6 +2397,11 @@ func callLuaUIFormatterWithSingleParam(formatterName, defaultFmtStr, param strin
 	return fmt.Sprintf(optionToFmtstr(defaultFmtStr), param)
 }
 
+// getLuaUIPrinter finds Lua UI printer message with given name.
+func getLuaUIPrinter(name string) *luaMsgExpr {
+	return gLuaRegistry.uiPrinter[name]
+}
+
 // getLuaUIStyle looks up Lua UI style registry with given name
 func getLuaUIStyle(name string, defaultFmtStr string) (tcell.Style, bool) {
 	style, ok := gLuaRegistry.uiStyleMap[name]
@@ -2348,6 +2423,24 @@ func getLuaUIStyleWithDefaultStr(name string, defaultFmtStr string) tcell.Style 
 // this function returns nil.
 func getLuaMiscMsg(name string) *luaMsgExpr {
 	return gLuaRegistry.misc[name]
+}
+
+func formatDuplicatedFilenameWithLuaMsg(expr *luaMsgExpr, basename, ext string, dupIndex int) (string, error) {
+	ret, err := callLuaMsgExpr(expr, makeLuaMsgArgsWrapper(basename, ext, dupIndex))
+	if err != nil {
+		return "", err
+	}
+
+	if len(ret) <= 0 {
+		return "", fmt.Errorf("Lua message returns nonthing")
+	}
+
+	strValue, ok := ret[0].(lua.LString)
+	if !ok {
+		return "", fmt.Errorf("return value #1 is not a string")
+	}
+
+	return string(strValue), nil
 }
 
 // makeShellCmdWithLuaMsg creates `exec.Cmd` object by calling Lua message.

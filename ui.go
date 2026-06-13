@@ -509,7 +509,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		visualSelections: visualSelections,
 	}
 
-	luaMsg := getLuaUIFormatter(luaUIFormatterFile)
+	luaMsg := getLuaUIPrinter(luaUIPrinterFile)
 	if luaMsg == nil {
 		for i, f := range dir.files[beg:end] {
 			printDirEntry(win, ui, i, f, &entryContext)
@@ -526,7 +526,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				}
 			})
 			if err != nil {
-				log.Printf("Lua UI formatter %s error: %s", luaUIFormatterFile, err)
+				log.Printf("Lua UI printer %s error: %s", luaUIPrinterFile, err)
 			}
 		}
 	}
@@ -815,7 +815,7 @@ func (ui *ui) drawPromptLineWithLua(nav *nav, expr *luaMsgExpr) {
 	})
 
 	if err != nil {
-		log.Printf("Lua prompt formatter error: %s", err)
+		log.Printf("Lua printer %s error: %s", luaUIPrinterPrompt, err)
 	}
 }
 
@@ -1277,7 +1277,7 @@ func (ui *ui) drawRulerWithLua(nav *nav, expr *luaMsgExpr) {
 	})
 
 	if err != nil {
-		log.Printf("Lua ruler formatter error: %s", err)
+		log.Printf("Lua printer %s error: %s", luaUIPrinterRuler, err)
 	}
 }
 
@@ -1407,7 +1407,7 @@ func (ui *ui) draw(nav *nav) {
 
 	ui.screen.Clear()
 
-	promptFormatter := getLuaUIFormatter(luaUIFormatterPrompt)
+	promptFormatter := getLuaUIPrinter(luaUIPrinterPrompt)
 	if promptFormatter != nil {
 		ui.drawPromptLineWithLua(nav, promptFormatter)
 	} else {
@@ -1436,7 +1436,7 @@ func (ui *ui) draw(nav *nav) {
 
 	switch ui.cmdPrefix {
 	case "":
-		luaFormatter := getLuaUIFormatter(luaUIFormatterRuler)
+		luaFormatter := getLuaUIPrinter(luaUIPrinterRuler)
 		if luaFormatter != nil {
 			ui.drawRulerWithLua(nav, luaFormatter)
 		} else if gOpts.rulerfmt == "" {

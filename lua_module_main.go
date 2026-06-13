@@ -97,15 +97,18 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	uiFormatterType.RawSetString("cursoractive", lua.LString(luaUIFormatterCursorActive))
 	uiFormatterType.RawSetString("cursorparent", lua.LString(luaUIFormatterCursorParent))
 	uiFormatterType.RawSetString("cursorpreview", lua.LString(luaUIFormatterCursorPreview))
-	uiFormatterType.RawSetString("dupfile", lua.LString(luaUIFormatterDupFile))
 	uiFormatterType.RawSetString("error", lua.LString(luaUIFormatterError))
-	uiFormatterType.RawSetString("file", lua.LString(luaUIFormatterFile))
 	uiFormatterType.RawSetString("numbercursor", lua.LString(luaUIFormatterNumberCursor))
 	uiFormatterType.RawSetString("number", lua.LString(luaUIFormatterNumber))
-	uiFormatterType.RawSetString("ruler", lua.LString(luaUIFormatterRuler))
-	uiFormatterType.RawSetString("prompt", lua.LString(luaUIFormatterPrompt))
 	uiFormatterType.RawSetString("tag", lua.LString(luaUIFormatterTag))
 	mod.RawSetString("UIFormatterType", uiFormatterType)
+
+	// ui printer type
+	uiPrinterType := L.NewTable()
+	uiPrinterType.RawSetString("file", lua.LString(luaUIPrinterFile))
+	uiPrinterType.RawSetString("ruler", lua.LString(luaUIPrinterRuler))
+	uiPrinterType.RawSetString("prompt", lua.LString(luaUIPrinterPrompt))
+	mod.RawSetString("UIPrinterType", uiPrinterType)
 
 	// ui style type
 	uiStyleType := L.NewTable()

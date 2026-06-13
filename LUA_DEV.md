@@ -209,6 +209,7 @@ Currently, following keys are supported:
 
   Currently supported messages are:
 
+  - `dupfile`, generates name for duplicated files during copy/move operation.
   - `shell`, takes shell command and argument list, and makes an `exec.Cmd` from
     them.
 - `option`, is a table of string keys and string values. Keys are lf option names,
@@ -236,24 +237,39 @@ Currently, following keys are supported:
   Provides formatter function for different UI element in place of `fmt` options
   that with formatting verbs in them.
 
+  Messages in this table affect appearance of UI element by returning styled string.
+
   Entry type: `function`, `table`
 
   Variant:
 
-  - `action`, a function, its argument and return type differs by UI element type.
+  - `action`, a function, its argument type differs by UI element type.
 
   Currently supported keys are:
 
   - `cursoractive`, formatting file entry under cursor in active directory window.
   - `cursorparent`, formatting file entry under cursor in parent directory window.
   - `cursorpreview`, formatting file entry under cursor in preview directory window.
-  - `dupfile`, generates name for duplicated files during copy/move operation.
   - `error`, formatting error message.
   - `numbercursor`, formatting directory line number under corsor.
   - `number`, formatting directory line number.
-  - `ruler`, returns ruler content
-  - `prompt`, returns prompt content
   - `tag`: formatting tags
+- `ui_printer`, is a message table
+
+  Messages in this table will receive objects like `win`, `screen` as arguments,
+  and prints directly to screen to define how UI elements look.
+
+  Entry type: `function`, `table`
+
+  Variant:
+
+  - `action`
+
+  Currently supported keys are:
+
+  - `file`, print one file entry in directory
+  - `ruler`, print ruler line
+  - `prompt`, print prompt line
 - `ui_style`
 
   This registry table provides style values for `fmt` options that do not allow

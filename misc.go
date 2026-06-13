@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -595,9 +596,14 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 // formatDuplicatedFilename returns name used for duplicated files during copy
 // or move operation.
 func formatDuplicatedFilename(basename, ext string, dupIndex int) string {
-	luaFormatter := getLuaUIFormatter(luaUIFormatterDupFile)
-	if luaFormatter != nil {
-		return callLuaUIFormatterIgnoreError(luaFormatter, makeLuaMsgArgsWrapper(basename, ext, dupIndex))
+	msgExpr := getLuaMiscMsg(luaMiscMsgDupFile)
+	if msgExpr != nil {
+		file, err := formatDuplicatedFilenameWithLuaMsg(msgExpr, basename, ext, dupIndex)
+		if file == "" {
+			log.Printf("Lua duplicated file name formatter error: %s", err)
+		} else {
+			return file
+		}
 	}
 
 	file := strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
