@@ -264,8 +264,7 @@ func luaFileSize(L *lua.LState) int {
 
 func luaFileMode(L *lua.LState) int {
 	file := lCheckFile(L, 1)
-	L.Push(lua.LNumber(file.Mode()))
-	return 1
+	return lAddFileModeToState(L, file.Mode())
 }
 
 func luaFileIsDir(L *lua.LState) int {
@@ -1524,10 +1523,7 @@ func lRegisterIconMapType(L *lua.LState) *lua.LTable {
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"get": l// printLength returns the display width of s in terminal cells.
-//
-// It ignores supported terminal control sequences (see [readTermSequence])
-// and accounts for tab expansions using the `tabstop` option.uaIconMapGet,
+		"get": luaIconMapGet,
 	}))
 
 	return mt
