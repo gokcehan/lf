@@ -1,6 +1,7 @@
 package main
 
 import (
+	"bytes"
 	"fmt"
 	"log"
 	"os"
@@ -72,9 +73,29 @@ func (sxs *sixelScreen) printSixel(win *win, screen tcell.Screen, reg *reg) {
 		y += sh
 	}
 
+	// Clear the preview pane in tcell's buffer so old text from
+	// a previous file doesn't linger around or behind the image.
+	st := tcell.StyleDefault
+	for row := range win.h {
+		for col := range win.w {
+			screen.SetContent(win.x+col, win.y+row, ' ', nil, st)
+		}
+	}
+
+	// Also write clear-to-end-of-line for each row of the preview
+	// pane directly to the terminal, so old text is erased even if
+	// tcell's Show() doesn't fully clear it.
+	var clearBuf bytes.Buffer
+	for row := range win.h {
+		fmt.Fprintf(&clearBuf, "\033[%d;%dH\033[0K", win.y+row+1, win.x+1)
+	}
+	clearStr := clearBuf.String()
+
 	fmt.Fprint(os.Stderr, "\033[?2026h") // Begin synchronized update
 	fmt.Fprint(os.Stderr, "\0337")       // Save cursor position
-	fmt.Fprint(os.Stderr, b.String())    // Write data
+	screen.Show()                        // Flush tcell's cleared buffer
+	fmt.Fprint(os.Stderr, clearStr)      // Clear terminal rows
+	fmt.Fprint(os.Stderr, b.String())    // Write sixel + text data
 	fmt.Fprint(os.Stderr, "\0338")       // Restore cursor position
 	fmt.Fprint(os.Stderr, "\033[?2026l") // End synchronized update
 
