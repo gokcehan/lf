@@ -193,7 +193,7 @@ func lRegisterFileTypeMt(L *lua.LState) *lua.LTable {
 		"custom_info": luaFileCustomInfo,
 		"ext":         luaFileExt,
 
-		"extra_info": luaFileExtraInfo,
+		"extra_data": luaFileExtraData,
 
 		"is_previewable": luaFileIsPreviewable,
 	}))
@@ -349,10 +349,9 @@ func luaFileExt(L *lua.LState) int {
 	return 1
 }
 
-// luaFileExtraInfo can get & set Lua value to a table binded to this file object.
-// This method takes data key, and a optional data value, when value argument is
-// not nil, this method will set named key to given value.
-func luaFileExtraInfo(L *lua.LState) int {
+// luaFileExtraData can get & stores value to a map associated with this file.
+// Only number, string, boolean, nil value are supported.
+func luaFileExtraData(L *lua.LState) int {
 	file := lCheckFile(L, 1)
 	key := L.CheckString(2)
 
@@ -361,13 +360,13 @@ func luaFileExtraInfo(L *lua.LState) int {
 		tryRaiseNonSyncLuaStateError(L)
 		value := L.Get(3)
 
-		if file.extraInfo == nil {
-			file.extraInfo = make(map[string]any)
+		if file.extraLuaData == nil {
+			file.extraLuaData = make(map[string]any)
 		}
 
 		goValue, err := luaValueToGoValue(value)
 		if err != nil {
-			file.extraInfo[key] = goValue
+			file.extraLuaData[key] = goValue
 		}
 
 		L.Push(value)
@@ -376,12 +375,12 @@ func luaFileExtraInfo(L *lua.LState) int {
 		return 2
 	}
 
-	if file.extraInfo == nil {
+	if file.extraLuaData == nil {
 		L.Push(lua.LNil)
 		return 1
 	}
 
-	goValue := file.extraInfo[key]
+	goValue := file.extraLuaData[key]
 	value, err := goValueToLuaValue(L, goValue)
 
 	L.Push(value)
@@ -437,6 +436,8 @@ func lRegisterDirType(L *lua.LState) *lua.LTable {
 
 		"iter_files":     luaDirIterFiles,
 		"iter_all_files": luaDirIterAllFiles,
+
+		"extra_data": luaDirExtraData,
 	}))
 
 	return mt
@@ -744,6 +745,46 @@ func luaDirIterAllFiles(L *lua.LState) int {
 	L.Push(lua.LNumber(0))
 
 	return 3
+}
+
+// luaDirExtraData can get & stores value to a map associated with this file.
+// Only number, string, boolean, nil value are supported.
+func luaDirExtraData(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	key := L.CheckString(2)
+
+	nargs := L.GetTop()
+	if nargs >= 3 {
+		tryRaiseNonSyncLuaStateError(L)
+		value := L.Get(3)
+
+		if dir.extraLuaData == nil {
+			dir.extraLuaData = make(map[string]any)
+		}
+
+		goValue, err := luaValueToGoValue(value)
+		if err != nil {
+			dir.extraLuaData[key] = goValue
+		}
+
+		L.Push(value)
+		L.Push(lua.LString(err.Error()))
+
+		return 2
+	}
+
+	if dir.extraLuaData == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	goValue := dir.extraLuaData[key]
+	value, err := goValueToLuaValue(L, goValue)
+
+	L.Push(value)
+	L.Push(lua.LString(err.Error()))
+
+	return 2
 }
 
 // ----------------------------------------------------------------------------

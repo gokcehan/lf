@@ -31,19 +31,19 @@ const (
 )
 
 type file struct {
-	os.FileInfo                // stat information
-	linkState   linkState      // symlink state
-	linkTarget  string         // path a symlink points to
-	path        string         // full path including the name
-	dirCount    int            // number of items inside the directory
-	dirSize     int64          // total directory size (needs to be calculated via `calcdirsize`)
-	accessTime  time.Time      // time of last access
-	birthTime   time.Time      // time of file birth
-	changeTime  time.Time      // time of last status (inode) change
-	customInfo  string         // property defined via `addcustominfo`
-	ext         string         // file extension (including the dot)
-	err         error          // potential error returned by [os.Lstat]
-	extraInfo   map[string]any // stores data set by Lua scripts
+	os.FileInfo                 // stat information
+	linkState    linkState      // symlink state
+	linkTarget   string         // path a symlink points to
+	path         string         // full path including the name
+	dirCount     int            // number of items inside the directory
+	dirSize      int64          // total directory size (needs to be calculated via `calcdirsize`)
+	accessTime   time.Time      // time of last access
+	birthTime    time.Time      // time of file birth
+	changeTime   time.Time      // time of last status (inode) change
+	customInfo   string         // property defined via `addcustominfo`
+	ext          string         // file extension (including the dot)
+	err          error          // potential error returned by [os.Lstat]
+	extraLuaData map[string]any // stores data set and used by Lua scripts
 }
 
 func newFile(path string) *file {
@@ -163,26 +163,27 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading        bool       // whether directory is loading from disk
-	loadTime       time.Time  // last load time
-	ind            int        // 0-based index of current entry in dir.files
-	pos            int        // 0-based cursor row in directory window
-	path           string     // full path of directory
-	files          []*file    // displayed files in directory including or excluding hidden ones
-	allFiles       []*file    // all files in directory including hidden ones (same array as files)
-	sortby         sortMethod // sortby value from last sort
-	dircounts      bool       // dircounts value from last sort
-	dirfirst       bool       // dirfirst value from last sort
-	dironly        bool       // dironly value from last sort
-	hidden         bool       // hidden value from last sort
-	reverse        bool       // reverse value from last sort
-	visualAnchor   int        // index where Visual mode was initiated
-	visualWrap     int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
-	hiddenfiles    []string   // hiddenfiles value from last sort
-	filter         []string   // last filter for this directory
-	sortignorecase bool       // sortignorecase value from last sort
-	sortignoredia  bool       // sortignoredia value from last sort
-	noPerm         bool       // whether lf has no permission to open the directory
+	loading        bool           // whether directory is loading from disk
+	loadTime       time.Time      // last load time
+	ind            int            // 0-based index of current entry in dir.files
+	pos            int            // 0-based cursor row in directory window
+	path           string         // full path of directory
+	files          []*file        // displayed files in directory including or excluding hidden ones
+	allFiles       []*file        // all files in directory including hidden ones (same array as files)
+	sortby         sortMethod     // sortby value from last sort
+	dircounts      bool           // dircounts value from last sort
+	dirfirst       bool           // dirfirst value from last sort
+	dironly        bool           // dironly value from last sort
+	hidden         bool           // hidden value from last sort
+	reverse        bool           // reverse value from last sort
+	visualAnchor   int            // index where Visual mode was initiated
+	visualWrap     int            // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
+	hiddenfiles    []string       // hiddenfiles value from last sort
+	filter         []string       // last filter for this directory
+	sortignorecase bool           // sortignorecase value from last sort
+	sortignoredia  bool           // sortignoredia value from last sort
+	noPerm         bool           // whether lf has no permission to open the directory
+	extraLuaData   map[string]any // stores data set and used by Lua scripts
 }
 
 func newDir(path string) *dir {
