@@ -2028,7 +2028,7 @@ func luaPrintDirEntryContextNew(L *lua.LState) int {
 	if !ok {
 		L.RaiseError("key `dir_beg` should be a number")
 	}
-	dirBeg := int(dirBegValue) - 1
+	dirBeg := int(dirBegValue)
 
 	dirEndValue, ok := tbl.RawGetString("dir_end").(lua.LNumber)
 	if !ok {

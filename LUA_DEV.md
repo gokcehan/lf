@@ -267,7 +267,8 @@ Currently, following keys are supported:
 
   Currently supported keys are:
 
-  - `file`, print one file entry in directory
+  - `directory`, print content in window of a directory
+  - `dir_entry`, print a single entry in directory
   - `ruler`, print ruler line
   - `prompt`, print prompt line
 - `ui_style`

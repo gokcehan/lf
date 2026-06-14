@@ -428,24 +428,27 @@ func printDirEntry(win *win, screen tcell.Screen, context *printDirEntryContext,
 	}
 }
 
-func tryPrintDirEntriesWithLua(win *win, screen tcell.Screen, context *printDirEntryContext, files []*file) bool {
-	msgExpr := getLuaUIPrinter(luaUIPrinterFile)
+func tryPrintDirEntriesWithLua(win *win, ui *ui, context *printDirEntryContext, files []*file) bool {
+	msgExpr := getLuaUIPrinter(luaUIPrinterDirEntry)
 	if msgExpr == nil {
 		return false
 	}
 
 	for i, f := range files {
 		_, err := callLuaMsgExpr(msgExpr, func(L *lua.LState) []lua.LValue {
+			data := L.NewTable()
+			data.RawSetString("context", lWrapPrintDirEntryContext(L, context))
+			data.RawSetString("index", lua.LNumber(i))
+			data.RawSetString("file", lWrapFile(L, f))
+
 			return []lua.LValue{
 				lWrapWin(L, win),
-				lWrapTcellScreen(L, screen),
-				lWrapPrintDirEntryContext(L, context),
-				lua.LNumber(i),
-				lWrapFile(L, f),
+				lWrapUI(L, ui),
+				data,
 			}
 		})
 		if err != nil {
-			log.Printf("Lua UI printer %s error: %s", luaUIPrinterFile, err)
+			log.Printf("Lua UI printer %s error: %s", luaUIPrinterDirEntry, err)
 		}
 	}
 
@@ -535,7 +538,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	files := dir.files[beg:end]
 
-	if !tryPrintDirEntriesWithLua(win, ui.screen, &entryContext, files) {
+	if !tryPrintDirEntriesWithLua(win, ui, &entryContext, files) {
 		for i, f := range files {
 			printDirEntry(win, ui.screen, &entryContext, i, f)
 		}
@@ -550,6 +553,7 @@ func (win *win) tryPrintDirWithLua(ui *ui, dir *dir, context *dirContext, dirSty
 
 	_, err := callLuaMsgExpr(msgExpr, func(L *lua.LState) []lua.LValue {
 		args := L.NewTable()
+		args.RawSetString("dir", lWrapDir(L, dir))
 		args.RawSetString("context", lWrapDirContext(L, context))
 		args.RawSetString("dir_style", lWrapDirStyle(L, dirStyle))
 		args.RawSetString("preview_timer", lWrapTimer(L, previewTimer))
@@ -557,7 +561,6 @@ func (win *win) tryPrintDirWithLua(ui *ui, dir *dir, context *dirContext, dirSty
 		return []lua.LValue{
 			lWrapWin(L, win),
 			lWrapUI(L, ui),
-			lWrapDir(L, dir),
 			args,
 		}
 	})
@@ -851,7 +854,7 @@ func (ui *ui) tryDrawPromptLineWithLua(nav *nav) bool {
 
 		return []lua.LValue{
 			lWrapWin(L, ui.promptWin),
-			lWrapTcellScreen(L, ui.screen),
+			lWrapUI(L, ui),
 			data,
 		}
 	})
@@ -1320,7 +1323,7 @@ func (ui *ui) tryDrawRulerWithLua(nav *nav) bool {
 
 		return []lua.LValue{
 			lWrapWin(L, ui.msgWin),
-			lWrapTcellScreen(L, ui.screen),
+			lWrapUI(L, ui),
 			data,
 		}
 	})

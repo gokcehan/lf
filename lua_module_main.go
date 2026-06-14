@@ -108,7 +108,8 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 
 	// ui printer type
 	uiPrinterType := L.NewTable()
-	uiPrinterType.RawSetString("file", lua.LString(luaUIPrinterFile))
+	uiPrinterType.RawSetString("dir_entry", lua.LString(luaUIPrinterDirEntry))
+	uiPrinterType.RawSetString("directory", lua.LString(luaUIPrinterDirectory))
 	uiPrinterType.RawSetString("ruler", lua.LString(luaUIPrinterRuler))
 	uiPrinterType.RawSetString("prompt", lua.LString(luaUIPrinterPrompt))
 	mod.RawSetString("UIPrinterType", uiPrinterType)

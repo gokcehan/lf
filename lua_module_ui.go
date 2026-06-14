@@ -22,7 +22,8 @@ func lfUIModuleLoader(L *lua.LState) int {
 		"option_to_fmtstr":                luaUIModuleOptionToFmtstr,
 		"strip_term_sequence":             luaUIModuleStripTermSequence,
 
-		"print_dir_entries": luaUIModulePrintDirEntries,
+		"print_dir_entry_list": luaUIModulePrintDirEntryList,
+		"print_dir_entry":      luaUIModulePrintDirEntry,
 	})
 
 	L.Push(mod)
@@ -152,13 +153,13 @@ func luaUIModuleStripTermSequence(L *lua.LState) int {
 	return 1
 }
 
-// luaUIModulePrintDirEntries is default implmenetation of printing given list
+// luaUIModulePrintDirEntryList is default implementation of printing given list
 // of directory entries.
-func luaUIModulePrintDirEntries(L *lua.LState) int {
+func luaUIModulePrintDirEntryList(L *lua.LState) int {
 	tryRaiseSyncLuaStateError(L)
 
 	win := lCheckWin(L, 1)
-	screen := lCheckTcellScreen(L, 2)
+	ui := lCheckUI(L, 2)
 	context := lCheckPrintDirEntryContext(L, 3)
 	fileTbl := L.CheckTable(4)
 
@@ -177,11 +178,27 @@ func luaUIModulePrintDirEntries(L *lua.LState) int {
 		}
 	}
 
-	if !tryPrintDirEntriesWithLua(win, screen, context, files) {
+	if !tryPrintDirEntriesWithLua(win, ui, context, files) {
 		for i, f := range files {
-			printDirEntry(win, screen, context, i, f)
+			printDirEntry(win, ui.screen, context, i, f)
 		}
 	}
+
+	return 0
+}
+
+// luaUIModulePrintDirEntry is default implementation of printing a single file
+// onto screen without invoking `file` Lua UI printer.
+func luaUIModulePrintDirEntry(L *lua.LState) int {
+	tryRaiseSyncLuaStateError(L)
+
+	win := lCheckWin(L, 1)
+	screen := lCheckTcellScreen(L, 2)
+	context := lCheckPrintDirEntryContext(L, 3)
+	index := L.CheckInt(4)
+	file := lCheckFile(L, 5)
+
+	printDirEntry(win, screen, context, index, file)
 
 	return 0
 }

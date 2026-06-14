@@ -55,8 +55,8 @@ const (
 	luaUIFormatterNumber        = "number"
 	luaUIFormatterTag           = "tag"
 
+	luaUIPrinterDirEntry  = "dir_entry"
 	luaUIPrinterDirectory = "directory"
-	luaUIPrinterFile      = "file"
 	luaUIPrinterRuler     = "ruler"
 	luaUIPrinterPrompt    = "prompt"
 
@@ -1521,8 +1521,8 @@ func loadUIPrinterRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		option := key.String()
 		switch option {
-		case luaUIPrinterDirectory,
-			luaUIPrinterFile,
+		case luaUIPrinterDirEntry,
+			luaUIPrinterDirectory,
 			luaUIPrinterRuler,
 			luaUIPrinterPrompt:
 			// ok
