@@ -366,13 +366,15 @@ func luaFileExtraData(L *lua.LState) int {
 
 		goValue, err := luaValueToGoValue(value)
 		if err != nil {
-			file.extraLuaData[key] = goValue
+			L.Push(value)
+			L.Push(lua.LString(err.Error()))
+			return 2
 		}
 
+		file.extraLuaData[key] = goValue
 		L.Push(value)
-		L.Push(lua.LString(err.Error()))
 
-		return 2
+		return 1
 	}
 
 	if file.extraLuaData == nil {
@@ -384,9 +386,12 @@ func luaFileExtraData(L *lua.LState) int {
 	value, err := goValueToLuaValue(L, goValue)
 
 	L.Push(value)
-	L.Push(lua.LString(err.Error()))
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
 
-	return 2
+	return 1
 }
 
 // luaFileIsPreviewable returns true if this file requires a preview call.
@@ -764,13 +769,15 @@ func luaDirExtraData(L *lua.LState) int {
 
 		goValue, err := luaValueToGoValue(value)
 		if err != nil {
-			dir.extraLuaData[key] = goValue
+			L.Push(lua.LNil)
+			L.Push(lua.LString(err.Error()))
+			return 2
 		}
 
+		dir.extraLuaData[key] = goValue
 		L.Push(value)
-		L.Push(lua.LString(err.Error()))
 
-		return 2
+		return 1
 	}
 
 	if dir.extraLuaData == nil {
@@ -782,9 +789,12 @@ func luaDirExtraData(L *lua.LState) int {
 	value, err := goValueToLuaValue(L, goValue)
 
 	L.Push(value)
-	L.Push(lua.LString(err.Error()))
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
 
-	return 2
+	return 1
 }
 
 // ----------------------------------------------------------------------------
