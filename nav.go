@@ -690,7 +690,7 @@ func (nav *nav) resize(ui *ui) {
 	} else {
 		// drop entries that no longer match the new pane height
 		for path, r := range nav.regCache {
-			if r.loading || r.sixel || r.kitty || (previewWin.h > len(r.lines) && len(r.lines) == r.height) {
+			if r.loading || r.kind != previewText || (previewWin.h > len(r.lines) && len(r.lines) == r.height) {
 				delete(nav.regCache, path)
 			}
 		}
@@ -939,7 +939,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				reg.lines = []string{"\033[7mpreview error\033[0m"}
 			} else {
 				reg.lines = kittyLines
-				reg.kitty = true
+				reg.kind = previewKitty
 			}
 			return
 		}
@@ -954,7 +954,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 		reader = bufio.NewReader(f)
 	}
 
-	lines, binary, sixel, kitty := readLines(reader, win.h)
+	lines, binary, kind := readLines(reader, win.h)
 	if binary {
 		lines = []string{"\033[7mbinary\033[0m"}
 	}
@@ -964,16 +964,14 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	// (e.g. OSC 52 clipboard writes). Replace control characters with
 	// U+FFFD so they are visible but cannot form escape sequences.
 	if len(gOpts.previewer) == 0 && !binary {
-		sixel = false
-		kitty = false
+		kind = previewText
 		for i, l := range lines {
 			lines[i] = sanitizePreview(l)
 		}
 	}
 
 	reg.lines = lines
-	reg.sixel = sixel
-	reg.kitty = kitty
+	reg.kind = kind
 }
 
 func (nav *nav) loadReg(path string, volatile bool) *reg {

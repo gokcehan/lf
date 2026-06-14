@@ -467,7 +467,7 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // with very long or no newlines.
 // Sixel and Kitty images are also detected and stored as separate lines.
 // C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
-func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool, kitty bool) {
+func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, kind previewKind) {
 	const maxLineBytes = 1 << 16 // 64 KiB per line
 
 	type state int
@@ -506,7 +506,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 		case stateNormal:
 			// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
 			if b < 0x07 || (b > 0x0D && b < 0x1B) || (b > 0x1B && b < 0x20) || b == 0x7F {
-				return nil, true, false, false
+				return nil, true, previewText
 			}
 			switch b {
 			case '\033':
@@ -555,7 +555,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 			if b == '\\' {
 				buf.WriteByte(b)
 				flush(true)
-				sixel = true
+				kind = previewSixel
 				currState = stateNormal
 			} else {
 				buf.Reset()
@@ -567,7 +567,7 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 			// a Kitty command or the sequence is terminated.
 			if b == 'G' {
 				buf.WriteByte(b)
-				kitty = true
+				kind = previewKitty
 				currState = stateKitty
 			} else if b >= 0x20 && b <= 0x7E {
 				buf.WriteByte(b)

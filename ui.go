@@ -143,9 +143,9 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, kts *k
 		} else {
 			previewTimer.Reset(previewLoadingDelay)
 		}
-	case reg.sixel:
+	case reg.kind == previewSixel:
 		sxs.printSixel(win, screen, reg)
-	case reg.kitty:
+	case reg.kind == previewKitty:
 		kts.printKitty(win, screen, reg)
 	default:
 		st := tcell.StyleDefault
@@ -158,10 +158,10 @@ func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, kts *k
 		}
 	}
 
-	if !reg.sixel {
+	if reg.kind != previewSixel {
 		sxs.lastFile = ""
 	}
-	if !reg.kitty {
+	if reg.kind != previewKitty {
 		kts.lastFile = ""
 	}
 }
@@ -612,14 +612,22 @@ func (ui *ui) echoerrf(format string, a ...any) {
 //
 // Note: the name `reg` is historical. It originally meant "regular"
 // file preview, but `previewer` now also supports non-regular files.
+// previewKind describes the content type of a preview region.
+type previewKind int
+
+const (
+	previewText  previewKind = iota // plain text (not an image)
+	previewSixel                    // sixel graphics
+	previewKitty                    // kitty graphics protocol
+)
+
 type reg struct {
 	loading  bool
 	volatile bool
 	loadTime time.Time
 	path     string
 	lines    []string
-	sixel    bool
-	kitty    bool
+	kind     previewKind
 	height   int
 }
 

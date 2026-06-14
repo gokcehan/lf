@@ -511,64 +511,63 @@ func TestReadLines(t *testing.T) {
 		maxLines int
 		lines    []string
 		binary   bool
-		sixel    bool
-		kitty    bool
+		kind     previewKind
 	}{
-		{"", 10, nil, false, false, false},
-		{"\r", 10, nil, false, false, false},
-		{"\r\n", 10, []string{""}, false, false, false},
-		{"\r\r\n", 10, []string{""}, false, false, false},
-		{"\n\n", 10, []string{"", ""}, false, false, false},
-		{"foo", 10, []string{"foo"}, false, false, false},
-		{"foo\n", 10, []string{"foo"}, false, false, false},
-		{"foo\r\n", 10, []string{"foo"}, false, false, false},
-		{"foo\nbar", 10, []string{"foo", "bar"}, false, false, false},
-		{"foo\nbar\n", 10, []string{"foo", "bar"}, false, false, false},
-		{"foo\r\nbar", 10, []string{"foo", "bar"}, false, false, false},
-		{"foo\r\nbar\r\n", 10, []string{"foo", "bar"}, false, false, false},
-		{"\033[31mfoo\033[0m", 10, []string{"\033[31mfoo\033[0m"}, false, false, false},
-		{"\000", 10, nil, true, false, false},
-		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false, false},
-		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true, false},
-		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true, false},
-		{"\033P\000\033\\", 10, []string{"\033\\"}, false, false, false},
-		{"\033P\n\033\\", 10, []string{"\033P\033\\"}, false, true, false},
-		{"\033P\r\n\033\\", 10, []string{"\033P\033\\"}, false, true, false},
-		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true, false},
-		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, true, false},
-		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, true, false},
-		{"foo\nbar\nbaz", 2, []string{"foo", "bar"}, false, false, false},
-		{"foo\nbar\nbaz\n", 2, []string{"foo", "bar"}, false, false, false},
-		{"foo\nbar\033P\033\\", 2, []string{"foo", "bar"}, false, false, false},
-		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false, false},
-		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false, false},
-		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true, false},
+		{"", 10, nil, false, previewText},
+		{"\r", 10, nil, false, previewText},
+		{"\r\n", 10, []string{""}, false, previewText},
+		{"\r\r\n", 10, []string{""}, false, previewText},
+		{"\n\n", 10, []string{"", ""}, false, previewText},
+		{"foo", 10, []string{"foo"}, false, previewText},
+		{"foo\n", 10, []string{"foo"}, false, previewText},
+		{"foo\r\n", 10, []string{"foo"}, false, previewText},
+		{"foo\nbar", 10, []string{"foo", "bar"}, false, previewText},
+		{"foo\nbar\n", 10, []string{"foo", "bar"}, false, previewText},
+		{"foo\r\nbar", 10, []string{"foo", "bar"}, false, previewText},
+		{"foo\r\nbar\r\n", 10, []string{"foo", "bar"}, false, previewText},
+		{"\033[31mfoo\033[0m", 10, []string{"\033[31mfoo\033[0m"}, false, previewText},
+		{"\000", 10, nil, true, previewText},
+		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, previewText},
+		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, previewSixel},
+		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, previewSixel},
+		{"\033P\000\033\\", 10, []string{"\033\\"}, false, previewText},
+		{"\033P\n\033\\", 10, []string{"\033P\033\\"}, false, previewSixel},
+		{"\033P\r\n\033\\", 10, []string{"\033P\033\\"}, false, previewSixel},
+		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, previewSixel},
+		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, previewSixel},
+		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, previewSixel},
+		{"foo\nbar\nbaz", 2, []string{"foo", "bar"}, false, previewText},
+		{"foo\nbar\nbaz\n", 2, []string{"foo", "bar"}, false, previewText},
+		{"foo\nbar\033P\033\\", 2, []string{"foo", "bar"}, false, previewText},
+		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, previewText},
+		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, previewText},
+		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, previewSixel},
 		// Inside the DCS body, ESC must be followed by '\\' (ST) for the
 		// frame to be accepted. Any other byte aborts, so an attacker
 		// cannot embed CSI/OSC/nested-DCS through the sixel path.
-		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, false, false},
+		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, previewText},
 		// Kitty graphics protocol: \033_G...\033\\
-		{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\", 10, []string{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\"}, false, false, true},
-		{"foo\033_Ga=T;data\033\\bar", 10, []string{"foo", "\033_Ga=T;data\033\\bar"}, false, false, true},
-		{"\033_G\n;\033\\", 10, []string{"\033_G;\033\\"}, false, false, true},
-		{"\033_G\r\n;\033\\", 10, []string{"\033_G;\033\\"}, false, false, true},
+		{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\", 10, []string{"\033_Ga=T,f=100,s=1,v=1;AA==\033\\"}, false, previewKitty},
+		{"foo\033_Ga=T;data\033\\bar", 10, []string{"foo", "\033_Ga=T;data\033\\bar"}, false, previewKitty},
+		{"\033_G\n;\033\\", 10, []string{"\033_G;\033\\"}, false, previewKitty},
+		{"\033_G\r\n;\033\\", 10, []string{"\033_G;\033\\"}, false, previewKitty},
 		// Kitty with raw binary payload (simulating chafa -f kitty f=32,t=d).
 		// The payload after ';' may contain any byte including \000, \033, etc.
-		{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\"}, false, false, true},
+		{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\x01\x02\033\\"}, false, previewKitty},
 		// \033 byte in raw payload followed by non-\\ must NOT abort the frame.
-		{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\"}, false, false, true},
+		{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\", 10, []string{"\033_Ga=T,f=32,s=1,v=1;\x00\033@more\033\\"}, false, previewKitty},
 		// Verify non-kitty APC (no G after ESC _) is not flagged as kitty.
-		{"\033_Xhello\033\\", 10, []string{"\033_Xhello\033\\"}, false, false, false},
+		{"\033_Xhello\033\\", 10, []string{"\033_Xhello\033\\"}, false, previewText},
 	}
 
 	for _, test := range tests {
-		lines, binary, sixel, kitty := readLines(strings.NewReader(test.s), test.maxLines)
-		if !reflect.DeepEqual(lines, test.lines) || binary != test.binary || sixel != test.sixel || kitty != test.kitty {
+		lines, binary, kind := readLines(strings.NewReader(test.s), test.maxLines)
+		if !reflect.DeepEqual(lines, test.lines) || binary != test.binary || kind != test.kind {
 			t.Errorf(
-				"at input (%q, %v) expected (%#v, %v, %v, %v) but got (%#v, %v, %v, %v)",
+				"at input (%q, %v) expected (%#v, %v, %v) but got (%#v, %v, %v)",
 				test.s, test.maxLines,
-				test.lines, test.binary, test.sixel, test.kitty,
-				lines, binary, sixel, kitty,
+				test.lines, test.binary, test.kind,
+				lines, binary, kind,
 			)
 		}
 	}
@@ -646,15 +645,15 @@ func TestReadLinesChafa(t *testing.T) {
 		t.Skipf("skipping: chafa test data not found (%s)", err)
 	}
 
-	lines, binary, sixel, kitty := readLines(bytes.NewReader(data), 100)
+	lines, binary, kind := readLines(bytes.NewReader(data), 100)
 	if binary {
 		t.Fatal("unexpected binary detection")
 	}
-	if sixel {
+	if kind == previewSixel {
 		t.Fatal("unexpected sixel detection")
 	}
-	if !kitty {
-		t.Fatalf("expected kitty=true, got kitty=%v (lines=%d)", kitty, len(lines))
+	if kind != previewKitty {
+		t.Fatalf("expected kitty, got kind=%v (lines=%d)", kind, len(lines))
 	}
 
 	// The first line should be \033[?25l (cursor hide CSI)
