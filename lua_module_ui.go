@@ -12,7 +12,8 @@ func lfUIModuleLoader(L *lua.LState) int {
 		"print_length":  lfUIModulePrintLength,
 		"display_width": lfUIModuleDisplayWidth,
 
-		"get_formatter":                   luaMainModuleGetUIFormatter,
+		"get_formatter":                   luaUIModuleGetUIFormatter,
+		"get_printer":                     luaUIModuleGetUIPrinter,
 		"call_formatter_with_default_str": luaUIModuleCallFormatterWithDefaultStr,
 		"get_style_with_default_str":      luaUIModuleGetStyleWithDefaultStr,
 		"format_option_str":               luaUIModuleFormatUIOptionStr,
@@ -20,6 +21,8 @@ func lfUIModuleLoader(L *lua.LState) int {
 		"truncate_filename":               luaUIModuleTruncateFilename,
 		"option_to_fmtstr":                luaUIModuleOptionToFmtstr,
 		"strip_term_sequence":             luaUIModuleStripTermSequence,
+
+		"print_dir_entries": luaUIModulePrintDirEntries,
 	})
 
 	L.Push(mod)
@@ -45,10 +48,16 @@ func lfUIModuleDisplayWidth(L *lua.LState) int {
 	return 1
 }
 
-func luaMainModuleGetUIFormatter(L *lua.LState) int {
+func luaUIModuleGetUIFormatter(L *lua.LState) int {
 	name := L.CheckString(1)
 	formatter := getLuaUIFormatter(name)
 	return lAddLuaMsgExprToState(L, formatter)
+}
+
+func luaUIModuleGetUIPrinter(L *lua.LState) int {
+	name := L.CheckString(1)
+	expr := getLuaUIPrinter(name)
+	return lAddLuaMsgExprToState(L, expr)
 }
 
 func luaUIModuleCallFormatterWithDefaultStr(L *lua.LState) int {
@@ -141,4 +150,38 @@ func luaUIModuleStripTermSequence(L *lua.LState) int {
 	str := L.CheckString(1)
 	L.Push(lua.LString(stripTermSequence(str)))
 	return 1
+}
+
+// luaUIModulePrintDirEntries is default implmenetation of printing given list
+// of directory entries.
+func luaUIModulePrintDirEntries(L *lua.LState) int {
+	tryRaiseSyncLuaStateError(L)
+
+	win := lCheckWin(L, 1)
+	screen := lCheckTcellScreen(L, 2)
+	context := lCheckPrintDirEntryContext(L, 3)
+	fileTbl := L.CheckTable(4)
+
+	nFile := fileTbl.Len()
+	files := make([]*file, nFile)
+	for i := 1; i <= nFile; i++ {
+		value := fileTbl.RawGetInt(i)
+		if ud, ok := value.(*lua.LUserData); ok {
+			if file, ok := ud.Value.(*file); ok {
+				files[i-1] = file
+			} else {
+				L.ArgError(4, fmt.Sprintf("element #%d is not a file object", i))
+			}
+		} else {
+			L.ArgError(4, fmt.Sprintf("element #%d is not userdata", i))
+		}
+	}
+
+	if !tryPrintDirEntriesWithLua(win, screen, context, files) {
+		for i, f := range files {
+			printDirEntry(win, screen, context, i, f)
+		}
+	}
+
+	return 0
 }

@@ -51,6 +51,9 @@ func lfMainModuleLoader(L *lua.LState) int {
 }
 
 func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
+	// constant
+	mod.RawSetString("PREVIEW_LOADING_DELAY", lua.LNumber(previewLoadingDelay))
+
 	// clipboard mode
 	clipboardMode := L.NewTable()
 	clipboardMode.RawSetString("Copy", lua.LNumber(clipboardCopy))

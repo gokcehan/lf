@@ -55,9 +55,10 @@ const (
 	luaUIFormatterNumber        = "number"
 	luaUIFormatterTag           = "tag"
 
-	luaUIPrinterFile   = "file"
-	luaUIPrinterRuler  = "ruler"
-	luaUIPrinterPrompt = "prompt"
+	luaUIPrinterDirectory = "directory"
+	luaUIPrinterFile      = "file"
+	luaUIPrinterRuler     = "ruler"
+	luaUIPrinterPrompt    = "prompt"
 
 	luaUIStyleBorder     = "border"
 	luaUIStyleCopy       = "copy"
@@ -542,6 +543,32 @@ func goReflectValueToLuaValue(L *lua.LState, rValue reflect.Value) (luaValue lua
 		}
 
 		luaValue = tbl
+	case reflect.Ptr:
+		if rValue.IsNil() {
+			luaValue = lua.LNil
+		} else {
+			ud := L.NewUserData()
+			ud.Value = rValue.Pointer()
+		}
+	case reflect.Interface:
+		if rValue.IsNil() {
+			luaValue = lua.LNil
+		} else if rValue.CanInterface() {
+			ud := L.NewUserData()
+			ud.Value = rValue.Interface()
+		} else {
+			err = fmt.Errorf("unaccessable interface value")
+		}
+	case reflect.Struct:
+		if rValue.CanAddr() {
+			ud := L.NewUserData()
+			ud.Value = rValue.Addr().Pointer()
+		} else if rValue.CanInterface() {
+			ud := L.NewUserData()
+			ud.Value = rValue.Interface()
+		} else {
+			err = fmt.Errorf("unaddressable struct value")
+		}
 	default:
 		err = fmt.Errorf("unsupported value type: %s", rValue.Kind())
 		luaValue = lua.LNil
@@ -696,33 +723,39 @@ func setupLuaTypeBindings(L *lua.LState) {
 	// bufio
 	lfTypes.RawSetString("BufWriter", lRegisterBufWriterType(L))
 	lfTypes.RawSetString("BufReader", lRegisterBufReaderType(L))
+	// exec
+	lfTypes.RawSetString("Cmd", lRegisterCmdType(L))
 	// fs
+	lfTypes.RawSetString("DirEntry", lRegisterDirEntryType(L))
 	lfTypes.RawSetString("FileInfo", lRegisterFileInfoType(L))
+	lfTypes.RawSetString("FileMode", lRegisterFileModeType(L))
 	// main
 	lfTypes.RawSetString("App", lRegisterAppType(L))
 	lfTypes.RawSetString("CompMatch", lRegisterCompMatchType(L))
 	lfTypes.RawSetString("Clipboard", lRegisterClipboardType(L))
 	lfTypes.RawSetString("Dir", lRegisterDirType(L))
+	lfTypes.RawSetString("DirContext", lRegisterDirContextType(L))
 	lfTypes.RawSetString("DirStyle", lRegisterDirStyleType(L))
 	lfTypes.RawSetString("File", lRegisterFileTypeMt(L))
 	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
 	lfTypes.RawSetString("IconDef", lRegisterIconDefType(L))
 	lfTypes.RawSetString("IconMap", lRegisterIconMapType(L))
+	lfTypes.RawSetString("LuaMsgExpr", lRegisterLuaMsgExprType(L))
 	lfTypes.RawSetString("Nav", lRegisterNavType(L))
 	lfTypes.RawSetString("PrintDirEntryContext", lRegisterPrintDirEntryContextType(L))
 	lfTypes.RawSetString("StyleMap", lRegisterStyleMapType(L))
 	lfTypes.RawSetString("Win", lRegisterWinType(L))
 	lfTypes.RawSetString("UI", lRegisterUIType(L))
-	// exec
-	lfTypes.RawSetString("Cmd", lRegisterCmdType(L))
 	// tcell
 	lfTypes.RawSetString("TcellColor", lRegisterTcellColorType(L))
+	lfTypes.RawSetString("TcellScreen", lRegisterTcellScreenType(L))
 	lfTypes.RawSetString("TcellStyle", lRegisterTcellStyleType(L))
 	// time
-	lfTypes.RawSetString("Time", lRegisterTimeType(L))
-	lfTypes.RawSetString("Month", lRegisterMonthType(L))
-	lfTypes.RawSetString("Weekday", lRegisterWeekdayType(L))
 	lfTypes.RawSetString("Duration", lRegisterDurationType(L))
+	lfTypes.RawSetString("Month", lRegisterMonthType(L))
+	lfTypes.RawSetString("Time", lRegisterTimeType(L))
+	lfTypes.RawSetString("Timer", lRegisterTimerType(L))
+	lfTypes.RawSetString("Weekday", lRegisterWeekdayType(L))
 
 	L.SetGlobal("lf_types", lfTypes)
 }
@@ -741,9 +774,22 @@ func tryRaiseNonSyncLuaStateError(L *lua.LState) {
 	if !gLuaPool.checkIsSyncState(L) {
 		app, _ := getAppObjectFromLuaGlobals(L)
 		if app != nil {
-			app.ui.exprChan <- &callExpr{"echoerr", []string{"synchronous Lua function is called under asynchronous mode"}, 1}
+			app.ui.exprChan <- &callExpr{"echoerr", []string{"synchronous Lua function is called under async mode"}, 1}
 		}
 		L.RaiseError("this func should be called with synchronous mode")
+	}
+}
+
+// tryRaiseSyncLuaStateError raises an error if `L` is synchronous Lua state.
+// This function is used to enforce a Lua API to be called with asynchronous mode,
+// such as a Lua API that calls other Lua mesages in it.
+func tryRaiseSyncLuaStateError(L *lua.LState) {
+	if gLuaPool.checkIsSyncState(L) {
+		app, _ := getAppObjectFromLuaGlobals(L)
+		if app != nil {
+			app.ui.exprChan <- &callExpr{"echoerr", []string{"async Lua API is called under synchronous mode"}, 1}
+		}
+		L.RaiseError("this func should be called with asynchronous mode")
 	}
 }
 
@@ -1475,7 +1521,8 @@ func loadUIPrinterRegistryFromTbl(sourceName string, tbl *lua.LTable) {
 
 		option := key.String()
 		switch option {
-		case luaUIPrinterFile,
+		case luaUIPrinterDirectory,
+			luaUIPrinterFile,
 			luaUIPrinterRuler,
 			luaUIPrinterPrompt:
 			// ok
@@ -1789,6 +1836,8 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		luaArgs = callArgs.getArgs(L)
 	}
 
+	oldTop := L.GetTop()
+
 	L.Push(action)
 	for _, arg := range luaArgs {
 		L.Push(arg)
@@ -1799,7 +1848,7 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		return nil, err
 	}
 
-	nRet := L.GetTop()
+	nRet := L.GetTop() - oldTop
 	defer L.Pop(nRet)
 	if nRet <= 0 {
 		return nil, nil

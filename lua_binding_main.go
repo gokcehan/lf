@@ -1262,12 +1262,12 @@ func lRegisterUIType(L *lua.LState) *lua.LTable {
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"screen": luaUiScreen,
+
 		"echo":     luaUIEcho,
 		"echomsg":  luaUIEchoMsg,
 		"echoerr":  luaUIEchhoErr,
 		"echoerrf": luaUIEchhoErrf,
-
-		"screen": luaUiScreen,
 	}))
 
 	return mt
@@ -1397,7 +1397,8 @@ func lRegisterWinType(L *lua.LState) *lua.LTable {
 
 		"renew": luaWinRenew,
 
-		"print": luaWinPrint,
+		"print":     luaWinPrint,
+		"print_msg": luaWinPrintMsg,
 	}))
 
 	return mt
@@ -1495,6 +1496,16 @@ func luaWinPrint(L *lua.LState) int {
 	result := win.print(screen, x, y, *st, str)
 
 	return lAddTcellStyleToState(L, &result)
+}
+
+func luaWinPrintMsg(L *lua.LState) int {
+	win := lCheckWin(L, 1)
+	screen := lCheckTcellScreen(L, 2)
+	msg := L.CheckString(3)
+
+	win.printMsg(screen, msg)
+
+	return 0
 }
 
 // ----------------------------------------------------------------------------
@@ -1753,6 +1764,186 @@ func luaIconMapGet(L *lua.LState) int {
 }
 
 // ----------------------------------------------------------------------------
+// type dirContext
+
+const LuaDirContextTypeName = "lf.dirContext"
+
+func lRegisterDirContextType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaDirContextTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"selections": luaDirContextSelections,
+		"clipboard":  luaDirContextClipboard,
+		"tags":       luaDirContextTags,
+
+		"get_selection_index": luaDirContextGetSelectionIndex,
+		"get_tag":             luaDirContextGetTag,
+	}))
+
+	return mt
+}
+
+func lCheckDirContext(L *lua.LState, index int) *dirContext {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*dirContext); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `DirContext` expected")
+
+	return nil
+}
+
+func lWrapDirContext(L *lua.LState, data *dirContext) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaDirContextTypeName))
+
+	return ud
+}
+
+func lAddDirContextToState(L *lua.LState, data *dirContext) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapDirContext(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaDirContextNew(L *lua.LState) int {
+	tbl := L.CheckTable(1)
+
+	selectionsTbl, ok := tbl.RawGetString("selections").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `selections` should be a table")
+	}
+	selections := map[string]int{}
+	selectionsTbl.ForEach(func(kValue, vValue lua.LValue) {
+		key, keyOk := kValue.(lua.LString)
+		value, valueOk := vValue.(lua.LNumber)
+		if keyOk && valueOk {
+			selections[string(key)] = int(value)
+		}
+	})
+
+	clipboardValue, ok := tbl.RawGetString("clipboard").(*lua.LUserData)
+	if !ok {
+		L.RaiseError("key `clipboard` should be a userdata")
+	}
+	clipboard, ok := clipboardValue.Value.(*clipboard)
+	if !ok {
+		L.RaiseError("key `clipboard` should be a clipboard object")
+	}
+
+	tagTbl, ok := tbl.RawGetString("tags").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `tags` should be a table")
+	}
+	tags := map[string]string{}
+	tagTbl.ForEach(func(kValue, vValue lua.LValue) {
+		key, keyOk := kValue.(lua.LString)
+		value, valueOk := vValue.(lua.LString)
+		if keyOk && valueOk {
+			tags[string(key)] = string(value)
+		}
+	})
+
+	visualSelectionTbl, ok := tbl.RawGetString("visual_selections").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `visual_selections` should be a table")
+	}
+	visualSelections := []string{}
+	nVisualSelection := visualSelectionTbl.Len()
+	for i := 1; i <= nVisualSelection; i++ {
+		value := visualSelectionTbl.RawGetInt(i)
+		if path, ok := value.(lua.LString); ok {
+			visualSelections = append(visualSelections, string(path))
+		}
+	}
+
+	context := &dirContext{
+		selections: selections,
+		clipboard:  *clipboard,
+		tags:       tags,
+	}
+
+	return lAddDirContextToState(L, context)
+}
+
+// ----------------------------------------------------------------------------
+
+func luaDirContextSelections(L *lua.LState) int {
+	context := lCheckDirContext(L, 1)
+
+	tbl := L.NewTable()
+	for k, v := range context.selections {
+		tbl.RawSetString(k, lua.LNumber(v))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+func luaDirContextClipboard(L *lua.LState) int {
+	context := lCheckDirContext(L, 1)
+	return lAddClipboardToState(L, &context.clipboard)
+}
+
+func luaDirContextTags(L *lua.LState) int {
+	context := lCheckDirContext(L, 1)
+
+	tbl := L.NewTable()
+	for k, v := range context.tags {
+		tbl.RawSetString(k, lua.LString(v))
+	}
+
+	L.Push(tbl)
+
+	return 1
+}
+
+// luaDirContextGetSelectionIndex returns 1-based selection index of
+// given path, returns 0 when that path is not selected.
+func luaDirContextGetSelectionIndex(L *lua.LState) int {
+	context := lCheckDirContext(L, 1)
+	path := L.CheckString(2)
+
+	index, found := context.selections[path]
+	if found {
+		L.Push(lua.LNumber(index + 1))
+	} else {
+		L.Push(lua.LNumber(0))
+	}
+
+	return 1
+}
+
+// luaDirContextGetTag returns tag of given path, returns `nil` when
+// no tag is set for target path.
+func luaDirContextGetTag(L *lua.LState) int {
+	context := lCheckDirContext(L, 1)
+	path := L.CheckString(2)
+
+	tag, ok := context.tags[path]
+	if ok {
+		L.Push(lua.LString(tag))
+	} else {
+		L.Push(lua.LNil)
+	}
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
 // type printDirEntryContext
 
 const LuaPrintDirEntryContextTypeName = "lf.printDirEntryContext"
@@ -1760,7 +1951,9 @@ const LuaPrintDirEntryContextTypeName = "lf.printDirEntryContext"
 func lRegisterPrintDirEntryContextType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(LuaPrintDirEntryContextTypeName)
 
-	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetFuncs(mt, map[string]lua.LGFunction{
+		"new": luaPrintDirEntryContextNew,
+	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
 		"dir":       luaPrintDirEntryContextDir,
 		"dir_beg":   luaPrintDirEntryContextDirBeg,
@@ -1815,6 +2008,133 @@ func lAddPrintDirEntryContextToState(L *lua.LState, data *printDirEntryContext) 
 	L.Push(ud)
 
 	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaPrintDirEntryContextNew(L *lua.LState) int {
+	tbl := L.CheckTable(1)
+
+	dirUd, ok := tbl.RawGetString("dir").(*lua.LUserData)
+	if !ok {
+		L.RaiseError("key `dir` should be userdata")
+	}
+	dir, ok := dirUd.Value.(*dir)
+	if !ok {
+		L.RaiseError("key `dir` should be a dir object")
+	}
+
+	dirBegValue, ok := tbl.RawGetString("dir_beg").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `dir_beg` should be a number")
+	}
+	dirBeg := int(dirBegValue) - 1
+
+	dirEndValue, ok := tbl.RawGetString("dir_end").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `dir_end` should be a number")
+	}
+	dirEnd := int(dirEndValue)
+
+	dirStyleUd, ok := tbl.RawGetString("dir_style").(*lua.LUserData)
+	if !ok {
+		L.RaiseError("key `dir_style` should be userdata")
+	}
+	dirStyle, ok := dirStyleUd.Value.(*dirStyle)
+	if !ok {
+		L.RaiseError("key `dir_style should be dirStyle object")
+	}
+
+	lnwidthValue, ok := tbl.RawGetString("lnwidth").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `lnwidth` should be a number")
+	}
+	lnwidth := int(lnwidthValue)
+
+	userWidthValue, ok := tbl.RawGetString("user_width").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `lnwidth` should be a number")
+	}
+	userWidth := int(userWidthValue)
+
+	groupWidthValue, ok := tbl.RawGetString("group_width").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `lnwidth` should be a number")
+	}
+	groupWidth := int(groupWidthValue)
+
+	customWidthValue, ok := tbl.RawGetString("custom_width").(lua.LNumber)
+	if !ok {
+		L.RaiseError("key `lnwidth` should be a number")
+	}
+	customWidth := int(customWidthValue)
+
+	selectionsTbl, ok := tbl.RawGetString("selections").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `selections` should be a table")
+	}
+	selections := map[string]int{}
+	selectionsTbl.ForEach(func(kValue, vValue lua.LValue) {
+		key, keyOk := kValue.(lua.LString)
+		value, valueOk := vValue.(lua.LNumber)
+		if keyOk && valueOk {
+			selections[string(key)] = int(value)
+		}
+	})
+
+	clipboardValue, ok := tbl.RawGetString("clipboard").(*lua.LUserData)
+	if !ok {
+		L.RaiseError("key `clipboard` should be a userdata")
+	}
+	clipboard, ok := clipboardValue.Value.(*clipboard)
+	if !ok {
+		L.RaiseError("key `clipboard` should be a clipboard object")
+	}
+
+	tagTbl, ok := tbl.RawGetString("tags").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `tags` should be a table")
+	}
+	tags := map[string]string{}
+	tagTbl.ForEach(func(kValue, vValue lua.LValue) {
+		key, keyOk := kValue.(lua.LString)
+		value, valueOk := vValue.(lua.LString)
+		if keyOk && valueOk {
+			tags[string(key)] = string(value)
+		}
+	})
+
+	visualSelectionTbl, ok := tbl.RawGetString("visual_selections").(*lua.LTable)
+	if !ok {
+		L.RaiseError("key `visual_selections` should be a table")
+	}
+	visualSelections := []string{}
+	nVisualSelection := visualSelectionTbl.Len()
+	for i := 1; i <= nVisualSelection; i++ {
+		value := visualSelectionTbl.RawGetInt(i)
+		if path, ok := value.(lua.LString); ok {
+			visualSelections = append(visualSelections, string(path))
+		}
+	}
+
+	context := &printDirEntryContext{
+		dir:      dir,
+		dirBeg:   dirBeg,
+		dirEnd:   dirEnd,
+		dirStyle: dirStyle,
+
+		lnwidth:     lnwidth,
+		userWidth:   userWidth,
+		groupWidth:  groupWidth,
+		customWidth: customWidth,
+
+		selections:       selections,
+		clipboard:        *clipboard,
+		tags:             tags,
+		visualSelections: visualSelections,
+	}
+
+	return lAddPrintDirEntryContextToState(L, context)
 }
 
 // ----------------------------------------------------------------------------

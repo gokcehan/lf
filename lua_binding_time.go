@@ -463,9 +463,17 @@ func lRegisterDurationType(L *lua.LState) *lua.LTable {
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":        luaDurationNew,
 		"__mul":      luaDurationMetaMul,
+		"__eq":       luaDurationMetaEq,
+		"__lt":       luaDurationMetaLt,
+		"__le":       luaDurationMetaLe,
 		"__tostring": luaDurationMetaTostring,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"mul": luaDurationMetaMul,
+		"eq":  luaDurationMetaEq,
+		"lt":  luaDurationMetaLt,
+		"le":  luaDurationMetaLe,
+
 		"nanoseconds":  luaDurationNanoseconds,
 		"microseconds": luadurationMicroseconds,
 		"milliseconds": luaDurationMilliseconds,
@@ -537,6 +545,27 @@ func luaDurationMetaMul(L *lua.LState) int {
 	return lAddDurationToState(L, result)
 }
 
+func luaDurationMetaEq(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	L.Push(lua.LBool(self == other))
+	return 1
+}
+
+func luaDurationMetaLt(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	L.Push(lua.LBool(self < other))
+	return 1
+}
+
+func luaDurationMetaLe(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	L.Push(lua.LBool(self <= other))
+	return 1
+}
+
 func luaDurationMetaTostring(L *lua.LState) int {
 	dur := lCheckDuration(L, 1)
 	L.Push(lua.LString(dur.String()))
@@ -598,4 +627,68 @@ func luaDurationRound(L *lua.LState) int {
 func luaDurationAbs(L *lua.LState) int {
 	dur := lCheckDuration(L, 1)
 	return lAddDurationToState(L, dur.Abs())
+}
+
+// ----------------------------------------------------------------------------
+// type time.Timer
+
+const LuaTimerTypeName = "time.Timer"
+
+func lRegisterTimerType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(LuaTimerTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"reset": luaTimerReset,
+		"stop":  luaTimerStop,
+	}))
+
+	return mt
+}
+
+func lCheckTimer(L *lua.LState, index int) *time.Timer {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*time.Timer); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `Timer` expected")
+
+	return nil
+}
+
+func lWrapTimer(L *lua.LState, data *time.Timer) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(LuaTimerTypeName))
+
+	return ud
+}
+
+func lAddTimerToState(L *lua.LState, data *time.Timer) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapTimer(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaTimerReset(L *lua.LState) int {
+	timer := lCheckTimer(L, 1)
+	duration := lCheckDuration(L, 2)
+	L.Push(lua.LBool(timer.Reset(duration)))
+	return 1
+}
+
+func luaTimerStop(L *lua.LState) int {
+	timer := lCheckTimer(L, 1)
+	L.Push(lua.LBool(timer.Stop()))
+	return 1
 }
