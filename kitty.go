@@ -5,21 +5,27 @@ import (
 	"encoding/base64"
 	"fmt"
 	"image"
-	_ "image/gif"
-	_ "image/jpeg"
 	"image/png"
 	"os"
 	"path/filepath"
 	"strconv"
 	"strings"
 
+	_ "image/gif"
+	_ "image/jpeg"
+
 	"github.com/gdamore/tcell/v3"
+
+	_ "golang.org/x/image/bmp"
+	_ "golang.org/x/image/tiff"
+	_ "golang.org/x/image/webp"
 )
 
 // imageExtensions lists file extensions that are treated as images for
 // built-in Kitty protocol previews.
 var imageExtensions = map[string]bool{
 	".png": true, ".jpg": true, ".jpeg": true, ".gif": true,
+	".bmp": true, ".tiff": true, ".tif": true, ".webp": true,
 }
 
 func isImageFile(path string) bool {
