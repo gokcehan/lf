@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"log"
 	"slices"
 
 	lua "github.com/yuin/gopher-lua"
@@ -436,8 +435,8 @@ func lRegisterDirType(L *lua.LState) *lua.LTable {
 		"visual_selections": luaDirVisualSelectioins,
 		"sel":               luaDirSel,
 
-		"files_for_each":     luaDirFilesForEach,
-		"all_files_for_each": luaDirAllFilesForEach,
+		"iter_files":     luaDirIterFiles,
+		"iter_all_files": luaDirIterAllFiles,
 	}))
 
 	return mt
@@ -678,50 +677,73 @@ func luaDirSel(L *lua.LState) int {
 	return 0
 }
 
-// luaDirFilesForEach is a helper method for iterating over list of displayed files.
-func luaDirFilesForEach(L *lua.LState) int {
+// luaDirIterFiles returns iterator over displayed files.
+func luaDirIterFiles(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
-	fn := L.CheckFunction(2)
 
-	for i, file := range dir.files {
-		err := L.CallByParam(
-			lua.P{
-				Fn:      fn,
-				NRet:    0,
-				Protect: true,
-			},
-			lua.LNumber(i),
-			lWrapFile(L, file),
-		)
-		if err != nil {
-			log.Printf("error during iteration : %s", err)
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]*file)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
 		}
-	}
 
-	return 0
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lWrapFile(L, list[index]))
+
+		return 2
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = dir.files
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
 }
 
-// luaDirAllFilesForEach is a helper method iterating over list of all files.
-func luaDirAllFilesForEach(L *lua.LState) int {
+// luaDirIterAllFiles returns iterator over all files.
+func luaDirIterAllFiles(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
-	fn := L.CheckFunction(2)
 
-	for i, file := range dir.allFiles {
-		err := L.CallByParam(
-			lua.P{
-				Fn:      fn,
-				NRet:    0,
-				Protect: true,
-			},
-			lua.LNumber(i),
-			lWrapFile(L, file),
-		)
-		if err != nil {
-			log.Printf("error during iteration : %s", err)
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]*file)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
 		}
-	}
 
-	return 0
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lWrapFile(L, list[index]))
+
+		return 2
+
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = dir.allFiles
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
 }
 
 // ----------------------------------------------------------------------------
