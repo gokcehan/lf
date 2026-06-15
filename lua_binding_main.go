@@ -1274,7 +1274,7 @@ func luaNavWriteTags(L *lua.LState) int {
 
 func luaNavCurrFile(L *lua.LState) int {
 	nav := lCheckNav(L, 1)
-	return lAddFileInfoToState(L, nav.currFile())
+	return lAddFileToState(L, nav.currFile())
 }
 
 func luaNavCurrSelections(L *lua.LState) int {
