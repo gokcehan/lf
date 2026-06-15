@@ -2271,7 +2271,9 @@ func getLuaPreviewerNames() []string {
 
 // callLuaKeyMapMsgOnState calls Lua key map message on given Lua state.
 func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
-	log.Printf("call Lua key map: %s - %s.%s", expr.sourceName, expr.keyMapType, expr.key)
+	if gOpts.luamsglog {
+		log.Printf("call Lua key map: %s - %s.%s", expr.sourceName, expr.keyMapType, expr.key)
+	}
 
 	keyMapGroup, err := getLuaMsgEntry(L, expr.sourceName, registryKeyKeyMap, expr.keyMapType)
 	if err != nil {
