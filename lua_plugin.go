@@ -1074,6 +1074,7 @@ func addKeyMapForRegistryValue(registryTbl *lua.LTable, sourceName, keyMapType, 
 				sourceName: sourceName,
 				keyMapType: keyMapType,
 				key:        mapKey,
+				count:      1,
 				isAsync:    isAsync,
 			}
 		default:
