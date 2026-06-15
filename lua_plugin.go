@@ -2305,8 +2305,9 @@ func callLuaKeyMapMsgOnState(L *lua.LState, expr *luaKeyMapExpr) error {
 	}
 
 	L.Push(action)
+	L.Push(lua.LNumber(expr.count))
 
-	err = L.PCall(0, 0, nil)
+	err = L.PCall(1, 0, nil)
 	if err != nil {
 		return err
 	}

@@ -216,6 +216,7 @@ type luaKeyMapExpr struct {
 	sourceName string
 	keyMapType string
 	key        string
+	count      int
 	isAsync    bool
 }
 

@@ -1755,6 +1755,14 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 					expr = &callExpr{name: e.name, args: e.args, count: count}
 				case *listExpr:
 					expr = &listExpr{exprs: e.exprs, count: count}
+				case *luaKeyMapExpr:
+					expr = &luaKeyMapExpr{
+						sourceName: e.sourceName,
+						keyMapType: e.keyMapType,
+						key:        e.key,
+						count:      count,
+						isAsync:    e.isAsync,
+					}
 				}
 			}
 		}
