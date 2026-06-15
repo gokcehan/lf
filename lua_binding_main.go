@@ -438,6 +438,7 @@ func lRegisterDirType(L *lua.LState) *lua.LTable {
 		"name":              luaDirName,
 		"visual_selections": luaDirVisualSelectioins,
 		"sel":               luaDirSel,
+		"bound_pos":         luaDirBoundPos,
 
 		"iter_files":     luaDirIterFiles,
 		"iter_all_files": luaDirIterAllFiles,
@@ -504,6 +505,14 @@ func luaDirLoadTime(L *lua.LState) int {
 // luaDirInd returns a 0-based index of current entry in directory.
 func luaDirInd(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckInt(2)
+		dir.ind = value
+	}
+
 	L.Push(lua.LNumber(dir.ind))
 	return 1
 }
@@ -511,6 +520,14 @@ func luaDirInd(L *lua.LState) int {
 // luaDirPos returns a 0-based row index indicating position of cursor.
 func luaDirPos(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckInt(2)
+		dir.pos = value
+	}
+
 	L.Push(lua.LNumber(dir.pos))
 	return 1
 }
@@ -535,6 +552,21 @@ func luaDirFiles(L *lua.LState) int {
 	return 1
 }
 
+func luaDirFilesLen(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	L.Push(lua.LNumber(len(dir.files)))
+	return 1
+}
+
+func luaDirFilesGetIndex(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	index := L.CheckInt(2)
+	if index <= 0 || index > len(dir.files) {
+		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index)", index, len(dir.files)))
+	}
+	return lAddFileToState(L, dir.files[index-1])
+}
+
 // luaDirAllFiles returns a list of file including non-displayed ones.
 func luaDirAllFiles(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
@@ -549,39 +581,102 @@ func luaDirAllFiles(L *lua.LState) int {
 	return 1
 }
 
+func luaDirAllFilesLen(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	L.Push(lua.LNumber(len(dir.allFiles)))
+	return 1
+}
+
+func luaDirAllFilesGetIndex(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	index := L.CheckInt(2)
+	if index <= 0 || index > len(dir.allFiles) {
+		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index)", index, len(dir.files)))
+	}
+	return lAddFileToState(L, dir.allFiles[index-1])
+}
+
 // luaDirSortby is getter & setter for directory sort method
 func luaDirSortby(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckString(2)
+		dir.sortby = sortMethod(value)
+	}
+
 	L.Push(lua.LString(dir.sortby))
 	return 1
 }
 
 func luaDirDircounts(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.dircounts = value
+	}
+
 	L.Push(lua.LBool(dir.dircounts))
 	return 1
 }
 
 func luaLuaDirfirst(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.dirfirst = value
+	}
+
 	L.Push(lua.LBool(dir.dirfirst))
 	return 1
 }
 
 func luaDirDironly(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.dironly = value
+	}
+
 	L.Push(lua.LBool(dir.dironly))
 	return 1
 }
 
 func luaDirHidden(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.hidden = value
+	}
+
 	L.Push(lua.LBool(dir.hidden))
 	return 1
 }
 
 func luaDirReverse(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.reverse = value
+	}
+
 	L.Push(lua.LBool(dir.reverse))
 	return 1
 }
@@ -589,6 +684,14 @@ func luaDirReverse(L *lua.LState) int {
 // luaDirVisualAnchor returns anchor position of visual mode selection range.
 func luaDirVisualAnchor(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckInt(2)
+		dir.visualAnchor = value
+	}
+
 	L.Push(lua.LNumber(dir.visualAnchor))
 	return 1
 }
@@ -596,6 +699,14 @@ func luaDirVisualAnchor(L *lua.LState) int {
 // luaDirVisualWrap returns wrap method of visual mode.
 func luaDirVisualWrap(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckInt(2)
+		dir.visualWrap = value
+	}
+
 	L.Push(lua.LNumber(dir.visualWrap))
 	return 1
 }
@@ -626,12 +737,28 @@ func luaDirFilter(L *lua.LState) int {
 
 func luaDirSortignorecase(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.sortignorecase = value
+	}
+
 	L.Push(lua.LBool(dir.sortignorecase))
 	return 1
 }
 
 func luaDirSortignoredia(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
+
+	if L.GetTop() > 1 {
+		tryRaiseNonSyncLuaStateError(L)
+
+		value := L.CheckBool(2)
+		dir.sortignoredia = value
+	}
+
 	L.Push(lua.LBool(dir.sortignoredia))
 	return 1
 }
@@ -680,6 +807,17 @@ func luaDirSel(L *lua.LState) int {
 	height := int(L.CheckNumber(3))
 	dir.sel(name, height)
 
+	return 0
+}
+
+// luaDirBoundPos restrict `pos` value of directory to UI window height range,
+// and applies `scrolloff` option value.
+func luaDirBoundPos(L *lua.LState) int {
+	tryRaiseNonSyncLuaStateError(L)
+
+	dir := lCheckDir(L, 1)
+	height := L.CheckInt(2)
+	dir.boundPos(height)
 	return 0
 }
 
