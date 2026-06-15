@@ -413,13 +413,19 @@ func lRegisterDirType(L *lua.LState) *lua.LTable {
 		"new": luaDirNew,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"loading":        luaDirLoading,
-		"load_time":      luaDirLoadTime,
-		"ind":            luaDirInd,
-		"pos":            luaDirPos,
-		"path":           luaDirPath,
-		"files":          luaDirFiles,
-		"all_files":      luaDirAllFiles,
+		"loading":   luaDirLoading,
+		"load_time": luaDirLoadTime,
+		"ind":       luaDirInd,
+		"pos":       luaDirPos,
+		"path":      luaDirPath,
+
+		"files":               luaDirFiles,
+		"files_len":           luaDirFilesLen,
+		"files_get_index":     luaDirFilesGetIndex,
+		"all_files":           luaDirAllFiles,
+		"all_files_len":       luaDirAllFilesLen,
+		"all_files_get_index": luaDirAllFilesGetIndex,
+
 		"sortby":         luaDirSortby,
 		"dircounts":      luaDirDircounts,
 		"dirfirst":       luaLuaDirfirst,
@@ -798,6 +804,8 @@ func luaDirVisualSelectioins(L *lua.LState) int {
 	return 1
 }
 
+// luaDirSel moves cursor to file with given name, and move new cursor position
+// into UI window according to given window height.
 func luaDirSel(L *lua.LState) int {
 	tryRaiseNonSyncLuaStateError(L)
 
