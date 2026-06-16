@@ -452,32 +452,34 @@ func lRegisterDirType(L *lua.LState) *lua.LTable {
 		"files":               luaDirFiles,
 		"files_len":           luaDirFilesLen,
 		"files_get_index":     luaDirFilesGetIndex,
+		"iter_files":          luaDirIterFiles,
 		"all_files":           luaDirAllFiles,
 		"all_files_len":       luaDirAllFilesLen,
 		"all_files_get_index": luaDirAllFilesGetIndex,
+		"iter_all_files":      luaDirIterAllFiles,
 
-		"sortby":         luaDirSortby,
-		"dircounts":      luaDirDircounts,
-		"dirfirst":       luaLuaDirfirst,
-		"dironly":        luaDirDironly,
-		"hidden":         luaDirHidden,
-		"reverse":        luaDirReverse,
-		"visual_anchor":  luaDirVisualAnchor,
-		"visual_wrap":    luaDirVisualWrap,
-		"hiddenfiles":    luaDirHiddenFiles,
-		"filter":         luaDirFilter,
-		"sortignorecase": luaDirSortignorecase,
-		"sortignoredia":  luaDirSortignoredia,
-		"no_perm":        luaDirNoPerm,
+		"sortby":           luaDirSortby,
+		"dircounts":        luaDirDircounts,
+		"dirfirst":         luaLuaDirfirst,
+		"dironly":          luaDirDironly,
+		"hidden":           luaDirHidden,
+		"reverse":          luaDirReverse,
+		"visual_anchor":    luaDirVisualAnchor,
+		"visual_wrap":      luaDirVisualWrap,
+		"hiddenfiles":      luaDirHiddenFiles,
+		"filter":           luaDirFilter,
+		"filter_len":       luaDirFilterLen,
+		"filter_get_index": luaDirFilterGetIndex,
+		"iter_filters":     luaDirIterFilters,
+		"sortignorecase":   luaDirSortignorecase,
+		"sortignoredia":    luaDirSortignoredia,
+		"no_perm":          luaDirNoPerm,
 
 		"sort":              luaDirSort,
 		"name":              luaDirName,
 		"visual_selections": luaDirVisualSelectioins,
 		"sel":               luaDirSel,
 		"bound_pos":         luaDirBoundPos,
-
-		"iter_files":     luaDirIterFiles,
-		"iter_all_files": luaDirIterAllFiles,
 
 		"extra_data":      luaDirExtraData,
 		"extra_data_keys": luaDirExtraDataKeys,
@@ -609,6 +611,40 @@ func luaDirFilesGetIndex(L *lua.LState) int {
 	return lAddFileToState(L, dir.files[index-1])
 }
 
+// luaDirIterFiles returns iterator over displayed files.
+func luaDirIterFiles(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]*file)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lWrapFile(L, list[index]))
+
+		return 2
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = dir.files
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
+}
+
 // luaDirAllFiles returns a list of file including non-displayed ones.
 func luaDirAllFiles(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
@@ -633,9 +669,44 @@ func luaDirAllFilesGetIndex(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
 	index := L.CheckInt(2)
 	if index <= 0 || index > len(dir.allFiles) {
-		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index)", index, len(dir.files)))
+		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index %d)", index, len(dir.allFiles)))
 	}
 	return lAddFileToState(L, dir.allFiles[index-1])
+}
+
+// luaDirIterAllFiles returns iterator over all files.
+func luaDirIterAllFiles(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]*file)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lWrapFile(L, list[index]))
+
+		return 2
+
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = dir.allFiles
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
 }
 
 // luaDirSortby returns directory's sorting method name.
@@ -735,6 +806,55 @@ func luaDirFilter(L *lua.LState) int {
 	return 1
 }
 
+func luaDirFilterLen(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	L.Push(lua.LNumber(len(dir.filter)))
+	return 1
+}
+
+func luaDirFilterGetIndex(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+	index := L.CheckInt(2)
+	if index <= 0 || index > len(dir.filter) {
+		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index %d)", index, len(dir.filter)))
+	}
+	L.Push(lua.LString(dir.filter[index-1]))
+	return 1
+}
+
+func luaDirIterFilters(L *lua.LState) int {
+	dir := lCheckDir(L, 1)
+
+	L.Push(L.NewFunction(func(L *lua.LState) int {
+		ud := L.CheckUserData(1)
+		index := L.CheckInt(2)
+
+		list, ok := ud.Value.([]string)
+		if !ok {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		if index >= len(list) {
+			L.Push(lua.LNil)
+			return 1
+		}
+
+		L.Push(lua.LNumber(index + 1))
+		L.Push(lua.LString(list[index]))
+
+		return 2
+	}))
+
+	ud := L.NewUserData()
+	ud.Value = dir.filter
+
+	L.Push(ud)
+	L.Push(lua.LNumber(0))
+
+	return 3
+}
+
 // getter
 func luaDirSortignorecase(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
@@ -807,75 +927,6 @@ func luaDirBoundPos(L *lua.LState) int {
 	height := L.CheckInt(2)
 	dir.boundPos(height)
 	return 0
-}
-
-// luaDirIterFiles returns iterator over displayed files.
-func luaDirIterFiles(L *lua.LState) int {
-	dir := lCheckDir(L, 1)
-
-	L.Push(L.NewFunction(func(L *lua.LState) int {
-		ud := L.CheckUserData(1)
-		index := L.CheckInt(2)
-
-		list, ok := ud.Value.([]*file)
-		if !ok {
-			L.Push(lua.LNil)
-			return 1
-		}
-
-		if index >= len(list) {
-			L.Push(lua.LNil)
-			return 1
-		}
-
-		L.Push(lua.LNumber(index + 1))
-		L.Push(lWrapFile(L, list[index]))
-
-		return 2
-	}))
-
-	ud := L.NewUserData()
-	ud.Value = dir.files
-
-	L.Push(ud)
-	L.Push(lua.LNumber(0))
-
-	return 3
-}
-
-// luaDirIterAllFiles returns iterator over all files.
-func luaDirIterAllFiles(L *lua.LState) int {
-	dir := lCheckDir(L, 1)
-
-	L.Push(L.NewFunction(func(L *lua.LState) int {
-		ud := L.CheckUserData(1)
-		index := L.CheckInt(2)
-
-		list, ok := ud.Value.([]*file)
-		if !ok {
-			L.Push(lua.LNil)
-			return 1
-		}
-
-		if index >= len(list) {
-			L.Push(lua.LNil)
-			return 1
-		}
-
-		L.Push(lua.LNumber(index + 1))
-		L.Push(lWrapFile(L, list[index]))
-
-		return 2
-
-	}))
-
-	ud := L.NewUserData()
-	ud.Value = dir.allFiles
-
-	L.Push(ud)
-	L.Push(lua.LNumber(0))
-
-	return 3
 }
 
 // luaDirExtraData can get & stores value to a map associated with this file.
@@ -957,6 +1008,8 @@ func lRegisterNavType(L *lua.LState) *lua.LTable {
 		"move_count":           luaNavMoveCount,
 		"move_total":           luaNavMoveTotal,
 		"get_clipboard":        luaNavGetClipboard,
+		"delete_count":         luaNavDeleteCount,
+		"delete_total":         luaNavDeleteTotal,
 		"get_marks_tbl":        luaNavGetMarksTbl,
 		"get_mark_path":        luaNavGetMarkPath,
 		"get_tag_tbl":          luaNavGetTagTbl,
@@ -1019,6 +1072,7 @@ func lRegisterNavType(L *lua.LState) *lua.LTable {
 		"read_tags":   luaNavReadTags,
 		"write_tags":  luaNavWriteTags,
 
+		"is_visual_mode":         luaNavIsVisualMode,
 		"curr_dir":               luaNavCurrDir,
 		"curr_file":              luaNavCurrFile,
 		"curr_selections":        luaNavCurrSelections,
@@ -1708,6 +1762,12 @@ func luaNavWriteTags(L *lua.LState) int {
 		return 1
 	}
 	return 0
+}
+
+func luaNavIsVisualMode(L *lua.LState) int {
+	nav := lCheckNav(L, 1)
+	L.Push(lua.LBool(nav.isVisualMode()))
+	return 1
 }
 
 func luaNavCurrDir(L *lua.LState) int {
@@ -2967,10 +3027,12 @@ func lRegisterClipboardType(L *lua.LState) *lua.LTable {
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
-		"paths":         luaClipboardPaths,
-		"mode":          luaClipboardMode,
-		"iter_paths":    luaClipboardIterPaths,
-		"contains_path": luaClipboardPathsContain,
+		"paths":           luaClipboardPaths,
+		"paths_len":       luaClipboardPathsLen,
+		"paths_get_index": luaClipboardPathsGetIndex,
+		"mode":            luaClipboardMode,
+		"iter_paths":      luaClipboardIterPaths,
+		"contains_path":   luaClipboardPathsContain,
 	}))
 
 	return mt
@@ -3020,6 +3082,22 @@ func luaClipboardPaths(L *lua.LState) int {
 
 	L.Push(tbl)
 
+	return 1
+}
+
+func luaClipboardPathsLen(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+	L.Push(lua.LNumber(len(board.paths)))
+	return 1
+}
+
+func luaClipboardPathsGetIndex(L *lua.LState) int {
+	board := lCheckClipboard(L, 1)
+	index := L.CheckInt(2)
+	if index <= 0 || index > len(board.paths) {
+		L.ArgError(2, fmt.Sprintf("index out of range: %d (max index %d)", index, len(board.paths)))
+	}
+	L.Push(lua.LString(board.paths[index-1]))
 	return 1
 }
 
