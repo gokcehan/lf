@@ -380,7 +380,7 @@ func luaFileExtraData(L *lua.LState) int {
 			return 0
 		}
 
-		goValue, err := luaValueToGoValue(value)
+		goValue, err := luaPlainValueToGoValue(value)
 		if err != nil {
 			L.Push(value)
 			L.Push(lua.LString(err.Error()))
@@ -949,7 +949,7 @@ func luaDirExtraData(L *lua.LState) int {
 			return 0
 		}
 
-		goValue, err := luaValueToGoValue(value)
+		goValue, err := luaPlainValueToGoValue(value)
 		if err != nil {
 			L.Push(lua.LNil)
 			L.Push(lua.LString(err.Error()))
@@ -3269,5 +3269,100 @@ func luaFuncWriterWrite(L *lua.LState) int {
 		return 2
 	}
 
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+// type luaDataStore
+
+const luaLuaDataStoreTypeName = "lf.luaDataStore"
+
+func lRegisterLuaDataStoreType(L *lua.LState) *lua.LTable {
+	mt := L.NewTypeMetatable(luaLuaDataStoreTypeName)
+
+	L.SetFuncs(mt, map[string]lua.LGFunction{})
+	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"get":   luaLuaDataStoreGet,
+		"set":   luaLuaDataStoreSet,
+		"clear": luaLuaDataStoreClear,
+		"keys":  luaLuaDataStoreKeys,
+	}))
+
+	return mt
+}
+
+func lCheckLuaDataStore(L *lua.LState, index int) *luaDataStore {
+	ud := L.CheckUserData(index)
+	if v, ok := ud.Value.(*luaDataStore); ok {
+		return v
+	}
+
+	L.ArgError(index, "value of type `LuaDataStore` expected")
+
+	return nil
+}
+
+func lWrapLuaDataStore(L *lua.LState, data *luaDataStore) *lua.LUserData {
+	ud := L.NewUserData()
+	ud.Value = data
+
+	L.SetMetatable(ud, L.GetTypeMetatable(luaLuaDataStoreTypeName))
+
+	return ud
+}
+
+func lAddLuaDataStoreToState(L *lua.LState, data *luaDataStore) int {
+	if data == nil {
+		L.Push(lua.LNil)
+		return 1
+	}
+
+	ud := lWrapLuaDataStore(L, data)
+	L.Push(ud)
+
+	return 1
+}
+
+// ----------------------------------------------------------------------------
+
+func luaLuaDataStoreGet(L *lua.LState) int {
+	store := lCheckLuaDataStore(L, 1)
+	key := L.CheckString(2)
+
+	value, err := store.get(L, key)
+	L.Push(value)
+
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 2
+	}
+
+	return 1
+}
+
+func luaLuaDataStoreSet(L *lua.LState) int {
+	store := lCheckLuaDataStore(L, 1)
+	key := L.CheckString(2)
+	value := L.CheckAny(3)
+
+	err := store.set(key, value)
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
+
+	return 0
+}
+
+func luaLuaDataStoreClear(L *lua.LState) int {
+	store := lCheckLuaDataStore(L, 1)
+	store.clear()
+	return 0
+}
+
+func luaLuaDataStoreKeys(L *lua.LState) int {
+	store := lCheckLuaDataStore(L, 1)
+	tbl := store.keysAsLuaTbl(L)
+	L.Push(tbl)
 	return 1
 }

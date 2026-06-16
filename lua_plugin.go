@@ -25,6 +25,7 @@ import (
 const luaPluginDirName = "plugins"
 
 const luaGlobalNameApp = "app"
+const luaGlobalNameDataStore = "data_store"
 
 const luaMsgVariantMain = ""
 const luaMsgMetaKeyIsAsync = "is_async"
@@ -97,6 +98,70 @@ const (
 	luaKeyMapTypeCommand = "c"
 )
 
+type luaDataStore struct {
+	lock      sync.RWMutex
+	dataStore map[string]any
+}
+
+func (store *luaDataStore) set(key string, value lua.LValue) error {
+	store.lock.Lock()
+	defer store.lock.Unlock()
+
+	if store.dataStore == nil {
+		store.dataStore = make(map[string]any)
+	}
+
+	if value == lua.LNil {
+		delete(store.dataStore, key)
+		return nil
+	}
+
+	goValue, err := luaPlainValueToGoValue(value)
+	if err != nil {
+		return err
+	}
+
+	store.dataStore[key] = goValue
+
+	return nil
+}
+
+func (store *luaDataStore) get(L *lua.LState, key string) (lua.LValue, error) {
+	store.lock.RLock()
+	defer store.lock.RUnlock()
+
+	if store.dataStore == nil {
+		return lua.LNil, nil
+	}
+
+	goValue := store.dataStore[key]
+	value, err := goValueToLuaValue(L, goValue)
+	if err != nil {
+		return lua.LNil, err
+	}
+
+	return value, nil
+}
+
+func (store *luaDataStore) clear() {
+	store.lock.Lock()
+	defer store.lock.Unlock()
+
+	clear(store.dataStore)
+}
+
+func (store *luaDataStore) keysAsLuaTbl(L *lua.LState) *lua.LTable {
+	store.lock.RLock()
+	defer store.lock.RUnlock()
+
+	tbl := L.NewTable()
+	for k := range store.dataStore {
+		tbl.Append(lua.LString(k))
+	}
+
+	return tbl
+}
+
 type lStatePool struct {
 	lockPool  sync.Mutex
 	saved     []*lua.LState
@@ -111,11 +176,14 @@ type lStatePool struct {
 	app             *app
 	pluginRootDirs  []string             // plugin root directory list
 	pluginByteCodes []*lua.FunctionProto // compiled Lua byte code of all plugin
+
+	dataStore *luaDataStore
 }
 
 func newLStatePool(app *app) *lStatePool {
 	return &lStatePool{
-		app: app,
+		app:       app,
+		dataStore: new(luaDataStore),
 	}
 }
 
@@ -192,7 +260,7 @@ func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LSt
 	if err := setupScripImportPath(L, pl.pluginRootDirs); err != nil {
 		log.Printf("failed to setup Lua loader search path: %s", err)
 	}
-	setupLuaGlobals(pl.app, L)
+	setupLuaGlobals(pl, L)
 	setupPreloadModules(L)
 
 	for _, proto := range pl.pluginByteCodes {
@@ -589,8 +657,8 @@ func goValueToLuaValue(L *lua.LState, value any) (lua.LValue, error) {
 	return goReflectValueToLuaValue(L, reflect.ValueOf(value))
 }
 
-// luaValueToGoValue converts simple Lua value to Go value.
-func luaValueToGoValue(value lua.LValue) (any, error) {
+// luaPlainValueToGoValue converts simple Lua value to Go value.
+func luaPlainValueToGoValue(value lua.LValue) (any, error) {
 	switch value.Type() {
 	case lua.LTNil:
 		return nil, nil
@@ -693,7 +761,7 @@ func setupScripImportPath(L *lua.LState, runtimeDirs []string) error {
 }
 
 // setupLuaGlobals setup global variables.
-func setupLuaGlobals(app *app, L *lua.LState) {
+func setupLuaGlobals(pl *lStatePool, L *lua.LState) {
 	// Lua meta table registering must happens before any user data gets pushed
 	// onto Lua state.
 	setupLuaTypeBindings(L)
@@ -712,7 +780,8 @@ func setupLuaGlobals(app *app, L *lua.LState) {
 		return 0
 	}))
 
-	L.SetGlobal(luaGlobalNameApp, lWrapApp(L, app))
+	L.SetGlobal(luaGlobalNameApp, lWrapApp(L, pl.app))
+	L.SetGlobal(luaGlobalNameDataStore, lWrapLuaDataStore(L, pl.dataStore))
 }
 
 // setupLuaTypeBindings adds `lf_types` global table as entrance of accessing
@@ -740,6 +809,7 @@ func setupLuaTypeBindings(L *lua.LState) {
 	lfTypes.RawSetString("FuncWriter", lRegisterFuncWriterType(L))
 	lfTypes.RawSetString("IconDef", lRegisterIconDefType(L))
 	lfTypes.RawSetString("IconMap", lRegisterIconMapType(L))
+	lfTypes.RawSetString("LuaDataStore", lRegisterLuaDataStoreType(L))
 	lfTypes.RawSetString("LuaMsgExpr", lRegisterLuaMsgExprType(L))
 	lfTypes.RawSetString("Nav", lRegisterNavType(L))
 	lfTypes.RawSetString("PrintDirEntryContext", lRegisterPrintDirEntryContextType(L))
