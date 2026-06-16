@@ -1781,8 +1781,15 @@ func lRegisterUIType(L *lua.LState) *lua.LTable {
 		"prompt_win":     luaUIPromptWin,
 		"msg_win":        luaUIMsgWin,
 		"menu_win":       luaUIMenuWin,
-		"styles":         luaUIStyles,
-		"icons":          luaUIIcons,
+
+		"msg":        luaUIMsg,
+		"menu":       luaUIMenu,
+		"cmd_prefix": luaUICmdPrefix,
+		"key_acc":    luaUIKeyAcc,
+		"key_count":  luaUIKeyCount,
+
+		"styles": luaUIStyles,
+		"icons":  luaUIIcons,
 
 		"win_at":    luaUIWinAt,
 		"renew":     luaUIRenew,
@@ -1897,6 +1904,36 @@ func luaUIMsgWin(L *lua.LState) int {
 func luaUIMenuWin(L *lua.LState) int {
 	ui := lCheckUI(L, 1)
 	return lAddWinToState(L, ui.menuWin)
+}
+
+func luaUIMsg(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	L.Push(lua.LString(ui.msg))
+	return 1
+}
+
+func luaUIMenu(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	L.Push(lua.LString(ui.menu))
+	return 1
+}
+
+func luaUICmdPrefix(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	L.Push(lua.LString(ui.cmdPrefix))
+	return 1
+}
+
+func luaUIKeyAcc(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	L.Push(lua.LString(ui.keyAcc))
+	return 1
+}
+
+func luaUIKeyCount(L *lua.LState) int {
+	ui := lCheckUI(L, 1)
+	L.Push(lua.LString(ui.keyCount))
+	return 1
 }
 
 func luaUIStyles(L *lua.LState) int {
