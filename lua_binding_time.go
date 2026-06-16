@@ -461,15 +461,24 @@ func lRegisterDurationType(L *lua.LState) *lua.LTable {
 	addDurationConstantToMt(L, mt)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
-		"new":        luaDurationNew,
-		"__mul":      luaDurationMetaMul,
-		"__eq":       luaDurationMetaEq,
-		"__lt":       luaDurationMetaLt,
-		"__le":       luaDurationMetaLe,
+		"new": luaDurationNew,
+
+		"__add": luaDurationMetaAdd,
+		"__sub": luaDurationMetaSub,
+		"__mul": luaDurationMetaMul,
+		"__div": luaDurationMetaDiv,
+
+		"__eq": luaDurationMetaEq,
+		"__lt": luaDurationMetaLt,
+		"__le": luaDurationMetaLe,
+
 		"__tostring": luaDurationMetaTostring,
 	})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
+		"add": luaDurationMetaAdd,
+		"sub": luaDurationMetaSub,
 		"mul": luaDurationMetaMul,
+		"div": luaDurationMetaDiv,
 		"eq":  luaDurationMetaEq,
 		"lt":  luaDurationMetaLt,
 		"le":  luaDurationMetaLe,
@@ -483,6 +492,8 @@ func lRegisterDurationType(L *lua.LState) *lua.LTable {
 		"truncate":     luaDurationTruncate,
 		"round":        luaDurationRound,
 		"abs":          luaDurationAbs,
+
+		"to_number": luaDurationToNumber,
 	}))
 
 	return mt
@@ -538,11 +549,32 @@ func luaDurationNew(L *lua.LState) int {
 	return lAddDurationToState(L, dur)
 }
 
+func luaDurationMetaAdd(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	result := self + other
+	return lAddDurationToState(L, result)
+}
+
+func luaDurationMetaSub(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	result := self - other
+	return lAddDurationToState(L, result)
+}
+
 func luaDurationMetaMul(L *lua.LState) int {
 	self := lCheckDuration(L, 1)
 	other := lCheckDuration(L, 2)
 	result := self * other
 	return lAddDurationToState(L, result)
+}
+
+func luaDurationMetaDiv(L *lua.LState) int {
+	self := lCheckDuration(L, 1)
+	other := lCheckDuration(L, 2)
+	L.Push(lua.LNumber(float64(self) / float64(other)))
+	return 1
 }
 
 func luaDurationMetaEq(L *lua.LState) int {
@@ -627,6 +659,13 @@ func luaDurationRound(L *lua.LState) int {
 func luaDurationAbs(L *lua.LState) int {
 	dur := lCheckDuration(L, 1)
 	return lAddDurationToState(L, dur.Abs())
+}
+
+// luaDurationToNumber converts duration userdata to number value.
+func luaDurationToNumber(L *lua.LState) int {
+	duration := lCheckDuration(L, 1)
+	L.Push(lua.LNumber(duration))
+	return 1
 }
 
 // ----------------------------------------------------------------------------

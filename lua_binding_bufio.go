@@ -212,7 +212,7 @@ func luaBufReaderPeek(L *lua.LState) int {
 	return 1
 }
 
-// luaBufReaderRead read n bytes from reader, and returns datga as a string.
+// luaBufReaderRead reads n bytes from reader, and returns datga as a string.
 func luaBufReaderRead(L *lua.LState) int {
 	reader := lCheckBufReader(L, 1)
 	n := L.CheckInt(2)

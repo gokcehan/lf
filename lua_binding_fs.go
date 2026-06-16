@@ -60,30 +60,34 @@ func lAddFileInfoToState(L *lua.LState, data fs.FileInfo) int {
 
 // ----------------------------------------------------------------------------
 
+// luaFileInfoName returns base name of file.
 func luaFileInfoName(L *lua.LState) int {
 	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LString(info.Name()))
 	return 1
 }
 
+// luaFileInfoSize returns length in bytes for regular files
 func luaFileInfoSize(L *lua.LState) int {
 	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LNumber(info.Size()))
 	return 1
 }
 
+// luaFileInfoMode returns mode bits userdata of this file.
 func luaFileInfoMode(L *lua.LState) int {
 	info := lCheckFileInfo(L, 1)
-	L.Push(lua.LNumber(info.Mode()))
-	return 1
+	return lAddFileModeToState(L, info.Mode())
 }
 
+// luaFileInfoModTime returns modification time of file.
 func luaFileInfoModTime(L *lua.LState) int {
 	info := lCheckFileInfo(L, 1)
 	t := info.ModTime()
 	return lAddTimeToState(L, &t)
 }
 
+// luaFileInfoIsDir returns if this file is a directory.
 func luaFileInfoIsDir(L *lua.LState) int {
 	info := lCheckFileInfo(L, 1)
 	L.Push(lua.LBool(info.IsDir()))
@@ -169,6 +173,8 @@ func luaDirEntryIsDir(L *lua.LState) int {
 	return 1
 }
 
+// luaDirEntryType returns the type bits for the entry. This is a subset of the
+// usual FileMode bits.
 func luaDirEntryType(L *lua.LState) int {
 	entry := lCheckDirEntry(L, 1)
 	return lAddFileModeToState(L, entry.Type())
@@ -191,6 +197,8 @@ func lRegisterFileModeType(L *lua.LState) *lua.LTable {
 		"is_regular": luaFileModeIsRegular,
 		"perm":       luaFileModePerm,
 		"type":       luaFileModeType,
+
+		"to_number": luaFileModeToNumber,
 	}))
 
 	return mt
@@ -268,4 +276,11 @@ func luaFileModePerm(L *lua.LState) int {
 func luaFileModeType(L *lua.LState) int {
 	mode := lCheckFileMode(L, 1)
 	return lAddFileModeToState(L, mode.Type())
+}
+
+// luaFileModeToNumber converts FileMode userdata to number.
+func luaFileModeToNumber(L *lua.LState) int {
+	mode := lCheckFileMode(L, 1)
+	L.Push(lua.LNumber(mode))
+	return 1
 }

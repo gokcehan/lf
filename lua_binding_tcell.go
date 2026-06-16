@@ -15,6 +15,8 @@ const luaTcellStyleTypeName = "tcell.Style"
 func lRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(luaTcellStyleTypeName)
 
+	addTcellStyleConstantToMt(mt)
+
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":          luaTcellStyleNew,
 		"reset_string": luaTcellStyleRestString,
@@ -33,14 +35,16 @@ func lRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 		"foreground_palette": luaTcellStyleForegroundPalette,
 		"background_palette": luaTcellStyleBackgroundPalette,
 
-		"normal":         luaTcellStyleNormal,
-		"bold":           luaTcellStyleBold,
-		"blink":          luaTcellStyleBlink,
-		"dim":            luaTcellStyleDim,
-		"italic":         luaTcellStyleItalic,
-		"reverse":        luaTcellStyleReverse,
-		"strike_through": luaTcellStyleStrikeThrough,
-		"underline":      luaTcellStyleUnderline,
+		"normal":              luaTcellStyleNormal,
+		"bold":                luaTcellStyleBold,
+		"blink":               luaTcellStyleBlink,
+		"dim":                 luaTcellStyleDim,
+		"italic":              luaTcellStyleItalic,
+		"reverse":             luaTcellStyleReverse,
+		"strike_through":      luaTcellStyleStrikeThrough,
+		"underline":           luaTcellStyleUnderline,
+		"set_underline_style": luaTcellStyleSetUnderlineStyle,
+		"set_underline_color": luaTcellStyleSetUnderlineColor,
 
 		"has_bold":           luaTcellStyleHasBold,
 		"has_blink":          luaTcellStyleHasBlink,
@@ -52,6 +56,15 @@ func lRegisterTcellStyleType(L *lua.LState) *lua.LTable {
 	}))
 
 	return mt
+}
+
+func addTcellStyleConstantToMt(mt *lua.LTable) {
+	mt.RawSetString("UnderlineStyleNone", lua.LNumber(tcell.UnderlineStyleNone))
+	mt.RawSetString("UnderlineStyleSolid", lua.LNumber(tcell.UnderlineStyleSolid))
+	mt.RawSetString("UnderlineStyleDouble", lua.LNumber(tcell.UnderlineStyleDouble))
+	mt.RawSetString("UnderlineStyleCurly", lua.LNumber(tcell.UnderlineStyleCurly))
+	mt.RawSetString("UnderlineStyleDotted", lua.LNumber(tcell.UnderlineStyleDotted))
+	mt.RawSetString("UnderlineStyleDashed", lua.LNumber(tcell.UnderlineStyleDashed))
 }
 
 func lCheckTcellStyle(L *lua.LState, index int) *tcell.Style {
@@ -134,6 +147,7 @@ func luaTcellStyleWrap(L *lua.LState) int {
 	return 1
 }
 
+// luaTcellStyleForeground sets foreground color.
 func luaTcellStyleForeground(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	color := lCheckTcellColor(L, 2)
@@ -141,6 +155,7 @@ func luaTcellStyleForeground(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleBackground sets background color.
 func luaTcellStyleBackground(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	color := lCheckTcellColor(L, 2)
@@ -148,6 +163,7 @@ func luaTcellStyleBackground(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleForegroundRGB sets foreground color with RGB channel value.
 func luaTcellStyleForegroundRGB(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	r := L.CheckInt(2)
@@ -158,6 +174,7 @@ func luaTcellStyleForegroundRGB(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleBackgroundRGB sets background color with RGB channel value.
 func luaTcellStyleBackgroundRGB(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	r := L.CheckInt(2)
@@ -219,6 +236,7 @@ func luaTcellStyleNormal(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleBold enables or disables bold attribute.
 func luaTcellStyleBold(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -226,6 +244,7 @@ func luaTcellStyleBold(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleBlink enables or disables blink attribute.
 func luaTcellStyleBlink(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -233,6 +252,7 @@ func luaTcellStyleBlink(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleDim enables or disables dim attribute.
 func luaTcellStyleDim(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -240,6 +260,7 @@ func luaTcellStyleDim(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleItalic enables or disables italic attribute.
 func luaTcellStyleItalic(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -247,6 +268,7 @@ func luaTcellStyleItalic(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleReverse enables or disables foreground-background reverse attribute.
 func luaTcellStyleReverse(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -254,6 +276,7 @@ func luaTcellStyleReverse(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleStrikeThrough enables or disables strike-through attribute.
 func luaTcellStyleStrikeThrough(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -261,6 +284,7 @@ func luaTcellStyleStrikeThrough(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleUnderline enables or disables underline attribute.
 func luaTcellStyleUnderline(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	isActive := L.CheckBool(2)
@@ -268,42 +292,70 @@ func luaTcellStyleUnderline(L *lua.LState) int {
 	return lAddTcellStyleToState(L, st)
 }
 
+// luaTcellStyleSetUnderlineStyle sets underline style type. Style type value
+// can be found as constant filed in metatable of Style.
+// ```lua
+// local Style = lf_type.TcellStyle
+// print(Style.UnderlineStyleSolid)
+// ```
+func luaTcellStyleSetUnderlineStyle(L *lua.LState) int {
+	st := lCheckTcellStyle(L, 1)
+	ulStyle := L.CheckInt(2)
+	*st = st.Underline(tcell.UnderlineStyle(ulStyle))
+	return lAddTcellStyleToState(L, st)
+}
+
+// luaTcellStyleSetUnderlineColor sets color of underline.
+func luaTcellStyleSetUnderlineColor(L *lua.LState) int {
+	st := lCheckTcellStyle(L, 1)
+	color := lCheckTcellColor(L, 2)
+	*st = st.Underline(color)
+	return lAddTcellStyleToState(L, st)
+}
+
+// luaTcellStyleHasBold checks if current sytle has bold attribute.
 func luaTcellStyleHasBold(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasBold()))
 	return 1
 }
 
+// luaTcellStyleHasBold checks if current sytle has blink attribute.
 func luaTcellStyleHasBlink(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasBlink()))
 	return 1
 }
 
+// luaTcellStyleHasReverse checks if current sytle has reverse attribute.
 func luaTcellStyleHasReverse(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasReverse()))
 	return 1
 }
 
+// luaTcellStyleHasItalic checks if current sytle has italic attribute.
 func luaTcellStyleHasItalic(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasItalic()))
 	return 1
 }
 
+// luaTcellStyleHasDim checks if current sytle has dim attribute.
 func luaTcellStyleHasDim(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasDim()))
 	return 1
 }
 
+// luaTcellStyleHasStrikeThrough checks if current sytle has strike-through attribute.
 func luaTcellStyleHasStrikeThrough(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasStrikeThrough()))
 	return 1
 }
 
+// luaTcellStyleHasUnderline checks if current sytle has underline attribute.
 func luaTcellStyleHasUnderline(L *lua.LState) int {
 	st := lCheckTcellStyle(L, 1)
 	L.Push(lua.LBool(st.HasUnderline()))
@@ -363,6 +415,7 @@ func lAddTcellColorToState(L *lua.LState, data *tcell.Color) int {
 
 // ----------------------------------------------------------------------------
 
+// luaTcellColorNewRgb creates color userdata with RGB channel value.
 func luaTcellColorNewRgb(L *lua.LState) int {
 	r := L.CheckInt(1)
 	g := L.CheckInt(2)
@@ -373,6 +426,7 @@ func luaTcellColorNewRgb(L *lua.LState) int {
 	return lAddTcellColorToState(L, &color)
 }
 
+// luaTcellColorNewHex creates color userdata with hexadecimal integer value.
 func luaTcellColorNewHex(L *lua.LState) int {
 	hex := L.CheckInt64(1)
 	color := tcell.NewHexColor(int32(hex))
@@ -387,6 +441,7 @@ func luaTcellColorNewName(L *lua.LState) int {
 	return lAddTcellColorToState(L, &color)
 }
 
+// luaTcellColorNewPalette creates new color with paletter index value.
 func luaTcellColorNewPalette(L *lua.LState) int {
 	index := L.CheckInt(1)
 	color := tcell.PaletteColor(index)
