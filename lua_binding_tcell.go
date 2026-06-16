@@ -451,10 +451,10 @@ func luaTcellColorNewPalette(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type tcell.Screen
 
-const LuaTcellScreenTypeName = "tcell.Screen"
+const luaTcellScreenTypeName = "tcell.Screen"
 
 func lRegisterTcellScreenType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaTcellScreenTypeName)
+	mt := L.NewTypeMetatable(luaTcellScreenTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{}))
@@ -477,7 +477,7 @@ func lWrapTcellScreen(L *lua.LState, data tcell.Screen) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaTcellScreenTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTcellScreenTypeName))
 
 	return ud
 }

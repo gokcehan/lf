@@ -97,10 +97,10 @@ func luaFileInfoIsDir(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type fs.DirEntry
 
-const LuaDirEntryTypeName = "fs.DirEntry"
+const luaDirEntryTypeName = "fs.DirEntry"
 
 func lRegisterDirEntryType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaDirEntryTypeName)
+	mt := L.NewTypeMetatable(luaDirEntryTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -128,7 +128,7 @@ func lWrapDirEntry(L *lua.LState, data fs.DirEntry) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaDirEntryTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaDirEntryTypeName))
 
 	return ud
 }
@@ -183,10 +183,10 @@ func luaDirEntryType(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type fs.FileMode
 
-const LuaFileModeTypeName = "fs.FileMode"
+const luaFileModeTypeName = "fs.FileMode"
 
 func lRegisterFileModeType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaFileModeTypeName)
+	mt := L.NewTypeMetatable(luaFileModeTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":        luaFileModeNew,
@@ -225,7 +225,7 @@ func lWrapFileMode(L *lua.LState, data fs.FileMode) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaFileModeTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaFileModeTypeName))
 
 	return ud
 }

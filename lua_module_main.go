@@ -88,6 +88,19 @@ func setupModuleConstants(L *lua.LState, mod *lua.LTable) {
 	shellCmdType.RawSetString("Async", lua.LString("&"))
 	mod.RawSetString("ShellCmdType", shellCmdType)
 
+	// sort method name
+	sortMethodNames := L.NewTable()
+	sortMethodNames.RawSetString("Natural", lua.LString(naturalSort))
+	sortMethodNames.RawSetString("Name", lua.LString(nameSort))
+	sortMethodNames.RawSetString("Size", lua.LString(sizeSort))
+	sortMethodNames.RawSetString("Time", lua.LString(timeSort))
+	sortMethodNames.RawSetString("Atime", lua.LString(atimeSort))
+	sortMethodNames.RawSetString("Btimed", lua.LString(btimeSort))
+	sortMethodNames.RawSetString("Ctime", lua.LString(ctimeSort))
+	sortMethodNames.RawSetString("Ext", lua.LString(extSort))
+	sortMethodNames.RawSetString("Custom", lua.LString(customSort))
+	mod.RawSetString("SortMethod", sortMethodNames)
+
 	// key map type
 	keyMapType := L.NewTable()
 	keyMapType.RawSetString("Normal", lua.LString(luaKeyMapTypeNormal))

@@ -671,10 +671,10 @@ func luaDurationToNumber(L *lua.LState) int {
 // ----------------------------------------------------------------------------
 // type time.Timer
 
-const LuaTimerTypeName = "time.Timer"
+const luaTimerTypeName = "time.Timer"
 
 func lRegisterTimerType(L *lua.LState) *lua.LTable {
-	mt := L.NewTypeMetatable(LuaTimerTypeName)
+	mt := L.NewTypeMetatable(luaTimerTypeName)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{})
 	L.SetField(mt, "__index", L.SetFuncs(L.NewTable(), map[string]lua.LGFunction{
@@ -700,7 +700,7 @@ func lWrapTimer(L *lua.LState, data *time.Timer) *lua.LUserData {
 	ud := L.NewUserData()
 	ud.Value = data
 
-	L.SetMetatable(ud, L.GetTypeMetatable(LuaTimerTypeName))
+	L.SetMetatable(ud, L.GetTypeMetatable(luaTimerTypeName))
 
 	return ud
 }
