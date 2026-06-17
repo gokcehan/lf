@@ -1458,7 +1458,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 		file := filepath.Base(src)
 		dst := filepath.Join(dstDir, file)
 
-		if dstStat, err := os.Stat(dst); err == nil {
+		if dstStat, err := os.Lstat(dst); err == nil {
 			if os.SameFile(srcStat, dstStat) {
 				sendErr("rename %s %s: source and destination are the same file", src, dst)
 				continue
