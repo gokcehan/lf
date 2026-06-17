@@ -897,66 +897,37 @@ func (ui *ui) drawStat(nav *nav) {
 		return
 	}
 
-	var fileInfoStr string
-
-	if luaFormatter := getLuaUIFormatter("stat"); luaFormatter != nil {
-		fileInfoStr = callLuaUIFormatterIgnoreError(luaFormatter, func(L *lua.LState) []lua.LValue {
-			modTime := curr.ModTime()
-
-			tbl := L.NewTable()
-
-			tbl.RawSetString("permission", lua.LString(permString(curr.Mode())))
-			tbl.RawSetString("link_count", lua.LString(linkCount(curr)))
-			tbl.RawSetString("user_name", lua.LString(userName(curr)))
-			tbl.RawSetString("group_name", lua.LString(groupName(curr)))
-			tbl.RawSetString("file_size", lua.LString(humanize(curr.Size())))
-			tbl.RawSetString("padded_file_size", lua.LString(fmt.Sprintf("%5s", humanize(curr.Size()))))
-			tbl.RawSetString("mod_time", lWrapTime(L, &modTime))
-			tbl.RawSetString("link_target", lua.LString(sanitizeName(curr.linkTarget)))
-
-			if nav.isVisualMode() {
-				tbl.RawSetString("curr_mode", lua.LString("VISUAL"))
-				tbl.RawSetString("curr_mode_full", lua.LString("VISUAL"))
-			} else {
-				tbl.RawSetString("curr_mode", lua.LString(""))
-				tbl.RawSetString("curr_mode_full", lua.LString("NORMAL"))
-			}
-
-			return []lua.LValue{tbl}
-		})
-	} else {
-		statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
-		replace := func(s, val string) {
-			if val == "" {
-				val = "\x00"
-			}
-			statfmt = strings.ReplaceAll(statfmt, s, val)
+	statfmt := strings.ReplaceAll(gOpts.statfmt, "|", "\x1f")
+	replace := func(s, val string) {
+		if val == "" {
+			val = "\x00"
 		}
-		if nav.isVisualMode() {
-			replace("%m", "VISUAL")
-			replace("%M", "VISUAL")
-		} else {
-			replace("%m", "")
-			replace("%M", "NORMAL")
-		}
-		replace("%p", permString(curr.Mode()))
-		replace("%c", linkCount(curr))
-		replace("%u", userName(curr))
-		replace("%g", groupName(curr))
-		replace("%s", humanize(curr.Size()))
-		replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
-		replace("%t", curr.ModTime().Format(gOpts.timefmt))
-		replace("%l", sanitizeName(curr.linkTarget))
-
-		var fileInfo strings.Builder
-		for section := range strings.SplitSeq(statfmt, "\x1f") {
-			if !strings.Contains(section, "\x00") {
-				fileInfo.WriteString(section)
-			}
-		}
-
-		fileInfoStr = fileInfo.String()
+		statfmt = strings.ReplaceAll(statfmt, s, val)
 	}
+	if nav.isVisualMode() {
+		replace("%m", "VISUAL")
+		replace("%M", "VISUAL")
+	} else {
+		replace("%m", "")
+		replace("%M", "NORMAL")
+	}
+	replace("%p", permString(curr.Mode()))
+	replace("%c", linkCount(curr))
+	replace("%u", userName(curr))
+	replace("%g", groupName(curr))
+	replace("%s", humanize(curr.Size()))
+	replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
+	replace("%t", curr.ModTime().Format(gOpts.timefmt))
+	replace("%l", sanitizeName(curr.linkTarget))
+
+	var fileInfo strings.Builder
+	for section := range strings.SplitSeq(statfmt, "\x1f") {
+		if !strings.Contains(section, "\x00") {
+			fileInfo.WriteString(section)
+		}
+	}
+
+	fileInfoStr := fileInfo.String()
 
 	ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, fileInfoStr)
 }
