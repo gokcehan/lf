@@ -1882,24 +1882,9 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 		log.Printf("call Lua msg: (%s, %s, %s)", callArgs.sourceName, callArgs.registryKey, callArgs.msg)
 	}
 
-	entry, err := getLuaMsgEntry(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg)
+	action, err := getLuaMsgAction(L, callArgs.sourceName, callArgs.registryKey, callArgs.msg, callArgs.variant)
 	if err != nil {
 		return nil, err
-	}
-
-	var action *lua.LFunction
-	var extractor luaMsgActionExtractor
-	if extractorMap, ok := gLuaMsgActionExtractorMap[callArgs.registryKey]; ok {
-		extractor = extractorMap[callArgs.variant]
-	}
-
-	if extractor != nil {
-		action = extractor(L, entry)
-	} else {
-		action, _ = entry.(*lua.LFunction)
-	}
-	if action == nil {
-		return nil, fmt.Errorf("can't get valid msg action function")
 	}
 
 	var luaArgs []lua.LValue
@@ -1978,6 +1963,9 @@ func callLuaMsgExpr(expr *luaMsgExpr, getArgs luaMsgArgsMaker) ([]lua.LValue, er
 	})
 }
 
+// ----------------------------------------------------------------------------
+// command
+
 // callLuaCommandCompletion calls completion message for given Lua command.
 func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) ([]compMatch, string) {
 	ret, err := callLuaMsg(
@@ -2054,6 +2042,9 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 	return matches, longest
 }
 
+// ----------------------------------------------------------------------------
+// event hook
+
 // callLuaEventHooks calls all Lua event hooks under given command name.
 func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 	exprList, ok := gLuaRegistry.eventHooks[cmdName]
@@ -2076,6 +2067,9 @@ func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 
 	return nil
 }
+
+// ----------------------------------------------------------------------------
+// previewer
 
 type luaPreviewerPipe struct {
 	m   sync.Mutex
@@ -2408,6 +2402,9 @@ func callLuaKeyMapMsg(expr *luaKeyMapExpr) error {
 	}
 }
 
+// ----------------------------------------------------------------------------
+// sorting method
+
 // getLuaSortingMethodNames returns name list of all registered Lua sort method.
 func getLuaSortingMethodNames() []string {
 	return slices.Collect(maps.Keys(gLuaRegistry.sortingMethod))
@@ -2500,6 +2497,9 @@ func sortByLuaMsg(expr *luaMsgExpr, dir *dir) error {
 	}
 }
 
+// ----------------------------------------------------------------------------
+// UI Formatter
+
 // getLuaUIFormatter finds Lua UI formatter message with given name.
 func getLuaUIFormatter(name string) *luaMsgExpr {
 	return gLuaRegistry.uiFormatter[name]
@@ -2546,10 +2546,16 @@ func callLuaUIFormatterWithSingleParam(formatterName, defaultFmtStr, param strin
 	return fmt.Sprintf(optionToFmtstr(defaultFmtStr), param)
 }
 
+// ----------------------------------------------------------------------------
+// UI printer
+
 // getLuaUIPrinter finds Lua UI printer message with given name.
 func getLuaUIPrinter(name string) *luaMsgExpr {
 	return gLuaRegistry.uiPrinter[name]
 }
+
+// ----------------------------------------------------------------------------
+// UI Style
 
 // getLuaUIStyle looks up Lua UI style registry with given name
 func getLuaUIStyle(name string, defaultFmtStr string) (tcell.Style, bool) {
@@ -2567,6 +2573,9 @@ func getLuaUIStyleWithDefaultStr(name string, defaultFmtStr string) tcell.Style 
 	}
 	return style
 }
+
+// ----------------------------------------------------------------------------
+// MISC
 
 // getLuaMiscMsg returns misc message with given name. If no such message is registered,
 // this function returns nil.
