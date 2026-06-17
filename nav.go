@@ -321,9 +321,11 @@ func (dir *dir) sort() {
 			return naturalCmp(s1, s2)
 		})
 	default:
-		name := string(dir.sortby)
-		if msgExpr := getLuaSortingMethod(name); msgExpr != nil {
-			sortByLuaMsg(msgExpr, dir.files, dir.reverse)
+		if msgExpr := getLuaSortingMethod(string(dir.sortby)); msgExpr != nil {
+			err := sortByLuaMsg(msgExpr, dir)
+			if err != nil {
+				log.Println(err)
+			}
 		}
 	}
 

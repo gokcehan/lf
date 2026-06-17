@@ -2418,60 +2418,86 @@ func getLuaSortingMethod(name string) *luaMsgExpr {
 	return gLuaRegistry.sortingMethod[name]
 }
 
-// sortByLuaMsg pass given file list to Lua sort method and update file list order
-// in place.
-func sortByLuaMsg(expr *luaMsgExpr, files []*file, isReverse bool) error {
-	retList, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
-		udTbl := L.NewTable()
-		for _, file := range files {
-			udTbl.Append(lWrapFile(L, file))
+// sortByLuaMsgOnState calls Lua sorting method message on given Lua state.
+func sortByLuaMsgOnState(L *lua.LState, expr *luaMsgExpr, dir *dir) error {
+	action, err := getLuaMsgAction(L, expr.sourceName, expr.registry, expr.msg, expr.variant)
+	if err != nil {
+		return err
+	}
+
+	options := L.NewTable()
+	options.RawSetString("dircounts", lua.LBool(dir.dircounts))
+	options.RawSetString("dirfirst", lua.LBool(dir.dirfirst))
+	options.RawSetString("dironly", lua.LBool(dir.dironly))
+	options.RawSetString("hidden", lua.LBool(dir.hidden))
+	options.RawSetString("sortignorecase", lua.LBool(dir.sortignorecase))
+	options.RawSetString("sortignoredia", lua.LBool(dir.sortignoredia))
+
+	udCache := make(map[*file]*lua.LUserData)
+
+	slices.SortStableFunc(dir.files, func(f1, f2 *file) int {
+		ud1 := udCache[f1]
+		if ud1 == nil {
+			ud1 = lWrapFile(L, f1)
+			udCache[f1] = ud1
 		}
-		return []lua.LValue{udTbl}
+
+		ud2 := udCache[f2]
+		if ud2 == nil {
+			ud2 = lWrapFile(L, f2)
+			udCache[f2] = ud2
+		}
+
+		L.Push(action)
+		if dir.reverse {
+			L.Push(ud2)
+			L.Push(ud1)
+		} else {
+			L.Push(ud1)
+			L.Push(ud2)
+		}
+
+		L.Push(options)
+
+		err = L.PCall(3, 1, nil)
+		if err != nil {
+			return 0
+		}
+
+		ret := L.Get(-1)
+		defer L.Pop(1)
+
+		num, ok := ret.(lua.LNumber)
+		if !ok {
+			err = fmt.Errorf("Lua sortting message returns non-numeric value")
+		}
+
+		return int(num)
 	})
 
-	if err != nil {
-		return fmt.Errorf("%s", err)
-	} else if len(retList) <= 0 {
-		return fmt.Errorf("Lua sort method returns nothing")
-	}
+	return err
+}
 
-	ret := retList[0]
-	if ret.Type() != lua.LTTable {
-		return fmt.Errorf("return value of Lua function is not a table")
-	}
-
-	retTbl := ret.(*lua.LTable)
-	nElem := retTbl.Len()
-	if nElem != len(files) {
-		return fmt.Errorf("number of elements in returned table does not match number of files")
-	}
-
-	result := make([]*file, nElem)
-	for i := 1; i <= nElem; i++ {
-		value := retTbl.RawGetInt(i)
-		if value.Type() != lua.LTUserData {
-			return fmt.Errorf("element %d in returned table is not userdata", i)
+// sortByLuaMsg pass given file list to Lua sort method and update file list order
+// in place.
+func sortByLuaMsg(expr *luaMsgExpr, dir *dir) error {
+	if expr.isAsync {
+		L, err := gLuaPool.get()
+		if err != nil {
+			return err
 		}
-
-		file, ok := value.(*lua.LUserData).Value.(*file)
-		if !ok {
-			return fmt.Errorf("element %d is not a *file data", i)
-		}
-
-		result[i-1] = file
-	}
-
-	if isReverse {
-		for i := range files {
-			files[i] = result[nElem-i-1]
-		}
+		defer gLuaPool.put(L)
+		return sortByLuaMsgOnState(L, expr, dir)
 	} else {
-		for i := range files {
-			files[i] = result[i]
-		}
-	}
+		L, err := gLuaPool.acquireSyncState()
+		defer gLuaPool.releaseSyncState()
 
-	return nil
+		if err != nil {
+			return err
+		}
+
+		return sortByLuaMsgOnState(L, expr, dir)
+	}
 }
 
 // getLuaUIFormatter finds Lua UI formatter message with given name.

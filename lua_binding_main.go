@@ -879,7 +879,14 @@ func luaDirNoPerm(L *lua.LState) int {
 // luaDirSort runs sorting for current directory
 func luaDirSort(L *lua.LState) int {
 	dir := lCheckDir(L, 1)
-	dir.sort()
+
+	if msgExpr := getLuaSortingMethod(string(dir.sortby)); msgExpr != nil {
+		// call sort action directly to avoid potential Lua state dead lock.
+		sortByLuaMsgOnState(L, msgExpr, dir)
+	} else {
+		dir.sort()
+	}
+
 	return 0
 }
 
