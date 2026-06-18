@@ -30,8 +30,18 @@ func lfMainModuleLoader(L *lua.LState) int {
 
 		"call_msg_expr": luaMainModuleCallMsgExpr,
 
-		"glob_match":          luaMainModuleGlobMatch,
-		"match_word":          luaMainModuleMatchWord,
+		"glob_match": luaMainModuleGlobMatch,
+
+		"match_word":           luaMainModuleMatchWord,
+		"match_list":           luaMainModuleMatchList,
+		"match_cmd":            luaMainModuleMatchCmd,
+		"match_cmd_file":       luaMainModuleMatchCmdFile,
+		"match_shell_file":     luaMainModuleMatchShellFile,
+		"match_exec":           luaMainModuleMatchExec,
+		"match_search":         luaMainModuleMatchSearch,
+		"match_opt_name":       luaMainModuleMatchOptName,
+		"match_local_opt_name": luaMainModuleMatchLocalOptName,
+
 		"str_fill":            luaMainModuleStrFill,
 		"str_fill_right":      luaMainModuleStrFillRight,
 		"to_perm_string":      luaMainModuleToPermString,
@@ -537,6 +547,18 @@ func luaMainModuleGlobMatch(L *lua.LState) int {
 	return 1
 }
 
+func luaMainModuleAddMatchResultToLuaState(L *lua.LState, matches []compMatch, longest string) int {
+	tbl := L.NewTable()
+	for _, match := range matches {
+		tbl.Append(lWrapCompMatch(L, &match))
+	}
+
+	L.Push(tbl)
+	L.Push(lua.LString(longest))
+
+	return 2
+}
+
 // luaMainModuleMatchWord takes a source string, and a list of candidate string, and
 // returns a list of match object and longest common matched string.
 func luaMainModuleMatchWord(L *lua.LState) int {
@@ -554,15 +576,85 @@ func luaMainModuleMatchWord(L *lua.LState) int {
 	slices.Sort(words)
 	matches, longest := matchWord(longest, slices.Compact(words))
 
-	tbl := L.NewTable()
-	for _, match := range matches {
-		tbl.Append(lWrapCompMatch(L, &match))
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+// luaMainModuleMatchList takes a `:` seperated list string, and a list element
+// candidate list, returns matching entry and completion result string.
+func luaMainModuleMatchList(L *lua.LState) int {
+	longest := L.CheckString(1)
+	wordTbl := L.CheckTable(2)
+
+	nWord := wordTbl.Len()
+	words := make([]string, nWord)
+
+	for i := 1; i <= nWord; i++ {
+		word := wordTbl.RawGetInt(i)
+		words[i-1] = word.String()
 	}
 
-	L.Push(tbl)
-	L.Push(lua.LString(longest))
+	slices.Sort(words)
+	matches, longest := matchList(longest, slices.Compact(words))
 
-	return 2
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+// luaMainModuleMatchCmd makes command name completion.
+func luaMainModuleMatchCmd(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchCmd(longest)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchCmdFile(L *lua.LState) int {
+	longest := L.CheckString(1)
+	dirOnly := L.CheckBool(2)
+
+	matches, longest := matchCmdFile(longest, dirOnly)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchShellFile(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchShellFile(longest)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchExec(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchExec(longest)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchSearch(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchSearch(longest)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchOptName(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchWord(longest, gOptWords)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
+}
+
+func luaMainModuleMatchLocalOptName(L *lua.LState) int {
+	longest := L.CheckString(1)
+
+	matches, longest := matchWord(longest, gLocalOptWords)
+
+	return luaMainModuleAddMatchResultToLuaState(L, matches, longest)
 }
 
 func luaMainModuleStrFill(L *lua.LState) int {
