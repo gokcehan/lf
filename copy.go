@@ -124,7 +124,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				dst = newPath
 			}
 
-			if rel, err := filepath.Rel(src, dst); err == nil && rel != "." && !strings.HasPrefix(rel, "..") {
+			if rel, err := filepath.Rel(src, dst); err == nil && rel != "." && filepath.IsLocal(rel) {
 				errs <- fmt.Errorf("cannot copy %s into a subdirectory of itself", src)
 				continue
 			}
