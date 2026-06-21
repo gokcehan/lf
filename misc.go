@@ -106,43 +106,50 @@ func truncateLeft(s string, maxWidth int) string {
 }
 
 // cmdEscape is used to escape whitespace and special characters with
-// backslashes in a given string.
+// backslashes in a given string. Byte-oriented to preserve invalid UTF-8
 func cmdEscape(s string) string {
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
-		if unicode.IsSpace(r) || r == '\\' || r == ';' || r == '#' {
-			buf = append(buf, '\\')
+	var buf strings.Builder
+	buf.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c == '\\' || c == ';' || c == '#' || isCmdSpace(c) {
+			buf.WriteByte('\\')
 		}
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
-	return string(buf)
+	return buf.String()
 }
 
 // cmdUnescape is used to remove backslashes that are used to escape
 // whitespace and special characters in a given string.
 func cmdUnescape(s string) string {
+	var buf strings.Builder
+	buf.Grow(len(s))
 	esc := false
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
 		if esc {
-			if !unicode.IsSpace(r) && r != '\\' && r != ';' && r != '#' {
-				buf = append(buf, '\\')
+			if c != '\\' && c != ';' && c != '#' && !isCmdSpace(c) {
+				buf.WriteByte('\\')
 			}
-			buf = append(buf, r)
+			buf.WriteByte(c)
 			esc = false
 			continue
 		}
-		if r == '\\' {
+		if c == '\\' {
 			esc = true
 			continue
 		}
-		esc = false
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
 	if esc {
-		buf = append(buf, '\\')
+		buf.WriteByte('\\')
 	}
-	return string(buf)
+	return buf.String()
+}
+
+func isCmdSpace(c byte) bool {
+	return c == ' ' || c == '\t' || c == '\n' || c == '\r' || c == '\v' || c == '\f'
 }
 
 // tokenize splits the given string by whitespace. It is aware of escaped
@@ -150,24 +157,25 @@ func cmdUnescape(s string) string {
 func tokenize(s string) []string {
 	esc := false
 	quote := false
-	var buf []rune
+	var buf []byte
 	var toks []string
-	for _, r := range s {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
 		switch {
 		case esc:
 			esc = false
-			buf = append(buf, r)
-		case r == '\\':
+			buf = append(buf, c)
+		case c == '\\':
 			esc = true
-			buf = append(buf, r)
-		case r == '"':
+			buf = append(buf, c)
+		case c == '"':
 			quote = !quote
-			buf = append(buf, r)
-		case unicode.IsSpace(r) && !quote:
+			buf = append(buf, c)
+		case isCmdSpace(c) && !quote:
 			toks = append(toks, string(buf))
 			buf = nil
 		default:
-			buf = append(buf, r)
+			buf = append(buf, c)
 		}
 	}
 	return append(toks, string(buf))
