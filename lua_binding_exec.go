@@ -4,7 +4,6 @@ import (
 	"bufio"
 	"io"
 	"os/exec"
-	"syscall"
 
 	lua "github.com/yuin/gopher-lua"
 )
@@ -16,8 +15,6 @@ const luaCmdTypeName = "exec.Cmd"
 
 func lRegisterCmdType(L *lua.LState) *lua.LTable {
 	mt := L.NewTypeMetatable(luaCmdTypeName)
-
-	lAddConstantToCmdMt(mt)
 
 	L.SetFuncs(mt, map[string]lua.LGFunction{
 		"new":        luaCmdNew,
@@ -45,49 +42,10 @@ func lRegisterCmdType(L *lua.LState) *lua.LTable {
 		"set_stdout_writer_func": luaCmdSetStdoutWriterFunc,
 		"set_stderr_writer_func": luaCmdSetStderrWriterFunc,
 
-		"signal": luaCmdSignal,
+		"kill": luaCmdKill,
 	}))
 
 	return mt
-}
-
-func lAddConstantToCmdMt(mt *lua.LTable) {
-	// signals
-	mt.RawSetString("SIGABRT", lua.LNumber(syscall.SIGABRT))
-	mt.RawSetString("SIGALRM", lua.LNumber(syscall.SIGALRM))
-	mt.RawSetString("SIGBUS", lua.LNumber(syscall.SIGBUS))
-	mt.RawSetString("SIGCHLD", lua.LNumber(syscall.SIGCHLD))
-	mt.RawSetString("SIGCLD", lua.LNumber(syscall.SIGCLD))
-	mt.RawSetString("SIGCONT", lua.LNumber(syscall.SIGCONT))
-	mt.RawSetString("SIGFPE", lua.LNumber(syscall.SIGFPE))
-	mt.RawSetString("SIGHUP", lua.LNumber(syscall.SIGHUP))
-	mt.RawSetString("SIGILL", lua.LNumber(syscall.SIGILL))
-	mt.RawSetString("SIGINT", lua.LNumber(syscall.SIGINT))
-	mt.RawSetString("SIGIO", lua.LNumber(syscall.SIGIO))
-	mt.RawSetString("SIGIOT", lua.LNumber(syscall.SIGIOT))
-	mt.RawSetString("SIGKILL", lua.LNumber(syscall.SIGKILL))
-	mt.RawSetString("SIGPIPE", lua.LNumber(syscall.SIGPIPE))
-	mt.RawSetString("SIGPOLL", lua.LNumber(syscall.SIGPOLL))
-	mt.RawSetString("SIGPROF", lua.LNumber(syscall.SIGPROF))
-	mt.RawSetString("SIGPWR", lua.LNumber(syscall.SIGPWR))
-	mt.RawSetString("SIGQUIT", lua.LNumber(syscall.SIGQUIT))
-	mt.RawSetString("SIGSEGV", lua.LNumber(syscall.SIGSEGV))
-	mt.RawSetString("SIGSTKFLT", lua.LNumber(syscall.SIGSTKFLT))
-	mt.RawSetString("SIGSTOP", lua.LNumber(syscall.SIGSTOP))
-	mt.RawSetString("SIGSYS", lua.LNumber(syscall.SIGSYS))
-	mt.RawSetString("SIGTERM", lua.LNumber(syscall.SIGTERM))
-	mt.RawSetString("SIGTRAP", lua.LNumber(syscall.SIGTRAP))
-	mt.RawSetString("SIGTSTP", lua.LNumber(syscall.SIGTSTP))
-	mt.RawSetString("SIGTTIN", lua.LNumber(syscall.SIGTTIN))
-	mt.RawSetString("SIGTTOU", lua.LNumber(syscall.SIGTTOU))
-	mt.RawSetString("SIGUNUSED", lua.LNumber(syscall.SIGUNUSED))
-	mt.RawSetString("SIGURG", lua.LNumber(syscall.SIGURG))
-	mt.RawSetString("SIGUSR1", lua.LNumber(syscall.SIGUSR1))
-	mt.RawSetString("SIGUSR2", lua.LNumber(syscall.SIGUSR2))
-	mt.RawSetString("SIGVTALRM", lua.LNumber(syscall.SIGVTALRM))
-	mt.RawSetString("SIGWINCH", lua.LNumber(syscall.SIGWINCH))
-	mt.RawSetString("SIGXCPU", lua.LNumber(syscall.SIGXCPU))
-	mt.RawSetString("SIGXFSZ", lua.LNumber(syscall.SIGXFSZ))
 }
 
 func lCheckCmd(L *lua.LState, index int) *exec.Cmd {
@@ -392,17 +350,10 @@ func luaCmdSetStderrWriterFunc(L *lua.LState) int {
 	return 0
 }
 
-// luaCmdSignal sends signal to subprocess.
-func luaCmdSignal(L *lua.LState) int {
+func luaCmdKill(L *lua.LState) int {
 	cmd := lCheckCmd(L, 1)
-	sig := L.CheckInt(2)
+	err := cmd.Process.Kill()
 
-	if cmd.Process == nil {
-		L.Push(lua.LString("no process is binded with this object"))
-		return 1
-	}
-
-	err := cmd.Process.Signal(syscall.Signal(sig))
 	if err != nil {
 		L.Push(lua.LString(err.Error()))
 		return 1
