@@ -426,11 +426,16 @@ func luaFileExtraDataKeys(L *lua.LState) int {
 
 // luaFileIsPreviewable returns true if this file requires a preview call.
 func luaFileIsPreviewable(L *lua.LState) int {
-	// TODO: dead lock protectioin
-	tryRaiseSyncLuaStateError(L)
-
 	file := lCheckFile(L, 1)
-	L.Push(lua.LBool(file.isPreviewable()))
+	if file.isPreviewablePlain() {
+		L.Push(lua.LTrue)
+		return 1
+	}
+
+	previewer := getLuaPreviewerForPathOnState(L, file.path)
+
+	L.Push(lua.LBool(previewer != nil))
+
 	return 1
 }
 

@@ -128,8 +128,20 @@ func newFile(path string) *file {
 	}
 }
 
+// isPreviewablePlain reports if file is previewable without calling any Lua message.
+// This method is seperated to avoid deadlock caused by calling isPreviewable from
+// Lua.
+func (file *file) isPreviewablePlain() bool {
+	return !file.IsDir() || gOpts.dirpreviews
+}
+
+// isPreviewableLua reports if file is previewable by any Lua previewer.
+func (file *file) isPreviewableLua() bool {
+	return getLuaPreviewerForPath(file.path) != nil
+}
+
 func (file *file) isPreviewable() bool {
-	return !file.IsDir() || gOpts.dirpreviews || getLuaPreviewerForPath(file.path) != nil
+	return file.isPreviewablePlain() || file.isPreviewableLua()
 }
 
 type fakeStat struct {

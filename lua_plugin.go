@@ -1912,7 +1912,7 @@ func callLuaMsgOnState(L *lua.LState, callArgs luaMsgCallArgs) ([]lua.LValue, er
 
 	ret := make([]lua.LValue, nRet)
 	for i := 0; i < nRet; i++ {
-		ret[i] = L.Get(i + 1)
+		ret[i] = L.Get(oldTop + i + 1)
 	}
 
 	return ret, nil
@@ -2317,6 +2317,45 @@ func getLuaPreviewerForPath(path string) *luaPreviewerInfo {
 		if err != nil {
 			log.Printf("failed to check condition for previewer %s: %s", previewer.name, err)
 		} else if ok {
+			result = previewer
+			break
+		}
+	}
+
+	return result
+}
+
+// getLuaPreviewerForPathOnState checks avtivation for each Lua previewer on
+// give Lua state.
+func getLuaPreviewerForPathOnState(L *lua.LState, path string) *luaPreviewerInfo {
+	var result *luaPreviewerInfo
+	for i := range gLuaRegistry.previewers {
+		previewer := &gLuaRegistry.previewers[i]
+
+		expr := previewer.msgexpr
+		ret, err := callLuaMsgOnState(L, luaMsgCallArgs{
+			sourceName:  expr.sourceName,
+			registryKey: expr.registry,
+			msg:         expr.msg,
+			variant:     luaPreviewerConditionFuncKey,
+			isAsync:     expr.isAsync,
+			getArgs: func(L *lua.LState) []lua.LValue {
+				return []lua.LValue{lua.LString(path)}
+			},
+		})
+
+		if err != nil {
+			log.Printf("failed to check condition for previewer %s: %s", previewer.name, err)
+			continue
+		}
+
+		if len(ret) == 0 {
+			continue
+		}
+
+		log.Println(previewer, ret)
+
+		if lua.LVAsBool(ret[0]) {
 			result = previewer
 			break
 		}
