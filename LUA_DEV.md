@@ -144,8 +144,21 @@ return {
 }
 ```
 
-There are some Lua APIs require synchronous state to call, when those APIs being
-called under asynchronous mode, a Lua side error will be raised.
+Asynchronous, does not necessary mean Lua tasks are executed in parallel, when
+a message is synchronous, it has to wait until synchronous Lua state to become
+free to get executed.
+
+And there are binding APIs that calls another Lua message itself. If such binding
+is used in synchronous message, and unluckly the message called by that binding is
+also a synchronous message, then dead lock would occur.
+
+There are two functions that can be used to force binding API to be called only
+on synchronous/asynchronous Lua state:
+
+- `tryRaiseNonSyncLuaStateError` raises error when `L` passed in is not synchronous
+  Lua state.
+- `tryRaiseSyncLuaStateError` raises error whnen `L` passed in is synchronous Lua
+  state.
 
 ## Supported Registry Keys
 
