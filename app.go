@@ -441,6 +441,7 @@ func (app *app) loop() {
 				continue
 			}
 			app.nav.regCache[r.path] = r
+			app.nav.evictRegCache()
 
 			if curr := app.nav.currFile(); curr != nil {
 				if r.path == curr.path {
