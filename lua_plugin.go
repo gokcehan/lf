@@ -252,7 +252,7 @@ func (pl *lStatePool) loadPluginScripts() error {
 // can do extra stuff with value returned by each plugin script.
 func (pl *lStatePool) newWithRetAction(action func(sourceName string, L *lua.LState, tbl *lua.LTable)) (*lua.LState, error) {
 	if pl.isClosed {
-		return nil, fmt.Errorf("Lua State has been closed on app quit")
+		return nil, fmt.Errorf("pool has been closed on app quit")
 	}
 
 	L := lua.NewState()
@@ -369,11 +369,11 @@ func (pl *lStatePool) get() (*lua.LState, error) {
 	defer pl.lockPool.Unlock()
 
 	if !pl.isInitialized {
-		return nil, fmt.Errorf("Lua State has not been initialized")
+		return nil, fmt.Errorf("lua state has not been initialized")
 	}
 
 	if pl.isClosed {
-		return nil, fmt.Errorf("Lua State has been closed on app quit")
+		return nil, fmt.Errorf("lua state has been closed on app quit")
 	}
 
 	n := len(pl.saved)
@@ -409,12 +409,12 @@ func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 
 	if !pl.isInitialized {
 		pl.lockPool.Unlock()
-		return nil, fmt.Errorf("Lua State has not been initialized")
+		return nil, fmt.Errorf("pool has not been initialized")
 	}
 
 	if pl.isClosed {
 		pl.lockPool.Unlock()
-		return nil, fmt.Errorf("Lua State has been closed on app quit")
+		return nil, fmt.Errorf("pool has been closed on app quit")
 	}
 
 	pl.lockPool.Unlock()
@@ -422,7 +422,7 @@ func (pl *lStatePool) acquireSyncState() (*lua.LState, error) {
 	pl.lockLuaStateSync.Lock()
 
 	if pl.luaStateSync == nil {
-		return nil, fmt.Errorf("No Lua State is available")
+		return nil, fmt.Errorf("no Lua State is available")
 	}
 
 	return pl.luaStateSync, nil
@@ -489,7 +489,7 @@ func (pl *lStatePool) resetLuaState() error {
 		return nil
 	}
 
-	return fmt.Errorf("Lua State is busy")
+	return fmt.Errorf("lua State is busy")
 }
 
 // checkIsSyncState checks if given state is synchronous Lua state.
@@ -538,7 +538,7 @@ func (writer *luaFuncWriter) Write(p []byte) (n int, err error) {
 	}
 
 	if errStr != "" {
-		err = fmt.Errorf("Lua writer function error: %s", err)
+		err = fmt.Errorf("lua writer function error: %s", err)
 	}
 
 	return
@@ -600,18 +600,20 @@ func goReflectValueToLuaValue(L *lua.LState, rValue reflect.Value) (luaValue lua
 			lMapKey, err = goReflectValueToLuaValue(L, mapKey)
 			if err != nil {
 				err = fmt.Errorf("failed to convert map key: %s", err)
+				break
 			}
 
 			lMapValue, err = goReflectValueToLuaValue(L, mapValue)
 			if err != nil {
 				err = fmt.Errorf("failed to convert map value: %s", err)
+				break
 			}
 
 			tbl.RawSet(lMapKey, lMapValue)
 		}
 
 		luaValue = tbl
-	case reflect.Ptr:
+	case reflect.Pointer:
 		if rValue.IsNil() {
 			luaValue = lua.LNil
 		} else {
@@ -702,6 +704,10 @@ func getPluginNameForSourcePath(sourceName string) string {
 // compileLua reads the passed lua file from disk and compiles it.
 func compileLua(filePath string) (*lua.FunctionProto, error) {
 	file, err := os.Open(filePath)
+	if err != nil {
+		return nil, err
+	}
+
 	defer file.Close()
 	if err != nil {
 		return nil, err
@@ -1216,7 +1222,7 @@ func loadLocalOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 					expr := &setLocalExpr{path: path, opt: option, val: string(ret.(lua.LString))}
 					expr.eval(app, nil)
 				} else {
-					app.ui.echoerrf("Lua function for local option `%s` `%s` does not return string value", path, option)
+					app.ui.echoerrf("lua function for local option `%s` `%s` does not return string value", path, option)
 				}
 			default:
 				log.Printf("unsupported local option registry value type for %s %s", path, option)
@@ -1327,7 +1333,7 @@ func loadOptionRegistryFromTbl(L *lua.LState, app *app, tbl *lua.LTable) {
 				expr := &setExpr{opt: option, val: string(ret.(lua.LString))}
 				expr.eval(app, nil)
 			} else {
-				app.ui.echoerrf("Lua function for option `%s` does not return string value", option)
+				app.ui.echoerrf("lua function for option `%s` does not return string value", option)
 			}
 		default:
 			log.Printf("unsupported option registry value type for key: %s", option)
@@ -1864,7 +1870,7 @@ func makeLuaMsgArgsWrapper(args ...any) luaMsgArgsMaker {
 			if value, err := goValueToLuaValue(L, arg); err == nil {
 				result[i] = value
 			} else {
-				log.Printf("Lua message argument wrapper error at value %v: %s", arg, err)
+				log.Printf("lua message argument wrapper error at value %v: %s", arg, err)
 				result[i] = lua.LNil
 			}
 		}
@@ -2046,10 +2052,10 @@ func callLuaCommandCompletion(expr *luaMsgExpr, args []string, longest string) (
 // event hook
 
 // callLuaEventHooks calls all Lua event hooks under given command name.
-func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
+func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) {
 	exprList, ok := gLuaRegistry.eventHooks[cmdName]
 	if !ok {
-		return nil
+		return
 	}
 
 	errCnt := 0
@@ -2062,10 +2068,8 @@ func callLuaEventHooks(cmdName string, getArgs luaMsgArgsMaker) error {
 	}
 
 	if errCnt > 0 {
-		return fmt.Errorf("%d error(s) occured during event hook call, see log for more detail", errCnt)
+		log.Printf("%d error(s) occured during event hook call, see log for more detail", errCnt)
 	}
-
-	return nil
 }
 
 // ----------------------------------------------------------------------------
@@ -2078,8 +2082,9 @@ type luaPreviewerPipe struct {
 	ticker *time.Ticker
 	wake   chan struct{}
 
-	closed bool
-	done   chan struct{}
+	readSideClosed bool
+	closed         bool
+	done           chan struct{}
 
 	volatile bool
 
@@ -2122,7 +2127,7 @@ func (lp *luaPreviewerPipe) Write(p []byte) (n int, err error) {
 	lp.m.Lock()
 	defer lp.m.Unlock()
 
-	if lp.closed {
+	if lp.readSideClosed || lp.closed {
 		return 0, io.ErrClosedPipe
 	}
 
@@ -2177,6 +2182,13 @@ func (lp *luaPreviewerPipe) Close() error {
 	lp.ticker.Stop()
 
 	return nil
+}
+
+func (lp *luaPreviewerPipe) closeReadSide() {
+	lp.m.Lock()
+	defer lp.m.Unlock()
+
+	lp.readSideClosed = true
 }
 
 // setVolatile updates volatile indicator on pipe.
@@ -2248,8 +2260,18 @@ func callLuaPreviewerAction(expr *luaMsgExpr, path string, w, h, x, y int, mode 
 
 	go func() {
 		writer := bufio.NewWriter(pipe)
-		defer pipe.Close()
-		defer writer.Flush()
+		defer func() {
+			var err error
+			err = writer.Flush()
+			if err != nil {
+				log.Printf("failed to flush Lua preview writer: %s", err)
+			}
+
+			err = pipe.Close()
+			if err != nil {
+				log.Printf("failed to close Lua preview pipe: %s", err)
+			}
+		}()
 
 		ret, err := callLuaMsgExpr(expr, func(L *lua.LState) []lua.LValue {
 			return []lua.LValue{
@@ -2505,7 +2527,7 @@ func sortByLuaMsgOnState(L *lua.LState, expr *luaMsgExpr, dir *dir) error {
 
 		num, ok := ret.(lua.LNumber)
 		if !ok {
-			err = fmt.Errorf("Lua sortting message returns non-numeric value")
+			err = fmt.Errorf("lua sortting message returns non-numeric value")
 		}
 
 		return int(num)
@@ -2553,12 +2575,12 @@ func callLuaUIFormatter(expr *luaMsgExpr, getArgs luaMsgArgsMaker) (string, erro
 	}
 
 	if len(ret) == 0 {
-		return "", fmt.Errorf("Lua UI formatter does not return a string")
+		return "", fmt.Errorf("lua UI formatter does not return a string")
 	}
 
 	value := ret[0]
 	if value.Type() != lua.LTString {
-		return "", fmt.Errorf("Lua UI formatter does not return a string")
+		return "", fmt.Errorf("lua UI formatter does not return a string")
 	}
 
 	return string(value.(lua.LString)), nil
@@ -2596,12 +2618,6 @@ func getLuaUIPrinter(name string) *luaMsgExpr {
 // ----------------------------------------------------------------------------
 // UI Style
 
-// getLuaUIStyle looks up Lua UI style registry with given name
-func getLuaUIStyle(name string, defaultFmtStr string) (tcell.Style, bool) {
-	style, ok := gLuaRegistry.uiStyleMap[name]
-	return style, ok
-}
-
 // getLuaUIStyleWithDefaultStr looks up Lua UI style registry with given name.
 // When target key does not exists, make a new style object with default format
 // string.
@@ -2629,7 +2645,7 @@ func formatDuplicatedFilenameWithLuaMsg(expr *luaMsgExpr, basename, ext string, 
 	}
 
 	if len(ret) <= 0 {
-		return "", fmt.Errorf("Lua message returns nonthing")
+		return "", fmt.Errorf("lua message returns nonthing")
 	}
 
 	strValue, ok := ret[0].(lua.LString)
@@ -2648,7 +2664,7 @@ func makeShellCmdWithLuaMsg(expr *luaMsgExpr, cmd_name string, args []string) (*
 	}
 
 	if len(ret) <= 0 {
-		return nil, fmt.Errorf("Lua shell command maker returns nonthing")
+		return nil, fmt.Errorf("lua shell command maker returns nonthing")
 	}
 
 	ret1 := ret[0]

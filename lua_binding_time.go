@@ -705,7 +705,7 @@ func lWrapTimer(L *lua.LState, data *time.Timer) *lua.LUserData {
 	return ud
 }
 
-func lAddTimerToState(L *lua.LState, data *time.Timer) int {
+/* func lAddTimerToState(L *lua.LState, data *time.Timer) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
@@ -715,7 +715,7 @@ func lAddTimerToState(L *lua.LState, data *time.Timer) int {
 	L.Push(ud)
 
 	return 1
-}
+} */
 
 // ----------------------------------------------------------------------------
 

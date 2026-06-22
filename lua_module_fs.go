@@ -70,7 +70,11 @@ func luaFsModuleLink(L *lua.LState) int {
 		}
 
 		if force {
-			os.Remove(newname)
+			err := os.Remove(newname)
+			if err != nil {
+				L.Push(lua.LString(fmt.Sprintf("failed to remove existing link: %s", err)))
+				return 1
+			}
 		} else {
 			L.Push(lua.LString(fmt.Sprintf("link %s already exists", newname)))
 			return 1
@@ -98,7 +102,11 @@ func luaFsModuleSymlink(L *lua.LState) int {
 		}
 
 		if force {
-			os.Remove(newname)
+			err := os.Remove(newname)
+			if err != nil {
+				L.Push(lua.LString(fmt.Sprintf("failed to remove existing link: %s", err)))
+				return 1
+			}
 		} else {
 			L.Push(lua.LString(fmt.Sprintf("link %s already exists", newname)))
 			return 1
@@ -134,7 +142,6 @@ func luaFsModuleCopyFile(L *lua.LState) int {
 
 	reader := bufio.NewReader(srcFile)
 	writer := bufio.NewWriter(dstFile)
-	defer writer.Flush()
 
 	_, err = io.Copy(writer, reader)
 	if err != nil {
@@ -142,9 +149,13 @@ func luaFsModuleCopyFile(L *lua.LState) int {
 		return 1
 	}
 
-	L.Push(lua.LNil)
+	err = writer.Flush()
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
 
-	return 1
+	return 0
 }
 
 func luaFsModuleJoin(L *lua.LState) int {

@@ -21,10 +21,9 @@ func lfUtf8ModuleLoader(L *lua.LState) int {
 // luaUtf8ModuleToRuneTbl converts given string into a list of UTF-8 runes.
 func luaUtf8ModuleToRuneTbl(L *lua.LState) int {
 	str := L.CheckString(1)
-	runes := []rune(str)
 
 	tbl := L.NewTable()
-	for _, r := range runes {
+	for _, r := range str {
 		tbl.Append(lua.LString(string(r)))
 	}
 

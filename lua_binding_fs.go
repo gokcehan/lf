@@ -133,7 +133,7 @@ func lWrapDirEntry(L *lua.LState, data fs.DirEntry) *lua.LUserData {
 	return ud
 }
 
-func lAddDirEntryToState(L *lua.LState, data fs.DirEntry) int {
+/* func lAddDirEntryToState(L *lua.LState, data fs.DirEntry) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
@@ -143,7 +143,7 @@ func lAddDirEntryToState(L *lua.LState, data fs.DirEntry) int {
 	L.Push(ud)
 
 	return 1
-}
+} */
 
 // ----------------------------------------------------------------------------
 

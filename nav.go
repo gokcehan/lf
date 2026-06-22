@@ -917,6 +917,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 		reader = bufio.NewReader(pipe)
 
 		defer func() {
+			pipe.closeReadSide()
 			pipe.wait()
 			reg.volatile = pipe.isVolatile()
 
@@ -924,7 +925,6 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				log.Printf("Lua previewer error %s: %s", &luaPreviewer.msgexpr, err)
 			}
 		}()
-		defer pipe.Close()
 	} else if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(
 			gOpts.previewer,

@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"log"
 	"slices"
 
 	lua "github.com/yuin/gopher-lua"
@@ -46,7 +47,7 @@ func lWrapApp(L *lua.LState, data *app) *lua.LUserData {
 	return ud
 }
 
-func lAddAppToState(L *lua.LState, data *app) int {
+/* func lAddAppToState(L *lua.LState, data *app) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
@@ -56,7 +57,7 @@ func lAddAppToState(L *lua.LState, data *app) int {
 	L.Push(ud)
 
 	return 1
-}
+} */
 
 // ----------------------------------------------------------------------------
 
@@ -890,7 +891,10 @@ func luaDirSort(L *lua.LState) int {
 
 	if msgExpr := getLuaSortingMethod(string(dir.sortby)); msgExpr != nil {
 		// call sort action directly to avoid potential Lua state dead lock.
-		sortByLuaMsgOnState(L, msgExpr, dir)
+		err := sortByLuaMsgOnState(L, msgExpr, dir)
+		if err != nil {
+			log.Println(err)
+		}
 	} else {
 		dir.sort()
 	}
@@ -1405,7 +1409,11 @@ func luaNavSetFilter(L *lua.LState) int {
 		}
 	}
 
-	nav.setFilter(patterns)
+	err := nav.setFilter(patterns)
+	if err != nil {
+		L.Push(lua.LString(err.Error()))
+		return 1
+	}
 
 	return 0
 }
@@ -2615,19 +2623,6 @@ func luaDirContextNew(L *lua.LState) int {
 		}
 	})
 
-	visualSelectionTbl, ok := tbl.RawGetString("visual_selections").(*lua.LTable)
-	if !ok {
-		L.RaiseError("key `visual_selections` should be a table")
-	}
-	visualSelections := []string{}
-	nVisualSelection := visualSelectionTbl.Len()
-	for i := 1; i <= nVisualSelection; i++ {
-		value := visualSelectionTbl.RawGetInt(i)
-		if path, ok := value.(lua.LString); ok {
-			visualSelections = append(visualSelections, string(path))
-		}
-	}
-
 	context := &dirContext{
 		selections: selections,
 		clipboard:  *clipboard,
@@ -3326,7 +3321,7 @@ func lWrapLuaDataStore(L *lua.LState, data *luaDataStore) *lua.LUserData {
 	return ud
 }
 
-func lAddLuaDataStoreToState(L *lua.LState, data *luaDataStore) int {
+/* func lAddLuaDataStoreToState(L *lua.LState, data *luaDataStore) int {
 	if data == nil {
 		L.Push(lua.LNil)
 		return 1
@@ -3336,7 +3331,7 @@ func lAddLuaDataStoreToState(L *lua.LState, data *luaDataStore) int {
 	L.Push(ud)
 
 	return 1
-}
+} */
 
 // ----------------------------------------------------------------------------
 

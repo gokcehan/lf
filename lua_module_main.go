@@ -274,7 +274,7 @@ func luaMainModuleTblExtend(L *lua.LState) int {
 			oldValue := dst.RawGet(key)
 
 			if checker != nil {
-				L.CallByParam(
+				_ = L.CallByParam(
 					lua.P{
 						Fn:   checker,
 						NRet: 1,
