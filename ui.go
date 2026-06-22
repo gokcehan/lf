@@ -1533,7 +1533,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return &callExpr{"cd", []string{dir.path}, 1}
 		}
 	case *tcell.EventResize:
-		return &callExpr{"redraw", nil, 1}
+		return &callExpr{"redraw", []string{"resize"}, 1}
 	case *tcell.EventError:
 		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
 	case *tcell.EventInterrupt:
