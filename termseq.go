@@ -319,6 +319,18 @@ func sanitizeName(s string) string {
 	}, s)
 }
 
+// sanitizeStdout strips per-line control bytes when stdout is a terminal.
+func sanitizeStdout(s string, stdoutIsTerminal bool) string {
+	if !stdoutIsTerminal {
+		return s
+	}
+	lines := strings.Split(s, "\n")
+	for i := range lines {
+		lines[i] = sanitizeName(lines[i])
+	}
+	return strings.Join(lines, "\n")
+}
+
 // sanitizeMessage sanitizes a message intended for the message line. Like
 // sanitizeName it strips control runes, but it preserves terminal sequences
 // that lf itself recognizes (SGR, EL, OSC 8) so internal messages that use
