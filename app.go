@@ -400,7 +400,12 @@ func (app *app) loop() {
 			// triggered by Git commands executed inside the users `on-load`
 			// command (often used to add git symbols using `addcustominfo`).
 			// TODO: Should `watch` also ignore `.git` directories?
-		if filepath.Base(d.path) != ".git" {
+		// Only run on-load for the currently focused directory.
+		// Parent directories are loaded too but skipping their hooks saves
+		// ~20ms each, eliminating the main-loop blocking that causes preview lag.
+		// Parent panes will use global hiddenfiles (hides dotfiles) instead of
+		// gitignore-aware local settings — a reasonable tradeoff for speed.
+		if filepath.Base(d.path) != ".git" && d.path == app.nav.currDir().path {
 			paths := make([]string, len(d.allFiles))
 			for i, file := range d.allFiles {
 				paths[i] = file.path

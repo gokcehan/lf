@@ -522,19 +522,19 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		err = applyLocalBoolOpt(gLocalOpts.dircounts, gOpts.dircounts, e)
 	case "dirfirst", "nodirfirst", "dirfirst!":
 		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
 		err = applyLocalBoolOpt(gLocalOpts.dironly, gOpts.dironly, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyLocalBoolOpt(gLocalOpts.hidden, gOpts.hidden, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
@@ -557,26 +557,28 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 			}
 			gLocalOpts.hiddenfiles[e.path] = toks
 		}
-		app.nav.sort()
-		app.nav.position()
-		app.ui.loadFile(app, true)
+		if !app.noSuspend {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.loadFile(app, true)
+		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "sortignorecase", "nosortignorecase", "sortignorecase!":
 		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "sortignoredia", "nosortignoredia", "sortignoredia!":
 		err = applyLocalBoolOpt(gLocalOpts.sortignoredia, gOpts.sortignoredia, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "info":
