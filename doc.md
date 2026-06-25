@@ -273,7 +273,6 @@ The following options can be used to customize the behavior of lf:
 	filesep           string    (default "\n")
 	filtermethod      string    (default 'text')
 	findlen           int       (default 1)
-	gitignore         bool      (default false)
 	hidden            bool      (default false)
 	hiddenfiles       []string  (default '.*' for Unix and '' for Windows)
 	history           bool      (default true)
@@ -952,12 +951,6 @@ See `SEARCHING FILES` for more details.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a single match left.
 
-## gitignore (bool) (default false)
-
-When enabled, files ignored by git are hidden in directories that are inside a git worktree.
-This works by querying `git check-ignore` when loading directory contents.
-If the directory is not inside a git worktree, normal `hiddenfiles` behavior applies.
-
 ## hidden (bool) (default false)
 
 Show hidden files.
@@ -1511,7 +1504,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby`, `sortignorecase` and `sortignoredia`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `hiddenfiles`, `info`, `reverse`, `sortby`, `sortignorecase` and `sortignoredia`.
 
 	setlocal /foo/bar hidden         # boolean enable
 	setlocal /foo/bar hidden true    # boolean enable

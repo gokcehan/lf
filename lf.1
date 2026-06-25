@@ -297,7 +297,6 @@ errorfmt          string    (default \(dq\(rs033[7;31;47m\(dq)
 filesep           string    (default \(dq\(rsn\(dq)
 filtermethod      string    (default \(aqtext\(aq)
 findlen           int       (default 1)
-gitignore         bool      (default false)
 hidden            bool      (default false)
 hiddenfiles       []string  (default \(aq.*\(aq for Unix and \(aq\(aq for Windows)
 history           bool      (default true)
@@ -919,13 +918,6 @@ See \f[CR]SEARCHING FILES\f[R] for more details.
 Number of characters prompted for the find command.
 When this value is set to 0, find command prompts until there is only a
 single match left.
-.SS gitignore (bool) (default false)
-When enabled, files ignored by git are hidden in directories that are
-inside a git worktree.
-This works by querying \f[CR]git check\-ignore\f[R] when loading
-directory contents.
-If the directory is not inside a git worktree, normal
-\f[CR]hiddenfiles\f[R] behavior applies.
 .SS hidden (bool) (default false)
 Show hidden files.
 On Unix systems, hidden files are determined by the value of
@@ -1459,8 +1451,9 @@ Command \f[CR]setlocal\f[R] is used to set a local option for a
 directory which can be a boolean or string.
 Currently supported local options are \f[CR]dircounts\f[R],
 \f[CR]dirfirst\f[R], \f[CR]dironly\f[R], \f[CR]hidden\f[R],
-\f[CR]info\f[R], \f[CR]reverse\f[R], \f[CR]sortby\f[R],
-\f[CR]sortignorecase\f[R] and \f[CR]sortignoredia\f[R].
+\f[CR]hiddenfiles\f[R], \f[CR]info\f[R], \f[CR]reverse\f[R],
+\f[CR]sortby\f[R], \f[CR]sortignorecase\f[R] and
+\f[CR]sortignoredia\f[R].
 .IP
 .EX
 setlocal /foo/bar hidden         # boolean enable
