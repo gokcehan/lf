@@ -679,7 +679,9 @@ func onChdir(app *app) {
 
 func onLoad(app *app, files []string) {
 	if cmd, ok := gOpts.cmds["on-load"]; ok {
+		app.noSuspend = true
 		cmd.eval(app, files)
+		app.noSuspend = false
 	}
 }
 

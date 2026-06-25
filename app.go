@@ -19,24 +19,25 @@ import (
 )
 
 type app struct {
-	ui              *ui            // ui state (screen, windows, input)
-	nav             *nav           // navigation state (dirs, cursor, selections, preview, caches)
-	ticker          *time.Ticker   // refresh ticker if `period` > 0
-	quitChan        chan struct{}  // signals main loop to exit
-	cmd             *exec.Cmd      // currently running % (shell-pipe) command
-	cmdIn           io.WriteCloser // stdin writer for running % command
-	cmdOutBuf       []byte         // output of running % command
-	cmdHistory      []string       // command history entries
-	cmdHistoryBeg   int            // index where commands from this session start in cmdHistory
-	cmdHistoryInd   int            // history navigation offset from most recent
-	cmdHistoryInput *string        // initial input used as prefix filter while browsing history
-	menuCompActive  bool           // whether completion cycling is active
-	menuCompTmp     []string       // token snapshot taken when completion cycling starts, used for `cmd-menu-discard`
-	menuComps       []compMatch    // completion candidates for active prompt
-	menuCompInd     int            // index of selected completion candidate (-1: none selected)
-	selectionOut    []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
-	watch           *watch         // fs watcher if `watch` is enabled
-	quitting        bool           // guard to prevent re-entering quit logic
+	ui                 *ui            // ui state (screen, windows, input)
+	nav                *nav           // navigation state (dirs, cursor, selections, preview, caches)
+	ticker             *time.Ticker   // refresh ticker if `period` > 0
+	quitChan           chan struct{}  // signals main loop to exit
+	cmd                *exec.Cmd      // currently running % (shell-pipe) command
+	cmdIn              io.WriteCloser // stdin writer for running % command
+	cmdOutBuf          []byte         // output of running % command
+	cmdHistory         []string       // command history entries
+	cmdHistoryBeg      int            // index where commands from this session start in cmdHistory
+	cmdHistoryInd      int            // history navigation offset from most recent
+	cmdHistoryInput    *string        // initial input used as prefix filter while browsing history
+	menuCompActive     bool           // whether completion cycling is active
+	menuCompTmp        []string       // token snapshot taken when completion cycling starts, used for `cmd-menu-discard`
+	menuComps          []compMatch    // completion candidates for active prompt
+	menuCompInd        int            // index of selected completion candidate (-1: none)
+	selectionOut       []string       // paths to output on exit, used for `-print-selection` and `-selection-path`
+	watch              *watch         // fs watcher if `watch` is enabled
+	quitting   bool // guard to prevent re-entering quit logic
+	noSuspend  bool // suppress terminal suspend/resume and "Press any key" for sync hooks
 }
 
 func newApp(ui *ui, nav *nav) *app {
@@ -399,26 +400,44 @@ func (app *app) loop() {
 			// triggered by Git commands executed inside the users `on-load`
 			// command (often used to add git symbols using `addcustominfo`).
 			// TODO: Should `watch` also ignore `.git` directories?
-			if filepath.Base(d.path) != ".git" {
-				paths := make([]string, len(d.allFiles))
-				for i, file := range d.allFiles {
-					paths[i] = file.path
-				}
-				onLoad(app, paths)
+		if filepath.Base(d.path) != ".git" {
+			paths := make([]string, len(d.allFiles))
+			for i, file := range d.allFiles {
+				paths[i] = file.path
 			}
+			onLoad(app, paths)
+		}
 
-			if prev, ok := app.nav.dirCache[d.path]; ok {
-				d.ind = prev.ind
-				d.pos = prev.pos
-				d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
-				d.visualWrap = prev.visualWrap
-				d.filter = prev.filter
-				d.sort()
-				d.sel(prev.name(), app.nav.height)
-			} else {
-				d.sort()
+		var prevName string
+		if prev, ok := app.nav.dirCache[d.path]; ok {
+			d.ind = prev.ind
+			d.pos = prev.pos
+			d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
+			d.visualWrap = prev.visualWrap
+			d.filter = prev.filter
+			prevName = prev.name()
+		}
+
+		// Put loaded directory into cache BEFORE draining server commands.
+		// This ensures commands like addcustominfo (sent by lf -remote from
+		// on-load) can find files in d.allFiles.
+		app.nav.dirCache[d.path] = d
+
+		// Drain pending server commands (e.g. setlocal) so local options apply
+		// before the first sort and draw.
+		if !gSingleMode {
+			for drained := true; drained; {
+				select {
+				case e := <-serverChan:
+					e.eval(app, nil)
+				default:
+					drained = false
+				}
 			}
-			app.nav.dirCache[d.path] = d
+		}
+
+		d.sort()
+		d.sel(prevName, app.nav.height)
 
 			app.nav.position()
 
@@ -536,6 +555,20 @@ func (app *app) loop() {
 func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.previewChan <- ""
 
+	if app.noSuspend {
+		cmd.Stdout = io.Discard
+		cmd.Stderr = io.Discard
+		cmd.Stdin = nil
+
+		if err := cmd.Run(); err != nil {
+			app.ui.echoerrf("running shell: %s", err)
+		}
+
+		app.ui.loadFile(app, true)
+		app.nav.renew()
+		return
+	}
+
 	if err := app.ui.suspend(); err != nil {
 		log.Printf("suspend: %s", err)
 	}
@@ -549,7 +582,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	if err := cmd.Run(); err != nil {
 		app.ui.echoerrf("running shell: %s", err)
 	}
-	if pauseAfter {
+	if pauseAfter && !app.noSuspend {
 		anyKey()
 	}
 
