@@ -179,7 +179,7 @@ func getGitIgnored(dir string, names []string) map[string]bool {
 
 	ignored := make(map[string]bool)
 	ignored[".git"] = true
-	for _, name := range strings.Split(stdout.String(), "\x00") {
+	for name := range strings.SplitSeq(stdout.String(), "\x00") {
 		if name != "" {
 			ignored[name] = true
 		}
