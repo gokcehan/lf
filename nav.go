@@ -43,6 +43,7 @@ type file struct {
 	customInfo  string    // property defined via `addcustominfo`
 	ext         string    // file extension (including the dot)
 	err         error     // potential error returned by [os.Lstat]
+	gitIgnored  bool      // true if file is ignored by git
 }
 
 func newFile(path string) *file {
@@ -142,23 +143,77 @@ func (fs *fakeStat) ModTime() time.Time { return time.Unix(0, 0) }
 func (fs *fakeStat) IsDir() bool        { return false }
 func (fs *fakeStat) Sys() any           { return nil }
 
-func readdir(path string) ([]*file, error) {
+func getGitIgnored(dir string, names []string) map[string]bool {
+	if len(names) == 0 {
+		return nil
+	}
+
+	cmd := exec.Command("git", "check-ignore", "--stdin", "-z")
+	cmd.Dir = dir
+	stdin, err := cmd.StdinPipe()
+	if err != nil {
+		return nil
+	}
+
+	var stdout bytes.Buffer
+	cmd.Stdout = &stdout
+
+	if err := cmd.Start(); err != nil {
+		return nil
+	}
+
+	go func() {
+		defer stdin.Close()
+		for _, name := range names {
+			stdin.Write([]byte(name))
+			stdin.Write([]byte{0})
+		}
+	}()
+
+	if err := cmd.Wait(); err != nil {
+		var exitErr *exec.ExitError
+		if !errors.As(err, &exitErr) || exitErr.ExitCode() != 1 {
+			return nil
+		}
+	}
+
+	ignored := make(map[string]bool)
+	ignored[".git"] = true
+	for _, name := range strings.Split(stdout.String(), "\x00") {
+		if name != "" {
+			ignored[name] = true
+		}
+	}
+	return ignored
+}
+
+func readdir(path string) ([]*file, bool, error) {
 	f, err := os.Open(path)
 	if err != nil {
-		return nil, err
+		return nil, false, err
 	}
 	names, err := f.Readdirnames(-1)
 	f.Close()
 
+	gitWorktree := false
+	var ignored map[string]bool
+	if gOpts.gitignore {
+		ignored = getGitIgnored(path, names)
+		gitWorktree = ignored != nil
+	}
+
 	files := make([]*file, 0, len(names))
 	for _, fname := range names {
 		file := newFile(filepath.Join(path, fname))
+		if ignored != nil {
+			file.gitIgnored = ignored[fname]
+		}
 		if !os.IsNotExist(file.err) {
 			files = append(files, file)
 		}
 	}
 
-	return files, err
+	return files, gitWorktree, err
 }
 
 type dir struct {
@@ -182,10 +237,12 @@ type dir struct {
 	sortignorecase bool       // sortignorecase value from last sort
 	sortignoredia  bool       // sortignoredia value from last sort
 	noPerm         bool       // whether lf has no permission to open the directory
+	gitignore      bool       // gitignore option value from last load
+	gitWorktree    bool       // whether this directory is inside a git worktree
 }
 
 func newDir(path string) *dir {
-	files, err := readdir(path)
+	files, gitWorktree, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
@@ -197,6 +254,8 @@ func newDir(path string) *dir {
 		allFiles:     files,
 		visualAnchor: -1,
 		noPerm:       os.IsPermission(err),
+		gitignore:    gOpts.gitignore,
+		gitWorktree:  gitWorktree,
 	}
 }
 
@@ -240,7 +299,11 @@ func (dir *dir) sort() {
 	}
 
 	if !dir.hidden {
-		applyFilter(func(f *file) bool { return !isHidden(f, dir.path, dir.hiddenfiles) })
+		if dir.gitWorktree {
+			applyFilter(func(f *file) bool { return !f.gitIgnored })
+		} else {
+			applyFilter(func(f *file) bool { return !isHidden(f, dir.path, dir.hiddenfiles) })
+		}
 	}
 
 	if len(dir.filter) != 0 {
@@ -504,6 +567,8 @@ func (nav *nav) getDir(path string) *dir {
 		hiddenfiles:    gOpts.hiddenfiles,
 		sortignorecase: getSortIgnoreCase(path),
 		sortignoredia:  getSortIgnoreDia(path),
+		gitignore:      gOpts.gitignore,
+		gitWorktree:    false,
 	}
 	nav.dirCache[path] = d
 	return d
@@ -533,6 +598,11 @@ func (nav *nav) checkDir(dir *dir) {
 			nav.dirChan <- newDir(dir.path)
 		}()
 	case dir.dircounts != getDirCounts(dir.path):
+		dir.loading = true
+		go func() {
+			nav.dirChan <- newDir(dir.path)
+		}()
+	case dir.gitignore != gOpts.gitignore:
 		dir.loading = true
 		go func() {
 			nav.dirChan <- newDir(dir.path)

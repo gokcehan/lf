@@ -103,6 +103,7 @@ var gOpts struct {
 	findlen          int
 	hidden           bool
 	hiddenfiles      []string
+	gitignore        bool
 	history          bool
 	icons            bool
 	ifs              string
@@ -264,6 +265,7 @@ func init() {
 	gOpts.findlen = 1
 	gOpts.hidden = false
 	gOpts.hiddenfiles = gDefaultHiddenFiles
+	gOpts.gitignore = false
 	gOpts.history = true
 	gOpts.icons = false
 	gOpts.ifs = ""

@@ -92,6 +92,12 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.resize(app.ui)
 			app.ui.loadFile(app, true)
 		}
+	case "gitignore", "nogitignore", "gitignore!":
+		err = applyBoolOpt(&gOpts.gitignore, e)
+		if err == nil {
+			app.nav.renew()
+			app.ui.loadFile(app, true)
+		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
