@@ -146,7 +146,7 @@ func writeSelection(filename string, selection []string) {
 }
 
 func readExpr() <-chan expr {
-	ch := make(chan expr)
+	ch := make(chan expr, 32)
 
 	go func() {
 		duration := 100 * time.Millisecond

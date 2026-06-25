@@ -171,6 +171,7 @@ var gLocalOpts struct {
 	dirfirst       map[string]bool
 	dironly        map[string]bool
 	hidden         map[string]bool
+	hiddenfiles    map[string][]string
 	info           map[string][]string
 	reverse        map[string]bool
 	sortby         map[string]sortMethod
@@ -204,6 +205,13 @@ func getHidden(path string) bool {
 		return val
 	}
 	return gOpts.hidden
+}
+
+func getHiddenFiles(path string) []string {
+	if val, ok := gLocalOpts.hiddenfiles[path]; ok {
+		return val
+	}
+	return gOpts.hiddenfiles
 }
 
 func getInfo(path string) []string {
@@ -455,6 +463,7 @@ func init() {
 	gLocalOpts.dirfirst = make(map[string]bool)
 	gLocalOpts.dironly = make(map[string]bool)
 	gLocalOpts.hidden = make(map[string]bool)
+	gLocalOpts.hiddenfiles = make(map[string][]string)
 	gLocalOpts.info = make(map[string][]string)
 	gLocalOpts.reverse = make(map[string]bool)
 	gLocalOpts.sortby = make(map[string]sortMethod)

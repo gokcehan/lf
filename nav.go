@@ -207,7 +207,7 @@ func (dir *dir) sort() {
 	dir.dironly = getDirOnly(dir.path)
 	dir.hidden = getHidden(dir.path)
 	dir.reverse = getReverse(dir.path)
-	dir.hiddenfiles = gOpts.hiddenfiles
+	dir.hiddenfiles = getHiddenFiles(dir.path)
 	dir.sortignorecase = getSortIgnoreCase(dir.path)
 	dir.sortignoredia = getSortIgnoreDia(dir.path)
 
@@ -501,7 +501,7 @@ func (nav *nav) getDir(path string) *dir {
 		hidden:         getHidden(path),
 		reverse:        getReverse(path),
 		visualAnchor:   -1,
-		hiddenfiles:    gOpts.hiddenfiles,
+		hiddenfiles:    getHiddenFiles(path),
 		sortignorecase: getSortIgnoreCase(path),
 		sortignoredia:  getSortIgnoreDia(path),
 	}
@@ -545,7 +545,7 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.dironly != getDirOnly(dir.path) ||
 		dir.hidden != getHidden(dir.path) ||
 		dir.reverse != getReverse(dir.path) ||
-		!slices.Equal(dir.hiddenfiles, gOpts.hiddenfiles) ||
+		!slices.Equal(dir.hiddenfiles, getHiddenFiles(dir.path)) ||
 		dir.sortignorecase != getSortIgnoreCase(dir.path) ||
 		dir.sortignoredia != getSortIgnoreDia(dir.path):
 		dir.loading = true

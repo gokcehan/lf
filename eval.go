@@ -522,36 +522,63 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 		err = applyLocalBoolOpt(gLocalOpts.dircounts, gOpts.dircounts, e)
 	case "dirfirst", "nodirfirst", "dirfirst!":
 		err = applyLocalBoolOpt(gLocalOpts.dirfirst, gOpts.dirfirst, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "dironly", "nodironly", "dironly!":
 		err = applyLocalBoolOpt(gLocalOpts.dironly, gOpts.dironly, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyLocalBoolOpt(gLocalOpts.hidden, gOpts.hidden, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
+			app.nav.sort()
+			app.nav.position()
+			app.ui.loadFile(app, true)
+		}
+	case "hiddenfiles":
+		if e.val == "" {
+			gLocalOpts.hiddenfiles[e.path] = nil
+		} else {
+			toks := strings.Split(e.val, ":")
+			for _, s := range toks {
+				if s == "" {
+					app.ui.echoerr("hiddenfiles: glob should be non-empty")
+					return
+				}
+				_, err := filepath.Match(s, "a")
+				if err != nil {
+					app.ui.echoerrf("hiddenfiles: %s", err)
+					return
+				}
+			}
+			gLocalOpts.hiddenfiles[e.path] = toks
+		}
+		if !app.noSuspend {
 			app.nav.sort()
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "sortignorecase", "nosortignorecase", "sortignorecase!":
 		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
+			app.nav.sort()
+		}
+		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "sortignoredia", "nosortignoredia", "sortignoredia!":
 		err = applyLocalBoolOpt(gLocalOpts.sortignoredia, gOpts.sortignoredia, e)
-		if err == nil {
+		if err == nil && !app.noSuspend {
 			app.nav.sort()
 		}
 	case "info":
@@ -654,7 +681,9 @@ func onChdir(app *app) {
 
 func onLoad(app *app, files []string) {
 	if cmd, ok := gOpts.cmds["on-load"]; ok {
+		app.noSuspend = true
 		cmd.eval(app, files)
+		app.noSuspend = false
 	}
 }
 
