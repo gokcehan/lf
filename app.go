@@ -395,6 +395,18 @@ func (app *app) loop() {
 				oldCurrPath = curr.path
 			}
 
+			// Avoid flickering UI and multiple, unnecessary `on-load` calls
+			// triggered by Git commands executed inside the users `on-load`
+			// command (often used to add git symbols using `addcustominfo`).
+			// TODO: Should `watch` also ignore `.git` directories?
+			if filepath.Base(d.path) != ".git" {
+				paths := make([]string, len(d.allFiles))
+				for i, file := range d.allFiles {
+					paths[i] = file.path
+				}
+				onLoad(app, paths)
+			}
+
 			if prev, ok := app.nav.dirCache[d.path]; ok {
 				d.ind = prev.ind
 				d.pos = prev.pos
@@ -417,18 +429,6 @@ func (app *app) loop() {
 			}
 
 			app.watchDir(d)
-
-			// Avoid flickering UI and multiple, unnecessary `on-load` calls
-			// triggered by Git commands executed inside the users `on-load`
-			// command (often used to add git symbols using `addcustominfo`).
-			// TODO: Should `watch` also ignore `.git` directories?
-			if filepath.Base(d.path) != ".git" {
-				paths := make([]string, len(d.allFiles))
-				for i, file := range d.allFiles {
-					paths[i] = file.path
-				}
-				onLoad(app, paths)
-			}
 
 			if d.path == app.nav.currDir().path {
 				app.nav.preload()

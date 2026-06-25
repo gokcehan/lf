@@ -92,12 +92,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 			app.nav.resize(app.ui)
 			app.ui.loadFile(app, true)
 		}
-	case "gitignore", "nogitignore", "gitignore!":
-		err = applyBoolOpt(&gOpts.gitignore, e)
-		if err == nil {
-			app.nav.renew()
-			app.ui.loadFile(app, true)
-		}
 	case "hidden", "nohidden", "hidden!":
 		err = applyBoolOpt(&gOpts.hidden, e)
 		if err == nil {
@@ -545,12 +539,37 @@ func (e *setLocalExpr) eval(app *app, _ []string) {
 			app.nav.position()
 			app.ui.loadFile(app, true)
 		}
+	case "hiddenfiles":
+		if e.val == "" {
+			gLocalOpts.hiddenfiles[e.path] = nil
+		} else {
+			toks := strings.Split(e.val, ":")
+			for _, s := range toks {
+				if s == "" {
+					app.ui.echoerr("hiddenfiles: glob should be non-empty")
+					return
+				}
+				_, err := filepath.Match(s, "a")
+				if err != nil {
+					app.ui.echoerrf("hiddenfiles: %s", err)
+					return
+				}
+			}
+			gLocalOpts.hiddenfiles[e.path] = toks
+		}
+		app.nav.sort()
+		app.nav.position()
+		app.ui.loadFile(app, true)
 	case "reverse", "noreverse", "reverse!":
 		err = applyLocalBoolOpt(gLocalOpts.reverse, gOpts.reverse, e)
 		if err == nil {
 			app.nav.sort()
 		}
 	case "sortignorecase", "nosortignorecase", "sortignorecase!":
+		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
+		if err == nil {
+			app.nav.sort()
+		}
 		err = applyLocalBoolOpt(gLocalOpts.sortignorecase, gOpts.sortignorecase, e)
 		if err == nil {
 			app.nav.sort()
