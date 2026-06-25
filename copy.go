@@ -6,8 +6,6 @@ import (
 	"os"
 	"path/filepath"
 	"slices"
-	"strconv"
-	"strings"
 
 	"github.com/djherbis/times"
 )
@@ -114,10 +112,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				basename := file[:len(file)-len(ext)]
 				var newPath string
 				for i := 1; !os.IsNotExist(err); i++ {
-					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
-					file = strings.ReplaceAll(file, "%b", basename)
-					file = strings.ReplaceAll(file, "%e", ext)
-					file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+					file = formatDuplicatedFilename(basename, ext, i)
 					newPath = filepath.Join(dstDir, file)
 					_, err = os.Lstat(newPath)
 				}

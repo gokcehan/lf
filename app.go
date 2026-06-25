@@ -78,6 +78,8 @@ func (app *app) quit() {
 
 	onQuit(app)
 
+	gLuaPool.shutdown()
+
 	if gOpts.history {
 		if err := app.writeHistory(); err != nil {
 			log.Printf("writing history file: %s", err)
@@ -276,6 +278,10 @@ func (app *app) loop() {
 	}
 
 	go app.ui.readEvents()
+
+	// loads plugins before sourcing config files, so that functionalities
+	// provided by plugins can be used in config.
+	initializeLua(app)
 
 	if gConfigPath != "" {
 		if _, err := os.Stat(gConfigPath); !os.IsNotExist(err) {
@@ -594,7 +600,18 @@ func (app *app) runShell(s string, args []string, prefix string) {
 	gState.data["files"] = listFilesInCurrDir(app.nav)
 	gState.mutex.Unlock()
 
-	cmd := shellCommand(s, args)
+	luaCmdMaker := getLuaMiscMsg(luaMiscMsgShell)
+	var cmd *exec.Cmd
+	if luaCmdMaker != nil {
+		var makerErr error
+		cmd, makerErr = makeShellCmdWithLuaMsg(luaCmdMaker, s, args)
+		if makerErr != nil {
+			app.ui.echoerrf("running shell: failed to create command with Lua message, %s", makerErr)
+			return
+		}
+	} else {
+		cmd = shellCommand(s, args)
+	}
 
 	switch prefix {
 	case "$", "!":

@@ -31,18 +31,19 @@ const (
 )
 
 type file struct {
-	os.FileInfo           // stat information
-	linkState   linkState // symlink state
-	linkTarget  string    // path a symlink points to
-	path        string    // full path including the name
-	dirCount    int       // number of items inside the directory
-	dirSize     int64     // total directory size (needs to be calculated via `calcdirsize`)
-	accessTime  time.Time // time of last access
-	birthTime   time.Time // time of file birth
-	changeTime  time.Time // time of last status (inode) change
-	customInfo  string    // property defined via `addcustominfo`
-	ext         string    // file extension (including the dot)
-	err         error     // potential error returned by [os.Lstat]
+	os.FileInfo                 // stat information
+	linkState    linkState      // symlink state
+	linkTarget   string         // path a symlink points to
+	path         string         // full path including the name
+	dirCount     int            // number of items inside the directory
+	dirSize      int64          // total directory size (needs to be calculated via `calcdirsize`)
+	accessTime   time.Time      // time of last access
+	birthTime    time.Time      // time of file birth
+	changeTime   time.Time      // time of last status (inode) change
+	customInfo   string         // property defined via `addcustominfo`
+	ext          string         // file extension (including the dot)
+	err          error          // potential error returned by [os.Lstat]
+	extraLuaData map[string]any // stores data set and used by Lua scripts
 }
 
 func newFile(path string) *file {
@@ -127,8 +128,20 @@ func newFile(path string) *file {
 	}
 }
 
-func (file *file) isPreviewable() bool {
+// isPreviewablePlain reports if file is previewable without calling any Lua message.
+// This method is seperated to avoid deadlock caused by calling isPreviewable from
+// Lua.
+func (file *file) isPreviewablePlain() bool {
 	return !file.IsDir() || gOpts.dirpreviews
+}
+
+// isPreviewableLua reports if file is previewable by any Lua previewer.
+func (file *file) isPreviewableLua() bool {
+	return getLuaPreviewerForPath(file.path) != nil
+}
+
+func (file *file) isPreviewable() bool {
+	return file.isPreviewablePlain() || file.isPreviewableLua()
 }
 
 type fakeStat struct {
@@ -162,26 +175,27 @@ func readdir(path string) ([]*file, error) {
 }
 
 type dir struct {
-	loading        bool       // whether directory is loading from disk
-	loadTime       time.Time  // last load time
-	ind            int        // 0-based index of current entry in dir.files
-	pos            int        // 0-based cursor row in directory window
-	path           string     // full path of directory
-	files          []*file    // displayed files in directory including or excluding hidden ones
-	allFiles       []*file    // all files in directory including hidden ones (same array as files)
-	sortby         sortMethod // sortby value from last sort
-	dircounts      bool       // dircounts value from last sort
-	dirfirst       bool       // dirfirst value from last sort
-	dironly        bool       // dironly value from last sort
-	hidden         bool       // hidden value from last sort
-	reverse        bool       // reverse value from last sort
-	visualAnchor   int        // index where Visual mode was initiated
-	visualWrap     int        // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
-	hiddenfiles    []string   // hiddenfiles value from last sort
-	filter         []string   // last filter for this directory
-	sortignorecase bool       // sortignorecase value from last sort
-	sortignoredia  bool       // sortignoredia value from last sort
-	noPerm         bool       // whether lf has no permission to open the directory
+	loading        bool           // whether directory is loading from disk
+	loadTime       time.Time      // last load time
+	ind            int            // 0-based index of current entry in dir.files
+	pos            int            // 0-based cursor row in directory window
+	path           string         // full path of directory
+	files          []*file        // displayed files in directory including or excluding hidden ones
+	allFiles       []*file        // all files in directory including hidden ones (same array as files)
+	sortby         sortMethod     // sortby value from last sort
+	dircounts      bool           // dircounts value from last sort
+	dirfirst       bool           // dirfirst value from last sort
+	dironly        bool           // dironly value from last sort
+	hidden         bool           // hidden value from last sort
+	reverse        bool           // reverse value from last sort
+	visualAnchor   int            // index where Visual mode was initiated
+	visualWrap     int            // wrap direction in Visual mode (0: none, +: bottom->top, -: top->bottom)
+	hiddenfiles    []string       // hiddenfiles value from last sort
+	filter         []string       // last filter for this directory
+	sortignorecase bool           // sortignorecase value from last sort
+	sortignoredia  bool           // sortignoredia value from last sort
+	noPerm         bool           // whether lf has no permission to open the directory
+	extraLuaData   map[string]any // stores data set and used by Lua scripts
 }
 
 func newDir(path string) *dir {
@@ -318,6 +332,13 @@ func (dir *dir) sort() {
 			s2 := normalize(stripTermSequence(f2.customInfo))
 			return naturalCmp(s1, s2)
 		})
+	default:
+		if msgExpr := getLuaSortingMethod(string(dir.sortby)); msgExpr != nil {
+			err := sortByLuaMsg(msgExpr, dir)
+			if err != nil {
+				log.Println(err)
+			}
+		}
 	}
 
 	// when sorting by size while also showing dircounts, we always display files
@@ -784,28 +805,38 @@ func (nav *nav) previewLoop(ui *ui) {
 			}
 		}
 		win := ui.wins[len(ui.wins)-1]
-		if isClear && len(gOpts.previewer) != 0 && len(gOpts.cleaner) != 0 && nav.volatilePreview {
-			cmd := exec.Command(
-				gOpts.cleaner,
-				prev,
-				strconv.Itoa(win.w),
-				strconv.Itoa(win.h),
-				strconv.Itoa(win.x),
-				strconv.Itoa(win.y),
-				path,
-			)
-			var stderr bytes.Buffer
-			cmd.Stderr = &stderr
+		luaPreviewer := getLuaPreviewerForPath(prev)
+		luaCleanerOk := luaPreviewer != nil && luaPreviewer.hasCleaner
 
-			if err := cmd.Run(); err != nil {
-				var exitErr *exec.ExitError
-				if !errors.As(err, &exitErr) {
-					log.Printf("cleaning preview: %s", err)
+		if isClear && (len(gOpts.cleaner) != 0 || luaCleanerOk) && nav.volatilePreview {
+			if luaCleanerOk {
+				err := callLuaPreviewerCleaning(&luaPreviewer.msgexpr, prev, win.w, win.h, win.x, win.y, path)
+				if err != nil {
+					log.Printf("Lua cleaner error: %s", err)
 				}
-			}
-			if s := strings.TrimSpace(stderr.String()); s != "" {
-				s = strings.Join(strings.Fields(s), " ")
-				log.Printf("cleaning preview (stderr): %s", s)
+			} else if len(gOpts.previewer) != 0 {
+				cmd := exec.Command(
+					gOpts.cleaner,
+					prev,
+					strconv.Itoa(win.w),
+					strconv.Itoa(win.h),
+					strconv.Itoa(win.x),
+					strconv.Itoa(win.y),
+					path,
+				)
+				var stderr bytes.Buffer
+				cmd.Stderr = &stderr
+
+				if err := cmd.Run(); err != nil {
+					var exitErr *exec.ExitError
+					if !errors.As(err, &exitErr) {
+						log.Printf("cleaning preview: %s", err)
+					}
+				}
+				if s := strings.TrimSpace(stderr.String()); s != "" {
+					s = strings.Join(strings.Fields(s), " ")
+					log.Printf("cleaning preview (stderr): %s", s)
+				}
 			}
 			nav.volatilePreview = false
 		}
@@ -879,7 +910,22 @@ func (nav *nav) preview(path string, win *win, mode string) {
 
 	var reader *bufio.Reader
 
-	if len(gOpts.previewer) != 0 {
+	luaPreviewer := getLuaPreviewerForPath(path)
+
+	if luaPreviewer != nil {
+		pipe := callLuaPreviewerAction(&luaPreviewer.msgexpr, path, win.w, win.h, win.x, win.y, mode)
+		reader = bufio.NewReader(pipe)
+
+		defer func() {
+			pipe.closeReadSide()
+			pipe.wait()
+			reg.volatile = pipe.isVolatile()
+
+			if err := pipe.checkPreviewError(); err != nil {
+				log.Printf("Lua previewer error %s: %s", &luaPreviewer.msgexpr, err)
+			}
+		}()
+	} else if len(gOpts.previewer) != 0 {
 		cmd := exec.Command(
 			gOpts.previewer,
 			path,
@@ -950,7 +996,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	// escape sequences that corrupt the display or enable code execution
 	// (e.g. OSC 52 clipboard writes). Replace control characters with
 	// U+FFFD so they are visible but cannot form escape sequences.
-	if len(gOpts.previewer) == 0 && !binary {
+	if luaPreviewer == nil && len(gOpts.previewer) == 0 && !binary {
 		sixel = false
 		for i, l := range lines {
 			lines[i] = sanitizePreview(l)
@@ -1433,10 +1479,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			basename := file[:len(file)-len(ext)]
 			var newPath string
 			for i := 1; !os.IsNotExist(err); i++ {
-				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
-				file = strings.ReplaceAll(file, "%b", basename)
-				file = strings.ReplaceAll(file, "%e", ext)
-				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
+				file = formatDuplicatedFilename(basename, ext, i)
 				newPath = filepath.Join(dstDir, file)
 				_, err = os.Lstat(newPath)
 			}

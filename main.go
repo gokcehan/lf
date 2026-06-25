@@ -41,6 +41,7 @@ var (
 	gLogPath        string
 	gSelect         string
 	gConfigPath     string
+	gPluginDir      string
 	gCommands       arrayFlag
 	gVersion        string
 )
@@ -92,6 +93,7 @@ func exportEnvVars() {
 
 func exportFlags() {
 	os.Setenv("lf_flag_config", gConfigPath)
+	os.Setenv("lf_flag_plugin_dir", gPluginDir)
 	os.Setenv("lf_flag_last_dir_path", gLastDirPath)
 	os.Setenv("lf_flag_log", gLogPath)
 	os.Setenv("lf_flag_print_last_dir", strconv.FormatBool(gPrintLastDir))
@@ -299,6 +301,11 @@ Options:
 		"config",
 		"",
 		"`path` to the config file (instead of the usual paths)")
+
+	flag.StringVar(&gPluginDir,
+		"plugin-dir",
+		"",
+		"`path` to plugin directory (overriding default paths)")
 
 	flag.Var(&gCommands,
 		"command",

@@ -49,6 +49,7 @@ var (
 		"jump-prev",
 		"load",
 		"low",
+		"luapreviewer-priority",
 		"mark-load",
 		"mark-remove",
 		"mark-save",
@@ -57,6 +58,7 @@ var (
 		"page-down",
 		"page-up",
 		"paste",
+		"plugin-reload",
 		"push",
 		"quit",
 		"read",
@@ -408,7 +410,9 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		case "sizeunits":
 			matches, longest = matchWord(f[2], []string{"binary", "decimal"})
 		case "sortby":
-			matches, longest = matchWord(f[2], []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"})
+			candidates := []string{"atime", "btime", "ctime", "custom", "ext", "name", "natural", "size", "time"}
+			candidates = append(candidates, getLuaSortingMethodNames()...)
+			matches, longest = matchWord(f[2], candidates)
 		case "terminalcursor":
 			matches, longest = matchWord(f[2], []string{"default", "block", "underline", "bar", "blinkblock", "blinkunderline", "blinkbar"})
 		default:
@@ -453,8 +457,17 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		}
 	case "toggle":
 		matches, longest = matchCmdFile(f[len(f)-1], false)
+	case "luapreviewer-priority":
+		if len(f)%2 == 0 {
+			names := getLuaPreviewerNames()
+			slices.Sort(names)
+			matches, longest = matchWord(longest, slices.Compact(names))
+		}
 	default:
-		if !slices.Contains(gCmdWords, f[0]) {
+		expr := gOpts.cmds[f[0]]
+		if luaExpr, ok := expr.(*luaMsgExpr); ok {
+			matches, longest = callLuaCommandCompletion(luaExpr, f, longest)
+		} else if !slices.Contains(gCmdWords, f[0]) {
 			matches, longest = matchCmdFile(f[len(f)-1], false)
 		}
 	}

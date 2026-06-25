@@ -26,7 +26,7 @@ func isValidSortMethod(method sortMethod) bool {
 	case naturalSort, nameSort, sizeSort, timeSort, atimeSort, btimeSort, ctimeSort, extSort, customSort:
 		return true
 	}
-	return false
+	return getLuaSortingMethod(string(method)) != nil
 }
 
 const invalidSortErrorMessage = `sortby: value should either be 'natural', 'name', 'size', 'time', 'atime', 'btime', 'ctime', 'ext' or 'custom'`
@@ -113,6 +113,7 @@ var gOpts struct {
 	info             []string
 	infotimefmtnew   string
 	infotimefmtold   string
+	luamsglog        bool
 	menufmt          string
 	menuheaderfmt    string
 	menuselectfmt    string
@@ -274,6 +275,7 @@ func init() {
 	gOpts.info = nil
 	gOpts.infotimefmtnew = "Jan _2 15:04"
 	gOpts.infotimefmtold = "Jan _2  2006"
+	gOpts.luamsglog = false
 	gOpts.menufmt = "\033[0m"
 	gOpts.menuheaderfmt = "\033[1m"
 	gOpts.menuselectfmt = "\033[7m"

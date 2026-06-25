@@ -200,6 +200,30 @@ func (e *listExpr) String() string {
 	return buf.String()
 }
 
+type luaMsgExpr struct {
+	sourceName string
+	registry   string
+	msg        string
+	variant    string
+	isAsync    bool
+}
+
+func (e *luaMsgExpr) String() string {
+	return fmt.Sprintf("luamsg: %s, registry: %s, msg: %s, async: %v", e.sourceName, e.registry, e.msg, e.isAsync)
+}
+
+type luaKeyMapExpr struct {
+	sourceName string
+	keyMapType string
+	key        string
+	count      int
+	isAsync    bool
+}
+
+func (e *luaKeyMapExpr) String() string {
+	return fmt.Sprintf("luakeymap: %s, type: %s, key: %q", e.sourceName, e.keyMapType, e.key)
+}
+
 type parser struct {
 	scanner *scanner
 	expr    expr

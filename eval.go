@@ -16,6 +16,7 @@ import (
 
 	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
+	lua "github.com/yuin/gopher-lua"
 )
 
 func applyBoolOpt(opt *bool, e *setExpr) error {
@@ -121,6 +122,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
+	case "luamsglog", "noluamsglog", "luamsglog!":
+		err = applyBoolOpt(&gOpts.luamsglog, e)
 	case "mergeindicators", "nomergeindicators", "mergeindicators!":
 		err = applyBoolOpt(&gOpts.mergeindicators, e)
 	case "mouse", "nomouse", "mouse!":
@@ -639,60 +642,106 @@ func (e *cmdExpr) eval(app *app, _ []string) {
 	}
 }
 
+func (e *luaMsgExpr) eval(app *app, args []string) {
+	_, err := callLuaMsgExpr(e, func(L *lua.LState) []lua.LValue {
+		msgArgs := make([]lua.LValue, len(args))
+		for i, arg := range args {
+			msgArgs[i] = lua.LString(arg)
+		}
+		return msgArgs
+	})
+
+	if err != nil {
+		app.ui.echoerrf("Lua msg execution failed, see log for more detail")
+		log.Println(err)
+	}
+}
+
+func (e *luaKeyMapExpr) eval(app *app, _ []string) {
+	err := callLuaKeyMapMsg(e)
+	if err != nil {
+		app.ui.echoerrf("Lua key map error (%s): %s", e, err)
+	}
+}
+
 func preChdir(app *app) {
-	if cmd, ok := gOpts.cmds["pre-cd"]; ok {
+	cmdName := "pre-cd"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onChdir(app *app) {
 	app.nav.addJumpList()
-	if cmd, ok := gOpts.cmds["on-cd"]; ok {
+	cmdName := "on-cd"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onLoad(app *app, files []string) {
-	if cmd, ok := gOpts.cmds["on-load"]; ok {
+	cmdName := "on-load"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, files)
 	}
+	callLuaEventHooks(cmdName, func(L *lua.LState) []lua.LValue {
+		args := make([]lua.LValue, len(files))
+		for i, f := range files {
+			args[i] = lua.LString(f)
+		}
+		return args
+	})
 }
 
 func onFocusGained(app *app) {
-	if cmd, ok := gOpts.cmds["on-focus-gained"]; ok {
+	cmdName := "on-focus-gained"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onFocusLost(app *app) {
-	if cmd, ok := gOpts.cmds["on-focus-lost"]; ok {
+	cmdName := "on-focus-lost"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onInit(app *app) {
-	if cmd, ok := gOpts.cmds["on-init"]; ok {
+	cmdName := "on-init"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onRedraw(app *app) {
-	if cmd, ok := gOpts.cmds["on-redraw"]; ok {
+	cmdName := "on-redraw"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onSelect(app *app) {
 	app.nav.preload()
-	if cmd, ok := gOpts.cmds["on-select"]; ok {
+	cmdName := "on-select"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func onQuit(app *app) {
-	if cmd, ok := gOpts.cmds["on-quit"]; ok {
+	cmdName := "on-quit"
+	if cmd, ok := gOpts.cmds[cmdName]; ok {
 		cmd.eval(app, nil)
 	}
+	callLuaEventHooks(cmdName, nil)
 }
 
 func splitKeys(s string) (keys []string) {
@@ -1669,6 +1718,26 @@ func (e *callExpr) eval(app *app, _ []string) {
 		clear(gOpts.vkeys)
 		gOpts.nkeys[":"] = &callExpr{"read", nil, 1}
 		gOpts.vkeys[":"] = &callExpr{"read", nil, 1}
+	case "luapreviewer-priority":
+		argc := len(e.args)
+		if argc%2 != 0 {
+			app.ui.echoerr("luapreviewer-priority: requires an even number of arguments")
+			return
+		}
+
+		changed := false
+		for i := 0; i < argc; i += 2 {
+			name, priorityStr := e.args[i], e.args[i+1]
+			priority, err := strconv.Atoi(priorityStr)
+			if err == nil {
+				withSort := i+2 >= argc && changed
+				changed = setLuaPreviewerPriority(name, priority, withSort) || changed
+			} else {
+				app.ui.echoerrf("luapreviewer-priority: invalid priority for %s: %s", name, priorityStr)
+			}
+		}
+	case "plugin-reload":
+		luaPluginReload(app)
 	case "tty-write":
 		if len(e.args) != 1 {
 			app.ui.echoerr("tty-write: requires an argument")

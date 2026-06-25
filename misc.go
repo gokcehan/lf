@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"io/fs"
+	"log"
 	"math/big"
 	"os"
 	"path/filepath"
@@ -590,6 +591,32 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 	}
 
 	return widths
+}
+
+// formatDuplicatedFilename returns name used for duplicated files during copy
+// or move operation.
+func formatDuplicatedFilename(basename, ext string, dupIndex int) string {
+	msgExpr := getLuaMiscMsg(luaMiscMsgDupFile)
+	if msgExpr != nil {
+		file, err := formatDuplicatedFilenameWithLuaMsg(msgExpr, basename, ext, dupIndex)
+		if file == "" {
+			log.Printf("Lua duplicated file name formatter error: %s", err)
+		} else {
+			return file
+		}
+	}
+
+	file := strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
+	file = strings.ReplaceAll(file, "%b", basename)
+	file = strings.ReplaceAll(file, "%e", ext)
+	file = strings.ReplaceAll(file, "%n", strconv.Itoa(dupIndex))
+
+	return file
+}
+
+// formatDisplayedErrorMsg returns displayed format of error message
+func formatDisplayedErrorMsg(msg string) string {
+	return callLuaUIFormatterWithSingleParam(luaUIFormatterError, gOpts.errorfmt, sanitizeName(msg))
 }
 
 // We don't need no generic code
