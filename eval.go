@@ -1220,6 +1220,12 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerrf("copy: %s", err)
 			return
 		}
+		for _, path := range app.nav.clipboard.paths {
+			if strings.ContainsAny(path, "\n\r") {
+				app.ui.echoerrf("copy: cannot copy %s because the name contains a newline", path)
+				break
+			}
+		}
 		app.nav.unselect()
 		if gSingleMode {
 			if err := app.nav.sync(); err != nil {
@@ -1236,6 +1242,12 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if err := app.nav.save(clipboardCut); err != nil {
 			app.ui.echoerrf("cut: %s", err)
 			return
+		}
+		for _, path := range app.nav.clipboard.paths {
+			if strings.ContainsAny(path, "\n\r") {
+				app.ui.echoerrf("cut: cannot move %s because the name contains a newline", path)
+				break
+			}
 		}
 		app.nav.unselect()
 		if gSingleMode {
