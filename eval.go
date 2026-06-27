@@ -145,6 +145,7 @@ func (e *setExpr) eval(app *app, _ []string) {
 		if err == nil {
 			gOpts.preview = preview
 			app.ui.sxScreen.forceClear = true
+			app.ui.ktScreen.forceClear = true
 			app.ui.loadFile(app, true)
 		}
 	case "relativenumber", "norelativenumber", "relativenumber!":

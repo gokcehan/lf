@@ -448,6 +448,7 @@ func (app *app) loop() {
 			if curr := app.nav.currFile(); curr != nil {
 				if r.path == curr.path {
 					app.ui.sxScreen.forceClear = true
+					app.ui.ktScreen.forceClear = true
 					if gOpts.preload && r.volatile {
 						app.ui.loadFile(app, true)
 					}
