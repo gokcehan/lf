@@ -274,6 +274,7 @@ The following options can be used to customize the behavior of lf:
 	filtermethod      string    (default 'text')
 	findlen           int       (default 1)
 	hidden            bool      (default false)
+	hiddenfmt         string    (default '')
 	hiddenfiles       []string  (default '.*' for Unix and '' for Windows)
 	history           bool      (default true)
 	icons             bool      (default false)
@@ -956,6 +957,14 @@ When this value is set to 0, find command prompts until there is only a single m
 Show hidden files.
 On Unix systems, hidden files are determined by the value of `hiddenfiles`.
 On Windows, files with hidden attributes are also considered hidden files.
+
+## hiddenfmt (string) (default ``)
+
+Format string for colouring hidden files and directories.
+When set to a non-empty value, it overrides the normal colour for entries considered hidden (see `hiddenfiles`).
+Hidden detection on Windows also respects the filesystem hidden attribute.
+Leave empty to disable and fall back to the regular colour lookup.
+Example: `set hiddenfmt "\033[3;38;2;146;131;116m"`.
 
 ## hiddenfiles ([]string) (default `.*` for Unix and `` for Windows)
 
