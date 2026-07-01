@@ -1582,8 +1582,8 @@ func (nav *nav) rename() error {
 	oldPath := nav.renameOldPath
 	newPath := nav.renameNewPath
 
-	// refuse to create a name containing a newline (POSIX.1-2024 / Austin Group #251)
-	if containsNewline(filepath.Base(newPath)) {
+	// refuse a newline anywhere in the target (POSIX.1-2024 / Austin Group #251)
+	if containsNewline(newPath) {
 		return fmt.Errorf("invalid name: %q contains a newline", filepath.Base(newPath))
 	}
 
