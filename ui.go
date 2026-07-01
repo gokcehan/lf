@@ -1354,7 +1354,7 @@ func listFilesInCurrDir(nav *nav) string {
 
 	b := new(strings.Builder)
 	for _, file := range dir.files {
-		if strings.ContainsAny(file.path, "\n\r") {
+		if containsNewline(file.path) {
 			continue
 		}
 		fmt.Fprintln(b, file.path)

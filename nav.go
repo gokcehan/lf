@@ -131,6 +131,11 @@ func (file *file) isPreviewable() bool {
 	return !file.IsDir() || gOpts.dirpreviews
 }
 
+// containsNewline reports whether a name or path contains a newline or carriage return.
+func containsNewline(s string) bool {
+	return strings.ContainsAny(s, "\n\r")
+}
+
 type fakeStat struct {
 	name string
 }
@@ -713,7 +718,7 @@ func (nav *nav) position() {
 
 func (nav *nav) exportFiles() {
 	var currFile string
-	if curr := nav.currFile(); curr != nil {
+	if curr := nav.currFile(); curr != nil && !containsNewline(curr.path) {
 		currFile = quoteString(curr.path)
 	}
 
@@ -1257,6 +1262,9 @@ func (nav *nav) toggleSelection(path string) {
 			nav.selectionInd = 0
 		}
 	} else {
+		if containsNewline(path) {
+			return // quarantine: a newline-containing path is never selected
+		}
 		nav.selections[path] = nav.selectionInd
 		nav.selectionInd++
 	}
@@ -1277,7 +1285,7 @@ func (nav *nav) tagToggleSelection(path, tag string) {
 }
 
 func (nav *nav) tagToggle(tag string) error {
-	list, err := nav.currFileOrSelections()
+	list, err := nav.currFileOrSelectionsValid()
 	if err != nil {
 		return err
 	}
@@ -1294,7 +1302,7 @@ func (nav *nav) tagToggle(tag string) error {
 }
 
 func (nav *nav) tag(tag string) error {
-	list, err := nav.currFileOrSelections()
+	list, err := nav.currFileOrSelectionsValid()
 	if err != nil {
 		return err
 	}
@@ -1322,7 +1330,7 @@ func (nav *nav) unselect() {
 }
 
 func (nav *nav) save(mode clipboardMode) error {
-	list, err := nav.currFileOrSelections()
+	list, err := nav.currFileOrSelectionsValid()
 	if err != nil {
 		return err
 	}
@@ -1566,6 +1574,11 @@ func (nav *nav) del(app *app) error {
 func (nav *nav) rename() error {
 	oldPath := nav.renameOldPath
 	newPath := nav.renameNewPath
+
+	// refuse to create a name containing a newline (POSIX.1-2024 / Austin Group #251)
+	if containsNewline(filepath.Base(newPath)) {
+		return fmt.Errorf("invalid name: %q contains a newline", filepath.Base(newPath))
+	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
@@ -1881,7 +1894,7 @@ func (nav *nav) writeMarks() error {
 		if strings.Contains(gOpts.tempmarks, k) {
 			continue
 		}
-		if strings.ContainsAny(nav.marks[k], "\n\r") {
+		if containsNewline(nav.marks[k]) {
 			log.Printf("marks: skipping mark '%s' with newline in path: %q", k, nav.marks[k])
 			continue
 		}
@@ -1940,7 +1953,7 @@ func (nav *nav) writeTags() error {
 	defer f.Close()
 
 	for _, k := range slices.Sorted(maps.Keys(nav.tags)) {
-		if strings.ContainsAny(k, "\n\r") {
+		if containsNewline(k) {
 			log.Printf("tags: skipping tag with newline in path: %q", k)
 			continue
 		}
@@ -2006,6 +2019,20 @@ func (nav *nav) currFileOrSelections() ([]string, error) {
 	}
 
 	return nil, errors.New("no file selected")
+}
+
+// currFileOrSelectionsValid is currFileOrSelections but errors if any path contains a newline.
+func (nav *nav) currFileOrSelectionsValid() ([]string, error) {
+	list, err := nav.currFileOrSelections()
+	if err != nil {
+		return nil, err
+	}
+	for _, path := range list {
+		if containsNewline(path) {
+			return nil, fmt.Errorf("%q contains a newline", filepath.Base(path))
+		}
+	}
+	return list, nil
 }
 
 func (nav *nav) calcDirSize() error {
