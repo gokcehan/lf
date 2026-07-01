@@ -730,6 +730,9 @@ func (nav *nav) exportFiles() {
 
 	var vSelections []string
 	for _, selection := range nav.currDir().visualSelections() {
+		if containsNewline(selection) {
+			continue // $fv is filesep-joined, so refuse newline paths like $f above
+		}
 		vSelections = append(vSelections, quoteString(selection))
 	}
 	currVSelections := strings.Join(vSelections, gOpts.filesep)
