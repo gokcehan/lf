@@ -96,7 +96,7 @@ func run() {
 // rejected unconditionally (frame integrity for line-oriented consumers);
 // control bytes are stripped only when stdout is a terminal.
 func printPath(label, path string, stdoutIsTerminal bool) {
-	if strings.ContainsAny(path, "\n\r") {
+	if containsNewline(path) {
 		log.Printf("%s: skipping path with newline: %q", label, path)
 		return
 	}
@@ -107,7 +107,7 @@ func printPath(label, path string, stdoutIsTerminal bool) {
 }
 
 func writeLastDir(filename, lastDir string) {
-	if strings.ContainsAny(lastDir, "\n\r") {
+	if containsNewline(lastDir) {
 		log.Printf("last-dir: path contains newline: %q", lastDir)
 		return
 	}
@@ -133,7 +133,7 @@ func writeSelection(filename string, selection []string) {
 	defer f.Close()
 
 	filtered := slices.DeleteFunc(slices.Clone(selection), func(s string) bool {
-		if strings.ContainsAny(s, "\n\r") {
+		if containsNewline(s) {
 			log.Printf("selection: skipping path with newline: %q", s)
 			return true
 		}

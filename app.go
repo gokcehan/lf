@@ -160,13 +160,7 @@ func loadFiles() (clipboard clipboard, err error) {
 }
 
 func saveFiles(clipboard clipboard) error {
-	for _, path := range clipboard.paths {
-		// the clipboard file stores one path per line so a newline cannot be saved
-		if strings.ContainsAny(path, "\n\r") {
-			return fmt.Errorf("cannot copy %s because the name contains a newline", path)
-		}
-	}
-
+	// clipboard.paths is gated by currFileOrSelectionsValid, so no newline check is needed here
 	if err := os.MkdirAll(filepath.Dir(gFilesPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}

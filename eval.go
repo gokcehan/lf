@@ -1113,7 +1113,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			onChdir(app)
 		} else {
 			if gSelectionPath != "" || gPrintSelection {
-				app.selectionOut, _ = app.nav.currFileOrSelections()
+				app.selectionOut, _ = app.nav.currFileOrSelectionsValid()
 				app.quitChan <- struct{}{}
 				return
 			}
@@ -1689,6 +1689,9 @@ func (e *callExpr) eval(app *app, _ []string) {
 	case "visual-accept":
 		dir := app.nav.currDir()
 		for _, path := range dir.visualSelections() {
+			if containsNewline(path) {
+				continue // quarantine: a newline-containing path is never selected
+			}
 			if _, ok := app.nav.selections[path]; !ok {
 				app.nav.selections[path] = app.nav.selectionInd
 				app.nav.selectionInd++
@@ -1863,6 +1866,11 @@ func (e *callExpr) eval(app *app, _ []string) {
 			newPath := filepath.Clean(replaceTilde(s))
 			if !filepath.IsAbs(newPath) {
 				newPath = filepath.Join(wd, newPath)
+			}
+			// reject before the create-parent prompt so no newline dir is made
+			if containsNewline(newPath) {
+				app.ui.echoerrf("rename: %q contains a newline", filepath.Base(newPath))
+				return
 			}
 			if oldPath == newPath {
 				return
