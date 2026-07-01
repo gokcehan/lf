@@ -740,7 +740,11 @@ func (nav *nav) exportFiles() {
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
 	os.Setenv("fv", currVSelections)
-	os.Setenv("PWD", quoteString(nav.currDir().path))
+	pwd := nav.currDir().path
+	if containsNewline(pwd) {
+		pwd = "" // refuse newline in $PWD; it reaches shell commands like $f
+	}
+	os.Setenv("PWD", quoteString(pwd))
 
 	if len(selections) == 0 {
 		os.Setenv("fx", currFile)
