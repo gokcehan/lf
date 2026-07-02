@@ -1429,18 +1429,10 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				sendErr("rename %s %s: source and destination are the same file", src, dst)
 				continue
 			}
-			ext := getFileExtension(dstStat)
-			basename := file[:len(file)-len(ext)]
-			var newPath string
-			for i := 1; !os.IsNotExist(err); i++ {
-				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
-				file = strings.ReplaceAll(file, "%b", basename)
-				file = strings.ReplaceAll(file, "%e", ext)
-				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
-				newPath = filepath.Join(dstDir, file)
-				_, err = os.Lstat(newPath)
+			if dst, err = dupFilePath(dstDir, file, dstStat); err != nil {
+				sendErr("%v", err)
+				continue
 			}
-			dst = newPath
 		}
 
 		if err := os.Rename(src, dst); err != nil {
