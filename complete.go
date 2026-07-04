@@ -273,6 +273,11 @@ func matchFile(s string, dirOnly bool, escape, unescape func(string) string) (ma
 			continue
 		}
 
+		// skip newline names because the escaped form is a shell line continuation
+		if containsNewline(f.Name()) {
+			continue
+		}
+
 		name := f.Name()
 		if isDir {
 			name += string(filepath.Separator)

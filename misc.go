@@ -601,3 +601,13 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 // All in all you're just another brick in the code
 //
 // -- Pink Trolled --
+
+// containsNewline reports whether a name or path contains a newline or carriage return.
+func containsNewline(s string) bool {
+	return strings.ContainsAny(s, "\n\r")
+}
+
+// errNewlinePath is the error shown when a path contains a newline.
+func errNewlinePath(path string) error {
+	return fmt.Errorf("%q contains a newline; use rename to fix the name", path)
+}

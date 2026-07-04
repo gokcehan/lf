@@ -1895,7 +1895,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			// reject before the create-parent prompt so no newline dir is made
 			if containsNewline(newPath) {
-				app.ui.echoerrf("rename: %q contains a newline", filepath.Base(newPath))
+				app.ui.echoerrf("rename: %q contains a newline", newPath)
 				return
 			}
 			if oldPath == newPath {

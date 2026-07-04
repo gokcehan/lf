@@ -131,16 +131,6 @@ func (file *file) isPreviewable() bool {
 	return !file.IsDir() || gOpts.dirpreviews
 }
 
-// containsNewline reports whether a name or path contains a newline or carriage return.
-func containsNewline(s string) bool {
-	return strings.ContainsAny(s, "\n\r")
-}
-
-// errNewlinePath is the error shown when a path contains a newline.
-func errNewlinePath(path string) error {
-	return fmt.Errorf("%q contains a newline; use rename to fix the name", path)
-}
-
 type fakeStat struct {
 	name string
 }
@@ -745,11 +735,12 @@ func (nav *nav) exportFiles() {
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
 	os.Setenv("fv", currVSelections)
-	pwd := nav.currDir().path
-	if containsNewline(pwd) {
-		pwd = "" // refuse newline in $PWD; it reaches shell commands like $f
+	if pwd := nav.currDir().path; containsNewline(pwd) {
+		// a newline in $PWD would reach shell commands
+		os.Unsetenv("PWD")
+	} else {
+		os.Setenv("PWD", quoteString(pwd))
 	}
-	os.Setenv("PWD", quoteString(pwd))
 
 	if len(selections) == 0 {
 		os.Setenv("fx", currFile)
@@ -1599,7 +1590,7 @@ func (nav *nav) rename() error {
 
 	// refuse a newline anywhere in the target (POSIX.1-2024 / Austin Group #251)
 	if containsNewline(newPath) {
-		return fmt.Errorf("invalid name: %q contains a newline", filepath.Base(newPath))
+		return fmt.Errorf("invalid name: %q contains a newline", newPath)
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
