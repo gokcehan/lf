@@ -554,6 +554,25 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.renew()
 }
 
+// warnNewlineEnv reports names that exportFiles dropped so shell commands do not fail silently.
+func (app *app) warnNewlineEnv() {
+	if curr := app.nav.currFile(); curr != nil && containsNewline(curr.path) {
+		app.ui.echoerrf("shell: left $f empty: %s", errNewlinePath(curr.path))
+	}
+	if pwd := app.nav.currDir().path; containsNewline(pwd) {
+		app.ui.echoerrf("shell: unset $PWD: %q: %s", pwd, errNewline)
+	}
+	skipped := 0
+	for _, path := range app.nav.currDir().visualSelections() {
+		if containsNewline(path) {
+			skipped++
+		}
+	}
+	if skipped > 0 {
+		app.ui.echoerrf("shell: dropped %d name(s) with a newline from $fv", skipped)
+	}
+}
+
 // runShell is used to run a shell command. Modes are as follows:
 //
 //	Prefix  Wait  Async  Stdin  Stdout  Stderr  UI action
@@ -563,6 +582,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 //	&       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
 	app.nav.exportFiles()
+	app.warnNewlineEnv()
 	app.ui.exportSizes()
 	app.exportMode()
 	exportLfPath()

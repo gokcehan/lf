@@ -1716,8 +1716,10 @@ func (e *callExpr) eval(app *app, _ []string) {
 			if _, ok := app.nav.selections[path]; ok {
 				continue
 			}
-			if err := app.nav.toggleSelection(path); err != nil {
+			if err := app.nav.toggleSelection(path); errors.Is(err, errNewline) {
 				skipped++
+			} else if err != nil {
+				app.ui.echoerrf("visual-accept: %s", err)
 			}
 		}
 		if skipped > 0 {
@@ -1895,7 +1897,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			// reject before the create-parent prompt so no newline dir is made
 			if containsNewline(newPath) {
-				app.ui.echoerrf("rename: %q contains a newline", newPath)
+				app.ui.echoerrf("rename: %q: %s", newPath, errNewline)
 				return
 			}
 			if oldPath == newPath {

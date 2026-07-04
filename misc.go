@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -592,6 +593,19 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 	return widths
 }
 
+// errNewline is the sentinel error for names refused due to a newline or carriage return.
+var errNewline = errors.New("name contains a newline")
+
+// containsNewline reports whether a name or path contains a newline or carriage return.
+func containsNewline(s string) bool {
+	return strings.ContainsAny(s, "\n\r")
+}
+
+// errNewlinePath wraps errNewline with the offending path and a hint to fix it.
+func errNewlinePath(path string) error {
+	return fmt.Errorf("%q: %w; use rename to fix the name", path, errNewline)
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler
@@ -601,13 +615,3 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 // All in all you're just another brick in the code
 //
 // -- Pink Trolled --
-
-// containsNewline reports whether a name or path contains a newline or carriage return.
-func containsNewline(s string) bool {
-	return strings.ContainsAny(s, "\n\r")
-}
-
-// errNewlinePath is the error shown when a path contains a newline.
-func errNewlinePath(path string) error {
-	return fmt.Errorf("%q contains a newline; use rename to fix the name", path)
-}

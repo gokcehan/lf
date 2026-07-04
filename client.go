@@ -96,6 +96,7 @@ func run() {
 // control bytes are stripped only when stdout is a terminal.
 func printPath(label, path string, stdoutIsTerminal bool) {
 	if containsNewline(path) {
+		fmt.Fprintf(os.Stderr, "lf: %s: skipping path with a newline: %q\n", label, path)
 		log.Printf("%s: skipping path with newline: %q", label, path)
 		return
 	}
@@ -107,6 +108,7 @@ func printPath(label, path string, stdoutIsTerminal bool) {
 
 func writeLastDir(filename, lastDir string) {
 	if containsNewline(lastDir) {
+		fmt.Fprintf(os.Stderr, "lf: last-dir: skipping path with a newline: %q\n", lastDir)
 		log.Printf("last-dir: path contains newline: %q", lastDir)
 		return
 	}

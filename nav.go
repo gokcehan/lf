@@ -462,7 +462,7 @@ type nav struct {
 	marks           map[string]string
 	renameOldPath   string
 	renameNewPath   string
-	selections      map[string]int
+	selections      map[string]int // never contains a path with a newline, enforced in toggleSelection
 	tags            map[string]string
 	selectionInd    int
 	height          int
@@ -1327,8 +1327,10 @@ func (nav *nav) tag(tag string) error {
 func (nav *nav) invert() error {
 	skipped := 0
 	for _, file := range nav.currDir().files {
-		if err := nav.toggleSelection(file.path); err != nil {
+		if err := nav.toggleSelection(file.path); errors.Is(err, errNewline) {
 			skipped++
+		} else if err != nil {
+			return err
 		}
 	}
 	if skipped > 0 {
@@ -1590,7 +1592,7 @@ func (nav *nav) rename() error {
 
 	// refuse a newline anywhere in the target (POSIX.1-2024 / Austin Group #251)
 	if containsNewline(newPath) {
-		return fmt.Errorf("invalid name: %q contains a newline", newPath)
+		return fmt.Errorf("%q: %w", newPath, errNewline)
 	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
@@ -1677,8 +1679,10 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 			anyMatched = true
 			fpath := filepath.Join(dir.path, dir.files[i].Name())
 			if _, ok := nav.selections[fpath]; ok == invert {
-				if err := nav.toggleSelection(fpath); err != nil {
+				if err := nav.toggleSelection(fpath); errors.Is(err, errNewline) {
 					skipped++
+				} else if err != nil {
+					return err
 				}
 			}
 		}

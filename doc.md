@@ -32,6 +32,9 @@ This documentation can either be read from the terminal using `lf -doc` or onlin
 You can also use the `help` command (default `<f-1>`) inside lf to view the documentation in a pager.
 A man page with the same content is also available in the repository at https://github.com/gokcehan/lf/blob/master/lf.1
 
+Names containing a newline or carriage return are displayed using replacement characters and can be navigated and previewed, but following the POSIX.1-2024 recommendation, operations on them (e.g. `copy`, `cut`, `delete`, `open`, `toggle`, `tag`, `mark-save`) are refused with an error, and such names are excluded from `$f`, `$fs`, `$fx` and `$fv` (with `$PWD` and `$OLDPWD` unset when affected) with a warning before shell commands run.
+Use `rename` to remove the newline from the name.
+
 # OPTIONS
 
 ## POSITIONAL ARGUMENTS
@@ -602,6 +605,7 @@ A custom `delete` command can be defined to override this default.
 
 Rename the current file using the built-in method.
 A custom `rename` command can be defined to override this default.
+Renaming a file to a name containing a newline is refused, but a name containing a newline can be edited to remove it.
 
 ## read (modal) (default `:`)
 
