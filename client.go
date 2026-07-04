@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -132,14 +131,8 @@ func writeSelection(filename string, selection []string) {
 	}
 	defer f.Close()
 
-	filtered := slices.DeleteFunc(slices.Clone(selection), func(s string) bool {
-		if containsNewline(s) {
-			log.Printf("selection: skipping path with newline: %q", s)
-			return true
-		}
-		return false
-	})
-	_, err = f.WriteString(strings.Join(filtered, "\n"))
+	// the selection is already checked by currFileOrSelections before quitting
+	_, err = f.WriteString(strings.Join(selection, "\n"))
 	if err != nil {
 		log.Printf("writing selection file: %s", err)
 	}

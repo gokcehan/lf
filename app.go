@@ -160,7 +160,7 @@ func loadFiles() (clipboard clipboard, err error) {
 }
 
 func saveFiles(clipboard clipboard) error {
-	// clipboard.paths is gated by currFileOrSelectionsValid, so no newline check is needed here
+	// clipboard.paths is already checked by currFileOrSelections, so no newline check is needed here
 	if err := os.MkdirAll(filepath.Dir(gFilesPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}

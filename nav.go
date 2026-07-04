@@ -136,6 +136,11 @@ func containsNewline(s string) bool {
 	return strings.ContainsAny(s, "\n\r")
 }
 
+// errNewlinePath is the error shown when a path contains a newline.
+func errNewlinePath(path string) error {
+	return fmt.Errorf("%q contains a newline; use rename to fix the name", path)
+}
+
 type fakeStat struct {
 	name string
 }
@@ -1262,25 +1267,28 @@ func (nav *nav) move(index int) bool {
 	}
 }
 
-func (nav *nav) toggleSelection(path string) {
+func (nav *nav) toggleSelection(path string) error {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)
 		if len(nav.selections) == 0 {
 			nav.selectionInd = 0
 		}
-	} else {
-		if containsNewline(path) {
-			return // quarantine: a newline-containing path is never selected
-		}
-		nav.selections[path] = nav.selectionInd
-		nav.selectionInd++
+		return nil
 	}
+	if containsNewline(path) {
+		// a newline path must never enter the selections because they are written line by line
+		return errNewlinePath(path)
+	}
+	nav.selections[path] = nav.selectionInd
+	nav.selectionInd++
+	return nil
 }
 
-func (nav *nav) toggle() {
+func (nav *nav) toggle() error {
 	if curr := nav.currFile(); curr != nil {
-		nav.toggleSelection(curr.path)
+		return nav.toggleSelection(curr.path)
 	}
+	return nil
 }
 
 func (nav *nav) tagToggleSelection(path, tag string) {
@@ -1292,7 +1300,7 @@ func (nav *nav) tagToggleSelection(path, tag string) {
 }
 
 func (nav *nav) tagToggle(tag string) error {
-	list, err := nav.currFileOrSelectionsValid()
+	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
@@ -1309,7 +1317,7 @@ func (nav *nav) tagToggle(tag string) error {
 }
 
 func (nav *nav) tag(tag string) error {
-	list, err := nav.currFileOrSelectionsValid()
+	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
@@ -1325,10 +1333,17 @@ func (nav *nav) tag(tag string) error {
 	return nil
 }
 
-func (nav *nav) invert() {
+func (nav *nav) invert() error {
+	skipped := 0
 	for _, file := range nav.currDir().files {
-		nav.toggleSelection(file.path)
+		if err := nav.toggleSelection(file.path); err != nil {
+			skipped++
+		}
 	}
+	if skipped > 0 {
+		return fmt.Errorf("skipped %d name(s) containing a newline; use rename to fix", skipped)
+	}
+	return nil
 }
 
 func (nav *nav) unselect() {
@@ -1337,7 +1352,7 @@ func (nav *nav) unselect() {
 }
 
 func (nav *nav) save(mode clipboardMode) error {
-	list, err := nav.currFileOrSelectionsValid()
+	list, err := nav.currFileOrSelections()
 	if err != nil {
 		return err
 	}
@@ -1661,6 +1676,7 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 	dir := nav.currDir()
 	anyMatched := false
 
+	skipped := 0
 	for i := range dir.files {
 		matched, err := filepath.Match(pattern, dir.files[i].Name())
 		if err != nil {
@@ -1670,13 +1686,19 @@ func (nav *nav) globSel(pattern string, invert bool) error {
 			anyMatched = true
 			fpath := filepath.Join(dir.path, dir.files[i].Name())
 			if _, ok := nav.selections[fpath]; ok == invert {
-				nav.toggleSelection(fpath)
+				if err := nav.toggleSelection(fpath); err != nil {
+					skipped++
+				}
 			}
 		}
 	}
 
 	if !anyMatched {
 		return fmt.Errorf("glob-select: pattern not found: %s", pattern)
+	}
+
+	if skipped > 0 {
+		return fmt.Errorf("glob-select: skipped %d name(s) containing a newline; use rename to fix", skipped)
 	}
 
 	return nil
@@ -2016,30 +2038,21 @@ func (nav *nav) currSelections() []string {
 	return paths
 }
 
+// currFileOrSelections returns the files a command works on and refuses paths with a newline.
 func (nav *nav) currFileOrSelections() ([]string, error) {
 	if sel := nav.currSelections(); len(sel) > 0 {
 		return sel, nil
 	}
 
 	if curr := nav.currFile(); curr != nil {
+		// selections are checked when they are added, so only the current file needs a check
+		if containsNewline(curr.path) {
+			return nil, errNewlinePath(curr.path)
+		}
 		return []string{curr.path}, nil
 	}
 
 	return nil, errors.New("no file selected")
-}
-
-// currFileOrSelectionsValid is currFileOrSelections but errors if any path contains a newline.
-func (nav *nav) currFileOrSelectionsValid() ([]string, error) {
-	list, err := nav.currFileOrSelections()
-	if err != nil {
-		return nil, err
-	}
-	for _, path := range list {
-		if containsNewline(path) {
-			return nil, fmt.Errorf("%q contains a newline", filepath.Base(path))
-		}
-	}
-	return list, nil
 }
 
 func (nav *nav) calcDirSize() error {

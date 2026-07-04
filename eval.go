@@ -1113,7 +1113,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			onChdir(app)
 		} else {
 			if gSelectionPath != "" || gPrintSelection {
-				app.selectionOut, _ = app.nav.currFileOrSelectionsValid()
+				app.selectionOut, _ = app.nav.currFileOrSelections()
 				app.quitChan <- struct{}{}
 				return
 			}
