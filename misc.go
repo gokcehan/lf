@@ -606,6 +606,11 @@ func errNewlinePath(path string) error {
 	return fmt.Errorf("%q: %w; use rename to fix the name", path, errNewline)
 }
 
+// skipMsg formats the notice for names skipped because they contain a newline.
+func skipMsg(cmd string, skipped int) string {
+	return fmt.Sprintf("%s: skipped %d name(s) containing a newline; use rename to fix", cmd, skipped)
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler

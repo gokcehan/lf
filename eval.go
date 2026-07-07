@@ -1214,8 +1214,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 		}
 	case "invert":
-		if err := app.nav.invert(); err != nil {
-			app.ui.echoerrf("invert: %s", err)
+		if skipped := app.nav.invert(); skipped > 0 {
+			app.ui.echomsg(skipMsg("invert", skipped))
 		}
 	case "unselect":
 		app.nav.unselect()
@@ -1224,18 +1224,26 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("glob-select: requires a pattern to match")
 			return
 		}
-		if err := app.nav.globSel(e.args[0], false); err != nil {
+		skipped, err := app.nav.globSel(e.args[0], false)
+		if err != nil {
 			app.ui.echoerrf("%s", err)
 			return
+		}
+		if skipped > 0 {
+			app.ui.echomsg(skipMsg("glob-select", skipped))
 		}
 	case "glob-unselect":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-unselect: requires a pattern to match")
 			return
 		}
-		if err := app.nav.globSel(e.args[0], true); err != nil {
+		skipped, err := app.nav.globSel(e.args[0], true)
+		if err != nil {
 			app.ui.echoerrf("%s", err)
 			return
+		}
+		if skipped > 0 {
+			app.ui.echomsg(skipMsg("glob-unselect", skipped))
 		}
 	case "copy":
 		if err := app.nav.save(clipboardCopy); err != nil {
@@ -1716,14 +1724,13 @@ func (e *callExpr) eval(app *app, _ []string) {
 			if _, ok := app.nav.selections[path]; ok {
 				continue
 			}
-			if err := app.nav.toggleSelection(path); errors.Is(err, errNewline) {
+			// toggleSelection only refuses newline paths
+			if err := app.nav.toggleSelection(path); err != nil {
 				skipped++
-			} else if err != nil {
-				app.ui.echoerrf("visual-accept: %s", err)
 			}
 		}
 		if skipped > 0 {
-			app.ui.echoerrf("visual-accept: skipped %d name(s) containing a newline; use rename to fix", skipped)
+			app.ui.echomsg(skipMsg("visual-accept", skipped))
 		}
 		// resetting Visual mode here instead of inside `normal()`
 		// allows us to use Visual mode inside search, find etc.
@@ -1896,8 +1903,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 				newPath = filepath.Join(wd, newPath)
 			}
 			// reject before the create-parent prompt so no newline dir is made
-			if containsNewline(newPath) {
-				app.ui.echoerrf("rename: %q: %s", newPath, errNewline)
+			if err := checkRenameTarget(oldPath, newPath); err != nil {
+				app.ui.echoerrf("rename: %s", err)
 				return
 			}
 			if oldPath == newPath {
