@@ -78,7 +78,12 @@ func exportEnvVars() {
 	if err != nil {
 		fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
 	}
-	os.Setenv("OLDPWD", dir)
+	if containsNewline(dir) {
+		// a newline in $OLDPWD would reach shell commands
+		os.Unsetenv("OLDPWD")
+	} else {
+		os.Setenv("OLDPWD", dir)
+	}
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {

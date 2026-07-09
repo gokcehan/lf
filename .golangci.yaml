@@ -17,6 +17,7 @@ linters:
         - fmt.Fprintln
         - io.WriteString
         - os.Setenv
+        - os.Unsetenv
         - syscall.Close
 issues:
   max-issues-per-linter: 0  # no limit

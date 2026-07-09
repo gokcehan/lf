@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"bytes"
 	"cmp"
+	"errors"
 	"fmt"
 	"io"
 	"io/fs"
@@ -590,6 +591,24 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 	}
 
 	return widths
+}
+
+// errNewline is the sentinel error for names refused due to a newline or carriage return.
+var errNewline = errors.New("name contains a newline")
+
+// containsNewline reports whether a name or path contains a newline or carriage return.
+func containsNewline(s string) bool {
+	return strings.ContainsAny(s, "\n\r")
+}
+
+// errNewlinePath wraps errNewline with the offending path and a hint to fix it.
+func errNewlinePath(path string) error {
+	return fmt.Errorf("%q: %w; use rename to fix the name", path, errNewline)
+}
+
+// skipMsg formats the notice for names skipped because they contain a newline.
+func skipMsg(cmd string, skipped int) string {
+	return fmt.Sprintf("%s: skipped %d name(s) containing a newline; use rename to fix", cmd, skipped)
 }
 
 // We don't need no generic code

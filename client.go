@@ -7,7 +7,6 @@ import (
 	"log"
 	"net"
 	"os"
-	"slices"
 	"strings"
 	"sync"
 	"time"
@@ -96,7 +95,8 @@ func run() {
 // rejected unconditionally (frame integrity for line-oriented consumers);
 // control bytes are stripped only when stdout is a terminal.
 func printPath(label, path string, stdoutIsTerminal bool) {
-	if strings.ContainsAny(path, "\n\r") {
+	if containsNewline(path) {
+		fmt.Fprintf(os.Stderr, "lf: %s: skipping path with a newline: %q\n", label, path)
 		log.Printf("%s: skipping path with newline: %q", label, path)
 		return
 	}
@@ -107,7 +107,8 @@ func printPath(label, path string, stdoutIsTerminal bool) {
 }
 
 func writeLastDir(filename, lastDir string) {
-	if strings.ContainsAny(lastDir, "\n\r") {
+	if containsNewline(lastDir) {
+		fmt.Fprintf(os.Stderr, "lf: last-dir: skipping path with a newline: %q\n", lastDir)
 		log.Printf("last-dir: path contains newline: %q", lastDir)
 		return
 	}
@@ -132,14 +133,8 @@ func writeSelection(filename string, selection []string) {
 	}
 	defer f.Close()
 
-	filtered := slices.DeleteFunc(slices.Clone(selection), func(s string) bool {
-		if strings.ContainsAny(s, "\n\r") {
-			log.Printf("selection: skipping path with newline: %q", s)
-			return true
-		}
-		return false
-	})
-	_, err = f.WriteString(strings.Join(filtered, "\n"))
+	// the selection is already checked by currFileOrSelections before quitting
+	_, err = f.WriteString(strings.Join(selection, "\n"))
 	if err != nil {
 		log.Printf("writing selection file: %s", err)
 	}

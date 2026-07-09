@@ -462,7 +462,7 @@ type nav struct {
 	marks           map[string]string
 	renameOldPath   string
 	renameNewPath   string
-	selections      map[string]int
+	selections      map[string]int // never contains a path with a newline, enforced in toggleSelection
 	tags            map[string]string
 	selectionInd    int
 	height          int
@@ -711,34 +711,67 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) exportFiles() {
+// exportFiles sets $f, $fs, $fv, $fx and $PWD, returning warnings for names dropped due to a newline.
+func (nav *nav) exportFiles() []string {
+	var warnings []string
+
 	var currFile string
 	if curr := nav.currFile(); curr != nil {
-		currFile = quoteString(curr.path)
+		if containsNewline(curr.path) {
+			warnings = append(warnings, fmt.Sprintf("shell: left $f empty: %s", errNewlinePath(curr.path)))
+		} else {
+			currFile = quoteString(curr.path)
+		}
 	}
 
 	var selections []string
+	dropped := 0
 	for _, selection := range nav.currSelections() {
+		// filter stale entries so a regression in toggleSelection cannot reach $fs and $fx
+		if containsNewline(selection) {
+			dropped++
+			continue
+		}
 		selections = append(selections, quoteString(selection))
+	}
+	if dropped > 0 {
+		warnings = append(warnings, fmt.Sprintf("shell: dropped %d name(s) with a newline from $fs and $fx", dropped))
 	}
 	currSelections := strings.Join(selections, gOpts.filesep)
 
 	var vSelections []string
+	dropped = 0
 	for _, selection := range nav.currDir().visualSelections() {
+		// $fv is filesep-joined, so refuse newline paths like $f above
+		if containsNewline(selection) {
+			dropped++
+			continue
+		}
 		vSelections = append(vSelections, quoteString(selection))
+	}
+	if dropped > 0 {
+		warnings = append(warnings, fmt.Sprintf("shell: dropped %d name(s) with a newline from $fv", dropped))
 	}
 	currVSelections := strings.Join(vSelections, gOpts.filesep)
 
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
 	os.Setenv("fv", currVSelections)
-	os.Setenv("PWD", quoteString(nav.currDir().path))
+	if pwd := nav.currDir().path; containsNewline(pwd) {
+		// a newline in $PWD would reach shell commands
+		warnings = append(warnings, fmt.Sprintf("shell: unset $PWD: %q: %s", pwd, errNewline))
+		os.Unsetenv("PWD")
+	} else {
+		os.Setenv("PWD", quoteString(pwd))
+	}
 
 	if len(selections) == 0 {
 		os.Setenv("fx", currFile)
 	} else {
 		os.Setenv("fx", currSelections)
 	}
+
+	return warnings
 }
 
 func (nav *nav) preloadLoop(ui *ui) {
@@ -1250,22 +1283,28 @@ func (nav *nav) move(index int) bool {
 	}
 }
 
-func (nav *nav) toggleSelection(path string) {
+func (nav *nav) toggleSelection(path string) error {
 	if _, ok := nav.selections[path]; ok {
 		delete(nav.selections, path)
 		if len(nav.selections) == 0 {
 			nav.selectionInd = 0
 		}
-	} else {
-		nav.selections[path] = nav.selectionInd
-		nav.selectionInd++
+		return nil
 	}
+	if containsNewline(path) {
+		// a newline path must never enter the selections because they are written line by line
+		return errNewlinePath(path)
+	}
+	nav.selections[path] = nav.selectionInd
+	nav.selectionInd++
+	return nil
 }
 
-func (nav *nav) toggle() {
+func (nav *nav) toggle() error {
 	if curr := nav.currFile(); curr != nil {
-		nav.toggleSelection(curr.path)
+		return nav.toggleSelection(curr.path)
 	}
+	return nil
 }
 
 func (nav *nav) tagToggleSelection(path, tag string) {
@@ -1310,10 +1349,16 @@ func (nav *nav) tag(tag string) error {
 	return nil
 }
 
-func (nav *nav) invert() {
+// invert toggles all files in the current directory, returning the number of newline names skipped.
+func (nav *nav) invert() int {
+	skipped := 0
 	for _, file := range nav.currDir().files {
-		nav.toggleSelection(file.path)
+		// toggleSelection only refuses newline paths
+		if err := nav.toggleSelection(file.path); err != nil {
+			skipped++
+		}
 	}
+	return skipped
 }
 
 func (nav *nav) unselect() {
@@ -1563,9 +1608,26 @@ func (nav *nav) del(app *app) error {
 	return nil
 }
 
+// checkRenameTarget refuses a newline in the rename target, exempting components inherited from the directory of oldPath.
+func checkRenameTarget(oldPath, newPath string) error {
+	rel, ok := strings.CutPrefix(newPath, filepath.Dir(oldPath)+string(filepath.Separator))
+	if !ok {
+		rel = newPath
+	}
+	if containsNewline(rel) {
+		return fmt.Errorf("%q: %w", rel, errNewline)
+	}
+	return nil
+}
+
 func (nav *nav) rename() error {
 	oldPath := nav.renameOldPath
 	newPath := nav.renameNewPath
+
+	// refuse creating a newline name (POSIX.1-2024 / Austin Group #251)
+	if err := checkRenameTarget(oldPath, newPath); err != nil {
+		return err
+	}
 
 	if err := os.Rename(oldPath, newPath); err != nil {
 		return err
@@ -1637,29 +1699,34 @@ func (nav *nav) cd(path string) error {
 	return nil
 }
 
-func (nav *nav) globSel(pattern string, invert bool) error {
+// globSel toggles files matching pattern, returning the number of newline names skipped.
+func (nav *nav) globSel(pattern string, invert bool) (int, error) {
 	dir := nav.currDir()
 	anyMatched := false
 
+	skipped := 0
 	for i := range dir.files {
 		matched, err := filepath.Match(pattern, dir.files[i].Name())
 		if err != nil {
-			return fmt.Errorf("glob-select: %w", err)
+			return skipped, fmt.Errorf("glob-select: %w", err)
 		}
 		if matched {
 			anyMatched = true
 			fpath := filepath.Join(dir.path, dir.files[i].Name())
 			if _, ok := nav.selections[fpath]; ok == invert {
-				nav.toggleSelection(fpath)
+				// toggleSelection only refuses newline paths
+				if err := nav.toggleSelection(fpath); err != nil {
+					skipped++
+				}
 			}
 		}
 	}
 
 	if !anyMatched {
-		return fmt.Errorf("glob-select: pattern not found: %s", pattern)
+		return skipped, fmt.Errorf("glob-select: pattern not found: %s", pattern)
 	}
 
-	return nil
+	return skipped, nil
 }
 
 func findMatch(name, pattern string) bool {
@@ -1881,7 +1948,7 @@ func (nav *nav) writeMarks() error {
 		if strings.Contains(gOpts.tempmarks, k) {
 			continue
 		}
-		if strings.ContainsAny(nav.marks[k], "\n\r") {
+		if containsNewline(nav.marks[k]) {
 			log.Printf("marks: skipping mark '%s' with newline in path: %q", k, nav.marks[k])
 			continue
 		}
@@ -1940,7 +2007,7 @@ func (nav *nav) writeTags() error {
 	defer f.Close()
 
 	for _, k := range slices.Sorted(maps.Keys(nav.tags)) {
-		if strings.ContainsAny(k, "\n\r") {
+		if containsNewline(k) {
 			log.Printf("tags: skipping tag with newline in path: %q", k)
 			continue
 		}
@@ -1996,12 +2063,17 @@ func (nav *nav) currSelections() []string {
 	return paths
 }
 
+// currFileOrSelections returns the files a command works on and refuses paths with a newline.
 func (nav *nav) currFileOrSelections() ([]string, error) {
 	if sel := nav.currSelections(); len(sel) > 0 {
 		return sel, nil
 	}
 
 	if curr := nav.currFile(); curr != nil {
+		// selections are checked when they are added, so only the current file needs a check
+		if containsNewline(curr.path) {
+			return nil, errNewlinePath(curr.path)
+		}
 		return []string{curr.path}, nil
 	}
 

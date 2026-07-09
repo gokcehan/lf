@@ -926,7 +926,13 @@ func insert(app *app, arg string) {
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
-		app.nav.marks[arg] = app.nav.currDir().path
+		path := app.nav.currDir().path
+		if containsNewline(path) {
+			// refuse instead of storing a mark that writeMarks would silently drop
+			app.ui.echoerrf("mark-save: %s", errNewlinePath(path))
+			return
+		}
+		app.nav.marks[arg] = path
 		if err := app.nav.writeMarks(); err != nil {
 			app.ui.echoerrf("mark-save: %s", err)
 			return
@@ -1113,11 +1119,21 @@ func (e *callExpr) eval(app *app, _ []string) {
 			onChdir(app)
 		} else {
 			if gSelectionPath != "" || gPrintSelection {
-				app.selectionOut, _ = app.nav.currFileOrSelections()
+				list, err := app.nav.currFileOrSelections()
+				if err != nil {
+					app.ui.echoerrf("open: %s", err)
+					return
+				}
+				app.selectionOut = list
 				app.quitChan <- struct{}{}
 				return
 			}
 
+			// refuse a newline name here because a custom open or the default opener would run with an empty $f
+			if containsNewline(curr.path) {
+				app.ui.echoerrf("open: %s", errNewlinePath(curr.path))
+				return
+			}
 			if cmd, ok := gOpts.cmds["open"]; ok {
 				cmd.eval(app, e.args)
 			}
@@ -1176,7 +1192,9 @@ func (e *callExpr) eval(app *app, _ []string) {
 		}
 	case "toggle":
 		if len(e.args) == 0 {
-			app.nav.toggle()
+			if err := app.nav.toggle(); err != nil {
+				app.ui.echoerrf("toggle: %s", err)
+			}
 		} else {
 			for _, path := range e.args {
 				path, err := filepath.Abs(replaceTilde(path))
@@ -1190,11 +1208,15 @@ func (e *callExpr) eval(app *app, _ []string) {
 					continue
 				}
 
-				app.nav.toggleSelection(path)
+				if err := app.nav.toggleSelection(path); err != nil {
+					app.ui.echoerrf("toggle: %s", err)
+				}
 			}
 		}
 	case "invert":
-		app.nav.invert()
+		if skipped := app.nav.invert(); skipped > 0 {
+			app.ui.echomsg(skipMsg("invert", skipped))
+		}
 	case "unselect":
 		app.nav.unselect()
 	case "glob-select":
@@ -1202,18 +1224,26 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("glob-select: requires a pattern to match")
 			return
 		}
-		if err := app.nav.globSel(e.args[0], false); err != nil {
+		skipped, err := app.nav.globSel(e.args[0], false)
+		if err != nil {
 			app.ui.echoerrf("%s", err)
 			return
+		}
+		if skipped > 0 {
+			app.ui.echomsg(skipMsg("glob-select", skipped))
 		}
 	case "glob-unselect":
 		if len(e.args) != 1 {
 			app.ui.echoerr("glob-unselect: requires a pattern to match")
 			return
 		}
-		if err := app.nav.globSel(e.args[0], true); err != nil {
+		skipped, err := app.nav.globSel(e.args[0], true)
+		if err != nil {
 			app.ui.echoerrf("%s", err)
 			return
+		}
+		if skipped > 0 {
+			app.ui.echomsg(skipMsg("glob-unselect", skipped))
 		}
 	case "copy":
 		if err := app.nav.save(clipboardCopy); err != nil {
@@ -1292,6 +1322,13 @@ func (e *callExpr) eval(app *app, _ []string) {
 		app.nav.reload()
 		app.ui.loadFile(app, true)
 	case "delete":
+		// check the files before dispatch so a custom delete command is refused like the builtin
+		list, err := app.nav.currFileOrSelections()
+		if err != nil {
+			app.ui.echoerrf("delete: %s", err)
+			return
+		}
+
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)
 			app.nav.unselect()
@@ -1305,12 +1342,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 				}
 			}
 		} else {
-			list, err := app.nav.currFileOrSelections()
-			if err != nil {
-				app.ui.echoerrf("delete: %s", err)
-				return
-			}
-
 			if app.ui.cmdPrefix == ">" {
 				return
 			}
@@ -1688,11 +1719,18 @@ func (e *callExpr) eval(app *app, _ []string) {
 		dir.visualWrap = 0
 	case "visual-accept":
 		dir := app.nav.currDir()
+		skipped := 0
 		for _, path := range dir.visualSelections() {
-			if _, ok := app.nav.selections[path]; !ok {
-				app.nav.selections[path] = app.nav.selectionInd
-				app.nav.selectionInd++
+			if _, ok := app.nav.selections[path]; ok {
+				continue
 			}
+			// toggleSelection only refuses newline paths
+			if err := app.nav.toggleSelection(path); err != nil {
+				skipped++
+			}
+		}
+		if skipped > 0 {
+			app.ui.echomsg(skipMsg("visual-accept", skipped))
 		}
 		// resetting Visual mode here instead of inside `normal()`
 		// allows us to use Visual mode inside search, find etc.
@@ -1863,6 +1901,11 @@ func (e *callExpr) eval(app *app, _ []string) {
 			newPath := filepath.Clean(replaceTilde(s))
 			if !filepath.IsAbs(newPath) {
 				newPath = filepath.Join(wd, newPath)
+			}
+			// reject before the create-parent prompt so no newline dir is made
+			if err := checkRenameTarget(oldPath, newPath); err != nil {
+				app.ui.echoerrf("rename: %s", err)
+				return
 			}
 			if oldPath == newPath {
 				return
