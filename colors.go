@@ -221,6 +221,7 @@ func (sm styleMap) parseBSD(env string) {
 	}
 }
 
+
 func (sm styleMap) get(f *file) tcell.Style {
 	if val, ok := sm.styles[f.path]; ok {
 		return val
