@@ -701,8 +701,7 @@ func (nav *nav) resize(ui *ui) {
 func (nav *nav) position() {
 	var base string
 
-	for i := len(nav.dirPaths) - 1; i >= 0; i-- {
-		path := nav.dirPaths[i]
+	for i, path := range slices.Backward(nav.dirPaths) {
 		if i < len(nav.dirPaths)-1 {
 			nav.getDir(path).sel(base, nav.height)
 		}

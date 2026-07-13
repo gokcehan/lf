@@ -563,8 +563,7 @@ func newUI(screen tcell.Screen) *ui {
 }
 
 func (ui *ui) winAt(x, y int) (int, *win) {
-	for i := len(ui.wins) - 1; i >= 0; i-- {
-		w := ui.wins[i]
+	for i, w := range slices.Backward(ui.wins) {
 		if x >= w.x && y >= w.y && y < w.y+w.h {
 			return i, w
 		}
@@ -1299,8 +1298,7 @@ func listJumps(jumps []string, ind int) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
-	for i := len(jumps) - 1; i >= 0; i-- {
-		path := jumps[i]
+	for i, path := range slices.Backward(jumps) {
 		switch {
 		case i < ind:
 			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
