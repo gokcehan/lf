@@ -606,6 +606,7 @@ func (ui *ui) echoerrf(format string, a ...any) {
 // file preview, but `previewer` now also supports non-regular files.
 type reg struct {
 	loading  bool
+	checking bool
 	volatile bool
 	loadTime time.Time
 	path     string
