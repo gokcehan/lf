@@ -2007,15 +2007,32 @@ func (nav *nav) currFileOrSelections() ([]string, error) {
 	return nil, errors.New("no file selected")
 }
 
+// calcSize returns the total size of the given directory. Symlinks pointing to
+// directories are resolved beforehand, since `copySize` does not follow them.
+func calcSize(f *file) (int64, error) {
+	path := f.path
+	if f.linkState == working {
+		var err error
+		path, err = filepath.EvalSymlinks(f.path)
+		if err != nil {
+			return 0, err
+		}
+	}
+
+	return copySize([]string{path})
+}
+
 func (nav *nav) calcDirSize() error {
 	calc := func(f *file) error {
-		if f.IsDir() {
-			total, err := copySize([]string{f.path})
-			if err != nil {
-				return err
-			}
-			f.dirSize = total
+		if !f.IsDir() {
+			return nil
 		}
+
+		total, err := calcSize(f)
+		if err != nil {
+			return err
+		}
+		f.dirSize = total
 		return nil
 	}
 
@@ -2028,8 +2045,10 @@ func (nav *nav) calcDirSize() error {
 	}
 
 	for sel := range nav.selections {
-		lstat, err := os.Lstat(sel)
-		if err != nil || !lstat.IsDir() {
+		// `os.Stat` is used instead of `os.Lstat` so that symlinks pointing to
+		// directories are not skipped.
+		stat, err := os.Stat(sel)
+		if err != nil || !stat.IsDir() {
 			continue
 		}
 		path, name := filepath.Dir(sel), filepath.Base(sel)
