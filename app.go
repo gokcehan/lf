@@ -740,14 +740,21 @@ func (app *app) watchDir(dir *dir) {
 		return
 	}
 
-	app.watch.add(dir.path)
+	paths := []string{dir.path}
 
 	// ensure dircounts are updated for child directories
 	for _, file := range dir.allFiles {
 		if file.IsDir() {
-			app.watch.add(file.path)
+			paths = append(paths, file.path)
 		}
 	}
+
+	// adding a watch blocks forever on an unresponsive filesystem
+	go func() {
+		for _, path := range paths {
+			app.watch.add(path)
+		}
+	}()
 }
 
 func (app *app) exportMode() {
