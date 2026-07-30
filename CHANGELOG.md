@@ -32,6 +32,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445). This also replaces the existing `roundbox` option.
 - The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 - `lf` will now automatically change to the parent directory if the current directory no longer exists and the `watch` option is enabled (#2424).
+- A new option `bidi` is added to display filenames containing right to left or Arabic characters in visual order (#2651).
 
 ### Fixed
 
