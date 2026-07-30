@@ -2,10 +2,8 @@ package main
 
 import (
 	"log"
-	"maps"
 	"os"
 	"path/filepath"
-	"slices"
 	"sync"
 	"time"
 
@@ -21,7 +19,7 @@ type watch struct {
 	dirChan   chan<- *dir
 	fileChan  chan<- *file
 	delChan   chan<- string
-	paths     map[string]bool
+	paths     map[string]os.FileInfo
 	pathsLock sync.Mutex
 }
 
@@ -33,7 +31,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
-		paths:    make(map[string]bool),
+		paths:    make(map[string]os.FileInfo),
 	}
 
 	return watch
@@ -78,13 +76,20 @@ func (watch *watch) add(path string) {
 		return
 	}
 
+	// the stat is kept so it is not repeated for every watched path on every event
+	stat, err := os.Stat(path)
+	if err != nil {
+		log.Printf("watch path %s: %s", path, err)
+		return
+	}
+
 	if err := watch.watcher.Add(path); err != nil {
 		log.Printf("watch path %s: %s", path, err)
 		return
 	}
 
 	watch.pathsLock.Lock()
-	watch.paths[path] = true
+	watch.paths[path] = stat
 	watch.pathsLock.Unlock()
 }
 
@@ -181,22 +186,24 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
+	// the kept stats tell which paths could be the same directory without asking the disk
+	var candidates []string
 	watch.pathsLock.Lock()
-	all := slices.Collect(maps.Keys(watch.paths))
+	for path, stat := range watch.paths {
+		if path == dir || os.SameFile(stat, dirStat) {
+			candidates = append(candidates, path)
+		}
+	}
 	watch.pathsLock.Unlock()
 
-	for _, path := range all {
+	for _, path := range candidates {
 		if path == dir {
 			paths = append(paths, path)
 			continue
 		}
 
-		stat, err := os.Stat(path)
-		if err != nil {
-			continue
-		}
-
-		if os.SameFile(stat, dirStat) {
+		// a kept stat can be out of date, so the match is confirmed
+		if stat, err := os.Stat(path); err == nil && os.SameFile(stat, dirStat) {
 			paths = append(paths, path)
 		}
 	}
