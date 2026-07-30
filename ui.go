@@ -400,6 +400,10 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
+		if gOpts.bidi {
+			// Keep the path logical and reorder only the filename shown on screen.
+			filename = filenameToVisual(filename)
+		}
 		spacing := maxFilenameWidth - displaywidth.String(filename)
 		if spacing > 0 {
 			filename += strings.Repeat(" ", spacing)
@@ -656,6 +660,10 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	var fname string
 	if curr := nav.currFile(); curr != nil {
 		fname = sanitizeName(filepath.Base(curr.path))
+		if gOpts.bidi {
+			// The prompt is display-only; keep curr.path in logical filesystem order.
+			fname = filenameToVisual(fname)
+		}
 	}
 
 	var prompt string

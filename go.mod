@@ -3,6 +3,7 @@ module github.com/gokcehan/lf
 go 1.25.0
 
 require (
+	github.com/benoitkugler/textprocessing v0.0.6
 	github.com/clipperhouse/displaywidth v0.11.0
 	github.com/djherbis/times v1.6.0
 	github.com/fsnotify/fsnotify v1.10.1
@@ -12,6 +13,7 @@ require (
 )
 
 require (
+	github.com/benoitkugler/textlayout v0.3.2 // indirect
 	github.com/clipperhouse/uax29/v2 v2.7.0 // indirect
 	github.com/gdamore/encoding v1.0.1 // indirect
 	github.com/lucasb-eyer/go-colorful v1.4.0 // indirect
