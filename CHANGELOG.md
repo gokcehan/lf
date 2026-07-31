@@ -61,10 +61,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Previews no longer flicker when the terminal height decreases (#2537).
 - Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 - Previews of modified files are now updated properly when the `preload` option is enabled (#2567).
-- Previews of files other than the current file are now reloaded immediately after being modified when the `watch` option is enabled (#2594).
+- Previews of files other than the current file are now reloaded immediately after being modified when the `watch` option is enabled (#2594) (#2602) (#2648).
 - The `loading...` message now shows for files that are reloading due to being modified (#2597).
-- Attempting to copy a directory into itself will now result in an error (#2608).
+- Attempting to copy a directory into itself will now result in an error (#2608) (#2623).
 - The permissions of state files (i.e. `files`/`history`/`marks`/`tags`) is now changed to only be accessible by the owner (#2612).
+- Broken symbolic links are no longer silently overwritten when moving files (#2619).
+- Using the `copy` or `cut` command with a path containing newline characters now results in an error instead of silently omitting the path (#2620).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
