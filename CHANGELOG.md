@@ -65,6 +65,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - The `loading...` message now shows for files that are reloading due to being modified (#2597).
 - Attempting to copy a directory into itself will now result in an error (#2608).
 - The permissions of state files (i.e. `files`/`history`/`marks`/`tags`) is now changed to only be accessible by the owner (#2612).
+- The `calcdirsize` command now calculates the size of the target directory for symbolic links instead of the size of the link itself (#2650).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 
