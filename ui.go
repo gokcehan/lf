@@ -660,7 +660,10 @@ func (ui *ui) drawPromptLine(nav *nav) {
 
 	var prompt string
 
-	prompt = strings.ReplaceAll(gOpts.promptfmt, "%u", gUser.Username)
+	// git style colored prompts contain hidden bytes that lf would print as extra characters
+	prompt = strings.ReplaceAll(gOpts.promptfmt, "\x01", "")
+	prompt = strings.ReplaceAll(prompt, "\x02", "")
+	prompt = strings.ReplaceAll(prompt, "%u", gUser.Username)
 	prompt = strings.ReplaceAll(prompt, "%h", gHostname)
 	prompt = strings.ReplaceAll(prompt, "%f", fname)
 
