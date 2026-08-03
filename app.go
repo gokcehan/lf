@@ -438,6 +438,8 @@ func (app *app) loop() {
 			}
 
 			app.ui.draw(app.nav)
+		case fn := <-app.nav.checkChan:
+			fn()
 		case r := <-app.nav.regChan:
 			if r.height != app.nav.height {
 				delete(app.nav.regCache, r.path)
@@ -727,14 +729,21 @@ func (app *app) watchDir(dir *dir) {
 		return
 	}
 
-	app.watch.add(dir.path)
+	paths := []string{dir.path}
 
 	// ensure dircounts are updated for child directories
 	for _, file := range dir.allFiles {
 		if file.IsDir() {
-			app.watch.add(file.path)
+			paths = append(paths, file.path)
 		}
 	}
+
+	// adding a watch blocks forever on an unresponsive filesystem
+	go func() {
+		for _, path := range paths {
+			app.watch.add(path)
+		}
+	}()
 }
 
 func (app *app) exportMode() {

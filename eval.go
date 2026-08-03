@@ -1594,7 +1594,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 
 		dir := app.nav.currDir()
 		app.nav.checkDir(dir)
-		if dir.loading {
+		// the directory is checked asynchronously, so show the file in the meantime
+		if (dir.loading || dir.checking) && !slices.ContainsFunc(dir.files, func(f *file) bool { return f.path == path }) {
 			dir.files = append(dir.files, &file{FileInfo: lstat})
 		}
 		dir.sel(filepath.Base(path), app.nav.height)
