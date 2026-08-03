@@ -138,6 +138,8 @@ func TestCmdEscape(t *testing.T) {
 		{`foo\tbar`, `foo\\tbar`},
 		{"foo\tbar", "foo\\\tbar"},
 		{`foo\`, `foo\\`},
+		{"foo\xffbar", "foo\xffbar"},
+		{"foo\u00a0bar", "foo\u00a0bar"},
 	}
 
 	for _, test := range tests {
@@ -163,6 +165,8 @@ func TestCmdUnescape(t *testing.T) {
 		{`foo\\tbar`, `foo\tbar`},
 		{"foo\\\tbar", "foo\tbar"},
 		{`foo\`, `foo\`},
+		{"foo\xffbar", "foo\xffbar"},
+		{"foo\u00a0bar", "foo\u00a0bar"},
 	}
 
 	for _, test := range tests {
@@ -190,6 +194,8 @@ func TestTokenize(t *testing.T) {
 		{`\"foo bar\"`, []string{`\"foo`, `bar\"`}},
 		{`:rename foo\ bar`, []string{":rename", `foo\ bar`}},
 		{`!dir "C:\Program Files"`, []string{"!dir", `"C:\Program Files"`}},
+		{"foo\xffbar", []string{"foo\xffbar"}},
+		{"foo\u00a0bar", []string{"foo\u00a0bar"}},
 	}
 
 	for _, test := range tests {

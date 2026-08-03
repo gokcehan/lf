@@ -244,29 +244,33 @@ func quoteString(s string) string {
 }
 
 func shellEscape(s string) string {
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
-		if strings.ContainsRune(" !\"$&'()*,:;<=>?@[\\]^`{|}", r) {
-			buf = append(buf, '\\')
+	var buf strings.Builder
+	buf.Grow(len(s))
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if strings.IndexByte(" !\"$&'()*,:;<=>?@[\\]^`{|}", c) >= 0 {
+			buf.WriteByte('\\')
 		}
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
-	return string(buf)
+	return buf.String()
 }
 
 func shellUnescape(s string) string {
+	var buf strings.Builder
+	buf.Grow(len(s))
 	esc := false
-	buf := make([]rune, 0, len(s))
-	for _, r := range s {
-		if r == '\\' && !esc {
+	for i := 0; i < len(s); i++ {
+		c := s[i]
+		if c == '\\' && !esc {
 			esc = true
 			continue
 		}
 		esc = false
-		buf = append(buf, r)
+		buf.WriteByte(c)
 	}
 	if esc {
-		buf = append(buf, '\\')
+		buf.WriteByte('\\')
 	}
-	return string(buf)
+	return buf.String()
 }
