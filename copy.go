@@ -162,6 +162,10 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 						}
 					}
 					nums <- info.Size()
+				case !info.Mode().IsRegular():
+					// skip pipes sockets and devices because copyFile opens them and blocks forever
+					errs <- fmt.Errorf("cannot copy irregular file %s (named pipe socket or device)", path)
+					nums <- info.Size()
 				default:
 					copyFile(path, newPath, preserve, info, nums, errs)
 				}
