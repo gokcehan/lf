@@ -66,7 +66,11 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 	if slices.Contains(preserve, "mode") {
 		dstMode = info.Mode()
 	}
-	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
+	flags := os.O_RDWR | os.O_CREATE | os.O_EXCL
+	if _, err := os.Lstat(dst); err == nil {
+		flags = os.O_RDWR | os.O_TRUNC
+	}
+	w, err := os.OpenFile(dst, flags, dstMode)
 	if err != nil {
 		errs <- err
 		return
