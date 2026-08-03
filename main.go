@@ -349,7 +349,11 @@ Options:
 		if term.IsTerminal(int(os.Stdout.Fd())) {
 			lines := strings.Split(resp, "\n")
 			for i := range lines {
-				lines[i] = sanitizeName(lines[i])
+				cells := strings.Split(lines[i], "\t")
+				for j := range cells {
+					cells[j] = sanitizeName(cells[j])
+				}
+				lines[i] = strings.Join(cells, "\t")
 			}
 			resp = strings.Join(lines, "\n")
 		}
