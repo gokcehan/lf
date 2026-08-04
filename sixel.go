@@ -19,6 +19,14 @@ type sixelScreen struct {
 func (sxs *sixelScreen) clearSixel(win *win, screen tcell.Screen, filePath string) {
 	if sxs.lastFile != "" && (filePath != sxs.lastFile || *win != sxs.lastWin || sxs.forceClear) {
 		screen.LockRegion(sxs.lastWin.x, sxs.lastWin.y, sxs.lastWin.w, sxs.lastWin.h, false)
+		// tmux sixel workaround: emit ECH per row so tmux clears the image overlay
+		if os.Getenv("TMUX") != "" {
+			var b strings.Builder
+			for y := sxs.lastWin.y; y < sxs.lastWin.y+sxs.lastWin.h; y++ {
+				fmt.Fprintf(&b, "\033[%d;%dH\033[%dX", y+1, sxs.lastWin.x+1, sxs.lastWin.w)
+			}
+			fmt.Fprint(os.Stderr, "\0337"+b.String()+"\0338")
+		}
 	}
 }
 
