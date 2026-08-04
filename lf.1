@@ -279,6 +279,7 @@ The following options can be used to customize the behavior of lf:
 .EX
 anchorfind        bool      (default true)
 autoquit          bool      (default true)
+bidi              bool      (default false)
 borderfmt         string    (default \(dq\(rs033[0m\(dq)
 borderstyle       string    (default \(aqbox\(aq)
 cleaner           string    (default \(aq\(aq)
@@ -815,6 +816,12 @@ from the beginning of filenames, otherwise, it can match at an arbitrary
 position.
 .SS autoquit (bool) (default true)
 Automatically quit the server when there are no clients left connected.
+.SS bidi (bool) (default false)
+When this option is enabled, filenames containing right to left or
+Arabic characters are reordered to visual order for display, along with
+Arabic presentation forms and mandatory ligatures.
+Only the displayed text is affected, filesystem paths always retain
+their original logical order.
 .SS borderfmt (string) (default \f[CR]\(rs033[0m\f[R])
 Format string of border characters.
 .SS borderstyle (string) (default \f[CR]box\f[R])

@@ -15,6 +15,7 @@ import (
 	"strings"
 	"unicode"
 
+	"github.com/benoitkugler/textprocessing/fribidi"
 	"github.com/clipperhouse/displaywidth"
 )
 
@@ -422,6 +423,39 @@ func getFileExtension(file fs.FileInfo) string {
 		return ""
 	}
 	return filepath.Ext(file.Name())
+}
+
+// filenameToVisual converts a logical filename to the visual order expected by
+// a cell terminal. FriBidi also applies Arabic presentation forms and mandatory
+// ligatures, since terminal renderers cannot reliably shape a run after its
+// bidirectional reordering. This must only be used for display; filesystem paths
+// must always retain their original logical order.
+func filenameToVisual(filename string) string {
+	// Names without any bidirectional character are already in visual order,
+	// so avoid the cost of reordering them on every redraw.
+	if !strings.ContainsFunc(filename, isBidiChar) {
+		return filename
+	}
+
+	baseDir := fribidi.ParType(fribidi.ON)
+	visual, _ := fribidi.LogicalToVisual(fribidi.DefaultFlags, []rune(filename), &baseDir)
+
+	// Ligatures are substituted in place, leaving a zero width no-break space
+	// as filler which terminals are not required to render invisibly.
+	return strings.ReplaceAll(string(visual.Str), "\ufeff", "")
+}
+
+// isBidiChar reports whether a rune belongs to a range that can carry a right
+// to left or Arabic bidirectional class.
+func isBidiChar(r rune) bool {
+	return r >= 0x0590 && (r <= 0x08ff || // Hebrew, Arabic, Syriac, Thaana, NKo, Samaritan
+		r >= 0xfb1d && r <= 0xfdff || // Hebrew and Arabic presentation forms A
+		r >= 0xfe70 && r <= 0xfeff || // Arabic presentation forms B
+		r >= 0x200e && r <= 0x200f || // LRM, RLM
+		r >= 0x202a && r <= 0x202e || // embeddings and overrides
+		r >= 0x2066 && r <= 0x2069 || // isolates
+		r >= 0x10800 && r <= 0x10fff || // RTL historic scripts
+		r >= 0x1e800 && r <= 0x1eeff) // Adlam, Arabic mathematical
 }
 
 // truncateFilename truncates a filename at a given position.
