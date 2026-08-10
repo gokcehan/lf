@@ -10,6 +10,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+## [r42](https://github.com/gokcehan/lf/releases/tag/r42)
+
 ### Changed
 
 - The key `<backspace2>` has been renamed to `<backspace>` for `map` keybindings (#2286).
@@ -28,16 +30,16 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Key combinations such as `<c-h>` and `<backspace>` can now be distinguished when supported by the terminal (#2286) (#2496).
 - A new field `.All` is added to the `ruler` file to display the number of all files (i.e. visible + hidden) in the current working directory (#2376).
 - A new option `numbercursorfmt` is added to further customize the appearance of line numbers (#2395).
-- A new option `terminalcursor` is added to customize the appearance of the terminal cursor (#2441).
-- A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445). This also replaces the existing `roundbox` option.
 - The `loading...` message delay of 100 milliseconds for file previews is now applied to directories as well (#2410).
 - `lf` will now automatically change to the parent directory if the current directory no longer exists and the `watch` option is enabled (#2424).
+- A new option `terminalcursor` is added to customize the appearance of the terminal cursor (#2441).
+- A new option `borderstyle` is added to control whether `drawbox` draws an outline, separators, or both (#2445). This also replaces the existing `roundbox` option.
 
 ### Fixed
 
 - Previews are now cleaned when changing to an empty directory (#2369).
-- Previews are now correctly updated on `visual-change` (#2373).
 - The `dircounts` indicator for errors is changed back to `!` instead of `?` (#2372).
+- Previews are now correctly updated on `visual-change` (#2373).
 - The `select` command can now select files immediately after creation as part of a script (#2377).
 - The `on-load` hook command now ignores `.git` directories to reduce flicker and repeated `on-load` triggers (#2382).
 - Preview messages like `empty` or `loading...` have their alignment improved (#2400).
@@ -59,11 +61,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Previews no longer flicker when the terminal height decreases (#2537).
 - Symbolic linked directories are now updated properly when the `watch` option is enabled (#2550).
 - Previews of modified files are now updated properly when the `preload` option is enabled (#2567).
-- Previews of files other than the current file are now reloaded immediately after being modified when the `watch` option is enabled (#2594).
+- Previews of files other than the current file are now reloaded immediately after being modified when the `watch` option is enabled (#2594) (#2602) (#2648).
 - The `loading...` message now shows for files that are reloading due to being modified (#2597).
-- Attempting to copy a directory into itself will now result in an error (#2608).
+- Attempting to copy a directory into itself will now result in an error (#2608) (#2623).
 - The permissions of state files (i.e. `files`/`history`/`marks`/`tags`) is now changed to only be accessible by the owner (#2612).
 - The `calcdirsize` command now calculates the size of the target directory for symbolic links instead of the size of the link itself (#2650).
+- Broken symbolic links are no longer silently overwritten when moving files (#2619).
+- Using the `copy` or `cut` command with a path containing newline characters now results in an error instead of silently omitting the path (#2620).
 
 ## [r41](https://github.com/gokcehan/lf/releases/tag/r41)
 

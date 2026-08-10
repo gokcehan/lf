@@ -660,7 +660,10 @@ func (ui *ui) drawPromptLine(nav *nav) {
 
 	var prompt string
 
-	prompt = strings.ReplaceAll(gOpts.promptfmt, "%u", gUser.Username)
+	// git style colored prompts contain hidden bytes that lf would print as extra characters
+	prompt = strings.ReplaceAll(gOpts.promptfmt, "\x01", "")
+	prompt = strings.ReplaceAll(prompt, "\x02", "")
+	prompt = strings.ReplaceAll(prompt, "%u", gUser.Username)
 	prompt = strings.ReplaceAll(prompt, "%h", gHostname)
 	prompt = strings.ReplaceAll(prompt, "%f", fname)
 
@@ -1028,9 +1031,12 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 
 	if gOpts.preview {
 		if curr.isPreviewable() {
-			if reg, ok := nav.regCache[curr.path]; ok {
-				win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
+			reg, ok := nav.regCache[curr.path]
+			if !ok {
+				// the shown file can lose its cache entry, e.g. a save that deletes and recreates it
+				reg = nav.loadReg(curr.path, false)
 			}
+			win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""
 			dir := nav.getDir(curr.path)
