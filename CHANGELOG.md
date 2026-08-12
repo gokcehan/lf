@@ -10,6 +10,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Fixed
+
+- Dead client connections no longer prevent the `quit` server command from terminating the server (#2643).
+- Readline markers in `promptfmt` are no longer rendered as visible characters (#2657).
+
 ## [r42](https://github.com/gokcehan/lf/releases/tag/r42)
 
 ### Changed
