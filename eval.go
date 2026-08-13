@@ -1597,7 +1597,13 @@ func (e *callExpr) eval(app *app, _ []string) {
 		if dir.loading {
 			dir.files = append(dir.files, &file{FileInfo: lstat})
 		}
-		dir.sel(filepath.Base(path), app.nav.height)
+		name := filepath.Base(path)
+		for i, f := range dir.files {
+			if f.Name() == name {
+				app.nav.move(i)
+				break
+			}
+		}
 		app.ui.loadFile(app, true)
 	case "source":
 		if len(e.args) != 1 {
