@@ -225,10 +225,11 @@ func main() {
 		f := flag.CommandLine.Output()
 		fmt.Fprintf(f, `lf - Terminal file manager
 
-Usage:  %s [options] [cd-or-select-path]
+Usage: %s [options] [path]
 
-  cd-or-select-path
-        set the initial dir or file selection to the given argument
+Arguments:
+  path
+        set the initial directory or select the given file
 
 Options:
 `, os.Args[0])

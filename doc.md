@@ -20,7 +20,7 @@ lf - terminal file manager
 [**-server**]
 [**-single**]
 [**-version**]
-[*cd-or-select-path*]
+[*path*]
 
 # DESCRIPTION
 
@@ -36,7 +36,7 @@ A man page with the same content is also available in the repository at https://
 
 ## POSITIONAL ARGUMENTS
 
-**cd-or-select-path**
+**path**
 
 Set the starting location. If *path* is a directory, start in there. If it's a file, start in the file's parent directory and select the file. When no *path* is supplied, lf uses the current directory. Only accepts one argument.
 

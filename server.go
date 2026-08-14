@@ -74,6 +74,8 @@ func manage() {
 			for id, c2 := range connList {
 				if _, err := fmt.Fprintln(c2, cmd.msg); err != nil {
 					echoerrf(cmd.c, "failed to send command to client %v: %s", id, err)
+					c2.Close()
+					delete(connList, id)
 				}
 			}
 		case "send":
@@ -104,6 +106,13 @@ func manage() {
 				echoerrf(cmd.c, "failed to read query response from client %v: %s", cmd.id, s2.Err())
 			}
 		case "quit":
+			for id, c := range connList {
+				// an empty line is ignored by clients and exposes dead connections
+				if _, err := fmt.Fprintln(c, ""); err != nil {
+					c.Close()
+					delete(connList, id)
+				}
+			}
 			if len(connList) == 0 {
 				gQuitChan <- struct{}{}
 				gListener.Close()

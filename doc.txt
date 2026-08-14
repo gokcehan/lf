@@ -7,7 +7,7 @@ SYNOPSIS
 lf [-command command] [-config path] [-cpuprofile path] [-doc] [-help]
 [-last-dir-path path] [-log path] [-memprofile path] [-print-last-dir]
 [-print-selection] [-remote command] [-selection-path path] [-server]
-[-single] [-version] [cd-or-select-path]
+[-single] [-version] [path]
 
 DESCRIPTION
 
@@ -26,7 +26,7 @@ OPTIONS
 
 POSITIONAL ARGUMENTS
 
-cd-or-select-path
+path
 
     Set the starting location. If path is a directory, start in there.
     If it's a file, start in the file's parent directory and select the
