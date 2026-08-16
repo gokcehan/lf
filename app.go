@@ -411,6 +411,14 @@ func (app *app) loop() {
 			}
 			app.nav.dirCache[d.path] = d
 
+			// load the details of each mount point in the background
+			for _, path := range d.deferred {
+				go func(path string) {
+					app.nav.fileChan <- newFile(path)
+				}(path)
+			}
+			d.deferred = nil
+
 			app.nav.position()
 
 			if curr := app.nav.currFile(); curr != nil {

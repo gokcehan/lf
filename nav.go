@@ -133,32 +133,81 @@ func (file *file) isPreviewable() bool {
 
 type fakeStat struct {
 	name string
+	mode os.FileMode
 }
 
 func (fs *fakeStat) Name() string       { return fs.name }
 func (fs *fakeStat) Size() int64        { return 0 }
-func (fs *fakeStat) Mode() os.FileMode  { return os.FileMode(0o000) }
+func (fs *fakeStat) Mode() os.FileMode  { return fs.mode }
 func (fs *fakeStat) ModTime() time.Time { return time.Unix(0, 0) }
-func (fs *fakeStat) IsDir() bool        { return false }
+func (fs *fakeStat) IsDir() bool        { return fs.mode.IsDir() }
 func (fs *fakeStat) Sys() any           { return nil }
 
-func readdir(path string) ([]*file, error) {
-	f, err := os.Open(path)
-	if err != nil {
-		return nil, err
-	}
-	names, err := f.Readdirnames(-1)
-	f.Close()
+// escape codes used for these characters in the mount table
+var gMountEscapes = strings.NewReplacer(`\040`, " ", `\011`, "\t", `\012`, "\n", `\134`, `\`)
 
-	files := make([]*file, 0, len(names))
-	for _, fname := range names {
-		file := newFile(filepath.Join(path, fname))
+// mountsIn returns the mount points directly inside the given directory
+func mountsIn(dir string) map[string]bool {
+	data, err := os.ReadFile("/proc/self/mounts")
+	if err != nil {
+		return nil
+	}
+
+	var mounts map[string]bool
+	for _, line := range strings.Split(string(data), "\n") {
+		start := strings.IndexByte(line, ' ')
+		if start < 0 {
+			continue
+		}
+		rest := line[start+1:]
+		end := strings.IndexByte(rest, ' ')
+		if end < 0 {
+			continue
+		}
+		path := gMountEscapes.Replace(rest[:end])
+		if filepath.Dir(path) != dir {
+			continue
+		}
+		if mounts == nil {
+			mounts = make(map[string]bool)
+		}
+		mounts[path] = true
+	}
+	return mounts
+}
+
+func readdir(path string) ([]*file, []string, error) {
+	mounts := mountsIn(path)
+
+	entries, err := os.ReadDir(path)
+
+	files := make([]*file, 0, len(entries))
+	var deferred []string
+	for _, entry := range entries {
+		fpath := filepath.Join(path, entry.Name())
+		if entry.IsDir() && mounts[fpath] {
+			info := &fakeStat{name: entry.Name(), mode: entry.Type()}
+			files = append(files, &file{
+				FileInfo:   info,
+				linkState:  notLink,
+				path:       fpath,
+				dirCount:   -1,
+				dirSize:    -1,
+				accessTime: time.Unix(0, 0),
+				birthTime:  time.Unix(0, 0),
+				changeTime: time.Unix(0, 0),
+				ext:        getFileExtension(info),
+			})
+			deferred = append(deferred, fpath)
+			continue
+		}
+		file := newFile(fpath)
 		if !os.IsNotExist(file.err) {
 			files = append(files, file)
 		}
 	}
 
-	return files, err
+	return files, deferred, err
 }
 
 type dir struct {
@@ -182,10 +231,11 @@ type dir struct {
 	sortignorecase bool       // sortignorecase value from last sort
 	sortignoredia  bool       // sortignoredia value from last sort
 	noPerm         bool       // whether lf has no permission to open the directory
+	deferred       []string   // mount points with details still to load
 }
 
 func newDir(path string) *dir {
-	files, err := readdir(path)
+	files, deferred, err := readdir(path)
 	if err != nil {
 		log.Printf("reading directory: %s", err)
 	}
@@ -197,6 +247,7 @@ func newDir(path string) *dir {
 		allFiles:     files,
 		visualAnchor: -1,
 		noPerm:       os.IsPermission(err),
+		deferred:     deferred,
 	}
 }
 
