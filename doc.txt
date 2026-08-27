@@ -267,6 +267,7 @@ The following options can be used to customize the behavior of lf:
 
     anchorfind        bool      (default true)
     autoquit          bool      (default true)
+    bidi              bool      (default false)
     borderfmt         string    (default "\033[0m")
     borderstyle       string    (default 'box')
     cleaner           string    (default '')
@@ -909,6 +910,14 @@ position.
 autoquit (bool) (default true)
 
 Automatically quit the server when there are no clients left connected.
+
+bidi (bool) (default false)
+
+When this option is enabled, filenames containing right to left or
+Arabic characters are reordered to visual order for display, along with
+Arabic presentation forms and mandatory ligatures. Only the displayed
+text is affected, filesystem paths always retain their original logical
+order.
 
 borderfmt (string) (default \033[0m)
 
