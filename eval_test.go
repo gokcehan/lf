@@ -661,3 +661,21 @@ func TestApplyLocalBoolOpt(t *testing.T) {
 		}
 	}
 }
+
+func TestParseMalformed(t *testing.T) {
+	inputs := []string{
+		"set",
+		"map",
+		"cmd foo {{ echo hello",
+		`set shell "unclosed`,
+		`set shell 'unclosed`,
+		"",
+		"# comment only",
+	}
+
+	for _, inp := range inputs {
+		p := newParser(strings.NewReader(inp))
+		for p.parse() {
+		}
+	}
+}
