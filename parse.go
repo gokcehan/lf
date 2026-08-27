@@ -237,6 +237,10 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 			if s.typ != tokenSemicolon {
+				if s.typ != tokenIdent {
+					p.err = fmt.Errorf("set %s: unexpected %q, value must be quoted", opt, s.tok)
+					return nil
+				}
 				val = s.tok
 				s.scan()
 			}
@@ -261,6 +265,10 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 			if s.typ != tokenSemicolon {
+				if s.typ != tokenIdent {
+					p.err = fmt.Errorf("setlocal %s: unexpected %q, value must be quoted", opt, s.tok)
+					return nil
+				}
 				val = s.tok
 				s.scan()
 			}
@@ -410,5 +418,10 @@ func (p *parser) parseExpr() expr {
 
 func (p *parser) parse() bool {
 	p.expr = p.parseExpr()
+	if p.err != nil {
+		// never evaluate an expression that produced a parse error
+		p.expr = nil
+		return false
+	}
 	return p.expr != nil
 }

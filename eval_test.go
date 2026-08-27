@@ -661,3 +661,21 @@ func TestApplyLocalBoolOpt(t *testing.T) {
 		}
 	}
 }
+
+func TestParseSetValueQuoting(t *testing.T) {
+	for _, inp := range []string{`set dupfilefmt %f.~%n~`, `setlocal /tmp promptfmt $x`} {
+		p := newParser(strings.NewReader(inp))
+		if p.parse() {
+			t.Errorf("parse(%q) evaluated %v despite error %v", inp, p.expr, p.err)
+		}
+		if p.err == nil {
+			t.Errorf("parse(%q) expected error", inp)
+		}
+	}
+	for _, inp := range []string{`set dupfilefmt "%f.~%n~"`, `set hidden!`, "set hidden"} {
+		p := newParser(strings.NewReader(inp))
+		if !p.parse() || p.err != nil {
+			t.Errorf("parse(%q) rejected: %v", inp, p.err)
+		}
+	}
+}
