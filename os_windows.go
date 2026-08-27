@@ -123,8 +123,8 @@ func detachedCommand(name string, arg ...string) *exec.Cmd {
 }
 
 func shellCommand(s string, args []string) *exec.Cmd {
-	// Windows CMD requires special handling to deal with quoted arguments
-	if strings.ToLower(gOpts.shell) == "cmd" {
+	// Windows cmd requires special handling to deal with quoted arguments.
+	if gOpts.shell == "cmd" {
 		var builder strings.Builder
 		builder.WriteString(s)
 		for _, arg := range args {
@@ -221,8 +221,8 @@ func errCrossDevice(err error) bool {
 }
 
 func quoteString(s string) string {
-	// Windows CMD requires special handling to deal with quoted arguments
-	if strings.ToLower(gOpts.shell) == "cmd" {
+	// Windows cmd requires special handling to deal with quoted arguments.
+	if gOpts.shell == "cmd" {
 		return fmt.Sprintf(`"%s"`, s)
 	}
 	return s
