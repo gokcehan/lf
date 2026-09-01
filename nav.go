@@ -1954,11 +1954,7 @@ func (nav *nav) writeTags() error {
 
 func (nav *nav) currDir() *dir {
 	if len(nav.dirPaths) == 0 {
-		wd, err := os.Getwd()
-		if err != nil {
-			log.Printf("getting current directory: %s", err)
-		}
-		nav.loadDirs(wd)
+		nav.loadDirs(gInitialWd)
 	}
 
 	path := nav.dirPaths[len(nav.dirPaths)-1]

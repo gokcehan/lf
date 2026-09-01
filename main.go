@@ -43,6 +43,7 @@ var (
 	gConfigPath     string
 	gCommands       arrayFlag
 	gVersion        string
+	gInitialWd      string
 )
 
 func (a *arrayFlag) Set(v string) error {
@@ -74,11 +75,7 @@ func exportEnvVars() {
 	os.Setenv("PAGER", envPager)
 	os.Setenv("SHELL", envShell)
 
-	dir, err := os.Getwd()
-	if err != nil {
-		fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
-	}
-	os.Setenv("OLDPWD", dir)
+	os.Setenv("OLDPWD", gInitialWd)
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {
@@ -371,11 +368,15 @@ Options:
 
 		gClientID = os.Getpid()
 
+		var err error
+		gInitialWd, err = os.Getwd()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
+		}
+
 		switch flag.NArg() {
 		case 0:
-			_, err := os.Getwd()
 			if err != nil {
-				fmt.Fprintf(os.Stderr, "getting current directory: %s\n", err)
 				os.Exit(2)
 			}
 		case 1:
