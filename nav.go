@@ -550,6 +550,8 @@ func (nav *nav) checkDir(dir *dir) {
 		dir.sortignoredia != getSortIgnoreDia(dir.path):
 		dir.loading = true
 		sd := *dir
+		// sort a copy to keep the cursor name intact
+		sd.allFiles = slices.Clone(dir.allFiles)
 		go func() {
 			sd.sort()
 			sd.loading = false
