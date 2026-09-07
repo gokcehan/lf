@@ -104,6 +104,11 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 
 	go func() {
 		dirInfos := make(map[string]os.FileInfo)
+		type dirMode struct {
+			path string
+			mode os.FileMode
+		}
+		var dirModes []dirMode
 
 		for _, src := range srcs {
 			file := filepath.Base(src)
@@ -148,6 +153,14 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					}
 					if err := os.MkdirAll(newPath, dstMode); err != nil {
 						errs <- fmt.Errorf("mkdir: %w", err)
+					} else if stat, err := os.Stat(newPath); err != nil {
+						errs <- fmt.Errorf("stat: %w", err)
+					} else if stat.Mode()&0o300 != 0o300 {
+						// open the directory for writing until its content is copied
+						dirModes = append(dirModes, dirMode{newPath, stat.Mode()})
+						if err := os.Chmod(newPath, stat.Mode()|0o300); err != nil {
+							errs <- fmt.Errorf("chmod: %w", err)
+						}
 					}
 					if slices.Contains(preserve, "timestamps") {
 						dirInfos[newPath] = info
@@ -177,6 +190,13 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			mtime := info.ModTime()
 			if err := os.Chtimes(path, atime, mtime); err != nil {
 				errs <- err
+			}
+		}
+
+		// restore the modes of directories that were opened for writing
+		for _, d := range slices.Backward(dirModes) {
+			if err := os.Chmod(d.path, d.mode); err != nil {
+				errs <- fmt.Errorf("chmod: %w", err)
 			}
 		}
 
