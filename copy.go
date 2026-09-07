@@ -81,6 +81,13 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 		return
 	}
 
+	// OpenFile reduces the given mode by the umask
+	if slices.Contains(preserve, "mode") {
+		if err := w.Chmod(info.Mode() &^ (os.ModeSetuid | os.ModeSetgid)); err != nil {
+			errs <- err
+		}
+	}
+
 	if err := w.Close(); err != nil {
 		errs <- err
 		if err = os.Remove(dst); err != nil {
