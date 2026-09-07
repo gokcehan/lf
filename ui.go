@@ -647,8 +647,9 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	dir := nav.currDir()
 	pwd := sanitizeName(dir.path)
 
-	if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
-		pwd = filepath.Join("~", after)
+	// shorten the home directory itself and paths inside
+	if rel, err := filepath.Rel(gUser.HomeDir, pwd); err == nil && filepath.IsLocal(rel) {
+		pwd = filepath.Join("~", rel)
 	}
 
 	sep := string(filepath.Separator)
