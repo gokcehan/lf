@@ -95,6 +95,14 @@ func (app *app) quit() {
 	}
 }
 
+// requestQuit signals the main loop to quit and never blocks when a request is already pending.
+func (app *app) requestQuit() {
+	select {
+	case app.quitChan <- struct{}{}:
+	default:
+	}
+}
+
 func (app *app) readFile(path string) {
 	log.Printf("reading file: %s", path)
 

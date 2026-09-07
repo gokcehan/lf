@@ -1046,7 +1046,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 
 	switch e.name {
 	case "quit":
-		app.quitChan <- struct{}{}
+		app.requestQuit()
 	case "up":
 		if app.nav.up(e.count) {
 			app.ui.loadFile(app, true)
@@ -1111,7 +1111,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		} else {
 			if gSelectionPath != "" || gPrintSelection {
 				app.selectionOut, _ = app.nav.currFileOrSelections()
-				app.quitChan <- struct{}{}
+				app.requestQuit()
 				return
 			}
 
