@@ -1305,6 +1305,9 @@ func listJumps(jumps []string, ind int) string {
 	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
 	for i, path := range slices.Backward(jumps) {
+		if strings.ContainsAny(path, "\n\r\t") {
+			continue
+		}
 		switch {
 		case i < ind:
 			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
@@ -1358,7 +1361,7 @@ func listFilesInCurrDir(nav *nav) string {
 
 	b := new(strings.Builder)
 	for _, file := range dir.files {
-		if strings.ContainsAny(file.path, "\n\r") {
+		if strings.ContainsAny(file.path, "\n\r\t") {
 			continue
 		}
 		fmt.Fprintln(b, file.path)
