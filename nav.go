@@ -163,6 +163,7 @@ func readdir(path string) ([]*file, error) {
 
 type dir struct {
 	loading        bool       // whether directory is loading from disk
+	checking       bool       // whether directory is being checked for changes
 	loadTime       time.Time  // last load time
 	ind            int        // 0-based index of current entry in dir.files
 	pos            int        // 0-based cursor row in directory window
@@ -453,6 +454,7 @@ type nav struct {
 	preloadChan     chan string
 	previewChan     chan string
 	dirChan         chan *dir
+	checkChan       chan func()
 	regChan         chan *reg
 	fileChan        chan *file
 	delChan         chan string
@@ -510,11 +512,21 @@ func (nav *nav) getDir(path string) *dir {
 }
 
 func (nav *nav) checkDir(dir *dir) {
-	if dir.loading {
+	if dir.loading || dir.checking {
 		return
 	}
 
-	s, err := os.Stat(dir.path)
+	// os.Stat can block forever on an unresponsive filesystem, so keep it off the ui goroutine
+	dir.checking = true
+	go func() {
+		s, err := os.Stat(dir.path)
+		nav.checkChan <- func() { nav.checkedDir(dir, s, err) }
+	}()
+}
+
+func (nav *nav) checkedDir(dir *dir, s os.FileInfo, err error) {
+	dir.checking = false
+
 	if err != nil {
 		log.Printf("getting directory info: %s", err)
 		return
@@ -586,6 +598,7 @@ func newNav(ui *ui) *nav {
 		preloadChan:     make(chan string, 1024),
 		previewChan:     make(chan string, 1024),
 		dirChan:         make(chan *dir),
+		checkChan:       make(chan func()),
 		regChan:         make(chan *reg),
 		fileChan:        make(chan *file),
 		delChan:         make(chan string),
@@ -989,7 +1002,21 @@ func (nav *nav) loadReg(path string, volatile bool) *reg {
 }
 
 func (nav *nav) checkReg(reg *reg) {
-	s, err := os.Stat(reg.path)
+	if reg.checking {
+		return
+	}
+
+	// os.Stat can block forever on an unresponsive filesystem, so keep it off the ui goroutine
+	reg.checking = true
+	go func() {
+		s, err := os.Stat(reg.path)
+		nav.checkChan <- func() { nav.checkedReg(reg, s, err) }
+	}()
+}
+
+func (nav *nav) checkedReg(reg *reg, s os.FileInfo, err error) {
+	reg.checking = false
+
 	if err != nil {
 		return
 	}
@@ -1584,7 +1611,7 @@ func (nav *nav) rename() error {
 	dir := nav.getDir(filepath.Dir(newPath))
 	nav.checkDir(dir)
 
-	if dir.loading {
+	if dir.loading || dir.checking {
 		for i := range dir.allFiles {
 			if dir.allFiles[i].path == oldPath {
 				dir.allFiles[i] = &file{FileInfo: lstat}
