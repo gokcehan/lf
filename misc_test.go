@@ -529,9 +529,9 @@ func TestReadLines(t *testing.T) {
 		{"foo\r\n\000\r\nbar\r\n", 10, nil, true, false},
 		{"\033P\033\\", 10, []string{"\033P\033\\"}, false, true},
 		{"\033Pq\"1;1;1;1#0@\033\\", 10, []string{"\033Pq\"1;1;1;1#0@\033\\"}, false, true},
-		{"\033P\000\033\\", 10, []string{"\033P\000\033\\"}, false, true},
-		{"\033P\n\033\\", 10, []string{"\033P\n\033\\"}, false, true},
-		{"\033P\r\n\033\\", 10, []string{"\033P\r\n\033\\"}, false, true},
+		{"\033P\000\033\\", 10, []string{"\033\\"}, false, false},
+		{"\033P\n\033\\", 10, []string{"\033P\033\\"}, false, true},
+		{"\033P\r\n\033\\", 10, []string{"\033P\033\\"}, false, true},
 		{"\033P\033\\\033P\033\\", 10, []string{"\033P\033\\", "\033P\033\\"}, false, true},
 		{"foo\033P\033\\bar", 10, []string{"foo", "\033P\033\\", "bar"}, false, true},
 		{"foo\033P\033\\bar\033P\033\\baz", 10, []string{"foo", "\033P\033\\", "bar", "\033P\033\\", "baz"}, false, true},
@@ -541,6 +541,10 @@ func TestReadLines(t *testing.T) {
 		{"foo\nbar\nbaz", 3, []string{"foo", "bar", "baz"}, false, false},
 		{"foo\nbar\nbaz\n", 3, []string{"foo", "bar", "baz"}, false, false},
 		{"foo\nbar\033P\033\\", 3, []string{"foo", "bar", "\033P\033\\"}, false, true},
+		// Inside the DCS body, ESC must be followed by '\\' (ST) for the
+		// frame to be accepted. Any other byte aborts, so an attacker
+		// cannot embed CSI/OSC/nested-DCS through the sixel path.
+		{"\033P\033]52;c;x\033\\", 10, []string{"52;c;x\033\\"}, false, false},
 	}
 
 	for _, test := range tests {

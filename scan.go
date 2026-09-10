@@ -242,7 +242,7 @@ scan:
 						oct = append(oct, s.chr)
 						s.next()
 					}
-					n, err := strconv.ParseInt(string(oct), 8, 0)
+					n, err := strconv.ParseUint(string(oct), 8, 8)
 					if err != nil {
 						log.Printf("scanning: %s", err)
 					}

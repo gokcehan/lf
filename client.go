@@ -7,11 +7,13 @@ import (
 	"log"
 	"net"
 	"os"
+	"slices"
 	"strings"
 	"sync"
 	"time"
 
 	"github.com/gdamore/tcell/v3"
+	"golang.org/x/term"
 )
 
 type State struct {
@@ -75,18 +77,40 @@ func run() {
 		writeSelection(gSelectionPath, app.selectionOut)
 	}
 
-	if gPrintLastDir {
-		fmt.Println(app.nav.currDir().path)
-	}
+	if gPrintLastDir || gPrintSelection {
+		stdoutIsTerminal := term.IsTerminal(int(os.Stdout.Fd()))
 
-	if gPrintSelection && len(app.selectionOut) > 0 {
-		for _, file := range app.selectionOut {
-			fmt.Println(file)
+		if gPrintLastDir {
+			printPath("last-dir", app.nav.currDir().path, stdoutIsTerminal)
+		}
+
+		if gPrintSelection {
+			for _, file := range app.selectionOut {
+				printPath("selection", file, stdoutIsTerminal)
+			}
 		}
 	}
 }
 
+// printPath prints path for -print-last-dir / -print-selection. Newlines are
+// rejected unconditionally (frame integrity for line-oriented consumers);
+// control bytes are stripped only when stdout is a terminal.
+func printPath(label, path string, stdoutIsTerminal bool) {
+	if strings.ContainsAny(path, "\n\r") {
+		log.Printf("%s: skipping path with newline: %q", label, path)
+		return
+	}
+	if stdoutIsTerminal {
+		path = sanitizeName(path)
+	}
+	fmt.Println(path)
+}
+
 func writeLastDir(filename, lastDir string) {
+	if strings.ContainsAny(lastDir, "\n\r") {
+		log.Printf("last-dir: path contains newline: %q", lastDir)
+		return
+	}
 	f, err := os.Create(filename)
 	if err != nil {
 		log.Printf("opening last dir file: %s", err)
@@ -108,7 +132,14 @@ func writeSelection(filename string, selection []string) {
 	}
 	defer f.Close()
 
-	_, err = f.WriteString(strings.Join(selection, "\n"))
+	filtered := slices.DeleteFunc(slices.Clone(selection), func(s string) bool {
+		if strings.ContainsAny(s, "\n\r") {
+			log.Printf("selection: skipping path with newline: %q", s)
+			return true
+		}
+		return false
+	})
+	_, err = f.WriteString(strings.Join(filtered, "\n"))
 	if err != nil {
 		log.Printf("writing selection file: %s", err)
 	}
@@ -120,16 +151,17 @@ func readExpr() <-chan expr {
 	go func() {
 		duration := 100 * time.Millisecond
 
-		c, err := net.Dial(gSocketProt, gSocketPath)
+		c, err := net.Dial("unix", gSocketPath)
 		for err != nil {
 			log.Printf("connecting server: %s", err)
 			time.Sleep(duration)
 			duration *= 2
-			c, err = net.Dial(gSocketProt, gSocketPath)
+			c, err = net.Dial("unix", gSocketPath)
 		}
 
 		if _, err := fmt.Fprintf(c, "conn %d\n", gClientID); err != nil {
-			log.Fatalf("registering with server: %s", err)
+			log.Printf("registering with server: %s", err)
+			return
 		}
 
 		ch <- &callExpr{"sync", nil, 1}
@@ -148,7 +180,8 @@ func readExpr() <-chan expr {
 				state := gState.data[rest]
 				gState.mutex.Unlock()
 				if _, err := fmt.Fprintln(c, state); err != nil {
-					log.Fatalf("sending response to server: %s", err)
+					log.Printf("sending response to server: %s", err)
+					return
 				}
 			} else {
 				p := newParser(strings.NewReader(s.Text()))
@@ -169,7 +202,7 @@ func readExpr() <-chan expr {
 }
 
 func remote(req string) (string, error) {
-	c, err := net.Dial(gSocketProt, gSocketPath)
+	c, err := net.Dial("unix", gSocketPath)
 	if err != nil {
 		return "", fmt.Errorf("connecting to server: %w", err)
 	}

@@ -9,7 +9,6 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
-	"syscall"
 
 	"golang.org/x/sys/windows"
 )
@@ -26,7 +25,6 @@ var envPathExts []string
 var (
 	gDefaultShell       = "cmd"
 	gDefaultShellFlag   = "/c"
-	gDefaultSocketProt  = "unix"
 	gDefaultSocketPath  string
 	gDefaultHiddenFiles []string
 )
@@ -106,15 +104,8 @@ func init() {
 	gTagsPath = filepath.Join(data, "lf", "tags")
 	gHistoryPath = filepath.Join(data, "lf", "history")
 
-	socket, err := syscall.Socket(syscall.AF_UNIX, syscall.SOCK_STREAM, 0)
-	if err != nil {
-		gDefaultSocketProt = "tcp"
-		gDefaultSocketPath = "127.0.0.1:12345"
-	} else {
-		runtime := os.TempDir()
-		gDefaultSocketPath = filepath.Join(runtime, fmt.Sprintf("lf.%s.sock", gUser.Username))
-		syscall.Close(socket)
-	}
+	runtimeDir := os.TempDir()
+	gDefaultSocketPath = filepath.Join(runtimeDir, "lf.sock")
 
 	s := cmp.Or(os.Getenv("PATHEXT"), ".COM;.EXE;.BAT;.CMD")
 	for ext := range strings.SplitSeq(s, ";") {

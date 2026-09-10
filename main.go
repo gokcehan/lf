@@ -15,6 +15,8 @@ import (
 	"strings"
 
 	_ "embed"
+
+	"golang.org/x/term"
 )
 
 //go:embed doc.txt
@@ -35,7 +37,6 @@ var (
 	gHostname       string
 	gLastDirPath    string
 	gSelectionPath  string
-	gSocketProt     string
 	gSocketPath     string
 	gLogPath        string
 	gSelect         string
@@ -178,19 +179,13 @@ func startServer() {
 }
 
 func checkServer() {
-	if gSocketProt == "unix" {
-		if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
-			startServer()
-		} else if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
-			if err := os.Remove(gSocketPath); err != nil {
-				log.Print(err)
-			}
-			startServer()
+	if _, err := os.Stat(gSocketPath); os.IsNotExist(err) {
+		startServer()
+	} else if _, err := net.Dial("unix", gSocketPath); err != nil {
+		if err := os.Remove(gSocketPath); err != nil {
+			log.Print(err)
 		}
-	} else {
-		if _, err := net.Dial(gSocketProt, gSocketPath); err != nil {
-			startServer()
-		}
+		startServer()
 	}
 }
 
@@ -230,10 +225,11 @@ func main() {
 		f := flag.CommandLine.Output()
 		fmt.Fprintf(f, `lf - Terminal file manager
 
-Usage:  %s [options] [cd-or-select-path]
+Usage: %s [options] [path]
 
-  cd-or-select-path
-        set the initial dir or file selection to the given argument
+Arguments:
+  path
+        set the initial directory or select the given file
 
 Options:
 `, os.Args[0])
@@ -316,7 +312,6 @@ Options:
 
 	flag.Parse()
 
-	gSocketProt = gDefaultSocketProt
 	gSocketPath = gDefaultSocketPath
 
 	if gLogPath != "" {
@@ -350,6 +345,14 @@ Options:
 		if err != nil {
 			log.Fatalf("remote command: %s", err)
 			return
+		}
+		// sanitize untrusted names when writing to a terminal
+		if term.IsTerminal(int(os.Stdout.Fd())) {
+			lines := strings.Split(resp, "\n")
+			for i := range lines {
+				lines[i] = sanitizeName(lines[i])
+			}
+			resp = strings.Join(lines, "\n")
 		}
 		fmt.Print(resp)
 	case *serverMode:

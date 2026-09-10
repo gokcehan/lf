@@ -78,7 +78,7 @@ func renderRuler(ruler *template.Template, data rulerData, width int) (string, s
 		return "", "", err
 	}
 
-	s := strings.ReplaceAll(b.String(), "\n", "")
+	s := strings.NewReplacer("\r", "", "\n", "").Replace(b.String())
 	sections := strings.Split(s, "\x1f")
 
 	if len(sections) == 1 {

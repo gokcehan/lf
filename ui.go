@@ -17,8 +17,8 @@ import (
 	"time"
 	"unicode/utf8"
 
+	"github.com/clipperhouse/displaywidth"
 	"github.com/gdamore/tcell/v3"
-	"github.com/rivo/uniseg"
 	"golang.org/x/term"
 )
 
@@ -36,10 +36,13 @@ func (win *win) renew(w, h, x, y int) {
 	win.w, win.h, win.x, win.y = w, h, x, y
 }
 
-// isPrintable reports whether sequence is safe to display.
-// It rejects C0 control characters (0x00-0x1F) and DEL (0x7F).
-func isPrintable(gc string) bool {
-	return gc[0] >= 0x20 && gc[0] != 0x7F
+// firstGrapheme returns the first grapheme cluster in s and its display width.
+func firstGrapheme(s string) (string, int) {
+	gr := displaywidth.StringGraphemes(s)
+	if !gr.Next() {
+		return "", 0
+	}
+	return gr.Value(), gr.Width()
 }
 
 // printLength returns the display width of s in terminal cells.
@@ -57,13 +60,15 @@ func printLength(s string) int {
 			continue
 		}
 
-		gc, _, w, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		gc, w := firstGrapheme(s[i:])
 		i += len(gc)
 
 		if gc == "\t" {
 			length += gOpts.tabstop - length%gOpts.tabstop
 		} else if isPrintable(gc) {
 			length += w
+		} else {
+			length++ // U+FFFD replacement has width 1
 		}
 	}
 
@@ -92,12 +97,14 @@ func (win *win) print(screen tcell.Screen, x, y int, st tcell.Style, s string) t
 			continue
 		}
 
-		gc, _, _, _ := uniseg.FirstGraphemeClusterInString(s[i:], -1)
+		gc := firstGraphemeCluster(s[i:])
 		if gc == "\t" {
 			w := gOpts.tabstop - (x+off+printLength(b.String()))%gOpts.tabstop
 			b.WriteString(strings.Repeat(" ", w))
 		} else if isPrintable(gc) {
 			b.WriteString(gc)
+		} else {
+			b.WriteString("\uFFFD")
 		}
 
 		i += len(gc)
@@ -384,7 +391,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		// subtract space for icon
-		maxFilenameWidth := maxWidth - uniseg.StringWidth(icon)
+		maxFilenameWidth := maxWidth - displaywidth.String(icon)
 		// subtract space for tag if not merged with selection marker
 		if !gOpts.mergeindicators {
 			maxFilenameWidth--
@@ -398,14 +405,14 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
-		spacing := maxFilenameWidth - uniseg.StringWidth(filename)
+		spacing := maxFilenameWidth - displaywidth.String(filename)
 		if spacing > 0 {
 			filename += strings.Repeat(" ", spacing)
 		}
 
 		if showInfo {
 			filename += info
-			customOff += nameOff + uniseg.StringWidth(icon) + maxFilenameWidth
+			customOff += nameOff + displaywidth.String(icon) + maxFilenameWidth
 		}
 
 		if i == dir.pos {
@@ -448,7 +455,7 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 				win.print(ui.screen, nameOff, i, iconStyle, icon)
 			}
 
-			win.print(ui.screen, nameOff+uniseg.StringWidth(icon), i, st, filename+" ")
+			win.print(ui.screen, nameOff+displaywidth.String(icon), i, st, filename+" ")
 
 			// print over the empty space we reserved for the custom info
 			if showInfo && custom != "" {
@@ -561,8 +568,7 @@ func newUI(screen tcell.Screen) *ui {
 }
 
 func (ui *ui) winAt(x, y int) (int, *win) {
-	for i := len(ui.wins) - 1; i >= 0; i-- {
-		w := ui.wins[i]
+	for i, w := range slices.Backward(ui.wins) {
 		if x >= w.x && y >= w.y && y < w.y+w.h {
 			return i, w
 		}
@@ -584,12 +590,12 @@ func (ui *ui) echo(msg string) {
 }
 
 func (ui *ui) echomsg(msg string) {
-	ui.echo(msg)
+	ui.echo(sanitizeMessage(msg))
 	log.Print(msg)
 }
 
 func (ui *ui) echoerr(msg string) {
-	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), msg))
+	ui.echo(fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(msg)))
 	log.Printf("error: %s", msg)
 }
 
@@ -610,6 +616,7 @@ type reg struct {
 	path     string
 	lines    []string
 	sixel    bool
+	height   int
 }
 
 func (ui *ui) loadFile(app *app, volatile bool) {
@@ -643,22 +650,26 @@ func (ui *ui) drawPromptLine(nav *nav) {
 	st := tcell.StyleDefault
 
 	dir := nav.currDir()
-	pwd := dir.path
+	pwd := sanitizeName(dir.path)
 
-	if after, ok := strings.CutPrefix(pwd, gUser.HomeDir); ok {
-		pwd = filepath.Join("~", after)
+	// shorten the home directory itself and paths inside
+	if rel, err := filepath.Rel(gUser.HomeDir, pwd); err == nil && filepath.IsLocal(rel) {
+		pwd = filepath.Join("~", rel)
 	}
 
 	sep := string(filepath.Separator)
 
 	var fname string
 	if curr := nav.currFile(); curr != nil {
-		fname = filepath.Base(curr.path)
+		fname = sanitizeName(filepath.Base(curr.path))
 	}
 
 	var prompt string
 
-	prompt = strings.ReplaceAll(gOpts.promptfmt, "%u", gUser.Username)
+	// git style colored prompts contain hidden bytes that lf would print as extra characters
+	prompt = strings.ReplaceAll(gOpts.promptfmt, "\x01", "")
+	prompt = strings.ReplaceAll(prompt, "\x02", "")
+	prompt = strings.ReplaceAll(prompt, "%u", gUser.Username)
 	prompt = strings.ReplaceAll(prompt, "%h", gHostname)
 	prompt = strings.ReplaceAll(prompt, "%f", fname)
 
@@ -751,7 +762,7 @@ func (ui *ui) drawStat(nav *nav) {
 	replace("%s", humanize(curr.Size()))
 	replace("%S", fmt.Sprintf("%5s", humanize(curr.Size())))
 	replace("%t", curr.ModTime().Format(gOpts.timefmt))
-	replace("%l", curr.linkTarget)
+	replace("%l", sanitizeName(curr.linkTarget))
 
 	var fileInfo strings.Builder
 	for section := range strings.SplitSeq(statfmt, "\x1f") {
@@ -877,7 +888,7 @@ func (ui *ui) drawRuler(nav *nav) {
 
 func (ui *ui) drawRulerFile(nav *nav) {
 	if ui.rulerErr != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("parsing ruler: %w", ui.rulerErr))
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("parsing ruler: %s", ui.rulerErr)))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
@@ -887,9 +898,9 @@ func (ui *ui) drawRulerFile(nav *nav) {
 	if curr != nil {
 		if curr.err == nil {
 			stat = &statData{
-				Path:        curr.path,
-				Name:        curr.Name(),
-				Extension:   curr.ext,
+				Path:        sanitizeName(curr.path),
+				Name:        sanitizeName(curr.Name()),
+				Extension:   sanitizeName(curr.ext),
 				Size:        curr.Size(),
 				DirSize:     curr.dirSize,
 				DirCount:    curr.dirCount,
@@ -901,7 +912,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 				LinkCount:   linkCount(curr),
 				User:        userName(curr),
 				Group:       groupName(curr),
-				Target:      curr.linkTarget,
+				Target:      sanitizeName(curr.linkTarget),
 				CustomInfo:  curr.customInfo,
 			}
 		} else {
@@ -1006,7 +1017,7 @@ func (ui *ui) drawRulerFile(nav *nav) {
 
 	left, right, err := renderRuler(ui.ruler, data, ui.msgWin.w)
 	if err != nil {
-		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), fmt.Errorf("rendering ruler: %w", err))
+		err := fmt.Sprintf(optionToFmtstr(gOpts.errorfmt), sanitizeName(fmt.Sprintf("rendering ruler: %s", err)))
 		ui.msgWin.print(ui.screen, 0, 0, tcell.StyleDefault, err)
 		return
 	}
@@ -1026,9 +1037,12 @@ func (ui *ui) drawPreview(nav *nav, context *dirContext) {
 
 	if gOpts.preview {
 		if curr.isPreviewable() {
-			if reg, ok := nav.regCache[curr.path]; ok {
-				win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
+			reg, ok := nav.regCache[curr.path]
+			if !ok {
+				// the shown file can lose its cache entry, e.g. a save that deletes and recreates it
+				reg = nav.loadReg(curr.path, false)
 			}
+			win.printReg(ui.screen, reg, &ui.sxScreen, nav.previewTimer)
 		} else if curr.IsDir() {
 			ui.sxScreen.lastFile = ""
 			dir := nav.getDir(curr.path)
@@ -1158,6 +1172,11 @@ func (ui *ui) draw(nav *nav) {
 		}
 	}
 
+	// sanitize cmd-line buffers at render time
+	cmdPrefix := sanitizeName(ui.cmdPrefix)
+	cmdAccLeft := sanitizeName(ui.cmdAccLeft)
+	cmdAccRight := sanitizeName(ui.cmdAccRight)
+
 	switch ui.cmdPrefix {
 	case "":
 		if gOpts.rulerfmt == "" {
@@ -1169,17 +1188,17 @@ func (ui *ui) draw(nav *nav) {
 		ui.screen.HideCursor()
 	case ">":
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix)-printLength(ui.msg))
+		prefix := truncateRight(cmdPrefix, maxWidth)
+		left := truncateLeft(cmdAccLeft, maxWidth-displaywidth.String(prefix)-printLength(ui.msg))
 		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+ui.msg)
-		ui.msgWin.print(ui.screen, uniseg.StringWidth(prefix)+printLength(ui.msg), 0, st, left+ui.cmdAccRight)
-		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+printLength(ui.msg)+uniseg.StringWidth(left), ui.msgWin.y)
+		ui.msgWin.print(ui.screen, displaywidth.String(prefix)+printLength(ui.msg), 0, st, left+cmdAccRight)
+		ui.screen.ShowCursor(ui.msgWin.x+displaywidth.String(prefix)+printLength(ui.msg)+displaywidth.String(left), ui.msgWin.y)
 	default:
 		maxWidth := ui.msgWin.w - 1 // leave space for cursor at the end
-		prefix := truncateRight(ui.cmdPrefix, maxWidth)
-		left := truncateLeft(ui.cmdAccLeft, maxWidth-uniseg.StringWidth(prefix))
-		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+ui.cmdAccRight)
-		ui.screen.ShowCursor(ui.msgWin.x+uniseg.StringWidth(prefix)+uniseg.StringWidth(left), ui.msgWin.y)
+		prefix := truncateRight(cmdPrefix, maxWidth)
+		left := truncateLeft(cmdAccLeft, maxWidth-displaywidth.String(prefix))
+		ui.msgWin.printLine(ui.screen, 0, 0, st, prefix+left+cmdAccRight)
+		ui.screen.ShowCursor(ui.msgWin.x+displaywidth.String(prefix)+displaywidth.String(left), ui.msgWin.y)
 	}
 
 	ui.drawPreview(nav, &context)
@@ -1261,7 +1280,7 @@ func listMatchingBinds(binds map[string]expr, prefix string) string {
 	fmt.Fprintln(t, "key\tcommand")
 	for _, k := range slices.Sorted(maps.Keys(binds)) {
 		remain, _ := strings.CutPrefix(k, prefix)
-		fmt.Fprintf(t, "%s\t%v\n", remain, binds[k])
+		fmt.Fprintf(t, "%s\t%v\n", sanitizeName(remain), binds[k])
 	}
 	t.Flush()
 
@@ -1291,14 +1310,14 @@ func listJumps(jumps []string, ind int) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "  jump\tpath")
 	// print jumps in order of most recent, Vim uses the opposite order
-	for i := len(jumps) - 1; i >= 0; i-- {
+	for i, path := range slices.Backward(jumps) {
 		switch {
 		case i < ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, ind-i, path)
 		case i > ind:
-			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, jumps[i])
+			fmt.Fprintf(t, "  %*d\t%s\n", maxlength, i-ind, path)
 		default:
-			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, jumps[i])
+			fmt.Fprintf(t, "> %*d\t%s\n", maxlength, 0, path)
 		}
 	}
 	t.Flush()
@@ -1329,7 +1348,7 @@ func listMarks(marks map[string]string) string {
 	t.Init(b, 0, gOpts.tabstop, 2, '\t', 0)
 	fmt.Fprintln(t, "mark\tpath")
 	for _, k := range slices.Sorted(maps.Keys(marks)) {
-		fmt.Fprintf(t, "%s\t%s\n", k, marks[k])
+		fmt.Fprintf(t, "%s\t%s\n", sanitizeName(k), sanitizeName(marks[k]))
 	}
 	t.Flush()
 
@@ -1345,6 +1364,9 @@ func listFilesInCurrDir(nav *nav) string {
 
 	b := new(strings.Builder)
 	for _, file := range dir.files {
+		if strings.ContainsAny(file.path, "\n\r") {
+			continue
+		}
 		fmt.Fprintln(b, file.path)
 	}
 
@@ -1612,10 +1634,15 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 		return "", nil
 	}
 
+	names := make([]string, len(matches))
+	for i, m := range matches {
+		names[i] = sanitizeName(m.name)
+	}
+
 	wtot, _ := screen.Size()
 	wcol := 0
-	for _, m := range matches {
-		wcol = max(wcol, uniseg.StringWidth(m.name))
+	for _, n := range names {
+		wcol = max(wcol, printLength(n))
 	}
 	wcol += gOpts.tabstop - wcol%gOpts.tabstop
 	ncol := max(wtot/wcol, 1)
@@ -1623,19 +1650,19 @@ func listMatches(screen tcell.Screen, matches []compMatch, selectedInd int) (str
 	var b strings.Builder
 	b.WriteString("possible matches")
 
-	for i, match := range matches {
+	for i, n := range names {
 		if i%ncol == 0 {
 			b.WriteByte('\n')
 		}
-		w := uniseg.StringWidth(match.name)
-		fmt.Fprintf(&b, "%s%*s", match.name, wcol-w, "")
+		w := printLength(n)
+		fmt.Fprintf(&b, "%s%*s", n, wcol-w, "")
 	}
 
 	b.WriteByte('\n')
 
 	var selection *menuSelect
 	if selectedInd != -1 {
-		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, matches[selectedInd].name}
+		selection = &menuSelect{selectedInd % ncol * wcol, selectedInd/ncol + 1, names[selectedInd]}
 	}
 
 	return b.String(), selection

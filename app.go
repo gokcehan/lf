@@ -95,6 +95,14 @@ func (app *app) quit() {
 	}
 }
 
+// requestQuit signals the main loop to quit and never blocks when a request is already pending.
+func (app *app) requestQuit() {
+	select {
+	case app.quitChan <- struct{}{}:
+	default:
+	}
+}
+
 func (app *app) readFile(path string) {
 	log.Printf("reading file: %s", path)
 
@@ -160,11 +168,18 @@ func loadFiles() (clipboard clipboard, err error) {
 }
 
 func saveFiles(clipboard clipboard) error {
-	if err := os.MkdirAll(filepath.Dir(gFilesPath), os.ModePerm); err != nil {
+	for _, path := range clipboard.paths {
+		// the clipboard file stores one path per line so a newline cannot be saved
+		if strings.ContainsAny(path, "\n\r") {
+			return fmt.Errorf("cannot copy %s because the name contains a newline", path)
+		}
+	}
+
+	if err := os.MkdirAll(filepath.Dir(gFilesPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	files, err := os.Create(gFilesPath)
+	files, err := os.OpenFile(gFilesPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("opening file selections file: %w", err)
 	}
@@ -236,11 +251,11 @@ func (app *app) writeHistory() error {
 		app.cmdHistory = app.cmdHistory[len(app.cmdHistory)-1000:]
 	}
 
-	if err := os.MkdirAll(filepath.Dir(gHistoryPath), os.ModePerm); err != nil {
+	if err := os.MkdirAll(filepath.Dir(gHistoryPath), 0o700); err != nil {
 		return fmt.Errorf("creating data directory: %w", err)
 	}
 
-	f, err := os.Create(gHistoryPath)
+	f, err := os.OpenFile(gHistoryPath, os.O_RDWR|os.O_CREATE|os.O_TRUNC, 0o600)
 	if err != nil {
 		return fmt.Errorf("creating history file: %w", err)
 	}
@@ -391,8 +406,7 @@ func (app *app) loop() {
 				oldCurrPath = curr.path
 			}
 
-			prev, ok := app.nav.dirCache[d.path]
-			if ok {
+			if prev, ok := app.nav.dirCache[d.path]; ok {
 				d.ind = prev.ind
 				d.pos = prev.pos
 				d.visualAnchor = min(prev.visualAnchor, len(d.files)-1)
@@ -400,6 +414,8 @@ func (app *app) loop() {
 				d.filter = prev.filter
 				d.sort()
 				d.sel(prev.name(), app.nav.height)
+			} else {
+				d.sort()
 			}
 			app.nav.dirCache[d.path] = d
 
@@ -431,6 +447,10 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case r := <-app.nav.regChan:
+			if r.height != app.nav.height {
+				delete(app.nav.regCache, r.path)
+				continue
+			}
 			app.nav.regCache[r.path] = r
 
 			if curr := app.nav.currFile(); curr != nil {
@@ -444,11 +464,7 @@ func (app *app) loop() {
 
 			app.ui.draw(app.nav)
 		case f := <-app.nav.fileChan:
-			for _, dir := range app.nav.dirCache {
-				if dir.path != filepath.Dir(f.path) {
-					continue
-				}
-
+			if dir, ok := app.nav.dirCache[filepath.Dir(f.path)]; ok {
 				for i := range dir.allFiles {
 					if dir.allFiles[i].path == f.path {
 						dir.allFiles[i] = f
@@ -461,8 +477,9 @@ func (app *app) loop() {
 				dir.sel(name, app.nav.height)
 			}
 
-			delete(app.nav.regCache, f.path)
-			app.ui.loadFile(app, false)
+			if r, ok := app.nav.regCache[f.path]; ok {
+				app.nav.checkReg(r)
+			}
 			onLoad(app, []string{f.path})
 			app.ui.draw(app.nav)
 		case path := <-app.nav.delChan:
@@ -597,7 +614,8 @@ func (app *app) runShell(s string, args []string, prefix string) {
 		// read before calling [exec.Cmd.Wait], however in this case Cmd.Wait should
 		// only wait for the command to finish executing regardless of whether the
 		// output has been fully read or not.
-		inReader, inWriter, err := os.Pipe()
+		var err error
+		inReader, inWriter, err = os.Pipe()
 		if err != nil {
 			log.Printf("creating input pipe: %s", err)
 			return

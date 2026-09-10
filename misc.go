@@ -11,12 +11,11 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strconv"
 	"strings"
 	"unicode"
 
-	"github.com/rivo/uniseg"
+	"github.com/clipperhouse/displaywidth"
 )
 
 var (
@@ -42,18 +41,18 @@ func replaceTilde(s string) string {
 // firstGraphemeCluster returns the string containing the first grapheme cluster
 // of the input.
 func firstGraphemeCluster(s string) string {
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	gr.Next()
-	return gr.Str()
+	return gr.Value()
 }
 
 // lastGraphemeCluster returns the string containing the last grapheme cluster
 // of the input.
 func lastGraphemeCluster(s string) string {
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	var last string
 	for gr.Next() {
-		last = gr.Str()
+		last = gr.Value()
 	}
 	return last
 }
@@ -64,14 +63,14 @@ func truncateRight(s string, maxWidth int) string {
 	buf := make([]byte, 0, len(s))
 	width := 0
 
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	for gr.Next() {
 		width += gr.Width()
 		if width > maxWidth {
 			break
 		}
 
-		buf = append(buf, gr.Bytes()...)
+		buf = append(buf, gr.Value()...)
 	}
 
 	return string(buf)
@@ -87,9 +86,9 @@ func truncateLeft(s string, maxWidth int) string {
 
 	var clusters []cluster
 	totalWidth := 0
-	gr := uniseg.NewGraphemes(s)
+	gr := displaywidth.StringGraphemes(s)
 	for gr.Next() {
-		clusters = append(clusters, cluster{slices.Clone(gr.Bytes()), gr.Width()})
+		clusters = append(clusters, cluster{[]byte(gr.Value()), gr.Width()})
 		totalWidth += gr.Width()
 	}
 
@@ -284,7 +283,7 @@ func humanize(size int64) string {
 		"K", // kibi (2^10) or kilo (10^3)
 		"M", // mebi (2^20) or mega (10^6)
 		"G", // gibi (2^30) or giga (10^9)
-		"T", // tebi (2^40) or tera (10^2)
+		"T", // tebi (2^40) or tera (10^12)
 		"P", // pebi (2^50) or peta (10^15)
 		"E", // exbi (2^60) or exa (10^18)
 		"Z", // zebi (2^70) or zetta (10^21)
@@ -431,20 +430,20 @@ func getFileExtension(file fs.FileInfo) string {
 // The file extension is not affected by truncation, however it will be clipped
 // if it exceeds the allowed width.
 func truncateFilename(file fs.FileInfo, maxWidth, truncatePct int, truncateChar string) string {
-	filename := file.Name()
-	if uniseg.StringWidth(filename) <= maxWidth {
+	filename := sanitizeName(file.Name())
+	if displaywidth.String(filename) <= maxWidth {
 		return filename
 	}
 
-	ext := getFileExtension(file)
-	avail := maxWidth - uniseg.StringWidth(truncateChar) - uniseg.StringWidth(ext)
+	ext := sanitizeName(getFileExtension(file))
+	avail := maxWidth - displaywidth.String(truncateChar) - displaywidth.String(ext)
 	if avail < 0 {
 		return truncateRight(truncateChar+ext, maxWidth)
 	}
 
 	basename := strings.TrimSuffix(filename, ext)
 	left := truncateRight(basename, avail*truncatePct/100)
-	right := truncateLeft(basename, avail-uniseg.StringWidth(left))
+	right := truncateLeft(basename, avail-displaywidth.String(left))
 	return left + truncateChar + right + ext
 }
 
@@ -467,7 +466,7 @@ func deletePathRecursive[T any](m map[string]T, path string) {
 // Individual lines are truncated to avoid unbounded memory usage on files
 // with very long or no newlines.
 // Sixel images are also detected and stored as separate lines.
-// The presence of a null byte outside a sixel image indicates a binary file.
+// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
 func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool, sixel bool) {
 	const maxLineBytes = 1 << 16 // 64 KiB per line
 
@@ -501,9 +500,11 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 
 		switch currState {
 		case stateNormal:
-			switch b {
-			case 0:
+			// C0 control bytes outside of \a \b \t \n \v \f \r \033 and DEL indicate binary content.
+			if b < 0x07 || (b > 0x0D && b < 0x1B) || (b > 0x1B && b < 0x20) || b == 0x7F {
 				return nil, true, false
+			}
+			switch b {
 			case '\033':
 				currState = stateEsc
 			case '\r':
@@ -527,18 +528,30 @@ func readLines(reader io.ByteReader, maxLines int) (lines []string, binary bool,
 				currState = stateNormal
 			}
 		case stateSixel:
-			buf.WriteByte(b)
-			if b == '\033' {
+			// Inside the DCS frame, accept only printable bytes. Tolerate
+			// '\r'/'\n' (some encoders insert them for readability) by
+			// silently dropping them. Anything else aborts the frame so
+			// that an attacker cannot smuggle CSI/OSC/DCS through it.
+			switch {
+			case b == '\033':
+				buf.WriteByte(b)
 				currState = stateSixelEsc
+			case b == '\r' || b == '\n':
+			case b >= 0x20 && b <= 0x7E:
+				buf.WriteByte(b)
+			default:
+				buf.Reset()
+				currState = stateNormal
 			}
 		case stateSixelEsc:
-			buf.WriteByte(b)
 			if b == '\\' {
+				buf.WriteByte(b)
 				flush(true)
 				sixel = true
 				currState = stateNormal
 			} else {
-				currState = stateSixel
+				buf.Reset()
+				currState = stateNormal
 			}
 		}
 	}

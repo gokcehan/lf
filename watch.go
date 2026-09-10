@@ -2,22 +2,27 @@ package main
 
 import (
 	"log"
+	"maps"
 	"os"
 	"path/filepath"
+	"slices"
+	"sync"
 	"time"
 
 	"github.com/fsnotify/fsnotify"
 )
 
 type watch struct {
-	watcher  *fsnotify.Watcher
-	events   <-chan fsnotify.Event
-	quit     chan struct{}
-	pending  map[watchUpdate]bool
-	timeout  chan watchUpdate
-	dirChan  chan<- *dir
-	fileChan chan<- *file
-	delChan  chan<- string
+	watcher   *fsnotify.Watcher
+	events    <-chan fsnotify.Event
+	quit      chan struct{}
+	pending   map[watchUpdate]bool
+	timeout   chan watchUpdate
+	dirChan   chan<- *dir
+	fileChan  chan<- *file
+	delChan   chan<- string
+	paths     map[string]bool
+	pathsLock sync.Mutex
 }
 
 func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string) *watch {
@@ -28,6 +33,7 @@ func newWatch(dirChan chan<- *dir, fileChan chan<- *file, delChan chan<- string)
 		dirChan:  dirChan,
 		fileChan: fileChan,
 		delChan:  delChan,
+		paths:    make(map[string]bool),
 	}
 
 	return watch
@@ -68,11 +74,18 @@ func (watch *watch) add(path string) {
 	}
 
 	// ignore /dev since write updates to /dev/tty causes high cpu usage
-	if path != "/dev" {
-		if err := watch.watcher.Add(path); err != nil {
-			log.Printf("watch path %s: %s", path, err)
-		}
+	if path == "/dev" {
+		return
 	}
+
+	if err := watch.watcher.Add(path); err != nil {
+		log.Printf("watch path %s: %s", path, err)
+		return
+	}
+
+	watch.pathsLock.Lock()
+	watch.paths[path] = true
+	watch.pathsLock.Unlock()
 }
 
 func (watch *watch) loop() {
@@ -118,6 +131,9 @@ func (watch *watch) loop() {
 				delete(watch.pending, update)
 			}
 		case <-watch.quit:
+			watch.pathsLock.Lock()
+			clear(watch.paths)
+			watch.pathsLock.Unlock()
 			return
 		}
 	}
@@ -144,9 +160,7 @@ func (watch *watch) processUpdate(update watchUpdate) {
 	switch update.kind {
 	case "dir":
 		if _, err := os.Lstat(update.path); err == nil {
-			dir := newDir(update.path)
-			dir.sort()
-			watch.dirChan <- dir
+			watch.dirChan <- newDir(update.path)
 		}
 	case "file":
 		if _, err := os.Lstat(update.path); err == nil {
@@ -155,8 +169,10 @@ func (watch *watch) processUpdate(update watchUpdate) {
 	}
 }
 
-// Hacky workaround since fsnotify reports changes for only one path if a
-// directory is located at more than one path (e.g. bind mounts).
+// fsnotify silently aliases watches by inode, so two paths to the same
+// directory (a symlink and its target) end up as a single entry in
+// watcher.WatchList. Track every Added path ourselves so getSameDirs can
+// fan events out to all aliases.
 func (watch *watch) getSameDirs(dir string) []string {
 	var paths []string
 
@@ -165,7 +181,11 @@ func (watch *watch) getSameDirs(dir string) []string {
 		return nil
 	}
 
-	for _, path := range watch.watcher.WatchList() {
+	watch.pathsLock.Lock()
+	all := slices.Collect(maps.Keys(watch.paths))
+	watch.pathsLock.Unlock()
+
+	for _, path := range all {
 		if path == dir {
 			paths = append(paths, path)
 			continue

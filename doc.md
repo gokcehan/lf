@@ -20,7 +20,7 @@ lf - terminal file manager
 [**-server**]
 [**-single**]
 [**-version**]
-[*cd-or-select-path*]
+[*path*]
 
 # DESCRIPTION
 
@@ -36,7 +36,7 @@ A man page with the same content is also available in the repository at https://
 
 ## POSITIONAL ARGUMENTS
 
-**cd-or-select-path**
+**path**
 
 Set the starting location. If *path* is a directory, start in there. If it's a file, start in the file's parent directory and select the file. When no *path* is supplied, lf uses the current directory. Only accepts one argument.
 
@@ -68,7 +68,7 @@ Use the config file at *path* instead of the normal search locations. This only 
 
 **-print-last-dir**
 
-Print the last directory to stdout when lf exits. This can be used to let lf change your shells working directory. See `CHANGING DIRECTORY` for more details.
+Print the last directory to stdout when lf exits. This can be used to let lf change your shell's working directory. See `CHANGING DIRECTORY` for more details.
 
 **-last-dir-path** *path*
 
@@ -317,6 +317,8 @@ The following options can be used to customize the behavior of lf:
 	smartcase         bool      (default true)
 	smartdia          bool      (default false)
 	sortby            string    (default 'natural')
+	sortignorecase    bool      (default true)
+	sortignoredia     bool      (default true)
 	statfmt           string    (default "\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l")
 	tabstop           int       (default 8)
 	tagfmt            string    (default "\033[31m")
@@ -904,7 +906,7 @@ When this option is enabled, directory sizes show the number of items inside ins
 This information needs to be calculated by reading the directory and counting the items inside.
 Therefore, this option is disabled by default for performance reasons.
 This option only has an effect when `info` has a `size` field and the pane is wide enough to show the information.
-999 items are counted per directory at most, and bigger directories are shown as `999+`.
+9999 items are counted per directory at most, and bigger directories are shown as `9999+`.
 
 ## dirfirst (bool) (default true)
 
@@ -990,11 +992,11 @@ This option does not have any effect on Windows.
 
 ## ignorecase (bool) (default true)
 
-Ignore case in sorting and search patterns.
+Ignore case in search patterns. See also `sortignorecase`.
 
 ## ignoredia (bool) (default true)
 
-Ignore diacritics in sorting and search patterns.
+Ignore diacritics in search patterns. See also `sortignoredia`.
 
 ## incfilter (bool) (default false)
 
@@ -1078,13 +1080,13 @@ Allow previews to be generated in advance using the `previewer` script as the us
 
 List of attributes that are preserved when copying files.
 Currently supported attributes are `mode` (i.e. access mode) and `timestamps` (i.e. modification time and access time).
-Note that preserving other attributes like ownership of change/birth timestamp is desirable, but not portably supported in Go.
+Note that preserving other attributes like ownership or change/birth timestamps is desirable, but not portably supported in Go.
 
 ## preview (bool) (default true)
 
 Show previews of files and directories at the rightmost pane.
 If the file has more lines than the preview pane, the rest of the lines are not read.
-Files containing the null character (U+0000) in the read portion are considered binary files and displayed as `binary`.
+Files are considered binary and displayed as `binary` if the read portion contains a control character other than bell, backspace, tab, newline, vertical tab, form feed, carriage return, escape or delete. 
 
 ## previewer (string) (default ``) (not filtered if empty)
 
@@ -1206,7 +1208,7 @@ Determines whether file sizes are displayed using binary units (`1K` is 1024 byt
 
 ## smartcase (bool) (default true)
 
-Override `ignorecase` option when the pattern contains an uppercase character.
+Override `ignorecase` option for searching when the pattern contains an uppercase character.
 This option has no effect when `ignorecase` is disabled.
 
 ## smartdia (bool) (default false)
@@ -1229,6 +1231,14 @@ The following sort types are supported:
 	btime     time of file birth
 	ctime     time of last status (inode) change
 	custom    property defined via `addcustominfo` (empty by default)
+
+## sortignorecase (bool) (default true)
+
+Ignore case when sorting. See also `ignorecase`.
+
+## sortignoredia (bool) (default true)
+
+Ignore diacritics when sorting. See also `ignoredia`.
 
 ## statfmt (string) (default `\033[36m%p\033[0m| %c| %u| %g| %S| %t| -> %l`)
 
@@ -1503,7 +1513,7 @@ Command `set` is used to set an option which can be a boolean, integer, or strin
 	set sortby "time"  # string value with double quotes (backslash escapes)
 
 Command `setlocal` is used to set a local option for a directory which can be a boolean or string.
-Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse` and `sortby`.
+Currently supported local options are `dircounts`, `dirfirst`, `dironly`, `hidden`, `info`, `reverse`, `sortby`, `sortignorecase` and `sortignoredia`.
 
 	setlocal /foo/bar hidden         # boolean enable
 	setlocal /foo/bar hidden true    # boolean enable
@@ -1622,7 +1632,7 @@ Some special keys and modifiers use different names and separators, and key name
 	map <m-up> down   # not <ScrollWheelUp>
 
 WARNING: Some key combinations will likely be intercepted by your OS, window manager, or terminal.
-Other key combinations cannot be recognized by lf due to the way terminals work (e.g. `Ctrl+h` combination sends a backspace key instead).
+Other key combinations may not be distinguishable by lf, depending on how the terminal reports them (e.g. `Ctrl+h` may be reported as `backspace` instead).
 The easiest way to find out the name of a key combination and whether it will work on your system is to press the key while lf is running and read the name from the `unknown mapping` error.
 
 Mouse buttons are prefixed with an `m` character:
@@ -1753,7 +1763,7 @@ To use this feature, you need to use a client which supports communicating with 
 OpenBSD implementation of netcat (nc) is one such example.
 You can use it to send a command to the socket file:
 
-	echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/tmp}/lf.${USER}.sock
+	echo 'send echo hello world' | nc -U ${XDG_RUNTIME_DIR:-/tmp/lf-$(id -u)}/lf.sock
 
 Since such a client may not be available everywhere, lf comes bundled with a command line flag to be used as such.
 When using lf, you do not need to specify the address of the socket file.
@@ -1996,7 +2006,7 @@ Since the preview script is called for each file selection change, it may not ge
 To deal with this, the `preload` option can be set to enable file previews to be preloaded in advance.
 If enabled, the preview script will be run on files in advance as the user navigates through them.
 In this case, if the exit code of the preview script is zero, then the output will be cached in memory and displayed by lf (useful for text or sixel previews).
-Otherwise, it will fallback to calling the preview script again when the file is actually selected (useful for previews managed by an external program).
+Otherwise, it will fall back to calling the preview script again when the file is actually selected (useful for previews managed by an external program).
 
 # CHANGING DIRECTORY
 
@@ -2035,7 +2045,7 @@ You can add an extra call to make it run on startup as well:
 	cmd on-cd &{{ ... }}
 	on-cd
 
-Note that all shell commands are possible but `%` and `&` are usually more appropriate as `$` and `!` causes flickers and pauses respectively.
+Note that all shell command types can be used, but `%` and `&` are usually more appropriate, as `$` and `!` cause flickering and pauses respectively.
 
 There is also a `pre-cd` command, that works like `on-cd`, but is run before the directory is actually changed.
 Another related command is `on-load` which gets executed when loading a directory.
@@ -2126,7 +2136,7 @@ Lastly, you may also want to configure the colors of the prompt line to match th
 Colors of the prompt line can be configured using the `promptfmt` option which can include hardcoded colors as ANSI escapes.
 See the default value of this option to have an idea about how to color this line.
 
-It is worth noting that lf uses as many colors advertised by your terminal's entry in terminfo or infocmp databases on your system.
+It is worth noting that lf uses as many colors as advertised by your terminal's entry in terminfo or infocmp databases on your system.
 If an entry is not present, it falls back to an internal database.
 If your terminal supports 24-bit colors but either does not have a database entry or does not advertise all capabilities, you can enable support by setting the `$COLORTERM` variable to `truecolor` or ensuring `$TERM` is set to a value that ends with `-truecolor`.
 
@@ -2224,7 +2234,7 @@ https://en.wikipedia.org/wiki/ANSI_escape_code
 Icons are configured using `LF_ICONS` environment variable or an icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)).
 The variable uses the same syntax as `LS_COLORS/LF_COLORS`.
 Instead of colors, you should use single characters or symbols as values.
-The `ln` entry supports the special value `target`, which will use the link target to select a icon. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
+The `ln` entry supports the special value `target`, which will use the link target to select an icon. Filename rules will still apply based on the link's name -- this mirrors GNU's `ls` and `dircolors` behavior.
 The icons file (refer to the [CONFIGURATION section](https://github.com/gokcehan/lf/blob/master/doc.md#configuration)) should consist of whitespace-separated arrays with a `#` character to start comments until the end of the line.
 Each line should contain 1-3 columns: a file type or file name pattern, the icon, and an optional icon color. Using only one column disables all rules for that type or name.
 Do not forget to add `set icons true` to your `lfrc` to see the icons.
