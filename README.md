@@ -36,6 +36,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
 
 See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
+See [security](SECURITY.md) for release verification and reproducible builds.
 
 Building from the source requires [Go](https://go.dev/).
 
