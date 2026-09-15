@@ -201,8 +201,37 @@ func readExpr() <-chan expr {
 	return ch
 }
 
+// dialServer connects to the server socket, briefly waiting for the socket
+// file to appear when a starting lf instance has not created it yet. An
+// lfrc command like `lf -remote "send $id ..."` races the server process
+// that this very instance just spawned, and without the wait the command
+// is silently dropped (#2660). The wait only happens while the socket file
+// is absent, so a genuinely stopped server still fails without delay.
+func dialServer() (net.Conn, error) {
+	const (
+		retryDelay  = 20 * time.Millisecond
+		retryBudget = 2 * time.Second
+	)
+	deadline := time.Now().Add(retryBudget)
+	for {
+		c, err := net.Dial("unix", gSocketPath)
+		if err == nil {
+			return c, nil
+		}
+		if _, statErr := os.Stat(gSocketPath); statErr == nil || !os.IsNotExist(statErr) {
+			// The socket exists (or its state is unknown) — the dial
+			// failure is real, not the startup race.
+			return nil, err
+		}
+		if time.Now().After(deadline) {
+			return nil, err
+		}
+		time.Sleep(retryDelay)
+	}
+}
+
 func remote(req string) (string, error) {
-	c, err := net.Dial("unix", gSocketPath)
+	c, err := dialServer()
 	if err != nil {
 		return "", fmt.Errorf("connecting to server: %w", err)
 	}
