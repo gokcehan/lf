@@ -320,7 +320,12 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 
 	visualSelections := dir.visualSelections()
 	for i, f := range dir.files[beg:end] {
-		st := dirStyle.colors.get(f)
+		var st tcell.Style
+		if gOpts.hiddenfmt != "" && isHidden(f, dir.path, gOpts.hiddenfiles) {
+			st = parseEscapeSequence(gOpts.hiddenfmt)
+		} else {
+			st = dirStyle.colors.get(f)
+		}
 
 		if lnwidth > 0 {
 			var ln string
