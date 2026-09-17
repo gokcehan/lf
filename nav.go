@@ -16,6 +16,7 @@ import (
 	"slices"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 
 	"github.com/djherbis/times"
@@ -142,6 +143,14 @@ func (fs *fakeStat) ModTime() time.Time { return time.Unix(0, 0) }
 func (fs *fakeStat) IsDir() bool        { return false }
 func (fs *fakeStat) Sys() any           { return nil }
 
+// statWorkers bounds how many entries readdir stats concurrently. Entries
+// are independent (one lstat each, plus an opendir+readdir for directories
+// when dircounts is on), so on high-latency filesystems — network mounts,
+// sshfs — the serial loop multiplied per-entry round trips into a multi-
+// second freeze per directory (#2666). Local disks see no ordering change:
+// results are written into a pre-sized slice by index.
+const statWorkers = 8
+
 func readdir(path string) ([]*file, error) {
 	f, err := os.Open(path)
 	if err != nil {
@@ -150,11 +159,36 @@ func readdir(path string) ([]*file, error) {
 	names, err := f.Readdirnames(-1)
 	f.Close()
 
+	// Stat entries concurrently; the resulting order matches names exactly.
+	stats := make([]*file, len(names))
+	indices := make(chan int)
+	workers := statWorkers
+	if len(names) < workers {
+		workers = len(names)
+	}
+	var wg sync.WaitGroup
+	for range workers {
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			for i := range indices {
+				fl := newFile(filepath.Join(path, names[i]))
+				if !os.IsNotExist(fl.err) {
+					stats[i] = fl
+				}
+			}
+		}()
+	}
+	for i := range names {
+		indices <- i
+	}
+	close(indices)
+	wg.Wait()
+
 	files := make([]*file, 0, len(names))
-	for _, fname := range names {
-		file := newFile(filepath.Join(path, fname))
-		if !os.IsNotExist(file.err) {
-			files = append(files, file)
+	for _, fl := range stats {
+		if fl != nil {
+			files = append(files, fl)
 		}
 	}
 
