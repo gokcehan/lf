@@ -67,7 +67,8 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 
 	var dstMode os.FileMode = 0o666
 	if slices.Contains(preserve, "mode") {
-		dstMode = info.Mode()
+		// drop the setuid and setgid bits from the copy
+		dstMode = info.Mode() &^ (os.ModeSetuid | os.ModeSetgid)
 	}
 	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 	if err != nil {
