@@ -192,6 +192,13 @@ func setUserUmask() {
 	unix.Umask(0o077)
 }
 
+// read the umask without changing it
+func getUmask() os.FileMode {
+	mask := unix.Umask(0)
+	unix.Umask(mask)
+	return os.FileMode(mask)
+}
+
 func isExecutable(f os.FileInfo) bool {
 	return f.Mode()&0o111 != 0
 }

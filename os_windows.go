@@ -172,6 +172,11 @@ func setDefaults() {
 
 func setUserUmask() {}
 
+// umask does not apply on Windows
+func getUmask() os.FileMode {
+	return 0
+}
+
 func isExecutable(f os.FileInfo) bool {
 	ext := filepath.Ext(f.Name())
 	if ext == "" {

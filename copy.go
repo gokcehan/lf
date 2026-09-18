@@ -12,6 +12,9 @@ import (
 	"github.com/djherbis/times"
 )
 
+// process umask at startup
+var gUmask = getUmask()
+
 type ProgressWriter struct {
 	writer io.Writer
 	nums   chan<- int64
@@ -64,7 +67,8 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 
 	var dstMode os.FileMode = 0o666
 	if slices.Contains(preserve, "mode") {
-		dstMode = info.Mode()
+		// drop the setuid setgid and sticky bits from the copy
+		dstMode = info.Mode() &^ (os.ModeSetuid | os.ModeSetgid | os.ModeSticky)
 	}
 	w, err := os.OpenFile(dst, os.O_RDWR|os.O_CREATE|os.O_TRUNC, dstMode)
 	if err != nil {
@@ -79,6 +83,13 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 			errs <- err
 		}
 		return
+	}
+
+	// OpenFile reduces the given mode by the umask
+	if slices.Contains(preserve, "mode") && info.Mode()&gUmask != 0 {
+		if err := w.Chmod(info.Mode() &^ (os.ModeSetuid | os.ModeSetgid | os.ModeSticky)); err != nil {
+			errs <- err
+		}
 	}
 
 	if err := w.Close(); err != nil {
@@ -144,10 +155,16 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				case info.IsDir():
 					dstMode := os.ModePerm
 					if slices.Contains(preserve, "mode") {
-						dstMode = info.Mode()
+						dstMode = info.Mode() &^ (os.ModeSetuid | os.ModeSetgid | os.ModeSticky)
 					}
 					if err := os.MkdirAll(newPath, dstMode); err != nil {
 						errs <- fmt.Errorf("mkdir: %w", err)
+					}
+					// keep the exact permission bits ignoring the umask
+					if slices.Contains(preserve, "mode") && info.Mode()&gUmask != 0 {
+						if err := os.Chmod(newPath, dstMode); err != nil {
+							errs <- fmt.Errorf("chmod: %w", err)
+						}
 					}
 					if slices.Contains(preserve, "timestamps") {
 						dirInfos[newPath] = info
