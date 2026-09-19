@@ -137,7 +137,7 @@ func (win *win) printMsg(screen tcell.Screen, s string) {
 
 func (win *win) printReg(screen tcell.Screen, reg *reg, sxs *sixelScreen, previewTimer *time.Timer) {
 	switch {
-	case reg.loading:
+	case reg.loading && len(reg.lines) == 0:
 		if time.Since(reg.loadTime) > previewLoadingDelay {
 			win.printMsg(screen, "loading...")
 		} else {
