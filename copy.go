@@ -140,8 +140,8 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 					return nil
 				}
 				newPath := filepath.Join(dst, rel)
-				switch {
-				case info.IsDir():
+				switch info.Mode() & os.ModeType {
+				case os.ModeDir:
 					dstMode := os.ModePerm
 					if slices.Contains(preserve, "mode") {
 						dstMode = info.Mode()
@@ -153,7 +153,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 						dirInfos[newPath] = info
 					}
 					nums <- info.Size()
-				case info.Mode()&os.ModeSymlink != 0:
+				case os.ModeSymlink:
 					if rlink, err := os.Readlink(path); err != nil {
 						errs <- fmt.Errorf("symlink: %w", err)
 					} else {
@@ -162,12 +162,12 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 						}
 					}
 					nums <- info.Size()
-				case !info.Mode().IsRegular():
-					// skip pipes sockets and devices because copyFile opens them and blocks forever
-					errs <- fmt.Errorf("cannot copy irregular file %s (named pipe socket or device)", path)
-					nums <- info.Size()
-				default:
+				case 0:
 					copyFile(path, newPath, preserve, info, nums, errs)
+				default:
+					// pipes, sockets and devices cannot be copied like regular files
+					errs <- fmt.Errorf("cannot copy irregular file %s (named pipe, socket or device)", path)
+					nums <- info.Size()
 				}
 				return nil
 			})
