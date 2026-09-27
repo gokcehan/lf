@@ -81,6 +81,13 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 		return
 	}
 
+	// set the exact mode on the open file, the umask does not apply here
+	if slices.Contains(preserve, "mode") {
+		if err := w.Chmod(dstMode); err != nil {
+			errs <- err
+		}
+	}
+
 	if err := w.Close(); err != nil {
 		errs <- err
 		if err = os.Remove(dst); err != nil {
@@ -187,5 +194,29 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 		close(errs)
 	}()
 
+	// set the exact mode through a handle of the new directory, the umask does not apply here
+	if slices.Contains(preserve, "mode") {
+		if err := setDirMode(dst, dstName, dstInfo, dstMode); err != nil {
+			errs <- err
+		}
+	}
+
 	return nums, errs
 }
+// setDirMode sets the mode of the new directory name in dst through an open handle
+func setDirMode(dst fsDir, name string, info os.FileInfo, mode os.FileMode) error {
+	f, err := dst.OpenFile(name, os.O_RDONLY, 0)
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	stat, err := f.Stat()
+	if err != nil {
+		return err
+	}
+	if err := checkSame(f.Name(), info, stat); err != nil {
+		return err
+	}
+	return f.Chmod(mode)
+}
+
