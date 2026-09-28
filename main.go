@@ -229,7 +229,7 @@ Usage: %s [options] [path]
 
 Arguments:
   path
-        set the initial directory or select the given file
+    	set the initial directory or select the given file
 
 Options:
 `, os.Args[0])
