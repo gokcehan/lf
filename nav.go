@@ -200,6 +200,28 @@ func newDir(path string) *dir {
 	}
 }
 
+// copyDirSizes carries over directory sizes calculated via `calcdirsize` from
+// a previously loaded version of the same directory, since reloading the
+// directory creates new file objects with unknown sizes.
+func (dir *dir) copyDirSizes(prev *dir) {
+	sizes := make(map[string]int64)
+	for _, f := range prev.allFiles {
+		if f.dirSize >= 0 {
+			sizes[f.path] = f.dirSize
+		}
+	}
+
+	if len(sizes) == 0 {
+		return
+	}
+
+	for _, f := range dir.allFiles {
+		if size, ok := sizes[f.path]; ok && f.IsDir() {
+			f.dirSize = size
+		}
+	}
+}
+
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dircounts = getDirCounts(dir.path)
