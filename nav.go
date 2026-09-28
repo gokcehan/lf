@@ -797,8 +797,7 @@ func (nav *nav) previewLoop(ui *ui) {
 			cmd.Stderr = &stderr
 
 			if err := cmd.Run(); err != nil {
-				var exitErr *exec.ExitError
-				if !errors.As(err, &exitErr) {
+				if _, ok := errors.AsType[*exec.ExitError](err); !ok {
 					log.Printf("cleaning preview: %s", err)
 				}
 			}
@@ -905,8 +904,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 
 		defer func() {
 			if err := cmd.Wait(); err != nil {
-				var exitErr *exec.ExitError
-				if errors.As(err, &exitErr) {
+				if _, ok := errors.AsType[*exec.ExitError](err); ok {
 					reg.volatile = true
 				} else {
 					log.Printf("loading file: %s", err)
