@@ -127,8 +127,7 @@ var (
 
 func getOptWords(opts any) (optWords []string) {
 	t := reflect.TypeOf(opts)
-	for i := range t.NumField() {
-		field := t.Field(i)
+	for field := range t.Fields() {
 		switch field.Type.Kind() {
 		case reflect.Map:
 			continue
@@ -145,8 +144,7 @@ func getOptWords(opts any) (optWords []string) {
 
 func getLocalOptWords(localOpts any) (localOptWords []string) {
 	t := reflect.TypeOf(localOpts)
-	for i := range t.NumField() {
-		field := t.Field(i)
+	for field := range t.Fields() {
 		name := field.Name
 		if field.Type.Kind() != reflect.Map {
 			continue
