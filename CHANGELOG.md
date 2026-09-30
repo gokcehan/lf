@@ -10,6 +10,10 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ## Unreleased
 
+### Added
+
+- The `cd` command now supports `-` to change to the previous directory (#2693).
+
 ### Fixed
 
 - Dead client connections no longer prevent the `quit` server command from terminating the server (#2643).
