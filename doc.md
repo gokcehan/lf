@@ -674,6 +674,7 @@ Print given arguments to the message line at the bottom as `errorfmt` and also t
 ## cd
 
 Change the working directory to the given argument.
+If the argument is `-`, change to the previous directory stored in the special bookmark `'`.
 
 ## select
 
