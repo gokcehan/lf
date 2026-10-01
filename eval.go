@@ -989,13 +989,20 @@ func insert(app *app, arg string) {
 }
 
 func cd(app *app, path string) error {
-	wd := app.nav.currDir().path
+	if path == "-" {
+		prev, ok := app.nav.marks["'"]
+		if !ok {
+			return errors.New("no previous directory")
+		}
+		path = prev
+	}
 
 	path, err := filepath.Abs(replaceTilde(path))
 	if err != nil {
 		return fmt.Errorf("getting absolute path: %w", err)
 	}
 
+	wd := app.nav.currDir().path
 	if path == wd {
 		return nil
 	}

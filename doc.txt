@@ -707,7 +707,8 @@ also to the log file.
 
 cd
 
-Change the working directory to the given argument.
+Change the working directory to the given argument. If the argument is
+-, change to the previous directory stored in the special bookmark '.
 
 select
 
