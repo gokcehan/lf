@@ -16,10 +16,13 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 
 ### Fixed
 
+- Attempting to copy irregular files now results in an error instead of causing the copy operation to hang (#2618).
 - Dead client connections no longer prevent the `quit` server command from terminating the server (#2643).
 - The `calcdirsize` command now calculates the size of the target directory for symbolic links instead of the size of the link itself (#2650).
 - Readline markers in `promptfmt` are no longer rendered as visible characters (#2657).
 - Selecting entries with the mouse no longer causes the file list to jump unexpectedly (#2664).
+- A bug where executing the `quit` command multiple times in quick succession could cause `lf` to become unresponsive is now fixed (#2674).
+- The home directory abbreviation `~` no longer matches partial directory names (#2679).
 
 ## [r42](https://github.com/gokcehan/lf/releases/tag/r42)
 
