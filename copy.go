@@ -58,6 +58,7 @@ func copySize(srcs []string) (int64, error) {
 
 // fsDir is a directory that entries are read from or created in
 type fsDir interface {
+	io.Closer
 	Name() string
 	Lstat(name string) (os.FileInfo, error)
 	OpenFile(name string, flag int, perm os.FileMode) (*os.File, error)
@@ -73,6 +74,8 @@ type fsDir interface {
 type pathDir string
 
 func (d pathDir) Name() string { return string(d) }
+
+func (d pathDir) Close() error { return nil }
 
 func (d pathDir) Lstat(name string) (os.FileInfo, error) {
 	return os.Lstat(filepath.Join(string(d), name))
@@ -106,16 +109,22 @@ func (d pathDir) Chtimes(name string, atime, mtime time.Time) error {
 	return os.Chtimes(filepath.Join(string(d), name), atime, mtime)
 }
 
+// openDir holds path open when it can be read, else names it by path
+func openDir(path string) fsDir {
+	if root, err := os.OpenRoot(path); err == nil {
+		return heldDir{root}
+	}
+	return pathDir(path)
+}
+
 // heldDir is a directory held open whose errors carry the full path
 type heldDir struct{ *os.Root }
 
 // full adds the parent path to an error that names only the entry
 func (d heldDir) full(err error) error {
-	var pathErr *os.PathError
-	var linkErr *os.LinkError
-	if errors.As(err, &pathErr) {
+	if pathErr, ok := errors.AsType[*os.PathError](err); ok {
 		pathErr.Path = filepath.Join(d.Name(), pathErr.Path)
-	} else if errors.As(err, &linkErr) {
+	} else if linkErr, ok := errors.AsType[*os.LinkError](err); ok {
 		linkErr.New = filepath.Join(d.Name(), linkErr.New)
 	}
 	return err
@@ -266,8 +275,9 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 	if slices.Contains(preserve, "mode") {
 		dstMode = info.Mode().Perm()
 	}
+	// create with owner access so the new directory can be opened and written
 	// Mkdir fails if the name exists, refusing a planted directory or symlink
-	if err := dst.Mkdir(dstName, dstMode); err != nil {
+	if err := dst.Mkdir(dstName, dstMode|0o700); err != nil {
 		errs <- fmt.Errorf("mkdir: %w", err)
 		return
 	}
@@ -276,24 +286,23 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 		errs <- err
 		return
 	}
+	dstDir, err := openDirAt(dst, dstName, dstInfo)
+	if err != nil {
+		errs <- err
+		return
+	}
+	defer dstDir.Close()
 
-	// hold both directories open while copying their entries
+	// hold the source directory open while copying its entries
 	if len(entries) > 0 {
 		srcDir, err := openDirAt(src, name, info)
 		if err != nil {
 			errs <- fmt.Errorf("walk: %w", err)
 			return
 		}
-		dstDir, err := openDirAt(dst, dstName, dstInfo)
-		if err != nil {
-			srcDir.Close()
-			errs <- err
-			return
-		}
 		for _, entry := range entries {
 			copyEntry(srcDir, entry.Name(), dstDir, entry.Name(), preserve, nums, errs)
 		}
-		dstDir.Close()
 		srcDir.Close()
 	}
 
@@ -303,6 +312,13 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 		mtime := info.ModTime()
 		if err := dst.Chtimes(dstName, atime, mtime); err != nil {
 			errs <- err
+		}
+	}
+
+	// restore the real mode last
+	if dstMode&0o700 != 0o700 {
+		if err := dstDir.Chmod(".", dstMode); err != nil {
+			errs <- dstDir.full(err)
 		}
 	}
 }
@@ -327,7 +343,7 @@ func copyEntry(src fsDir, name string, dst fsDir, dstName string, preserve []str
 		}
 		nums <- info.Size()
 	case !info.Mode().IsRegular():
-		errs <- fmt.Errorf("cannot copy irregular file %s", filepath.Join(src.Name(), name))
+		errs <- fmt.Errorf("cannot copy irregular file %s (named pipe, socket or device)", filepath.Join(src.Name(), name))
 		nums <- info.Size()
 	default:
 		copyFile(src, name, dst, dstName, preserve, info, nums, errs)
@@ -342,11 +358,8 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 		defer close(errs)
 
 		// hold the destination open when it can be read, else use it by path
-		var dst fsDir = pathDir(dstDir)
-		if root, err := os.OpenRoot(dstDir); err == nil {
-			defer root.Close()
-			dst = heldDir{root}
-		}
+		dst := openDir(dstDir)
+		defer dst.Close()
 
 		for _, src := range srcs {
 			src = filepath.Clean(src)
@@ -373,7 +386,9 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				continue
 			}
 
-			copyEntry(pathDir(filepath.Dir(src)), filepath.Base(src), dst, file, preserve, nums, errs)
+			parent := openDir(filepath.Dir(src))
+			copyEntry(parent, filepath.Base(src), dst, file, preserve, nums, errs)
+			parent.Close()
 		}
 	}()
 
