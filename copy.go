@@ -231,6 +231,13 @@ func copyFile(src fsDir, name string, dst fsDir, dstName string, preserve []stri
 		return
 	}
 
+	// set the exact mode on the open file, the umask does not apply here
+	if slices.Contains(preserve, "mode") {
+		if err := w.Chmod(dstMode); err != nil {
+			errs <- err
+		}
+	}
+
 	if err := w.Close(); err != nil {
 		errs <- err
 		if err = dst.Remove(dstName); err != nil {
@@ -289,6 +296,10 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 	dstDir, err := openDirAt(dst, dstName, dstInfo)
 	if err != nil {
 		errs <- err
+		// remove the new directory, it is still empty
+		if err = dst.Remove(dstName); err != nil {
+			errs <- err
+		}
 		return
 	}
 	defer dstDir.Close()
@@ -298,12 +309,12 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 		srcDir, err := openDirAt(src, name, info)
 		if err != nil {
 			errs <- fmt.Errorf("walk: %w", err)
-			return
+		} else {
+			for _, entry := range entries {
+				copyEntry(srcDir, entry.Name(), dstDir, entry.Name(), preserve, nums, errs)
+			}
+			srcDir.Close()
 		}
-		for _, entry := range entries {
-			copyEntry(srcDir, entry.Name(), dstDir, entry.Name(), preserve, nums, errs)
-		}
-		srcDir.Close()
 	}
 
 	// set the directory time last, after its entries are written
@@ -315,8 +326,8 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 		}
 	}
 
-	// restore the real mode last
-	if dstMode&0o700 != 0o700 {
+	// set the exact mode last, the umask does not apply here
+	if slices.Contains(preserve, "mode") {
 		if err := dstDir.Chmod(".", dstMode); err != nil {
 			errs <- dstDir.full(err)
 		}
