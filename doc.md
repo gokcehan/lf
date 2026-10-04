@@ -285,6 +285,7 @@ The following options can be used to customize the behavior of lf:
 	info              []string  (default '')
 	infotimefmtnew    string    (default 'Jan _2 15:04')
 	infotimefmtold    string    (default 'Jan _2  2006')
+	linkarrow         string    (default '')
 	menufmt           string    (default "\033[0m")
 	menuheaderfmt     string    (default "\033[1m")
 	menuselectfmt     string    (default "\033[7m")
@@ -1023,6 +1024,11 @@ Format string of the file time shown in the info column when it matches this yea
 ## infotimefmtold (string) (default `Jan _2  2006`)
 
 Format string of the file time shown in the info column when it doesn't match this year.
+
+## linkarrow (string) (default ``)
+
+Arrow shown after the name of a symbolic link, followed by the link target (e.g. `set linkarrow ' -> '`).
+No target is shown when this option is empty and a target that does not fit is truncated from the right.
 
 ## menufmt (string) (default `\033[0m`)
 
