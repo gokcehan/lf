@@ -123,9 +123,13 @@ type heldDir struct{ *os.Root }
 // full adds the parent path to an error that names only the entry
 func (d heldDir) full(err error) error {
 	if pathErr, ok := errors.AsType[*os.PathError](err); ok {
-		pathErr.Path = filepath.Join(d.Name(), pathErr.Path)
+		if !filepath.IsAbs(pathErr.Path) {
+			pathErr.Path = filepath.Join(d.Name(), pathErr.Path)
+		}
 	} else if linkErr, ok := errors.AsType[*os.LinkError](err); ok {
-		linkErr.New = filepath.Join(d.Name(), linkErr.New)
+		if !filepath.IsAbs(linkErr.New) {
+			linkErr.New = filepath.Join(d.Name(), linkErr.New)
+		}
 	}
 	return err
 }
@@ -296,10 +300,6 @@ func copyDir(src fsDir, name string, dst fsDir, dstName string, preserve []strin
 	dstDir, err := openDirAt(dst, dstName, dstInfo)
 	if err != nil {
 		errs <- err
-		// remove the new directory, it is still empty
-		if err = dst.Remove(dstName); err != nil {
-			errs <- err
-		}
 		return
 	}
 	defer dstDir.Close()
@@ -361,6 +361,14 @@ func copyEntry(src fsDir, name string, dst fsDir, dstName string, preserve []str
 	}
 }
 
+// realPath resolves symlinks in the parent of path
+func realPath(path string) string {
+	if dir, err := filepath.EvalSymlinks(filepath.Dir(path)); err == nil {
+		return filepath.Join(dir, filepath.Base(path))
+	}
+	return path
+}
+
 func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
 	nums = make(chan int64, 1024)
 	errs = make(chan error, 1024)
@@ -392,7 +400,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				}
 			}
 
-			if rel, err := filepath.Rel(src, filepath.Join(dstDir, file)); err == nil && rel != "." && filepath.IsLocal(rel) {
+			if rel, err := filepath.Rel(realPath(src), realPath(filepath.Join(dstDir, file))); err == nil && rel != "." && filepath.IsLocal(rel) {
 				errs <- fmt.Errorf("cannot copy %s into a subdirectory of itself", src)
 				continue
 			}
