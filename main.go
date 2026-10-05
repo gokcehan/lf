@@ -221,6 +221,8 @@ func printVersion() {
 }
 
 func main() {
+	var exitCode int
+
 	flag.Usage = func() {
 		f := flag.CommandLine.Output()
 		fmt.Fprintf(f, `lf - Terminal file manager
@@ -388,7 +390,7 @@ Options:
 		exportEnvVars()
 		exportFlags()
 
-		run()
+		exitCode = run()
 	}
 
 	if *memprofile != "" {
@@ -401,5 +403,9 @@ Options:
 			log.Fatal("could not write memory profile: ", err)
 		}
 		f.Close()
+	}
+
+	if exitCode != 0 {
+		os.Exit(exitCode)
 	}
 }

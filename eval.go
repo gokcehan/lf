@@ -1054,6 +1054,21 @@ func (e *callExpr) eval(app *app, _ []string) {
 	switch e.name {
 	case "quit":
 		app.requestQuit()
+	case "cq", "cquit":
+		code := 1
+		if len(e.args) > 1 {
+			app.ui.echoerrf("%s: too many arguments", e.name)
+			return
+		}
+		if len(e.args) == 1 {
+			var err error
+			code, err = strconv.Atoi(e.args[0])
+			if err != nil {
+				app.ui.echoerrf("%s: %s", e.name, err)
+				return
+			}
+		}
+		app.requestCq(code)
 	case "up":
 		if app.nav.up(e.count) {
 			app.ui.loadFile(app, true)

@@ -18,11 +18,16 @@ import (
 	"time"
 )
 
+type quitMsg struct {
+	code  int
+	force bool
+}
+
 type app struct {
 	ui              *ui            // ui state (screen, windows, input)
 	nav             *nav           // navigation state (dirs, cursor, selections, preview, caches)
 	ticker          *time.Ticker   // refresh ticker if `period` > 0
-	quitChan        chan struct{}  // signals main loop to exit
+	quitChan        chan quitMsg   // signals main loop to exit
 	cmd             *exec.Cmd      // currently running % (shell-pipe) command
 	cmdIn           io.WriteCloser // stdin writer for running % command
 	cmdOutBuf       []byte         // output of running % command
@@ -40,7 +45,7 @@ type app struct {
 }
 
 func newApp(ui *ui, nav *nav) *app {
-	quitChan := make(chan struct{}, 1)
+	quitChan := make(chan quitMsg, 1)
 
 	app := &app{
 		ui:       ui,
@@ -98,7 +103,19 @@ func (app *app) quit() {
 // requestQuit signals the main loop to quit and never blocks when a request is already pending.
 func (app *app) requestQuit() {
 	select {
-	case app.quitChan <- struct{}{}:
+	case app.quitChan <- quitMsg{code: 0, force: false}:
+	default:
+	}
+}
+
+// requestCq signals the main loop to exit immediately with an exit code.
+func (app *app) requestCq(code int) {
+	select {
+	case <-app.quitChan:
+	default:
+	}
+	select {
+	case app.quitChan <- quitMsg{code: code, force: true}:
 	default:
 	}
 }
@@ -274,7 +291,7 @@ func (app *app) writeHistory() error {
 // the client and the server on separate goroutines and sent here over channels
 // for evaluation. Similarly directories and regular files are also read in
 // separate goroutines and sent here for update.
-func (app *app) loop() {
+func (app *app) loop() int {
 	go app.nav.preloadLoop(app.ui)
 	go app.nav.previewLoop(app.ui)
 
@@ -328,20 +345,22 @@ func (app *app) loop() {
 
 	for {
 		select {
-		case <-app.quitChan:
-			if app.nav.copyJobs > 0 {
-				app.ui.echoerr("quit: copy operation in progress")
-				continue
-			}
+		case q := <-app.quitChan:
+			if !q.force {
+				if app.nav.copyJobs > 0 {
+					app.ui.echoerr("quit: copy operation in progress")
+					continue
+				}
 
-			if app.nav.moveTotal > 0 {
-				app.ui.echoerr("quit: move operation in progress")
-				continue
-			}
+				if app.nav.moveTotal > 0 {
+					app.ui.echoerr("quit: move operation in progress")
+					continue
+				}
 
-			if app.nav.deleteTotal > 0 {
-				app.ui.echoerr("quit: delete operation in progress")
-				continue
+				if app.nav.deleteTotal > 0 {
+					app.ui.echoerr("quit: delete operation in progress")
+					continue
+				}
 			}
 
 			app.quit()
@@ -350,7 +369,7 @@ func (app *app) loop() {
 
 			log.Printf("*************** closing client, PID: %d ***************", gClientID)
 
-			return
+			return q.code
 		case n := <-app.nav.copyJobsChan:
 			app.nav.copyJobs += n
 			app.ui.draw(app.nav)

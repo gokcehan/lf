@@ -145,6 +145,8 @@ Inherit lf's working directory in your shell:
 The following commands are provided by lf:
 
 	quit                     (default 'q')
+	cq
+	cquit
 	up                       (default 'k' and '<up>')
 	half-up                  (default '<c-u>')
 	page-up                  (default '<c-b>' and '<pgup>')
@@ -505,6 +507,10 @@ Modal commands do not take any arguments, but instead change the operation mode 
 ## quit (default `q`)
 
 Quit lf and return to the shell.
+
+## cq, cquit
+
+Quit lf immediately with an exit code (default 1, or optional argument).
 
 ## up (default `k` and `<up>`), half-up (default `<c-u>`), page-up (default `<c-b>` and `<pgup>`), scroll-up (default `<c-y>`), down (default `j` and `<down>`), half-down (default `<c-d>`), page-down (default `<c-f>` and `<pgdn>`), scroll-down (default `<c-e>`)
 

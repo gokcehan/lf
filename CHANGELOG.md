@@ -13,6 +13,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 ### Added
 
 - The `cd` command now supports `-` to change to the previous directory (#2693).
+- The `cq` and `cquit` commands can now be used to quit lf immediately with an exit code (#2696).
 
 ### Fixed
 

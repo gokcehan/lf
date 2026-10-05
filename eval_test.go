@@ -541,6 +541,9 @@ func TestExprString(t *testing.T) {
 		{&cmdExpr{"foo", nil}, "cmd foo"},
 		{&cmdExpr{"foo", &callExpr{"quit", nil, 1}}, "cmd foo quit"},
 		{&callExpr{"quit", nil, 1}, "quit"},
+		{&callExpr{"cq", nil, 1}, "cq"},
+		{&callExpr{"cq", []string{"1"}, 1}, "cq 1"},
+		{&callExpr{"cquit", nil, 1}, "cquit"},
 		{&callExpr{"cd", []string{"~"}, 1}, "cd ~"},
 		{&execExpr{"$", "du -h . | less"}, "${{ du -h . | less }}"},
 		{

@@ -27,7 +27,7 @@ func init() {
 	gState.data = make(map[string]string)
 }
 
-func run() {
+func run() int {
 	if gLogPath != "" {
 		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o600)
 		if err != nil {
@@ -65,9 +65,13 @@ func run() {
 		app.ui.echoerrf("reading history file: %s", err)
 	}
 
-	app.loop()
+	exitCode := app.loop()
 
 	app.ui.screen.Fini()
+
+	if exitCode != 0 {
+		return exitCode
+	}
 
 	if gLastDirPath != "" {
 		writeLastDir(gLastDirPath, app.nav.currDir().path)
@@ -90,6 +94,8 @@ func run() {
 			}
 		}
 	}
+
+	return 0
 }
 
 // printPath prints path for -print-last-dir / -print-selection. Newlines are

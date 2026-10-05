@@ -27,6 +27,8 @@ var (
 		"clear",
 		"clearmaps",
 		"copy",
+		"cq",
+		"cquit",
 		"cut",
 		"down",
 		"delete",

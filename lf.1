@@ -162,6 +162,8 @@ The following commands are provided by lf:
 .IP
 .EX
 quit                     (default \(aqq\(aq)
+cq
+cquit
 up                       (default \(aqk\(aq and \(aq<up>\(aq)
 half\-up                  (default \(aq<c\-u>\(aq)
 page\-up                  (default \(aq<c\-b>\(aq and \(aq<pgup>\(aq)
@@ -556,6 +558,8 @@ operation mode to read their input conveniently, and so they are meant
 to be assigned to keybindings.
 .SS quit (default \f[CR]q\f[R])
 Quit lf and return to the shell.
+.SS cq, cquit
+Quit lf immediately with an exit code (default 1, or optional argument).
 .SS up (default \f[CR]k\f[R] and \f[CR]<up>\f[R]), half\-up (default \f[CR]<c\-u>\f[R]), page\-up (default \f[CR]<c\-b>\f[R] and \f[CR]<pgup>\f[R]), scroll\-up (default \f[CR]<c\-y>\f[R]), down (default \f[CR]j\f[R] and \f[CR]<down>\f[R]), half\-down (default \f[CR]<c\-d>\f[R]), page\-down (default \f[CR]<c\-f>\f[R] and \f[CR]<pgdn>\f[R]), scroll\-down (default \f[CR]<c\-e>\f[R])
 Move/scroll the current file selection upwards/downwards by one/half a
 page/full page.
