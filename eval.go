@@ -121,6 +121,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.incfilter, e)
 	case "incsearch", "noincsearch", "incsearch!":
 		err = applyBoolOpt(&gOpts.incsearch, e)
+	case "linktarget", "nolinktarget", "linktarget!":
+		err = applyBoolOpt(&gOpts.linktarget, e)
 	case "mergeindicators", "nomergeindicators", "mergeindicators!":
 		err = applyBoolOpt(&gOpts.mergeindicators, e)
 	case "mouse", "nomouse", "mouse!":
@@ -295,8 +297,6 @@ func (e *setExpr) eval(app *app, _ []string) {
 		gOpts.infotimefmtnew = e.val
 	case "infotimefmtold":
 		gOpts.infotimefmtold = e.val
-	case "linkarrow":
-		gOpts.linkarrow = e.val
 	case "menufmt":
 		gOpts.menufmt = e.val
 	case "menuheaderfmt":
