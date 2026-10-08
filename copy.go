@@ -98,6 +98,14 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 	}
 }
 
+// realPath resolves symlinks in the parent of path
+func realPath(path string) string {
+	if dir, err := filepath.EvalSymlinks(filepath.Dir(path)); err == nil {
+		return filepath.Join(dir, filepath.Base(path))
+	}
+	return path
+}
+
 func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
 	nums = make(chan int64, 1024)
 	errs = make(chan error, 1024)
@@ -124,7 +132,7 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				dst = newPath
 			}
 
-			if rel, err := filepath.Rel(src, dst); err == nil && rel != "." && filepath.IsLocal(rel) {
+			if rel, err := filepath.Rel(realPath(src), realPath(dst)); err == nil && rel != "." && filepath.IsLocal(rel) {
 				errs <- fmt.Errorf("cannot copy %s into a subdirectory of itself", src)
 				continue
 			}
