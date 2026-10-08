@@ -32,7 +32,7 @@ var (
 func isRoot(name string) bool { return filepath.Dir(name) == name }
 
 func replaceTilde(s string) string {
-	if strings.HasPrefix(s, "~") {
+	if s == "~" || strings.HasPrefix(s, "~/") || strings.HasPrefix(s, `~\`) {
 		return gUser.HomeDir + s[1:]
 	}
 	return s

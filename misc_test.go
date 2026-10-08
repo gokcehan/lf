@@ -32,6 +32,28 @@ func TestIsRoot(t *testing.T) {
 	}
 }
 
+func TestReplaceTilde(t *testing.T) {
+	home := gUser.HomeDir
+	tests := []struct {
+		s   string
+		exp string
+	}{
+		{"~", home},
+		{"~/foo", home + "/foo"},
+		{`~\foo`, home + `\foo`},
+		{"~test", "~test"},
+		{"~test/foo", "~test/foo"},
+		{"/abs/~", "/abs/~"},
+		{"", ""},
+	}
+
+	for _, test := range tests {
+		if got := replaceTilde(test.s); got != test.exp {
+			t.Errorf("at input %q expected %q but got %q", test.s, test.exp, got)
+		}
+	}
+}
+
 func TestFirstGraphemeCluster(t *testing.T) {
 	tests := []struct {
 		s   string
