@@ -608,6 +608,7 @@ type reg struct {
 	loading  bool
 	volatile bool
 	loadTime time.Time
+	modTime  time.Time // modification time of the previewed file
 	path     string
 	lines    []string
 	sixel    bool

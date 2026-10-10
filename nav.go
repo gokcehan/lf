@@ -865,6 +865,9 @@ func (nav *nav) preload() {
 
 func (nav *nav) preview(path string, win *win, mode string) {
 	reg := &reg{loadTime: time.Now(), path: path, height: win.h}
+	if fi, err := os.Stat(path); err == nil {
+		reg.modTime = fi.ModTime()
+	}
 	defer func() {
 		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true
@@ -1000,7 +1003,9 @@ func (nav *nav) checkReg(reg *reg) {
 		return
 	}
 
-	if s.ModTime().After(reg.loadTime) {
+	// reload when the mtime differs from the one seen at preview time
+	if !s.ModTime().Equal(reg.modTime) {
+		reg.modTime = s.ModTime()
 		reg.loadTime = now
 		reg.loading = true
 		if gOpts.preload {
