@@ -1585,7 +1585,8 @@ func (nav *nav) rename() error {
 	if dir.loading {
 		for i := range dir.allFiles {
 			if dir.allFiles[i].path == oldPath {
-				dir.allFiles[i] = &file{FileInfo: lstat}
+				dir.allFiles[i] = newFile(newPath)
+				nav.moveCache(oldPath, newPath)
 				break
 			}
 		}
@@ -1595,6 +1596,24 @@ func (nav *nav) rename() error {
 	dir.sel(lstat.Name(), nav.height)
 
 	return nil
+}
+
+// moveCache moves the cached preview and listing of a renamed file to its new path
+func (nav *nav) moveCache(oldPath, newPath string) {
+	if r, ok := nav.regCache[oldPath]; ok && !r.loading {
+		r.path = newPath
+		nav.regCache[newPath] = r
+	}
+	delete(nav.regCache, oldPath)
+
+	if d, ok := nav.dirCache[oldPath]; ok && !d.loading {
+		d.path = newPath
+		for _, f := range d.allFiles {
+			f.path = filepath.Join(newPath, f.Name())
+		}
+		nav.dirCache[newPath] = d
+	}
+	delete(nav.dirCache, oldPath)
 }
 
 func (nav *nav) sync() error {
