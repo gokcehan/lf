@@ -148,10 +148,33 @@ func writeSelection(filename string, selection []string) {
 func readExpr() <-chan expr {
 	ch := make(chan expr)
 
+	// The server may have just been started and not be listening yet. Wait
+	// briefly for it so that the client is registered before the config file
+	// is read, otherwise commands run from there that use
+	// `lf -remote "send $id ..."` are dropped.
+	c, err := net.Dial("unix", gSocketPath)
+	for deadline := time.Now().Add(time.Second); err != nil && time.Now().Before(deadline); {
+		time.Sleep(time.Millisecond)
+		c, err = net.Dial("unix", gSocketPath)
+	}
+
+	register := func() error {
+		_, err := fmt.Fprintf(c, "conn %d\n", gClientID)
+		return err
+	}
+
+	registered := false
+	if err == nil {
+		if err := register(); err != nil {
+			log.Printf("registering with server: %s", err)
+			return ch
+		}
+		registered = true
+	}
+
 	go func() {
 		duration := 100 * time.Millisecond
 
-		c, err := net.Dial("unix", gSocketPath)
 		for err != nil {
 			log.Printf("connecting server: %s", err)
 			time.Sleep(duration)
@@ -159,9 +182,11 @@ func readExpr() <-chan expr {
 			c, err = net.Dial("unix", gSocketPath)
 		}
 
-		if _, err := fmt.Fprintf(c, "conn %d\n", gClientID); err != nil {
-			log.Printf("registering with server: %s", err)
-			return
+		if !registered {
+			if err := register(); err != nil {
+				log.Printf("registering with server: %s", err)
+				return
+			}
 		}
 
 		ch <- &callExpr{"sync", nil, 1}
