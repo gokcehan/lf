@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"testing"
+	"time"
 )
 
 func TestDirSize(t *testing.T) {
@@ -34,5 +35,45 @@ func TestDirSize(t *testing.T) {
 
 	if got != expected {
 		t.Errorf("at symlink to directory expected %d but got %d", expected, got)
+	}
+}
+
+func TestCopyDirSizes(t *testing.T) {
+	tmp := t.TempDir()
+
+	for _, name := range []string{"a", "b", "d"} {
+		if err := os.Mkdir(filepath.Join(tmp, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	prev := newDir(tmp)
+	for _, f := range prev.allFiles {
+		switch f.Name() {
+		case "a":
+			f.dirSize = 42
+		case "d":
+			f.dirSize = 7
+		}
+	}
+
+	// changing the modification time of "d" should invalidate its size
+	later := time.Now().Add(time.Hour)
+	if err := os.Chtimes(filepath.Join(tmp, "d"), later, later); err != nil {
+		t.Fatal(err)
+	}
+
+	if err := os.Mkdir(filepath.Join(tmp, "c"), 0o755); err != nil {
+		t.Fatal(err)
+	}
+
+	curr := newDir(tmp)
+	curr.copyDirSizes(prev)
+
+	expected := map[string]int64{"a": 42, "b": -1, "c": -1, "d": -1}
+	for _, f := range curr.allFiles {
+		if got := f.dirSize; got != expected[f.Name()] {
+			t.Errorf("at %q expected dirSize %d but got %d", f.Name(), expected[f.Name()], got)
+		}
 	}
 }
