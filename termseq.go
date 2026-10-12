@@ -200,7 +200,7 @@ loop:
 		case "38":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 38: %s", err)
+				log.Printf("processing ANSI code 38: %s", err)
 				break loop
 			}
 			st = st.Foreground(color)
@@ -214,7 +214,7 @@ loop:
 		case "48":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 48: %s", err)
+				log.Printf("processing ANSI code 48: %s", err)
 				break loop
 			}
 			st = st.Background(color)
@@ -222,13 +222,13 @@ loop:
 		case "58":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
-				log.Printf("error processing ansi code 58: %s", err)
+				log.Printf("processing ANSI code 58: %s", err)
 				break loop
 			}
 			st = st.Underline(color)
 			i += offset
 		default:
-			log.Printf("unknown ansi code: %s", toks[i])
+			log.Printf("unknown ANSI code: %s", toks[i])
 		}
 	}
 
