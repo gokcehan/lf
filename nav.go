@@ -200,6 +200,30 @@ func newDir(path string) *dir {
 	}
 }
 
+// copyDirSizes carries over directory sizes calculated via `calcdirsize` from
+// a previously loaded version of the same directory, since reloading the
+// directory creates new file objects with unknown sizes. A size is only kept
+// if the directory's modification time is unchanged, so directories that were
+// recreated or had entries added or removed are recalculated.
+func (dir *dir) copyDirSizes(prev *dir) {
+	prevFiles := make(map[string]*file)
+	for _, f := range prev.allFiles {
+		if f.dirSize >= 0 {
+			prevFiles[f.path] = f
+		}
+	}
+
+	if len(prevFiles) == 0 {
+		return
+	}
+
+	for _, f := range dir.allFiles {
+		if p, ok := prevFiles[f.path]; ok && f.IsDir() && f.ModTime().Equal(p.ModTime()) {
+			f.dirSize = p.dirSize
+		}
+	}
+}
+
 func (dir *dir) sort() {
 	dir.sortby = getSortBy(dir.path)
 	dir.dircounts = getDirCounts(dir.path)
@@ -532,15 +556,16 @@ func (nav *nav) checkDir(dir *dir) {
 		go func() {
 			nav.dirChan <- newDir(dir.path)
 		}()
-	case dir.dircounts != getDirCounts(dir.path):
+	// Enabling dircounts requires reloading the directory to count the entries
+	// of its child directories. Disabling it only requires sorting the files
+	// again, which also keeps the sizes calculated by `calcdirsize`.
+	case !dir.dircounts && getDirCounts(dir.path):
 		dir.loading = true
 		go func() {
 			nav.dirChan <- newDir(dir.path)
 		}()
-	// Although toggling dircounts can affect sorting, it is already handled by
-	// reloading the directory which should sort the files anyway, so it is not
-	// checked below.
-	case dir.sortby != getSortBy(dir.path) ||
+	case dir.dircounts != getDirCounts(dir.path) ||
+		dir.sortby != getSortBy(dir.path) ||
 		dir.dirfirst != getDirFirst(dir.path) ||
 		dir.dironly != getDirOnly(dir.path) ||
 		dir.hidden != getHidden(dir.path) ||
