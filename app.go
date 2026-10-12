@@ -54,9 +54,11 @@ func newApp(ui *ui, nav *nav) *app {
 	signal.Notify(sigChan, os.Interrupt, syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM)
 	go func() {
 		for {
-			switch <-sigChan {
+			sig := <-sigChan
+			switch sig {
 			case os.Interrupt:
 			case syscall.SIGHUP, syscall.SIGQUIT, syscall.SIGTERM:
+				log.Printf("received termination signal: %s", sig)
 				app.quit()
 				app.ui.screen.Fini()
 				os.Exit(3)
@@ -537,10 +539,11 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 	app.nav.previewChan <- ""
 
 	if err := app.ui.suspend(); err != nil {
-		log.Printf("suspend: %s", err)
+		log.Printf("suspending screen: %s", err)
 	}
 	defer func() {
 		if err := app.ui.resume(); err != nil {
+			log.Printf("resuming screen: %s", err)
 			app.quit()
 			os.Exit(3)
 		}

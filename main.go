@@ -82,7 +82,7 @@ func exportEnvVars() {
 
 	level, err := strconv.Atoi(envLevel)
 	if err != nil {
-		log.Printf("reading lf level: %s", err)
+		log.Printf("parsing $LF_LEVEL: %s", err)
 	}
 
 	level++
@@ -183,7 +183,7 @@ func checkServer() {
 		startServer()
 	} else if _, err := net.Dial("unix", gSocketPath); err != nil {
 		if err := os.Remove(gSocketPath); err != nil {
-			log.Print(err)
+			log.Printf("removing socket: %s", err)
 		}
 		startServer()
 	}
@@ -381,7 +381,7 @@ Options:
 		case 1:
 			gSelect = flag.Arg(0)
 		default:
-			fmt.Fprintln(os.Stderr, "only single file or directory is allowed")
+			fmt.Fprintln(os.Stderr, "only one file or directory may be specified")
 			os.Exit(2)
 		}
 

@@ -48,7 +48,7 @@ type file struct {
 func newFile(path string) *file {
 	lstat, err := os.Lstat(path)
 	if err != nil {
-		log.Printf("getting file information: %s", err)
+		log.Printf("getting file info: %s", err)
 		return &file{
 			FileInfo:   &fakeStat{name: filepath.Base(path)},
 			linkState:  notLink,
@@ -100,13 +100,13 @@ func newFile(path string) *file {
 	if lstat.IsDir() && getDirCounts(filepath.Dir(path)) {
 		d, err := os.Open(path)
 		if err != nil {
-			log.Printf("opening file: %s", err)
+			log.Printf("counting directory entries: %s", err)
 		} else {
 			names, err := d.Readdirnames(10000)
 			d.Close()
 
 			if names == nil && err != io.EOF {
-				log.Printf("reading directory: %s", err)
+				log.Printf("counting directory entries: %s", err)
 			} else {
 				dirCount = len(names)
 			}
@@ -907,12 +907,12 @@ func (nav *nav) preview(path string, win *win, mode string) {
 				if _, ok := errors.AsType[*exec.ExitError](err); ok {
 					reg.volatile = true
 				} else {
-					log.Printf("loading file: %s", err)
+					log.Printf("previewing file: %s", err)
 				}
 			}
 			if s := strings.TrimSpace(stderr.String()); s != "" {
 				s = strings.Join(strings.Fields(s), " ")
-				log.Printf("loading file (stderr): %s", s)
+				log.Printf("previewing file (stderr): %s", s)
 			}
 		}()
 		defer out.Close()
@@ -920,7 +920,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 	} else {
 		lstat, err := os.Lstat(path)
 		if err != nil {
-			log.Printf("lstat: %s", err)
+			log.Printf("previewing file: %s", err)
 			return
 		}
 
@@ -930,7 +930,7 @@ func (nav *nav) preview(path string, win *win, mode string) {
 
 		f, err := os.Open(path)
 		if err != nil {
-			log.Printf("opening file: %s", err)
+			log.Printf("previewing file: %s", err)
 			return
 		}
 
@@ -1151,7 +1151,7 @@ func (nav *nav) open() error {
 	}
 
 	if err := os.Chdir(curr.path); err != nil {
-		return fmt.Errorf("open: %w", err)
+		return err
 	}
 
 	nav.dirPaths = append(nav.dirPaths, curr.path)
@@ -1814,7 +1814,7 @@ func isFiltered(f os.FileInfo, filter []string) bool {
 	for _, pattern := range filter {
 		matched, err := searchMatch(f.Name(), strings.TrimPrefix(pattern, "!"), gOpts.filtermethod)
 		if err != nil {
-			log.Printf("Filter Error: %s", err)
+			log.Printf("applying filter: %s", err)
 			return false
 		}
 		if strings.HasPrefix(pattern, "!") && matched {

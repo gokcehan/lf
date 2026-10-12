@@ -31,7 +31,7 @@ func run() {
 	if gLogPath != "" {
 		f, err := os.OpenFile(gLogPath, os.O_RDWR|os.O_CREATE|os.O_APPEND, 0o600)
 		if err != nil {
-			log.Fatalf("failed to open log file: %s", err)
+			log.Fatalf("opening log file: %s", err)
 		}
 		defer f.Close()
 		log.SetOutput(f)
@@ -108,7 +108,7 @@ func printPath(label, path string, stdoutIsTerminal bool) {
 
 func writeLastDir(filename, lastDir string) {
 	if strings.ContainsAny(lastDir, "\n\r") {
-		log.Printf("last-dir: path contains newline: %q", lastDir)
+		log.Printf("last-dir: skipping path with newline: %q", lastDir)
 		return
 	}
 	f, err := os.Create(filename)
@@ -153,7 +153,7 @@ func readExpr() <-chan expr {
 
 		c, err := net.Dial("unix", gSocketPath)
 		for err != nil {
-			log.Printf("connecting server: %s", err)
+			log.Printf("connecting to server (retrying in %s): %s", duration, err)
 			time.Sleep(duration)
 			duration *= 2
 			c, err = net.Dial("unix", gSocketPath)

@@ -786,7 +786,7 @@ func resetIncCmd(app *app) {
 		dir := app.nav.currDir()
 		old := dir.ind
 		if err := app.nav.setFilter(app.nav.prevFilter); err != nil {
-			log.Printf("reset filter: %s", err)
+			log.Printf("resetting filter: %s", err)
 		} else if old != dir.ind {
 			app.ui.loadFile(app, true)
 		}
@@ -1011,7 +1011,7 @@ func cd(app *app, path string) error {
 	preChdir(app)
 
 	if err := app.nav.cd(path); err != nil {
-		return fmt.Errorf("changing directory: %w", err)
+		return err
 	}
 
 	app.ui.loadFile(app, true)
@@ -1109,7 +1109,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			preChdir(app)
 			err := app.nav.open()
 			if err != nil {
-				app.ui.echoerrf("opening directory: %s", err)
+				app.ui.echoerrf("open: %s", err)
 				return
 			}
 			app.ui.loadFile(app, true)
@@ -1623,7 +1623,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerr("push: requires an argument")
 			return
 		}
-		log.Println("pushing keys", e.args[0])
+		log.Printf("pushing keys: %s", e.args[0])
 		for _, val := range splitKeys(e.args[0]) {
 			app.ui.evChan <- parseKey(val)
 		}
@@ -1687,7 +1687,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 
 		tty, ok := app.ui.screen.Tty()
 		if !ok {
-			log.Print("tty-write: failed to get tty")
+			log.Print("tty-write: no tty available")
 			return
 		}
 
@@ -1911,7 +1911,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			}
 			app.ui.loadFile(app, true)
 		default:
-			log.Printf("entering unknown execution prefix: %q", app.ui.cmdPrefix)
+			log.Printf("unknown execution prefix: %q", app.ui.cmdPrefix)
 		}
 	case "cmd-interrupt":
 		if app.cmd != nil {

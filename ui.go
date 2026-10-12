@@ -1353,7 +1353,7 @@ func listMarks(marks map[string]string) string {
 func listFilesInCurrDir(nav *nav) string {
 	dir := nav.currDir()
 	if dir.loading {
-		log.Printf("listFilesInCurrDir(): %s is still loading, `files` isn't ready for remote query", dir.path)
+		log.Printf("listFilesInCurrDir: directory contents not loaded yet: %q", dir.path)
 		return ""
 	}
 
@@ -1426,7 +1426,7 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 		expr := keys[ui.keyAcc]
 		if ui.keyCount != "" {
 			if count, err := strconv.Atoi(ui.keyCount); err != nil {
-				log.Printf("converting command count: %s", err)
+				log.Printf("parsing command count: %s", err)
 			} else if count > 0 {
 				switch e := expr.(type) {
 				case *callExpr:
@@ -1540,9 +1540,9 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 	case *tcell.EventResize:
 		return &callExpr{"redraw", nil, 1}
 	case *tcell.EventError:
-		log.Printf("Got EventError: '%s' at %s", tev.Error(), tev.When())
+		log.Printf("event error: %q at %s", tev.Error(), tev.When())
 	case *tcell.EventInterrupt:
-		log.Printf("Got EventInterrupt: at %s", tev.When())
+		log.Printf("event interrupt at %s", tev.When())
 	case *tcell.EventFocus:
 		if tev.Focused {
 			return &callExpr{"on-focus-gained", nil, 1}
@@ -1620,7 +1620,7 @@ func anyKey() {
 
 	b := make([]byte, 8)
 	if _, err := os.Stdin.Read(b); err != nil {
-		log.Printf("Failed to read key press: %s", err)
+		log.Printf("reading key press: %s", err)
 	}
 }
 

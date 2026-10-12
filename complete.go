@@ -246,7 +246,7 @@ func matchFile(s string, dirOnly bool, escape, unescape func(string) string) (ma
 	}
 	files, err := os.ReadDir(d)
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		log.Printf("completing path: %s", err)
 		longest = s
 		return
 	}
@@ -316,7 +316,7 @@ func matchExec(s string) (matches []compMatch, longest string) {
 		files, err := os.ReadDir(p)
 		if err != nil {
 			if !os.IsNotExist(err) {
-				log.Printf("reading path: %s", err)
+				log.Printf("completing shell command: %s", err)
 			}
 			continue
 		}
@@ -328,7 +328,7 @@ func matchExec(s string) (matches []compMatch, longest string) {
 
 			finfo, err := f.Info()
 			if err != nil {
-				log.Printf("getting file information: %s", err)
+				log.Printf("completing shell command: %s", err)
 				continue
 			}
 
@@ -346,7 +346,7 @@ func matchExec(s string) (matches []compMatch, longest string) {
 func matchSearch(s string) (matches []compMatch, longest string) {
 	files, err := os.ReadDir(".")
 	if err != nil {
-		log.Printf("reading directory: %s", err)
+		log.Printf("completing search: %s", err)
 		longest = s
 		return
 	}
