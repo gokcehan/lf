@@ -1582,7 +1582,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		}
 
 		path := replaceTilde(e.args[0])
-		lstat, err := os.Lstat(path)
+		_, err := os.Lstat(path)
 		if err != nil {
 			app.ui.echoerrf("select: %s", err)
 			return
@@ -1602,7 +1602,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 		dir := app.nav.currDir()
 		app.nav.checkDir(dir)
 		if dir.loading {
-			dir.files = append(dir.files, &file{FileInfo: lstat})
+			dir.files = append(dir.files, newFile(path))
 		}
 		name := filepath.Base(path)
 		for i, f := range dir.files {
