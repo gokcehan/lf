@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"errors"
 	"fmt"
 	"log"
 	"maps"
@@ -139,12 +140,17 @@ func listen(l net.Listener) {
 	for {
 		c, err := l.Accept()
 		if err != nil {
+			if errors.Is(err, net.ErrClosed) {
+				log.Print("*************** closing server ***************")
+				return
+			}
 			select {
 			case <-gQuitChan:
 				log.Print("*************** closing server ***************")
 				return
 			default:
 				log.Printf("accepting connection: %s", err)
+				continue
 			}
 		}
 		go handleConn(c)
