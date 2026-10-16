@@ -449,6 +449,30 @@ func TestGetFileExtension(t *testing.T) {
 	}
 }
 
+func TestFilenameToVisual(t *testing.T) {
+	tests := []struct {
+		logical string
+		visual  string
+	}{
+		{"plain.txt", "plain.txt"},
+		{"مرحبا.txt", "txt.ﺎﺒﺣﺮﻣ"},
+		{"report-تقرير.txt", "report-ﺮﻳﺮﻘﺗ.txt"},
+		{"ملف 123.txt", "txt.123 ﻒﻠﻣ"},
+		{"שלום.txt", "txt.םולש"},
+		{"لا.txt", "txt.ﻻ"},
+		{"日本語.txt", "日本語.txt"},
+	}
+
+	for _, test := range tests {
+		if got := filenameToVisual(test.logical); got != test.visual {
+			t.Errorf("filenameToVisual(%q): expected %q, got %q", test.logical, test.visual, got)
+		}
+		if strings.ContainsRune(filenameToVisual(test.logical), '\ufeff') {
+			t.Errorf("filenameToVisual(%q) left a zero width filler", test.logical)
+		}
+	}
+}
+
 func TestTruncateFilename(t *testing.T) {
 	tests := []struct {
 		file        fakeFileInfo

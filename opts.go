@@ -83,6 +83,7 @@ func (s borderStyle) String() string {
 var gOpts struct {
 	anchorfind       bool
 	autoquit         bool
+	bidi             bool
 	borderfmt        string
 	borderstyle      borderStyle
 	cleaner          string
@@ -244,6 +245,7 @@ func getSortIgnoreDia(path string) bool {
 func init() {
 	gOpts.anchorfind = true
 	gOpts.autoquit = true
+	gOpts.bidi = false
 	gOpts.borderfmt = "\033[0m"
 	gOpts.borderstyle = borderBox
 	gOpts.cleaner = ""
