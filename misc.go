@@ -11,7 +11,6 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"strconv"
 	"strings"
 	"unicode"
 
@@ -393,14 +392,16 @@ func naturalCmp(s1, s2 string) int {
 		tok2 := s2[lo2:hi2]
 
 		if isDigit1 && isDigit2 {
-			num1, err1 := strconv.Atoi(tok1)
-			num2, err2 := strconv.Atoi(tok2)
-			if err1 == nil && err2 == nil {
-				if num1 != num2 {
-					return cmp.Compare(num1, num2)
-				} else if len(tok1) != len(tok2) {
-					return cmp.Compare(len(tok1), len(tok2))
-				}
+			// compare the digits directly instead of parsing them, so that
+			// numbers too large for an int are still ordered by value
+			num1 := strings.TrimLeft(tok1, "0")
+			num2 := strings.TrimLeft(tok2, "0")
+			if len(num1) != len(num2) {
+				return cmp.Compare(len(num1), len(num2))
+			} else if num1 != num2 {
+				return cmp.Compare(num1, num2)
+			} else if len(tok1) != len(tok2) {
+				return cmp.Compare(len(tok1), len(tok2))
 			}
 		}
 
