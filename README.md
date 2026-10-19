@@ -14,6 +14,8 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 ![image-preview](https://github.com/user-attachments/assets/9ff42a21-19dd-42fa-8407-5d055aa9d561)
 ![new-features](https://github.com/user-attachments/assets/2a9a32aa-a764-438f-a810-e687e979dcee)
 
+[![Live demo by Demoshell](https://build.demoshell.com/v1/embed/badge.svg)](https://build.demoshell.com/launch?snapshot=demoshell%2Ftui%3Alf&utm_source=badge)
+
 ## Features
 
 - Cross-platform (Linux, macOS, BSDs, Windows)
