@@ -1071,8 +1071,10 @@ Allow previews to be generated in advance using the `previewer` script as the us
 ## preserve ([]string) (default `mode`)
 
 List of attributes that are preserved when copying files.
-Currently supported attributes are `mode` (i.e. access mode) and `timestamps` (i.e. modification time and access time).
-Note that preserving other attributes like ownership or change/birth timestamps is desirable, but not portably supported in Go.
+Currently supported attributes are `mode` (i.e. access mode and ownership) and `timestamps` (i.e. modification time and access time).
+Setuid, setgid and sticky bits are kept only when the ownership is kept and they can be set.
+Ownership that cannot be kept, for example for files of other users or on file systems without owners, is skipped without an error.
+Without `mode`, copies get the permission bits of the source minus the umask.
 
 ## preview (bool) (default true)
 
@@ -1846,7 +1848,7 @@ lf uses its own built-in copy and move operations by default.
 These are implemented as asynchronous operations and progress is shown in the bottom ruler.
 These commands do not overwrite existing files or directories with the same name.
 Instead, a suffix that is compatible with the `--backup=numbered` option in GNU cp is added to the new files or directories.
-Only file modes and (some) timestamps can be preserved (see `preserve` option), all other attributes are ignored including ownership, context, and xattr.
+Mode, ownership and timestamps can be preserved (see `preserve` option), other attributes such as ACLs, context, and xattr are ignored.
 Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed.
 Moving is performed using the rename operation of the underlying OS.
 For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors.

@@ -14,6 +14,7 @@ import (
 	"strconv"
 	"strings"
 	"syscall"
+	"time"
 
 	"golang.org/x/sys/unix"
 )
@@ -233,6 +234,28 @@ func linkCount(f os.FileInfo) string {
 		return strconv.FormatUint(uint64(stat.Nlink), 10)
 	}
 	return ""
+}
+
+// fileOwner returns the user and group ids of f
+func fileOwner(f os.FileInfo) (uid, gid int, ok bool) {
+	if stat, ok := f.Sys().(*syscall.Stat_t); ok {
+		return int(stat.Uid), int(stat.Gid), true
+	}
+	return 0, 0, false
+}
+
+// lchtimes sets the times of name in dir without following a symlink
+func lchtimes(dir *os.Root, name string, atime, mtime time.Time) error {
+	f, err := dir.Open(".")
+	if err != nil {
+		return err
+	}
+	defer f.Close()
+	ts := []unix.Timespec{unix.NsecToTimespec(atime.UnixNano()), unix.NsecToTimespec(mtime.UnixNano())}
+	if err := unix.UtimesNanoAt(int(f.Fd()), name, ts, unix.AT_SYMLINK_NOFOLLOW); err != nil {
+		return &os.PathError{Op: "lchtimes", Path: name, Err: err}
+	}
+	return nil
 }
 
 func errCrossDevice(err error) bool {
