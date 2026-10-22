@@ -1442,8 +1442,8 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 		if err := os.Rename(src, dst); err != nil {
 			if errCrossDevice(err) {
-				// copy and remove through one open parent to keep the remove on the real source
-				parent, err := os.OpenRoot(filepath.Dir(src))
+				// copy and remove through one open parent of the cleaned path to keep the remove on the real source
+				parent, err := os.OpenRoot(filepath.Dir(filepath.Clean(src)))
 				if err != nil {
 					sendErr("%v", err)
 					continue
@@ -1461,7 +1461,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				nav.copyTotalChan <- total
 
 				// keep all attributes since the copy replaces the source
-				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"}, parent)
+				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "ownership", "timestamps"}, parent)
 
 				oldCount := errCount
 			loop:

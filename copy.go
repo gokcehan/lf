@@ -100,10 +100,10 @@ func chownFailureOK(err error) bool {
 	return errors.Is(err, syscall.EPERM) || errors.Is(err, syscall.EINVAL) || errors.Is(err, syscall.EACCES)
 }
 
-// preserveOwner gives the copy the owner of info and reports if the special bits can stay
-func preserveOwner(chown func(uid, gid int) error, info, stat os.FileInfo) (bool, error) {
+// preserveOwner gives the copy the owner of info if asked and reports if the special bits can stay
+func preserveOwner(chown func(uid, gid int) error, info, stat os.FileInfo, owner bool) (bool, error) {
 	uid, gid, ok := fileOwner(info)
-	if !ok {
+	if !ok || !owner {
 		return false, nil
 	}
 	if stat != nil {
@@ -124,8 +124,8 @@ func preserveOwner(chown func(uid, gid int) error, info, stat os.FileInfo) (bool
 }
 
 // preserveOwnerAndMode sets the owner before the mode since chown clears special bits
-func preserveOwnerAndMode(chown func(uid, gid int) error, chmod func(os.FileMode) error, info, stat os.FileInfo) error {
-	keep, err := preserveOwner(chown, info, stat)
+func preserveOwnerAndMode(chown func(uid, gid int) error, chmod func(os.FileMode) error, info, stat os.FileInfo, owner bool) error {
+	keep, err := preserveOwner(chown, info, stat, owner)
 	if err != nil {
 		return err
 	}
@@ -142,7 +142,7 @@ func preserveOwnerAndMode(chown func(uid, gid int) error, chmod func(os.FileMode
 
 // preserveLink sets the owner and times of a copied symlink without following it
 func preserveLink(dst *os.Root, name string, info os.FileInfo, preserve []string) error {
-	if uid, gid, ok := fileOwner(info); ok && slices.Contains(preserve, "mode") {
+	if uid, gid, ok := fileOwner(info); ok && slices.Contains(preserve, "ownership") {
 		if err := dst.Lchown(name, uid, gid); err != nil && !chownFailureOK(err) {
 			return fullPathErr(dst, err)
 		}
@@ -196,7 +196,7 @@ func copyFile(src *os.Root, name string, dst *os.Root, dstName string, preserve 
 
 	if slices.Contains(preserve, "mode") {
 		created, _ := w.Stat()
-		if err := preserveOwnerAndMode(w.Chown, w.Chmod, info, created); err != nil {
+		if err := preserveOwnerAndMode(w.Chown, w.Chmod, info, created, slices.Contains(preserve, "ownership")); err != nil {
 			errs <- err
 		}
 	}
@@ -218,7 +218,13 @@ func copyFile(src *os.Root, name string, dst *os.Root, dstName string, preserve 
 	}
 }
 
-func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve []string, info os.FileInfo, nums chan<- int64, errs chan<- error) {
+func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve []string, info, top os.FileInfo, nums chan<- int64, errs chan<- error) {
+	// stop when the walk reaches its own copy, the path check in copyAll misses bind mounts
+	if top != nil && os.SameFile(info, top) {
+		errs <- fmt.Errorf("cannot copy %s into itself", filepath.Join(src.Name(), name))
+		return
+	}
+
 	// list the source before creating anything, a self copy must not see the copy
 	f, err := src.OpenFile(name, os.O_RDONLY, 0)
 	if err != nil {
@@ -256,6 +262,9 @@ func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve [
 		errs <- fullPathErr(dst, err)
 		return
 	}
+	if top == nil {
+		top = dstInfo
+	}
 	dstDir, err := openDirAt(dst, dstName, dstInfo)
 	if err != nil {
 		errs <- err
@@ -279,7 +288,7 @@ func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve [
 			errs <- fmt.Errorf("walk: %w", err)
 		} else {
 			for _, entry := range entries {
-				copyEntry(srcDir, entry.Name(), dstDir, entry.Name(), preserve, nums, errs)
+				copyEntry(srcDir, entry.Name(), dstDir, entry.Name(), preserve, top, nums, errs)
 			}
 			srcDir.Close()
 		}
@@ -296,7 +305,7 @@ func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve [
 	if slices.Contains(preserve, "mode") {
 		chown := func(uid, gid int) error { return dstDir.Chown(".", uid, gid) }
 		chmod := func(mode os.FileMode) error { return dstDir.Chmod(".", mode) }
-		if err := preserveOwnerAndMode(chown, chmod, info, nil); err != nil {
+		if err := preserveOwnerAndMode(chown, chmod, info, nil, slices.Contains(preserve, "ownership")); err != nil {
 			errs <- fullPathErr(dstDir, err)
 		}
 		return
@@ -311,7 +320,7 @@ func copyDir(src *os.Root, name string, dst *os.Root, dstName string, preserve [
 }
 
 // copyEntry copies the entry name in src to dstName in dst, a symlink as a symlink
-func copyEntry(src *os.Root, name string, dst *os.Root, dstName string, preserve []string, nums chan<- int64, errs chan<- error) {
+func copyEntry(src *os.Root, name string, dst *os.Root, dstName string, preserve []string, top os.FileInfo, nums chan<- int64, errs chan<- error) {
 	info, err := src.Lstat(name)
 	if err != nil {
 		errs <- fmt.Errorf("walk: %w", fullPathErr(src, err))
@@ -321,12 +330,12 @@ func copyEntry(src *os.Root, name string, dst *os.Root, dstName string, preserve
 	switch {
 	case info.IsDir():
 		nums <- info.Size()
-		copyDir(src, name, dst, dstName, preserve, info, nums, errs)
+		copyDir(src, name, dst, dstName, preserve, info, top, nums, errs)
 	case info.Mode()&os.ModeSymlink != 0:
 		if target, err := src.Readlink(name); err != nil {
 			errs <- fmt.Errorf("symlink: %w", fullPathErr(src, err))
-		} else if err := dst.Symlink(target, dstName); err != nil {
-			errs <- fmt.Errorf("symlink: %w", fullPathErr(dst, err))
+		} else if err := symlinkAt(dst, target, dstName); err != nil {
+			errs <- fmt.Errorf("symlink: %w", err)
 		} else if err := preserveLink(dst, dstName, info, preserve); err != nil {
 			errs <- err
 		}
@@ -394,7 +403,7 @@ func copyAll(srcs []string, dstDir string, preserve []string, srcParent *os.Root
 					continue
 				}
 			}
-			copyEntry(parent, filepath.Base(src), dst, file, preserve, nums, errs)
+			copyEntry(parent, filepath.Base(src), dst, file, preserve, nil, nums, errs)
 			if srcParent == nil {
 				parent.Close()
 			}

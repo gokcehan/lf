@@ -330,11 +330,16 @@ func (e *setExpr) eval(app *app, _ []string) {
 		toks := strings.Split(e.val, ":")
 		for _, s := range toks {
 			switch s {
-			case "mode", "timestamps":
+			case "mode", "ownership", "timestamps":
 			default:
-				app.ui.echoerr("preserve: should consist of 'mode' or 'timestamps' separated with colon")
+				app.ui.echoerr("preserve: should consist of 'mode', 'ownership' or 'timestamps' separated with colon")
 				return
 			}
+		}
+		// the owner is set together with the mode
+		if slices.Contains(toks, "ownership") && !slices.Contains(toks, "mode") {
+			app.ui.echoerr("preserve: 'ownership' needs 'mode'")
+			return
 		}
 		gOpts.preserve = toks
 	case "previewer":

@@ -1071,7 +1071,7 @@ Allow previews to be generated in advance using the `previewer` script as the us
 ## preserve ([]string) (default `mode`)
 
 List of attributes that are preserved when copying files.
-Currently supported attributes are `mode` (i.e. access mode and ownership) and `timestamps` (i.e. modification time and access time).
+Currently supported attributes are `mode` (i.e. access mode), `ownership` (i.e. owner and group, needs `mode`) and `timestamps` (i.e. modification time and access time).
 Setuid, setgid and sticky bits are kept only when the ownership is kept and they can be set.
 Ownership that cannot be kept, for example for files of other users or on file systems without owners, is skipped without an error.
 Without `mode`, copies get the permission bits of the source minus the umask.
@@ -1852,6 +1852,7 @@ Mode, ownership and timestamps can be preserved (see `preserve` option), other a
 Special files such as character and block devices, named pipes, and sockets are skipped and links are not followed.
 Moving is performed using the rename operation of the underlying OS.
 For cross-device moving, lf falls back to copying and then deletes the original files if there are no errors.
+This copy keeps mode, ownership and timestamps.
 Operation errors are shown in the message line as well as the log file and they do not prematurely terminate the corresponding file operation.
 
 File operations can be performed on the currently selected file or on multiple files by selecting them first.

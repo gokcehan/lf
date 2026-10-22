@@ -400,7 +400,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 		case "info":
 			matches, longest = matchList(f[2], []string{"atime", "btime", "ctime", "custom", "group", "perm", "size", "time", "user"})
 		case "preserve":
-			matches, longest = matchList(f[2], []string{"mode", "timestamps"})
+			matches, longest = matchList(f[2], []string{"mode", "ownership", "timestamps"})
 		case "selmode":
 			matches, longest = matchWord(f[2], []string{"all", "dir"})
 		case "sizeunits":
