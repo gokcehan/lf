@@ -1361,7 +1361,7 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nav.copyTotalChan <- total
 
-	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
+	nums, errs := copyAll(srcs, dstDir, gOpts.preserve, nil)
 
 loop:
 	for {
@@ -1442,18 +1442,26 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 
 		if err := os.Rename(src, dst); err != nil {
 			if errCrossDevice(err) {
+				// copy and remove through one open parent of the cleaned path to keep the remove on the real source
+				parent, err := os.OpenRoot(filepath.Dir(filepath.Clean(src)))
+				if err != nil {
+					sendErr("%v", err)
+					continue
+				}
 				nav.copyJobsChan <- 1
 
 				total, err := copySize([]string{src})
 				if err != nil {
 					sendErr("%v", err)
 					nav.copyJobsChan <- -1
+					parent.Close()
 					continue
 				}
 
 				nav.copyTotalChan <- total
 
-				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"})
+				// keep all attributes since the copy replaces the source
+				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "ownership", "timestamps"}, parent)
 
 				oldCount := errCount
 			loop:
@@ -1473,10 +1481,11 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				nav.copyTotalChan <- -total
 
 				if errCount == oldCount {
-					if err := os.RemoveAll(src); err != nil {
-						sendErr("%v", err)
+					if err := parent.RemoveAll(filepath.Base(src)); err != nil {
+						sendErr("%v", fullPathErr(parent, err))
 					}
 				}
+				parent.Close()
 			} else {
 				sendErr("%v", err)
 			}

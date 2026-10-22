@@ -9,6 +9,7 @@ import (
 	"path/filepath"
 	"slices"
 	"strings"
+	"time"
 
 	"golang.org/x/sys/windows"
 )
@@ -214,6 +215,21 @@ func groupName(_ os.FileInfo) string {
 
 func linkCount(_ os.FileInfo) string {
 	return ""
+}
+
+// fileOwner reports no owner since files have no user and group ids on windows
+func fileOwner(_ os.FileInfo) (uid, gid int, ok bool) {
+	return 0, 0, false
+}
+
+// lchtimes does nothing, symlink times are not kept on windows
+func lchtimes(_ *os.Root, _ string, _, _ time.Time) error {
+	return nil
+}
+
+// symlinkAt uses os.Symlink since os.Root makes a file link for a folder target outside the root
+func symlinkAt(dir *os.Root, target, name string) error {
+	return os.Symlink(target, filepath.Join(dir.Name(), name))
 }
 
 func errCrossDevice(err error) bool {
