@@ -235,6 +235,11 @@ func linkCount(f os.FileInfo) string {
 	return ""
 }
 
+// symlinkAt creates name in dir as a symlink to target
+func symlinkAt(dir *os.Root, target, name string) error {
+	return fullPathErr(dir, dir.Symlink(target, name))
+}
+
 func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(unix.Errno) == unix.EXDEV
 }
