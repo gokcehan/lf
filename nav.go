@@ -1472,8 +1472,9 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				nav.copyJobsChan <- -1
 				nav.copyTotalChan <- -total
 
+				// remove only what the copy holds, so nothing without a copy is lost
 				if errCount == oldCount {
-					if err := os.RemoveAll(src); err != nil {
+					if err := removeCopied(src, dst); err != nil {
 						sendErr("%v", err)
 					}
 				}
