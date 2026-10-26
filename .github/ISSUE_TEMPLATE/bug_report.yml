@@ -1,0 +1,41 @@
+name: Bug report
+description: Report a problem
+labels: [bug]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        - Search [existing issues](https://github.com/gokcehan/lf/issues) before reporting.
+        - Verify bugs yourself. AI claims alone aren't proof.
+  - type: textarea
+    attributes:
+      label: Description
+      description: Describe the problem. Include logs (`lf -log lf.log`), images, or videos if useful.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Steps to reproduce
+      description: |
+        Describe how to reproduce or verify the problem.
+        - Try `lf -config /dev/null` (Windows: `lf -config NUL`) to skip loading your `lfrc`.
+        - If the problem disappears, include any settings or scripts needed to reproduce it.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: lf version
+      description: Paste the output of `lf -version`.
+      render: text
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Environment
+      description: Include your operating system, terminal, and any other details relevant to the issue.
+      placeholder: |
+        Operating system:
+        Terminal:
+        ...
+    validations:
+      required: true

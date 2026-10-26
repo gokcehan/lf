@@ -1,0 +1,23 @@
+name: Feature request
+description: Suggest a feature or improvement
+labels: [enhancement]
+body:
+  - type: markdown
+    attributes:
+      value: Search [existing issues](https://github.com/gokcehan/lf/issues) before submitting.
+  - type: textarea
+    attributes:
+      label: Problem or use case
+      description: What is missing or difficult to do in lf?
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Desired behavior
+      description: Describe how the feature should work. Include examples from other tools if relevant.
+    validations:
+      required: true
+  - type: textarea
+    attributes:
+      label: Configuration and workarounds
+      description: Have you tried achieving this through configuration or scripting? If so, what limitations did you encounter?
