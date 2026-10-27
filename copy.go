@@ -98,6 +98,40 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 	}
 }
 
+// removeCopied removes src where dst holds its copy, so data without a copy stays
+func removeCopied(src, dst string) error {
+	info, err := os.Lstat(src)
+	if err != nil {
+		return err
+	}
+	got, err := os.Lstat(dst)
+	if err != nil || got.Mode().Type() != info.Mode().Type() || info.Mode().IsRegular() && got.Size() != info.Size() {
+		return fmt.Errorf("%s has no copy and was not removed", src)
+	}
+	if info.IsDir() {
+		f, err := os.Open(src)
+		if err != nil {
+			return err
+		}
+		names, err := f.Readdirnames(-1)
+		f.Close()
+		if err != nil {
+			return err
+		}
+		var first error
+		for _, n := range names {
+			if err := removeCopied(filepath.Join(src, n), filepath.Join(dst, n)); err != nil && first == nil {
+				first = err
+			}
+		}
+		if first != nil {
+			return first
+		}
+	}
+	// Remove refuses a directory that is not empty
+	return os.Remove(src)
+}
+
 func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
 	nums = make(chan int64, 1024)
 	errs = make(chan error, 1024)
