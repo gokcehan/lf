@@ -1503,6 +1503,7 @@ func (e *callExpr) eval(app *app, _ []string) {
 			return
 		}
 		normal(app)
+		app.ui.menu = listMarks(app.nav.marks)
 		app.ui.cmdPrefix = "mark-save: "
 	case "mark-load":
 		if app.ui.cmdPrefix == ">" {
