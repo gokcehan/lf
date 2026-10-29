@@ -98,6 +98,31 @@ func copyFile(src, dst string, preserve []string, info os.FileInfo, nums chan<- 
 	}
 }
 
+// dupFilePath returns a path for a duplicate of name in dstDir based on the dupfilefmt option.
+func dupFilePath(dstDir, name string, info os.FileInfo) (string, error) {
+	ext := getFileExtension(info)
+	basename := strings.TrimSuffix(name, ext)
+	hasNum := strings.Contains(gOpts.dupfilefmt, "%n")
+
+	for i := 1; ; i++ {
+		dupName := strings.ReplaceAll(gOpts.dupfilefmt, "%f", name)
+		dupName = strings.ReplaceAll(dupName, "%b", basename)
+		dupName = strings.ReplaceAll(dupName, "%e", ext)
+		dupName = strings.ReplaceAll(dupName, "%n", strconv.Itoa(i))
+		path := filepath.Join(dstDir, dupName)
+
+		_, err := os.Lstat(path)
+		switch {
+		case os.IsNotExist(err):
+			return path, nil
+		case err != nil:
+			return "", fmt.Errorf("finding duplicate name for %s: %w", name, err)
+		case !hasNum:
+			return "", fmt.Errorf("finding duplicate name for %s: dupfilefmt must contain %%n", name)
+		}
+	}
+}
+
 func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, errs chan error) {
 	nums = make(chan int64, 1024)
 	errs = make(chan error, 1024)
@@ -110,18 +135,10 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 			dst := filepath.Join(dstDir, file)
 
 			if lstat, err := os.Lstat(dst); err == nil {
-				ext := getFileExtension(lstat)
-				basename := file[:len(file)-len(ext)]
-				var newPath string
-				for i := 1; !os.IsNotExist(err); i++ {
-					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
-					file = strings.ReplaceAll(file, "%b", basename)
-					file = strings.ReplaceAll(file, "%e", ext)
-					file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
-					newPath = filepath.Join(dstDir, file)
-					_, err = os.Lstat(newPath)
+				if dst, err = dupFilePath(dstDir, file, lstat); err != nil {
+					errs <- err
+					continue
 				}
-				dst = newPath
 			}
 
 			if rel, err := filepath.Rel(src, dst); err == nil && rel != "." && filepath.IsLocal(rel) {
