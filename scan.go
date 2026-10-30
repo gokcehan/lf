@@ -237,8 +237,10 @@ scan:
 				case s.chr == 'v':
 					buf = append(buf, '\v')
 				case isDigit(s.chr):
+					// like C, an octal escape is at most three digits long
+					// so that "\0337" is read as "\033" followed by "7"
 					var oct []byte
-					for isDigit(s.chr) {
+					for len(oct) < 3 && isDigit(s.chr) {
 						oct = append(oct, s.chr)
 						s.next()
 					}
