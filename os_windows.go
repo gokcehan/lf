@@ -216,6 +216,11 @@ func linkCount(_ os.FileInfo) string {
 	return ""
 }
 
+// symlinkAt uses os.Symlink since os.Root makes a file link for a folder target outside the root
+func symlinkAt(dir *os.Root, target, name string) error {
+	return os.Symlink(target, filepath.Join(dir.Name(), name))
+}
+
 func errCrossDevice(err error) bool {
 	return err.(*os.LinkError).Err.(windows.Errno) == windows.ERROR_NOT_SAME_DEVICE
 }
