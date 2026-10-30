@@ -1,10 +1,41 @@
 package main
 
 import (
+	"os"
+	"path/filepath"
 	"testing"
 
 	"github.com/gdamore/tcell/v3"
 )
+
+func TestLinkTargetColorOverrides(t *testing.T) {
+	link := &file{FileInfo: &fakeStat{name: "link"}, linkState: working}
+	for _, test := range []struct {
+		name, initial, override, config string
+		want                            string
+	}{
+		{"file-target", "ln=35:fi=31", "", "ln target\n", "31"},
+		{"env-color", "ln=target:fi=31", "ln=35", "", "35"},
+		{"file-color", "ln=target:fi=31", "", "ln 35\n", "35"},
+		{"last-file-entry", "fi=31", "", "ln target\nln 35\n", "35"},
+	} {
+		t.Run(test.name, func(t *testing.T) {
+			sm := styleMap{styles: make(map[string]tcell.Style)}
+			sm.parseGNU(test.initial)
+			sm.parseGNU(test.override)
+			if test.config != "" {
+				path := filepath.Join(t.TempDir(), "colors")
+				if err := os.WriteFile(path, []byte(test.config), 0o600); err != nil {
+					t.Fatal(err)
+				}
+				sm.parseFile(path)
+			}
+			if got, want := sm.get(link), applySGR(test.want, tcell.StyleDefault); got != want {
+				t.Errorf("link style = %v, want %v", got, want)
+			}
+		})
+	}
+}
 
 func TestParseColor(t *testing.T) {
 	tests := []struct {

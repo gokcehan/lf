@@ -124,7 +124,7 @@ func parseColor(toks []string) (tcell.Color, int, error) {
 	return tcell.ColorDefault, 0, fmt.Errorf("invalid args: %v", toks)
 }
 
-func (sm styleMap) parseFile(path string) {
+func (sm *styleMap) parseFile(path string) {
 	log.Printf("reading file: %s", path)
 
 	f, err := os.Open(path)
@@ -172,8 +172,11 @@ func (sm *styleMap) parsePair(pair []string) {
 		key = filepath.Clean(key)
 	}
 
-	if key == "ln" && val == "target" {
-		sm.useLinkTarget = true
+	if key == "ln" {
+		sm.useLinkTarget = val == "target"
+		if sm.useLinkTarget {
+			return
+		}
 	}
 
 	sm.styles[key] = applySGR(val, tcell.StyleDefault)
