@@ -662,17 +662,24 @@ func TestApplyLocalBoolOpt(t *testing.T) {
 	}
 }
 
-func TestParseSetValueQuoting(t *testing.T) {
-	for _, inp := range []string{`set dupfilefmt %f.~%n~`, `setlocal /tmp promptfmt $x`} {
-		p := newParser(strings.NewReader(inp))
-		if p.parse() {
-			t.Errorf("parse(%q) evaluated %v despite error %v", inp, p.expr, p.err)
-		}
-		if p.err == nil {
-			t.Errorf("parse(%q) expected error", inp)
+func TestParseErrors(t *testing.T) {
+	for _, test := range []struct{ inp, err string }{
+		{`set dupfilefmt %f.~%n~`, `set dupfilefmt: value starting with "%" must be quoted`},
+		{`setlocal /tmp promptfmt $x`, `setlocal /tmp promptfmt: value starting with "$" must be quoted`},
+		{"set", "set: expected option, found end of line"},
+		{"setlocal", "setlocal: expected directory, found end of line"},
+		{"setlocal /tmp", "setlocal /tmp: expected option, found end of line"},
+		{"map x :{{ set hidden }}", `set hidden: unexpected "}}"`},
+		{"map x ${{ echo", `block: expected "}}", found end of input`},
+		{"map x :{{\n echo", `block: expected "}}", found end of input`},
+		{"}}", `unexpected "}}"`},
+	} {
+		p := newParser(strings.NewReader(test.inp))
+		if p.parse() || p.err == nil || p.err.Error() != test.err {
+			t.Errorf("parse(%q) got error %v, want %q", test.inp, p.err, test.err)
 		}
 	}
-	for _, inp := range []string{`set dupfilefmt "%f.~%n~"`, `set hidden!`, "set hidden"} {
+	for _, inp := range []string{`set dupfilefmt "%f.~%n~"`, `set hidden!`, "set hidden", "map x :{{ set hidden; }}", "map x ${{ echo hi }}"} {
 		p := newParser(strings.NewReader(inp))
 		if !p.parse() || p.err != nil {
 			t.Errorf("parse(%q) rejected: %v", inp, p.err)
