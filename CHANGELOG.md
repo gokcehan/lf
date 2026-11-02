@@ -27,6 +27,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 - Selecting entries with the mouse no longer causes the file list to jump unexpectedly (#2664).
 - A bug where executing the `quit` command multiple times in quick succession could cause `lf` to become unresponsive is now fixed (#2674).
 - The home directory abbreviation `~` (#2679) and its expansion (#2687) no longer match partial path components.
+- A bug where quitting `lf` required an additional key press on some platforms is now fixed (#2684).
 - The terminal state is now restored when `lf` receives `SIGHUP`, `SIGQUIT`, or `SIGTERM` (#2701).
 - Natural sorting now correctly compares numbers regardless of their length (#2714).
 
