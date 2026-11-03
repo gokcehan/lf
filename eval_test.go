@@ -85,6 +85,18 @@ var gEvalTests = []struct {
 	},
 
 	{
+		`echo "hello\1011world"`,
+		[]string{"echo", "hello\1011world", "\n"},
+		[]expr{&callExpr{"echo", []string{"hello\1011world"}, 1}},
+	},
+
+	{
+		`tty-write "\0337\0338"`,
+		[]string{"tty-write", "\0337\0338", "\n"},
+		[]expr{&callExpr{"tty-write", []string{"\0337\0338"}, 1}},
+	},
+
+	{
 		`echo hello\ world`,
 		[]string{"echo", "hello world", "\n"},
 		[]expr{&callExpr{"echo", []string{"hello world"}, 1}},
