@@ -532,14 +532,17 @@ func (nav *nav) checkDir(dir *dir) {
 		go func() {
 			nav.dirChan <- newDir(dir.path)
 		}()
+	case dir.dircounts && !getDirCounts(dir.path):
+		// Disabling counts only changes sorting; keep calculated directory sizes.
+		name := dir.name()
+		dir.sort()
+		dir.sel(name, nav.height)
 	case dir.dircounts != getDirCounts(dir.path):
 		dir.loading = true
 		go func() {
 			nav.dirChan <- newDir(dir.path)
 		}()
-	// Although toggling dircounts can affect sorting, it is already handled by
-	// reloading the directory which should sort the files anyway, so it is not
-	// checked below.
+	// Changes to dircounts are handled above, including their effect on sorting.
 	case dir.sortby != getSortBy(dir.path) ||
 		dir.dirfirst != getDirFirst(dir.path) ||
 		dir.dironly != getDirOnly(dir.path) ||
