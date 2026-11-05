@@ -201,6 +201,18 @@ func matchWord(s string, words []string) (matches []compMatch, longest string) {
 	return
 }
 
+func matchOpt(s string, words []string) (matches []compMatch, longest string) {
+	matches, longest = matchWord(s, words)
+	if strings.HasPrefix(s, "no") {
+		// Show negated options without their prefix in the menu.
+		// TODO: Update if a future option ever starts with "no".
+		for i := range matches {
+			matches[i].name = matches[i].name[2:]
+		}
+	}
+	return
+}
+
 func matchList(s string, words []string) (matches []compMatch, longest string) {
 	toks := strings.Split(s, ":")
 
@@ -384,7 +396,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 	switch f[0] {
 	case "set":
 		if len(f) == 2 {
-			matches, longest = matchWord(f[1], gOptWords)
+			matches, longest = matchOpt(f[1], gOptWords)
 			break
 		}
 		if len(f) != 3 {
@@ -420,7 +432,7 @@ func completeCmd(s string) (matches []compMatch, longest string) {
 			break
 		}
 		if len(f) == 3 {
-			matches, longest = matchWord(f[2], gLocalOptWords)
+			matches, longest = matchOpt(f[2], gLocalOptWords)
 			break
 		}
 		if len(f) != 4 {
