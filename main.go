@@ -350,7 +350,8 @@ Options:
 		if term.IsTerminal(int(os.Stdout.Fd())) {
 			lines := strings.Split(resp, "\n")
 			for i := range lines {
-				lines[i] = sanitizeName(lines[i])
+				// using sanitizePreview instead of sanitizeName here to preserve tabs for printed tables
+				lines[i] = sanitizePreview(lines[i])
 			}
 			resp = strings.Join(lines, "\n")
 		}
