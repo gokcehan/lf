@@ -111,6 +111,10 @@ func (im *iconMap) parseArray(arr []string) {
 		key = filepath.Clean(key)
 	}
 
+	if key == "ln" {
+		im.useLinkTarget = false
+	}
+
 	switch len(arr) {
 	case 1:
 		delete(im.icons, key)
