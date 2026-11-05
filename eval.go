@@ -65,6 +65,8 @@ func (e *setExpr) eval(app *app, _ []string) {
 		err = applyBoolOpt(&gOpts.anchorfind, e)
 	case "autoquit", "noautoquit", "autoquit!":
 		err = applyBoolOpt(&gOpts.autoquit, e)
+	case "bidi", "nobidi", "bidi!":
+		err = applyBoolOpt(&gOpts.bidi, e)
 	case "dircounts", "nodircounts", "dircounts!":
 		err = applyBoolOpt(&gOpts.dircounts, e)
 		if err == nil {
