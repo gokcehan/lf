@@ -265,14 +265,27 @@ func (dir *dir) sort() {
 		return s
 	}
 
+	// normalize() allocates, so for sort orders that call it on the same name
+	// repeatedly during a single sort, compute it once per file up front
+	// rather than once per comparison.
+	normalizedNames := func() map[*file]string {
+		names := make(map[*file]string, len(dir.files))
+		for _, f := range dir.files {
+			names[f] = normalize(f.Name())
+		}
+		return names
+	}
+
 	switch dir.sortby {
 	case naturalSort:
+		names := normalizedNames()
 		applySort(func(f1, f2 *file) int {
-			return naturalCmp(normalize(f1.Name()), normalize(f2.Name()))
+			return naturalCmp(names[f1], names[f2])
 		})
 	case nameSort:
+		names := normalizedNames()
 		applySort(func(f1, f2 *file) int {
-			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
+			return cmp.Compare(names[f1], names[f2])
 		})
 	case sizeSort:
 		sizeVal := func(f *file) int64 {
@@ -304,19 +317,25 @@ func (dir *dir) sort() {
 			return f1.changeTime.Compare(f2.changeTime)
 		})
 	case extSort:
+		names := normalizedNames()
+		exts := make(map[*file]string, len(dir.files))
+		for _, f := range dir.files {
+			exts[f] = normalize(f.ext)
+		}
 		applySort(func(f1, f2 *file) int {
-			ext1 := normalize(f1.ext)
-			ext2 := normalize(f2.ext)
+			ext1, ext2 := exts[f1], exts[f2]
 			if ext1 != ext2 {
 				return cmp.Compare(ext1, ext2)
 			}
-			return cmp.Compare(normalize(f1.Name()), normalize(f2.Name()))
+			return cmp.Compare(names[f1], names[f2])
 		})
 	case customSort:
+		infos := make(map[*file]string, len(dir.files))
+		for _, f := range dir.files {
+			infos[f] = normalize(stripTermSequence(f.customInfo))
+		}
 		applySort(func(f1, f2 *file) int {
-			s1 := normalize(stripTermSequence(f1.customInfo))
-			s2 := normalize(stripTermSequence(f2.customInfo))
-			return naturalCmp(s1, s2)
+			return naturalCmp(infos[f1], infos[f2])
 		})
 	}
 
