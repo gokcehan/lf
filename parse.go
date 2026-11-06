@@ -44,6 +44,7 @@ import (
 	"bytes"
 	"fmt"
 	"io"
+	"strconv"
 	"strings"
 )
 
@@ -216,6 +217,17 @@ func newParser(r io.Reader) *parser {
 	}
 }
 
+// tokenDesc names the current token in error messages, a newline or EOF is spelled out
+func (s *scanner) tokenDesc() string {
+	switch {
+	case s.typ == tokenEOF:
+		return "end of input"
+	case s.typ == tokenSemicolon && s.tok == "\n":
+		return "end of line"
+	}
+	return strconv.Quote(s.tok)
+}
+
 func (p *parser) parseExpr() expr {
 	s := p.scanner
 
@@ -231,12 +243,21 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 			if s.typ != tokenIdent {
-				p.err = fmt.Errorf("expected identifier: %s", s.tok)
+				p.err = fmt.Errorf("set: expected option, found %s", s.tokenDesc())
+				return nil
 			}
 			opt := s.tok
 
 			s.scan()
 			if s.typ != tokenSemicolon {
+				if s.typ == tokenPrefix || s.typ == tokenColon {
+					p.err = fmt.Errorf("set %s: value starting with %q must be quoted", opt, s.tok)
+					return nil
+				}
+				if s.typ != tokenIdent {
+					p.err = fmt.Errorf("set %s: unexpected %s", opt, s.tokenDesc())
+					return nil
+				}
 				val = s.tok
 				s.scan()
 			}
@@ -249,18 +270,28 @@ func (p *parser) parseExpr() expr {
 
 			s.scan()
 			if s.typ != tokenIdent {
-				p.err = fmt.Errorf("expected directory: %s", s.tok)
+				p.err = fmt.Errorf("setlocal: expected directory, found %s", s.tokenDesc())
+				return nil
 			}
 			dir := s.tok
 
 			s.scan()
 			if s.typ != tokenIdent {
-				p.err = fmt.Errorf("expected identifier: %s", s.tok)
+				p.err = fmt.Errorf("setlocal %s: expected option, found %s", dir, s.tokenDesc())
+				return nil
 			}
 			opt := s.tok
 
 			s.scan()
 			if s.typ != tokenSemicolon {
+				if s.typ == tokenPrefix || s.typ == tokenColon {
+					p.err = fmt.Errorf("setlocal %s %s: value starting with %q must be quoted", dir, opt, s.tok)
+					return nil
+				}
+				if s.typ != tokenIdent {
+					p.err = fmt.Errorf("setlocal %s %s: unexpected %s", dir, opt, s.tokenDesc())
+					return nil
+				}
 				val = s.tok
 				s.scan()
 			}
@@ -359,6 +390,9 @@ func (p *parser) parseExpr() expr {
 			for {
 				e := p.parseExpr()
 				if e == nil {
+					if p.err == nil {
+						p.err = fmt.Errorf(`block: expected "}}", found %s`, s.tokenDesc())
+					}
 					return nil
 				}
 				exprs = append(exprs, e)
@@ -391,6 +425,10 @@ func (p *parser) parseExpr() expr {
 		s.scan()
 		if s.typ == tokenLBraces {
 			s.scan()
+			if s.typ != tokenCommand {
+				p.err = fmt.Errorf(`block: expected "}}", found %s`, s.tokenDesc())
+				return nil
+			}
 			expr = s.tok
 			s.scan()
 		} else {
@@ -402,7 +440,7 @@ func (p *parser) parseExpr() expr {
 
 		result = &execExpr{prefix, expr}
 	default:
-		p.err = fmt.Errorf("unexpected token: %s", s.tok)
+		p.err = fmt.Errorf("unexpected %s", s.tokenDesc())
 	}
 
 	return result
@@ -410,5 +448,10 @@ func (p *parser) parseExpr() expr {
 
 func (p *parser) parse() bool {
 	p.expr = p.parseExpr()
+	if p.err != nil {
+		// never evaluate an expression that produced a parse error
+		p.expr = nil
+		return false
+	}
 	return p.expr != nil
 }
