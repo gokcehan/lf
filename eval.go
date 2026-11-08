@@ -1282,6 +1282,8 @@ func (e *callExpr) eval(app *app, _ []string) {
 			app.ui.echoerrf("sync: %s", err)
 		}
 	case "draw":
+		// Input handlers return this no-op instead of nil to
+		// trigger the screen update performed by [app.loop].
 	case "redraw":
 		app.ui.screen.Sync()
 		app.ui.renew()
