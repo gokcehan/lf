@@ -553,7 +553,7 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 		app.ui.echoerrf("running shell: %s", err)
 	}
 	if pauseAfter {
-		anyKey()
+		app.ui.anyKey()
 	}
 
 	app.ui.loadFile(app, true)
