@@ -1605,22 +1605,26 @@ func (ui *ui) exportSizes() {
 	os.Setenv("lf_height", strconv.Itoa(h))
 }
 
-func anyKey() {
-	fmt.Fprint(os.Stderr, gOpts.waitmsg)
-	defer fmt.Fprintln(os.Stderr)
-	oldState, err := term.MakeRaw(int(os.Stdin.Fd()))
+func (ui *ui) anyKey() {
+	fd := int(os.Stdin.Fd())
+	oldState, err := term.MakeRaw(fd)
 	if err != nil {
-		panic(err)
+		ui.echoerrf("enabling raw mode: %s", err)
+		return
 	}
+
+	defer fmt.Fprintln(os.Stderr)
 	defer func() {
-		if err := term.Restore(int(os.Stdin.Fd()), oldState); err != nil {
-			panic(err)
+		if err := term.Restore(fd, oldState); err != nil {
+			ui.echoerrf("restoring terminal state: %s", err)
 		}
 	}()
 
+	fmt.Fprint(os.Stderr, gOpts.waitmsg)
+
 	b := make([]byte, 8)
 	if _, err := os.Stdin.Read(b); err != nil {
-		log.Printf("reading key press: %s", err)
+		ui.echoerrf("reading key press: %s", err)
 	}
 }
 
