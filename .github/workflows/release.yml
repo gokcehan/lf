@@ -78,12 +78,26 @@ jobs:
   release:
     runs-on: ubuntu-latest
     needs: build
+    permissions:
+      contents: write
+      id-token: write
+      attestations: write
     steps:
       - name: Download artifacts
         uses: actions/download-artifact@v8
         with:
           path: dist
           merge-multiple: true
+
+      - name: Attest build provenance
+        id: attest
+        uses: actions/attest@v4
+        with:
+          subject-path: dist/*
+
+      # publish the attestation so it can be verified without the GitHub CLI
+      - name: Add attestation bundle
+        run: cp "${{ steps.attest.outputs.bundle-path }}" dist/lf.sigstore.json
 
       - name: Release
         uses: softprops/action-gh-release@v3
