@@ -961,8 +961,13 @@ func (nav *nav) preview(path string, win *win, mode string) {
 func (nav *nav) loadReg(path string, volatile bool) *reg {
 	r, ok := nav.regCache[path]
 	if !ok || (!gOpts.preload && r.loading) {
-		r = &reg{loading: true, loadTime: time.Now(), path: path}
-		nav.regCache[path] = r
+		// keep a reloading preview so its lines stay visible until the new ones arrive
+		if !ok {
+			r = &reg{path: path}
+			nav.regCache[path] = r
+		}
+		r.loading = true
+		r.loadTime = time.Now()
 		if gOpts.preload {
 			select {
 			case nav.preloadChan <- path:
@@ -1579,13 +1584,21 @@ func (nav *nav) rename() error {
 	// this clears only the current instance of lf, and not any other instances.
 	deletePathRecursive(nav.regCache, newPath)
 	deletePathRecursive(nav.dirCache, newPath)
+
+	// show the old preview until the renamed file is previewed again
+	if r, ok := nav.regCache[oldPath]; ok {
+		delete(nav.regCache, oldPath)
+		r.path = newPath
+		r.loadTime = time.Time{}
+		nav.regCache[newPath] = r
+	}
 	dir := nav.getDir(filepath.Dir(newPath))
 	nav.checkDir(dir)
 
 	if dir.loading {
 		for i := range dir.allFiles {
 			if dir.allFiles[i].path == oldPath {
-				dir.allFiles[i] = &file{FileInfo: lstat}
+				dir.allFiles[i] = newFile(newPath)
 				break
 			}
 		}
