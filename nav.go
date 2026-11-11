@@ -865,6 +865,9 @@ func (nav *nav) preload() {
 
 func (nav *nav) preview(path string, win *win, mode string) {
 	reg := &reg{loadTime: time.Now(), path: path, height: win.h}
+	if fi, err := os.Stat(path); err == nil {
+		reg.modTime = fi.ModTime()
+	}
 	defer func() {
 		if (gOpts.preload && mode == "preview") || (!gOpts.preload && reg.volatile) {
 			nav.volatilePreview = true
@@ -961,8 +964,13 @@ func (nav *nav) preview(path string, win *win, mode string) {
 func (nav *nav) loadReg(path string, volatile bool) *reg {
 	r, ok := nav.regCache[path]
 	if !ok || (!gOpts.preload && r.loading) {
-		r = &reg{loading: true, loadTime: time.Now(), path: path}
-		nav.regCache[path] = r
+		// keep a reloading preview so its lines stay visible until the new ones arrive
+		if !ok {
+			r = &reg{path: path}
+			nav.regCache[path] = r
+		}
+		r.loading = true
+		r.loadTime = time.Now()
 		if gOpts.preload {
 			select {
 			case nav.preloadChan <- path:
@@ -1000,7 +1008,14 @@ func (nav *nav) checkReg(reg *reg) {
 		return
 	}
 
-	if s.ModTime().After(reg.loadTime) {
+	// a running load already covers changes made before it was queued
+	if reg.loading && !s.ModTime().After(reg.loadTime) {
+		return
+	}
+
+	// reload when the mtime differs from the one seen at preview time
+	if !s.ModTime().Equal(reg.modTime) {
+		reg.modTime = s.ModTime()
 		reg.loadTime = now
 		reg.loading = true
 		if gOpts.preload {
@@ -1579,13 +1594,21 @@ func (nav *nav) rename() error {
 	// this clears only the current instance of lf, and not any other instances.
 	deletePathRecursive(nav.regCache, newPath)
 	deletePathRecursive(nav.dirCache, newPath)
+
+	// show the old preview until the renamed file is previewed again
+	if r, ok := nav.regCache[oldPath]; ok && !r.loading {
+		delete(nav.regCache, oldPath)
+		r.path = newPath
+		r.modTime = time.Time{}
+		nav.regCache[newPath] = r
+	}
 	dir := nav.getDir(filepath.Dir(newPath))
 	nav.checkDir(dir)
 
 	if dir.loading {
 		for i := range dir.allFiles {
 			if dir.allFiles[i].path == oldPath {
-				dir.allFiles[i] = &file{FileInfo: lstat}
+				dir.allFiles[i] = newFile(newPath)
 				break
 			}
 		}
