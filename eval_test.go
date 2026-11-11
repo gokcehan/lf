@@ -665,13 +665,13 @@ func TestApplyLocalBoolOpt(t *testing.T) {
 func TestParseErrors(t *testing.T) {
 	for _, test := range []struct{ inp, err string }{
 		{`set dupfilefmt %f.~%n~`, `set dupfilefmt: value starting with "%" must be quoted`},
-		{`setlocal /tmp promptfmt $x`, `setlocal /tmp promptfmt: value starting with "$" must be quoted`},
-		{"set", "set: expected option, found end of line"},
-		{"setlocal", "setlocal: expected directory, found end of line"},
-		{"setlocal /tmp", "setlocal /tmp: expected option, found end of line"},
+		{`setlocal /tmp info $x`, `setlocal /tmp info: value starting with "$" must be quoted`},
+		{"set", "set: expected option"},
+		{"setlocal", "setlocal: expected directory"},
+		{"setlocal /tmp", "setlocal /tmp: expected option"},
 		{"map x :{{ set hidden }}", `set hidden: unexpected "}}"`},
-		{"map x ${{ echo", `block: expected "}}", found end of input`},
-		{"map x :{{\n echo", `block: expected "}}", found end of input`},
+		{"map x ${{ echo", `missing "}}"`},
+		{"map x :{{\n echo", `missing "}}"`},
 		{"}}", `unexpected "}}"`},
 	} {
 		p := newParser(strings.NewReader(test.inp))
