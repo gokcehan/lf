@@ -400,6 +400,17 @@ func (win *win) printDir(ui *ui, dir *dir, context *dirContext, dirStyle *dirSty
 		}
 
 		filename := truncateFilename(f, maxFilenameWidth, gOpts.truncatepct, gOpts.truncatechar)
+		// show the link target after the full name, keeping its end if it must be truncated
+		if gOpts.linktarget && f.linkTarget != "" {
+			link := filename + " -> "
+			target := sanitizeName(f.linkTarget)
+			full := link + target
+			if displaywidth.String(full) <= maxFilenameWidth {
+				filename = full
+			} else if t := truncateLeft(target, maxFilenameWidth-displaywidth.String(link)-displaywidth.String(gOpts.truncatechar)); t != "" {
+				filename = link + gOpts.truncatechar + t
+			}
+		}
 		spacing := maxFilenameWidth - displaywidth.String(filename)
 		if spacing > 0 {
 			filename += strings.Repeat(" ", spacing)
