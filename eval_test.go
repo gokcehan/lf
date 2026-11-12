@@ -673,3 +673,28 @@ func TestApplyLocalBoolOpt(t *testing.T) {
 		}
 	}
 }
+
+func TestParseErrors(t *testing.T) {
+	for _, test := range []struct{ inp, err string }{
+		{`set dupfilefmt %f.~%n~`, `set dupfilefmt: value starting with "%" must be quoted`},
+		{`setlocal /tmp info $x`, `setlocal /tmp info: value starting with "$" must be quoted`},
+		{"set", "set: expected option"},
+		{"setlocal", "setlocal: expected directory"},
+		{"setlocal /tmp", "setlocal /tmp: expected option"},
+		{"map x :{{ set hidden }}", `set hidden: unexpected "}}"`},
+		{"map x ${{ echo", `missing "}}"`},
+		{"map x :{{\n echo", `missing "}}"`},
+		{"}}", `unexpected "}}"`},
+	} {
+		p := newParser(strings.NewReader(test.inp))
+		if p.parse() || p.err == nil || p.err.Error() != test.err {
+			t.Errorf("parse(%q) got error %v, want %q", test.inp, p.err, test.err)
+		}
+	}
+	for _, inp := range []string{`set dupfilefmt "%f.~%n~"`, `set hidden!`, "set hidden", "map x :{{ set hidden; }}", "map x ${{ echo hi }}"} {
+		p := newParser(strings.NewReader(inp))
+		if !p.parse() || p.err != nil {
+			t.Errorf("parse(%q) rejected: %v", inp, p.err)
+		}
+	}
+}

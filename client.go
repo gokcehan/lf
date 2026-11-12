@@ -187,6 +187,8 @@ func readExpr() <-chan expr {
 				p := newParser(strings.NewReader(s.Text()))
 				if p.parse() {
 					ch <- p.expr
+				} else if p.err != nil {
+					ch <- &callExpr{"echoerr", []string{p.err.Error()}, 1}
 				}
 			}
 		}
