@@ -113,13 +113,17 @@ func copyAll(srcs []string, dstDir string, preserve []string) (nums chan int64, 
 				ext := getFileExtension(lstat)
 				basename := file[:len(file)-len(ext)]
 				var newPath string
-				for i := 1; !os.IsNotExist(err); i++ {
+				for i := 1; err == nil; i++ {
 					file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
 					file = strings.ReplaceAll(file, "%b", basename)
 					file = strings.ReplaceAll(file, "%e", ext)
 					file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
 					newPath = filepath.Join(dstDir, file)
 					_, err = os.Lstat(newPath)
+				}
+				if !os.IsNotExist(err) {
+					errs <- err
+					continue
 				}
 				dst = newPath
 			}

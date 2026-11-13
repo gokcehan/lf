@@ -1429,13 +1429,17 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 			ext := getFileExtension(dstStat)
 			basename := file[:len(file)-len(ext)]
 			var newPath string
-			for i := 1; !os.IsNotExist(err); i++ {
+			for i := 1; err == nil; i++ {
 				file = strings.ReplaceAll(gOpts.dupfilefmt, "%f", basename+ext)
 				file = strings.ReplaceAll(file, "%b", basename)
 				file = strings.ReplaceAll(file, "%e", ext)
 				file = strings.ReplaceAll(file, "%n", strconv.Itoa(i))
 				newPath = filepath.Join(dstDir, file)
 				_, err = os.Lstat(newPath)
+			}
+			if !os.IsNotExist(err) {
+				sendErr("%v", err)
+				continue
 			}
 			dst = newPath
 		}
