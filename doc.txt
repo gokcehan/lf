@@ -2091,6 +2091,12 @@ can also assign a key to this command if you like. An example command to
 move selected files to a trash folder and remove files completely after
 a prompt is provided in the example configuration file.
 
+File names containing a newline are handled as recommended by
+POSIX.1-2024. Since lf passes file names to shell commands and stores
+them in files one per line, such names are left out of $f, $fs, $fv, $fx
+and the on-load arguments, and they cannot be copied, cut, tagged or
+opened. They can still be deleted, or renamed to remove the newline.
+
 SEARCHING FILES
 
 There are two mechanisms implemented in lf to search a file in the

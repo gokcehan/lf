@@ -283,6 +283,11 @@ func matchFile(s string, dirOnly bool, escape, unescape func(string) string) (ma
 			continue
 		}
 
+		// a newline in a completed name would split the command line
+		if strings.ContainsAny(f.Name(), "\n\r") {
+			continue
+		}
+
 		name := f.Name()
 		if isDir {
 			name += string(filepath.Separator)

@@ -173,7 +173,7 @@ func saveFiles(clipboard clipboard) error {
 	for _, path := range clipboard.paths {
 		// the clipboard file stores one path per line so a newline cannot be saved
 		if strings.ContainsAny(path, "\n\r") {
-			return fmt.Errorf("cannot copy %s because the name contains a newline", path)
+			return newlineErr(path)
 		}
 	}
 
@@ -568,7 +568,10 @@ func (app *app) runCmdSync(cmd *exec.Cmd, pauseAfter bool) {
 //	!       Yes   No     Yes    Yes     Yes     Pause and then resume
 //	&       No    Yes    No     No      No      Do nothing
 func (app *app) runShell(s string, args []string, prefix string) {
-	app.nav.exportFiles()
+	// report a dropped name so shell commands do not fail silently
+	if err := app.nav.exportFiles(); err != nil {
+		app.ui.echoerrf("shell: left out %s", err)
+	}
 	app.ui.exportSizes()
 	app.exportMode()
 	exportLfPath()
