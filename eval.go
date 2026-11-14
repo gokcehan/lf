@@ -651,7 +651,12 @@ func onChdir(app *app) {
 
 func onLoad(app *app, files []string) {
 	if cmd, ok := gOpts.cmds["on-load"]; ok {
-		cmd.eval(app, files)
+		// newline names must not reach the shell command
+		clean := slices.DeleteFunc(files, func(path string) bool { return strings.ContainsAny(path, "\n\r") })
+		if dropped := len(files) - len(clean); dropped > 0 {
+			app.ui.echoerrf("on-load: dropped %d name(s) with a newline from the arguments", dropped)
+		}
+		cmd.eval(app, clean)
 	}
 }
 
@@ -923,7 +928,13 @@ func insert(app *app, arg string) {
 	case app.ui.cmdPrefix == "mark-save: ":
 		normal(app)
 
-		app.nav.marks[arg] = app.nav.currDir().path
+		path := app.nav.currDir().path
+		// refuse instead of storing a mark that writeMarks would silently drop
+		if err := newlineErr(path); err != nil {
+			app.ui.echoerrf("mark-save: %s", err)
+			return
+		}
+		app.nav.marks[arg] = path
 		if err := app.nav.writeMarks(); err != nil {
 			app.ui.echoerrf("mark-save: %s", err)
 			return
@@ -1117,7 +1128,15 @@ func (e *callExpr) eval(app *app, _ []string) {
 			onChdir(app)
 		} else {
 			if gSelectionPath != "" || gPrintSelection {
-				app.selectionOut, _ = app.nav.currFileOrSelections()
+				list, err := app.nav.currFileOrSelections()
+				if err == nil {
+					err = newlineErr(list...)
+				}
+				if err != nil {
+					app.ui.echoerrf("open: %s", err)
+					return
+				}
+				app.selectionOut = list
 				app.requestQuit()
 				return
 			}
@@ -1298,6 +1317,13 @@ func (e *callExpr) eval(app *app, _ []string) {
 		app.nav.reload()
 		app.ui.loadFile(app, true)
 	case "delete":
+		// check the files before a custom delete runs
+		list, err := app.nav.currFileOrSelections()
+		if err != nil {
+			app.ui.echoerrf("delete: %s", err)
+			return
+		}
+
 		if cmd, ok := gOpts.cmds["delete"]; ok {
 			cmd.eval(app, e.args)
 			app.nav.unselect()
@@ -1311,12 +1337,6 @@ func (e *callExpr) eval(app *app, _ []string) {
 				}
 			}
 		} else {
-			list, err := app.nav.currFileOrSelections()
-			if err != nil {
-				app.ui.echoerrf("delete: %s", err)
-				return
-			}
-
 			if app.ui.cmdPrefix == ">" {
 				return
 			}
