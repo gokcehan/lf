@@ -271,6 +271,13 @@ func TestApplySGR(t *testing.T) {
 
 		{"48;5;1", none.Background(color.Green), none.Background(color.Maroon)},
 
+		{"39", none.Foreground(color.Maroon), none},
+		{"39", none.Foreground(color.Maroon).Background(color.Green).Bold(true), none.Background(color.Green).Bold(true)},
+		{"49", none.Background(color.Maroon), none},
+		{"49", none.Foreground(color.Green).Background(color.Maroon), none.Foreground(color.Green)},
+		{"31;49", none.Background(color.Green), none.Foreground(color.Maroon)},
+		{"59", none.Underline(true, color.Maroon), none.Underline(true)},
+
 		{"1;38;5;1", none, none.Foreground(color.Maroon).Bold(true)},
 		{"1;38;5;1", none.Foreground(color.Green), none.Foreground(color.Maroon).Bold(true)},
 

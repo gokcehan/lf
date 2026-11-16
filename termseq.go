@@ -205,6 +205,8 @@ loop:
 			}
 			st = st.Foreground(color)
 			i += offset
+		case "39":
+			st = st.Foreground(tcell.ColorDefault)
 		case "40", "41", "42", "43", "44", "45", "46", "47":
 			n, _ := strconv.Atoi(toks[i])
 			st = st.Background(tcell.PaletteColor(n - 40))
@@ -219,6 +221,8 @@ loop:
 			}
 			st = st.Background(color)
 			i += offset
+		case "49":
+			st = st.Background(tcell.ColorDefault)
 		case "58":
 			color, offset, err := parseColor(toks[i+1:])
 			if err != nil {
@@ -227,6 +231,8 @@ loop:
 			}
 			st = st.Underline(color)
 			i += offset
+		case "59":
+			st = st.Underline(tcell.ColorDefault)
 		default:
 			log.Printf("unknown ANSI code: %s", toks[i])
 		}
