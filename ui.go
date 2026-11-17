@@ -170,6 +170,21 @@ func infotimefmt(t time.Time) string {
 	return t.Format(gOpts.infotimefmtold)
 }
 
+func mouseWheelKey(buttons tcell.ButtonMask) string {
+	switch {
+	case buttons&tcell.WheelUp != 0:
+		return "<m-up>"
+	case buttons&tcell.WheelDown != 0:
+		return "<m-down>"
+	case buttons&tcell.WheelLeft != 0:
+		return "<m-left>"
+	case buttons&tcell.WheelRight != 0:
+		return "<m-right>"
+	default:
+		return ""
+	}
+}
+
 func fileInfo(f *file, d *dir, userWidth, groupWidth, customWidth int) (string, string, int) {
 	var info strings.Builder
 	var custom string
@@ -1447,37 +1462,32 @@ func (ui *ui) readNormalEvent(ev tcell.Event, nav *nav) expr {
 			return nil
 		}
 
-		var button string
+		buttons := tev.Buttons()
+		button := mouseWheelKey(buttons)
 
-		switch tev.Buttons() {
-		case tcell.Button1:
-			button = "<m-1>"
-		case tcell.Button2:
-			button = "<m-2>"
-		case tcell.Button3:
-			button = "<m-3>"
-		case tcell.Button4:
-			button = "<m-4>"
-		case tcell.Button5:
-			button = "<m-5>"
-		case tcell.Button6:
-			button = "<m-6>"
-		case tcell.Button7:
-			button = "<m-7>"
-		case tcell.Button8:
-			button = "<m-8>"
-		case tcell.WheelUp:
-			button = "<m-up>"
-		case tcell.WheelDown:
-			button = "<m-down>"
-		case tcell.WheelLeft:
-			button = "<m-left>"
-		case tcell.WheelRight:
-			button = "<m-right>"
-		case tcell.ButtonNone:
-			return nil
+		if button == "" {
+			switch buttons {
+			case tcell.Button1:
+				button = "<m-1>"
+			case tcell.Button2:
+				button = "<m-2>"
+			case tcell.Button3:
+				button = "<m-3>"
+			case tcell.Button4:
+				button = "<m-4>"
+			case tcell.Button5:
+				button = "<m-5>"
+			case tcell.Button6:
+				button = "<m-6>"
+			case tcell.Button7:
+				button = "<m-7>"
+			case tcell.Button8:
+				button = "<m-8>"
+			case tcell.ButtonNone:
+				return nil
+			}
 		}
-		if tev.Modifiers() == tcell.ModCtrl {
+		if button != "" && tev.Modifiers() == tcell.ModCtrl {
 			button = "<c-" + button[1:]
 		}
 		if expr, ok := keys[button]; ok {

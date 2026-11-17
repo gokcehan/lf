@@ -44,3 +44,43 @@ func TestParseKey(t *testing.T) {
 		}
 	}
 }
+
+func TestMouseWheelKey(t *testing.T) {
+	tests := []struct {
+		name    string
+		buttons tcell.ButtonMask
+		want    string
+	}{
+		{name: "up", buttons: tcell.WheelUp, want: "<m-up>"},
+		{name: "down", buttons: tcell.WheelDown, want: "<m-down>"},
+		{name: "left", buttons: tcell.WheelLeft, want: "<m-left>"},
+		{name: "right", buttons: tcell.WheelRight, want: "<m-right>"},
+		{name: "wheel with held button", buttons: tcell.Button2 | tcell.WheelUp, want: "<m-up>"},
+		{name: "no wheel", buttons: tcell.Button2, want: ""},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			if got := mouseWheelKey(tt.buttons); got != tt.want {
+				t.Errorf("mouseWheelKey(%v) = %q, want %q", tt.buttons, got, tt.want)
+			}
+		})
+	}
+}
+
+func TestReadNormalEventWheelWithHeldButton(t *testing.T) {
+	previousKeys := gOpts.nkeys
+	gOpts.nkeys = map[string]expr{"<m-up>": &callExpr{name: "up", count: 1}}
+	t.Cleanup(func() { gOpts.nkeys = previousKeys })
+
+	nav := &nav{
+		dirPaths: []string{"."},
+		dirCache: map[string]*dir{".": {visualAnchor: -1}},
+	}
+	want := gOpts.nkeys["<m-up>"]
+	event := tcell.NewEventMouse(0, 0, tcell.Button2|tcell.WheelUp, tcell.ModNone)
+
+	if got := (&ui{}).readNormalEvent(event, nav); got != want {
+		t.Errorf("readNormalEvent() = %#v, want wheel-up binding %#v", got, want)
+	}
+}
