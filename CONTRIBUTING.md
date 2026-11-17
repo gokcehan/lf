@@ -12,6 +12,10 @@ If your feature can be implemented as a configuration option, **please add it to
 
 For bug fixes, you can simply send a pull request.
 
+## Automated contributions
+
+Pull requests generated entirely by AI tools or submitted as part of mass-submission campaigns are not accepted. Such pull requests may be closed without review and labeled as spam.
+
 ## Code conventions
 
 In addition to `gofmt` and friends (e.g. [go vet](https://pkg.go.dev/cmd/vet), [staticcheck](https://staticcheck.dev/), [golangci-lint](https://golangci-lint.run/)), we have a few conventions:
