@@ -230,6 +230,7 @@ func TestApplySGR(t *testing.T) {
 		{"4:0", none.Underline(true), none},
 		{"4:1", none, none.Underline(true)},
 		{"4:2", none, none.Underline(tcell.UnderlineStyleDouble)},
+		{"21", none, none.Underline(tcell.UnderlineStyleDouble)},
 		{"4:3", none, none.Underline(tcell.UnderlineStyleCurly)},
 		{"4:4", none, none.Underline(tcell.UnderlineStyleDotted)},
 		{"4:5", none, none.Underline(tcell.UnderlineStyleDashed)},
@@ -244,9 +245,11 @@ func TestApplySGR(t *testing.T) {
 		{"31", none, none.Foreground(color.Maroon)},
 		{"31", none.Foreground(color.Green), none.Foreground(color.Maroon)},
 		{"31", none.Foreground(color.Green).Bold(true), none.Foreground(color.Maroon).Bold(true)},
+		{"39", none.Foreground(color.Maroon).Bold(true), none.Bold(true)},
 
 		{"41", none, none.Background(color.Maroon)},
 		{"41", none.Background(color.Green), none.Background(color.Maroon)},
+		{"49", none.Background(color.Maroon).Bold(true), none.Bold(true)},
 
 		{"1;31", none, none.Foreground(color.Maroon).Bold(true)},
 		{"1;31", none.Foreground(color.Green), none.Foreground(color.Maroon).Bold(true)},
@@ -276,6 +279,7 @@ func TestApplySGR(t *testing.T) {
 
 		{"38;2;5;102;8", none, none.Foreground(tcell.NewRGBColor(5, 102, 8))},
 		{"48;2;0;48;143", none, none.Background(tcell.NewRGBColor(0, 48, 143))},
+		{"59", none.Underline(true, color.Maroon), none.Underline(true)},
 
 		// Fixes color construction issue: https://github.com/gokcehan/lf/pull/439#issuecomment-674409446
 		{"38;5;34;1", none, none.Foreground(color.XTerm34).Bold(true)},
