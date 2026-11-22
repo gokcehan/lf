@@ -593,6 +593,16 @@ func getWidths(wtot int, ratios []int, drawbox bool, borderstyle borderStyle) []
 	return widths
 }
 
+// newlineErr returns an error for the first path that contains a newline or carriage return.
+func newlineErr(paths ...string) error {
+	for _, path := range paths {
+		if strings.ContainsAny(path, "\n\r") {
+			return fmt.Errorf("%q: path contains a newline", path)
+		}
+	}
+	return nil
+}
+
 // We don't need no generic code
 // We don't need no type control
 // No dark templates in compiler

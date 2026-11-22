@@ -36,3 +36,31 @@ func TestDirSize(t *testing.T) {
 		t.Errorf("at symlink to directory expected %d but got %d", expected, got)
 	}
 }
+
+// a newline name must not reach shell commands through $f, $fx or $fv
+func TestExportFilesNewline(t *testing.T) {
+	t.Setenv("PWD", "") // restored after the test, exportFiles changes it
+
+	// the cursor and the visual selection are on the newline name
+	d := &dir{path: "/tmp/dir", files: []*file{{path: "/tmp/dir/a\n"}}}
+	nav := &nav{dirPaths: []string{d.path}, dirCache: map[string]*dir{d.path: d}}
+
+	if err := nav.exportFiles(); err == nil {
+		t.Error("no error for the dropped name")
+	}
+	for _, name := range []string{"f", "fx", "fv"} {
+		if v := os.Getenv(name); v != "" {
+			t.Errorf("$%s = %q, want empty", name, v)
+		}
+	}
+
+	// a selection of only newline paths must not fall back to the cursor file
+	d.files = []*file{{path: "/tmp/dir/c"}}
+	nav.selections = map[string]int{"/tmp/dir/a\n": 0}
+	if err := nav.exportFiles(); err == nil {
+		t.Error("no error for the dropped name")
+	}
+	if v := os.Getenv("fx"); v != "" {
+		t.Errorf("$fx = %q, want empty", v)
+	}
+}

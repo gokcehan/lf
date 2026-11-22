@@ -710,34 +710,43 @@ func (nav *nav) position() {
 	}
 }
 
-func (nav *nav) exportFiles() {
-	var currFile string
-	if curr := nav.currFile(); curr != nil {
-		currFile = quoteString(curr.path)
+// exportFiles sets the shell variables and returns an error for a dropped name.
+func (nav *nav) exportFiles() error {
+	// a name with a newline would split the list
+	join := func(paths []string) string {
+		var quoted []string
+		for _, path := range paths {
+			if !strings.ContainsAny(path, "\n\r") {
+				quoted = append(quoted, quoteString(path))
+			}
+		}
+		return strings.Join(quoted, gOpts.filesep)
 	}
 
-	var selections []string
-	for _, selection := range nav.currSelections() {
-		selections = append(selections, quoteString(selection))
+	var curr []string
+	if file := nav.currFile(); file != nil {
+		curr = []string{file.path}
 	}
-	currSelections := strings.Join(selections, gOpts.filesep)
+	selections := nav.currSelections()
+	vSelections := nav.currDir().visualSelections()
 
-	var vSelections []string
-	for _, selection := range nav.currDir().visualSelections() {
-		vSelections = append(vSelections, quoteString(selection))
-	}
-	currVSelections := strings.Join(vSelections, gOpts.filesep)
+	currFile := join(curr)
+	currSelections := join(selections)
+	currVSelections := join(vSelections)
 
 	os.Setenv("f", currFile)
 	os.Setenv("fs", currSelections)
 	os.Setenv("fv", currVSelections)
 	os.Setenv("PWD", quoteString(nav.currDir().path))
 
+	// $fx must not fall back to $f when all selected paths were dropped
 	if len(selections) == 0 {
 		os.Setenv("fx", currFile)
 	} else {
 		os.Setenv("fx", currSelections)
 	}
+
+	return newlineErr(slices.Concat(curr, selections, vSelections)...)
 }
 
 func (nav *nav) preloadLoop(ui *ui) {
@@ -1278,6 +1287,9 @@ func (nav *nav) tagToggle(tag string) error {
 	if err != nil {
 		return err
 	}
+	if err := newlineErr(list...); err != nil {
+		return err
+	}
 
 	if printLength(tag) != 1 {
 		return errors.New("tag should be single width character")
@@ -1293,6 +1305,9 @@ func (nav *nav) tagToggle(tag string) error {
 func (nav *nav) tag(tag string) error {
 	list, err := nav.currFileOrSelections()
 	if err != nil {
+		return err
+	}
+	if err := newlineErr(list...); err != nil {
 		return err
 	}
 
