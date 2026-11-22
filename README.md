@@ -36,6 +36,7 @@ See [faq](https://github.com/gokcehan/lf/wiki/FAQ) for more information and [tut
 See [packages](https://github.com/gokcehan/lf/wiki/Packages) for community maintained packages.
 
 See [releases](https://github.com/gokcehan/lf/releases) for pre-built binaries.
+See [verifying releases](#verifying-releases) to check the signature of a release.
 
 Building from the source requires [Go](https://go.dev/).
 
@@ -57,6 +58,21 @@ On Windows `PowerShell`:
 ```powershell
 $env:CGO_ENABLED = '0'
 go install -trimpath -ldflags="-s -w" github.com/gokcehan/lf@latest
+```
+
+### Verifying releases
+
+Release archives are signed by the release workflow with [Sigstore](https://www.sigstore.dev/).
+Each release has the signature in `lf.sigstore.json`.
+
+Verify a downloaded archive with [cosign](https://github.com/sigstore/cosign)
+
+```bash
+cosign verify-blob lf-linux-amd64.tar.gz \
+  --bundle lf.sigstore.json \
+  --new-bundle-format \
+  --certificate-identity-regexp '^https://github.com/gokcehan/lf/' \
+  --certificate-oidc-issuer https://token.actions.githubusercontent.com
 ```
 
 ## Usage
