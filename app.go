@@ -365,9 +365,6 @@ func (app *app) loop() {
 			}
 		case n := <-app.nav.copyTotalChan:
 			app.nav.copyTotal += n
-			if n < 0 {
-				app.nav.copyBytes += n
-			}
 			if app.nav.copyTotal == 0 {
 				app.nav.copyUpdate = 0
 			}
