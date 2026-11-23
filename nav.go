@@ -1363,10 +1363,12 @@ func (nav *nav) copyAsync(app *app, srcs []string, dstDir string) {
 
 	nums, errs := copyAll(srcs, dstDir, gOpts.preserve)
 
+	var copied int64
 loop:
 	for {
 		select {
 		case n := <-nums:
+			copied += n
 			nav.copyBytesChan <- n
 		case err, ok := <-errs:
 			if !ok {
@@ -1376,6 +1378,8 @@ loop:
 		}
 	}
 
+	// remove exactly the bytes this copy added, a failed copy adds less than its total
+	nav.copyBytesChan <- -copied
 	nav.copyJobsChan <- -1
 	nav.copyTotalChan <- -total
 
@@ -1456,10 +1460,12 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 				nums, errs := copyAll([]string{src}, dstDir, []string{"mode", "timestamps"})
 
 				oldCount := errCount
+				var copied int64
 			loop:
 				for {
 					select {
 					case n := <-nums:
+						copied += n
 						nav.copyBytesChan <- n
 					case err, ok := <-errs:
 						if !ok {
@@ -1469,6 +1475,7 @@ func (nav *nav) moveAsync(app *app, srcs []string, dstDir string) {
 					}
 				}
 
+				nav.copyBytesChan <- -copied
 				nav.copyJobsChan <- -1
 				nav.copyTotalChan <- -total
 
